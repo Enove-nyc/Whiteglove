@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cityGuides } from "@/data/city-guides";
+import { bulkDestinations } from "@/data/bulk-destinations";
 import { sacredStops } from "@/data/sacred-stops";
 
 type SearchMatch = {
@@ -10,6 +11,7 @@ type SearchMatch = {
   title: string;
   yiddish: string;
   subtitle: string;
+  yiddishSubtitle?: string;
   aliases?: string[];
   href: string;
   kind: "Guide" | "Location";
@@ -21,6 +23,7 @@ const featuredMatches: SearchMatch[] = [
     title: "Lizhensk",
     yiddish: "ליזענסק",
     subtitle: "Reb Elimelech of Lizhensk · Poland",
+    yiddishSubtitle: "רבי אלימלך מליזענסק",
     aliases: ["Lizensk", "Lezajsk", "Leżajsk", "ליז'ענסק"],
     href: "/lizensk",
     kind: "Guide",
@@ -30,9 +33,20 @@ const featuredMatches: SearchMatch[] = [
     title: guide.city,
     yiddish: guide.yiddishCity,
     subtitle: `${guide.tzaddik} · ${guide.country}`,
+    yiddishSubtitle: guide.yiddishTzaddik,
     aliases: guide.aliases,
     href: `/${guide.slug}`,
     kind: "Guide" as const,
+  })),
+  ...bulkDestinations.map((destination) => ({
+    id: `directory-${destination.slug}`,
+    title: destination.city,
+    yiddish: destination.yiddishCity,
+    subtitle: `${destination.country} · Directory entry`,
+    yiddishSubtitle: undefined,
+    aliases: destination.aliases,
+    href: `/destinations/${destination.slug}`,
+    kind: "Location" as const,
   })),
 ];
 
@@ -53,6 +67,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
         title: stop.city,
         yiddish: stop.yiddishName,
         subtitle: `${stop.traditionalName ? `${stop.traditionalName} · ` : ""}${stop.country}`,
+        yiddishSubtitle: undefined,
         href: `/stops?q=${encodeURIComponent(stop.city)}`,
         kind: "Location" as const,
       }));
@@ -96,7 +111,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
               onClick={() => { router.push(match.href); setOpen(false); }}
               className="flex w-full items-center justify-between gap-5 border-b border-[var(--gold-light)] px-5 py-4 text-left last:border-b-0 transition hover:bg-[var(--cream-deep)]"
             >
-              <span><span className="block font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{match.title}<span className="ml-2 text-base text-stone-500">{match.yiddish}</span></span><span className="mt-1 block text-sm text-stone-600">{match.subtitle}</span></span>
+              <span><span dir="rtl" className="block font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{match.yiddish}</span><span className="mt-1 block font-[family-name:var(--font-display)] text-base text-stone-500">{match.title}</span>{match.yiddishSubtitle && <span dir="rtl" className="mt-2 block text-base text-stone-700">{match.yiddishSubtitle}</span>}<span className="mt-1 block text-sm text-stone-600">{match.subtitle}</span></span>
               <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{match.kind}</span>
             </button>
           )) : <p className="px-5 py-4 text-sm text-stone-600">No match yet. Press Enter to search the full directory.</p>}

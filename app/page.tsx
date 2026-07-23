@@ -10,7 +10,15 @@ const destinations = [
   { name: "Medzhybizh", yiddishName: "מעזשיבוזש", country: "Ukraine", description: "A guide to the resting place of the Baal Shem Tov and the birthplace of Chassidus.", href: "/medzhybizh" },
   { name: "Belz", yiddishName: "בעלז", country: "Ukraine", description: "Discover the places and stories of historic Belzer Chassidus.", href: "/belz" },
   { name: "Lelov", yiddishName: "לעלוב", country: "Poland", description: "A guide to the kever of Reb Dovid Lelover and the town's living legacy.", href: "/lelov" },
-  { name: "Ropshitz", yiddishName: "ראפשיץ", country: "Poland", description: "Visit the world of the Ropshitzer Rav and his enduring Torah legacy.", href: "/ropshitz" },
+  { name: "Łańcut (Ropshitz)", yiddishName: "לאַנצוט (ראפשיץ)", country: "Poland", description: "Visit the kever of the Ropshitzer Rav in Łańcut.", href: "/ropshitz" },
+  { name: "Preshburg", yiddishName: "פרעשבורג", country: "Slovakia", description: "A guide to the Chatam Sofer's preserved historic gravesite.", href: "/preshburg" },
+  { name: "Kerestir", yiddishName: "קערעסטיר", country: "Hungary", description: "Visit the kever of Reb Shayale, with practical arrival guidance.", href: "/kerestir" },
+  { name: "Munkatch", yiddishName: "מונקאטש", country: "Ukraine", description: "A guide to the Minchas Elazar and the Munkatcher Rebbes' ohel.", href: "/munkatch" },
+  { name: "Rymanow", yiddishName: "רימינוב", country: "Poland", description: "Plan a focused visit to Reb Mendele of Rymanow.", href: "/rymanow" },
+  { name: "Dynow", yiddishName: "דינוב", country: "Poland", description: "A practical guide to the Bnei Yissaschar's kever.", href: "/dynow" },
+  { name: "Sanz", yiddishName: "צאנז", country: "Poland", description: "Visit the Divrei Chaim and the historic ohel of Sanz.", href: "/sanz" },
+  { name: "Ijhel", yiddishName: "איהעל", country: "Hungary", description: "Visit the Yismach Moshe in the old Jewish cemetery of Ujhely.", href: "/ijhel" },
+  { name: "Liska", yiddishName: "ליסקא", country: "Hungary", description: "A guide to Reb Hershele Lisker, the Ach Pri Tevuah.", href: "/liska" },
 ];
 
 const services = [
