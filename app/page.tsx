@@ -1,59 +1,132 @@
+const destinations = [
+  {
+    name: "Lizhensk",
+    country: "Poland",
+    description: "Kever of Reb Elimelech זי״ע",
+    status: "Featured",
+  },
+  {
+    name: "Uman",
+    country: "Ukraine",
+    description: "Rebbe Nachman of Breslov",
+    status: "Coming Soon",
+  },
+  {
+    name: "Kraków",
+    country: "Poland",
+    description: "Jewish Heritage & Airport Hub",
+    status: "Coming Soon",
+  },
+  {
+    name: "Belz",
+    country: "Ukraine",
+    description: "Historic Belzer Chassidus",
+    status: "Coming Soon",
+  },
+];
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-stone-50 text-gray-900">
 
-      <section className="max-w-5xl mx-auto px-6 py-20 text-center">
+      {/* Hero */}
 
-        <h1 className="text-5xl font-bold mb-4">
-          White Glove Itineraries
-        </h1>
+      <section className="bg-[#1D2F6F] text-white">
+        <div className="max-w-6xl mx-auto px-6 py-24 text-center">
 
-        <p className="text-2xl mb-2">
-          Travel with Confidence.
-        </p>
+          <h1 className="text-6xl font-bold">
+            White Glove Itineraries
+          </h1>
 
-        <p className="text-xl text-gray-600 mb-10">
-          Daven with Peace of Mind.
-        </p>
+          <p className="mt-6 text-2xl text-gray-200">
+            Luxury Kosher Travel & Jewish Heritage Journeys
+          </p>
 
-        <div className="bg-white shadow-lg rounded-xl p-6">
+          <p className="mt-4 max-w-3xl mx-auto text-lg text-gray-300">
+            Hotels • Drivers • Kosher Dining • Mikvaos • Minyanim •
+            Kivrei Tzadikim
+          </p>
 
-          <h2 className="text-2xl font-semibold mb-4">
-            Where is your next Nesiah Tovah?
-          </h2>
+          <div className="mt-12 max-w-2xl mx-auto bg-white rounded-xl p-3 shadow-xl flex">
 
-          <input
-            className="w-full border rounded-lg p-4"
-            placeholder="Search by city, tzaddik, country or airport..."
-          />
+            <input
+              className="flex-1 p-4 text-black outline-none"
+              placeholder="Search a destination..."
+            />
 
-          <button className="mt-5 w-full bg-green-700 text-white py-4 rounded-lg">
-            Explore Destinations
+            <button className="bg-[#A88945] px-8 rounded-lg font-semibold">
+              Search
+            </button>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* Featured */}
+
+      <section className="max-w-6xl mx-auto px-6 py-16">
+
+        <h2 className="text-4xl font-bold mb-8">
+          Featured Destination
+        </h2>
+
+        <div className="rounded-2xl bg-white shadow-lg p-8 border">
+
+          <div className="text-sm uppercase tracking-wide text-[#A88945] font-semibold">
+            Now Building
+          </div>
+
+          <h3 className="text-4xl font-bold mt-2">
+            Lizhensk, Poland
+          </h3>
+
+          <p className="mt-6 text-lg text-gray-600 leading-8">
+            Plan your complete נסיעה to Reb Elimelech of Lizhensk with verified
+            hotels, kosher food, mikvaos, minyanim, transportation,
+            nearby kivrei tzaddikim, and practical travel guidance.
+          </p>
+
+          <button className="mt-8 bg-[#1D2F6F] text-white px-8 py-3 rounded-lg">
+            View Guide (Coming Soon)
           </button>
 
         </div>
 
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 pb-16">
+      {/* Destinations */}
 
-        <h2 className="text-3xl font-bold mb-6">
-          Featured Destination
+      <section className="max-w-6xl mx-auto px-6 pb-20">
+
+        <h2 className="text-4xl font-bold mb-8">
+          Popular Destinations
         </h2>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-          <h3 className="text-2xl font-bold">
-            Lizensk
-          </h3>
+          {destinations.map((place) => (
+            <div
+              key={place.name}
+              className="bg-white rounded-xl border shadow-sm p-6 hover:shadow-lg transition"
+            >
+              <div className="text-sm text-[#A88945] font-semibold">
+                {place.status}
+              </div>
 
-          <p className="mt-4 text-gray-600">
-            Everything you need for a meaningful visit to Reb Elimelech of Lizensk, including travel information, accommodations, minyanim, mikvaos, kosher food, and nearby Kivrei Tzadikim.
-          </p>
+              <h3 className="text-2xl font-bold mt-2">
+                {place.name}
+              </h3>
 
-          <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg">
-            Coming Soon
-          </button>
+              <p className="text-gray-500">
+                {place.country}
+              </p>
+
+              <p className="mt-4 text-gray-600">
+                {place.description}
+              </p>
+            </div>
+          ))}
 
         </div>
 
