@@ -30,17 +30,8 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Kivrei tzaddikim</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">Information is not available yet. Names and burial lists will be added only after they are checked for this exact cemetery.</p>
-          </article>
-          <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Shomer & access</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">Information is not available yet. A shomer number will appear only when a current public contact has been verified.</p>
-          </article>
-          {record && <PracticalInformation record={record} />}
-        </div>
+        {record?.cemeteries.length ? <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{record.cemeteries.map((cemetery) => <article key={cemetery.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6"><h2 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cemetery.yiddishName}</h2><p className="mt-1 text-sm text-stone-500">{cemetery.name}</p>{cemetery.address && <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.address}</p>}{cemetery.arrivalNotes[0] && <p className="mt-4 border-l-2 border-[var(--gold)] pl-3 text-sm leading-6 text-stone-600">{cemetery.arrivalNotes[0]}</p>}{cemetery.burials.length > 0 && <p className="mt-4 text-sm font-semibold text-[var(--navy)]">{cemetery.burials.length} known kevarim recorded.</p>}{cemetery.address && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cemetery.address} ${cemetery.coordinates ?? ""}`)}`} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Navigate to this beis hachaim</a>}</article>)}</div> : <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Cemetery information</p><h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Information is not available yet.</h2><p className="mt-3 max-w-2xl leading-7 text-stone-600">Names of the kevarim, arrival notes, and a shomer contact will appear here only after they are checked for this exact beis hachaim.</p></div>}
+        {record && <PracticalInformation record={record} />}
       </section>
       <Footer />
     </main>

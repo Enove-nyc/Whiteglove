@@ -3,6 +3,8 @@ type RedisResult<T> = { result?: T };
 export type DashboardStats = {
   configured: boolean;
   visits: number;
+  visitsToday: number;
+  searchesToday: number;
   topSearches: Array<{ label: string; count: number }>;
   topPages: Array<{ label: string; count: number }>;
   siteLocked: boolean;
@@ -33,11 +35,16 @@ export function analyticsIsConfigured() {
   return Boolean(redisConfig());
 }
 
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export async function trackPageView(pathname: string) {
   const path = cleanLabel(pathname, 120);
   if (!path.startsWith("/")) return;
   await Promise.all([
     redis(`incr/white-glove:visits:all`),
+    redis(`incr/white-glove:visits:${todayKey()}`),
     redis(`zincrby/white-glove:pages/1/${encodeURIComponent(path)}`),
   ]);
 }
@@ -45,7 +52,10 @@ export async function trackPageView(pathname: string) {
 export async function trackSearch(query: string) {
   const term = cleanLabel(query);
   if (term.length < 2) return;
-  await redis(`zincrby/white-glove:searches/1/${encodeURIComponent(term)}`);
+  await Promise.all([
+    redis(`zincrby/white-glove:searches/1/${encodeURIComponent(term)}`),
+    redis(`incr/white-glove:searches:${todayKey()}`),
+  ]);
 }
 
 function pairs(values: unknown): Array<{ label: string; count: number }> {
@@ -61,9 +71,11 @@ function pairs(values: unknown): Array<{ label: string; count: number }> {
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   const configured = analyticsIsConfigured();
-  if (!configured) return { configured: false, visits: 0, topSearches: [], topPages: [], siteLocked: process.env.SITE_LOCK_ENABLED === "true" };
-  const [visits, searches, pages, lock] = await Promise.all([
+  if (!configured) return { configured: false, visits: 0, visitsToday: 0, searchesToday: 0, topSearches: [], topPages: [], siteLocked: process.env.SITE_LOCK_ENABLED === "true" };
+  const [visits, visitsToday, searchesToday, searches, pages, lock] = await Promise.all([
     redis<number>("get/white-glove:visits:all"),
+    redis<number>(`get/white-glove:visits:${todayKey()}`),
+    redis<number>(`get/white-glove:searches:${todayKey()}`),
     redis<unknown>("zrevrange/white-glove:searches/0/9/WITHSCORES"),
     redis<unknown>("zrevrange/white-glove:pages/0/9/WITHSCORES"),
     redis<string>("get/white-glove:site-lock"),
@@ -71,6 +83,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   return {
     configured: true,
     visits: Number(visits?.result || 0),
+    visitsToday: Number(visitsToday?.result || 0),
+    searchesToday: Number(searchesToday?.result || 0),
     topSearches: pairs(searches?.result),
     topPages: pairs(pages?.result),
     siteLocked: lock?.result === "on" || process.env.SITE_LOCK_ENABLED === "true",
