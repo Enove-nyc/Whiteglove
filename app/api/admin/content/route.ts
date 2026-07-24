@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken } from "@/lib/secure-access";
-import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, updateSuggestionStatus } from "@/lib/admin-content";
+import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, updateSuggestionStatus } from "@/lib/admin-content";
 
 function isAdmin(request: NextRequest) {
   return isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value);
@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
     if (!payload?.id || !payload.status) return NextResponse.json({ error: "Choose a suggestion status." }, { status: 400 });
     const saved = await updateSuggestionStatus(payload.id, payload.status, payload.reviewerNotes ?? "");
     if (!saved) return NextResponse.json({ error: "Connect the private database before editing suggestions." }, { status: 503 });
+  } else if (body.kind === "promotion") {
+    const saved = await upsertPromotion(body.data as Parameters<typeof upsertPromotion>[0]);
+    if (!saved) return NextResponse.json({ error: "Connect the private database before editing promotions." }, { status: 503 });
   } else {
     return NextResponse.json({ error: "Unsupported update type." }, { status: 400 });
   }

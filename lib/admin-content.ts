@@ -63,11 +63,50 @@ export type EditSuggestion = {
   reviewerNotes?: string;
 };
 
+export type PromotionPlacement =
+  | "popup"
+  | "fixed-top-banner"
+  | "sticky-bottom-banner"
+  | "homepage-promo"
+  | "inline-content"
+  | "sidebar"
+  | "destination-specific"
+  | "accommodation-page"
+  | "sponsored-listing"
+  | "full-page-takeover";
+
+export type PromotionDevice = "all" | "mobile" | "desktop";
+
+export type Promotion = {
+  id: string;
+  title: string;
+  description: string;
+  buttonText: string;
+  targetHref: string;
+  imageUrl: string;
+  pdfUrl: string;
+  placements: PromotionPlacement[];
+  targetPaths: string;
+  device: PromotionDevice;
+  startDate: string;
+  endDate: string;
+  priority: number;
+  maxViewsPerVisitor: number;
+  enabled: boolean;
+  impressions: number;
+  clicks: number;
+  createdAt: string;
+  updatedAt: string;
+  lastShownAt?: string;
+  lastClickedAt?: string;
+};
+
 export type AdminContentBundle = {
   settings: SiteSettings;
   locations: EditableLocation[];
   accommodations: EditableAccommodation[];
   suggestions: EditSuggestion[];
+  promotions: Promotion[];
   updatedAt?: string;
 };
 
@@ -154,11 +193,39 @@ function defaultLocations(): EditableLocation[] {
   return [...guideLocations, ...destinationLocations, ...cemeteryLocations];
 }
 
+function defaultPromotions(): Promotion[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: "homepage-planning-help",
+      title: "Need help planning the rest of the trip?",
+      description: "Ask White Glove for flights, hotels, drivers, and itinerary help in one place.",
+      buttonText: "Start planning",
+      targetHref: "/planning",
+      imageUrl: "",
+      pdfUrl: "",
+      placements: ["homepage-promo", "inline-content"],
+      targetPaths: "/",
+      device: "all",
+      startDate: "",
+      endDate: "",
+      priority: 1,
+      maxViewsPerVisitor: 3,
+      enabled: false,
+      impressions: 0,
+      clicks: 0,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
+
 const defaultBundle = (): AdminContentBundle => ({
   settings: defaultSettings(),
   locations: defaultLocations(),
   accommodations: [],
   suggestions: [],
+  promotions: defaultPromotions(),
   updatedAt: new Date().toISOString(),
 });
 
@@ -171,6 +238,7 @@ function parseBundle(value?: string): AdminContentBundle {
       locations: Array.isArray(parsed.locations) ? parsed.locations : defaultLocations(),
       accommodations: Array.isArray(parsed.accommodations) ? parsed.accommodations : [],
       suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+      promotions: Array.isArray(parsed.promotions) ? parsed.promotions : defaultPromotions(),
       updatedAt: parsed.updatedAt,
     };
   } catch {
@@ -227,6 +295,129 @@ export async function upsertLocations(locations: EditableLocation[]) {
     map.set(location.id, { ...location });
   }
   return writeBundle({ ...bundle, locations: [...map.values()] });
+}
+
+function placementLabels() {
+  return new Map<PromotionPlacement, string>([
+    ["popup", "Popup"],
+    ["fixed-top-banner", "Fixed top banner"],
+    ["sticky-bottom-banner", "Sticky bottom banner"],
+    ["homepage-promo", "Homepage promotion"],
+    ["inline-content", "Inline content"],
+    ["sidebar", "Sidebar"],
+    ["destination-specific", "Destination page"],
+    ["accommodation-page", "Accommodation page"],
+    ["sponsored-listing", "Sponsored listing"],
+    ["full-page-takeover", "Full-page takeover"],
+  ]);
+}
+
+function normalizePromotion(promotion: Promotion): Promotion {
+  return {
+    ...promotion,
+    id: promotion.id.trim() || `promotion-${Date.now()}`,
+    title: promotion.title.trim(),
+    description: promotion.description.trim(),
+    buttonText: promotion.buttonText.trim() || "Learn more",
+    targetHref: promotion.targetHref.trim() || "/",
+    imageUrl: promotion.imageUrl.trim(),
+    pdfUrl: promotion.pdfUrl.trim(),
+    placements: Array.isArray(promotion.placements) ? promotion.placements.filter((placement): placement is PromotionPlacement => placementLabels().has(placement)) : ["homepage-promo"],
+    targetPaths: promotion.targetPaths.trim(),
+    device: promotion.device === "mobile" || promotion.device === "desktop" ? promotion.device : "all",
+    startDate: promotion.startDate.trim(),
+    endDate: promotion.endDate.trim(),
+    priority: Number.isFinite(Number(promotion.priority)) ? Number(promotion.priority) : 0,
+    maxViewsPerVisitor: Math.max(0, Number(promotion.maxViewsPerVisitor) || 0),
+    enabled: Boolean(promotion.enabled),
+    impressions: Math.max(0, Number(promotion.impressions) || 0),
+    clicks: Math.max(0, Number(promotion.clicks) || 0),
+    createdAt: promotion.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastShownAt: promotion.lastShownAt,
+    lastClickedAt: promotion.lastClickedAt,
+  };
+}
+
+function parsePromotionTargets(targetPaths: string) {
+  return targetPaths
+    .split(/\r?\n|,/)
+    .map((path) => path.trim())
+    .filter(Boolean);
+}
+
+function matchesPromotionPath(promotion: Promotion, pathname: string) {
+  const targets = parsePromotionTargets(promotion.targetPaths);
+  if (targets.length === 0 || targets.includes("*")) return true;
+  return targets.some((target) => pathname === target || pathname.startsWith(target.endsWith("/") ? target : `${target}/`));
+}
+
+function matchesPromotionDevice(promotion: Promotion, device: PromotionDevice) {
+  return promotion.device === "all" || promotion.device === device;
+}
+
+function isPromotionActive(promotion: Promotion) {
+  const now = new Date();
+  if (promotion.startDate) {
+    const start = new Date(promotion.startDate);
+    if (Number.isFinite(start.getTime()) && start > now) return false;
+  }
+  if (promotion.endDate) {
+    const end = new Date(promotion.endDate);
+    if (Number.isFinite(end.getTime())) {
+      end.setHours(23, 59, 59, 999);
+      if (end < now) return false;
+    }
+  }
+  return true;
+}
+
+export async function upsertPromotion(promotion: Promotion) {
+  if (!contentStorageIsConfigured()) return false;
+  const bundle = await readBundle();
+  const nextPromotion = normalizePromotion(promotion);
+  const promotions = bundle.promotions.filter((item) => item.id !== nextPromotion.id).concat(nextPromotion);
+  return writeBundle({ ...bundle, promotions });
+}
+
+export async function recordPromotionEvent(id: string, kind: "impression" | "click") {
+  if (!contentStorageIsConfigured()) return false;
+  const bundle = await readBundle();
+  const promotions = bundle.promotions.map((item) => {
+    if (item.id !== id) return item;
+    if (kind === "impression") {
+      return { ...item, impressions: item.impressions + 1, lastShownAt: new Date().toISOString() };
+    }
+    return { ...item, clicks: item.clicks + 1, lastClickedAt: new Date().toISOString() };
+  });
+  return writeBundle({ ...bundle, promotions });
+}
+
+export async function getActivePromotions(placement: PromotionPlacement, pathname: string, device: PromotionDevice) {
+  const bundle = await readBundle();
+  return bundle.promotions
+    .filter((promotion) => promotion.enabled)
+    .filter((promotion) => promotion.placements.includes(placement))
+    .filter((promotion) => matchesPromotionDevice(promotion, device))
+    .filter((promotion) => matchesPromotionPath(promotion, pathname))
+    .filter(isPromotionActive)
+    .sort((left, right) => right.priority - left.priority || right.updatedAt.localeCompare(left.updatedAt));
+}
+
+export async function getPromotionsDashboard() {
+  const bundle = await readBundle();
+  const byPlacement = [...placementLabels().entries()].map(([placement, label]) => ({
+    label,
+    count: bundle.promotions.filter((item) => item.enabled && item.placements.includes(placement)).length,
+  }));
+  return {
+    configured: contentStorageIsConfigured(),
+    totalPromotions: bundle.promotions.length,
+    enabledPromotions: bundle.promotions.filter((item) => item.enabled).length,
+    totalImpressions: bundle.promotions.reduce((total, item) => total + item.impressions, 0),
+    totalClicks: bundle.promotions.reduce((total, item) => total + item.clicks, 0),
+    byPlacement,
+  };
 }
 
 export async function addSuggestion(suggestion: Omit<EditSuggestion, "id" | "status" | "createdAt">) {

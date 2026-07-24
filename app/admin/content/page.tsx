@@ -18,6 +18,7 @@ export default async function AdminContentPage() {
           <div className="flex flex-wrap gap-3">
             <Link href="/admin" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Dashboard</Link>
             <Link href="/admin/inventory" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page inventory</Link>
+            <Link href="/admin/content#promotions" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Promotions</Link>
           </div>
         </div>
       </header>

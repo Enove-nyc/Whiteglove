@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AdminPromotionsManager from "@/components/AdminPromotionsManager";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
 
-type Tab = "settings" | "locations" | "bulk" | "accommodations" | "suggestions" | "report";
+type Tab = "settings" | "locations" | "bulk" | "accommodations" | "suggestions" | "promotions" | "report";
 
 function statusClass(status: string) {
   if (status === "published") return "bg-emerald-50 text-emerald-800 border-emerald-200";
@@ -73,7 +74,12 @@ function parseLocationsCsv(text: string): EditableLocation[] {
 
 export default function AdminContentManager({ initialBundle, configured }: { initialBundle: AdminContentBundle; configured: boolean }) {
   const [bundle, setBundle] = useState(initialBundle);
-  const [tab, setTab] = useState<Tab>("report");
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window !== "undefined" && window.location.hash.replace("#", "") === "promotions") {
+      return "promotions";
+    }
+    return "report";
+  });
   const [savingKey, setSavingKey] = useState("");
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing site content.");
   const [locationQuery, setLocationQuery] = useState("");
@@ -336,6 +342,12 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
               </div>
             </article>
           ))}
+        </div>
+      )}
+
+      {tab === "promotions" && (
+        <div className="mt-6">
+          <AdminPromotionsManager initialPromotions={bundle.promotions} configured={configured} />
         </div>
       )}
     </section>

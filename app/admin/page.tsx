@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteLockControl from "@/components/SiteLockControl";
 import { getEditableInventory } from "@/lib/admin-inventory";
+import { getPromotionsDashboard } from "@/lib/admin-content";
 import { getDashboardStats } from "@/lib/site-analytics";
 
 function RankedList({ title, rows, empty }: { title: string; rows: Array<{ label: string; count: number }>; empty: string }) {
@@ -28,7 +29,7 @@ function RankedList({ title, rows, empty }: { title: string; rows: Array<{ label
 }
 
 export default async function AdminPage() {
-  const [stats, inventory] = await Promise.all([getDashboardStats(), getEditableInventory()]);
+  const [stats, inventory, promotions] = await Promise.all([getDashboardStats(), getEditableInventory(), getPromotionsDashboard()]);
   const allSearches = stats.topSearches.reduce((total, item) => total + item.count, 0);
   const openInventory = inventory.items.filter((item) => item.status !== "complete").length;
   const overview = [
@@ -37,6 +38,7 @@ export default async function AdminPage() {
     { label: "All recorded visits", value: stats.visits, detail: "One visit per browser session, per page." },
     { label: "All recorded searches", value: allSearches, detail: "Use this to decide what to update next." },
     { label: "Open checklist items", value: openInventory, detail: "Pages and issues still marked not completed." },
+    { label: "Promotions live", value: promotions.enabledPromotions, detail: "Ad placements currently active on the public site." },
   ];
 
   return (
@@ -50,13 +52,14 @@ export default async function AdminPage() {
           <div className="flex flex-wrap gap-3">
             <Link href="/admin/inventory" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page inventory</Link>
             <Link href="/admin/content" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Content manager</Link>
+            <Link href="/admin/content#promotions" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Promotions</Link>
             <Link href="/" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">View website</Link>
           </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-6">
           {overview.map((item) => (
             <div key={item.label} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">{item.label}</p>
@@ -76,6 +79,11 @@ export default async function AdminPage() {
                 ? "Visitor activity, search interest, and inventory notes are being saved privately."
                 : "Connect the private analytics store to begin collecting real traffic and inventory edits."}
             </p>
+          </section>
+          <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Promotions</p>
+            <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{promotions.enabledPromotions} live</p>
+            <p className="mt-3 text-sm leading-6 text-stone-600">Use the content manager to target banners, popups, and full-page takeovers by page and device.</p>
           </section>
         </div>
 
