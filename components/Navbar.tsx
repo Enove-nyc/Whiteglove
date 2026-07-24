@@ -49,7 +49,7 @@ export default function Navbar() {
     <nav ref={navRef} className="relative border-b border-[var(--gold-light)] bg-[rgba(247,243,235,0.94)]">
       <div className={`mx-auto h-20 max-w-7xl items-center gap-4 px-5 sm:px-8 ${showSearch ? "grid grid-cols-[auto_minmax(0,1fr)_auto]" : "flex justify-between"}`}>
         <Link href="/" className="flex items-center" aria-label="White Glove Itineraries home">
-          <Image src="/Logo.png.jpeg" alt="White Glove Itineraries" width={500} height={300} className="h-14 w-auto object-contain" priority />
+          <Image src="/logo.jpg" alt="White Glove Itineraries" width={500} height={300} className="h-14 w-auto object-contain" priority />
         </Link>
         {showSearch && <div className="mx-auto hidden w-full max-w-sm min-w-0 sm:block"><DestinationSearch compact /></div>}
         <div className="flex shrink-0 items-center gap-2">
