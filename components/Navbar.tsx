@@ -13,6 +13,7 @@ const menuItems = [
   { yiddish: "פליגערס און האטעלן", english: "Flights & hotels", href: "/booking" },
   { yiddish: "מיין וועג", english: "My Route", href: "/my-route" },
   { yiddish: "מיין אקאונט", english: "My account", href: "/account" },
+  { yiddish: "ניהול", english: "Owner dashboard", href: "/admin/login" },
 ];
 
 export default function Navbar() {
@@ -46,3 +47,4 @@ export default function Navbar() {
     {menuOpen && <div className="absolute right-5 top-[4.6rem] z-30 w-64 border border-[var(--gold-light)] bg-[#fcfaf6] p-3 shadow-xl sm:right-8">{menuItems.map((item) => <Link key={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href={item.href}><span dir="rtl">{item.yiddish}</span><span className="ml-2 text-xs font-normal text-stone-500">{item.english}</span></Link>)}<a onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href="#contact"><span dir="rtl">קאָנטאַקט</span><span className="ml-2 text-xs font-normal text-stone-500">Contact White Glove</span></a></div>}
   </nav>;
 }
+
