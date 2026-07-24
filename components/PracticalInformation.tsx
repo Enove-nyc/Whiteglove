@@ -1,12 +1,16 @@
 import Link from "next/link";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 
-const sections: Array<{ yiddish: string; english: string; key: keyof Pick<DestinationRecord, "accommodations" | "kosherFood" | "minyanim" | "mikvaos" | "transport"> }> = [
+const sections: Array<{
+  yiddish: string;
+  english: string;
+  key: keyof Pick<DestinationRecord, "accommodations" | "kosherFood" | "minyanim" | "mikvaos" | "transport">;
+}> = [
   { yiddish: "אכסניא", english: "Accommodations", key: "accommodations" },
-  { yiddish: "כשר'ע עסן", english: "Kosher food", key: "kosherFood" },
+  { yiddish: "כשרות עסן", english: "Kosher food", key: "kosherFood" },
   { yiddish: "מנינים", english: "Minyanim", key: "minyanim" },
   { yiddish: "מקוה", english: "Mikvaos", key: "mikvaos" },
-  { yiddish: "טרענספארט", english: "Transport & drivers", key: "transport" },
+  { yiddish: "טראַנספארט", english: "Transport & drivers", key: "transport" },
 ];
 
 function Detail({ section }: { section: PracticalSection }) {
@@ -33,6 +37,7 @@ export default function PracticalInformation({ record }: { record: DestinationRe
             <p className="mt-1 text-sm text-stone-500">{english}</p>
             <Status section={record[key]} />
             <Detail section={record[key]} />
+            {record[key].lastChecked && <p className="mt-4 text-xs uppercase tracking-[0.12em] text-stone-500">Last checked: {record[key].lastChecked}</p>}
           </article>
         ))}
         <article className="border border-[var(--gold)] bg-[#fcfaf6] p-6">
