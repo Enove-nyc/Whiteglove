@@ -10,8 +10,9 @@ const menuItems = [
   { yiddish: "היים", english: "Home", href: "/" },
   { yiddish: "נסיעות", english: "Destinations", href: "/stops" },
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
+  { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
   { yiddish: "פליגערס און האטעלן", english: "Flights & hotels", href: "/booking" },
-  { yiddish: "מיין וועג", english: "My Route", href: "/my-route" },
+  { yiddish: "מייַן וועג", english: "My Route", href: "/my-route" },
 ];
 
 export default function Navbar() {
