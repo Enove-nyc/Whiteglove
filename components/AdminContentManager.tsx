@@ -3,12 +3,72 @@
 import { useMemo, useState } from "react";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
 
-type Tab = "settings" | "locations" | "accommodations" | "suggestions" | "report";
+type Tab = "settings" | "locations" | "bulk" | "accommodations" | "suggestions" | "report";
 
 function statusClass(status: string) {
   if (status === "published") return "bg-emerald-50 text-emerald-800 border-emerald-200";
   if (status === "draft") return "bg-stone-50 text-stone-700 border-stone-200";
   return "bg-amber-50 text-amber-800 border-amber-200";
+}
+
+const locationCsvTemplate = [
+  "id,route,title,yiddishTitle,category,country,address,coordinates,shomerContact,source,notes,status,lastVerified",
+  "cemetery-lizhensk,/cemeteries/lizhensk,Jewish Cemetery in Lizhensk,ליזענסק,cemetery,Poland,\"Górna 16, 37-300 Leżajsk, Poland\",\"50.251263, 22.421938\",,+source-url,\"Reb Elimelech of Lizhensk\",published,",
+].join("\n");
+
+function parseCsvLine(line: string) {
+  const cells: string[] = [];
+  let current = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      i += 1;
+      continue;
+    }
+    if (char === '"') {
+      quoted = !quoted;
+      continue;
+    }
+    if (char === "," && !quoted) {
+      cells.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current);
+  return cells.map((cell) => cell.trim());
+}
+
+function parseLocationsCsv(text: string): EditableLocation[] {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
+  return lines.slice(1).map((line, index) => {
+    const values = parseCsvLine(line);
+    const row: Record<string, string> = {};
+    headers.forEach((header, headerIndex) => {
+      row[header] = values[headerIndex] ?? "";
+    });
+    return {
+      id: row.id || `bulk-location-${index + 1}-${Date.now()}`,
+      route: row.route || "",
+      title: row.title || "",
+      yiddishTitle: row.yiddishtitle || "",
+      category: (row.category === "city-guide" || row.category === "cemetery" ? row.category : "destination") as EditableLocation["category"],
+      country: row.country || "",
+      address: row.address || "",
+      coordinates: row.coordinates || "",
+      shomerContact: row.shomercontact || "",
+      source: row.source || "",
+      notes: row.notes || "",
+      status: (row.status === "published" || row.status === "needs-review" ? row.status : "draft") as EditableLocation["status"],
+      lastVerified: row.lastverified || "",
+    };
+  }).filter((item) => item.title.trim() || item.yiddishTitle.trim() || item.route.trim());
 }
 
 export default function AdminContentManager({ initialBundle, configured }: { initialBundle: AdminContentBundle; configured: boolean }) {
@@ -18,6 +78,7 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing site content.");
   const [locationQuery, setLocationQuery] = useState("");
   const [accommodationQuery, setAccommodationQuery] = useState("");
+  const [bulkCsv, setBulkCsv] = useState(locationCsvTemplate);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(bundle.settings);
   const [newLocation, setNewLocation] = useState<EditableLocation>({
     id: "",
@@ -59,7 +120,7 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
     pendingSuggestions: bundle.suggestions.filter((item) => item.status === "pending").length,
   }), [bundle]);
 
-  async function save(kind: "settings" | "location" | "accommodation" | "suggestion", data: unknown) {
+  async function save(kind: "settings" | "location" | "locations-bulk" | "accommodation" | "suggestion", data: unknown) {
     if (!configured) {
       setMessage("Connect the private database before editing site content.");
       return;
@@ -105,6 +166,15 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
     });
   }
 
+  async function importLocations() {
+    const parsed = parseLocationsCsv(bulkCsv);
+    if (parsed.length === 0) {
+      setMessage("Paste at least one row of location data.");
+      return;
+    }
+    await save("locations-bulk", parsed);
+  }
+
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -116,7 +186,7 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2 border-b border-[var(--gold-light)] pb-4">
-        {(["report", "settings", "locations", "accommodations", "suggestions"] as Tab[]).map((name) => (
+        {(["report", "settings", "locations", "bulk", "accommodations", "suggestions"] as Tab[]).map((name) => (
           <button key={name} type="button" onClick={() => setTab(name)} className={`px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] ${tab === name ? "border border-[var(--navy)] bg-[var(--navy)] text-white" : "border border-[var(--gold-light)] text-[var(--navy)]"}`}>
             {name}
           </button>
@@ -187,6 +257,22 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
           {filteredLocations.map((item) => (
             <LocationEditor key={item.id} item={item} onSave={(next) => save("location", next)} saving={savingKey === "location"} />
           ))}
+        </div>
+      )}
+
+      {tab === "bulk" && (
+        <div className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Bulk import locations</h2>
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            Paste CSV rows for cemetery and tzaddik records here. Use English and Yiddish fields together so the public pages stay searchable in both languages.
+          </p>
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Columns</p>
+          <p className="mt-2 text-sm leading-6 text-stone-600">id, route, title, yiddishTitle, category, country, address, coordinates, shomerContact, source, notes, status, lastVerified</p>
+          <textarea value={bulkCsv} onChange={(event) => setBulkCsv(event.target.value)} rows={14} className="mt-4 w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button type="button" onClick={importLocations} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Import locations</button>
+            <button type="button" onClick={() => setBulkCsv(locationCsvTemplate)} className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Reset template</button>
+          </div>
         </div>
       )}
 

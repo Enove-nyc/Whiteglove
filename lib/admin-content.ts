@@ -218,6 +218,17 @@ export async function upsertAccommodation(accommodation: EditableAccommodation) 
   return writeBundle({ ...bundle, accommodations: next });
 }
 
+export async function upsertLocations(locations: EditableLocation[]) {
+  if (!contentStorageIsConfigured()) return false;
+  const bundle = await readBundle();
+  const incoming = locations.filter((location) => location.id.trim() && location.title.trim());
+  const map = new Map(bundle.locations.map((item) => [item.id, item]));
+  for (const location of incoming) {
+    map.set(location.id, { ...location });
+  }
+  return writeBundle({ ...bundle, locations: [...map.values()] });
+}
+
 export async function addSuggestion(suggestion: Omit<EditSuggestion, "id" | "status" | "createdAt">) {
   if (!contentStorageIsConfigured()) return false;
   const bundle = await readBundle();

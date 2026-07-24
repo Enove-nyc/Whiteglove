@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken } from "@/lib/secure-access";
-import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, updateSuggestionStatus } from "@/lib/admin-content";
+import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, updateSuggestionStatus } from "@/lib/admin-content";
 
 function isAdmin(request: NextRequest) {
   return isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value);
@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
   } else if (body.kind === "accommodation") {
     const saved = await upsertAccommodation(body.data as Parameters<typeof upsertAccommodation>[0]);
     if (!saved) return NextResponse.json({ error: "Connect the private database before editing accommodations." }, { status: 503 });
+  } else if (body.kind === "locations-bulk") {
+    const saved = await upsertLocations(body.data as Parameters<typeof upsertLocations>[0]);
+    if (!saved) return NextResponse.json({ error: "Connect the private database before importing locations." }, { status: 503 });
   } else if (body.kind === "suggestion") {
     const payload = body.data as { id?: string; status?: "pending" | "approved" | "rejected" | "needs-info"; reviewerNotes?: string };
     if (!payload?.id || !payload.status) return NextResponse.json({ error: "Choose a suggestion status." }, { status: 400 });
