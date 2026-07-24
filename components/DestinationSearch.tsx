@@ -77,6 +77,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (query.trim()) void fetch("/api/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "search", value: query.trim() }), keepalive: true });
     if (matches[0] && query.trim()) {
       router.push(matches[0].href);
     } else {
@@ -108,10 +109,10 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
               key={match.id}
               type="button"
               onMouseDown={(event) => event.preventDefault()}
-              onClick={() => { router.push(match.href); setOpen(false); }}
+              onClick={() => { if (query.trim()) void fetch("/api/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "search", value: query.trim() }), keepalive: true }); router.push(match.href); setOpen(false); }}
               className="flex w-full items-center justify-between gap-5 border-b border-[var(--gold-light)] px-5 py-4 text-left last:border-b-0 transition hover:bg-[var(--cream-deep)]"
             >
-              <span><span dir="rtl" className="block font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{match.yiddish}</span><span className="mt-1 block font-[family-name:var(--font-display)] text-base text-stone-500">{match.title}</span>{match.yiddishSubtitle && <span dir="rtl" className="mt-2 block text-base text-stone-700">{match.yiddishSubtitle}</span>}<span className="mt-1 block text-sm text-stone-600">{match.subtitle}</span></span>
+              <span><span dir="rtl" className="block font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{match.yiddish}</span><span className="mt-1 block font-[family-name:var(--font-display)] text-base text-stone-500">{match.title}</span>{match.yiddishSubtitle && <span dir="rtl" className="mt-2 block text-xl leading-tight text-stone-700">{match.yiddishSubtitle}</span>}<span className="mt-1 block text-sm text-stone-600">{match.subtitle}</span></span>
               <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{match.kind}</span>
             </button>
           )) : <p className="px-5 py-4 text-sm text-stone-600">No match yet. Press Enter to search the full directory.</p>}

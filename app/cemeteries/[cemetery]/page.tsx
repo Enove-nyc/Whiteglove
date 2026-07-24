@@ -21,7 +21,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Beis hachaim · {cemetery.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">{cemetery.yiddishName}</h1>
+          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-6xl leading-tight text-[var(--navy)] sm:text-7xl">{cemetery.yiddishName}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{cemetery.name}</p>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{cemetery.city} · {cemetery.yiddishCity}</p>
           <a href={mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to this beis hachaim →</a>
@@ -55,7 +55,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => <article key={burial.name} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-                <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{burial.yiddishName}</h3>
+                <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{burial.yiddishName}</h3>
                 <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
                 {burial.knownAs && <p className="mt-3 text-sm font-semibold text-stone-700">{burial.knownAs}</p>}
                 {burial.seforim && <p dir="rtl" className="mt-3 text-lg text-[var(--navy)]">{burial.seforim}</p>}

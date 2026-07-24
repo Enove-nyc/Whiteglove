@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+
+type Traveler = { firstName?: string; lastName?: string; email?: string; bornOn?: string; title?: string; gender?: string; phone?: string; passportNumber?: string; passportCountry?: string; passportExpires?: string };
+
+const duffelHeaders = (token: string, request?: Request) => ({
+  Accept: "application/json",
+  "Content-Type": "application/json",
+  "Duffel-Version": "v2",
+  Authorization: `Bearer ${token}`,
+  ...(request ? {
+    "x-duffel-device-ip": request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1",
+    "x-duffel-device-user-agent": request.headers.get("user-agent") ?? "White Glove Itineraries checkout",
+  } : {}),
+});
+
+export async function POST(request: Request) {
+  const token = process.env.DUFFEL_ACCESS_TOKEN;
+  if (!token) return NextResponse.json({ message: "The White Glove Duffel account is not connected." }, { status: 503 });
+
+  const { offerId, threeDSecureSessionId, traveler } = await request.json() as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler };
+  if (!offerId || !threeDSecureSessionId || !traveler?.firstName || !traveler.lastName || !traveler.email || !traveler.bornOn || !traveler.title || !traveler.gender || !traveler.phone) {
+    return NextResponse.json({ message: "Please complete every traveler detail before booking." }, { status: 400 });
+  }
+
+  const offerResponse = await fetch(`https://api.duffel.com/air/offers/${encodeURIComponent(offerId)}`, { headers: duffelHeaders(token), cache: "no-store" });
+  if (!offerResponse.ok) return NextResponse.json({ message: "This flight is no longer available. Please search again for a current price." }, { status: 409 });
+  const offer = (await offerResponse.json()).data;
+  if (offer.passenger_identity_documents_required && (!traveler.passportNumber || !traveler.passportCountry || !traveler.passportExpires)) return NextResponse.json({ message: "This flight requires passport number, issuing country, and expiry date before it can be booked." }, { status: 422 });
+
+  const passenger = {
+    ...(offer.passengers?.[0]?.id ? { id: offer.passengers[0].id } : {}),
+    given_name: traveler.firstName.trim(), family_name: traveler.lastName.trim(), email: traveler.email.trim(), born_on: traveler.bornOn,
+    title: traveler.title, gender: traveler.gender, phone_number: traveler.phone.trim(),
+    ...(traveler.passportNumber && traveler.passportCountry && traveler.passportExpires ? { identity_documents: [{ type: "passport", unique_identifier: traveler.passportNumber.trim(), issuing_country_code: traveler.passportCountry.trim().toUpperCase(), expires_on: traveler.passportExpires }] } : {}),
+  };
+  const orderResponse = await fetch("https://api.duffel.com/air/orders", {
+    method: "POST", headers: duffelHeaders(token, request), cache: "no-store",
+    body: JSON.stringify({ data: {
+      type: "instant", selected_offers: [offer.id], passengers: [passenger],
+      payments: [{ type: "card", currency: offer.total_currency, amount: offer.total_amount, three_d_secure_session_id: threeDSecureSessionId }],
+    } }),
+  });
+  const result = await orderResponse.json().catch(() => ({}));
+  if (!orderResponse.ok) {
+    const reason = result.errors?.[0]?.message ?? result.errors?.[0]?.title;
+    return NextResponse.json({ message: reason ?? "Duffel could not complete the booking. No ticket has been issued." }, { status: 422 });
+  }
+  return NextResponse.json({ bookingReference: result.data?.booking_reference, orderId: result.data?.id, airline: result.data?.owner?.name, totalAmount: result.data?.total_amount, totalCurrency: result.data?.total_currency });
+}
