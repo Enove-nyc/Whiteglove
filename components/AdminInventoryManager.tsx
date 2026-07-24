@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { inventoryStatusLabel, inventoryStatuses, type InventoryArea, type InventoryStatus } from "@/data/page-inventory";
 import type { EditableInventoryItem } from "@/lib/admin-inventory";
 
-type Filter = "all" | "open" | InventoryStatus;
-type SortKey = "priority" | "status" | "route";
+type Filter = "all" | "open" | "complete" | InventoryStatus;
+type SortKey = "priority" | "status" | "route" | "completion";
 
 const areaOptions: Array<InventoryArea | "All"> = ["All", "Public page", "Admin page", "API route", "Cross-site issue"];
 const priorityRank = { High: 0, Medium: 1, Low: 2 };
@@ -28,8 +28,9 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
   const visibleItems = useMemo(() => {
     return items
       .filter((item) => area === "All" || item.area === area)
-      .filter((item) => filter === "all" || (filter === "open" ? item.status !== "complete" : item.status === filter))
+      .filter((item) => filter === "all" || (filter === "open" ? item.status !== "complete" : filter === "complete" ? item.status === "complete" : item.status === filter))
       .sort((a, b) => {
+        if (sort === "completion") return Number(a.status === "complete") - Number(b.status === "complete") || priorityRank[a.priority] - priorityRank[b.priority] || a.route.localeCompare(b.route);
         if (sort === "priority") return priorityRank[a.priority] - priorityRank[b.priority] || a.route.localeCompare(b.route);
         if (sort === "status") return inventoryStatusLabel(a.status).localeCompare(inventoryStatusLabel(b.status)) || a.route.localeCompare(b.route);
         return a.route.localeCompare(b.route);
@@ -80,13 +81,14 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
       </div>
 
       <div className="mt-6 grid gap-3 border border-[var(--gold-light)] bg-[#fcfaf6] p-4 lg:grid-cols-3">
-        <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Show
-          <select value={filter} onChange={(event) => setFilter(event.target.value as Filter)} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700">
-            <option value="open">Not completed</option>
-            <option value="all">All items</option>
-            {inventoryStatuses.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
-          </select>
-        </label>
+        <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+          Show
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <button type="button" onClick={() => setFilter("open")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "open" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Not completed</button>
+            <button type="button" onClick={() => setFilter("complete")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "complete" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Completed</button>
+            <button type="button" onClick={() => setFilter("all")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "all" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>All</button>
+          </div>
+        </div>
         <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Area
           <select value={area} onChange={(event) => setArea(event.target.value as InventoryArea | "All")} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700">
             {areaOptions.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -94,6 +96,7 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
         </label>
         <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Sort by
           <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700">
+            <option value="completion">Completion</option>
             <option value="priority">Priority</option>
             <option value="status">Status</option>
             <option value="route">Page / route</option>

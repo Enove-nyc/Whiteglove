@@ -19,6 +19,21 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
   const [locationQuery, setLocationQuery] = useState("");
   const [accommodationQuery, setAccommodationQuery] = useState("");
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(bundle.settings);
+  const [newLocation, setNewLocation] = useState<EditableLocation>({
+    id: "",
+    route: "",
+    title: "",
+    yiddishTitle: "",
+    category: "destination",
+    country: "",
+    address: "",
+    coordinates: "",
+    shomerContact: "",
+    source: "",
+    notes: "",
+    status: "draft",
+    lastVerified: "",
+  });
   const [newAccommodation, setNewAccommodation] = useState<EditableAccommodation>({
     id: "",
     locationId: "",
@@ -70,6 +85,26 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
   const filteredLocations = bundle.locations.filter((item) => `${item.title} ${item.yiddishTitle} ${item.route} ${item.country}`.toLowerCase().includes(locationQuery.toLowerCase()));
   const filteredAccommodations = bundle.accommodations.filter((item) => `${item.name} ${item.locationId} ${item.address}`.toLowerCase().includes(accommodationQuery.toLowerCase()));
 
+  function addLocation() {
+    const id = newLocation.id || `location-${Date.now()}`;
+    void save("location", { ...newLocation, id });
+    setNewLocation({
+      id: "",
+      route: "",
+      title: "",
+      yiddishTitle: "",
+      category: "destination",
+      country: "",
+      address: "",
+      coordinates: "",
+      shomerContact: "",
+      source: "",
+      notes: "",
+      status: "draft",
+      lastVerified: "",
+    });
+  }
+
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -118,6 +153,37 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
       {tab === "locations" && (
         <div className="mt-6 space-y-4">
           <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} placeholder="Search locations" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
+          <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add location</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <Field label="ID" value={newLocation.id} onChange={(value) => setNewLocation((current) => ({ ...current, id: value }))} />
+              <Field label="Route" value={newLocation.route} onChange={(value) => setNewLocation((current) => ({ ...current, route: value }))} />
+              <Field label="Title" value={newLocation.title} onChange={(value) => setNewLocation((current) => ({ ...current, title: value }))} />
+              <Field label="Yiddish title" value={newLocation.yiddishTitle} onChange={(value) => setNewLocation((current) => ({ ...current, yiddishTitle: value }))} />
+              <Field label="Country" value={newLocation.country} onChange={(value) => setNewLocation((current) => ({ ...current, country: value }))} />
+              <Field label="Coordinates" value={newLocation.coordinates} onChange={(value) => setNewLocation((current) => ({ ...current, coordinates: value }))} />
+              <Field label="Shomer contact" value={newLocation.shomerContact} onChange={(value) => setNewLocation((current) => ({ ...current, shomerContact: value }))} />
+              <Field label="Source" value={newLocation.source} onChange={(value) => setNewLocation((current) => ({ ...current, source: value }))} />
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <Field label="Address" value={newLocation.address} onChange={(value) => setNewLocation((current) => ({ ...current, address: value }))} textarea />
+              <Field label="Notes" value={newLocation.notes} onChange={(value) => setNewLocation((current) => ({ ...current, notes: value }))} textarea />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <select value={newLocation.category} onChange={(event) => setNewLocation((current) => ({ ...current, category: event.target.value as EditableLocation["category"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
+                <option value="destination">Destination</option>
+                <option value="city-guide">City guide</option>
+                <option value="cemetery">Cemetery</option>
+              </select>
+              <select value={newLocation.status} onChange={(event) => setNewLocation((current) => ({ ...current, status: event.target.value as EditableLocation["status"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
+                <option value="draft">Draft</option>
+                <option value="needs-review">Needs review</option>
+                <option value="published">Published</option>
+              </select>
+              <input value={newLocation.lastVerified} onChange={(event) => setNewLocation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
+              <button type="button" onClick={addLocation} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Save location</button>
+            </div>
+          </div>
           {filteredLocations.map((item) => (
             <LocationEditor key={item.id} item={item} onSave={(next) => save("location", next)} saving={savingKey === "location"} />
           ))}
@@ -150,7 +216,8 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
                 <option value="needs-review">Needs review</option>
                 <option value="published">Published</option>
               </select>
-              <button type="button" onClick={() => { const id = newAccommodation.id || `accommodation-${Date.now()}`; void save("accommodation", { ...newAccommodation, id }); setNewAccommodation((current) => ({ ...current, id: "", locationId: "", name: "", address: "", phone: "", whatsapp: "", email: "", website: "", bookingLink: "", amenities: "", kosherInfo: "", notes: "" })); }} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Save accommodation</button>
+              <input value={newAccommodation.lastVerified} onChange={(event) => setNewAccommodation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
+              <button type="button" onClick={() => { const id = newAccommodation.id || `accommodation-${Date.now()}`; void save("accommodation", { ...newAccommodation, id }); setNewAccommodation((current) => ({ ...current, id: "", locationId: "", name: "", address: "", phone: "", whatsapp: "", email: "", website: "", bookingLink: "", amenities: "", kosherInfo: "", notes: "", lastVerified: "" })); }} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Save accommodation</button>
             </div>
           </div>
           {filteredAccommodations.map((item) => (
