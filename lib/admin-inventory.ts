@@ -21,12 +21,16 @@ function redisConfig() {
 async function redis<T>(command: string) {
   const config = redisConfig();
   if (!config) return undefined;
-  const response = await fetch(`${config.url}/${command}`, {
-    headers: { Authorization: `Bearer ${config.token}` },
-    cache: "no-store",
-  });
-  if (!response.ok) return undefined;
-  return (await response.json()) as RedisResult<T>;
+  try {
+    const response = await fetch(`${config.url}/${command}`, {
+      headers: { Authorization: `Bearer ${config.token}` },
+      cache: "no-store",
+    });
+    if (!response.ok) return undefined;
+    return (await response.json()) as RedisResult<T>;
+  } catch {
+    return undefined;
+  }
 }
 
 function parseOverrides(value: unknown): Record<string, InventoryOverride> {

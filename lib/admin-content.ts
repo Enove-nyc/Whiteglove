@@ -139,7 +139,7 @@ function defaultSettings(): SiteSettings {
     heroSubtitle: "A trusted guide for meaningful journeys: tefillos, kosher food, minyanim, mikvaos, local contacts, and every practical detail around your visit.",
     searchPlaceholder: "Search a city, tzaddik, or country...",
     publicNotice: "Travel and access information is checked before publication.",
-    footerEmail: "hello@whitegloveitineraries.com",
+    footerEmail: "whitegloveitineraries@gmail.com",
     bookingNotice: "Live travel tools remain linked to the owner dashboard and can be refined here.",
   };
 }
