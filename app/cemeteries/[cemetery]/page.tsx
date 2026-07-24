@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
+import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries, getCemetery } from "@/data/cemeteries";
 
 export function generateStaticParams() {
@@ -48,6 +49,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                 </div>
               </div>)}
             </div>}
+            <SuggestEditButton targetType="location" targetId={cemetery.slug} title={cemetery.name} currentInfo={`${cemetery.yiddishName}\n${cemetery.address}\n${cemetery.accessNote ?? ""}`} />
           </aside>
 
           <div>

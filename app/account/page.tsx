@@ -25,7 +25,7 @@ export default async function AccountPage() {
         </div>
         <div className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600">
           {account ? (
-            <p>Signed in as {account.email}. {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
+            <p>Signed in as {account.email}. {account.verifiedAt ? "Email verified." : "Email verification pending."} {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
           ) : (
             <p>You are viewing the local preview. Sign in to store your route and favorites across devices.</p>
           )}

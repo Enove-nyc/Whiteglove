@@ -7,7 +7,8 @@ export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signup" | "login">("signup");
+  const [code, setCode] = useState("");
+  const [mode, setMode] = useState<"signup" | "login" | "verify">("signup");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -28,15 +29,23 @@ export default function LoginForm() {
     event.preventDefault();
     setSaving(true);
     setMessage("");
-    const endpoint = mode === "signup" ? "/api/account/register" : "/api/account/login";
+    const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
+    const payload = mode === "verify" ? { email, code } : { email, password };
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(payload),
     });
-    const data = await response.json().catch(() => null) as { error?: string; email?: string } | null;
+    const data = await response.json().catch(() => null) as { error?: string; email?: string; verificationCode?: string; verificationRequired?: boolean } | null;
     if (!response.ok) {
       setMessage(data?.error || "Please try again.");
+      setSaving(false);
+      if (data?.verificationRequired) setMode("verify");
+      return;
+    }
+    if (mode === "signup") {
+      setMode("verify");
+      setMessage(data?.verificationCode ? `Verification code for setup: ${data.verificationCode}` : "Check your email for the verification code, then enter it below.");
       setSaving(false);
       return;
     }
@@ -53,11 +62,17 @@ export default function LoginForm() {
       <label className="block text-sm font-semibold text-[var(--navy)]">Email address
         <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required placeholder="you@example.com" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
       </label>
-      <label className="block text-sm font-semibold text-[var(--navy)]">Password
+      {mode !== "verify" && <label className="block text-sm font-semibold text-[var(--navy)]">Password
         <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" required placeholder="Choose a password" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
-      </label>
+      </label>}
+      {mode === "verify" && <label className="block text-sm font-semibold text-[var(--navy)]">Verification code
+        <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" required placeholder="Enter the 6-digit code" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
+      </label>}
       {message && <p className="text-sm leading-6 text-amber-800">{message}</p>}
-      <button type="submit" disabled={saving} className="w-full bg-[var(--navy)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:opacity-60">{saving ? "Checking..." : mode === "signup" ? "Create account" : "Log in"}</button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button type="submit" disabled={saving} className="w-full bg-[var(--navy)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:opacity-60">{saving ? "Checking..." : mode === "signup" ? "Create account" : mode === "verify" ? "Verify account" : "Log in"}</button>
+        {mode === "verify" && <button type="button" disabled={saving} onClick={async () => { setSaving(true); const response = await fetch("/api/account/resend-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const data = await response.json().catch(() => null) as { error?: string; verificationCode?: string } | null; setSaving(false); setMessage(response.ok ? (data?.verificationCode ? `New code for setup: ${data.verificationCode}` : "A new verification code was sent.") : data?.error || "Please try again."); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Resend code</button>}
+      </div>
     </form>
   );
 }

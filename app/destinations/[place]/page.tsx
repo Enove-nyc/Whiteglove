@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
+import SuggestEditButton from "@/components/SuggestEditButton";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/bulk-destinations";
 import { getDestinationRecord } from "@/data/destination-database";
@@ -26,6 +27,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{destination.city}</p>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>
           <SavePlaceButtons place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, href: `/destinations/${destination.slug}` }} />
+          <SuggestEditButton targetType="location" targetId={destination.slug} title={destination.city} currentInfo={`${destination.yiddishCity}\n${destination.summary}`} />
         </div>
       </section>
 

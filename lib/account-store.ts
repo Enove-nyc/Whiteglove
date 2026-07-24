@@ -1,4 +1,4 @@
-import { pbkdf2Sync, randomBytes } from "crypto";
+import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
@@ -9,6 +9,10 @@ export type AccountRecord = {
   passwordHash: string;
   salt: string;
   createdAt: string;
+  verifiedAt?: string;
+  verificationCodeHash?: string;
+  verificationCodeExpiresAt?: string;
+  verificationRequestedAt?: string;
 };
 
 export type AccountData = {
@@ -22,6 +26,7 @@ export type AccountSummary = {
   routeCount: number;
   favoriteCount: number;
   createdAt?: string;
+  verifiedAt?: string;
 };
 
 function redisConfig() {
@@ -55,6 +60,18 @@ function normalizeEmail(email: string) {
 
 function hashPassword(password: string, salt: string) {
   return pbkdf2Sync(password, salt, 120000, 64, "sha256").toString("hex");
+}
+
+function verificationSecret() {
+  return process.env.WHITE_GLOVE_SESSION_SECRET || process.env.ADMIN_PASSWORD || "white-glove-development-secret";
+}
+
+function verificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function hashVerificationCode(email: string, code: string) {
+  return createHmac("sha256", verificationSecret()).update(`${normalizeEmail(email)}:${code}`).digest("base64url");
 }
 
 export function hasAccountStorage() {
@@ -102,11 +119,15 @@ export async function createAccount(email: string, password: string) {
     salt,
     passwordHash: hashPassword(password, salt),
     createdAt: new Date().toISOString(),
+    verificationRequestedAt: new Date().toISOString(),
   };
+  const code = verificationCode();
+  record.verificationCodeHash = hashVerificationCode(normalized, code);
+  record.verificationCodeExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   const saved = await writeJson(accountKey(normalized), record);
   if (!saved) return { ok: false as const, error: "The account could not be created." };
   await writeJson(dataKey(normalized), { route: [], favorites: [], updatedAt: new Date().toISOString() } satisfies AccountData);
-  return { ok: true as const, email: normalized };
+  return { ok: true as const, email: normalized, verificationCode: code };
 }
 
 export async function verifyAccount(email: string, password: string) {
@@ -114,6 +135,56 @@ export async function verifyAccount(email: string, password: string) {
   const record = await getAccountRecord(normalized);
   if (!record) return false;
   return hashPassword(password, record.salt) === record.passwordHash;
+}
+
+export async function verifyAccountStatus(email: string, password: string) {
+  const normalized = normalizeEmail(email);
+  const record = await getAccountRecord(normalized);
+  if (!record) return { ok: false as const, reason: "missing" as const };
+  if (hashPassword(password, record.salt) !== record.passwordHash) return { ok: false as const, reason: "credentials" as const };
+  if (!record.verifiedAt) return { ok: false as const, reason: "unverified" as const, record };
+  return { ok: true as const, record };
+}
+
+export async function verifyEmailCode(email: string, code: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeEmail(email);
+  const record = await getAccountRecord(normalized);
+  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record.verificationCodeHash || !record.verificationCodeExpiresAt) return { ok: false as const, error: "No verification code is active. Request a new one." };
+  if (new Date(record.verificationCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That verification code has expired. Request a new one." };
+  if (hashVerificationCode(normalized, code) !== record.verificationCodeHash) return { ok: false as const, error: "That verification code is not correct." };
+  const next: AccountRecord = {
+    ...record,
+    verifiedAt: new Date().toISOString(),
+    verificationCodeHash: undefined,
+    verificationCodeExpiresAt: undefined,
+  };
+  const saved = await writeJson(accountKey(normalized), next);
+  if (!saved) return { ok: false as const, error: "The account could not be verified." };
+  return { ok: true as const, email: normalized };
+}
+
+export async function resendVerificationCode(email: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeEmail(email);
+  const record = await getAccountRecord(normalized);
+  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  const code = verificationCode();
+  const next: AccountRecord = {
+    ...record,
+    verificationRequestedAt: new Date().toISOString(),
+    verificationCodeHash: hashVerificationCode(normalized, code),
+    verificationCodeExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+  };
+  const saved = await writeJson(accountKey(normalized), next);
+  if (!saved) return { ok: false as const, error: "The verification code could not be refreshed." };
+  return { ok: true as const, email: normalized, verificationCode: code };
+}
+
+export async function isAccountVerified(email: string) {
+  const record = await getAccountRecord(email);
+  return Boolean(record?.verifiedAt);
 }
 
 export async function getAccountData(email: string) {
@@ -152,6 +223,7 @@ export async function getCurrentAccountSummary(cookieValue?: string): Promise<Ac
     routeCount: data.route.length,
     favoriteCount: data.favorites.length,
     createdAt: record.createdAt,
+    verifiedAt: record.verifiedAt,
   };
 }
 

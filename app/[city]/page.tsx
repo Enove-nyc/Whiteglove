@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
+import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
 import PracticalInformation from "@/components/PracticalInformation";
@@ -62,6 +63,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
                 {guide.findingNotes.map((note, index) => <li key={note} className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold)]">{index + 1}.</span><span>{note}</span></li>)}
               </ol>
             </div>}
+            <SuggestEditButton targetType="location" targetId={guide.slug} title={guide.city} currentInfo={`${guide.yiddishCity}\n${guide.tzaddik}\n${guide.graveAddress ?? ""}`} />
           </div>
 
           <div className="border-l border-[var(--gold)] pl-6">
