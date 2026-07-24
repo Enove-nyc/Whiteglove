@@ -17,6 +17,12 @@ function Detail({ section }: { section: PracticalSection }) {
   return <p className="mt-4 text-sm leading-6 text-stone-600">{section.note}</p>;
 }
 
+function Status({ section }: { section: PracticalSection }) {
+  if (section.status === "verified") return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">Checked information</p>;
+  if (section.status === "needs-verification") return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-amber-800">Being checked</p>;
+  return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Not available yet</p>;
+}
+
 export default function PracticalInformation({ record }: { record: DestinationRecord }) {
   return (
     <div className="mt-12">
@@ -25,6 +31,7 @@ export default function PracticalInformation({ record }: { record: DestinationRe
           <article key={key} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
             <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{yiddish}</h3>
             <p className="mt-1 text-sm text-stone-500">{english}</p>
+            <Status section={record[key]} />
             <Detail section={record[key]} />
           </article>
         ))}
