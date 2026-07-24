@@ -4,6 +4,7 @@ import { edgeAccessToken, edgeSiteIsLocked } from "@/lib/edge-lock";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/api/")) return NextResponse.next();
+  if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const token = await edgeAccessToken("admin");

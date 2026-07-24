@@ -1,0 +1,220 @@
+export type InventoryStatus = "complete" | "partial" | "not-started" | "broken" | "verify" | "mobile";
+
+export type InventoryArea = "Public page" | "Admin page" | "API route" | "Cross-site issue";
+
+export type InventoryItem = {
+  id: string;
+  area: InventoryArea;
+  route: string;
+  title: string;
+  status: InventoryStatus;
+  priority: "High" | "Medium" | "Low";
+  missing: string;
+  nextAction: string;
+};
+
+export const inventoryStatuses: Array<{ value: InventoryStatus; label: string }> = [
+  { value: "not-started", label: "Not completed" },
+  { value: "partial", label: "Partially complete" },
+  { value: "broken", label: "Broken / blocked" },
+  { value: "verify", label: "Needs verification" },
+  { value: "mobile", label: "Needs mobile repair" },
+  { value: "complete", label: "Completed" },
+];
+
+export const inventoryItems: InventoryItem[] = [
+  {
+    id: "page-home",
+    area: "Public page",
+    route: "/",
+    title: "Homepage",
+    status: "partial",
+    priority: "High",
+    missing: "Encoding cleanup, search verification, and final mobile review.",
+    nextAction: "Fix visible text issues and confirm search behavior on desktop and phone.",
+  },
+  {
+    id: "page-stops",
+    area: "Public page",
+    route: "/stops",
+    title: "Destination directory",
+    status: "partial",
+    priority: "High",
+    missing: "Clear verified/research labels, factual review, mobile card testing.",
+    nextAction: "Use this as the main destination work queue after encoding repair.",
+  },
+  {
+    id: "page-city",
+    area: "Public page",
+    route: "/[city]",
+    title: "City guide template",
+    status: "verify",
+    priority: "High",
+    missing: "Verified shomer contacts, accommodations, food, minyanim, mikvaos, yahrzeiten, and burials per city.",
+    nextAction: "Add source and last-verified fields before adding hundreds of records.",
+  },
+  {
+    id: "page-lizensk",
+    area: "Public page",
+    route: "/lizensk",
+    title: "Lizhensk legacy route",
+    status: "broken",
+    priority: "High",
+    missing: "Route spelling and consolidation with /lizhensk search behavior.",
+    nextAction: "Add redirects or aliases so all common spellings land on the correct guide.",
+  },
+  {
+    id: "page-research-destination",
+    area: "Public page",
+    route: "/destinations/[place]",
+    title: "Research-queue destination page",
+    status: "partial",
+    priority: "High",
+    missing: "Full cemetery, burial, shomer, accommodation, and practical information.",
+    nextAction: "Convert researched places into complete city guides after verification.",
+  },
+  {
+    id: "page-cemeteries",
+    area: "Public page",
+    route: "/cemeteries",
+    title: "Beis hachaim directory",
+    status: "partial",
+    priority: "High",
+    missing: "Encoding cleanup, verification status, and richer sorting/filtering.",
+    nextAction: "Show which cemeteries have verified shomer numbers and which do not.",
+  },
+  {
+    id: "page-cemetery-detail",
+    area: "Public page",
+    route: "/cemeteries/[cemetery]",
+    title: "Individual beis hachaim page",
+    status: "verify",
+    priority: "High",
+    missing: "Verified burials, yahrzeit details, shomer numbers, and access notes.",
+    nextAction: "Add verification fields and source dates for every cemetery record.",
+  },
+  {
+    id: "page-booking",
+    area: "Public page",
+    route: "/booking",
+    title: "Flights and hotels search",
+    status: "partial",
+    priority: "Medium",
+    missing: "Hotel API decision, production booking completion, and smaller mobile form cleanup.",
+    nextAction: "Keep flights working, decide hotel provider, then finish booking flow.",
+  },
+  {
+    id: "page-booking-review",
+    area: "Public page",
+    route: "/booking/review",
+    title: "Flight review and payment",
+    status: "partial",
+    priority: "Medium",
+    missing: "Production payment confirmation, passenger validation, and complete booking receipts.",
+    nextAction: "Test end-to-end with Duffel production account once allowed.",
+  },
+  {
+    id: "page-login",
+    area: "Public page",
+    route: "/login",
+    title: "Login and sign up",
+    status: "partial",
+    priority: "High",
+    missing: "Real authentication, email verification, reset password, logout, and signed-in redirects.",
+    nextAction: "Replace browser-storage preview with real account backend.",
+  },
+  {
+    id: "page-account",
+    area: "Public page",
+    route: "/account",
+    title: "Account dashboard",
+    status: "partial",
+    priority: "High",
+    missing: "Cloud saved routes, favorites, itinerary data, profile, and account settings.",
+    nextAction: "Connect account data to the database after real auth is selected.",
+  },
+  {
+    id: "page-my-route",
+    area: "Public page",
+    route: "/my-route",
+    title: "My Route",
+    status: "partial",
+    priority: "High",
+    missing: "Cloud sync, route preferences, itinerary integration, and stronger optimization.",
+    nextAction: "Move route items from localStorage to user-owned database records.",
+  },
+  {
+    id: "page-access",
+    area: "Public page",
+    route: "/access",
+    title: "Site access gate",
+    status: "complete",
+    priority: "Medium",
+    missing: "Final security review before public launch.",
+    nextAction: "Keep for development lock, then replace with launch workflow if needed.",
+  },
+  {
+    id: "page-admin-login",
+    area: "Admin page",
+    route: "/admin/login",
+    title: "Owner login",
+    status: "partial",
+    priority: "High",
+    missing: "Real admin users and roles.",
+    nextAction: "Move from shared password to role-based admin access.",
+  },
+  {
+    id: "page-admin",
+    area: "Admin page",
+    route: "/admin",
+    title: "Owner dashboard",
+    status: "partial",
+    priority: "High",
+    missing: "Content management, missing-content reporting, suggestions, media, and settings.",
+    nextAction: "Use the new inventory page as the first admin work queue.",
+  },
+  {
+    id: "api-hotels",
+    area: "API route",
+    route: "/api/hotels/search",
+    title: "Hotel search API",
+    status: "broken",
+    priority: "Medium",
+    missing: "Duffel Stays access or alternate hotel API.",
+    nextAction: "Choose the hotel provider before building final hotel booking.",
+  },
+  {
+    id: "issue-encoding",
+    area: "Cross-site issue",
+    route: "All pages",
+    title: "Encoding and Yiddish text",
+    status: "broken",
+    priority: "High",
+    missing: "Visible mojibake and misencoded Yiddish/Hebrew across source files.",
+    nextAction: "Repair source encoding before large content expansion.",
+  },
+  {
+    id: "issue-mobile",
+    area: "Cross-site issue",
+    route: "All pages",
+    title: "Mobile responsiveness",
+    status: "mobile",
+    priority: "High",
+    missing: "Systematic iPhone, Android, tablet, and small desktop testing.",
+    nextAction: "Fix shared overflow and form layouts first, then test each page.",
+  },
+  {
+    id: "issue-legal",
+    area: "Cross-site issue",
+    route: "Legal pages",
+    title: "Legal and trust pages",
+    status: "not-started",
+    priority: "Medium",
+    missing: "Privacy, terms, cookie policy, booking disclaimer, advertising disclosure, affiliate disclosure.",
+    nextAction: "Draft legal pages before public promotion and app work.",
+  },
+];
+
+export function inventoryStatusLabel(status: InventoryStatus) {
+  return inventoryStatuses.find((item) => item.value === status)?.label ?? status;
+}

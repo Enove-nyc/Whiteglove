@@ -1,8 +1,11 @@
 import DestinationCard from "@/components/DestinationCard";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
+import PromotionBanner from "@/components/PromotionBanner";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
+import { getActivePromotions } from "@/lib/admin-content";
+import { headers } from "next/headers";
 
 const destinations = [
   { name: "Lizhensk", yiddishName: "ליזענסק", country: "Poland", description: "A complete guide for a meaningful visit to the Noam Elimelech.", href: "/lizensk" },
@@ -28,7 +31,13 @@ const services = [
   ["04", "A smoother journey", "Clear travel planning from airport to hotel, so the logistics stay out of the way."],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const requestHeaders = await headers();
+  const userAgent = requestHeaders.get("user-agent") || "";
+  const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
+  const homepagePromotions = await getActivePromotions("homepage-promo", "/", device);
+  const inlinePromotions = await getActivePromotions("inline-content", "/", device);
+
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
@@ -47,6 +56,9 @@ export default function Home() {
             </div>
           </div>
           <DestinationSearch />
+          <div className="mt-8">
+            <PromotionBanner promotion={homepagePromotions[0] ?? null} placement="homepage-promo" />
+          </div>
         </div>
       </section>
 
@@ -77,6 +89,12 @@ export default function Home() {
           <p className="border-l border-[var(--gold)] pl-6 text-lg leading-8 text-stone-600">We gather the essentials in one calm, dependable guide, leaving you free to focus on your tefillos and the meaning of the journey.</p>
         </div>
       </section>
+
+      {inlinePromotions.length ? (
+        <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
+          <PromotionBanner promotion={inlinePromotions[0] ?? null} placement="inline-content" compact />
+        </section>
+      ) : null}
 
       <Footer />
     </main>
