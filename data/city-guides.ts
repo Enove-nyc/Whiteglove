@@ -254,6 +254,18 @@ export const cityGuides: CityGuide[] = [
       "The cemetery is about 650 metres north of the city square, between Rybacka and Flisaków Streets.",
       "Access to the ohel may require current local arrangements, so confirm before the trip or a large group visit.",
     ],
+    accessContacts: [
+      {
+        label: "Cemetery shomer",
+        phone: "+48-51-394-9894",
+        note: "Please call ahead to confirm current access.",
+      },
+      {
+        label: "Cemetery shomer",
+        phone: "+48-18-441-9381",
+        note: "Please call ahead to confirm current access.",
+      },
+    ],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/nowy-sacz-new-jewish-cemetery/",
   },
   {

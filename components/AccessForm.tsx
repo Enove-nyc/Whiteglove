@@ -1,0 +1,20 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function AccessForm({ scope, next }: { scope: "admin" | "site"; next?: string }) {
+  const router = useRouter();
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true); setMessage("");
+    const response = await fetch("/api/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scope, password }) });
+    if (!response.ok) { const data = await response.json().catch(() => null); setMessage(data?.error || "Please try again."); setSaving(false); return; }
+    router.replace(scope === "admin" ? "/admin" : (next?.startsWith("/") ? next : "/"));
+    router.refresh();
+  }
+  return <form onSubmit={submit} className="mt-7 space-y-5"><label className="block text-sm font-semibold text-[var(--navy)]">Password<input autoFocus value={password} onChange={(event) => setPassword(event.target.value)} type="password" required className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" /></label>{message && <p className="text-sm text-red-700">{message}</p>}<button disabled={saving} className="w-full bg-[var(--navy)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:opacity-60">{saving ? "Checking..." : scope === "admin" ? "Open admin" : "Enter White Glove"}</button></form>;
+}

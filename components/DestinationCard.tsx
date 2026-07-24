@@ -26,7 +26,7 @@ export default function DestinationCard({
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f2e9d8]">{country}</p>
       </div>
       <div className="p-6">
-        <h3 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{yiddishName && <span dir="rtl" className="block">{yiddishName}</span>}<span className={`block text-stone-500 ${yiddishName ? "mt-1 text-xl" : ""}`}>{name}</span></h3>
+        <h3 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{yiddishName && <span dir="rtl" className="block text-4xl leading-tight">{yiddishName}</span>}<span className={`block text-stone-500 ${yiddishName ? "mt-2 text-xl" : ""}`}>{name}</span></h3>
         <p className="mt-3 leading-7 text-stone-600">{description}</p>
         <span className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)] group-hover:text-[var(--navy)]">Explore the journey →</span>
       </div>

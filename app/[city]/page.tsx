@@ -4,7 +4,9 @@ import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
+import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
+import { getDestinationRecord } from "@/data/destination-database";
 
 export function generateStaticParams() {
   return cityGuides.map(({ slug }) => ({ city: slug }));
@@ -15,6 +17,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
   const guide = getCityGuide(city);
   if (!guide) notFound();
   const cemetery = getCemetery(guide.slug);
+  const destinationRecord = getDestinationRecord(guide.slug);
   const accessContacts = guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : []);
 
   const graveMapUrl = guide.graveAddress
@@ -28,7 +31,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">City guide · {guide.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">{guide.yiddishCity}</h1>
+          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-6xl leading-tight text-[var(--navy)] sm:text-7xl">{guide.yiddishCity}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-stone-500 sm:text-4xl">{guide.city}</p>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-stone-600">A White Glove guide to the journey, the tzaddik, and the practical details that matter most.</p>
         </div>
@@ -44,7 +47,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
         <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr]">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">At the kever</p>
-            <h2 dir="rtl" className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">{guide.yiddishTzaddik}</h2>
+            <h2 dir="rtl" className="mt-4 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">{guide.yiddishTzaddik}</h2>
             <p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-stone-500 sm:text-3xl">{guide.tzaddik}</p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -84,7 +87,8 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
 
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading eyebrow="Guide in progress" title="Practical details, gathered carefully." description="We are researching food, minyanim, mikvaos, lodging, drivers, and current local contacts for this destination. Only details that can be checked will be published." />
+          <SectionHeading eyebrow="Practical guide" title="Everything around the visit." description="Accommodations, food, minyanim, mikvaos, and transport are kept together here. A detail appears only when it has been checked for this exact destination." />
+          {destinationRecord && <PracticalInformation record={destinationRecord} />}
           <a href={guide.sourceUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Read source information</a>
         </div>
       </section>

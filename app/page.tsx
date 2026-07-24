@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 
 const destinations = [
-  { name: "Lizhensk", yiddishName: "ליזענסק", country: "Poland", description: "A complete guide for a meaningful visit to the Noam Elimelech.", href: "/lizensk", featured: true },
+  { name: "Lizhensk", yiddishName: "ליזענסק", country: "Poland", description: "A complete guide for a meaningful visit to the Noam Elimelech.", href: "/lizensk" },
   { name: "Uman", yiddishName: "אומאן", country: "Ukraine", description: "A guide to Rebbe Nachman of Breslov, planned with clarity and care.", href: "/uman" },
   { name: "Medzhybizh", yiddishName: "מעזשיבוזש", country: "Ukraine", description: "A guide to the resting place of the Baal Shem Tov and the birthplace of Chassidus.", href: "/medzhybizh" },
   { name: "Belz", yiddishName: "בעלז", country: "Ukraine", description: "Discover the places and stories of historic Belzer Chassidus.", href: "/belz" },
