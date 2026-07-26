@@ -19,6 +19,7 @@ export default function AccountSettings({
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [open, setOpen] = useState(false);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,9 +56,25 @@ export default function AccountSettings({
 
   return (
     <div className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Account settings</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your details</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Account settings</p>
+          <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your details</h2>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="rounded-md border border-[var(--gold)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+        >
+          {open ? "Close" : "Edit details"}
+        </button>
+      </div>
 
+      {!open ? (
+        <p className="mt-4 text-sm leading-6 text-stone-600">Update your name, phone, and email, or delete your account.</p>
+      ) : (
+      <>
       <form onSubmit={save} className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className={captionClass}>Name</span>
@@ -100,6 +117,8 @@ export default function AccountSettings({
           {deleting ? "Deleting…" : "Delete my account"}
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }
