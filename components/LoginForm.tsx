@@ -14,6 +14,7 @@ function EyeIcon({ open }: { open: boolean }) {
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -78,7 +79,7 @@ export default function LoginForm() {
     }
 
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
-    const payload = mode === "verify" ? { email, code } : { email, password };
+    const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name } : { email, password };
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -108,6 +109,12 @@ export default function LoginForm() {
           <button type="button" onClick={() => { setMode("signup"); setMessage(""); }} className={`px-3 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "signup" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Sign up</button>
           <button type="button" onClick={() => { setMode("login"); setMessage(""); }} className={`px-3 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "login" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Log in</button>
         </div>
+      )}
+
+      {mode === "signup" && (
+        <label className="block text-sm font-semibold text-[var(--navy)]">Your name
+          <input value={name} onChange={(event) => setName(event.target.value)} type="text" required placeholder="e.g. Yaakov Cohen" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
+        </label>
       )}
 
       <label className="block text-sm font-semibold text-[var(--navy)]">Email address
