@@ -8,10 +8,14 @@ import SectionHeading from "@/components/SectionHeading";
 import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
 import { getDestinationRecord } from "@/data/destination-database";
+import { getPublishedDestinationContent } from "@/lib/content";
 
 export function generateStaticParams() {
   return cityGuides.map(({ slug }) => ({ city: slug }));
 }
+
+// Re-render at most hourly; admin edits also trigger on-demand revalidation.
+export const revalidate = 3600;
 
 export default async function CityGuidePage({ params }: { params: Promise<{ city: string }> }) {
   const { city } = await params;
@@ -19,7 +23,13 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
   if (!guide) notFound();
   const cemetery = getCemetery(guide.slug);
   const destinationRecord = getDestinationRecord(guide.slug);
-  const accessContacts = guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : []);
+  // DB-backed practical listings, when the content database is connected.
+  const dbContent = await getPublishedDestinationContent(guide.slug);
+  // Prefer DB-managed contacts when the admin has entered any; otherwise the
+  // static guide contacts. Both shapes expose label/phone/email/note.
+  const accessContacts = dbContent?.contacts.length
+    ? dbContent.contacts
+    : guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : []);
 
   const graveMapUrl = guide.graveAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${guide.graveAddress} ${guide.graveCoordinates ?? ""}`)}`
@@ -90,7 +100,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeading eyebrow="Practical guide" title="Everything around the visit." description="Accommodations, food, minyanim, mikvaos, and transport are kept together here. A detail appears only when it has been checked for this exact destination." />
-          {destinationRecord && <PracticalInformation record={destinationRecord} />}
+          {destinationRecord && <PracticalInformation record={destinationRecord} places={dbContent?.places ?? []} />}
           <a href={guide.sourceUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Read source information</a>
         </div>
       </section>

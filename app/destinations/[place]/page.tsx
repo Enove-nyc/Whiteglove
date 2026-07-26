@@ -6,10 +6,14 @@ import SuggestEditButton from "@/components/SuggestEditButton";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/bulk-destinations";
 import { getDestinationRecord } from "@/data/destination-database";
+import { getPublishedDestinationContent } from "@/lib/content";
 
 export function generateStaticParams() {
   return bulkDestinations.map(({ slug }) => ({ place: slug }));
 }
+
+// Re-render at most hourly; admin edits also trigger on-demand revalidation.
+export const revalidate = 3600;
 
 export default async function BulkDestinationPage({ params }: { params: Promise<{ place: string }> }) {
   const { place: slug } = await params;
@@ -17,6 +21,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
   if (!destination) notFound();
 
   const record = getDestinationRecord(destination.slug);
+  const dbContent = await getPublishedDestinationContent(destination.slug);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -86,7 +91,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           </div>
         )}
 
-        {record && <PracticalInformation record={record} />}
+        {record && <PracticalInformation record={record} places={dbContent?.places ?? []} />}
       </section>
 
       <Footer />

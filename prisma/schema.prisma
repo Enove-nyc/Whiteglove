@@ -1,0 +1,264 @@
+// White Glove — content database schema
+// -------------------------------------------------------------------
+// Target: Neon Postgres (free tier). Requires a DATABASE_URL env var
+// pointing at the Neon connection string (add it in Vercel > Settings >
+// Environment Variables, and to a local .env for `prisma migrate`).
+//
+// This schema models the destination/CMS content that today lives as
+// hardcoded TypeScript in `data/*.ts` plus the admin content bundle in
+// Redis. Accounts, sessions, analytics counters and the site lock stay
+// on Upstash Redis — Redis is the right tool for those and they are NOT
+// modeled here on purpose.
+//
+// Workflow after provisioning the DB:
+//   npx prisma migrate dev --name init   # create tables
+//   npx prisma db seed                    # import data/*.ts (see prisma/seed.ts)
+// -------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7: the connection URL lives in prisma.config.ts (datasource.url),
+// not here. The schema only declares the provider.
+datasource db {
+  provider = "postgresql"
+}
+
+// ---- Enums ----------------------------------------------------------
+
+// Preserves where a destination came from so the right template renders.
+enum DestinationKind {
+  CITY_GUIDE // rich guide (data/city-guides.ts) — tzaddik, seforim, findings
+  DESTINATION // compact entry (data/bulk-destinations.ts)
+  SACRED_STOP // waypoint with address/coords (data/sacred-stops.ts)
+}
+
+// Editorial state, mirrors the admin content statuses.
+enum ContentStatus {
+  PUBLISHED
+  DRAFT
+  NEEDS_REVIEW
+}
+
+// How confident we are in a piece of practical info (mirrors
+// VerificationStatus in data/destination-database.ts).
+enum VerificationStatus {
+  VERIFIED
+  UNAVAILABLE
+  NEEDS_VERIFICATION
+}
+
+// One table serves every kind of on-the-ground listing. Covers the
+// Milestone-1 expansion list (Hotel, KosherEstablishment, Minyan,
+// Mikvah, Airport, Driver) without a table per type.
+enum PlaceCategory {
+  ACCOMMODATION
+  KOSHER_FOOD
+  MINYAN
+  MIKVAH
+  TRANSPORT
+  AIRPORT
+  DRIVER
+}
+
+// ---- Core content ---------------------------------------------------
+
+model Destination {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  kind         DestinationKind @default(DESTINATION)
+  city         String
+  yiddishCity  String
+  country      String
+  aliases      String[]        @default([])
+  overview     String? // long-form intro (city guides)
+  summary      String? // short blurb (bulk destinations)
+  safetyNote   String?
+  sourceUrl    String?
+  status       ContentStatus   @default(PUBLISHED)
+  notes        String[]        @default([])
+  lastVerified DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  tzaddikim  Tzaddik[]
+  cemeteries Cemetery[]
+  contacts   Contact[]
+  places     PracticalPlace[]
+
+  @@index([kind])
+  @@index([country])
+}
+
+// A tzaddik, either the primary one featured on a city page
+// (isPrimary) or one of several buried in a cemetery.
+model Tzaddik {
+  id               String             @id @default(cuid())
+  name             String
+  yiddishName      String
+  knownAs          String?
+  seforim          String?
+  yahrzeit         String?
+  niftar           String? // year of petirah, kept as text (e.g. "תקמ\"ז")
+  graveAddress     String?
+  graveCoordinates String?
+  findingNotes     String[]           @default([])
+  note             String?
+  isPrimary        Boolean            @default(false)
+  status           VerificationStatus @default(NEEDS_VERIFICATION)
+  source           String?
+
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String?
+  cemetery      Cemetery?    @relation(fields: [cemeteryId], references: [id], onDelete: SetNull)
+  cemeteryId    String?
+
+  @@index([destinationId])
+  @@index([cemeteryId])
+}
+
+model Cemetery {
+  id           String             @id @default(cuid())
+  slug         String             @unique
+  city         String
+  yiddishCity  String
+  name         String
+  yiddishName  String
+  country      String
+  address      String?
+  coordinates  String?
+  arrivalNotes String[]           @default([])
+  accessNote   String?
+  status       VerificationStatus @default(NEEDS_VERIFICATION)
+  sourceUrl    String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  destinationId String?
+  burials       Tzaddik[]
+  contacts      Contact[]
+
+  @@index([destinationId])
+}
+
+// Shomer / access contact. Attaches to a destination or a cemetery.
+model Contact {
+  id     String             @id @default(cuid())
+  label  String
+  phone  String?
+  email  String?
+  note   String?
+  source String?
+  status VerificationStatus @default(NEEDS_VERIFICATION)
+
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String?
+  cemetery      Cemetery?    @relation(fields: [cemeteryId], references: [id], onDelete: Cascade)
+  cemeteryId    String?
+
+  @@index([destinationId])
+  @@index([cemeteryId])
+}
+
+// Lodging, kosher food, minyanim, mikvaos, transport, airports, drivers.
+// Mirrors EditableAccommodation from lib/admin-content.ts, generalized.
+model PracticalPlace {
+  id           String        @id @default(cuid())
+  category     PlaceCategory
+  name         String
+  yiddishName  String?
+  address      String?
+  phone        String?
+  whatsapp     String?
+  email        String?
+  website      String?
+  bookingLink  String?
+  coordinates  String?
+  hours        String? // opening times / minyan schedule / mikvah hours
+  amenities    String?
+  kosherInfo   String?
+  notes        String?
+  status       ContentStatus @default(DRAFT)
+  lastVerified DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String
+
+  @@index([destinationId, category])
+}
+
+// ---- CMS operational tables (migrated from the Redis content bundle) --
+
+// Visitor-submitted correction (SuggestEditButton -> admin review).
+model EditSuggestion {
+  id            String    @id @default(cuid())
+  targetType    String // "location" | "accommodation" | "site"
+  targetId      String
+  title         String
+  name          String
+  email         String
+  issue         String
+  currentInfo   String    @default("")
+  suggestedInfo String    @default("")
+  source        String?
+  status        String    @default("pending") // pending|approved|rejected|needs-info
+  reviewerNotes String?
+  createdAt     DateTime  @default(now())
+  reviewedAt    DateTime?
+
+  @@index([status])
+}
+
+// Sponsored banners — already the one admin->public bridge that works.
+model Promotion {
+  id                 String    @id @default(cuid())
+  title              String
+  description        String    @default("")
+  buttonText         String    @default("")
+  targetHref         String    @default("")
+  imageUrl           String?
+  pdfUrl             String?
+  placements         String[]  @default([])
+  targetPaths        String    @default("")
+  device             String    @default("all") // all|mobile|desktop
+  startDate          DateTime?
+  endDate            DateTime?
+  priority           Int       @default(0)
+  maxViewsPerVisitor Int       @default(0)
+  enabled            Boolean   @default(true)
+  impressions        Int       @default(0)
+  clicks             Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastShownAt        DateTime?
+  lastClickedAt      DateTime?
+
+  @@index([enabled, priority])
+}
+
+// Global site settings — one row, id fixed to "site".
+model SiteSetting {
+  id                String   @id @default("site")
+  heroTitle         String
+  heroSubtitle      String
+  searchPlaceholder String
+  publicNotice      String
+  footerEmail       String
+  bookingNotice     String
+  updatedAt         DateTime @updatedAt
+}
+
+// Generic editable marketing/info page (Milestone-1 "Page").
+model Page {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  title     String
+  body      String        @default("")
+  status    ContentStatus @default(DRAFT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
