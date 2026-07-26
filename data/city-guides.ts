@@ -184,8 +184,8 @@ export const cityGuides: CityGuide[] = [
     seforim: "מנחת אלעזר · דרכי תשובה · שער יששכר",
     yahrzeit: "ב׳ סיון",
     niftar: "תרצ״ז / 1937",
-    graveAddress: "Old Jewish Cemetery, Mukachevo, Zakarpattia Oblast, Ukraine",
-    graveCoordinates: "48.440865, 22.733225",
+    graveAddress: "Old Jewish Cemetery, Myru St 102, Mukachevo, Zakarpattia Oblast, Ukraine, 89611",
+    graveCoordinates: "48.441167, 22.732556",
     findingNotes: [
       "Set GPS to the exact coordinates for the old Jewish cemetery; street labels in the area can vary between maps.",
       "The ohel of the Shapiro Rebbes is within the cemetery. Confirm the current entrance and access details locally before setting out.",
