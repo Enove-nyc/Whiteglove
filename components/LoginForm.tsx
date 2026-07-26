@@ -45,7 +45,7 @@ export default function LoginForm() {
     }
     if (mode === "signup") {
       setMode("verify");
-      setMessage(data?.verificationCode ? `Verification code for setup: ${data.verificationCode}` : "Check your email for the verification code, then enter it below.");
+ setMessage("Check your email for the verification code, then enter it below.");
       setSaving(false);
       return;
     }
@@ -71,7 +71,7 @@ export default function LoginForm() {
       {message && <p className="text-sm leading-6 text-amber-800">{message}</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         <button type="submit" disabled={saving} className="w-full bg-[var(--navy)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:opacity-60">{saving ? "Checking..." : mode === "signup" ? "Create account" : mode === "verify" ? "Verify account" : "Log in"}</button>
-        {mode === "verify" && <button type="button" disabled={saving} onClick={async () => { setSaving(true); const response = await fetch("/api/account/resend-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const data = await response.json().catch(() => null) as { error?: string; verificationCode?: string } | null; setSaving(false); setMessage(response.ok ? (data?.verificationCode ? `New code for setup: ${data.verificationCode}` : "A new verification code was sent.") : data?.error || "Please try again."); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Resend code</button>}
+        {mode === "verify" && <button type="button" disabled={saving} onClick={async () => { setSaving(true); const response = await fetch("/api/account/resend-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const data = await response.json().catch(() => null) as { error?: string; verificationCode?: string } | null; setSaving(false); setMessage(response.ok ? "A new verification code was sent." : data?.error || "Please try again."); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Resend code</button>}
       </div>
     </form>
   );
