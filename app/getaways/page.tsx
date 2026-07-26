@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBody from "@/components/PageBody";
 import SectionHeading from "@/components/SectionHeading";
 import { getaways } from "@/data/getaways";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Kosher Getaways — White Glove Itineraries",
@@ -13,20 +15,19 @@ export const metadata: Metadata = {
 const mailto = (name: string) =>
   `mailto:whitegloveitineraries@gmail.com?subject=${encodeURIComponent(`Kosher getaway inquiry: ${name}`)}`;
 
-export default function GetawaysPage() {
+export default async function GetawaysPage() {
+  const page = (await resolvePage("getaways"))!;
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Kosher getaways</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{page.eyebrow}</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">
-            Vacations and getaways, planned kosher.
+            {page.title}
           </h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-            Beyond kevarim and nesios, White Glove plans the trips you take to unwind — resorts, beaches, mountains, and cities like Rome and Paris — with kosher food, Shabbos, and every detail arranged.
-          </p>
+          <PageBody body={page.body} className="mt-7 max-w-2xl text-lg leading-8 text-stone-600" />
           <a
             href="mailto:whitegloveitineraries@gmail.com?subject=Kosher%20getaway%20planning"
             className="mt-9 inline-block bg-[var(--navy)] px-7 py-4 text-xs font-bold uppercase tracking-[0.15em] text-white transition hover:bg-[var(--gold)]"

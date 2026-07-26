@@ -141,3 +141,20 @@ export async function deletePlace(id: string) {
   const prisma = await db();
   return prisma.practicalPlace.delete({ where: { id } });
 }
+
+// ---- Editable general pages (heading + intro text) -------------------
+
+export type PageFields = {
+  title: string;
+  body: string;
+  status: ContentStatus;
+};
+
+export async function upsertPage(slug: string, fields: PageFields) {
+  const prisma = await db();
+  return prisma.page.upsert({
+    where: { slug },
+    update: fields,
+    create: { slug, ...fields },
+  });
+}
