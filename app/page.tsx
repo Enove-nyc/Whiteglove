@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import { getActivePromotions } from "@/lib/admin-content";
 import { headers } from "next/headers";
+import Link from "next/link";
 
 const destinations = [
   { name: "Lizhensk", yiddishName: "ליזענסק", country: "Poland", description: "A complete guide for a meaningful visit to the Noam Elimelech.", href: "/lizensk" },
@@ -66,6 +67,11 @@ export default async function Home() {
         <SectionHeading eyebrow="Destination directory" title="The information you need when it matters." description="Browse by city or tzaddik—every guide is built around the questions frum travelers actually ask before and during a visit." />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {destinations.map((destination) => <DestinationCard key={destination.name} {...destination} />)}
+        </div>
+        <div className="mt-12 text-center">
+          <Link href="/stops" className="inline-block border border-[var(--gold)] px-8 py-4 text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+            Browse all destinations →
+          </Link>
         </div>
       </section>
 
