@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DbSetupButton from "@/components/DbSetupButton";
 import DestinationEditor from "@/components/DestinationEditor";
 import {
   getDestinationForAdmin,
@@ -17,8 +18,20 @@ export default async function AdminDestinationsPage({
   const { slug } = await searchParams;
   const dbReady = isDbEnabled();
 
-  const destinations = dbReady ? await listDestinationsForAdmin() : [];
-  const selected = dbReady && slug ? await getDestinationForAdmin(slug) : null;
+  // When DATABASE_URL is set but the tables aren't created/seeded yet, the
+  // query throws (missing table) or returns nothing — either way, show setup.
+  let destinations: Awaited<ReturnType<typeof listDestinationsForAdmin>> = [];
+  let needsSetup = false;
+  if (dbReady) {
+    try {
+      destinations = await listDestinationsForAdmin();
+      needsSetup = destinations.length === 0;
+    } catch {
+      needsSetup = true;
+    }
+  }
+  const selected =
+    dbReady && !needsSetup && slug ? await getDestinationForAdmin(slug) : null;
 
   // Group the picker by country for a friendly, scannable list.
   const byCountry = new Map<string, typeof destinations>();
@@ -54,6 +67,22 @@ export default async function AdminDestinationsPage({
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The content database isn&apos;t connected.</h2>
             <p className="mt-4 text-sm leading-7 text-stone-600">
               Once the database is set up, this page becomes your editor for every destination&apos;s practical details. Setup is a one-time step: create a free Neon database, add its connection string as <code className="rounded bg-[var(--cream)] px-1">DATABASE_URL</code>, then run the import. Full instructions are in <code className="rounded bg-[var(--cream)] px-1">docs/DATABASE.md</code>.
+            </p>
+          </div>
+        </section>
+      ) : needsSetup ? (
+        <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
+          <div className="border border-[var(--gold)] bg-[#fcfaf6] p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One-time setup</p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Set up your content database.</h2>
+            <p className="mt-4 text-sm leading-7 text-stone-600">
+              Your database is connected. Tap the button below once to create the tables and import all destinations from the current site (about 136 places). It takes roughly a minute. After it finishes, this page becomes your editor.
+            </p>
+            <div className="mt-6">
+              <DbSetupButton />
+            </div>
+            <p className="mt-4 text-xs leading-5 text-stone-500">
+              Safe to run again later — it reloads the imported content from the site&apos;s built-in data. Your own added listings live in separate tables and are not touched.
             </p>
           </div>
         </section>

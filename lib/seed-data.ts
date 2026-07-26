@@ -1,0 +1,190 @@
+// Shared seed data builder — turns the static data/*.ts content into flat rows
+// (with pre-assigned ids so foreign keys resolve) ready for Prisma createMany.
+// Used by both the CLI seed (prisma/seed.ts) and the in-app setup route
+// (app/api/admin/db-setup). Pure data — no DB access here.
+
+import { randomUUID } from "node:crypto";
+import type { Prisma } from "@prisma/client";
+import { bulkDestinations } from "@/data/bulk-destinations";
+import { cemeteries } from "@/data/cemeteries";
+import { cityGuides } from "@/data/city-guides";
+import { sacredStops } from "@/data/sacred-stops";
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export type SeedRows = {
+  destinations: Prisma.DestinationCreateManyInput[];
+  cemeteries: Prisma.CemeteryCreateManyInput[];
+  tzaddikim: Prisma.TzaddikCreateManyInput[];
+  contacts: Prisma.ContactCreateManyInput[];
+};
+
+export function buildSeedRows(): SeedRows {
+  const destinations: Prisma.DestinationCreateManyInput[] = [];
+  const tzaddikim: Prisma.TzaddikCreateManyInput[] = [];
+  const contacts: Prisma.ContactCreateManyInput[] = [];
+  const cemeteryRows: Prisma.CemeteryCreateManyInput[] = [];
+
+  const slugToDestId = new Map<string, string>();
+
+  // City guides — rich records with a primary tzaddik + access contacts.
+  for (const g of cityGuides) {
+    const id = randomUUID();
+    slugToDestId.set(g.slug, id);
+    destinations.push({
+      id,
+      slug: g.slug,
+      kind: "CITY_GUIDE",
+      city: g.city,
+      yiddishCity: g.yiddishCity,
+      country: g.country,
+      aliases: g.aliases ?? [],
+      overview: g.overview,
+      safetyNote: g.safetyNote ?? null,
+      sourceUrl: g.sourceUrl,
+      status: "PUBLISHED",
+    });
+    tzaddikim.push({
+      id: randomUUID(),
+      name: g.tzaddik,
+      yiddishName: g.yiddishTzaddik,
+      seforim: g.seforim,
+      yahrzeit: g.yahrzeit,
+      niftar: g.niftar,
+      graveAddress: g.graveAddress ?? null,
+      graveCoordinates: g.graveCoordinates ?? null,
+      findingNotes: g.findingNotes ?? [],
+      isPrimary: true,
+      status: "VERIFIED",
+      source: g.sourceUrl,
+      destinationId: id,
+    });
+    const guideContacts = g.accessContacts ?? (g.accessContact ? [g.accessContact] : []);
+    for (const c of guideContacts) {
+      contacts.push({
+        id: randomUUID(),
+        label: c.label,
+        phone: c.phone ?? null,
+        email: c.email ?? null,
+        note: c.note ?? null,
+        source: g.sourceUrl,
+        status: "VERIFIED",
+        destinationId: id,
+      });
+    }
+  }
+
+  // Bulk destinations — compact entries (skip slugs a guide already owns).
+  for (const b of bulkDestinations) {
+    if (slugToDestId.has(b.slug)) continue;
+    const id = randomUUID();
+    slugToDestId.set(b.slug, id);
+    destinations.push({
+      id,
+      slug: b.slug,
+      kind: "DESTINATION",
+      city: b.city,
+      yiddishCity: b.yiddishCity,
+      country: b.country,
+      aliases: b.aliases ?? [],
+      summary: b.summary,
+      status: "PUBLISHED",
+    });
+  }
+
+  // Sacred stops — waypoints not already covered.
+  for (const s of sacredStops) {
+    const slug = slugify(s.city);
+    if (slugToDestId.has(slug)) continue;
+    const id = randomUUID();
+    slugToDestId.set(slug, id);
+    destinations.push({
+      id,
+      slug,
+      kind: "SACRED_STOP",
+      city: s.city,
+      yiddishCity: s.yiddishName,
+      country: s.country,
+      aliases: s.aliases ?? (s.traditionalName ? [s.traditionalName] : []),
+      summary: s.note ?? null,
+      status: "PUBLISHED",
+    });
+  }
+
+  // Cemeteries — link to a destination when the slug matches; add burials +
+  // contacts as related rows.
+  for (const c of cemeteries) {
+    const cemeteryId = randomUUID();
+    cemeteryRows.push({
+      id: cemeteryId,
+      slug: c.slug,
+      city: c.city,
+      yiddishCity: c.yiddishCity,
+      name: c.name,
+      yiddishName: c.yiddishName,
+      country: c.country,
+      address: c.address ?? null,
+      coordinates: c.coordinates ?? null,
+      arrivalNotes: c.arrivalNotes ?? [],
+      accessNote: c.accessNote ?? null,
+      status: "VERIFIED",
+      sourceUrl: c.sourceUrl,
+      destinationId: slugToDestId.get(c.slug) ?? null,
+    });
+    for (const b of c.burials) {
+      tzaddikim.push({
+        id: randomUUID(),
+        name: b.name,
+        yiddishName: b.yiddishName,
+        knownAs: b.knownAs ?? null,
+        seforim: b.seforim ?? null,
+        yahrzeit: b.yahrzeit ?? null,
+        note: b.note ?? null,
+        isPrimary: false,
+        status: "VERIFIED",
+        source: c.sourceUrl,
+        cemeteryId,
+      });
+    }
+    for (const ct of c.accessContacts ?? []) {
+      contacts.push({
+        id: randomUUID(),
+        label: ct.label,
+        phone: ct.phone ?? null,
+        email: ct.email ?? null,
+        note: ct.note ?? null,
+        source: c.sourceUrl,
+        status: "VERIFIED",
+        cemeteryId,
+      });
+    }
+  }
+
+  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts };
+}
+
+export const DEFAULT_SETTINGS = {
+  id: "site",
+  heroTitle: "Every Journey Begins with Purpose.",
+  heroSubtitle:
+    "A trusted guide for meaningful journeys: tefillos, kosher food, minyanim, mikvaos, local contacts, and every practical detail around your visit.",
+  searchPlaceholder: "Search a city, tzaddik, or country...",
+  publicNotice: "Travel and access information is checked before publication.",
+  footerEmail: "whitegloveitineraries@gmail.com",
+  bookingNotice:
+    "Live travel tools remain linked to the owner dashboard and can be refined here.",
+};
+
+export function countSeedRows(rows: SeedRows) {
+  return {
+    destinations: rows.destinations.length,
+    cemeteries: rows.cemeteries.length,
+    tzaddikim: rows.tzaddikim.length,
+    contacts: rows.contacts.length,
+  };
+}
