@@ -5,12 +5,19 @@ import { useRouter } from "next/navigation";
 
 type Result = { ok?: boolean; error?: string; tablesCreated?: boolean; counts?: Record<string, number> };
 
-export default function DbSetupButton({ label = "Set up database & import destinations" }: { label?: string }) {
+export default function DbSetupButton({
+  label = "Set up database & import destinations",
+  confirmMessage,
+}: {
+  label?: string;
+  confirmMessage?: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
 
   async function run() {
+    if (confirmMessage && !window.confirm(confirmMessage)) return;
     setBusy(true);
     setResult(null);
     try {
@@ -41,7 +48,7 @@ export default function DbSetupButton({ label = "Set up database & import destin
       {result?.ok && (
         <p className="mt-4 text-sm font-semibold text-emerald-700">
           Done — {result.tablesCreated ? "tables created and " : ""}imported {result.counts?.destinations ?? 0} destinations,{" "}
-          {result.counts?.tzaddikim ?? 0} tzaddikim, {result.counts?.cemeteries ?? 0} cemeteries. Refreshing…
+          {result.counts?.tzaddikim ?? 0} tzaddikim, {result.counts?.cemeteries ?? 0} cemeteries, {result.counts?.places ?? 0} places. Refreshing…
         </p>
       )}
       {result?.error && <p className="mt-4 text-sm font-semibold text-red-700">{result.error}</p>}

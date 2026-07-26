@@ -81,8 +81,25 @@ export default async function AdminDestinationsPage({
         </section>
       ) : (
         <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[.9fr_2fr]">
-          <aside className="lg:sticky lg:top-6 lg:self-start">
+          <aside className="lg:sticky lg:top-6 lg:self-start space-y-6">
             <DestinationPicker destinations={destinations} selectedSlug={slug} />
+            <details className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+              <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
+                Re-import built-in content
+              </summary>
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                Reloads all destinations and the researched practical listings from the site&apos;s built-in data — use this after an update adds new content (e.g. the city-guide details). It refreshes the imported destinations, cemeteries, tzaddikim, contacts, and places.
+              </p>
+              <p className="mt-2 text-xs leading-5 text-amber-700">
+                Note: this overwrites edits you made to <strong>imported</strong> destinations. Your added listings, page edits, and promotions are kept.
+              </p>
+              <div className="mt-4">
+                <DbSetupButton
+                  label="Re-import content now"
+                  confirmMessage="Re-import the built-in content? This reloads imported destinations and practical listings and will overwrite edits made to imported destinations. Your added listings and page edits are kept."
+                />
+              </div>
+            </details>
           </aside>
 
           <div>

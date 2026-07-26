@@ -1,5 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBody from "@/components/PageBody";
+import { resolvePage } from "@/lib/pages";
 
 const offerings = [
   {
@@ -34,19 +36,18 @@ const offerings = [
   },
 ];
 
-export default function HoneymoonPage() {
+export default async function HoneymoonPage() {
+  const page = (await resolvePage("honeymoon"))!;
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">White Glove special service</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{page.eyebrow}</p>
           <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-6xl leading-tight text-[var(--navy)] sm:text-7xl">האָנימאָן</h1>
-          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">Honeymoon</p>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-            We are building this page as a premium honeymoon planning service for kosher travelers. It is being developed carefully so the final version feels calm, private, and practical.
-          </p>
+          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{page.title}</p>
+          <PageBody body={page.body} className="mt-7 max-w-2xl text-lg leading-8 text-stone-600" />
         </div>
       </section>
 

@@ -43,6 +43,7 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.cemetery.createMany({ data: rows.cemeteries });
   await prisma.tzaddik.createMany({ data: rows.tzaddikim });
   await prisma.contact.createMany({ data: rows.contacts });
+  await prisma.practicalPlace.createMany({ data: rows.places });
 
   await prisma.siteSetting.upsert({
     where: { id: DEFAULT_SETTINGS.id },
