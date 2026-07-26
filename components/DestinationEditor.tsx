@@ -26,6 +26,8 @@ const CATEGORIES: Array<[string, string]> = [
   ["DRIVER", "Driver"],
 ];
 
+const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(CATEGORIES);
+
 const STATUSES: Array<[string, string]> = [
   ["PUBLISHED", "Published — visible on the site"],
   ["DRAFT", "Draft — hidden from visitors"],
@@ -33,27 +35,31 @@ const STATUSES: Array<[string, string]> = [
 ];
 
 const inputClass =
-  "mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none";
-const labelClass = "block";
-const captionClass = "text-xs font-bold uppercase tracking-[0.12em] text-stone-500";
+  "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm transition focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
+const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
+
+/* ---- small field primitives ------------------------------------------ */
 
 function Field({
   label,
   name,
   defaultValue,
   placeholder,
+  hint,
   type = "text",
 }: {
   label: string;
   name: string;
   defaultValue?: string | null;
   placeholder?: string;
+  hint?: string;
   type?: string;
 }) {
   return (
-    <label className={labelClass}>
+    <label className="block">
       <span className={captionClass}>{label}</span>
       <input type={type} name={name} defaultValue={defaultValue ?? ""} placeholder={placeholder} className={inputClass} />
+      {hint && <span className="mt-1 block text-xs text-stone-400">{hint}</span>}
     </label>
   );
 }
@@ -72,7 +78,7 @@ function TextArea({
   rows?: number;
 }) {
   return (
-    <label className={labelClass}>
+    <label className="block">
       <span className={captionClass}>{label}</span>
       <textarea name={name} defaultValue={defaultValue ?? ""} placeholder={placeholder} rows={rows} className={inputClass} />
     </label>
@@ -91,7 +97,7 @@ function SelectField({
   defaultValue?: string;
 }) {
   return (
-    <label className={labelClass}>
+    <label className="block">
       <span className={captionClass}>{label}</span>
       <select name={name} defaultValue={defaultValue ?? options[0][0]} className={inputClass}>
         {options.map(([value, text]) => (
@@ -99,6 +105,16 @@ function SelectField({
         ))}
       </select>
     </label>
+  );
+}
+
+// A labelled group of fields, so a card reads as tidy clusters.
+function Group({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-5 first:mt-0">
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </div>
   );
 }
 
@@ -112,24 +128,8 @@ function Hidden({ values }: { values: Record<string, string> }) {
   );
 }
 
-function SubmitRow({ pending, label, state }: { pending: boolean; label: string; state: ActionResult | null }) {
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-3">
-      <button
-        type="submit"
-        disabled={pending}
-        className="bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] disabled:opacity-50"
-      >
-        {pending ? "Saving…" : label}
-      </button>
-      {state && (
-        <span className={`text-sm font-semibold ${state.ok ? "text-emerald-700" : "text-red-700"}`}>{state.message}</span>
-      )}
-    </div>
-  );
-}
+/* ---- action-bound forms ---------------------------------------------- */
 
-// A form bound to a server action, with inline save feedback.
 function ActionForm({
   action,
   submitLabel,
@@ -146,12 +146,22 @@ function ActionForm({
     <form action={formAction}>
       <Hidden values={hidden} />
       {children}
-      <SubmitRow pending={pending} label={submitLabel} state={state} />
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-md bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] disabled:opacity-50"
+        >
+          {pending ? "Saving…" : submitLabel}
+        </button>
+        {state && (
+          <span className={`text-sm font-semibold ${state.ok ? "text-emerald-700" : "text-red-700"}`}>{state.message}</span>
+        )}
+      </div>
     </form>
   );
 }
 
-// Delete confirmation — preventDefault in onSubmit cancels the form action.
 function DeleteForm({
   action,
   hidden,
@@ -173,129 +183,178 @@ function DeleteForm({
       <button
         type="submit"
         disabled={pending}
-        className="border border-red-300 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-red-700 transition hover:bg-red-700 hover:text-white disabled:opacity-50"
+        className="text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition hover:text-red-800 disabled:opacity-50"
       >
         {pending ? "Removing…" : label}
       </button>
-      {state && !state.ok && <p className="mt-2 text-sm font-semibold text-red-700">{state.message}</p>}
+      {state && !state.ok && <span className="ml-3 text-sm font-semibold text-red-700">{state.message}</span>}
     </form>
   );
 }
 
-function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+/* ---- cards ------------------------------------------------------------ */
+
+// A wrapper giving each editable item a header + a body, cleanly separated.
+function Card({
+  title,
+  badge,
+  children,
+  footer,
+  accent = false,
+}: {
+  title: string;
+  badge?: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  accent?: boolean;
+}) {
   return (
-    <div className="mb-5">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{eyebrow}</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{title}</h2>
+    <div className={`overflow-hidden rounded-lg border bg-white shadow-sm ${accent ? "border-dashed border-[var(--gold)]" : "border-[var(--gold-light)]"}`}>
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-3">
+        <h4 className="font-[family-name:var(--font-display)] text-xl leading-none text-[var(--navy)]">{title}</h4>
+        {badge && <span className="rounded-full bg-[var(--gold-light)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">{badge}</span>}
+      </div>
+      <div className="px-5 py-5">{children}</div>
+      {footer && <div className="flex items-center justify-end border-t border-[var(--gold-light)] px-5 py-3">{footer}</div>}
+    </div>
+  );
+}
+
+function SectionHeader({ eyebrow, title, hint, count }: { eyebrow: string; title: string; hint?: string; count?: number }) {
+  return (
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{eyebrow}</p>
+        <h2 className="mt-1.5 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{title}</h2>
+        {hint && <p className="mt-1 text-sm text-stone-500">{hint}</p>}
+      </div>
+      {typeof count === "number" && (
+        <span className="shrink-0 rounded-full border border-[var(--gold-light)] px-3 py-1 text-xs font-bold text-[var(--navy)]">{count}</span>
+      )}
     </div>
   );
 }
 
 function PlaceFields({ place }: { place?: PracticalPlace }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Name" name="name" defaultValue={place?.name} placeholder="e.g. Hotel Sanz" />
-      <SelectField label="Type" name="category" options={CATEGORIES} defaultValue={place?.category} />
-      <Field label="Phone" name="phone" defaultValue={place?.phone} placeholder="+48 ..." />
-      <Field label="WhatsApp" name="whatsapp" defaultValue={place?.whatsapp} placeholder="+48 ..." />
-      <Field label="Email" name="email" defaultValue={place?.email} placeholder="name@example.com" />
-      <Field label="Website" name="website" defaultValue={place?.website} placeholder="https://..." />
-      <Field label="Hours / timings" name="hours" defaultValue={place?.hours} placeholder="e.g. Shacharis 7:30, 8:30" />
-      <SelectField label="Visibility" name="status" options={STATUSES} defaultValue={place?.status} />
-      <div className="sm:col-span-2">
+    <>
+      <Group label="Name & type">
+        <Field label="Name" name="name" defaultValue={place?.name} placeholder="e.g. Hotel Sanz" />
+        <SelectField label="Type" name="category" options={CATEGORIES} defaultValue={place?.category} />
+      </Group>
+      <Group label="How to reach them">
+        <Field label="Phone" name="phone" defaultValue={place?.phone} placeholder="+48 ..." />
+        <Field label="WhatsApp" name="whatsapp" defaultValue={place?.whatsapp} placeholder="+48 ..." />
+        <Field label="Email" name="email" defaultValue={place?.email} placeholder="name@example.com" />
+        <Field label="Website" name="website" defaultValue={place?.website} placeholder="https://..." />
+      </Group>
+      <Group label="Details">
         <Field label="Address" name="address" defaultValue={place?.address} placeholder="Street, city" />
-      </div>
-      <div className="sm:col-span-2">
+        <Field label="Hours / timings" name="hours" defaultValue={place?.hours} placeholder="e.g. Shacharis 7:30, 8:30" />
+      </Group>
+      <div className="mt-4">
         <TextArea label="Notes" name="notes" defaultValue={place?.notes} placeholder="Anything else visitors should know" rows={2} />
       </div>
-    </div>
+      <div className="mt-4 sm:max-w-sm">
+        <SelectField label="Visibility" name="status" options={STATUSES} defaultValue={place?.status} />
+      </div>
+    </>
   );
 }
 
 function ContactFields({ contact }: { contact?: Contact }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Label" name="label" defaultValue={contact?.label} placeholder="e.g. Shomer / access desk" />
-      <Field label="Phone" name="phone" defaultValue={contact?.phone} placeholder="+48 ..." />
-      <Field label="Email" name="email" defaultValue={contact?.email} placeholder="name@example.com" />
-      <div className="sm:col-span-2">
+    <>
+      <Group label="Contact">
+        <Field label="Label" name="label" defaultValue={contact?.label} placeholder="e.g. Shomer / access desk" hint="Shown as the heading for this contact" />
+        <Field label="Phone" name="phone" defaultValue={contact?.phone} placeholder="+48 ..." />
+        <Field label="Email" name="email" defaultValue={contact?.email} placeholder="name@example.com" />
+      </Group>
+      <div className="mt-4">
         <TextArea label="Note" name="note" defaultValue={contact?.note} placeholder="When to call, what they help with" rows={2} />
       </div>
-    </div>
+    </>
   );
 }
+
+/* ---- main ------------------------------------------------------------- */
 
 export default function DestinationEditor({ destination }: { destination: EditorDestination }) {
   const slug = destination.slug;
   const base = { slug, destinationId: destination.id };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Core destination details */}
-      <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-        <SectionTitle eyebrow={`Editing · ${destination.country}`} title={destination.city} />
-        <ActionForm action={saveDestinationAction} submitLabel="Save details" hidden={{ slug }}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="City name" name="city" defaultValue={destination.city} />
-            <Field label="Yiddish name" name="yiddishCity" defaultValue={destination.yiddishCity} />
-            <Field label="Country" name="country" defaultValue={destination.country} />
-            <SelectField label="Visibility" name="status" options={STATUSES} defaultValue={destination.status} />
-            <div className="sm:col-span-2">
-              <TextArea label="Safety / travel notice" name="safetyNote" defaultValue={destination.safetyNote} placeholder="Shown as a banner when set" rows={2} />
-            </div>
-            <div className="sm:col-span-2">
+      <section>
+        <SectionHeader eyebrow={`Editing · ${destination.country}`} title={destination.city} hint="The headline details shown at the top of this destination's page." />
+        <div className="rounded-lg border border-[var(--gold-light)] bg-white p-6 shadow-sm sm:p-7">
+          <ActionForm action={saveDestinationAction} submitLabel="Save details" hidden={{ slug }}>
+            <Group label="Names">
+              <Field label="City name" name="city" defaultValue={destination.city} />
+              <Field label="Yiddish name" name="yiddishCity" defaultValue={destination.yiddishCity} />
+              <Field label="Country" name="country" defaultValue={destination.country} />
+              <SelectField label="Visibility" name="status" options={STATUSES} defaultValue={destination.status} />
+            </Group>
+            <div className="mt-5 space-y-4">
+              <TextArea label="Safety / travel notice" name="safetyNote" defaultValue={destination.safetyNote} placeholder="Shown as a banner when set — leave empty for none" rows={2} />
               <TextArea label="Overview" name="overview" defaultValue={destination.overview} rows={3} />
-            </div>
-            <div className="sm:col-span-2">
               <TextArea label="Short summary" name="summary" defaultValue={destination.summary} rows={2} />
             </div>
-          </div>
-        </ActionForm>
+          </ActionForm>
+        </div>
       </section>
 
       {/* Shomer / access contacts */}
       <section>
-        <SectionTitle eyebrow="Contacts" title="Shomer & access numbers" />
-        <div className="space-y-5">
+        <SectionHeader eyebrow="Contacts" title="Shomer & access numbers" hint="The people a visitor can call about access to the kever." count={destination.contacts.length} />
+        <div className="space-y-4">
           {destination.contacts.map((contact) => (
-            <div key={contact.id} className="border border-[var(--gold-light)] bg-white p-5">
+            <Card
+              key={contact.id}
+              title={contact.label || "Contact"}
+              badge="Contact"
+              footer={<DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" />}
+            >
               <ActionForm action={saveContactAction} submitLabel="Save contact" hidden={{ ...base, contactId: contact.id }}>
                 <ContactFields contact={contact} />
               </ActionForm>
-              <div className="mt-3 border-t border-[var(--gold-light)] pt-3">
-                <DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" />
-              </div>
-            </div>
+            </Card>
           ))}
-          <div className="border border-dashed border-[var(--gold)] bg-white p-5">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Add a contact</p>
+          <Card title="Add a contact" accent>
             <ActionForm action={saveContactAction} submitLabel="Add contact" hidden={base}>
               <ContactFields />
             </ActionForm>
-          </div>
+          </Card>
         </div>
       </section>
 
       {/* Practical places */}
       <section>
-        <SectionTitle eyebrow="Listings" title="Hotels, food, minyanim, mikvaos, transport" />
-        <div className="space-y-5">
+        <SectionHeader
+          eyebrow="Listings"
+          title="Hotels, food, minyanim, mikvaos, transport"
+          hint="Everything practical around the visit. Only Published listings appear to visitors."
+          count={destination.places.length}
+        />
+        <div className="space-y-4">
           {destination.places.map((place) => (
-            <div key={place.id} className="border border-[var(--gold-light)] bg-white p-5">
+            <Card
+              key={place.id}
+              title={place.name || "Listing"}
+              badge={CATEGORY_LABEL[place.category] ?? place.category}
+              footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label="Delete listing" />}
+            >
               <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }}>
                 <PlaceFields place={place} />
               </ActionForm>
-              <div className="mt-3 border-t border-[var(--gold-light)] pt-3">
-                <DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label="Delete listing" />
-              </div>
-            </div>
+            </Card>
           ))}
-          <div className="border border-dashed border-[var(--gold)] bg-white p-5">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Add a listing</p>
+          <Card title="Add a listing" accent>
             <ActionForm action={savePlaceAction} submitLabel="Add listing" hidden={base}>
               <PlaceFields />
             </ActionForm>
-          </div>
+          </Card>
         </div>
       </section>
     </div>
