@@ -13,7 +13,11 @@ export default function Footer() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Begin a conversation</p>
           <a className="mt-4 inline-block font-[family-name:var(--font-display)] text-3xl transition hover:text-[var(--gold-light)]" href="mailto:whitegloveitineraries@gmail.com">whitegloveitineraries@gmail.com</a>
           <p className="mt-6 text-sm text-slate-400">White Glove Itineraries - Personalized travel, planned with purpose.</p>
-          <Link href="/login" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Sign in</Link>
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link href="/login" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Sign in</Link>
+            <span className="text-slate-600">·</span>
+            <Link href="/admin" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-500 transition hover:text-[var(--gold-light)]">Owner login</Link>
+          </div>
         </div>
       </div>
     </footer>
