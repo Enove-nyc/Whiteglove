@@ -47,16 +47,32 @@ export default async function Home() {
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">Kosher travel, considered</p>
-          <div className="mt-6 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
-            <div>
-              <h1 className="max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-[1.05] text-[var(--navy)] sm:text-6xl lg:text-7xl">Every journey begins with purpose.</h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">A trusted guide for meaningful journeys: tefillos, kosher food, minyanim, mikvaos, local contacts, and every practical detail around your visit.</p>
-            </div>
-            <div className="border-l border-[var(--gold)] pl-6 text-base leading-7 text-stone-600 lg:mb-2">
-              From the first tefillah to the ride back to the airport, White Glove keeps the details clear and close at hand.
-            </div>
+          <h1 className="mt-6 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-[1.05] text-[var(--navy)] sm:text-6xl lg:text-7xl">Every journey, planned with purpose.</h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">Kevarim and nesios, and kosher getaways — every detail handled with care, from the first tefillah to the ride home.</p>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <Link href="/stops" className="group flex flex-col justify-between border border-[var(--navy)] bg-[var(--navy)] p-8 text-white transition hover:bg-[var(--navy-deep)]">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Kevarim &amp; Nesios</p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">Guides to tzaddikim &amp; kevarim</h2>
+                <p className="mt-4 leading-7 text-slate-200">Tefillos, kosher food, minyanim, mikvaos, local contacts, and the practical details that matter most.</p>
+              </div>
+              <span className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold-light)] transition group-hover:text-white">Explore the guides →</span>
+            </Link>
+            <Link href="/getaways" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-8 transition hover:border-[var(--gold)]">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Kosher Getaways</p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Vacations, resorts &amp; cities</h2>
+                <p className="mt-4 leading-7 text-stone-600">Rome, Paris, and restful getaways — planned kosher, from start to finish.</p>
+              </div>
+              <span className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">See getaways →</span>
+            </Link>
           </div>
-          <DestinationSearch />
+
+          <div className="mt-10">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Search kevarim &amp; destinations</p>
+            <DestinationSearch />
+          </div>
           <div className="mt-8">
             <PromotionBanner promotion={homepagePromotions[0] ?? null} placement="homepage-promo" />
           </div>
