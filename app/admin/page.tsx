@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import LockedSectionsControl from "@/components/LockedSectionsControl";
 import PasswordSettings from "@/components/PasswordSettings";
 import SiteLockControl from "@/components/SiteLockControl";
 import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { getPromotionsDashboard } from "@/lib/admin-content";
-import { getDashboardStats } from "@/lib/site-analytics";
+import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
 
 function RankedList({ title, rows, empty }: { title: string; rows: Array<{ label: string; count: number }>; empty: string }) {
   return (
@@ -32,7 +33,7 @@ function RankedList({ title, rows, empty }: { title: string; rows: Array<{ label
 }
 
 export default async function AdminPage() {
-  const [stats, inventory, promotions] = await Promise.all([getDashboardStats(), getEditableInventory(), getPromotionsDashboard()]);
+  const [stats, inventory, promotions, lockedPaths] = await Promise.all([getDashboardStats(), getEditableInventory(), getPromotionsDashboard(), getLockedPaths()]);
   const allSearches = stats.topSearches.reduce((total, item) => total + item.count, 0);
   const openInventory = inventory.items.filter((item) => item.status !== "complete").length;
   const overview = [
@@ -89,6 +90,10 @@ export default async function AdminPage() {
             <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{promotions.enabledPromotions} live</p>
             <p className="mt-3 text-sm leading-6 text-stone-600">Use the content manager to target banners, popups, and full-page takeovers by page and device.</p>
           </section>
+        </div>
+
+        <div className="mt-5">
+          <LockedSectionsControl initialPaths={lockedPaths} available={stats.configured} />
         </div>
 
         <div className="mt-5">

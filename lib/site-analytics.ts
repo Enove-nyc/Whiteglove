@@ -100,3 +100,24 @@ export async function setSiteLock(locked: boolean) {
   const response = await redis(`set/white-glove:site-lock/${locked ? "on" : "off"}`);
   return Boolean(response);
 }
+
+// Sections (path prefixes) that require the site-access code, even when the
+// whole site is not locked.
+export async function getLockedPaths(): Promise<string[]> {
+  if (!analyticsIsConfigured()) return [];
+  const response = await redis<string>("get/white-glove:locked-paths");
+  if (!response?.result) return [];
+  try {
+    const parsed = JSON.parse(response.result);
+    return Array.isArray(parsed) ? parsed.filter((p): p is string => typeof p === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function setLockedPaths(paths: string[]) {
+  if (!analyticsIsConfigured()) return false;
+  const clean = [...new Set(paths.map((p) => p.trim()).filter(Boolean))];
+  const response = await redis(`set/white-glove:locked-paths/${encodeURIComponent(JSON.stringify(clean))}`);
+  return Boolean(response);
+}
