@@ -8,6 +8,7 @@ import type { Prisma } from "@prisma/client";
 import { bulkDestinations } from "@/data/bulk-destinations";
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/city-guides";
+import { practicalContent } from "@/data/practical-content";
 import { sacredStops } from "@/data/sacred-stops";
 
 function slugify(value: string) {
@@ -22,6 +23,7 @@ export type SeedRows = {
   cemeteries: Prisma.CemeteryCreateManyInput[];
   tzaddikim: Prisma.TzaddikCreateManyInput[];
   contacts: Prisma.ContactCreateManyInput[];
+  places: Prisma.PracticalPlaceCreateManyInput[];
 };
 
 export function buildSeedRows(): SeedRows {
@@ -29,6 +31,7 @@ export function buildSeedRows(): SeedRows {
   const tzaddikim: Prisma.TzaddikCreateManyInput[] = [];
   const contacts: Prisma.ContactCreateManyInput[] = [];
   const cemeteryRows: Prisma.CemeteryCreateManyInput[] = [];
+  const places: Prisma.PracticalPlaceCreateManyInput[] = [];
 
   const slugToDestId = new Map<string, string>();
 
@@ -165,7 +168,45 @@ export function buildSeedRows(): SeedRows {
     }
   }
 
-  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts };
+  // Web-researched practical content (data/practical-content.ts) — attach
+  // published places + extra contacts to the destination that owns the slug.
+  // Everything carries a source and is owner-verifiable in the admin editor.
+  for (const [slug, content] of Object.entries(practicalContent)) {
+    const destinationId = slugToDestId.get(slug);
+    if (!destinationId) continue;
+    for (const p of content.places ?? []) {
+      places.push({
+        id: randomUUID(),
+        category: p.category,
+        name: p.name,
+        address: p.address ?? null,
+        phone: p.phone ?? null,
+        whatsapp: p.whatsapp ?? null,
+        email: p.email ?? null,
+        website: p.website ?? null,
+        hours: p.hours ?? null,
+        notes: [p.notes, p.source ? `Source: ${p.source}` : null]
+          .filter(Boolean)
+          .join("\n") || null,
+        status: "PUBLISHED",
+        destinationId,
+      });
+    }
+    for (const c of content.contacts ?? []) {
+      contacts.push({
+        id: randomUUID(),
+        label: c.label,
+        phone: c.phone ?? null,
+        email: c.email ?? null,
+        note: c.note ?? null,
+        source: c.source ?? null,
+        status: "NEEDS_VERIFICATION",
+        destinationId,
+      });
+    }
+  }
+
+  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts, places };
 }
 
 export const DEFAULT_SETTINGS = {
@@ -186,5 +227,6 @@ export function countSeedRows(rows: SeedRows) {
     cemeteries: rows.cemeteries.length,
     tzaddikim: rows.tzaddikim.length,
     contacts: rows.contacts.length,
+    places: rows.places.length,
   };
 }
