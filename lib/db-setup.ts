@@ -9,10 +9,15 @@ import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data"
 
 /** Create the tables if they don't exist yet. Returns whether it created them. */
 export async function ensureTables(prisma: PrismaClient): Promise<{ created: boolean }> {
-  const existing = await prisma.$queryRawUnsafe<Array<{ t: string | null }>>(
-    `SELECT to_regclass('public."Destination"') AS t`,
+  // Use information_schema (returns a plain boolean) rather than to_regclass,
+  // whose `regclass` return type the driver adapter can't deserialize.
+  const existing = await prisma.$queryRawUnsafe<Array<{ present: boolean }>>(
+    `SELECT EXISTS (
+       SELECT 1 FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_name = 'Destination'
+     ) AS present`,
   );
-  if (existing?.[0]?.t) return { created: false };
+  if (existing?.[0]?.present) return { created: false };
 
   // The init SQL has one statement per ";" with no semicolons inside literals,
   // so a plain split is safe. Comments (-- ...) are valid inside a statement.
