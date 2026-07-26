@@ -30,7 +30,7 @@ export default async function AccountPage() {
             <p>You are viewing the local preview. Sign in to store your route and favorites across devices.</p>
           )}
         </div>
-        <AccountRoutePanel />
+        <AccountRoutePanel loggedIn={!!account} />
         <div className="mt-10 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Start exploring</p>

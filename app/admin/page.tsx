@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 import SiteLockControl from "@/components/SiteLockControl";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { getPromotionsDashboard } from "@/lib/admin-content";
@@ -114,6 +115,7 @@ export default async function AdminPage() {
           </div>
         </section>
       </section>
+      <Footer />
     </main>
   );
 }

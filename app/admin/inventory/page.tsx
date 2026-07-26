@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 import AdminInventoryManager from "@/components/AdminInventoryManager";
 import { getEditableInventory } from "@/lib/admin-inventory";
 
@@ -21,6 +22,7 @@ export default async function AdminInventoryPage() {
         </div>
       </header>
       <AdminInventoryManager initialItems={inventory.items} configured={inventory.configured} />
+      <Footer />
     </main>
   );
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 import DbSetupButton from "@/components/DbSetupButton";
 import DestinationEditor from "@/components/DestinationEditor";
+import DestinationPicker from "@/components/DestinationPicker";
 import {
   getDestinationForAdmin,
   isDbEnabled,
@@ -32,15 +34,6 @@ export default async function AdminDestinationsPage({
   }
   const selected =
     dbReady && !needsSetup && slug ? await getDestinationForAdmin(slug) : null;
-
-  // Group the picker by country for a friendly, scannable list.
-  const byCountry = new Map<string, typeof destinations>();
-  for (const destination of destinations) {
-    const list = byCountry.get(destination.country) ?? [];
-    list.push(destination);
-    byCountry.set(destination.country, list);
-  }
-  const countries = [...byCountry.keys()].sort();
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -89,33 +82,7 @@ export default async function AdminDestinationsPage({
       ) : (
         <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[.9fr_2fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
-            <form method="get" className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <label htmlFor="slug" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Choose a destination</label>
-              <select
-                id="slug"
-                name="slug"
-                defaultValue={slug ?? ""}
-                className="mt-3 w-full border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)]"
-              >
-                <option value="" disabled>Select a city…</option>
-                {countries.map((country) => (
-                  <optgroup key={country} label={country}>
-                    {byCountry.get(country)!.map((destination) => (
-                      <option key={destination.slug} value={destination.slug}>
-                        {destination.city}
-                        {destination._count.places || destination._count.contacts
-                          ? ` (${destination._count.places} listings, ${destination._count.contacts} contacts)`
-                          : ""}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              <button type="submit" className="mt-4 w-full bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">
-                Open editor
-              </button>
-              <p className="mt-3 text-xs leading-5 text-stone-500">{destinations.length} destinations in the database.</p>
-            </form>
+            <DestinationPicker destinations={destinations} selectedSlug={slug} />
           </aside>
 
           <div>
@@ -130,6 +97,7 @@ export default async function AdminDestinationsPage({
           </div>
         </section>
       )}
+      <Footer />
     </main>
   );
 }
