@@ -1,3 +1,11 @@
+const RESEND_API_URL = "https://api.resend.com/emails";
+
+function resendConfig() {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL || "White Glove Itineraries <onboarding@resend.dev>";
+  return apiKey ? { apiKey, from } : null;
+}
+
 export async function sendVerificationEmail(email: string, code: string) {
   const config = resendConfig();
   if (!config) {
