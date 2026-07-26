@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import IdleLogout from "@/components/IdleLogout";
 import SiteTracker from "@/components/SiteTracker";
 
 export const metadata: Metadata = {
@@ -23,7 +24,11 @@ export default function RootLayout({
       lang="en"
       className="h-full antialiased"
     >
-      <body className="min-h-full flex flex-col"><SiteTracker />{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SiteTracker />
+        <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
+        {children}
+      </body>
     </html>
   );
 }
