@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: body.scope === "admin" ? 60 * 60 * 12 : 60 * 60 * 24,
+    maxAge: body.scope === "admin" ? 60 * 60 * 4 : 60 * 60 * 24,
     path: "/",
   });
   return response;

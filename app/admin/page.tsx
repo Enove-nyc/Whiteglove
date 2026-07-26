@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdminSignOut from "@/components/AdminSignOut";
 import Footer from "@/components/Footer";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import PasswordSettings from "@/components/PasswordSettings";
@@ -59,6 +60,7 @@ export default async function AdminPage() {
             <Link href="/admin/destinations" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Destination editor</Link>
             <Link href="/admin/content#promotions" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Promotions</Link>
             <Link href="/" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">View website</Link>
+            <AdminSignOut />
           </div>
         </div>
       </header>
