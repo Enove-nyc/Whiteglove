@@ -16,6 +16,10 @@ export default function Footer() {
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link href="/login" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Sign in</Link>
             <span className="text-slate-600">·</span>
+            <Link href="/privacy" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Privacy</Link>
+            <span className="text-slate-600">·</span>
+            <Link href="/terms" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Terms</Link>
+            <span className="text-slate-600">·</span>
             <Link href="/admin" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-500 transition hover:text-[var(--gold-light)]">Owner login</Link>
           </div>
         </div>
