@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
+import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
 import LogoutButton from "@/components/LogoutButton";
 import Navbar from "@/components/Navbar";
@@ -31,6 +32,7 @@ export default async function AccountPage() {
           )}
         </div>
         <AccountRoutePanel loggedIn={!!account} />
+        {account && <AccountSettings initial={{ name: account.name, email: account.email, phone: account.phone }} />}
         <div className="mt-10 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Start exploring</p>
