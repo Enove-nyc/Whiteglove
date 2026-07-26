@@ -82,12 +82,17 @@ export async function verifyAccessPassword(scope: Scope, password: string): Prom
   return Boolean(env && password === env);
 }
 
+export function minPasswordLength(scope: Scope) {
+  return scope === "site" ? 4 : 6;
+}
+
 export async function setAccessPassword(scope: Scope, newPassword: string) {
   if (!passwordStorageAvailable()) {
     return { ok: false as const, error: "Connect the private database to change passwords." };
   }
-  if (!newPassword || newPassword.trim().length < 6) {
-    return { ok: false as const, error: "Use a password of at least 6 characters." };
+  const min = minPasswordLength(scope);
+  if (!newPassword || newPassword.trim().length < min) {
+    return { ok: false as const, error: `Use a password of at least ${min} characters.` };
   }
   const salt = randomBytes(16).toString("hex");
   const payload = encodeURIComponent(JSON.stringify({ salt, hash: hashPassword(newPassword.trim(), salt) }));

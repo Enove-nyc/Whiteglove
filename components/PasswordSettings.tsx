@@ -55,7 +55,7 @@ function ChangeForm({
         )}
         <label className="block">
           <span className={captionClass}>New password</span>
-          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" required minLength={6} placeholder="At least 6 characters" className={inputClass} />
+          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" required minLength={scope === "site" ? 4 : 6} placeholder={`At least ${scope === "site" ? 4 : 6} characters`} className={inputClass} />
         </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -5,12 +5,17 @@ import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
 import LogoutButton from "@/components/LogoutButton";
 import Navbar from "@/components/Navbar";
-import { accountCookieName, getCurrentAccountSummary } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 
 export default async function AccountPage() {
   const cookieStore = await cookies();
-  const account = await getCurrentAccountSummary(cookieStore.get(accountCookieName())?.value);
-  const displayName = account?.name || account?.email?.split("@")[0] || "Traveler";
+  const cookie = cookieStore.get(accountCookieName())?.value;
+  const account = await getCurrentAccountSummary(cookie);
+  // A valid signed session means you're signed in, even if the saved record
+  // can't be read at this moment.
+  const sessionEmail = readSessionEmail(cookie);
+  const signedIn = Boolean(account || sessionEmail);
+  const displayName = account?.name || sessionEmail?.split("@")[0] || account?.email?.split("@")[0] || "Traveler";
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -27,12 +32,16 @@ export default async function AccountPage() {
         <div className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600">
           {account ? (
             <p>Signed in as {account.email}. {account.verifiedAt ? "Email verified." : "Email verification pending."} {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
+          ) : signedIn ? (
+            <p>Signed in as {sessionEmail}. Your saved route and favorites will appear here once your account data loads.</p>
           ) : (
             <p>You are viewing the local preview. Sign in to store your route and favorites across devices.</p>
           )}
         </div>
-        <AccountRoutePanel loggedIn={!!account} />
-        {account && <AccountSettings initial={{ name: account.name, email: account.email, phone: account.phone }} />}
+        <AccountRoutePanel loggedIn={signedIn} />
+        {(account || sessionEmail) && (
+          <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
+        )}
         <div className="mt-10 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Start exploring</p>
