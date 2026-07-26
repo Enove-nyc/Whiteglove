@@ -5,12 +5,19 @@ import { useRouter } from "next/navigation";
 
 type Result = { ok?: boolean; error?: string; tablesCreated?: boolean; counts?: Record<string, number> };
 
-export default function DbSetupButton({ label = "Set up database & import destinations" }: { label?: string }) {
+export default function DbSetupButton({
+  label = "Set up database & import destinations",
+  confirmMessage,
+}: {
+  label?: string;
+  confirmMessage?: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
 
   async function run() {
+    if (confirmMessage && !window.confirm(confirmMessage)) return;
     setBusy(true);
     setResult(null);
     try {
