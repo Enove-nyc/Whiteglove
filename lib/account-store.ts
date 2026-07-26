@@ -12,7 +12,9 @@ export type AccountRecord = {
   verifiedAt?: string;
   verificationCodeHash?: string;
   verificationCodeExpiresAt?: string;
-  verificationRequestedAt?: string;
+  verificationRequestedAt?: string
+  resetCodeHash?: string;
+  resetCodeExpiresAt?: string;
 };
 
 export type AccountData = {
