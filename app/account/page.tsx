@@ -9,7 +9,7 @@ import { accountCookieName, getCurrentAccountSummary } from "@/lib/account-store
 export default async function AccountPage() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountSummary(cookieStore.get(accountCookieName())?.value);
-  const displayName = account?.email?.split("@")[0] || "Traveler";
+  const displayName = account?.name || account?.email?.split("@")[0] || "Traveler";
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">

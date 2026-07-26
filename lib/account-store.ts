@@ -6,6 +6,7 @@ type RedisResult<T> = { result?: T };
 
 export type AccountRecord = {
   email: string;
+  name?: string;
   passwordHash: string;
   salt: string;
   createdAt: string;
@@ -25,6 +26,7 @@ export type AccountData = {
 
 export type AccountSummary = {
   email: string;
+  name?: string;
   routeCount: number;
   favoriteCount: number;
   createdAt?: string;
@@ -113,15 +115,17 @@ export async function getAccountRecord(email: string) {
   return readJson<AccountRecord>(accountKey(normalized));
 }
 
-export async function createAccount(email: string, password: string) {
+export async function createAccount(email: string, password: string, name?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const normalized = normalizeEmail(email);
   if (!normalized || !password) return { ok: false as const, error: "Enter an email and password." };
   const existing = await getAccountRecord(normalized);
   if (existing) return { ok: false as const, error: "An account already exists for that email." };
   const salt = randomBytes(16).toString("hex");
+  const cleanName = name?.trim();
   const record: AccountRecord = {
     email: normalized,
+    name: cleanName || undefined,
     salt,
     passwordHash: hashPassword(password, salt),
     createdAt: new Date().toISOString(),
@@ -263,6 +267,7 @@ export async function getCurrentAccountSummary(cookieValue?: string): Promise<Ac
   if (!record) return null;
   return {
     email,
+    name: record.name,
     routeCount: data.route.length,
     favoriteCount: data.favorites.length,
     createdAt: record.createdAt,
