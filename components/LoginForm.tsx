@@ -25,10 +25,10 @@ export default function LoginForm() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/account/me")
+    fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
-        if (active && data?.account?.email) router.replace("/account");
+        if (active && (data?.signedIn || data?.account?.email)) router.replace("/account");
       })
       .catch(() => undefined);
     return () => {
