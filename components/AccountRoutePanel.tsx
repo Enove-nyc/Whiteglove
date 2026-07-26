@@ -33,7 +33,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
     };
 
     const syncRemote = async () => {
-      const response = await fetch("/api/account/me");
+      const response = await fetch("/api/account/me", { cache: "no-store" });
       const data = await response.json().catch(() => null) as { account?: { email?: string }; data?: { route?: SavedPlace[]; favorites?: SavedPlace[] } | null } | null;
       if (data?.account?.email && data.data) {
         setAccount({
