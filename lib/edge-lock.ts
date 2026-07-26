@@ -21,6 +21,21 @@ export async function edgeAccessToken(scope: "admin" | "site") {
   return toBase64Url(signature);
 }
 
+export async function edgeLockedPaths(): Promise<string[]> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return [];
+  try {
+    const response = await fetch(`${url.replace(/\/$/, "")}/get/white-glove:locked-paths`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    const payload = (await response.json()) as { result?: string };
+    if (!payload.result) return [];
+    const parsed = JSON.parse(payload.result);
+    return Array.isArray(parsed) ? parsed.filter((p): p is string => typeof p === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function edgeSiteIsLocked() {
   if (process.env.SITE_LOCK_ENABLED === "true") return true;
   const url = process.env.UPSTASH_REDIS_REST_URL;

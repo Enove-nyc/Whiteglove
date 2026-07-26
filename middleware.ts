@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { edgeAccessToken, edgeSiteIsLocked } from "@/lib/edge-lock";
+import { edgeAccessToken, edgeLockedPaths, edgeSiteIsLocked } from "@/lib/edge-lock";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,12 +13,22 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname !== "/access" && !pathname.startsWith("/admin") && await edgeSiteIsLocked()) {
-    const token = await edgeAccessToken("site");
-    if (request.cookies.get("white_glove_site_access")?.value !== token) {
-      const url = new URL("/access", request.url);
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
+  if (pathname !== "/access" && !pathname.startsWith("/admin")) {
+    let locked = await edgeSiteIsLocked();
+    if (!locked) {
+      const lockedPaths = await edgeLockedPaths();
+      locked = lockedPaths.some((raw) => {
+        const prefix = raw.endsWith("/") ? raw.slice(0, -1) : raw;
+        return prefix.length > 0 && (pathname === prefix || pathname.startsWith(prefix + "/"));
+      });
+    }
+    if (locked) {
+      const token = await edgeAccessToken("site");
+      if (request.cookies.get("white_glove_site_access")?.value !== token) {
+        const url = new URL("/access", request.url);
+        url.searchParams.set("next", pathname);
+        return NextResponse.redirect(url);
+      }
     }
   }
   return NextResponse.next();
