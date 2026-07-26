@@ -7,6 +7,7 @@ type RedisResult<T> = { result?: T };
 export type AccountRecord = {
   email: string;
   name?: string;
+  phone?: string;
   passwordHash: string;
   salt: string;
   createdAt: string;
@@ -27,6 +28,7 @@ export type AccountData = {
 export type AccountSummary = {
   email: string;
   name?: string;
+  phone?: string;
   routeCount: number;
   favoriteCount: number;
   createdAt?: string;
@@ -268,11 +270,60 @@ export async function getCurrentAccountSummary(cookieValue?: string): Promise<Ac
   return {
     email,
     name: record.name,
+    phone: record.phone,
     routeCount: data.route.length,
     favoriteCount: data.favorites.length,
     createdAt: record.createdAt,
     verifiedAt: record.verifiedAt,
   };
+}
+
+async function deleteKey(key: string) {
+  const response = await redis(`del/${encodeURIComponent(key)}`);
+  return Boolean(response);
+}
+
+export async function updateAccountProfile(email: string, updates: { name?: string; phone?: string }) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeEmail(email);
+  const record = await getAccountRecord(normalized);
+  if (!record) return { ok: false as const, error: "Account not found." };
+  const next: AccountRecord = {
+    ...record,
+    name: updates.name !== undefined ? updates.name.trim() || undefined : record.name,
+    phone: updates.phone !== undefined ? updates.phone.trim() || undefined : record.phone,
+  };
+  const saved = await writeJson(accountKey(normalized), next);
+  if (!saved) return { ok: false as const, error: "Could not save your changes." };
+  return { ok: true as const };
+}
+
+// Move the account (and its saved data) to a new email key. Email is the
+// record key, so changing it re-keys both records and removes the old ones.
+export async function changeAccountEmail(currentEmail: string, newEmail: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const from = normalizeEmail(currentEmail);
+  const to = normalizeEmail(newEmail);
+  if (!to || !to.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  if (to === from) return { ok: true as const, email: from };
+  if (await getAccountRecord(to)) return { ok: false as const, error: "An account already exists for that email." };
+  const record = await getAccountRecord(from);
+  if (!record) return { ok: false as const, error: "Account not found." };
+  const data = await getAccountData(from);
+  const moved = await writeJson(accountKey(to), { ...record, email: to });
+  if (!moved) return { ok: false as const, error: "Could not update your email." };
+  await writeJson(dataKey(to), data);
+  await deleteKey(accountKey(from));
+  await deleteKey(dataKey(from));
+  return { ok: true as const, email: to };
+}
+
+export async function deleteAccount(email: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeEmail(email);
+  await deleteKey(accountKey(normalized));
+  await deleteKey(dataKey(normalized));
+  return { ok: true as const };
 }
 
 export async function getCurrentAccountData(cookieValue?: string) {
