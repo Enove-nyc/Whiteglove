@@ -4,16 +4,16 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#f7f3eb]">
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.4fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 text-center sm:px-8 md:grid-cols-[1.4fr_1fr] md:text-left">
         <div className="min-w-0">
-          <Image src="/logo-light.png" alt="White Glove Itineraries" width={500} height={300} className="h-20 w-auto max-w-full object-contain" />
-          <p className="mt-5 max-w-md leading-7 text-slate-300">Thoughtfully planned kosher travel and Jewish heritage journeys, with every detail handled with care.</p>
+          <Image src="/logo-light.png" alt="White Glove Itineraries" width={500} height={300} className="mx-auto h-20 w-auto max-w-full object-contain md:mx-0" />
+          <p className="mx-auto mt-5 max-w-md leading-7 text-slate-300 md:mx-0">Thoughtfully planned kosher travel and Jewish heritage journeys, with every detail handled with care.</p>
         </div>
         <div className="min-w-0 md:justify-self-end">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Begin a conversation</p>
           <a className="mt-4 block break-all font-[family-name:var(--font-display)] text-2xl transition hover:text-[var(--gold-light)] sm:text-3xl" href="mailto:whitegloveitineraries@gmail.com">whitegloveitineraries@gmail.com</a>
           <p className="mt-6 text-sm text-slate-400">White Glove Itineraries - Personalized travel, planned with purpose.</p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:justify-start">
             <Link href="/login" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Sign in</Link>
             <span className="text-slate-600">·</span>
             <Link href="/privacy" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Privacy</Link>
