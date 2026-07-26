@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accessToken, isCorrectPassword } from "@/lib/secure-access";
+import { accessToken } from "@/lib/secure-access";
+import { verifyAccessPassword } from "@/lib/access-passwords";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null) as { scope?: "admin" | "site"; password?: string } | null;
-  if (!body || (body.scope !== "admin" && body.scope !== "site") || !isCorrectPassword(body.scope, body.password || "")) {
+  if (!body || (body.scope !== "admin" && body.scope !== "site") || !(await verifyAccessPassword(body.scope, body.password || ""))) {
     return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
   }
   const response = NextResponse.json({ ok: true });
