@@ -18,7 +18,13 @@ export function createAccountSession(email: string) {
 
 export function parseAccountSession(value?: string) {
   if (!value) return null;
-  const [encodedEmail, signature] = value.split(".");
+  // Split on the LAST "." — the signature is base64url (no dots), but the
+  // encoded email keeps its dots (e.g. "gmail.com"), so splitting on the first
+  // "." would slice the email apart and never validate.
+  const separator = value.lastIndexOf(".");
+  if (separator <= 0) return null;
+  const encodedEmail = value.slice(0, separator);
+  const signature = value.slice(separator + 1);
   if (!encodedEmail || !signature) return null;
   const email = decodeURIComponent(encodedEmail);
   const expected = createHmac("sha256", secret()).update(normalizeEmail(email)).digest("base64url");
