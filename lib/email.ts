@@ -1,11 +1,3 @@
-const RESEND_API_URL = "https://api.resend.com/emails";
-
-function resendConfig() {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL || "White Glove Itineraries <onboarding@resend.dev>";
-  return apiKey ? { apiKey, from } : null;
-}
-
 export async function sendVerificationEmail(email: string, code: string) {
   const config = resendConfig();
   if (!config) {
@@ -26,8 +18,13 @@ export async function sendVerificationEmail(email: string, code: string) {
         html: `<p>Your verification code is:</p><h2 style="letter-spacing:4px;">${code}</h2><p>This code expires in 30 minutes.</p>`,
       }),
     });
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      console.error("Resend send failed:", response.status, errorBody);
+    }
     return response.ok;
-  } catch {
+  } catch (error) {
+    console.error("Resend send threw:", error);
     return false;
   }
 }
