@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import PasswordSettings from "@/components/PasswordSettings";
 import SiteLockControl from "@/components/SiteLockControl";
+import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { getPromotionsDashboard } from "@/lib/admin-content";
 import { getDashboardStats } from "@/lib/site-analytics";
@@ -87,6 +89,10 @@ export default async function AdminPage() {
             <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{promotions.enabledPromotions} live</p>
             <p className="mt-3 text-sm leading-6 text-stone-600">Use the content manager to target banners, popups, and full-page takeovers by page and device.</p>
           </section>
+        </div>
+
+        <div className="mt-5">
+          <PasswordSettings available={passwordStorageAvailable()} />
         </div>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
