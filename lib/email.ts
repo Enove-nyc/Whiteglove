@@ -36,3 +36,22 @@ export async function sendVerificationEmail(email: string, code: string) {
     return false;
   }
 }
+
+export async function sendPasswordResetEmail(email: string, code: string) {
+  const config = resendConfig();
+  if (!config) {
+    console.error("RESEND_API_KEY is not set — password reset email not sent.");
+    return false;
+  }
+  try {
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: config.from,
+        to: email,
+        subject: "Reset your White Glove password",
+        html: `<p>Your password reset code is:</p><h2 style="letter-spacing:4px;">${code}</h2><p>This code expires in 30 minutes. If you didn't request
