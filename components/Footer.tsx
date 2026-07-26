@@ -11,7 +11,7 @@ export default function Footer() {
         </div>
         <div className="min-w-0 md:justify-self-end">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Begin a conversation</p>
-          <a className="mt-4 block break-all font-[family-name:var(--font-display)] text-2xl transition hover:text-[var(--gold-light)] sm:text-3xl" href="mailto:whitegloveitineraries@gmail.com">whitegloveitineraries@gmail.com</a>
+          <a className="mt-4 block whitespace-nowrap font-[family-name:var(--font-display)] text-lg transition hover:text-[var(--gold-light)] sm:text-2xl md:text-3xl" href="mailto:whitegloveitineraries@gmail.com">whitegloveitineraries@gmail.com</a>
           <p className="mt-6 text-sm text-slate-400">White Glove Itineraries - Personalized travel, planned with purpose.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:justify-start">
             <Link href="/login" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Sign in</Link>
