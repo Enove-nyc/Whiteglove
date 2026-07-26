@@ -176,6 +176,7 @@ model PracticalPlace {
   website      String?
   bookingLink  String?
   coordinates  String?
+  hours        String? // opening times / minyan schedule / mikvah hours
   amenities    String?
   kosherInfo   String?
   notes        String?

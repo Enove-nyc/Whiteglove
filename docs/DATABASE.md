@@ -81,15 +81,41 @@ created if missing.
 - **Promotion / EditSuggestion / SiteSetting / Page** — the CMS tables that
   currently live in the Redis content bundle.
 
+## The admin editor (done)
+
+Once `DATABASE_URL` is set and the seed has run, go to **`/admin/destinations`**
+(linked from the admin dashboard as "Destination editor"). Pick a city and edit,
+with no code:
+
+- **Destination details** — city name, Yiddish name, country, a safety/travel
+  notice, overview, and visibility (published/draft).
+- **Contacts** — shomer / access numbers (label, phone, email, note). Add, edit,
+  or delete each one.
+- **Listings** — hotels, kosher food, minyanim, mikvaos, transport, airports,
+  drivers. Each has name, type, phone, WhatsApp, email, website, **hours/timings**,
+  address, notes, and visibility. Add, edit, or delete each one.
+
+Saving writes to Postgres and refreshes the matching public page (`/{slug}` or
+`/destinations/{slug}`) within about a minute. Only **Published** items appear to
+visitors; drafts stay hidden.
+
+### How it stays safe before the database is connected
+
+The public pages read DB content through `lib/content.ts`, which returns nothing
+when `DATABASE_URL` is unset or the DB is unreachable — so the site keeps showing
+today's static `data/*.ts` content and only upgrades to DB-backed content once
+Neon is connected and seeded. The build was verified to pass with no database.
+Rendering uses ISR (`export const revalidate = 3600`) plus on-demand
+`revalidatePath` from the admin actions — Cache Components (`use cache`) is
+intentionally **not** enabled, since it would make the whole site dynamic and
+disable `dynamicParams`.
+
 ## What's next (not done yet)
 
-1. Point the public pages (`app/[city]`, `app/destinations/[place]`,
-   `app/cemeteries/[cemetery]`) at Prisma instead of `data/*.ts`, with
-   on-demand revalidation so admin edits appear without a redeploy. This is the
-   step that finally connects the admin editor to what visitors see — the core
-   goal. (Requires reading the Next 16 rendering/revalidation docs first, per
-   `AGENTS.md`.)
-2. Repoint the admin API routes (`app/api/admin/content`) from the Redis bundle
-   to Prisma.
-3. Fill in the real `PracticalPlace` data that's currently placeholder
-   "unavailable" stubs.
+1. Repoint the older admin content manager (`app/api/admin/content`, the Redis
+   bundle) and the homepage hero/settings to Prisma too, so `SiteSetting` and
+   the legacy `EditableLocation`/`EditableAccommodation` editors also drive the
+   live site. (The new `/admin/destinations` editor already does.)
+2. Wire `app/cemeteries/[cemetery]` to DB content the same way.
+3. Populate real listings — the `PracticalPlace` table starts empty; the
+   editor is how you fill it.
