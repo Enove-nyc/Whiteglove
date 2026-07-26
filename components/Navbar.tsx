@@ -9,6 +9,7 @@ import DestinationSearch from "@/components/DestinationSearch";
 const menuItems = [
   { yiddish: "היים", english: "Home", href: "/" },
   { yiddish: "נסיעות", english: "Destinations", href: "/stops" },
+  { yiddish: "וואַקאַציעס", english: "Getaways", href: "/getaways" },
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
   { yiddish: "פּלאַנירונג", english: "Planning", href: "/planning" },
