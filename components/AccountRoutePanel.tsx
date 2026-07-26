@@ -18,10 +18,13 @@ const read = (key: string) => {
   }
 };
 
-export default function AccountRoutePanel() {
+export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boolean }) {
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
-  const [route, setRoute] = useState<SavedPlace[]>(() => read("whiteGloveMyRoute"));
-  const [favorites, setFavorites] = useState<SavedPlace[]>(() => read("whiteGloveFavorites"));
+  // Only read browser-local saves for the anonymous preview. When the user is
+  // logged in, their account (server) is the single source of truth — otherwise
+  // places saved while browsing anonymously would leak into a new account.
+  const [route, setRoute] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveMyRoute")));
+  const [favorites, setFavorites] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveFavorites")));
 
   useEffect(() => {
     const syncLocal = () => {
@@ -41,15 +44,18 @@ export default function AccountRoutePanel() {
       }
     };
 
-    syncLocal();
+    // Anonymous preview follows local storage; logged-in view follows the account.
+    if (!loggedIn) {
+      syncLocal();
+      window.addEventListener("whiteglove-route", syncLocal);
+    }
     syncRemote().catch(() => undefined);
-    window.addEventListener("whiteglove-route", syncLocal);
     return () => window.removeEventListener("whiteglove-route", syncLocal);
-  }, []);
+  }, [loggedIn]);
 
-  const activeRoute = account?.route ?? route;
-  const activeFavorites = account?.favorites ?? favorites;
-  const sourceLabel = account ? `Synced to ${account.email}` : "Saved in this browser";
+  const activeRoute = loggedIn ? account?.route ?? [] : account?.route ?? route;
+  const activeFavorites = loggedIn ? account?.favorites ?? [] : account?.favorites ?? favorites;
+  const sourceLabel = account ? `Synced to ${account.email}` : loggedIn ? "Synced to your account" : "Saved in this browser";
 
   return (
     <>

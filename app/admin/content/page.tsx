@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 import AdminContentManager from "@/components/AdminContentManager";
 import { getAdminContent, getMissingContentReport } from "@/lib/admin-content";
 
@@ -34,6 +35,7 @@ export default async function AdminContentPage() {
       </section>
 
       <AdminContentManager initialBundle={bundle} configured={configured} />
+      <Footer />
     </main>
   );
 }
