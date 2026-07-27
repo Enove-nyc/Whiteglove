@@ -20,6 +20,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל המאור עינים",
     country: "Ukraine",
     address: "Jewish cemetery, Chernobyl, Ukraine — confirm exact location locally",
+    airportRef: "51.276, 30.222",
     arrivalNotes: [
       "Resting place of Rabbi Menachem Nachum Twersky, the Me'or Einayim, founder of the Chernobyl chassidic dynasty.",
       "IMPORTANT: Chernobyl lies inside the restricted exclusion zone. Access is tightly controlled and arranged only through authorized escorts — do not travel without confirming current permissions and safety. Exact grave location to be confirmed locally.",
@@ -38,6 +39,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי אהרן הגדול מקארלין",
     country: "Belarus",
     address: "Jewish cemetery, Karlin quarter of Pinsk, Belarus — confirm exact location locally",
+    airportRef: "52.115, 26.100",
     arrivalNotes: [
       "Karlin, now a district of Pinsk, is the cradle of the Karlin-Stolin chassidus; Rabbi Aharon HaGadol (Aharon the Great) of Karlin is associated with the town.",
       "Confirm the cemetery and exact grave location locally. Belarus entry rules change — check current travel requirements.",
@@ -56,6 +58,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי צבי הירש מזידיטשוב",
     country: "Ukraine",
     address: "Jewish cemetery, Zhydachiv, Lviv Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.383, 24.145",
     arrivalNotes: [
       "Resting place of Rabbi Tzvi Hirsch Eichenstein of Zidichov, a foundational master of the Zidichov-Komarno kabbalistic chassidic line.",
       "Confirm the cemetery and exact grave location locally.",
@@ -73,6 +76,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי מאיר מפרעמישלאן",
     country: "Ukraine",
     address: "Jewish cemetery, Peremyshlyany, Lviv Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.663, 24.560",
     arrivalNotes: [
       "Resting place of Rabbi Meir of Premishlan, beloved for his simplicity, wit, and wonder-working.",
       "Confirm the cemetery and exact grave location locally.",
@@ -90,6 +94,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר בעל תולדות יעקב יוסף",
     country: "Ukraine",
     address: "Jewish cemetery, Polonne, Khmelnytskyi Oblast, Ukraine — confirm exact location locally",
+    airportRef: "50.130, 27.515",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Yosef HaKohen of Polonne, the foremost disciple and recorder of the Baal Shem Tov's teachings.",
       "Confirm the cemetery and exact grave location locally.",
@@ -107,6 +112,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר המהרש״א",
     country: "Ukraine",
     address: "Old Jewish cemetery, Ostroh, Rivne Oblast, Ukraine — confirm exact location locally",
+    airportRef: "50.329, 26.515",
     arrivalNotes: [
       "Ostroh was a great center of Torah; Rabbi Shmuel Eidels, the Maharsha, served and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
@@ -124,6 +130,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל תפארת שלמה",
     country: "Poland",
     address: "Jewish cemetery, Radomsko, Łódź Voivodeship, Poland — confirm exact location locally",
+    airportRef: "51.067, 19.445",
     arrivalNotes: [
       "Resting place of Rabbi Shlomo HaKohen Rabinowicz, the Tiferes Shlomo, founder of the Radomsk chassidic dynasty.",
       "Confirm the cemetery and exact grave/ohel location locally.",
@@ -141,6 +148,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל רבי יצחק מווארקא",
     country: "Poland",
     address: "Jewish cemetery, Warka, Masovian Voivodeship, Poland — confirm exact location locally",
+    airportRef: "51.783, 21.193",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Kalish of Vorki, known for his boundless love of every Jew.",
       "Confirm the cemetery and exact grave/ohel location locally.",
@@ -158,6 +166,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר הצמח צדיק מוויזשניץ",
     country: "Ukraine",
     address: "Jewish cemetery, Vyzhnytsia, Chernivtsi Oblast, Ukraine — confirm exact location locally",
+    airportRef: "48.245, 25.195",
     arrivalNotes: [
       "Vyzhnytsia is the cradle of the Vizhnitz chassidus; Rabbi Menachem Mendel Hager, the Tzemach Tzadik, is its founder.",
       "Confirm the cemetery and exact grave location locally.",
@@ -175,6 +184,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל האדמו״ר הראשון מבאבוב",
     country: "Poland",
     address: "Jewish cemetery, Bobowa, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    airportRef: "49.717, 20.950",
     arrivalNotes: [
       "Bobowa is the cradle of the Bobov chassidus; Rabbi Shlomo Halberstam, its founder, is associated with the town.",
       "Confirm the cemetery and exact grave/ohel location locally.",
@@ -192,6 +202,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי דוד משה מטשארטקאוו",
     country: "Ukraine",
     address: "Jewish cemetery, Chortkiv, Ternopil Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.017, 25.800",
     arrivalNotes: [
       "Resting place of Rabbi Dovid Moshe Friedman, founder of the Chortkov chassidus and a son of the Ruzhiner Rebbe.",
       "Confirm the cemetery and exact grave location locally.",
@@ -209,6 +220,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר הרוז׳ינער רבי",
     country: "Ukraine",
     address: "Jewish cemetery, Sadhora district of Chernivtsi, Ukraine — confirm exact location locally",
+    airportRef: "48.325, 25.950",
     arrivalNotes: [
       "Rabbi Yisrael Friedman of Ruzhin settled in Sadigura after leaving the Russian Empire, and is buried there; his court shaped many chassidic dynasties.",
       "Confirm the cemetery and exact grave location locally.",
@@ -226,6 +238,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי דוד מטאלנא",
     country: "Ukraine",
     address: "Jewish cemetery, Talne, Cherkasy Oblast, Ukraine — confirm exact location locally",
+    airportRef: "48.887, 30.696",
     arrivalNotes: [
       "Resting place of Rabbi Dovid Twersky of Talne, a son of the Chernobyler dynasty who led a large chassidic court.",
       "Confirm the cemetery and exact grave location locally.",
@@ -243,6 +256,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר יונתן בן עוזיאל",
     country: "Israel",
     address: "Amuka, western edge of the Biriya Forest, between Tzfat and Rosh Pina, Israel — confirm exact approach locally",
+    airportRef: "32.995, 35.510",
     arrivalNotes: [
       "A marked structure over the ancient burial cave of the Tanna Rabbi Yonasan ben Uziel, in the Biriya Forest north of Tzfat. Long a place of prayer, especially by singles seeking a shidduch.",
       "Busiest around the hilula (26 Sivan). Confirm current access and hours locally.",
@@ -261,6 +275,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "מערת המכפלה",
     country: "Israel / Judea",
     address: "Me'aras HaMachpela, Hebron — confirm current access, security, and hours before traveling",
+    airportRef: "31.532, 35.095",
     arrivalNotes: [
       "The burial place of the Avos and Imahos — Avraham and Sarah, Yitzchak and Rivka, Yaakov and Leah — one of Judaism's holiest sites.",
       "IMPORTANT: Hebron is a security-sensitive area with controlled access that varies by day and by section, and expands on special days (e.g. Chayei Sarah). Confirm current access, security guidance, and hours before traveling.",
@@ -281,6 +296,7 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רחל אמנו",
     country: "Israel / Judea",
     address: "Kever Rochel, northern edge of Bethlehem — confirm current access and security before traveling",
+    airportRef: "31.722, 35.202",
     arrivalNotes: [
       "The tomb of Rachel Imenu on the road to Bethlehem, a place of prayer for generations — 'Rachel weeping for her children.'",
       "IMPORTANT: The site sits within a secured compound with access that depends on the current situation, usually reached by protected transport. Confirm current access, security, and hours before traveling.",

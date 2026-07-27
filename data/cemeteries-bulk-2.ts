@@ -53,6 +53,7 @@ export const bulkCemeteries2: Cemetery[] = [
     yiddishName: "בית החיים ראדין",
     country: "Belarus",
     address: "Radun (Raduń), Voranava district, Hrodna (Grodno) region, Belarus (~25 km NW of Lida)",
+    airportRef: "53.985, 24.995",
     arrivalNotes: [
       "A wooden ohel stands over the grave of the Chofetz Chaim in the restored Radun Jewish cemetery, alongside matsevot of Radun yeshiva rabbis (including Rabbi Naftali Tropp). The town is home to the historic Radun Yeshiva.",
       "Exact grave GPS is not confirmed from a reliable public source here — confirm the cemetery/ohel location and access locally (the site was restored in the 1990s). Belarus entry rules change; check current travel requirements.",
@@ -71,6 +72,7 @@ export const bulkCemeteries2: Cemetery[] = [
     yiddishName: "אוהל בעל התניא",
     country: "Ukraine",
     address: "Ohel of Rabbi Schneur Zalman, Hadiach (Gadyach), Poltava Oblast, Ukraine",
+    airportRef: "50.373, 33.998",
     arrivalNotes: [
       "The ohel of the Alter Rebbe, founder of Chabad, stands in Hadiach in east-central Ukraine; a Chabad pilgrimage site, busiest around the yahrzeit (24 Tevet). A 'kohanim bridge' lets kohanim visit without passing over other graves.",
       "Exact grave GPS is not confirmed from a reliable public source here — arrange the visit and current access through Chabad of Hadiach. Ukraine sites are wartime-sensitive; check travel advisories.",
