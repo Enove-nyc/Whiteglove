@@ -64,9 +64,13 @@ export async function POST(request: NextRequest) {
           }),
         },
       );
-      if (!res.ok) return NextResponse.json({ available: false, reason: "AI service is temporarily unavailable." });
+      if (!res.ok) {
+        const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        return NextResponse.json({ available: false, reason: reason?.error?.message ? `Gemini (HTTP ${res.status}): ${reason.error.message}` : `AI service returned HTTP ${res.status}.` });
+      }
       const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
       const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text).filter(Boolean).join("\n").trim();
+      if (!text) return NextResponse.json({ available: false, reason: "The AI returned an empty response — try rephrasing." });
       return NextResponse.json({ available: true, text });
     }
 
@@ -75,7 +79,10 @@ export async function POST(request: NextRequest) {
       headers: { "x-api-key": anthropicKey as string, "anthropic-version": "2023-06-01", "content-type": "application/json" },
       body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 400, system: SYSTEM, messages: [{ role: "user", content: userMessage }] }),
     });
-    if (!res.ok) return NextResponse.json({ available: false, reason: "AI service is temporarily unavailable." });
+    if (!res.ok) {
+      const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+      return NextResponse.json({ available: false, reason: reason?.error?.message ? `Anthropic (HTTP ${res.status}): ${reason.error.message}` : `AI service returned HTTP ${res.status}.` });
+    }
     const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
     const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
     return NextResponse.json({ available: true, text });
