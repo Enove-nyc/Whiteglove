@@ -99,8 +99,7 @@ export default function Navbar() {
         <div className="absolute right-5 top-[4.6rem] z-30 w-64 border border-[var(--gold-light)] bg-[#fcfaf6] p-3 shadow-xl sm:right-8">
           {menuItems.map((item) => (
             <Link key={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href={item.href}>
-              <span dir="rtl">{item.yiddish}</span>
-              <span className="ml-2 text-xs font-normal text-stone-500">{item.english}</span>
+              {item.english}
             </Link>
           ))}
           <div className="mt-1 border-t border-[var(--gold-light)] pt-1">
