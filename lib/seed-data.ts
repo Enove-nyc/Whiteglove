@@ -8,6 +8,7 @@ import type { Prisma } from "@prisma/client";
 import { bulkDestinations } from "@/data/bulk-destinations";
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/city-guides";
+import { directoryProviders } from "@/data/directory";
 import { practicalContent } from "@/data/practical-content";
 import { sacredStops } from "@/data/sacred-stops";
 
@@ -24,6 +25,7 @@ export type SeedRows = {
   tzaddikim: Prisma.TzaddikCreateManyInput[];
   contacts: Prisma.ContactCreateManyInput[];
   places: Prisma.PracticalPlaceCreateManyInput[];
+  directory: Prisma.DirectoryProviderCreateManyInput[];
 };
 
 export function buildSeedRows(): SeedRows {
@@ -206,7 +208,28 @@ export function buildSeedRows(): SeedRows {
     }
   }
 
-  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts, places };
+  // Directory of service providers (data/directory.ts).
+  const directory: Prisma.DirectoryProviderCreateManyInput[] = directoryProviders.map((p) => ({
+    id: randomUUID(),
+    slug: p.slug,
+    name: p.name,
+    category: p.category,
+    tagline: p.tagline ?? null,
+    description: p.description ?? null,
+    phone: p.phone ?? null,
+    whatsapp: p.whatsapp ?? null,
+    email: p.email ?? null,
+    website: p.website ?? null,
+    basedIn: p.basedIn ?? null,
+    regions: p.regions ?? [],
+    languages: p.languages ?? [],
+    specialties: p.specialties ?? [],
+    featured: p.featured ?? false,
+    status: "PUBLISHED",
+    source: p.source ?? null,
+  }));
+
+  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts, places, directory };
 }
 
 export const DEFAULT_SETTINGS = {
@@ -228,5 +251,6 @@ export function countSeedRows(rows: SeedRows) {
     tzaddikim: rows.tzaddikim.length,
     contacts: rows.contacts.length,
     places: rows.places.length,
+    directory: rows.directory.length,
   };
 }
