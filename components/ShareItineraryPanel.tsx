@@ -17,12 +17,19 @@ export default function ShareItineraryPanel() {
   const [copied, setCopied] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/account/itinerary/share", { cache: "no-store" });
-    if (res.status === 401) { setLoggedIn(false); return; }
-    setLoggedIn(true);
-    const data = await res.json().catch(() => ({}));
-    setUrl(data.url ?? null);
-    setCollaborators(data.collaborators ?? []);
+    try {
+      const res = await fetch("/api/account/itinerary/share", { cache: "no-store" });
+      if (res.status === 401) { setLoggedIn(false); return; }
+      if (!res.ok) { setLoggedIn(false); return; }
+      setLoggedIn(true);
+      const data = await res.json().catch(() => ({}));
+      setUrl(data.url ?? null);
+      setCollaborators(data.collaborators ?? []);
+    } catch {
+      // Never leave the panel invisible: if we can't tell whether the traveler
+      // is signed in, show the signed-out state rather than rendering nothing.
+      setLoggedIn(false);
+    }
   }
   useEffect(() => { load(); }, []);
 
