@@ -39,9 +39,12 @@ export type ItinActivity = {
   yiddishName?: string;
   address?: string;
   coordinates?: string;
-  date: string; // YYYY-MM-DD
+  /** YYYY-MM-DD. Empty means "not scheduled yet" — the planner will place it. */
+  date: string;
   startTime?: string; // HH:MM
   durationMins?: number;
+  /** Position within the day. Lower comes first; set by reordering or planning. */
+  order?: number;
   href?: string; // link (our kever page, a booking page, a map…)
   phone?: string; // contact number for this stop
   keverSlug?: string; // set when picked from our kever directory
@@ -211,12 +214,34 @@ export function lodgingForNight(itin: Itinerary, date: string): ItinLodging | nu
   return itin.lodging.find((l) => l.type === "overnight-transit" && l.checkIn === date) ?? null;
 }
 
+/**
+ * The order stops appear in a day: an explicit position first (set by
+ * reordering or route planning), then by clock time, then as entered.
+ */
+export function sortDayActivities(acts: ItinActivity[]): ItinActivity[] {
+  return acts
+    .map((a, i) => ({ a, i }))
+    .sort((x, y) => {
+      const ox = x.a.order ?? Number.POSITIVE_INFINITY;
+      const oy = y.a.order ?? Number.POSITIVE_INFINITY;
+      if (ox !== oy) return ox - oy;
+      const tx = timeToMins(x.a.startTime) ?? Number.POSITIVE_INFINITY;
+      const ty = timeToMins(y.a.startTime) ?? Number.POSITIVE_INFINITY;
+      if (tx !== ty) return tx - ty;
+      return x.i - y.i;
+    })
+    .map((x) => x.a);
+}
+
+/** Stops that have no date yet — the planner can place these on a day. */
+export function unscheduledActivities(itin: Itinerary): ItinActivity[] {
+  return itin.activities.filter((a) => !a.date);
+}
+
 export function buildDays(itin: Itinerary): ItineraryDay[] {
   const dates = eachDate(itin.startDate, itin.endDate);
   return dates.map((date, index) => {
-    const dayActs = itin.activities
-      .filter((a) => a.date === date)
-      .sort((a, b) => (timeToMins(a.startTime) ?? 9999) - (timeToMins(b.startTime) ?? 9999));
+    const dayActs = sortDayActivities(itin.activities.filter((a) => a.date === date));
     const withDistance: DayActivity[] = dayActs.map((a, i) => {
       const distanceFromPrev = i === 0 ? null : kmBetween(dayActs[i - 1].coordinates, a.coordinates);
       return { ...a, distanceFromPrev, travelMinutesFromPrev: i === 0 ? null : estimateTravelMinutes(distanceFromPrev) };
@@ -337,12 +362,23 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       }
     }
 
+    // If stops have no location we cannot measure the driving between them, and
+    // silently counting it as zero is what makes a packed day look wide open.
+    // Say so instead of quietly overstating the free time.
+    const missingLocation = dayActs.filter((a) => !coordinatesToPoint(a.coordinates));
+    if (dayActs.length > 1 && missingLocation.length > 0) {
+      const names = missingLocation.slice(0, 3).map((a) => a.name).join(", ");
+      warnings.push(
+        `Travel time is not counted for ${missingLocation.length} stop${missingLocation.length > 1 ? "s" : ""} (${names}${missingLocation.length > 3 ? "…" : ""}) because ${missingLocation.length > 1 ? "they have" : "it has"} no location yet — pick the address from the dropdown, or use "Plan my route" to look them up. Until then the free hours below are too high.`,
+      );
+    }
+
     if (isEmpty) {
       warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
     } else if (committed > USABLE_DAY_HOURS) {
       const over = Math.round((committed - USABLE_DAY_HOURS) * 10) / 10;
       warnings.push(`This day is over-packed — about ${Math.round(scheduled * 10) / 10} h at the stops plus roughly ${travelHours} h of driving is about ${over} h more than a ${USABLE_DAY_HOURS}-hour day. Consider moving a stop to another day.`);
-    } else if (!hasTimingConflict && freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
+    } else if (!hasTimingConflict && missingLocation.length === 0 && freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
       warnings.push(`About ${freeHours} free hours this day${travelNote} — room for another stop.`);
     }
     warnings.push(...legWarnings);
