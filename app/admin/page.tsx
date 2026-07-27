@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
+import AiConnectionTest from "@/components/AiConnectionTest";
 import Footer from "@/components/Footer";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import PasswordSettings from "@/components/PasswordSettings";
@@ -103,6 +104,10 @@ export default async function AdminPage() {
 
         <div className="mt-5">
           <PasswordSettings available={passwordStorageAvailable()} />
+        </div>
+
+        <div className="mt-5">
+          <AiConnectionTest />
         </div>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
