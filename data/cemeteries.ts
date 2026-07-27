@@ -16,6 +16,10 @@ export type Cemetery = {
   country: string;
   address: string;
   coordinates?: string;
+  // City-level point ("lat, lng") used ONLY to rank the nearest airports when we
+  // don't have the exact grave GPS. NEVER a grave location — travelers must not
+  // navigate to this; grave navigation always uses `coordinates` or `address`.
+  airportRef?: string;
   arrivalNotes: string[];
   accessNote?: string;
   accessContacts?: Array<{
@@ -437,7 +441,7 @@ const guideCemeteries: Cemetery[] = cityGuides
     sourceUrl: guide.sourceUrl,
   }));
 
-export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3];
+export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4];
 
 export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
@@ -446,4 +450,5 @@ import { cityGuides } from "@/data/city-guides";
 import { bulkCemeteries } from "@/data/cemeteries-bulk";
 import { bulkCemeteries2 } from "@/data/cemeteries-bulk-2";
 import { bulkCemeteries3 } from "@/data/cemeteries-bulk-3";
+import { bulkCemeteries4 } from "@/data/cemeteries-bulk-4";
 import type { ContentPlace } from "@/data/practical-content";

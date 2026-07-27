@@ -72,7 +72,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
             {cemetery.accessNote && <p className="mt-6 border-t border-[var(--gold-light)] pt-5 text-sm leading-6 text-stone-600">{cemetery.accessNote}</p>}
 
-            <NearestAirports coordinates={cemetery.coordinates} address={cemetery.address} country={cemetery.country} />
+            <NearestAirports coordinates={cemetery.coordinates} rankCoordinates={cemetery.airportRef} address={cemetery.address} country={cemetery.country} />
 
             {cemetery.accessContacts && (
               <div className="mt-5 space-y-4">

@@ -73,6 +73,22 @@ export const SPELLING_GROUPS: SpellingGroup[] = [
   { keys: ["amuka-yonasan-ben-uziel", "amuka"], spellings: ["amuka", "amukah", "amuca", "yonasan ben uziel", "yonatan ben uziel", "jonathan ben uzziel", "targum yonasan"] },
   { keys: ["hebron-machpela", "hebron"], spellings: ["hebron", "chevron", "hevron", "chvron", "machpela", "maaras hamachpela", "meoras hamachpela", "cave of the patriarchs", "avos", "avot", "patriarchs"] },
   { keys: ["kever-rochel-bethlehem", "kever rochel"], spellings: ["kever rochel", "kever rachel", "rachels tomb", "rochel imenu", "rachel imenu", "bethlehem", "beis lechem", "beit lechem"] },
+  // --- batch 4 ---
+  { keys: ["queens-ohel-lubavitch", "ohel"], spellings: ["ohel", "lubavitch", "lubavitcher rebbe", "chabad", "schneerson", "schneersohn", "montefiore", "queens", "cambria heights", "frierdiker rebbe", "rayatz", "the rebbe"] },
+  { keys: ["kiryas-joel-satmar", "satmar"], spellings: ["satmar", "satmar rav", "kiryas joel", "kiryas yoel", "monroe", "yoel teitelbaum", "joel teitelbaum", "divrei yoel", "vayoel moshe"] },
+  { keys: ["monsey-ribnitzer", "ribnitz"], spellings: ["ribnitz", "ribnitzer", "monsey", "chaim zanvl", "abramowitz", "rybnitsa"] },
+  { keys: ["netanya-klausenburger", "klausenburg"], spellings: ["klausenburg", "klausenburger", "sanz klausenburg", "netanya", "divrei yatziv", "shefa chaim", "yekusiel yehuda halberstam", "cluj"] },
+  { keys: ["bnei-brak-chazon-ish", "chazon ish"], spellings: ["chazon ish", "chazon eish", "bnei brak", "karelitz", "avraham yeshaya", "zichron meir"] },
+  { keys: ["har-hamenuchos-jerusalem", "har hamenuchos"], spellings: ["har hamenuchos", "har hamenuchot", "givat shaul", "jerusalem", "yerushalayim", "auerbach", "elyashiv", "belzer rebbe", "aharon rokeach"] },
+  { keys: ["har-hazeisim-jerusalem", "har hazeisim"], spellings: ["har hazeisim", "har hazeitim", "mount of olives", "jerusalem", "yerushalayim", "ohr hachaim", "or hachaim", "ibn attar", "ben attar"] },
+  { keys: ["slonim-yesod-haavodah", "slonim"], spellings: ["slonim", "slonimer", "yesod haavodah", "avraham weinberg", "slonim belarus"] },
+  { keys: ["kosiv-ahavas-shalom", "kosov"], spellings: ["kosov", "kosiv", "kosover", "ahavas shalom", "ahavat shalom", "menachem mendel hager kosov", "kossov"] },
+  { keys: ["sieniawa-shinover", "shinova"], spellings: ["shinova", "shinover", "sieniawa", "shiniva", "yechezkel shraga halberstam", "divrei yechezkel"] },
+  { keys: ["komarno-heichal-habracha", "komarno"], spellings: ["komarno", "komarna", "heichal habracha", "safrin", "yitzchak isaac safrin", "zohar chai"] },
+  { keys: ["skvyra-skver", "skver"], spellings: ["skver", "skvyra", "skverer", "skwira", "new square", "yitzchak twersky skver"] },
+  { keys: ["turiysk-trisk", "trisk"], spellings: ["trisk", "turiysk", "turisk", "magen avraham", "avraham twersky trisk", "turzysk"] },
+  { keys: ["savran-savraner", "savran"], spellings: ["savran", "savraner", "savran ukraine", "moshe tzvi giterman", "savraner rebbe"] },
+  { keys: ["rotmistrivka-rachmastrivka", "rachmastrivka"], spellings: ["rachmastrivka", "rachmistrivka", "rotmistrivka", "rachmastrivke", "yochanan twersky", "rotmistrovka"] },
 ];
 
 // Every spelling from groups whose keys intersect the given place identifiers.

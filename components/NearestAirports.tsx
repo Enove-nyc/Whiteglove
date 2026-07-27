@@ -8,12 +8,15 @@ export default function NearestAirports({
   coordinates,
   address,
   country,
+  rankCoordinates,
 }: {
   coordinates?: string;
   address?: string;
   country?: string;
+  // City-level point for ranking when there's no grave GPS (never used for nav).
+  rankCoordinates?: string;
 }) {
-  const byDistance = nearestAirports(coordinates, 3);
+  const byDistance = nearestAirports(coordinates ?? rankCoordinates, 3);
   const ranked = byDistance.length ? byDistance : airportsForCountry(country, 3);
   if (!ranked.length) return null;
 
