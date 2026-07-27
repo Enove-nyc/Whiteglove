@@ -20,6 +20,7 @@ import {
   type ItinFlight,
   type ItinLodging,
   type LodgingType,
+  type TravelLeg,
 } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
 
@@ -156,7 +157,7 @@ export default function ItineraryBuilder() {
             <Stat label="Nights" value={summary.nights} />
             <Stat label="Nights without lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
-            <Stat label="Driving between stops" value={`${summary.travelHours} h`} />
+            <Stat label="Driving (stops + transfers)" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
             <div className="ml-auto flex gap-3">
               <Link href="/itinerary/print" target="_blank" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Print itinerary (PDF)</Link>
@@ -226,6 +227,7 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
 
       <div className="mt-4 space-y-3">
         {day.flightsArriving.map((f) => <p key={`a-${f.id}`} className="text-sm text-[var(--navy)]">✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} — {f.from} → {f.to}{f.airline ? ` (${f.airline})` : ""}</p>)}
+        <TransferLine leg={day.travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging")} />
         {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
             {a.distanceFromPrev !== null && (
@@ -252,6 +254,7 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
             {a.notes && <p className="mt-1 text-sm text-stone-500">{a.notes}</p>}
           </div>
         ))}
+        <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />
         {day.flightsDeparting.map((f) => <p key={`d-${f.id}`} className="text-sm text-[var(--navy)]">✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} — {f.from} → {f.to}{f.airline ? ` (${f.airline})` : ""}</p>)}
       </div>
 
@@ -293,6 +296,24 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
 }
 
 // ---- Small pieces -----------------------------------------------------
+
+// A transfer to/from the hotel or the airport — travel that also eats the day.
+function TransferLine({ leg }: { leg?: TravelLeg }) {
+  if (!leg) return null;
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
+      🚗 {leg.label} — {formatKm(leg.km)} · ≈{formatDuration(leg.minutes)}{" "}
+      <a
+        href={directionsBetweenUrl({ coordinates: leg.fromCoordinates }, { coordinates: leg.toCoordinates })}
+        target="_blank"
+        rel="noreferrer"
+        className="normal-case tracking-normal text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+      >
+        exact time →
+      </a>
+    </p>
+  );
+}
 
 function Stat({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (

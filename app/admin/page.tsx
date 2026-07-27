@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
 import AiConnectionTest from "@/components/AiConnectionTest";
+import EmailDeliveryTest from "@/components/EmailDeliveryTest";
 import Footer from "@/components/Footer";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import PasswordSettings from "@/components/PasswordSettings";
@@ -107,6 +108,10 @@ export default async function AdminPage() {
 
         <div className="mt-5">
           <PasswordSettings available={passwordStorageAvailable()} />
+        </div>
+
+        <div className="mt-5">
+          <EmailDeliveryTest />
         </div>
 
         <div className="mt-5">
