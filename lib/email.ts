@@ -14,7 +14,7 @@ function editsInbox() {
 }
 
 function contactInbox() {
-  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || "contacts@whitegloveitineraries.com";
+  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || "contact@whitegloveitineraries.com";
 }
 
 const escapeHtml = (v: string) =>
