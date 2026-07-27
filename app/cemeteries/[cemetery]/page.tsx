@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
+import NearestAirports from "@/components/NearestAirports";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries } from "@/data/cemeteries";
+import { kmBetween } from "@/data/itinerary";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getCemeteryView } from "@/lib/cemeteries-view";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
@@ -20,6 +23,16 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
   const mapUrl = placeDirectionsUrl(cemetery.address, cemetery.coordinates);
   const hasAccessContacts = Boolean(cemetery.accessContacts?.length);
+
+  // Other entries that are the SAME physical beis hachaim (same spot, or same
+  // city + name) — so two kevarim modelled separately still cross-link here.
+  const normKey = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const alsoHere = cemeteries.filter((c) => {
+    if (c.slug === cemetery.slug) return false;
+    const km = kmBetween(c.coordinates, cemetery.coordinates);
+    if (km !== null) return km < 0.4;
+    return normKey(c.city) === normKey(cemetery.city) && normKey(c.name) === normKey(cemetery.name);
+  });
 
   const placeGroups = PLACE_CATEGORY_ORDER.map((category) => ({
     category,
@@ -59,6 +72,8 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
             {cemetery.accessNote && <p className="mt-6 border-t border-[var(--gold-light)] pt-5 text-sm leading-6 text-stone-600">{cemetery.accessNote}</p>}
 
+            <NearestAirports coordinates={cemetery.coordinates} address={cemetery.address} country={cemetery.country} />
+
             {cemetery.accessContacts && (
               <div className="mt-5 space-y-4">
                 {cemetery.accessContacts.map((contact) => (
@@ -91,6 +106,21 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                 </article>
               ))}
             </div>
+
+            {alsoHere.length > 0 && (
+              <div className="mt-8 border-t border-[var(--gold-light)] pt-5">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Also resting in this beis hachaim</p>
+                <p className="mt-1 text-sm text-stone-500">Other kevarim recorded at the same cemetery:</p>
+                <ul className="mt-3 space-y-2">
+                  {alsoHere.map((c) => (
+                    <li key={c.slug}>
+                      <Link href={`/cemeteries/${c.slug}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">{c.name}</Link>
+                      <span className="text-sm text-stone-500"> — {c.burials.map((b) => b.knownAs || b.name).slice(0, 3).join(", ")}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
