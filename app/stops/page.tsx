@@ -7,13 +7,14 @@ import SuggestEditButton from "@/components/SuggestEditButton";
 import { bulkDestinations } from "@/data/bulk-destinations";
 import { cityGuides } from "@/data/city-guides";
 import { mapsUrl, sacredStops } from "@/data/sacred-stops";
+import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
 
 export default async function SacredStopsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const query = q.trim().toLowerCase();
-  const matchingGuides = query ? cityGuides.filter((guide) => `${guide.city} ${guide.yiddishCity} ${guide.country} ${guide.tzaddik} ${guide.yiddishTzaddik} ${guide.seforim} ${guide.aliases?.join(" ") ?? ""}`.toLowerCase().includes(query)) : [];
-  const matchingStops = query ? sacredStops.filter((stop) => `${stop.city} ${stop.traditionalName ?? ""} ${stop.yiddishName} ${stop.country} ${stop.address} ${stop.aliases?.join(" ") ?? ""}`.toLowerCase().includes(query)) : sacredStops;
-  const matchingBulk = query ? bulkDestinations.filter((destination) => `${destination.city} ${destination.yiddishCity} ${destination.country} ${destination.aliases.join(" ")}`.toLowerCase().includes(query)) : bulkDestinations;
+  const matchingGuides = query ? cityGuides.filter((guide) => fuzzyMatch(query, `${guide.city} ${guide.yiddishCity} ${guide.country} ${guide.tzaddik} ${guide.yiddishTzaddik} ${guide.seforim} ${guide.aliases?.join(" ") ?? ""} ${extraSpellings([guide.slug, guide.city])}`)) : [];
+  const matchingStops = query ? sacredStops.filter((stop) => fuzzyMatch(query, `${stop.city} ${stop.traditionalName ?? ""} ${stop.yiddishName} ${stop.country} ${stop.address} ${stop.aliases?.join(" ") ?? ""} ${extraSpellings([stop.city, stop.traditionalName])}`)) : sacredStops;
+  const matchingBulk = query ? bulkDestinations.filter((destination) => fuzzyMatch(query, `${destination.city} ${destination.yiddishCity} ${destination.country} ${destination.aliases.join(" ")} ${extraSpellings([destination.slug, destination.city])}`)) : bulkDestinations;
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
