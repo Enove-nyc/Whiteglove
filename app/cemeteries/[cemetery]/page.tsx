@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries } from "@/data/cemeteries";
+import { placeDirectionsUrl } from "@/data/route-utils";
 import { getCemeteryView } from "@/lib/cemeteries-view";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
 
@@ -16,7 +17,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
   const cemetery = await getCemeteryView(slug);
   if (!cemetery) notFound();
 
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cemetery.address} ${cemetery.coordinates ?? ""}`)}`;
+  const mapUrl = placeDirectionsUrl(cemetery.address, cemetery.coordinates);
   const hasAccessContacts = Boolean(cemetery.accessContacts?.length);
 
   const placeGroups = PLACE_CATEGORY_ORDER.map((category) => ({

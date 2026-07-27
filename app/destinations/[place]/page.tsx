@@ -5,6 +5,7 @@ import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/bulk-destinations";
+import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
 
@@ -79,7 +80,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
                 {cemetery.address && <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.address}</p>}
                 {cemetery.arrivalNotes[0] && <p className="mt-4 border-l-2 border-[var(--gold)] pl-3 text-sm leading-6 text-stone-600">{cemetery.arrivalNotes[0]}</p>}
                 {cemetery.burials.length > 0 && <p className="mt-4 text-sm font-semibold text-[var(--navy)]">{cemetery.burials.length} known kevarim recorded.</p>}
-                {cemetery.address && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cemetery.address} ${cemetery.coordinates ?? ""}`)}`} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Navigate to this beis hachaim</a>}
+                {cemetery.address && <a href={placeDirectionsUrl(cemetery.address, cemetery.coordinates)} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Navigate to this beis hachaim</a>}
               </article>
             ))}
           </div>

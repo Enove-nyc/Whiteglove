@@ -7,6 +7,7 @@ import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
 import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/city-guides";
+import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
 
@@ -31,9 +32,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
     ? dbContent.contacts
     : guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : []);
 
-  const graveMapUrl = guide.graveAddress
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${guide.graveAddress} ${guide.graveCoordinates ?? ""}`)}`
-    : undefined;
+  const graveMapUrl = guide.graveAddress ? placeDirectionsUrl(guide.graveAddress, guide.graveCoordinates) : undefined;
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">

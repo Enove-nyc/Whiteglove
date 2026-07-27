@@ -23,6 +23,28 @@ export function coordinatesToPoint(coordinates?: string) {
   return { lat: convert(matches[0]), lng: convert(matches[1]) };
 }
 
+/**
+ * A Google Maps destination string. When we have real coordinates we use ONLY
+ * the "lat,lng" (so Maps drops the pin on the exact spot instead of resolving
+ * the address text, which can land at the wrong place or "address not found").
+ * Falls back to the address only when there are no coordinates.
+ */
+export function mapsDestination(address?: string | null, coordinates?: string | null): string {
+  const point = coordinatesToPoint(coordinates ?? undefined);
+  if (point) return `${point.lat},${point.lng}`;
+  return (address ?? "").trim();
+}
+
+/** "Show this place" — drops a pin (exact coordinates when we have them). */
+export function placeMapUrl(address?: string | null, coordinates?: string | null): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsDestination(address, coordinates))}`;
+}
+
+/** "Navigate here" — opens turn-by-turn directions to the exact coordinates. */
+export function placeDirectionsUrl(address?: string | null, coordinates?: string | null): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsDestination(address, coordinates))}`;
+}
+
 function distance(first: SavedPlace, second: SavedPlace) {
   const a = coordinatesToPoint(first.coordinates);
   const b = coordinatesToPoint(second.coordinates);
@@ -64,7 +86,7 @@ export function optimizeRoute(places: SavedPlace[]) {
 
 export function directionsUrl(places: SavedPlace[]) {
   if (places.length < 2) return "";
-  const location = (place: SavedPlace) => place.coordinates || place.address;
+  const location = (place: SavedPlace) => mapsDestination(place.address, place.coordinates);
   const params = new URLSearchParams({ api: "1", origin: location(places[0]), destination: location(places[places.length - 1]) });
   if (places.length > 2) params.set("waypoints", places.slice(1, -1).map(location).join("|"));
   return `https://www.google.com/maps/dir/?${params.toString()}`;
