@@ -6,7 +6,7 @@ export default function Footer() {
     <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#f7f3eb]">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 text-center sm:px-8 md:grid-cols-[1.4fr_1fr] md:text-left">
         <div className="min-w-0">
-          <Image src="/logo-light.png" alt="White Glove Itineraries" width={500} height={300} className="mx-auto h-20 w-auto max-w-full object-contain md:mx-0" />
+          <Image src="/logo-footer.png" alt="White Glove Itineraries" width={1599} height={1066} className="mx-auto h-24 w-auto max-w-full object-contain md:mx-0" />
           <p className="mx-auto mt-5 max-w-md leading-7 text-slate-300 md:mx-0">Thoughtfully planned kosher travel and Jewish heritage journeys, with every detail handled with care.</p>
         </div>
         <div className="min-w-0 md:justify-self-end">
