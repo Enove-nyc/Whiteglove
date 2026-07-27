@@ -3,14 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-// Optional AI suggestions for filling free time. Uses ANTHROPIC_API_KEY when it
-// is configured; otherwise returns { available: false } so the UI can show a
-// gentle note instead of failing.
+// Optional AI suggestions for filling free time. Works with a FREE Google
+// Gemini key (GEMINI_API_KEY — no credit card needed) or a paid Anthropic key
+// (ANTHROPIC_API_KEY). If neither is set it returns { available: false } so the
+// UI shows a gentle note instead of failing.
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ available: false, reason: "AI suggestions are off. Add ANTHROPIC_API_KEY to enable them." });
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!geminiKey && !anthropicKey) {
+    return NextResponse.json({ available: false, reason: "AI ideas are off. Add a free GEMINI_API_KEY (or an ANTHROPIC_API_KEY) to enable them." });
   }
+
   const body = (await request.json().catch(() => null)) as
     | { location?: string; date?: string; freeHours?: number; alreadyPlanned?: string[] }
     | null;
@@ -30,23 +33,30 @@ export async function POST(request: NextRequest) {
   ].join("");
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 400,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
-    if (!response.ok) {
-      return NextResponse.json({ available: false, reason: "AI service is temporarily unavailable." });
+    // Prefer the free Gemini key when present.
+    if (geminiKey) {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        },
+      );
+      if (!res.ok) return NextResponse.json({ available: false, reason: "AI service is temporarily unavailable." });
+      const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+      const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text).filter(Boolean).join("\n").trim();
+      return NextResponse.json({ available: true, text });
     }
-    const data = (await response.json()) as { content?: Array<{ type: string; text?: string }> };
+
+    // Fall back to Anthropic if that key is the one configured.
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": anthropicKey as string, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 400, messages: [{ role: "user", content: prompt }] }),
+    });
+    if (!res.ok) return NextResponse.json({ available: false, reason: "AI service is temporarily unavailable." });
+    const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
     const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
     return NextResponse.json({ available: true, text });
   } catch {
