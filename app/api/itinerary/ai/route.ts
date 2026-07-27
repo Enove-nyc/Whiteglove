@@ -38,8 +38,8 @@ function buildUserMessage(body: { question?: string; location?: string; date?: s
 }
 
 export async function POST(request: NextRequest) {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
   if (!geminiKey && !anthropicKey) {
     return NextResponse.json({ available: false, reason: "AI help is off. Add a free GEMINI_API_KEY (or an ANTHROPIC_API_KEY) to enable it." });
   }
