@@ -6,6 +6,7 @@ import BilingualLabel from "@/components/BilingualLabel";
 import { cityGuides } from "@/data/city-guides";
 import { bulkDestinations } from "@/data/bulk-destinations";
 import { sacredStops } from "@/data/sacred-stops";
+import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
 
 type SearchMatch = {
   id: string;
@@ -60,9 +61,11 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
     const normalized = query.trim().toLowerCase();
     if (!normalized) return featuredMatches.slice(0, 5);
 
-    const guideMatches = featuredMatches.filter((match) => `${match.title} ${match.yiddish} ${match.subtitle} ${match.aliases?.join(" ") ?? ""}`.toLowerCase().includes(normalized));
+    const guideMatches = featuredMatches.filter((match) =>
+      fuzzyMatch(normalized, `${match.title} ${match.yiddish} ${match.subtitle} ${match.aliases?.join(" ") ?? ""} ${extraSpellings([match.id, match.title])}`),
+    );
     const stopMatches = sacredStops
-      .filter((stop) => `${stop.city} ${stop.traditionalName ?? ""} ${stop.yiddishName} ${stop.country} ${stop.address} ${stop.aliases?.join(" ") ?? ""}`.toLowerCase().includes(normalized))
+      .filter((stop) => fuzzyMatch(normalized, `${stop.city} ${stop.traditionalName ?? ""} ${stop.yiddishName} ${stop.country} ${stop.address} ${stop.aliases?.join(" ") ?? ""} ${extraSpellings([stop.city, stop.traditionalName])}`))
       .map((stop) => ({
         id: `stop-${stop.city}-${stop.address}`,
         title: stop.city,
