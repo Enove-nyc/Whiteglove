@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import FooterContactForm from "@/components/FooterContactForm";
 
 export default function Footer() {
   return (
@@ -12,7 +11,8 @@ export default function Footer() {
         </div>
         <div className="min-w-0 md:justify-self-end">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Begin a conversation</p>
-          <FooterContactForm />
+          <p className="mx-auto mt-4 max-w-sm leading-7 text-slate-300 md:mx-0 md:ml-auto">Tell us about your trip — kevarim, dates, and kosher needs — and we&apos;ll be in touch.</p>
+          <Link href="/contact" className="mt-5 inline-block border border-[var(--gold-light)] bg-[var(--gold)] px-7 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">Contact us</Link>
           <p className="mt-6 text-sm text-slate-400">White Glove Itineraries - Personalized travel, planned with purpose.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:justify-start">
             <Link href="/contact" className="inline-block text-xs font-bold uppercase tracking-[0.14em] text-slate-400 transition hover:text-[var(--gold-light)]">Contact</Link>
