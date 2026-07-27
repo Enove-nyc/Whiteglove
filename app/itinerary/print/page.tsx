@@ -76,7 +76,8 @@ export default function PrintItineraryPage() {
                 {day.activities.map((a) => (
                   <div key={a.id}>
                     {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)}</p>}
-                    <p><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.address ? <span className="text-stone-500"> — {a.address}</span> : null}</p>
+                    <p><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}{a.address ? <span className="text-stone-500"> — {a.address}</span> : null}</p>
+                    {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
                     {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}
                   </div>
                 ))}

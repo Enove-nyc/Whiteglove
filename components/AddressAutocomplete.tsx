@@ -55,6 +55,9 @@ export default function AddressAutocomplete({
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // Sync when the value is set from outside (e.g. prefilled by the kever picker).
+  useEffect(() => { setQuery(value); }, [value]);
+
   useEffect(() => {
     const q = query.trim();
     if (q.length < 3) { setResults([]); return; }

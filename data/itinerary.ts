@@ -40,7 +40,9 @@ export type ItinActivity = {
   date: string; // YYYY-MM-DD
   startTime?: string; // HH:MM
   durationMins?: number;
-  href?: string;
+  href?: string; // link (our kever page, a booking page, a map…)
+  phone?: string; // contact number for this stop
+  keverSlug?: string; // set when picked from our kever directory
   notes?: string;
   bookedOnSite?: boolean;
 };
