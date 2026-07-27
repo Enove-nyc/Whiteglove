@@ -21,6 +21,9 @@ export default function AirportAutocomplete({
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // Sync when the value is set from outside (e.g. after a flight-number lookup).
+  useEffect(() => { setQuery(value); }, [value]);
+
   const q = query.trim().toLowerCase();
   const matches = q.length >= 1
     ? AIRPORTS.filter((a) => `${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`.toLowerCase().includes(q)).slice(0, 8)

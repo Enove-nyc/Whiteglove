@@ -11,6 +11,7 @@ export type ItinLodging = {
   name: string;
   address?: string;
   coordinates?: string;
+  phone?: string;
   checkIn: string; // YYYY-MM-DD
   checkOut: string; // YYYY-MM-DD (for overnight-transit, the morning after)
   notes?: string;
