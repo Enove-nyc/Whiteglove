@@ -82,7 +82,7 @@ export default function PrintItineraryPage() {
                   </div>
                 ))}
                 {day.flightsDeparting.map((f) => <p key={`d${f.id}`}>✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
-                <p className="pt-1 text-stone-600">🛏️ <strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}</p>
+                <p className="pt-1 text-stone-600">🛏️ <strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</p>
               </div>
             </section>
           ))}

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import AirportAutocomplete from "@/components/AirportAutocomplete";
 import type { KeverResult } from "@/lib/kever-search";
+import type { LodgingResult } from "@/lib/lodging-search";
 import {
   buildDays,
   emptyItinerary,
@@ -233,7 +235,7 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
       <p className="mt-4 border-t border-[var(--gold-light)] pt-3 text-sm">
         <span className={caption}>Tonight</span>{" "}
         {day.lodging ? (
-          <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}</span>
+          <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}</span>
         ) : (
           <span className="text-stone-400">— not set —</span>
         )}
@@ -336,8 +338,8 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
-      <Field label="From *"><input className={inputClass} value={f.from ?? ""} onChange={(e) => setF({ ...f, from: e.target.value })} placeholder="e.g. JFK" /></Field>
-      <Field label="To *"><input className={inputClass} value={f.to ?? ""} onChange={(e) => setF({ ...f, to: e.target.value })} placeholder="e.g. Kyiv (KBP)" /></Field>
+      <Field label="From *"><AirportAutocomplete value={f.from ?? ""} onChange={(v) => setF({ ...f, from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
+      <Field label="To *"><AirportAutocomplete value={f.to ?? ""} onChange={(v) => setF({ ...f, to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
       <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
@@ -351,15 +353,87 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
 function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinLodging) => void }) {
   const [l, setL] = useState<Partial<ItinLodging>>({ type: "hotel", checkIn: startDate });
   const overnight = l.type === "overnight-transit";
+
+  function pickLodging(g: LodgingResult) {
+    setL((prev) => ({ ...prev, name: g.name, address: g.address ?? prev.address, phone: g.phone ?? prev.phone, notes: prev.notes || g.notes }));
+  }
+
   return (
-    <FormShell title="Add lodging / where you sleep" onSubmit={() => { if ((overnight || l.name) && l.checkIn) onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, checkIn: l.checkIn, checkOut: l.checkOut || l.checkIn, notes: l.notes, bookedOnSite: false }); }}>
+    <FormShell title="Add lodging / where you sleep" onSubmit={() => { if ((overnight || l.name) && l.checkIn) onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn: l.checkIn, checkOut: l.checkOut || l.checkIn, notes: l.notes, bookedOnSite: false }); }}>
+      {!overnight && (
+        <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
+          <span className={caption}>Pick from lodging we&apos;ve researched near the kevarim</span>
+          <LodgingPicker onPick={pickLodging} />
+          <p className="mt-2 text-[11px] text-stone-500">Kosher-friendly guesthouses and hotels we&apos;ve gathered — confirm rates and availability directly. Or just type your own below.</p>
+        </div>
+      )}
       <Field label="Type"><select className={inputClass} defaultValue="hotel" onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
-      {!overnight && <Field label="Name *"><input className={inputClass} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
-      {overnight && <Field label="Bus or flight?"><input className={inputClass} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
+      {!overnight && <Field label="Name *"><input className={inputClass} value={l.name ?? ""} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
+      {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
+      {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
       <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setL({ ...l, checkIn: e.target.value })} /></Field>
       {!overnight && <Field label="Check-out *"><input type="date" className={inputClass} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
     </FormShell>
+  );
+}
+
+// Search-and-pick lodging from the site's researched accommodations.
+function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<LodgingResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 2) { setResults([]); return; }
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/lodging/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (active) setResults(data.results ?? []);
+      } catch {
+        if (active) setResults([]);
+      }
+    }, 200);
+    return () => { active = false; clearTimeout(timer); };
+  }, [q]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative mt-1">
+      <input
+        className={inputClass}
+        value={q}
+        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="Search by place or city — e.g. Uman, Lizhensk, guesthouse…"
+        autoComplete="off"
+      />
+      {open && results.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+          {results.map((g, i) => (
+            <li key={`${g.name}-${i}`}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onPick(g); setQ(""); setResults([]); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
+              >
+                <span className="text-sm font-semibold text-[var(--navy)]">{g.name}</span>
+                <span className="block text-xs text-stone-500">{g.city}{g.phone ? ` · ${g.phone}` : ""}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
