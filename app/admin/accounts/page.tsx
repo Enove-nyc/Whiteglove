@@ -1,14 +1,9 @@
 import Link from "next/link";
+import AdminAccountsTable from "@/components/AdminAccountsTable";
 import Footer from "@/components/Footer";
 import { hasAccountStorage, listAllAccounts } from "@/lib/account-store";
 
 export const dynamic = "force-dynamic";
-
-function fmtDate(value?: string) {
-  if (!value) return "—";
-  const d = new Date(value);
-  return Number.isFinite(d.getTime()) ? d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—";
-}
 
 export default async function AdminAccountsPage() {
   const available = hasAccountStorage();
@@ -47,32 +42,7 @@ export default async function AdminAccountsPage() {
                 <p className="mt-2 text-sm text-stone-600">Registered travelers will appear here.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto border border-[var(--gold-light)] bg-[#fcfaf6]">
-                <table className="w-full min-w-[720px] text-left text-sm">
-                  <thead className="border-b border-[var(--gold-light)] text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                    <tr>
-                      <th className="px-4 py-3">Name</th>
-                      <th className="px-4 py-3">Email</th>
-                      <th className="px-4 py-3">Phone</th>
-                      <th className="px-4 py-3">Joined</th>
-                      <th className="px-4 py-3">Verified</th>
-                      <th className="px-4 py-3">Saved</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--gold-light)]">
-                    {accounts.map((a) => (
-                      <tr key={a.email} className="text-stone-700">
-                        <td className="px-4 py-3 font-semibold text-[var(--navy)]">{a.name || "—"}</td>
-                        <td className="px-4 py-3"><a href={`mailto:${a.email}`} className="underline decoration-[var(--gold)] underline-offset-2">{a.email}</a></td>
-                        <td className="px-4 py-3">{a.phone ? <a href={`tel:${a.phone.replace(/[^+\d]/g, "")}`} className="underline decoration-[var(--gold-light)] underline-offset-2">{a.phone}</a> : "—"}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{fmtDate(a.createdAt)}</td>
-                        <td className="px-4 py-3">{a.verifiedAt ? <span className="text-emerald-700">Yes</span> : <span className="text-stone-400">No</span>}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-xs text-stone-500">{a.routeCount} route · {a.favoriteCount} fav{a.hasItinerary ? " · itinerary" : ""}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <AdminAccountsTable accounts={accounts} />
             )}
             <p className="mt-4 text-xs leading-5 text-stone-400">
               This list is private to the owner. Only handle travelers&apos; details in line with your privacy policy — they entrusted their name, email, and phone to book with you.

@@ -64,6 +64,39 @@ export default function AdminExpenses() {
     load();
   }
 
+  async function uploadReceipt(id: string, file: File) {
+    setError(null);
+    if (file.type !== "application/pdf") {
+      setError("The receipt must be a PDF file.");
+      return;
+    }
+    if (file.size > 700 * 1024) {
+      setError("That PDF is too large (max ~700 KB). Compress it and try again.");
+      return;
+    }
+    const dataUrl: string = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    }).catch(() => "");
+    if (!dataUrl) {
+      setError("Could not read that file.");
+      return;
+    }
+    const res = await fetch("/api/admin/expenses/receipt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, name: file.name, dataUrl }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Could not upload the receipt.");
+      return;
+    }
+    load();
+  }
+
   if (!available) {
     return <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm text-stone-600">The private store isn&apos;t connected, so expenses can&apos;t be saved yet.</div>;
   }
@@ -113,17 +146,27 @@ export default function AdminExpenses() {
       <div className="mt-6 overflow-x-auto border border-[var(--gold-light)] bg-[#fcfaf6]">
         <table className="w-full min-w-[680px] text-left text-sm">
           <thead className="border-b border-[var(--gold-light)] text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
-            <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Description</th><th className="px-4 py-3">Category</th><th className="px-4 py-3 text-right">Amount</th><th className="px-4 py-3" /></tr>
+            <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Description</th><th className="px-4 py-3">Category</th><th className="px-4 py-3 text-right">Amount</th><th className="px-4 py-3">Receipt</th><th className="px-4 py-3" /></tr>
           </thead>
           <tbody className="divide-y divide-[var(--gold-light)]">
             {items.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">No expenses yet — add your first above.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-stone-400">No expenses yet — add your first above.</td></tr>
             ) : items.map((e) => (
               <tr key={e.id} className="text-stone-700">
                 <td className="px-4 py-3 whitespace-nowrap">{e.date}</td>
                 <td className="px-4 py-3"><span className="font-semibold text-[var(--navy)]">{e.description}</span>{e.notes ? <span className="block text-xs text-stone-500">{e.notes}</span> : null}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-xs">{e.category}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-right font-semibold text-[var(--navy)]">{money(e.amountCents, e.currency)}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-xs">
+                  {e.receiptName ? (
+                    <a href={`/api/admin/expenses/receipt?id=${encodeURIComponent(e.id)}`} target="_blank" rel="noreferrer" className="text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2" title={e.receiptName}>📄 View</a>
+                  ) : (
+                    <label className="cursor-pointer text-stone-500 underline decoration-dotted underline-offset-2 hover:text-[var(--navy)]">
+                      Add PDF
+                      <input type="file" accept="application/pdf" className="hidden" onChange={(ev) => { const file = ev.target.files?.[0]; if (file) void uploadReceipt(e.id, file); ev.target.value = ""; }} />
+                    </label>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right"><button type="button" onClick={() => remove(e.id)} className="text-xs text-stone-400 hover:text-red-700">✕</button></td>
               </tr>
             ))}
