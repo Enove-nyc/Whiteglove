@@ -94,8 +94,7 @@ export default async function Home() {
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {travelServices.map((service) => (
             <Link key={service.href} href={service.href} className="group flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
-              <p dir="rtl" className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{service.yiddish}</p>
-              <p className="mt-1 text-sm font-semibold text-stone-500">{service.title}</p>
+              <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{service.title}</p>
               <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{service.text}</p>
               <span className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Learn more →</span>
             </Link>
