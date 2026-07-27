@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
+import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function ItineraryPage() {
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
         <TravelAssistantBox />
         <div className="mt-10">
+          <SharedWithMe />
           <ItineraryBuilder />
         </div>
       </section>

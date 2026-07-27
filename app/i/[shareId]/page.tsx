@@ -1,0 +1,82 @@
+import Link from "next/link";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import SharedItineraryActions from "@/components/SharedItineraryActions";
+import { buildDays, emptyItinerary, formatKm } from "@/data/itinerary";
+import { getSharedItineraryByShareId } from "@/lib/account-store";
+
+export const dynamic = "force-dynamic";
+
+export default async function SharedItineraryPage({ params }: { params: Promise<{ shareId: string }> }) {
+  const { shareId } = await params;
+  const shared = await getSharedItineraryByShareId(shareId);
+
+  if (!shared) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <section className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">This trip isn&apos;t available</h1>
+          <p className="mt-4 text-stone-600">The link may have been turned off, or the trip hasn&apos;t been built yet. Ask the person who shared it for a fresh link.</p>
+          <Link href="/" className="mt-8 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white">Back to White Glove</Link>
+        </section>
+        <Footer />
+      </main>
+    );
+  }
+
+  const itin = { ...emptyItinerary(), ...shared.itinerary };
+  const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
+  const sharedByName = shared.ownerName || shared.ownerEmail;
+
+  return (
+    <main className="min-h-screen bg-[var(--cream)]">
+      <Navbar />
+      <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
+        <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Shared itinerary</p>
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{itin.title || "A trip"}</h1>
+          <p className="mt-2 text-sm text-stone-600">
+            Shared by <strong className="text-[var(--navy)]">{sharedByName}</strong>
+            {itin.travelerName ? <> · for {itin.travelerName}</> : null}
+            {itin.startDate && itin.endDate ? <> · {itin.startDate} → {itin.endDate}</> : null}
+          </p>
+          <SharedItineraryActions itinerary={itin} />
+        </div>
+
+        {days.length === 0 ? (
+          <p className="mt-8 text-sm text-stone-500">This trip doesn&apos;t have dates and stops yet.</p>
+        ) : (
+          <div className="mt-6 space-y-5">
+            {days.map((day) => (
+              <article key={day.date} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--gold-light)] pb-2">
+                  <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h2>
+                  <p className="text-sm font-semibold text-stone-500">{day.label}</p>
+                </div>
+                <div className="mt-3 space-y-2 text-sm">
+                  {day.flightsArriving.map((f) => <p key={`a${f.id}`} className="text-[var(--navy)]">✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
+                  {day.activities.map((a) => (
+                    <div key={a.id} className="border-t border-[var(--gold-light)] pt-2 first:border-t-0 first:pt-0">
+                      {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)} from previous stop</p>}
+                      <p className="text-base"><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}</p>
+                      {a.address ? <p className="text-stone-600">{a.address}</p> : null}
+                      {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
+                      {a.href ? <p><a href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2" target="_blank" rel="noreferrer">Details →</a></p> : null}
+                      {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}
+                    </div>
+                  ))}
+                  {day.flightsDeparting.map((f) => <p key={`d${f.id}`} className="text-[var(--navy)]">✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
+                  <p className="pt-1 text-stone-600">🛏️ <strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.address ? ` — ${day.lodging.address}` : ""}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
+      </section>
+      <Footer />
+    </main>
+  );
+}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
 import {
@@ -133,6 +134,8 @@ export default function ItineraryBuilder() {
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
       </div>
+
+      <ShareItineraryPanel />
 
       {/* Bookings summary + print */}
       {(itin.flights.length + itin.lodging.length + itin.activities.length) > 0 && (

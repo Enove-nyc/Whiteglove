@@ -24,7 +24,17 @@ export type AccountData = {
   route: SavedPlace[];
   favorites: SavedPlace[];
   itinerary?: Itinerary;
+  itineraryShareId?: string; // public read-only share token for this account's trip
+  itineraryCollaborators?: string[]; // emails the owner added to the trip
   updatedAt?: string;
+};
+
+// One entry in a person's "shared with me" index.
+export type SharedTrip = {
+  ownerEmail: string;
+  ownerName?: string;
+  title: string;
+  shareId: string;
 };
 
 export type AccountSummary = {
@@ -322,6 +332,134 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary) 
     updatedAt: new Date().toISOString(),
   };
   return writeJson(dataKey(normalized), next);
+}
+
+// ---- Itinerary sharing ------------------------------------------------
+
+function shareKey(shareId: string) {
+  return `white-glove:itinerary-share:${shareId}`;
+}
+function sharedWithKey(email: string) {
+  return `white-glove:shared-with:${normalizeEmail(email)}`;
+}
+function shareToken() {
+  return randomBytes(9).toString("base64url"); // ~12 url-safe chars
+}
+
+async function patchAccountData(email: string, patch: Partial<AccountData>) {
+  const normalized = normalizeEmail(email);
+  const current = await getAccountData(normalized);
+  const next: AccountData = { ...current, ...patch, updatedAt: new Date().toISOString() };
+  const ok = await writeJson(dataKey(normalized), next);
+  return ok ? next : null;
+}
+
+/** Current share state for the owner's trip. */
+export async function getItineraryShareState(email: string) {
+  const data = await getAccountData(email);
+  return { shareId: data.itineraryShareId, collaborators: data.itineraryCollaborators ?? [] };
+}
+
+/** Ensure a public share token exists for this account's trip; returns it. */
+export async function ensureItineraryShare(email: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeEmail(email);
+  const data = await getAccountData(normalized);
+  if (data.itineraryShareId) {
+    // Make sure the reverse lookup exists (self-heal).
+    await writeJson(shareKey(data.itineraryShareId), { ownerEmail: normalized, createdAt: new Date().toISOString() });
+    return data.itineraryShareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(shareKey(token), { ownerEmail: normalized, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  await patchAccountData(normalized, { itineraryShareId: token });
+  return token;
+}
+
+/** Stop sharing: remove the public link and every collaborator's access. */
+export async function stopItineraryShare(email: string) {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeEmail(email);
+  const data = await getAccountData(normalized);
+  if (data.itineraryShareId) await deleteKey(shareKey(data.itineraryShareId));
+  for (const collaborator of data.itineraryCollaborators ?? []) {
+    await removeFromSharedWith(collaborator, normalized);
+  }
+  await patchAccountData(normalized, { itineraryShareId: undefined, itineraryCollaborators: [] });
+  return true;
+}
+
+export async function getShareOwnerEmail(shareId: string): Promise<string | null> {
+  const rec = await readJson<{ ownerEmail: string }>(shareKey(shareId));
+  return rec?.ownerEmail ?? null;
+}
+
+/** Read a shared trip by its public token (read-only view). */
+export async function getSharedItineraryByShareId(shareId: string) {
+  const ownerEmail = await getShareOwnerEmail(shareId);
+  if (!ownerEmail) return null;
+  const [data, record] = await Promise.all([getAccountData(ownerEmail), getAccountRecord(ownerEmail)]);
+  if (!data.itinerary) return null;
+  return { itinerary: data.itinerary, ownerName: record?.name, ownerEmail };
+}
+
+async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {
+  const key = sharedWithKey(collaboratorEmail);
+  const list = (await readJson<SharedTrip[]>(key)) ?? [];
+  const next = [entry, ...list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(entry.ownerEmail))].slice(0, 50);
+  await writeJson(key, next);
+}
+async function removeFromSharedWith(collaboratorEmail: string, ownerEmail: string) {
+  const key = sharedWithKey(collaboratorEmail);
+  const list = (await readJson<SharedTrip[]>(key)) ?? [];
+  const next = list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(ownerEmail));
+  await writeJson(key, next);
+}
+
+/** Add a person (by email) to the owner's trip. Returns the share token + list. */
+export async function addItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const owner = normalizeEmail(ownerEmail);
+  const person = normalizeEmail(collaboratorEmail);
+  if (!person || !person.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  if (person === owner) return { ok: false as const, error: "That's your own account." };
+  const shareId = await ensureItineraryShare(owner);
+  if (!shareId) return { ok: false as const, error: "Could not create the share link." };
+  const data = await getAccountData(owner);
+  const current = data.itineraryCollaborators ?? [];
+  const collaborators = current.includes(person) ? current : [...current, person].slice(0, 50);
+  await patchAccountData(owner, { itineraryCollaborators: collaborators });
+  const [record] = await Promise.all([getAccountRecord(owner)]);
+  await upsertSharedWith(person, { ownerEmail: owner, ownerName: record?.name, title: data.itinerary?.title || "Shared trip", shareId });
+  return { ok: true as const, shareId, collaborators };
+}
+
+export async function removeItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const owner = normalizeEmail(ownerEmail);
+  const person = normalizeEmail(collaboratorEmail);
+  const data = await getAccountData(owner);
+  const collaborators = (data.itineraryCollaborators ?? []).filter((e) => e !== person);
+  await patchAccountData(owner, { itineraryCollaborators: collaborators });
+  await removeFromSharedWith(person, owner);
+  return { ok: true as const, collaborators };
+}
+
+/** Trips other people have shared with this person (still-valid ones only). */
+export async function listSharedWithMe(email: string): Promise<SharedTrip[]> {
+  const list = (await readJson<SharedTrip[]>(sharedWithKey(email))) ?? [];
+  const valid = await Promise.all(
+    list.map(async (e): Promise<SharedTrip | null> => {
+      const owner = await getShareOwnerEmail(e.shareId);
+      if (!owner || normalizeEmail(owner) !== normalizeEmail(e.ownerEmail)) return null;
+      const data = await getAccountData(owner);
+      // Confirm the person is still a collaborator (owner may have removed them).
+      if (!(data.itineraryCollaborators ?? []).includes(normalizeEmail(email))) return null;
+      return { ...e, title: data.itinerary?.title || e.title };
+    }),
+  );
+  return valid.filter((e): e is SharedTrip => e !== null);
 }
 
 export async function toggleAccountPlace(email: string, collection: "route" | "favorites", place: SavedPlace) {
