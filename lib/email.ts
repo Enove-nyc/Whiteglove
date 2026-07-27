@@ -180,6 +180,42 @@ export async function sendContactMessage(msg: ContactMessage): Promise<boolean> 
   }
 }
 
+/**
+ * Emails a person a link to an itinerary that was shared with them. Never
+ * throws; returns true when Resend accepts it.
+ */
+export async function sendItineraryShareEmail(to: string, opts: { fromName: string; url: string; title: string }): Promise<boolean> {
+  const config = resendConfig();
+  if (!config) {
+    console.error("RESEND_API_KEY is not set - itinerary share email not sent.");
+    return false;
+  }
+  const who = escapeHtml(opts.fromName || "A fellow traveler");
+  const title = escapeHtml(opts.title || "their trip");
+  const url = escapeHtml(opts.url);
+  const html =
+    `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} shared a trip with you</h2>` +
+    `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">You've been added to <strong>${title}</strong> on White Glove Itineraries.</p>` +
+    `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">View the itinerary →</a></p>` +
+    `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Or open this link: ${url}</p>`;
+  const text = `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on White Glove Itineraries.\n\nView it here: ${opts.url}`;
+  try {
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: config.from, to, subject: `${opts.fromName || "A traveler"} shared "${opts.title}" with you`, html, text }),
+    });
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      console.error("Resend itinerary-share failed:", response.status, errorBody);
+    }
+    return response.ok;
+  } catch (error) {
+    console.error("Resend itinerary-share threw:", error);
+    return false;
+  }
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const config = resendConfig();
   if (!config) {
