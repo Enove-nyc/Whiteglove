@@ -5,7 +5,8 @@
 // isn't connected, so the admin UI can show a clear "connect the database"
 // message instead of a stack trace.
 
-import type { ContentStatus, PlaceCategory } from "@prisma/client";
+import { randomUUID } from "node:crypto";
+import type { ContentStatus, PlaceCategory, ProviderCategory } from "@prisma/client";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -157,4 +158,57 @@ export async function upsertPage(slug: string, fields: PageFields) {
     update: fields,
     create: { slug, ...fields },
   });
+}
+
+// ---- Directory providers (tour operators, planners, agencies, guides) --
+
+export type ProviderFields = {
+  name: string;
+  category: ProviderCategory;
+  tagline: string | null;
+  description: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  website: string | null;
+  basedIn: string | null;
+  regions: string[];
+  languages: string[];
+  specialties: string[];
+  featured: boolean;
+  status: ContentStatus;
+};
+
+function providerSlug(name: string) {
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "provider";
+  return `${base}-${randomUUID().slice(0, 6)}`;
+}
+
+export async function listProvidersForAdmin() {
+  const prisma = await db();
+  return prisma.directoryProvider.findMany({
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+  });
+}
+
+export async function getProviderForAdmin(slug: string) {
+  const prisma = await db();
+  return prisma.directoryProvider.findUnique({ where: { slug } });
+}
+
+export async function createProvider(fields: ProviderFields) {
+  const prisma = await db();
+  return prisma.directoryProvider.create({
+    data: { slug: providerSlug(fields.name), ...fields },
+  });
+}
+
+export async function updateProvider(slug: string, fields: ProviderFields) {
+  const prisma = await db();
+  return prisma.directoryProvider.update({ where: { slug }, data: fields });
+}
+
+export async function deleteProvider(slug: string) {
+  const prisma = await db();
+  return prisma.directoryProvider.delete({ where: { slug } });
 }

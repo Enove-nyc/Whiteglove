@@ -48,7 +48,7 @@ export type EditableAccommodation = {
 
 export type EditSuggestion = {
   id: string;
-  targetType: "location" | "accommodation" | "site";
+  targetType: "location" | "accommodation" | "site" | "directory";
   targetId: string;
   title: string;
   name: string;

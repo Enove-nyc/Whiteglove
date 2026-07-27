@@ -252,6 +252,41 @@ model SiteSetting {
   updatedAt         DateTime @updatedAt
 }
 
+// Directory of service providers (tour operators, vacation planners, travel
+// agencies, guides & drivers) that travelers can look up. Distinct from the
+// per-destination PracticalPlace listings — these are businesses/people, not
+// on-the-ground spots tied to one city.
+enum ProviderCategory {
+  TOUR_OPERATOR // organized trips & kever tours
+  VACATION_PLANNER // full-trip planners / concierges
+  TRAVEL_AGENCY // flights, hotels, packages
+  GUIDE_DRIVER // tour guides & private drivers
+}
+
+model DirectoryProvider {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  name        String
+  category    ProviderCategory
+  tagline     String?
+  description String?
+  phone       String?
+  whatsapp    String?
+  email       String?
+  website     String?
+  basedIn     String?
+  regions     String[]         @default([]) // countries/areas served
+  languages   String[]         @default([])
+  specialties String[]         @default([])
+  featured    Boolean          @default(false)
+  status      ContentStatus    @default(PUBLISHED)
+  source      String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([category])
+}
+
 // Generic editable marketing/info page (Milestone-1 "Page").
 model Page {
   id        String        @id @default(cuid())

@@ -18,6 +18,9 @@ CREATE TYPE "VerificationStatus" AS ENUM ('VERIFIED', 'UNAVAILABLE', 'NEEDS_VERI
 -- CreateEnum
 CREATE TYPE "PlaceCategory" AS ENUM ('ACCOMMODATION', 'KOSHER_FOOD', 'MINYAN', 'MIKVAH', 'TRANSPORT', 'AIRPORT', 'DRIVER');
 
+-- CreateEnum
+CREATE TYPE "ProviderCategory" AS ENUM ('TOUR_OPERATOR', 'VACATION_PLANNER', 'TRAVEL_AGENCY', 'GUIDE_DRIVER');
+
 -- CreateTable
 CREATE TABLE "Destination" (
     "id" TEXT NOT NULL,
@@ -187,6 +190,31 @@ CREATE TABLE "SiteSetting" (
 );
 
 -- CreateTable
+CREATE TABLE "DirectoryProvider" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "category" "ProviderCategory" NOT NULL,
+    "tagline" TEXT,
+    "description" TEXT,
+    "phone" TEXT,
+    "whatsapp" TEXT,
+    "email" TEXT,
+    "website" TEXT,
+    "basedIn" TEXT,
+    "regions" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "languages" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "specialties" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "featured" BOOLEAN NOT NULL DEFAULT false,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "source" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "DirectoryProvider_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Page" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -236,6 +264,12 @@ CREATE INDEX "EditSuggestion_status_idx" ON "EditSuggestion"("status");
 CREATE INDEX "Promotion_enabled_priority_idx" ON "Promotion"("enabled", "priority");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "DirectoryProvider_slug_key" ON "DirectoryProvider"("slug");
+
+-- CreateIndex
+CREATE INDEX "DirectoryProvider_category_idx" ON "DirectoryProvider"("category");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Page_slug_key" ON "Page"("slug");
 
 -- AddForeignKey
@@ -255,5 +289,4 @@ ALTER TABLE "Contact" ADD CONSTRAINT "Contact_cemeteryId_fkey" FOREIGN KEY ("cem
 
 -- AddForeignKey
 ALTER TABLE "PracticalPlace" ADD CONSTRAINT "PracticalPlace_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
 `;

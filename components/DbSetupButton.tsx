@@ -48,7 +48,7 @@ export default function DbSetupButton({
       {result?.ok && (
         <p className="mt-4 text-sm font-semibold text-emerald-700">
           Done — {result.tablesCreated ? "tables created and " : ""}imported {result.counts?.destinations ?? 0} destinations,{" "}
-          {result.counts?.tzaddikim ?? 0} tzaddikim, {result.counts?.cemeteries ?? 0} cemeteries, {result.counts?.places ?? 0} places. Refreshing…
+          {result.counts?.tzaddikim ?? 0} tzaddikim, {result.counts?.cemeteries ?? 0} cemeteries, {result.counts?.places ?? 0} places, {result.counts?.directory ?? 0} directory listings. Refreshing…
         </p>
       )}
       {result?.error && <p className="mt-4 text-sm font-semibold text-red-700">{result.error}</p>}
