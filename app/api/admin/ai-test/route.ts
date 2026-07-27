@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   }
 
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
   const provider = geminiKey ? "Google Gemini (free)" : anthropicKey ? "Anthropic" : null;
 
   if (!provider) {
