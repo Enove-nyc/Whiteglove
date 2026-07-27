@@ -11,11 +11,13 @@ import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
+import { fetchRoadTimes } from "@/lib/road-times";
 import {
   buildDays,
   emptyItinerary,
   formatDuration,
   formatKm,
+  nextDate,
   summarize,
   unscheduledActivities,
   type Itinerary,
@@ -138,15 +140,33 @@ export default function ItineraryBuilder() {
     }
     setPlanNote("Planning the fastest route…");
     const result = planRoute(working);
-    persist(result.itinerary);
+    let planned = result.itinerary;
+
+    // Replace the straight-line estimates with real road driving times.
+    setPlanNote("Getting real driving times…");
+    const chains = buildDays(planned)
+      .map((d) => {
+        const legs = d.travelLegs;
+        if (!legs.length) return [];
+        return [legs[0].fromCoordinates ?? "", ...legs.map((l) => l.toCoordinates ?? "")];
+      })
+      .filter((chain) => chain.length > 1 && chain.every(Boolean));
+    const measured = await fetchRoadTimes(chains, planned.roadTimes ?? {});
+    if (Object.keys(measured).length) planned = { ...planned, roadTimes: { ...(planned.roadTimes ?? {}), ...measured } };
+
+    persist(planned);
     const stillMissing = result.unplaceable.length;
     setPlanning(false);
     setPlanNote(
       `Route planned${result.placed ? ` — ${result.placed} stop${result.placed > 1 ? "s" : ""} scheduled` : ""}.` +
+        (Object.keys(measured).length ? " Driving times measured on real roads." : "") +
         (stillMissing ? ` ${stillMissing} stop${stillMissing > 1 ? "s" : ""} still need a location or a day.` : ""),
     );
-    setTimeout(() => setPlanNote(""), 6000);
+    setTimeout(() => setPlanNote(""), 8000);
   }
+
+  // Change any detail of a stop after it's on the route.
+  const updateActivity = (updated: ItinActivity) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === updated.id ? updated : a)) });
 
   const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
   const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
@@ -232,7 +252,7 @@ export default function ItineraryBuilder() {
           )}
 
           <div className="mt-6 space-y-6">
-            {days.map((day) => <DayCard key={day.date} day={day} onMove={moveStopBy} />)}
+            {days.map((day) => <DayCard key={day.date} day={day} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
           </div>
         </>
       )}
@@ -249,10 +269,17 @@ export default function ItineraryBuilder() {
 
 // ---- Day card with checks + suggestions ------------------------------
 
-function DayCard({ day, onMove }: { day: ReturnType<typeof buildDays>[number]; onMove: (id: string, direction: -1 | 1) => void }) {
+function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
+  day: ReturnType<typeof buildDays>[number];
+  onMove: (id: string, direction: -1 | 1) => void;
+  onUpdate: (a: ItinActivity) => void;
+  onRemove: (id: string) => void;
+  allDates: Array<{ date: string; label: string }>;
+}) {
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const anchor = day.activities.find((a) => a.coordinates) || (day.lodging?.coordinates ? { coordinates: day.lodging.coordinates } : null);
   const canSuggest = Boolean(anchor?.coordinates);
@@ -299,7 +326,7 @@ function DayCard({ day, onMove }: { day: ReturnType<typeof buildDays>[number]; o
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
             {a.distanceFromPrev !== null && (
               <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-                ↓ {formatKm(a.distanceFromPrev)} · ≈{formatDuration(a.travelMinutesFromPrev)} drive from previous stop{" "}
+                ↓ {formatKm(a.distanceFromPrev)} · {a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} drive from previous stop{" "}
                 <a
                   href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
                   target="_blank"
@@ -317,13 +344,27 @@ function DayCard({ day, onMove }: { day: ReturnType<typeof buildDays>[number]; o
                 {a.name}
                 {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
               </p>
-              {day.activities.length > 1 && (
-                <span className="flex shrink-0 gap-1">
-                  <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
-                  <button type="button" onClick={() => onMove(a.id, 1)} disabled={i === day.activities.length - 1} aria-label={`Move ${a.name} later`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↓</button>
-                </span>
-              )}
+              <span className="flex shrink-0 items-center gap-1">
+                {day.activities.length > 1 && (
+                  <>
+                    <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
+                    <button type="button" onClick={() => onMove(a.id, 1)} disabled={i === day.activities.length - 1} aria-label={`Move ${a.name} later`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↓</button>
+                  </>
+                )}
+                <button type="button" onClick={() => setEditingId(editingId === a.id ? null : a.id)} className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+                  {editingId === a.id ? "Close" : "Edit"}
+                </button>
+              </span>
             </div>
+            {editingId === a.id && (
+              <EditStopForm
+                activity={a}
+                allDates={allDates}
+                onSave={(updated) => { onUpdate(updated); setEditingId(null); }}
+                onRemove={() => { onRemove(a.id); setEditingId(null); }}
+                onCancel={() => setEditingId(null)}
+              />
+            )}
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
             {(a.phone || a.href) && (
               <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -380,12 +421,45 @@ function DayCard({ day, onMove }: { day: ReturnType<typeof buildDays>[number]; o
 
 // ---- Small pieces -----------------------------------------------------
 
+// Change anything about a stop that is already on the route — how long you
+// stay, the time, a phone number, the address, or which day it belongs to.
+function EditStopForm({ activity, allDates, onSave, onRemove, onCancel }: {
+  activity: ItinActivity;
+  allDates: Array<{ date: string; label: string }>;
+  onSave: (a: ItinActivity) => void;
+  onRemove: () => void;
+  onCancel: () => void;
+}) {
+  const [f, setF] = useState<ItinActivity>({ ...activity });
+  return (
+    <div className="mt-3 rounded-md border border-[var(--gold)] bg-white p-4">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Edit this stop</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Field label="Name"><input className={inputClass} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
+        <Field label="Address"><AddressAutocomplete value={f.address ?? ""} onChange={(address, coords) => setF({ ...f, address, coordinates: coords || f.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
+        <Field label="Coordinates"><input className={inputClass} value={f.coordinates ?? ""} onChange={(e) => setF({ ...f, coordinates: e.target.value })} placeholder="lat, lng — needed for travel time" /></Field>
+        <Field label="Day"><select className={inputClass} value={f.date} onChange={(e) => setF({ ...f, date: e.target.value, order: undefined })}><option value="">Not scheduled</option>{allDates.map((d, i) => <option key={d.date} value={d.date}>Day {i + 1} — {d.label}</option>)}</select></Field>
+        <Field label="Start time"><input type="time" className={inputClass} value={f.startTime ?? ""} onChange={(e) => setF({ ...f, startTime: e.target.value })} /></Field>
+        <Field label="How long (minutes)"><input type="number" min={0} step={15} className={inputClass} value={f.durationMins ?? ""} onChange={(e) => setF({ ...f, durationMins: Number(e.target.value) || undefined })} placeholder="90" /></Field>
+        <Field label="Phone"><input type="tel" className={inputClass} value={f.phone ?? ""} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
+        <Field label="Link"><input type="url" className={inputClass} value={f.href ?? ""} onChange={(e) => setF({ ...f, href: e.target.value })} /></Field>
+        <Field label="Notes"><input className={inputClass} value={f.notes ?? ""} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={() => onSave(f)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Save changes</button>
+        <button type="button" onClick={onCancel} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Cancel</button>
+        <button type="button" onClick={onRemove} className="ml-auto text-xs text-stone-400 hover:text-red-700">Remove this stop</button>
+      </div>
+    </div>
+  );
+}
+
 // A transfer to/from the hotel or the airport — travel that also eats the day.
 function TransferLine({ leg }: { leg?: TravelLeg }) {
   if (!leg) return null;
   return (
     <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-      🚗 {leg.label} — {formatKm(leg.km)} · ≈{formatDuration(leg.minutes)}{" "}
+      🚗 {leg.label} — {formatKm(leg.km)} · {leg.measured ? "" : "≈"}{formatDuration(leg.minutes)}{" "}
       <a
         href={directionsBetweenUrl({ coordinates: leg.fromCoordinates }, { coordinates: leg.toCoordinates })}
         target="_blank"
@@ -490,8 +564,21 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
     setL((prev) => ({ ...prev, name: g.name, address: g.address ?? prev.address, phone: g.phone ?? prev.phone, notes: prev.notes || g.notes }));
   }
 
+  // You cannot check out on or before the day you check in.
+  const checkOutTooEarly = Boolean(!overnight && l.checkIn && l.checkOut && l.checkOut <= l.checkIn);
+  const minCheckOut = l.checkIn ? nextDate(l.checkIn) : undefined;
+
   return (
-    <FormShell title="Add lodging / where you sleep" onSubmit={() => { if ((overnight || l.name) && l.checkIn) onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn: l.checkIn, checkOut: l.checkOut || l.checkIn, notes: l.notes, bookedOnSite: false }); }}>
+    <FormShell
+      title="Add lodging / where you sleep"
+      error={checkOutTooEarly ? "Check-out has to be at least the day after check-in." : ""}
+      onSubmit={() => {
+        if (checkOutTooEarly) return;
+        if ((overnight || l.name) && l.checkIn) {
+          onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn: l.checkIn, checkOut: overnight ? nextDate(l.checkIn) : l.checkOut || nextDate(l.checkIn), notes: l.notes, bookedOnSite: false });
+        }
+      }}
+    >
       {!overnight && (
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
           <span className={caption}>Pick from lodging we&apos;ve researched near the kevarim</span>
@@ -505,7 +592,7 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
       <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setL({ ...l, checkIn: e.target.value })} /></Field>
-      {!overnight && <Field label="Check-out *"><input type="date" className={inputClass} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
+      {!overnight && <Field label="Check-out *"><input type="date" className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
     </FormShell>
   );
 }
@@ -666,12 +753,13 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
   );
 }
 
-function FormShell({ title, children, onSubmit }: { title: string; children: React.ReactNode; onSubmit: () => void }) {
+function FormShell({ title, children, onSubmit, error }: { title: string; children: React.ReactNode; onSubmit: () => void; error?: string }) {
   return (
     <div className="mt-5 border-t border-[var(--gold-light)] pt-5">
       <p className="text-sm font-bold text-[var(--navy)]">{title}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
-      <button type="button" onClick={onSubmit} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Add</button>
+      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      <button type="button" onClick={onSubmit} disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">Add</button>
     </div>
   );
 }

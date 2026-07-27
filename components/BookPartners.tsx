@@ -3,7 +3,7 @@
 import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
-import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
+import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 
 // Unified "Book" experience. Each tab collects a search and hands the traveler
 // off to a trusted partner that takes payment (affiliate-ready deep links).
@@ -177,8 +177,8 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
   return (
     <div className="mt-7 grid gap-5 sm:grid-cols-2">
       <label className={`block ${caption} sm:col-span-2`}>Destination (city)<AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="Start typing a city…" className={inputClass} /></label>
-      <label className={`block ${caption}`}>Check in<input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} className={inputClass} /></label>
-      <label className={`block ${caption}`}>Check out<input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} className={inputClass} /></label>
+      <label className={`block ${caption}`}>Check in<input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={inputClass} /></label>
+      <label className={`block ${caption}`}>Check out<input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={inputClass} /></label>
       <label className={`block ${caption}`}>Guests<input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={inputClass} /></label>
       {error && <p className="text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
       <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search hotels on Booking.com →" />
