@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import type { KeverResult } from "@/lib/kever-search";
 import {
   buildDays,
   emptyItinerary,
@@ -217,6 +218,12 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
             {a.distanceFromPrev !== null && <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">↓ {formatKm(a.distanceFromPrev)} from previous stop</p>}
             <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}{a.name}{a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}</p>
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
+            {(a.phone || a.href) && (
+              <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">📞 {a.phone}</a>}
+                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Link →</a>)}
+              </p>
+            )}
             {a.notes && <p className="mt-1 text-sm text-stone-500">{a.notes}</p>}
           </div>
         ))}
@@ -358,16 +365,98 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
 
 function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: ItinActivity) => void }) {
   const [a, setA] = useState<Partial<ItinActivity>>({ date: startDate });
+
+  function pickKever(k: KeverResult) {
+    setA((prev) => ({
+      ...prev,
+      name: k.name,
+      yiddishName: k.yiddishName,
+      address: k.address,
+      coordinates: k.coordinates || prev.coordinates,
+      href: k.href,
+      phone: k.phone ?? prev.phone,
+      keverSlug: k.slug,
+      notes: prev.notes || k.notes,
+    }));
+  }
+
   return (
-    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name && a.date) onAdd({ id: uid(), name: a.name, address: a.address, coordinates: a.coordinates, date: a.date, startTime: a.startTime, durationMins: a.durationMins, notes: a.notes, bookedOnSite: false }); }}>
-      <Field label="Name *"><input className={inputClass} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
+    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name && a.date) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date, startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, notes: a.notes, bookedOnSite: false }); }}>
+      <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
+        <span className={caption}>Add a kever from our list — we&apos;ll fill in the rest</span>
+        <KeverPicker onPick={pickKever} />
+        {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}. Edit anything below if you like.</p>}
+      </div>
+      <Field label="Name *"><input className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
-      <Field label="Date *"><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
-      <Field label="Time"><input type="time" className={inputClass} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
-      <Field label="Duration (min)"><input type="number" min={0} className={inputClass} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
-      <Field label="Notes"><input className={inputClass} onChange={(e) => setA({ ...a, notes: e.target.value })} /></Field>
+      <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
+      <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder="https://… (map, booking, our kever page)" /></Field>
+      <Field label="Date *"><input type="date" className={inputClass} value={a.date ?? ""} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
+      <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
+      <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
+      <Field label="Notes"><input className={inputClass} value={a.notes ?? ""} onChange={(e) => setA({ ...a, notes: e.target.value })} /></Field>
     </FormShell>
+  );
+}
+
+// Search-and-pick a kever from the site's own directory; fills the whole form.
+function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<KeverResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 2) { setResults([]); return; }
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/kevarim/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (active) setResults(data.results ?? []);
+      } catch {
+        if (active) setResults([]);
+      }
+    }, 200);
+    return () => { active = false; clearTimeout(timer); };
+  }, [q]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative mt-1">
+      <input
+        className={inputClass}
+        value={q}
+        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="Search a kever, city, or tzaddik — e.g. Uman, Lizhensk, Baba Sali…"
+        autoComplete="off"
+      />
+      {open && results.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+          {results.map((k) => (
+            <li key={k.slug}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onPick(k); setQ(""); setResults([]); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
+              >
+                <span className="text-sm font-semibold text-[var(--navy)]">{k.name}</span>
+                {k.yiddishName ? <span className="ml-2 text-sm text-stone-500">{k.yiddishName}</span> : null}
+                <span className="block text-xs text-stone-500">{[k.city, k.country].filter(Boolean).join(", ")}{k.coordinates ? "" : " · location — confirm locally"}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
