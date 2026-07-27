@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import PromotionBanner from "@/components/PromotionBanner";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
+import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { getActivePromotions } from "@/lib/admin-content";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -110,6 +111,10 @@ export default async function Home() {
           <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Our promise</p><h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">The details should never distract from the reason you came.</h2></div>
           <p className="border-l border-[var(--gold)] pl-6 text-lg leading-8 text-stone-600">We gather the essentials in one calm, dependable guide, leaving you free to focus on your tefillos and the meaning of the journey.</p>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <TravelAssistantBox />
       </section>
 
       {inlinePromotions.length ? (
