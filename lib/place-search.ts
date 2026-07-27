@@ -103,6 +103,19 @@ export const SPELLING_GROUPS: SpellingGroup[] = [
   { keys: ["stefanesti-friedman", "stefanesti"], spellings: ["stefanesti", "stefanest", "stefaneshti", "stefaneshter", "avraham matisyahu", "friedman stefanesti"] },
   { keys: ["tarnobrzeg-dzikover", "dzikov"], spellings: ["dzikov", "dzikover", "tarnobrzeg", "dzików", "imrei noam", "meir horowitz dzikov"] },
   { keys: ["shepetivka-reb-pinchas", "koretz"], spellings: ["koretz", "koritz", "koritzer", "shepetivka", "shepetovka", "pinchas of koretz", "pinchas koritzer", "midrash pinchas"] },
+  // --- batch 6 ---
+  { keys: ["kozienice-maggid", "kozhnitz"], spellings: ["kozhnitz", "koznitz", "kozienice", "kozhnitzer", "maggid of kozhnitz", "avodas yisrael", "yisrael hopstein", "hopsztajn"] },
+  { keys: ["lublin-chozeh", "lublin"], spellings: ["lublin", "chozeh", "chozeh of lublin", "seer of lublin", "the seer", "yaakov yitzchak horowitz", "zos zichron"] },
+  { keys: ["sasiv-moshe-leib", "sasov"], spellings: ["sasov", "sasiv", "sassover", "sassov", "moshe leib sassov", "moshe leib of sasov", "reb moshe leib"] },
+  { keys: ["zhytomyr-ohr-hameir", "zhitomir"], spellings: ["zhitomir", "zhytomyr", "zhitomer", "ohr hameir", "or hameir", "zeev wolf", "wolf of zhitomir"] },
+  { keys: ["neshchiz-mordechai", "neshchiz"], spellings: ["neshchiz", "neschiz", "neskhizh", "nesukhoyizhe", "mordechai of neshchiz", "neshchizer"] },
+  { keys: ["bershad-raphael", "bershad"], spellings: ["bershad", "bershader", "raphael of bershad", "reb raphael"] },
+  { keys: ["sighet-yetev-lev", "sighet"], spellings: ["sighet", "siget", "sighetu marmatiei", "seiget", "yetev lev", "yitav lev", "teitelbaum sighet"] },
+  { keys: ["sapanta-spinka", "spinka"], spellings: ["spinka", "sapanta", "sapinka", "sepinka", "imrei yosef", "yosef meir weiss"] },
+  { keys: ["ostrowiec-meir-yechiel", "ostrovtze"], spellings: ["ostrovtze", "ostrovtzer", "ostrowiec", "ostrovtsa", "meir yechiel", "halstock", "meir einei chachomim"] },
+  { keys: ["amshinov-mszczonow", "amshinov"], spellings: ["amshinov", "amshinover", "mszczonow", "amshinev", "yaakov dovid kalish", "amshinower"] },
+  { keys: ["sochaczew-avnei-nezer", "sochatchov"], spellings: ["sochatchov", "sochaczew", "sochatchover", "avnei nezer", "eglei tal", "avrohom bornsztain", "bornstein"] },
+  { keys: ["radzymin-guterman", "radzymin"], spellings: ["radzymin", "radziminer", "radzimin", "yaakov aryeh guterman", "guterman"] },
 ];
 
 // Every spelling from groups whose keys intersect the given place identifiers.
