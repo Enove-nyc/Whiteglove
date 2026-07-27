@@ -233,8 +233,14 @@ export default function AdminPromotionsManager({
               <option value="desktop">Desktop</option>
             </select>
           </label>
-          <Field label="Start date" value={draft.startDate} onChange={(value) => setDraft((current) => ({ ...current, startDate: value }))} />
-          <Field label="End date" value={draft.endDate} onChange={(value) => setDraft((current) => ({ ...current, endDate: value }))} />
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            Start date (optional)
+            <input type="date" value={draft.startDate} onChange={(event) => setDraft((current) => ({ ...current, startDate: event.target.value }))} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700 outline-none" />
+          </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            End date (optional)
+            <input type="date" value={draft.endDate} onChange={(event) => setDraft((current) => ({ ...current, endDate: event.target.value }))} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700 outline-none" />
+          </label>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">
