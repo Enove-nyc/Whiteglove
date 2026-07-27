@@ -5,16 +5,16 @@ import SectionPlaceholder from "@/components/SectionPlaceholder";
 import type { Promotion, PromotionPlacement } from "@/lib/admin-content";
 
 const placementOptions: Array<{ value: PromotionPlacement; label: string }> = [
-  { value: "popup", label: "Popup" },
-  { value: "fixed-top-banner", label: "Fixed top banner" },
-  { value: "sticky-bottom-banner", label: "Sticky bottom banner" },
-  { value: "homepage-promo", label: "Homepage promotion" },
-  { value: "inline-content", label: "Inline content" },
-  { value: "sidebar", label: "Sidebar" },
-  { value: "destination-specific", label: "Destination page" },
-  { value: "accommodation-page", label: "Accommodation page" },
-  { value: "sponsored-listing", label: "Sponsored listing" },
-  { value: "full-page-takeover", label: "Full-page takeover" },
+  { value: "fixed-top-banner", label: "Fixed top banner — shows on every page" },
+  { value: "popup", label: "Popup — shows on every page (once per visit)" },
+  { value: "sticky-bottom-banner", label: "Sticky bottom banner — shows on every page" },
+  { value: "homepage-promo", label: "Homepage promotion — home page only" },
+  { value: "inline-content", label: "Inline content — home page only" },
+  { value: "sidebar", label: "Sidebar — not shown yet" },
+  { value: "destination-specific", label: "Destination page — not shown yet" },
+  { value: "accommodation-page", label: "Accommodation page — not shown yet" },
+  { value: "sponsored-listing", label: "Sponsored listing — not shown yet" },
+  { value: "full-page-takeover", label: "Full-page takeover — not shown yet" },
 ];
 
 function emptyPromotion(): Promotion {
@@ -200,6 +200,7 @@ export default function AdminPromotionsManager({
 
         <div className="mt-5">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Placements</p>
+          <p className="mt-2 text-sm leading-6 text-stone-600">To make an ad appear, pick <strong>Fixed top banner</strong>, <strong>Popup</strong>, or <strong>Sticky bottom banner</strong>, check <strong>Enabled</strong> below, and set <strong>Max views per visitor</strong> to 0 while testing. Then view the public site (ads don&apos;t show inside the admin area).</p>
           <div className="mt-3 flex flex-wrap gap-3">
             {placementOptions.map((placement) => (
               <label key={placement.value} className="flex items-center gap-2 border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-stone-700">
