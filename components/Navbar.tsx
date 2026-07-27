@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
+import SitePromotions from "@/components/SitePromotions";
 
 const menuItems = [
   { yiddish: "היים", english: "Home", href: "/" },
@@ -56,6 +57,7 @@ export default function Navbar() {
   }, [menuOpen]);
 
   return (
+    <>
     <nav ref={navRef} className="relative border-b border-[var(--gold-light)] bg-[rgba(247,243,235,0.94)]">
       <div className={`relative mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 ${showSearch ? "sm:grid sm:grid-cols-[auto_minmax(0,1fr)_auto]" : ""}`}>
         <Link href="/" className="flex items-center max-sm:absolute max-sm:left-1/2 max-sm:top-1/2 max-sm:-translate-x-1/2 max-sm:-translate-y-1/2" aria-label="White Glove Itineraries home">
@@ -118,5 +120,7 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    <SitePromotions />
+    </>
   );
 }
