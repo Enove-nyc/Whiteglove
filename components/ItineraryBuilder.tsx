@@ -8,9 +8,11 @@ import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
+import { directionsBetweenUrl } from "@/data/route-utils";
 import {
   buildDays,
   emptyItinerary,
+  formatDuration,
   formatKm,
   summarize,
   type Itinerary,
@@ -154,6 +156,8 @@ export default function ItineraryBuilder() {
             <Stat label="Nights" value={summary.nights} />
             <Stat label="Nights without lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
+            <Stat label="Driving between stops" value={`${summary.travelHours} h`} />
+            {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
             <div className="ml-auto flex gap-3">
               <Link href="/itinerary/print" target="_blank" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Print itinerary (PDF)</Link>
             </div>
@@ -210,7 +214,10 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
     <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h3>
-        <p className="text-sm font-semibold text-stone-500">{day.label}</p>
+        <p className="text-sm font-semibold text-stone-500">
+          {day.label}
+          {day.travelHours > 0 ? <span className="ml-3 text-xs font-normal text-stone-400">≈{day.travelHours} h driving between stops</span> : null}
+        </p>
       </div>
 
       {day.warnings.map((w, i) => (
@@ -219,9 +226,21 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
 
       <div className="mt-4 space-y-3">
         {day.flightsArriving.map((f) => <p key={`a-${f.id}`} className="text-sm text-[var(--navy)]">✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} — {f.from} → {f.to}{f.airline ? ` (${f.airline})` : ""}</p>)}
-        {day.activities.map((a) => (
+        {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
-            {a.distanceFromPrev !== null && <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">↓ {formatKm(a.distanceFromPrev)} from previous stop</p>}
+            {a.distanceFromPrev !== null && (
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
+                ↓ {formatKm(a.distanceFromPrev)} · ≈{formatDuration(a.travelMinutesFromPrev)} drive from previous stop{" "}
+                <a
+                  href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="normal-case tracking-normal text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                >
+                  exact time →
+                </a>
+              </p>
+            )}
             <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}{a.name}{a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}</p>
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
             {(a.phone || a.href) && (
@@ -275,7 +294,7 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
 
 // ---- Small pieces -----------------------------------------------------
 
-function Stat({ label, value, warn }: { label: string; value: number; warn?: boolean }) {
+function Stat({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
     <div>
       <p className={`font-[family-name:var(--font-display)] text-3xl ${warn ? "text-red-700" : "text-[var(--navy)]"}`}>{value}</p>

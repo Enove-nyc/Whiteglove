@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { buildDays, emptyItinerary, formatKm, type Itinerary } from "@/data/itinerary";
+import { buildDays, emptyItinerary, formatDuration, formatKm, type Itinerary } from "@/data/itinerary";
 
 const LS_KEY = "whiteGloveItinerary";
 
@@ -75,7 +75,7 @@ export default function PrintItineraryPage() {
                 {day.flightsArriving.map((f) => <p key={`a${f.id}`}>✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
                 {day.activities.map((a) => (
                   <div key={a.id}>
-                    {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)}</p>}
+                    {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)} · ≈{formatDuration(a.travelMinutesFromPrev)} drive</p>}
                     <p><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}{a.address ? <span className="text-stone-500"> — {a.address}</span> : null}</p>
                     {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
                     {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}

@@ -45,6 +45,17 @@ export function placeDirectionsUrl(address?: string | null, coordinates?: string
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsDestination(address, coordinates))}`;
 }
 
+/** Directions between two places — used to check the exact travel time. */
+export function directionsBetweenUrl(
+  from: { address?: string | null; coordinates?: string | null },
+  to: { address?: string | null; coordinates?: string | null },
+  mode: "driving" | "transit" = "driving",
+): string {
+  const origin = mapsDestination(from.address, from.coordinates);
+  const destination = mapsDestination(to.address, to.coordinates);
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=${mode}`;
+}
+
 function distance(first: SavedPlace, second: SavedPlace) {
   const a = coordinatesToPoint(first.coordinates);
   const b = coordinatesToPoint(second.coordinates);
