@@ -121,6 +121,7 @@ export default function MyRouteDashboard() {
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Optimize the flexible stops.</h2>
             <p className="mt-4 leading-7 text-stone-600">A place with a fixed date stays in its place. The other kevarim are ordered by nearby distance within the flexible parts of your route. Places without coordinates remain at the end until we verify them.</p>
             <button type="button" disabled={activeRoute.length < 2} onClick={openDirections} className="mt-7 w-full bg-[var(--navy)] px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-50">Open optimized route in maps</button>
+            <Link href="/itinerary" className="mt-3 block w-full border border-[var(--gold)] px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Build a full day-by-day itinerary →</Link>
           </aside>
         </div>
       )}
