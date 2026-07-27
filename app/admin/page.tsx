@@ -64,7 +64,7 @@ export default async function AdminPage() {
             <Link href="/admin/add" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">+ Add new entry</Link>
             <Link href="/admin/accounts" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Accounts</Link>
             <Link href="/admin/finances" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Finances</Link>
-            <Link href="/admin/content#promotions" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Promotions</Link>
+            <Link href="/admin/advertisements" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Advertisements</Link>
             <Link href="/" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">View website</Link>
             <AdminSignOut />
           </div>
@@ -94,9 +94,10 @@ export default async function AdminPage() {
             </p>
           </section>
           <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Promotions</p>
+            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Advertisements</p>
             <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{promotions.enabledPromotions} live</p>
-            <p className="mt-3 text-sm leading-6 text-stone-600">Use the content manager to target banners, popups, and full-page takeovers by page and device.</p>
+            <p className="mt-3 text-sm leading-6 text-stone-600">Create and target banners, popups, and full-page ads by page and device.</p>
+            <Link href="/admin/advertisements" className="mt-4 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Open advertisements →</Link>
           </section>
         </div>
 
