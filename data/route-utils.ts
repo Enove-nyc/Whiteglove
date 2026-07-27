@@ -45,6 +45,30 @@ export function placeDirectionsUrl(address?: string | null, coordinates?: string
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsDestination(address, coordinates))}`;
 }
 
+/**
+ * Coordinates in the degrees/minutes/seconds form Google Maps shows —
+ * e.g. 50°15'04.1"N 22°25'21.4"E. This is what a traveler should paste into
+ * Maps to land on the exact spot, rather than a street address that can
+ * resolve somewhere nearby. Returns null when there is no usable coordinate.
+ */
+export function toDMS(coordinates?: string | null): string | null {
+  const point = coordinatesToPoint(coordinates ?? undefined);
+  if (!point) return null;
+  const part = (value: number, positive: string, negative: string) => {
+    const hemisphere = value >= 0 ? positive : negative;
+    // Work in tenths of a second so the carry cases (59.97" -> next minute)
+    // round correctly instead of printing 60.0".
+    const totalSeconds = Math.round(Math.abs(value) * 36000) / 10;
+    let degrees = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds - degrees * 3600) / 60);
+    let seconds = Math.round((totalSeconds - degrees * 3600 - minutes * 60) * 10) / 10;
+    if (seconds >= 60) { seconds -= 60; minutes += 1; }
+    if (minutes >= 60) { minutes -= 60; degrees += 1; }
+    return `${degrees}°${String(minutes).padStart(2, "0")}'${seconds.toFixed(1).padStart(4, "0")}"${hemisphere}`;
+  };
+  return `${part(point.lat, "N", "S")} ${part(point.lng, "E", "W")}`;
+}
+
 /** Directions between two places — used to check the exact travel time. */
 export function directionsBetweenUrl(
   from: { address?: string | null; coordinates?: string | null },

@@ -13,6 +13,7 @@ export default function TravelAssistantBox() {
   const [answer, setAnswer] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   async function ask(q: string) {
     const value = q.trim();
@@ -20,6 +21,7 @@ export default function TravelAssistantBox() {
     setBusy(true);
     setAnswer(null);
     setNote(null);
+    setExpanded(false);
     try {
       const res = await fetch("/api/itinerary/ai", {
         method: "POST",
@@ -70,9 +72,17 @@ export default function TravelAssistantBox() {
       </div>
 
       {answer && (
-        <div className="mt-5 border-l-4 border-[var(--gold)] bg-white p-4 text-sm leading-6 text-stone-700">
-          <p className="whitespace-pre-line">{answer}</p>
-          <p className="mt-3 text-[11px] text-stone-400">AI-generated — please confirm details (hours, access, kashrus) before you rely on them.</p>
+        <div className="mt-5 border-l-4 border-[var(--gold)] bg-white">
+          {/* Long answers scroll inside the box instead of being cut off. */}
+          <div className={`overflow-y-auto overscroll-contain p-4 text-sm leading-6 text-stone-700 ${expanded ? "" : "max-h-80"}`}>
+            <p className="whitespace-pre-line">{answer}</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] px-4 py-2">
+            <p className="text-[11px] text-stone-400">AI-generated — please confirm details (hours, access, kashrus) before you rely on them.</p>
+            <button type="button" onClick={() => setExpanded((v) => !v)} className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+              {expanded ? "Collapse" : "Expand full answer"}
+            </button>
+          </div>
         </div>
       )}
       {note && <p className="mt-5 text-sm font-semibold text-stone-500">{note}</p>}
