@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     if (geminiKey) {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(geminiKey)}`,
         { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }], generationConfig: { maxOutputTokens: 20, thinkingConfig: { thinkingBudget: 0 } } }) },
       );
       if (!res.ok) {
