@@ -29,7 +29,7 @@ const destinations = [
 const travelServices = [
   { title: "Phone & SIM rentals", yiddish: "פאָון־רענטאַלס", href: "/phone-rentals", text: "SIMs, eSIMs, and hotspots so you stay reachable abroad without the setup hassle." },
   { title: "Travel insurance", yiddish: "רײַזע־אינשוראַנס", href: "/travel-insurance", text: "Understand your coverage options — medical, cancellation, and baggage — clearly." },
-  { title: "Flights & hotels", yiddish: "פליגערס און האטעלן", href: "/booking", text: "Search and arrange flights and hotels that fit your route, dates, and kosher needs." },
+  { title: "Flights, hotels & cars", yiddish: "פליגערס און האטעלן", href: "/book", text: "Search and book flights, hotels, and rental cars that fit your route, dates, and kosher needs." },
   { title: "Trip planning", yiddish: "פּלאַנירונג", href: "/planning", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
   { title: "Honeymoon", yiddish: "האָנימאָן", href: "/honeymoon", text: "A calm, private, well-planned kosher honeymoon, arranged end to end." },
   { title: "Kosher getaways", yiddish: "וואַקאַציעס", href: "/getaways", text: "Resorts, beaches, and cities like Rome and Paris — planned kosher, start to finish." },

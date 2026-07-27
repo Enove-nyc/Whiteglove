@@ -16,7 +16,7 @@ const menuItems = [
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
   { yiddish: "פּלאַנירונג", english: "Planning", href: "/planning" },
   { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
-  { yiddish: "פליגערס און האטעלן", english: "Flights & hotels", href: "/booking" },
+  { yiddish: "פליגערס און האטעלן", english: "Book flights, hotels & cars", href: "/book" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
 
