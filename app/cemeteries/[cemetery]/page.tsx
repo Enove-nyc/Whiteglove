@@ -3,7 +3,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
-import { cemeteries, getCemetery } from "@/data/cemeteries";
+import { cemeteries } from "@/data/cemeteries";
+import { getCemeteryView } from "@/lib/cemeteries-view";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
 
 export function generateStaticParams() {
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 
 export default async function CemeteryPage({ params }: { params: Promise<{ cemetery: string }> }) {
   const { cemetery: slug } = await params;
-  const cemetery = getCemetery(slug);
+  const cemetery = await getCemeteryView(slug);
   if (!cemetery) notFound();
 
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cemetery.address} ${cemetery.coordinates ?? ""}`)}`;

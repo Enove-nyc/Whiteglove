@@ -212,3 +212,99 @@ export async function deleteProvider(slug: string) {
   const prisma = await db();
   return prisma.directoryProvider.delete({ where: { slug } });
 }
+
+// ---- Owner-added new entries (cemeteries, tzaddikim, info pages) -------
+
+function newSlug(value: string, fallback: string) {
+  const base = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || fallback;
+  return `${base}-${randomUUID().slice(0, 6)}`;
+}
+
+export type NewCemeteryFields = {
+  name: string;
+  yiddishName: string;
+  city: string;
+  yiddishCity: string;
+  country: string;
+  address: string | null;
+  coordinates: string | null;
+  accessNote: string | null;
+  sourceUrl: string | null;
+};
+
+/** Create a new (owner-added) cemetery. Slug is generated; row is a draft-ish
+ *  NEEDS_VERIFICATION so the owner can fill details in later. */
+export async function createCemetery(fields: NewCemeteryFields) {
+  const prisma = await db();
+  return prisma.cemetery.create({
+    data: {
+      slug: newSlug(fields.name, "cemetery"),
+      name: fields.name,
+      yiddishName: fields.yiddishName || fields.name,
+      city: fields.city,
+      yiddishCity: fields.yiddishCity || fields.city,
+      country: fields.country,
+      address: fields.address,
+      coordinates: fields.coordinates,
+      accessNote: fields.accessNote,
+      sourceUrl: fields.sourceUrl,
+      status: "NEEDS_VERIFICATION",
+    },
+  });
+}
+
+/** All cemeteries in the DB (built-in + owner-added), for the add-tzadik picker. */
+export async function listCemeteriesForAdmin() {
+  const prisma = await db();
+  return prisma.cemetery.findMany({
+    orderBy: [{ country: "asc" }, { city: "asc" }],
+    select: { id: true, slug: true, name: true, city: true, country: true },
+  });
+}
+
+export type NewBurialFields = {
+  cemeteryId: string;
+  name: string;
+  yiddishName: string;
+  knownAs: string | null;
+  seforim: string | null;
+  yahrzeit: string | null;
+  note: string | null;
+};
+
+/** Add a tzadik (burial) to a cemetery. */
+export async function createBurial(fields: NewBurialFields) {
+  const prisma = await db();
+  return prisma.tzaddik.create({
+    data: {
+      name: fields.name,
+      yiddishName: fields.yiddishName || fields.name,
+      knownAs: fields.knownAs,
+      seforim: fields.seforim,
+      yahrzeit: fields.yahrzeit,
+      note: fields.note,
+      isPrimary: false,
+      status: "NEEDS_VERIFICATION",
+      cemeteryId: fields.cemeteryId,
+    },
+  });
+}
+
+export type NewPageFields = {
+  title: string;
+  body: string;
+  status: ContentStatus;
+};
+
+/** Create a new standalone info page (rendered at /info/[slug]). */
+export async function createInfoPage(fields: NewPageFields) {
+  const prisma = await db();
+  return prisma.page.create({
+    data: {
+      slug: newSlug(fields.title, "page"),
+      title: fields.title,
+      body: fields.body,
+      status: fields.status,
+    },
+  });
+}
