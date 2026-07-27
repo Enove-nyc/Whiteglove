@@ -119,6 +119,62 @@ export async function getAccountRecord(email: string) {
   return readJson<AccountRecord>(accountKey(normalized));
 }
 
+export type AdminAccountSummary = {
+  email: string;
+  name?: string;
+  phone?: string;
+  createdAt?: string;
+  verifiedAt?: string;
+  routeCount: number;
+  favoriteCount: number;
+  hasItinerary: boolean;
+};
+
+const ACCOUNT_PREFIX = "white-glove:account:";
+
+/**
+ * Every registered account, for the owner's admin view. Scans the Redis
+ * keyspace (SCAN) rather than needing an index, so it includes accounts made
+ * before this feature. Returns only owner-appropriate fields — never the
+ * password hash or salt.
+ */
+export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
+  if (!hasAccountStorage()) return [];
+  const keys: string[] = [];
+  let cursor = "0";
+  let guard = 0;
+  do {
+    const res = await redis<[string, string[]]>(
+      `scan/${cursor}/match/${encodeURIComponent(`${ACCOUNT_PREFIX}*`)}/count/500`,
+    );
+    const [next, batch] = res?.result ?? ["0", []];
+    cursor = typeof next === "string" ? next : "0";
+    if (Array.isArray(batch)) keys.push(...batch);
+    guard += 1;
+  } while (cursor !== "0" && guard < 100);
+
+  const emails = keys.map((k) => k.slice(ACCOUNT_PREFIX.length)).filter(Boolean);
+  const summaries = await Promise.all(
+    emails.map(async (email): Promise<AdminAccountSummary | null> => {
+      const [record, data] = await Promise.all([getAccountRecord(email), getAccountData(email)]);
+      if (!record) return null;
+      return {
+        email: record.email,
+        name: record.name,
+        phone: record.phone,
+        createdAt: record.createdAt,
+        verifiedAt: record.verifiedAt,
+        routeCount: data.route?.length ?? 0,
+        favoriteCount: data.favorites?.length ?? 0,
+        hasItinerary: Boolean(data.itinerary),
+      };
+    }),
+  );
+  return summaries
+    .filter((s): s is AdminAccountSummary => s !== null)
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
 export async function createAccount(email: string, password: string, name?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const normalized = normalizeEmail(email);
