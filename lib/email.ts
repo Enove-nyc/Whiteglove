@@ -6,12 +6,15 @@ function resendConfig() {
   return apiKey ? { apiKey, from } : null;
 }
 
-// Where owner notifications (form submissions, edit suggestions) are delivered.
-// Defaults to the owner's Google inbox so it works before the Spacemail
-// mailboxes exist; set OWNER_NOTIFICATION_EMAIL to edits@whitegloveitineraries.com
-// once that mailbox is live.
-function ownerInbox() {
-  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || "whitegloveitineraries@gmail.com";
+// Where notifications are delivered. Edit/suggestion submissions go to the
+// "edits" inbox; contact-form messages go to the "contacts" inbox. Both can be
+// overridden by env vars without a code change.
+function editsInbox() {
+  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || "edits@whitegloveitineraries.com";
+}
+
+function contactInbox() {
+  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || "contacts@whitegloveitineraries.com";
 }
 
 const escapeHtml = (v: string) =>
@@ -70,7 +73,7 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
       headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: config.from,
-        to: ownerInbox(),
+        to: editsInbox(),
         reply_to: sub.email,
         subject: `White Glove: new ${sub.kind}${sub.title ? ` — ${sub.title}` : ""}`,
         html,
@@ -115,6 +118,64 @@ export async function sendVerificationEmail(email: string, code: string) {
     return response.ok;
   } catch (error) {
     console.error("Resend send threw:", error);
+    return false;
+  }
+}
+
+export type ContactMessage = {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+};
+
+/** Delivers a public contact-form message to the contacts inbox. Never throws. */
+export async function sendContactMessage(msg: ContactMessage): Promise<boolean> {
+  const config = resendConfig();
+  if (!config) {
+    console.error("RESEND_API_KEY is not set - contact message not sent.");
+    return false;
+  }
+  const rows: Array<[string, string | undefined]> = [
+    ["From", `${msg.name} <${msg.email}>`],
+    ["Phone", msg.phone],
+    ["Subject", msg.subject],
+    ["Message", msg.message],
+  ];
+  const visible = rows.filter(([, v]) => v && String(v).trim());
+  const html =
+    `<h2 style="font-family:Georgia,serif;color:#1e2a44;">New message from the White Glove contact form</h2>` +
+    `<table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;">` +
+    visible
+      .map(
+        ([k, v]) =>
+          `<tr><td style="vertical-align:top;color:#8a7a52;font-weight:bold;white-space:nowrap;">${escapeHtml(k)}</td>` +
+          `<td style="vertical-align:top;color:#333;">${escapeHtml(String(v)).replace(/\n/g, "<br>")}</td></tr>`,
+      )
+      .join("") +
+    `</table><p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Reply directly to this email to respond to ${escapeHtml(msg.name)}.</p>`;
+  const text = visible.map(([k, v]) => `${k}: ${v}`).join("\n");
+  try {
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: config.from,
+        to: contactInbox(),
+        reply_to: msg.email,
+        subject: `White Glove contact${msg.subject ? `: ${msg.subject}` : " form message"}`,
+        html,
+        text,
+      }),
+    });
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      console.error("Resend contact message failed:", response.status, errorBody);
+    }
+    return response.ok;
+  } catch (error) {
+    console.error("Resend contact message threw:", error);
     return false;
   }
 }

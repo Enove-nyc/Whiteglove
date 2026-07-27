@@ -19,6 +19,7 @@ const menuItems = [
   { yiddish: "פליגערס און האטעלן", english: "Flights & hotels", href: "/booking" },
   { yiddish: "מייַן וועג", english: "My Route", href: "/my-route" },
   { yiddish: "רייזע־פּלאַן", english: "Itinerary planner", href: "/itinerary" },
+  { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
