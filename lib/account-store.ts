@@ -1,4 +1,5 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
+import type { Itinerary } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
@@ -22,6 +23,7 @@ export type AccountRecord = {
 export type AccountData = {
   route: SavedPlace[];
   favorites: SavedPlace[];
+  itinerary?: Itinerary;
   updatedAt?: string;
 };
 
@@ -249,6 +251,18 @@ export async function saveAccountCollection(email: string, collection: "route" |
   const next: AccountData = {
     ...current,
     [collection]: items.slice(0, 200),
+    updatedAt: new Date().toISOString(),
+  };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function saveAccountItinerary(email: string, itinerary: Itinerary) {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeEmail(email);
+  const current = await getAccountData(normalized);
+  const next: AccountData = {
+    ...current,
+    itinerary: { ...itinerary, updatedAt: new Date().toISOString() },
     updatedAt: new Date().toISOString(),
   };
   return writeJson(dataKey(normalized), next);
