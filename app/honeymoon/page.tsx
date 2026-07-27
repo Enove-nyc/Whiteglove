@@ -1,8 +1,11 @@
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import InquiryForm from "@/components/InquiryForm";
+import KosherFinder from "@/components/KosherFinder";
 import Navbar from "@/components/Navbar";
 import PageBody from "@/components/PageBody";
 import { resolvePage } from "@/lib/pages";
+import { honeymoonDestinations, honeymoonPlans } from "@/data/trip-ideas";
 
 const offerings = [
   {
@@ -53,6 +56,55 @@ export default async function HoneymoonPage() {
               <p className="mt-4 text-sm leading-7 text-stone-600">{item.text}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      {/* Curated destination ideas */}
+      <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Where to go</p>
+          <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Kosher-friendly honeymoon destinations</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Ideas to start from — every one has kosher food you can plan around. Use the finder below to see real kosher places in any city you&apos;re considering.</p>
+          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {honeymoonDestinations.map((d) => (
+              <article key={d.region} className="border border-[var(--gold-light)] bg-white p-6">
+                <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{d.region}</p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">{d.places}</p>
+                <p className="mt-3 text-sm leading-7 text-stone-600">{d.blurb}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Sample plans */}
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Sample plans</p>
+        <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">A shape to start from</h2>
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {honeymoonPlans.map((plan) => (
+            <article key={plan.title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{plan.length}</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{plan.title}</p>
+              <ol className="mt-4 space-y-2">
+                {plan.days.map((day, i) => (
+                  <li key={i} className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold)]">{i + 1}.</span>{day}</li>
+                ))}
+              </ol>
+              {plan.note && <p className="mt-4 border-t border-[var(--gold-light)] pt-3 text-sm text-stone-500">{plan.note}</p>}
+            </article>
+          ))}
+        </div>
+        <Link href="/itinerary" className="mt-8 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Build it in the planner →</Link>
+      </section>
+
+      {/* Live kosher finder */}
+      <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Kosher wherever you land</p>
+          <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Find kosher food in any city</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Search a destination you&apos;re considering to see real kosher restaurants and shops nearby.</p>
+          <div className="mt-8"><KosherFinder showAddToTrip={false} /></div>
         </div>
       </section>
 
