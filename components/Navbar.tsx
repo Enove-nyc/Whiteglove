@@ -17,8 +17,6 @@ const menuItems = [
   { yiddish: "פּלאַנירונג", english: "Planning", href: "/planning" },
   { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
   { yiddish: "פליגערס און האטעלן", english: "Flights & hotels", href: "/booking" },
-  { yiddish: "מייַן וועג", english: "My Route", href: "/my-route" },
-  { yiddish: "רייזע־פּלאַן", english: "Itinerary planner", href: "/itinerary" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
 
@@ -105,14 +103,12 @@ export default function Navbar() {
               <span className="ml-2 text-xs font-normal text-stone-500">{item.english}</span>
             </Link>
           ))}
-          <a onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href="#contact">
-            <span dir="rtl">קאָנטאַקט</span>
-            <span className="ml-2 text-xs font-normal text-stone-500">Contact White Glove</span>
-          </a>
           <div className="mt-1 border-t border-[var(--gold-light)] pt-1">
             {signedIn ? (
               <>
                 <Link onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href="/account">My account</Link>
+                <Link onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href="/itinerary">Itinerary planner</Link>
+                <Link onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href="/my-route">My Route</Link>
                 <button type="button" onClick={() => { setMenuOpen(false); signOut(); }} className="block w-full px-4 py-3 text-left text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Sign out</button>
               </>
             ) : (
