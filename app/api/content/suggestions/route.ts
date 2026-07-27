@@ -3,7 +3,7 @@ import { addSuggestion } from "@/lib/admin-content";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null) as {
-    targetType?: "location" | "accommodation" | "site" | "directory";
+    targetType?: "location" | "accommodation" | "site" | "directory" | "new";
     targetId?: string;
     title?: string;
     name?: string;

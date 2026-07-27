@@ -2,9 +2,10 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SuggestEditButton from "@/components/SuggestEditButton";
-import { cemeteries } from "@/data/cemeteries";
+import { getCemeteryList } from "@/lib/cemeteries-view";
 
-export default function CemeteriesPage() {
+export default async function CemeteriesPage() {
+  const cemeteries = await getCemeteryList();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -31,10 +32,10 @@ export default function CemeteriesPage() {
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{cemetery.city} · {cemetery.country}</p>
               <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h2>
               <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
-              <p className="mt-5 text-sm leading-6 text-stone-600">{cemetery.burials.length} known kevarim listed</p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-stone-500">
-                {cemetery.accessContacts?.length ? "Access contact listed" : "Access contact still needs verification"}
-              </p>
+              <p className="mt-5 text-sm leading-6 text-stone-600">{cemetery.burialCount} known {cemetery.burialCount === 1 ? "kever" : "kevarim"} listed</p>
+              {cemetery.ownerAdded && (
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Newly added</p>
+              )}
             </Link>
           ))}
         </div>

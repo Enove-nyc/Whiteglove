@@ -42,17 +42,35 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
   return { created: !alreadyProvisioned };
 }
 
-/** Replace the imported content tables with fresh rows from data/*.ts. */
+/**
+ * Reload the built-in content from data/*.ts. Deletes are SCOPED to the slugs
+ * that ship in the built-in data, so anything the owner added in the admin
+ * (new cemeteries, tzaddikim, directory providers with their own slugs, pages)
+ * is preserved across a re-import. (Note: a tzadik/contact the owner attaches
+ * to a *built-in* cemetery or destination is refreshed away, since that parent
+ * is reloaded; owner-created cemeteries and their tzaddikim persist.)
+ */
 export async function seedDatabase(prisma: PrismaClient) {
   const rows = buildSeedRows();
 
-  // Clear children first (FK order), then reload parents-first.
-  await prisma.contact.deleteMany();
-  await prisma.tzaddik.deleteMany();
-  await prisma.practicalPlace.deleteMany();
-  await prisma.cemetery.deleteMany();
-  await prisma.destination.deleteMany();
-  await prisma.directoryProvider.deleteMany();
+  const cemeterySlugs = rows.cemeteries.map((c) => c.slug);
+  const destinationSlugs = rows.destinations.map((d) => d.slug);
+  const providerSlugs = rows.directory.map((p) => p.slug);
+
+  // Clear children of built-in parents first (FK order), then the parents —
+  // all scoped by built-in slug so owner-added rows are untouched.
+  const builtInChildFilter = {
+    OR: [
+      { cemetery: { slug: { in: cemeterySlugs } } },
+      { destination: { slug: { in: destinationSlugs } } },
+    ],
+  };
+  await prisma.contact.deleteMany({ where: builtInChildFilter });
+  await prisma.tzaddik.deleteMany({ where: builtInChildFilter });
+  await prisma.practicalPlace.deleteMany({ where: { destination: { slug: { in: destinationSlugs } } } });
+  await prisma.cemetery.deleteMany({ where: { slug: { in: cemeterySlugs } } });
+  await prisma.destination.deleteMany({ where: { slug: { in: destinationSlugs } } });
+  await prisma.directoryProvider.deleteMany({ where: { slug: { in: providerSlugs } } });
 
   await prisma.destination.createMany({ data: rows.destinations });
   await prisma.cemetery.createMany({ data: rows.cemeteries });
