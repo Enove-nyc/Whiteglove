@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import type { Contact, Destination, PracticalPlace } from "@prisma/client";
 import {
   type ActionResult,
@@ -249,7 +250,10 @@ function PlaceFields({ place }: { place?: PracticalPlace }) {
         <Field label="Website" name="website" defaultValue={place?.website} placeholder="https://..." />
       </Group>
       <Group label="Details">
-        <Field label="Address" name="address" defaultValue={place?.address} placeholder="Street, city" />
+        <label className="block">
+          <span className={captionClass}>Address</span>
+          <AddressAutocomplete name="address" value={place?.address ?? ""} placeholder="Start typing the address…" className={inputClass} />
+        </label>
         <Field label="Hours / timings" name="hours" defaultValue={place?.hours} placeholder="e.g. Shacharis 7:30, 8:30" />
       </Group>
       <div className="mt-4">

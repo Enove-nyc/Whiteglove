@@ -130,6 +130,8 @@ export type ItineraryDay = {
 
 const USABLE_DAY_HOURS = 14; // 8am–10pm planning window
 const DEFAULT_ACTIVITY_HOURS = 1.5;
+const FREE_HOURS_THRESHOLD = 4; // flag a day with this many free hours overall
+const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
 
 function timeToMins(t?: string): number | null {
   const m = t && /^(\d{1,2}):(\d{2})$/.exec(t);
@@ -167,16 +169,34 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     if (!lodging && !isLastDay && !flightsDeparting.some((f) => (f.arriveDate ?? f.date) !== f.date)) {
       warnings.push("No place to sleep this night — add a hotel, or mark an overnight bus/flight.");
     }
-    // Empty day (no activities and no flights).
-    if (dayActs.length === 0 && flightsDeparting.length === 0 && flightsArriving.length === 0) {
-      warnings.push("Nothing planned this day yet.");
+    const travelDay = flightsDeparting.length > 0 || flightsArriving.length > 0;
+    const isEmpty = dayActs.length === 0 && !travelDay;
+
+    // Free hours: usable window minus scheduled activity time. A completely
+    // empty, non-travel day counts the whole usable window as open.
+    const scheduled = dayActs.reduce((sum, a) => sum + (a.durationMins ? a.durationMins / 60 : DEFAULT_ACTIVITY_HOURS), 0);
+    const freeHours = dayActs.length
+      ? Math.max(0, Math.round((USABLE_DAY_HOURS - scheduled) * 10) / 10)
+      : travelDay
+        ? null
+        : USABLE_DAY_HOURS;
+
+    if (isEmpty) {
+      warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
+    } else if (freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
+      warnings.push(`About ${freeHours} free hours this day — room for another stop.`);
     }
 
-    // Rough free hours: usable window minus scheduled activity time.
-    const scheduled = dayActs.reduce((sum, a) => sum + (a.durationMins ? a.durationMins / 60 : DEFAULT_ACTIVITY_HOURS), 0);
-    const freeHours = dayActs.length ? Math.max(0, Math.round((USABLE_DAY_HOURS - scheduled) * 10) / 10) : null;
-    if (freeHours !== null && freeHours >= 4) {
-      warnings.push(`About ${freeHours} free hours this day — room for another stop.`);
+    // Long empty gaps between timed stops (e.g. a free afternoon in the middle).
+    const timed = dayActs.filter((a) => timeToMins(a.startTime) !== null);
+    for (let i = 1; i < timed.length; i += 1) {
+      const prevStart = timeToMins(timed[i - 1].startTime) ?? 0;
+      const prevEnd = prevStart + (timed[i - 1].durationMins ?? DEFAULT_ACTIVITY_HOURS * 60);
+      const nextStart = timeToMins(timed[i].startTime) ?? 0;
+      const gapHours = Math.round(((nextStart - prevEnd) / 60) * 10) / 10;
+      if (gapHours >= GAP_HOURS_THRESHOLD) {
+        warnings.push(`About ${gapHours} free hours after ${timed[i - 1].name}, with nothing planned until ${timed[i].name} — room for another stop.`);
+      }
     }
 
     return {
