@@ -60,8 +60,9 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: SYSTEM }] },
             contents: [{ role: "user", parts: [{ text: userMessage }] }],
-            // Disable "thinking" so the short answer isn't eaten by the token budget.
-            generationConfig: { maxOutputTokens: 600, temperature: 0.6, thinkingConfig: { thinkingBudget: 0 } },
+            // Generous token budget so a short answer survives even if the model
+            // spends some of it "thinking" first.
+            generationConfig: { maxOutputTokens: 1200, temperature: 0.6 },
           }),
         },
       );
