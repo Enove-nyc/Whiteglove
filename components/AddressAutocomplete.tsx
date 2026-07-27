@@ -9,18 +9,29 @@ import { useEffect, useRef, useState } from "react";
 type Suggestion = { label: string; coordinates: string };
 
 type PhotonFeature = {
-  properties?: { name?: string; street?: string; housenumber?: string; city?: string; town?: string; village?: string; state?: string; country?: string; postcode?: string };
+  properties?: { name?: string; street?: string; housenumber?: string; city?: string; town?: string; village?: string; state?: string; country?: string; postcode?: string; type?: string; osm_key?: string };
   geometry?: { coordinates?: [number, number] };
 };
 
-function toSuggestion(feature: PhotonFeature): Suggestion | null {
+const CITY_TYPES = new Set(["city", "town", "village", "municipality", "locality", "district", "region", "state", "county", "country"]);
+
+function toSuggestion(feature: PhotonFeature, mode: "address" | "city"): Suggestion | null {
   const p = feature.properties ?? {};
   const coords = feature.geometry?.coordinates;
+  const coordinates = coords ? `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}` : "";
+
+  if (mode === "city") {
+    // Only real places (cities/towns), not streets or house numbers.
+    const isPlace = p.osm_key === "place" || (p.type ? CITY_TYPES.has(p.type) : false);
+    if (!isPlace || !p.name) return null;
+    const label = [p.name, p.state, p.country].filter(Boolean).join(", ");
+    return { label, coordinates };
+  }
+
   const main = p.name || [p.housenumber, p.street].filter(Boolean).join(" ");
   const parts = [main, p.city || p.town || p.village, p.state, p.country].filter(Boolean);
   const label = parts.join(", ");
   if (!label) return null;
-  const coordinates = coords ? `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}` : "";
   return { label, coordinates };
 }
 
@@ -30,12 +41,14 @@ export default function AddressAutocomplete({
   placeholder,
   className,
   name,
+  mode = "address",
 }: {
   value?: string;
   onChange?: (address: string, coordinates?: string) => void;
   placeholder?: string;
   className?: string;
   name?: string; // when used inside a plain <form> (server action), submits by this name
+  mode?: "address" | "city";
 }) {
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<Suggestion[]>([]);
@@ -48,16 +61,20 @@ export default function AddressAutocomplete({
     let active = true;
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`);
+        const layer = mode === "city" ? "&layer=city&layer=district&layer=locality&layer=county&layer=state" : "";
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8${layer}`);
         const data = (await res.json()) as { features?: PhotonFeature[] };
         if (!active) return;
-        setResults((data.features ?? []).map(toSuggestion).filter((s): s is Suggestion => s !== null));
+        const mapped = (data.features ?? []).map((f) => toSuggestion(f, mode)).filter((s): s is Suggestion => s !== null);
+        // De-duplicate identical labels (Photon can repeat).
+        const seen = new Set<string>();
+        setResults(mapped.filter((s) => (seen.has(s.label) ? false : (seen.add(s.label), true))).slice(0, 6));
       } catch {
         if (active) setResults([]);
       }
     }, 280);
     return () => { active = false; clearTimeout(timer); };
-  }, [query]);
+  }, [query, mode]);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };

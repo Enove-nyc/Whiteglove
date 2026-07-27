@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
+import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 
 // Unified "Book" experience. Each tab collects a search and hands the traveler
@@ -15,13 +17,6 @@ const inputClass = "mt-2 w-full border border-[var(--gold-light)] bg-white px-3 
 const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
 const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
-
-const AIRPORTS = [
-  "New York (JFK)", "Newark (EWR)", "Boston (BOS)", "Miami (MIA)", "Los Angeles (LAX)",
-  "Toronto (YYZ)", "London (LHR)", "Paris (CDG)", "Krakow (KRK)", "Rzeszow (RZE)",
-  "Warsaw (WAW)", "Budapest (BUD)", "Vienna (VIE)", "Prague (PRG)", "Frankfurt (FRA)",
-  "Munich (MUC)", "Rome (FCO)", "Zurich (ZRH)", "Tel Aviv (TLV)", "Istanbul (IST)",
-];
 
 function airportCode(value: string): string {
   const upper = value.toUpperCase();
@@ -85,8 +80,6 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
         <TabButton active={tab === "cars"} onClick={() => setTab("cars")}>Cars</TabButton>
       </div>
 
-      <datalist id="wg-airports">{AIRPORTS.map((a) => <option key={a} value={a} />)}</datalist>
-
       {added && (
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
           <span className="font-semibold text-[var(--navy)]">✓ Added to your trip.</span>
@@ -142,8 +135,8 @@ function FlightsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn
 
   return (
     <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption}`}>From (airport)<input list="wg-airports" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="New York (JFK)" className={inputClass} /></label>
-      <label className={`block ${caption}`}>To (airport)<input list="wg-airports" value={to} onChange={(e) => setTo(e.target.value)} placeholder="Krakow (KRK)" className={inputClass} /></label>
+      <label className={`block ${caption}`}>From (city or airport)<AirportAutocomplete value={from} onChange={setFrom} placeholder="e.g. NYC or New York" className={inputClass} /></label>
+      <label className={`block ${caption}`}>To (city or airport)<AirportAutocomplete value={to} onChange={setTo} placeholder="e.g. Krakow" className={inputClass} /></label>
       <label className={`block ${caption}`}>Departure<input type="date" value={depart} onChange={(e) => setDepart(e.target.value)} className={inputClass} /></label>
       <label className={`block ${caption}`}>Return<input type="date" value={ret} disabled={oneWay} onChange={(e) => setRet(e.target.value)} className={`${inputClass} disabled:opacity-50`} /></label>
       <label className="flex items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:col-span-2"><input type="checkbox" checked={oneWay} onChange={(e) => setOneWay(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />One way</label>
@@ -183,7 +176,7 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
 
   return (
     <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption} sm:col-span-2`}>Destination (city)<input value={dest} onChange={(e) => setDest(e.target.value)} placeholder="Krakow, Poland" className={inputClass} /></label>
+      <label className={`block ${caption} sm:col-span-2`}>Destination (city)<AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="Start typing a city…" className={inputClass} /></label>
       <label className={`block ${caption}`}>Check in<input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} className={inputClass} /></label>
       <label className={`block ${caption}`}>Check out<input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} className={inputClass} /></label>
       <label className={`block ${caption}`}>Guests<input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={inputClass} /></label>
@@ -220,7 +213,7 @@ function CarsForm({ onAdd }: { onAdd: AddFn }) {
 
   return (
     <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption} sm:col-span-2`}>Pick-up location (city or airport)<input value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Krakow Airport" className={inputClass} /></label>
+      <label className={`block ${caption} sm:col-span-2`}>Pick-up location (city)<AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="Start typing a city…" className={inputClass} /></label>
       <label className={`block ${caption}`}>Pick-up date<input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={inputClass} /></label>
       <label className={`block ${caption}`}>Drop-off date<input type="date" value={dropoff} onChange={(e) => setDropoff(e.target.value)} className={inputClass} /></label>
       {error && <p className="text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
