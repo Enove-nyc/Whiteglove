@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { getActivePromotions } from "@/lib/admin-content";
+import { getTopVisitedPaths } from "@/lib/site-analytics";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -49,6 +50,15 @@ export default async function Home() {
   const homepagePromotions = await getActivePromotions("homepage-promo", "/", device);
   const inlinePromotions = await getActivePromotions("inline-content", "/", device);
 
+  // Six most-visited kevarim, ranked by real site visits (falls back to the
+  // default order when analytics is off or has little data yet).
+  const visitCounts = new Map((await getTopVisitedPaths(60)).map((p) => [p.path, p.count]));
+  const mostVisited = [...destinations]
+    .map((d) => ({ d, count: visitCounts.get(d.href) ?? 0 }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6)
+    .map((x) => x.d);
+
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
@@ -86,6 +96,13 @@ export default async function Home() {
           <div className="mt-8">
             <PromotionBanner promotion={homepagePromotions[0] ?? null} placement="homepage-promo" />
           </div>
+        </div>
+      </section>
+
+      <section id="most-visited" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <SectionHeading eyebrow="Most visited" title="Where travelers are going most." description="The six kevarim frum travelers are visiting most on White Glove right now." />
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {mostVisited.map((destination) => <DestinationCard key={destination.name} {...destination} />)}
         </div>
       </section>
 

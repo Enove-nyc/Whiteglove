@@ -73,6 +73,15 @@ function pairs(values: unknown): Array<{ label: string; count: number }> {
   return output;
 }
 
+// Top-visited page paths (most visited first), for ranking homepage content.
+// Returns [] when analytics isn't connected, so callers can fall back to a
+// sensible default order.
+export async function getTopVisitedPaths(limit = 40): Promise<Array<{ path: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const pages = await redis<unknown>(`zrevrange/white-glove:pages/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(pages?.result).map(({ label, count }) => ({ path: label, count }));
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
   const configured = analyticsIsConfigured();
   if (!configured) return { configured: false, visits: 0, visitsToday: 0, searchesToday: 0, topSearches: [], topPages: [], siteLocked: process.env.SITE_LOCK_ENABLED === "true" };
