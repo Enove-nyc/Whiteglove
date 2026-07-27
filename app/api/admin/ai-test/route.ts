@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
         { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }] }) },
       );
       if (!res.ok) {
-        const detail = res.status === 400 || res.status === 403 ? " The key may be wrong or restricted." : "";
+        const reason = await res.json().catch(() => null) as { error?: { message?: string } } | null;
+        const detail = reason?.error?.message ? ` ${reason.error.message}` : " The key may be wrong or restricted.";
         return NextResponse.json({ configured: true, provider, ok: false, message: `Gemini rejected the request (HTTP ${res.status}).${detail}` });
       }
       const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
