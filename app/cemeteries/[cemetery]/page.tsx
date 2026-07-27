@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
+import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
@@ -124,6 +125,15 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {cemetery.coordinates && (
+          <div className="mt-14">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Kosher food nearby</p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">What&apos;s kosher around here</h2>
+            <p className="mt-3 mb-6 max-w-3xl text-sm leading-6 text-stone-500">Live kosher restaurants, bakeries, and groceries near the kever, from OpenStreetMap.</p>
+            <KosherNearby coordinates={cemetery.coordinates} radiusKm={15} heading="Kosher near this kever" />
           </div>
         )}
 

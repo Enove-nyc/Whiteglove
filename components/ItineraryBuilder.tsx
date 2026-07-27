@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
@@ -261,6 +262,11 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
       {ai && (
         <div className="mt-3 border border-[var(--gold-light)] bg-white p-3 text-sm text-stone-700">
           {ai.text ? <p className="whitespace-pre-line">{ai.text}</p> : <p className="text-stone-500">{ai.reason}</p>}
+        </div>
+      )}
+      {anchor?.coordinates && (
+        <div className="mt-4">
+          <KosherNearby coordinates={anchor.coordinates} radiusKm={12} showAddToTrip heading="Kosher food near this day's stops" />
         </div>
       )}
     </article>
