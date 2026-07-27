@@ -23,7 +23,7 @@ export default function BookPage() {
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book flights, hotels &amp; cars</h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-stone-600">
-              Everything for the travel side of your נסיעה in one place. Search flights, hotels, and rental cars, then keep your kevarim, shomer details, and guidance together in White Glove.
+              Everything for the travel side of your journey in one place. Search flights, hotels, and rental cars, then keep your kevarim, shomer details, and guidance together in White Glove.
             </p>
             <p className="mt-6 border-l-2 border-[var(--gold)] pl-4 text-sm leading-7 text-stone-600">
               Each search opens with a trusted partner where you compare options and pay securely. Your itinerary and saved places stay here with White Glove.
