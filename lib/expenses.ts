@@ -10,9 +10,15 @@ export type Expense = {
   category: string;
   notes?: string;
   createdAt: string;
+  receiptName?: string; // original filename when a PDF receipt is attached
 };
 
 const KEY = "white-glove:expenses";
+const receiptKey = (id: string) => `white-glove:receipt:${id}`;
+
+// Largest PDF we accept. Receipts are base64-encoded into a single Redis value,
+// so this stays well under Upstash's per-request size limit.
+export const MAX_RECEIPT_BYTES = 700 * 1024;
 
 function redisConfig() {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -68,7 +74,61 @@ export async function addExpense(input: Omit<Expense, "id" | "createdAt">): Prom
 export async function deleteExpense(id: string): Promise<boolean> {
   if (!expensesAvailable()) return false;
   const items = await listExpenses();
-  return writeExpenses(items.filter((e) => e.id !== id));
+  const ok = await writeExpenses(items.filter((e) => e.id !== id));
+  await deleteReceipt(id); // best-effort: drop the attached PDF too
+  return ok;
+}
+
+// ---- PDF receipts ----------------------------------------------------------
+// Each receipt is stored under its own key (not inside the expenses list) so
+// the list stays small and fast to load. Values can be large, so we POST the
+// body to Upstash rather than putting it in the URL path.
+
+type StoredReceipt = { name: string; contentType: string; data: string };
+
+async function redisSetBody(key: string, value: string): Promise<boolean> {
+  const config = redisConfig();
+  if (!config) return false;
+  try {
+    const res = await fetch(`${config.url}/set/${encodeURIComponent(key)}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.token}` },
+      body: value,
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Store a PDF receipt (base64, no data: prefix) and tag the expense with it. */
+export async function attachReceipt(id: string, name: string, base64: string): Promise<boolean> {
+  if (!expensesAvailable()) return false;
+  const items = await listExpenses();
+  const expense = items.find((e) => e.id === id);
+  if (!expense) return false;
+  const stored: StoredReceipt = { name: name.slice(0, 160), contentType: "application/pdf", data: base64 };
+  const ok = await redisSetBody(receiptKey(id), JSON.stringify(stored));
+  if (!ok) return false;
+  expense.receiptName = stored.name;
+  return writeExpenses(items);
+}
+
+export async function getReceipt(id: string): Promise<StoredReceipt | null> {
+  const res = await redis<string>(`get/${encodeURIComponent(receiptKey(id))}`);
+  if (!res?.result) return null;
+  try {
+    const parsed = JSON.parse(res.result) as StoredReceipt;
+    return parsed?.data ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteReceipt(id: string): Promise<boolean> {
+  const res = await redis(`del/${encodeURIComponent(receiptKey(id))}`);
+  return Boolean(res);
 }
 
 // Totals overall, by category, and by month — for the finances dashboard.
