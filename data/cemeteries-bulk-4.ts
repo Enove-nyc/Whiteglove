@@ -1,0 +1,289 @@
+// Bulk kevarim — batch 4. More historically well-documented tzaddikim and their
+// burial places, including the major kevarim in the US and Eretz Yisrael.
+//
+// IMPORTANT (safety): who is buried where and in which town/cemetery is from
+// public sources (each entry carries a source). We do NOT invent a precise grave
+// GPS. `airportRef` is a CITY-level point used only to rank the nearest airports
+// — it is NOT a grave location and must never be used to navigate. Grave
+// navigation uses the address; confirm the exact grave/ohel locally.
+
+import type { Cemetery } from "@/data/cemeteries";
+
+export const bulkCemeteries4: Cemetery[] = [
+  {
+    slug: "queens-ohel-lubavitch",
+    city: "Queens, New York",
+    yiddishCity: "קווינס",
+    name: "The Ohel — Old Montefiore Cemetery, Queens",
+    yiddishName: "אוהל",
+    country: "USA",
+    address: "Ohel Chabad-Lubavitch, Old Montefiore Cemetery, Cambria Heights, Queens, New York",
+    airportRef: "40.694, -73.739",
+    arrivalNotes: [
+      "The Ohel over the resting places of the Lubavitcher Rebbe, Rabbi Menachem Mendel Schneerson, and his predecessor the Frierdiker Rebbe, Rabbi Yosef Yitzchak Schneersohn — one of the most-visited Jewish gravesites in the world, with a visitors' center open around the clock.",
+      "Confirm the exact ohel entrance and current hours; the visitors' center (ohelchabad.org) has directions and guidance on preparing a pan (note).",
+    ],
+    accessNote: "Open to visitors day and night with an adjacent visitors' center; men's and women's entrances. Confirm hours and directions via Ohel Chabad-Lubavitch.",
+    burials: [
+      { name: "Rabbi Menachem Mendel Schneerson", yiddishName: "רבי מנחם מענדל שניאורסאהן", knownAs: "The Lubavitcher Rebbe", seforim: "לקוטי שיחות · אגרות קודש", yahrzeit: "ג׳ תמוז · 5754 / 1994", note: "Seventh Rebbe of Chabad-Lubavitch." },
+      { name: "Rabbi Yosef Yitzchak Schneersohn", yiddishName: "רבי יוסף יצחק שניאורסאהן", knownAs: "The Frierdiker (Previous) Rebbe", seforim: "ספר הזכרונות · אגרות קודש", yahrzeit: "י׳ שבט · 5710 / 1950", note: "Sixth Rebbe of Chabad-Lubavitch; rests in the same ohel." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ohel_(Chabad-Lubavitch)",
+  },
+  {
+    slug: "kiryas-joel-satmar",
+    city: "Kiryas Joel, New York",
+    yiddishCity: "קרית יואל",
+    name: "Kiryas Joel — Kever of the Satmar Rav",
+    yiddishName: "ציון הסאטמאר רב",
+    country: "USA",
+    address: "Satmar cemetery, Kiryas Joel (Monroe), Orange County, New York",
+    airportRef: "41.341, -74.168",
+    arrivalNotes: [
+      "Resting place of Rabbi Yoel Teitelbaum, the Satmar Rav, founder of the Satmar community and a towering post-war leader.",
+      "Confirm the cemetery location and access with the local community.",
+    ],
+    burials: [
+      { name: "Rabbi Yoel Teitelbaum", yiddishName: "רבי יואל טייטלבוים", knownAs: "The Satmar Rav · Divrei Yoel", seforim: "דברי יואל · ויואל משה", yahrzeit: "כ״ו אב · 5739 / 1979", note: "Founder of the Satmar chassidic community in America." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Joel_Teitelbaum",
+  },
+  {
+    slug: "monsey-ribnitzer",
+    city: "Monsey, New York",
+    yiddishCity: "מאנסי",
+    name: "Monsey — Kever of the Ribnitzer Rebbe",
+    yiddishName: "ציון הריבניצער רבי",
+    country: "USA",
+    address: "Vishnitz cemetery, Monsey, Rockland County, New York",
+    airportRef: "41.111, -74.068",
+    arrivalNotes: [
+      "Resting place of Rabbi Chaim Zanvl Abramowitz, the Ribnitzer Rebbe, renowned as a wonder-worker and for his extraordinary avodah.",
+      "Confirm the exact cemetery and access locally.",
+    ],
+    burials: [
+      { name: "Rabbi Chaim Zanvl Abramowitz", yiddishName: "רבי חיים זנוויל אבראמאוויטש", knownAs: "The Ribnitzer Rebbe", yahrzeit: "י״ג טבת · 5755 / 1995", note: "Moldovan-born tzaddik who kept mitzvos under Soviet rule and later settled in Monsey." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Chaim_Zanvl_Abramowitz",
+  },
+  {
+    slug: "netanya-klausenburger",
+    city: "Netanya",
+    yiddishCity: "נתניה",
+    name: "Netanya — Kever of the Klausenburger Rebbe",
+    yiddishName: "ציון הקלויזנבורגער רבי",
+    country: "Israel",
+    address: "Sanz cemetery, Kiryat Sanz, Netanya, Israel",
+    airportRef: "32.309, 34.858",
+    arrivalNotes: [
+      "Resting place of Rabbi Yekusiel Yehuda Halberstam, the Sanz-Klausenburg Rebbe, who rebuilt the Sanz chassidus and the Kiryat Sanz communities after the war.",
+      "Confirm the exact location within the Kiryat Sanz area and current access locally.",
+    ],
+    burials: [
+      { name: "Rabbi Yekusiel Yehuda Halberstam", yiddishName: "רבי יקותיאל יהודה האלברשטאם", knownAs: "The Klausenburger Rebbe · Divrei Yatziv", seforim: "דברי יציב · שפע חיים", yahrzeit: "ט׳ תמוז · 5754 / 1994", note: "Rebuilt Sanz-Klausenburg after the Holocaust and founded Laniado Hospital in Netanya." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Yekusiel_Yehuda_Halberstam",
+  },
+  {
+    slug: "bnei-brak-chazon-ish",
+    city: "Bnei Brak",
+    yiddishCity: "בני ברק",
+    name: "Bnei Brak — Kever of the Chazon Ish",
+    yiddishName: "ציון החזון איש",
+    country: "Israel",
+    address: "Zichron Meir cemetery, Bnei Brak, Israel",
+    airportRef: "32.084, 34.833",
+    arrivalNotes: [
+      "Resting place of Rabbi Avraham Yeshaya Karelitz, the Chazon Ish, whose halachic authority shaped Torah life in Eretz Yisrael.",
+      "In the Zichron Meir cemetery in Bnei Brak; confirm the exact location and access locally.",
+    ],
+    burials: [
+      { name: "Rabbi Avraham Yeshaya Karelitz", yiddishName: "רבי אברהם ישעיהו קרליץ", knownAs: "The Chazon Ish", seforim: "חזון איש (על הש״ס וההלכה)", yahrzeit: "ט״ו מרחשון · 5714 / 1953", note: "Leading halachic authority of his generation in Eretz Yisrael." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Avrohom_Yeshaya_Karelitz",
+  },
+  {
+    slug: "har-hamenuchos-jerusalem",
+    city: "Jerusalem",
+    yiddishCity: "ירושלים",
+    name: "Har HaMenuchos (Givat Shaul), Jerusalem",
+    yiddishName: "הר המנוחות",
+    country: "Israel",
+    address: "Har HaMenuchos cemetery, Givat Shaul, Jerusalem, Israel",
+    airportRef: "31.793, 35.178",
+    arrivalNotes: [
+      "Jerusalem's largest cemetery, on the western edge of the city, resting place of many gedolei Yisrael of recent generations — among them Rabbi Shlomo Zalman Auerbach, Rabbi Yosef Shalom Elyashiv, and the Belzer Rebbe Rabbi Aharon Rokeach.",
+      "A very large cemetery in numbered sections (chelkot) — confirm the exact section and grave location locally or with the chevra kadisha.",
+    ],
+    accessNote: "Large active cemetery with numbered sections; open to visitors. Ask locally or use the chevra kadisha grave-locator for the exact chelka.",
+    burials: [
+      { name: "Rabbi Shlomo Zalman Auerbach", yiddishName: "רבי שלמה זלמן אויערבאך", knownAs: "Posek of Jerusalem", seforim: "מנחת שלמה", yahrzeit: "כ׳ אדר א׳ · 5755 / 1995", note: "One of the foremost poskim of his generation." },
+      { name: "Rabbi Yosef Shalom Elyashiv", yiddishName: "רבי יוסף שלום אלישיב", knownAs: "Posek hador", yahrzeit: "כ״ח תמוז · 5772 / 2012", note: "Leading halachic authority of the generation." },
+      { name: "Rabbi Aharon Rokeach", yiddishName: "רבי אהרן ראקח", knownAs: "The Belzer Rebbe", yahrzeit: "כ״א אב · 5717 / 1957", note: "Fourth Belzer Rebbe, who survived the war and rebuilt Belz in Eretz Yisrael." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Har_HaMenuchot",
+  },
+  {
+    slug: "har-hazeisim-jerusalem",
+    city: "Jerusalem",
+    yiddishCity: "ירושלים",
+    name: "Har HaZeisim (Mount of Olives), Jerusalem",
+    yiddishName: "הר הזיתים",
+    country: "Israel",
+    address: "Mount of Olives Jewish cemetery, Jerusalem, Israel",
+    airportRef: "31.778, 35.245",
+    arrivalNotes: [
+      "The ancient Jewish cemetery on the Mount of Olives facing the Har HaBayis — in use for some 3,000 years — resting place of neviim and of many gedolim, among them the Ohr HaChaim HaKadosh.",
+      "A vast hillside of many sections; confirm the exact grave location and current access/security guidance locally.",
+    ],
+    accessNote: "Ancient, very large hillside cemetery facing the Old City; visited year-round. Confirm the exact section, access, and current security guidance locally.",
+    burials: [
+      { name: "Rabbi Chaim ibn Attar", yiddishName: "רבי חיים בן עטר", knownAs: "The Ohr HaChaim HaKadosh", seforim: "אור החיים (על התורה) · פרי תואר", yahrzeit: "ט״ו תמוז · 1743", note: "Author of the Ohr HaChaim commentary on the Torah; buried on the Mount of Olives." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Mount_of_Olives_Jewish_Cemetery",
+  },
+  {
+    slug: "slonim-yesod-haavodah",
+    city: "Slonim",
+    yiddishCity: "סלאנים",
+    name: "Slonim — Kever of the Yesod HaAvodah",
+    yiddishName: "ציון יסוד העבודה מסלאנים",
+    country: "Belarus",
+    address: "Jewish cemetery, Slonim, Hrodna (Grodno) region, Belarus — confirm exact location locally",
+    airportRef: "53.089, 25.319",
+    arrivalNotes: [
+      "Resting place of Rabbi Avraham Weinberg, the Yesod HaAvodah, founder of the Slonim chassidus.",
+      "Confirm the cemetery and exact grave location locally. Belarus entry rules change — check current requirements.",
+    ],
+    burials: [
+      { name: "Rabbi Avraham Weinberg of Slonim", yiddishName: "רבי אברהם ווינברג מסלאנים", knownAs: "The Yesod HaAvodah", seforim: "יסוד העבודה · באר אברהם", yahrzeit: "י״א חשון · 5644 / 1883", note: "Founder of the Slonim chassidic dynasty." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Avraham_Weinberg_(first_Slonimer_Rebbe)",
+  },
+  {
+    slug: "kosiv-ahavas-shalom",
+    city: "Kosiv (Kosov)",
+    yiddishCity: "קאסוב",
+    name: "Kosiv — Kever of the Ahavas Shalom",
+    yiddishName: "ציון האהבת שלום מקאסוב",
+    country: "Ukraine",
+    address: "Jewish cemetery, Kosiv, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    airportRef: "48.310, 25.096",
+    arrivalNotes: [
+      "Resting place of Rabbi Menachem Mendel Hager of Kosov, the Ahavas Shalom, founder of the Kosov-Vizhnitz line.",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Menachem Mendel Hager of Kosov", yiddishName: "רבי מנחם מענדל האגער מקאסוב", knownAs: "The Ahavas Shalom", seforim: "אהבת שלום", yahrzeit: "ב׳ אייר · 5586 / 1826", note: "Founder of the Kosov chassidus, forerunner of the Vizhnitz dynasty." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Kosov_(Hasidic_dynasty)",
+  },
+  {
+    slug: "sieniawa-shinover",
+    city: "Sieniawa (Shinova)",
+    yiddishCity: "שינאווא",
+    name: "Sieniawa — Kever of the Shinover Rav",
+    yiddishName: "ציון השינאווער רב",
+    country: "Poland",
+    address: "Jewish cemetery, Sieniawa, Subcarpathian Voivodeship, Poland — confirm exact location locally",
+    airportRef: "50.175, 22.610",
+    arrivalNotes: [
+      "Resting place of Rabbi Yechezkel Shraga Halberstam, the Shinover Rav, eldest son of the Divrei Chaim of Sanz.",
+      "Confirm the cemetery and exact grave/ohel location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Yechezkel Shraga Halberstam", yiddishName: "רבי יחזקאל שרגא האלברשטאם", knownAs: "The Shinover Rav · Divrei Yechezkel", seforim: "דברי יחזקאל", yahrzeit: "י״א אב · 5659 / 1899", note: "Eldest son of the Divrei Chaim of Sanz; a leading Galician rebbe." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Yechezkel_Shraga_Halberstam",
+  },
+  {
+    slug: "komarno-heichal-habracha",
+    city: "Komarno",
+    yiddishCity: "קאמארנא",
+    name: "Komarno — Kever of the Heichal HaBracha",
+    yiddishName: "ציון היכל הברכה מקאמארנא",
+    country: "Ukraine",
+    address: "Jewish cemetery, Komarno, Lviv Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.628, 23.699",
+    arrivalNotes: [
+      "Resting place of Rabbi Yitzchak Isaac Yehuda Yechiel Safrin of Komarno, the great kabbalist and author of the Heichal HaBracha.",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Yitzchak Isaac Yehuda Yechiel Safrin", yiddishName: "רבי יצחק אייזיק יהודה יחיאל ספרין", knownAs: "The Komarno Rebbe · Heichal HaBracha", seforim: "היכל הברכה · נתיב מצוותיך · זהר חי", yahrzeit: "י׳ אייר · 5634 / 1874", note: "Founder of the Komarno chassidus and a major kabbalistic author." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Komarno_(Hasidic_dynasty)",
+  },
+  {
+    slug: "skvyra-skver",
+    city: "Skvyra (Skver)",
+    yiddishCity: "סקווירא",
+    name: "Skvyra — Kever of the first Skverer Rebbe",
+    yiddishName: "ציון האדמו״ר הראשון מסקווירא",
+    country: "Ukraine",
+    address: "Jewish cemetery, Skvyra, Kyiv Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.731, 29.664",
+    arrivalNotes: [
+      "Resting place of Rabbi Yitzchak Twersky of Skver, founder of the Skver chassidus (today centered in New Square, NY).",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Yitzchak Twersky of Skver", yiddishName: "רבי יצחק טווערסקי מסקווירא", knownAs: "The first Skverer Rebbe", yahrzeit: "כ״ז אייר · 5645 / 1885", note: "Founder of the Skver chassidus, a branch of the Chernobyl dynasty." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Skver_(Hasidic_dynasty)",
+  },
+  {
+    slug: "turiysk-trisk",
+    city: "Turiysk (Trisk)",
+    yiddishCity: "טריסק",
+    name: "Turiysk — Kever of the Magen Avraham of Trisk",
+    yiddishName: "ציון המגן אברהם מטריסק",
+    country: "Ukraine",
+    address: "Jewish cemetery, Turiysk, Volyn Oblast, Ukraine — confirm exact location locally",
+    airportRef: "51.081, 24.531",
+    arrivalNotes: [
+      "Resting place of Rabbi Avraham Twersky of Trisk, the Magen Avraham, a son of the Chernobyl dynasty who led a large court.",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Avraham Twersky of Trisk", yiddishName: "רבי אברהם טווערסקי מטריסק", knownAs: "The Magen Avraham of Trisk", seforim: "מגן אברהם", yahrzeit: "כ׳ טבת · 5649 / 1889", note: "A son of Rabbi Mordechai of Chernobyl; founder of the Trisk chassidus." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Trisk_(Hasidic_dynasty)",
+  },
+  {
+    slug: "savran-savraner",
+    city: "Savran",
+    yiddishCity: "סאווראן",
+    name: "Savran — Kever of the Savraner Rebbe",
+    yiddishName: "ציון הסאווראנער רבי",
+    country: "Ukraine",
+    address: "Jewish cemetery, Savran, Odesa Oblast, Ukraine — confirm exact location locally",
+    airportRef: "48.130, 30.078",
+    arrivalNotes: [
+      "Resting place of Rabbi Moshe Tzvi Giterman of Savran, a leading Ukrainian rebbe of his day.",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Moshe Tzvi Giterman of Savran", yiddishName: "רבי משה צבי גיטערמאן מסאווראן", knownAs: "The Savraner Rebbe", yahrzeit: "ז׳ טבת · 5598 / 1838", note: "A prominent chassidic leader in the Ukraine of his generation." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Savran_(Hasidic_dynasty)",
+  },
+  {
+    slug: "rotmistrivka-rachmastrivka",
+    city: "Rotmistrivka (Rachmastrivka)",
+    yiddishCity: "ראחמיסטריווקא",
+    name: "Rotmistrivka — Kever of the first Rachmastrivka Rebbe",
+    yiddishName: "ציון האדמו״ר הראשון מראחמיסטריווקא",
+    country: "Ukraine",
+    address: "Jewish cemetery, Rotmistrivka, Cherkasy Oblast, Ukraine — confirm exact location locally",
+    airportRef: "49.250, 31.400",
+    arrivalNotes: [
+      "Resting place of Rabbi Yochanan Twersky, founder of the Rachmastrivka chassidus, a branch of the Chernobyl dynasty.",
+      "Confirm the cemetery and exact grave location locally.",
+    ],
+    burials: [
+      { name: "Rabbi Yochanan Twersky of Rachmastrivka", yiddishName: "רבי יוחנן טווערסקי מראחמיסטריווקא", knownAs: "The first Rachmastrivka Rebbe", yahrzeit: "ג׳ אדר · 5656 / 1895", note: "Founder of the Rachmastrivka chassidus, a son of the Chernobyl line." },
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Rachmastrivka_(Hasidic_dynasty)",
+  },
+];
