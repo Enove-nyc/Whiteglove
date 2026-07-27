@@ -1,5 +1,7 @@
 "use client";
 
+import AddressAutocomplete from "@/components/AddressAutocomplete";
+
 import { useActionState } from "react";
 import { type ActionResult, addBurialAction, addCemeteryAction, addInfoPageAction } from "@/app/admin/add/actions";
 
@@ -36,7 +38,7 @@ export default function AddEntryForms({ cemeteries }: { cemeteries: CemeteryOpti
           <label className="block"><span className={captionClass}>City (Yiddish)</span><input name="yiddishCity" dir="rtl" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>Coordinates</span><input name="coordinates" className={inputClass} placeholder="50.0512, 19.9448" /></label>
-          <label className="block sm:col-span-2"><span className={captionClass}>Address</span><input name="address" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Address</span><AddressAutocomplete name="address" className={inputClass} placeholder="Start typing the address…" /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>Access note</span><textarea name="accessNote" rows={2} className={inputClass} /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>Source URL</span><input name="sourceUrl" className={inputClass} /></label>
         </div>

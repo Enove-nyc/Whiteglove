@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import {
   buildDays,
   emptyItinerary,
@@ -346,7 +347,7 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
       <Field label="Type"><select className={inputClass} defaultValue="hotel" onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
       {!overnight && <Field label="Name *"><input className={inputClass} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {overnight && <Field label="Bus or flight?"><input className={inputClass} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
-      {!overnight && <Field label="Address"><input className={inputClass} onChange={(e) => setL({ ...l, address: e.target.value })} /></Field>}
+      {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setL({ ...l, checkIn: e.target.value })} /></Field>
       {!overnight && <Field label="Check-out *"><input type="date" className={inputClass} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
     </FormShell>
@@ -358,8 +359,8 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name && a.date) onAdd({ id: uid(), name: a.name, address: a.address, coordinates: a.coordinates, date: a.date, startTime: a.startTime, durationMins: a.durationMins, notes: a.notes, bookedOnSite: false }); }}>
       <Field label="Name *"><input className={inputClass} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
-      <Field label="Address"><input className={inputClass} onChange={(e) => setA({ ...a, address: e.target.value })} /></Field>
-      <Field label="Coordinates"><input className={inputClass} placeholder="50.05, 19.94 (for distances)" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
+      <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
+      <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Date *"><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
       <Field label="Time"><input type="time" className={inputClass} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
