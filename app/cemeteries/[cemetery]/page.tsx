@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries, getCemetery } from "@/data/cemeteries";
+import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
 
 export function generateStaticParams() {
   return cemeteries.map(({ slug }) => ({ cemetery: slug }));
@@ -16,6 +17,12 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cemetery.address} ${cemetery.coordinates ?? ""}`)}`;
   const hasAccessContacts = Boolean(cemetery.accessContacts?.length);
+
+  const placeGroups = PLACE_CATEGORY_ORDER.map((category) => ({
+    category,
+    label: PLACE_CATEGORY_LABELS[category],
+    items: (cemetery.places ?? []).filter((place) => place.category === category),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -83,6 +90,40 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             </div>
           </div>
         </div>
+
+        {placeGroups.length > 0 && (
+          <div className="mt-14">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Practical information nearby</p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Kosher food, lodging, minyanim & more</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-500">Gathered from public sources — please confirm details before you rely on them.</p>
+            <div className="mt-8 space-y-10">
+              {placeGroups.map((group) => (
+                <div key={group.category}>
+                  <h3 className="flex items-baseline gap-3 border-b border-[var(--gold-light)] pb-2">
+                    <span dir="rtl" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{group.label.yiddish}</span>
+                    <span className="text-sm font-semibold uppercase tracking-[0.12em] text-stone-500">{group.label.english}</span>
+                  </h3>
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    {group.items.map((place) => (
+                      <article key={`${place.name}-${place.address ?? ""}`} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+                        <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{place.name}</p>
+                        {place.address && <p className="mt-2 text-sm leading-6 text-stone-600">{place.address}</p>}
+                        {place.hours && <p className="mt-2 text-sm text-stone-600">Hours: {place.hours}</p>}
+                        {place.notes && <p className="mt-3 text-sm leading-6 text-stone-600">{place.notes}</p>}
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {place.phone && <a href={`tel:${place.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {place.phone}</a>}
+                          {place.email && <a href={`mailto:${place.email}`} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Email</a>}
+                          {place.website && <a href={place.website} target="_blank" rel="noreferrer" className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Website ↗</a>}
+                          {place.source && <a href={place.source} target="_blank" rel="noreferrer" className="px-1 py-2 text-xs font-bold uppercase tracking-[0.12em] text-stone-400 underline decoration-[var(--gold)] underline-offset-4">Source</a>}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
           <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
