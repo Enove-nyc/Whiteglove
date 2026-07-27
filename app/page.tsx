@@ -26,6 +26,15 @@ const destinations = [
   { name: "Liska", yiddishName: "ליסקא", country: "Hungary", description: "A guide to Reb Hershele Lisker, the Ach Pri Tevuah.", href: "/liska" },
 ];
 
+const travelServices = [
+  { title: "Phone & SIM rentals", yiddish: "פאָון־רענטאַלס", href: "/phone-rentals", text: "SIMs, eSIMs, and hotspots so you stay reachable abroad without the setup hassle." },
+  { title: "Travel insurance", yiddish: "רײַזע־אינשוראַנס", href: "/travel-insurance", text: "Understand your coverage options — medical, cancellation, and baggage — clearly." },
+  { title: "Flights & hotels", yiddish: "פליגערס און האטעלן", href: "/booking", text: "Search and arrange flights and hotels that fit your route, dates, and kosher needs." },
+  { title: "Trip planning", yiddish: "פּלאַנירונג", href: "/planning", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
+  { title: "Honeymoon", yiddish: "האָנימאָן", href: "/honeymoon", text: "A calm, private, well-planned kosher honeymoon, arranged end to end." },
+  { title: "Kosher getaways", yiddish: "וואַקאַציעס", href: "/getaways", text: "Resorts, beaches, and cities like Rome and Paris — planned kosher, start to finish." },
+];
+
 const services = [
   ["01", "At the kever", "Tefillos, practical preparation, visiting guidance, and the details that help you arrive ready."],
   ["02", "Kosher essentials", "Food, Shabbos arrangements, minyanim, mikvaos, and the information travelers look for first."],
@@ -77,6 +86,20 @@ export default async function Home() {
           <div className="mt-8">
             <PromotionBanner promotion={homepagePromotions[0] ?? null} placement="homepage-promo" />
           </div>
+        </div>
+      </section>
+
+      <section id="travel-services" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <SectionHeading eyebrow="Travel services" title="Everything around the trip, handled." description="Beyond the destination guides, White Glove helps with the practical parts of getting there and staying connected." />
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {travelServices.map((service) => (
+            <Link key={service.href} href={service.href} className="group flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
+              <p dir="rtl" className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{service.yiddish}</p>
+              <p className="mt-1 text-sm font-semibold text-stone-500">{service.title}</p>
+              <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{service.text}</p>
+              <span className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Learn more →</span>
+            </Link>
+          ))}
         </div>
       </section>
 
