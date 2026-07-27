@@ -44,7 +44,8 @@ const featuredCemeteries: Cemetery[] = [
     yiddishName: "בית החיים ליזענסק",
     country: "Poland",
     address: "Górna 16, 37-300 Leżajsk, Poland",
-    coordinates: "50.251263, 22.421938",
+    // Owner-verified ohel location: 50°15'04.1"N 22°25'21.4"E
+    coordinates: "50.251139, 22.422611",
     arrivalNotes: [
       "Navigate to Górna 16, the Jewish cemetery on the edge of the town.",
       "The ohel is the focal point of the cemetery; the graves of members of Reb Elimelech's family are recorded in and around the ohel.",

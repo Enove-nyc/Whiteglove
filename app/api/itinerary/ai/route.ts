@@ -79,7 +79,8 @@ export async function POST(request: NextRequest) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": anthropicKey as string, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 400, system: SYSTEM, messages: [{ role: "user", content: userMessage }] }),
+      // Matches the Gemini budget so a multi-part answer isn't cut off mid-list.
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1200, system: SYSTEM, messages: [{ role: "user", content: userMessage }] }),
     });
     if (!res.ok) {
       const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;

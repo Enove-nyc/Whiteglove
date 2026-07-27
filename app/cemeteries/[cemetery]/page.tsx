@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import KeverCoordinates from "@/components/KeverCoordinates";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import NearestAirports from "@/components/NearestAirports";
@@ -59,7 +60,10 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
         <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
           <aside className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">How to get there</p>
-            <p className="mt-4 text-sm leading-7 text-stone-600">{cemetery.address}</p>
+            <div className="mt-4">
+              <KeverCoordinates coordinates={cemetery.coordinates} address={cemetery.address} />
+            </div>
+            <p className="mt-3 text-sm leading-7 text-stone-600">{cemetery.address}</p>
 
             <ol className="mt-6 space-y-4 border-t border-[var(--gold-light)] pt-5">
               {cemetery.arrivalNotes.map((note, index) => (
