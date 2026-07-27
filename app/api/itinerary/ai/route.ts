@@ -53,14 +53,15 @@ export async function POST(request: NextRequest) {
   try {
     if (geminiKey) {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
         {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: SYSTEM }] },
             contents: [{ role: "user", parts: [{ text: userMessage }] }],
-            generationConfig: { maxOutputTokens: 400, temperature: 0.6 },
+            // Disable "thinking" so the short answer isn't eaten by the token budget.
+            generationConfig: { maxOutputTokens: 600, temperature: 0.6, thinkingConfig: { thinkingBudget: 0 } },
           }),
         },
       );
