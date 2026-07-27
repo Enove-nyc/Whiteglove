@@ -117,7 +117,11 @@ export function formatKm(km: number | null): string | null {
 
 // ---- Day-by-day assembly + checks ------------------------------------
 
-export type DayActivity = ItinActivity & { distanceFromPrev: number | null };
+export type DayActivity = ItinActivity & {
+  distanceFromPrev: number | null;
+  /** Estimated door-to-door travel time from the previous stop, in minutes. */
+  travelMinutesFromPrev: number | null;
+};
 
 export type ItineraryDay = {
   date: string;
@@ -129,12 +133,41 @@ export type ItineraryDay = {
   activities: DayActivity[];
   warnings: string[];
   freeHours: number | null;
+  /** Estimated hours spent travelling between this day's stops. */
+  travelHours: number;
 };
 
 const USABLE_DAY_HOURS = 14; // 8am–10pm planning window
 const DEFAULT_ACTIVITY_HOURS = 1.5;
 const FREE_HOURS_THRESHOLD = 4; // flag a day with this many free hours overall
 const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
+
+// --- Travel-time estimate ---------------------------------------------
+// Roads are never straight, so scale the straight-line distance up, then apply
+// a speed that reflects the trip type (short hops are slow town driving; long
+// legs run closer to highway speed), plus a fixed allowance for parking and
+// getting going. This is a planning ESTIMATE — the day cards link to Google
+// Maps for the exact live driving time.
+const ROAD_DETOUR_FACTOR = 1.3;
+const TRANSFER_OVERHEAD_MINS = 10;
+
+export function estimateTravelMinutes(straightLineKm: number | null): number | null {
+  if (straightLineKm === null || !Number.isFinite(straightLineKm)) return null;
+  if (straightLineKm <= 0.05) return 0; // same spot
+  const roadKm = straightLineKm * ROAD_DETOUR_FACTOR;
+  const kmh = roadKm < 5 ? 25 : roadKm < 25 ? 45 : roadKm < 100 ? 70 : 85;
+  return Math.round((roadKm / kmh) * 60 + TRANSFER_OVERHEAD_MINS);
+}
+
+/** "1 h 25 m" / "45 min" for a minute count. */
+export function formatDuration(mins: number | null): string | null {
+  if (mins === null || !Number.isFinite(mins)) return null;
+  const total = Math.round(mins);
+  if (total < 60) return `${total} min`;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return m ? `${h} h ${m} m` : `${h} h`;
+}
 
 function timeToMins(t?: string): number | null {
   const m = t && /^(\d{1,2}):(\d{2})$/.exec(t);
@@ -157,10 +190,13 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const dayActs = itin.activities
       .filter((a) => a.date === date)
       .sort((a, b) => (timeToMins(a.startTime) ?? 9999) - (timeToMins(b.startTime) ?? 9999));
-    const withDistance: DayActivity[] = dayActs.map((a, i) => ({
-      ...a,
-      distanceFromPrev: i === 0 ? null : kmBetween(dayActs[i - 1].coordinates, a.coordinates),
-    }));
+    const withDistance: DayActivity[] = dayActs.map((a, i) => {
+      const distanceFromPrev = i === 0 ? null : kmBetween(dayActs[i - 1].coordinates, a.coordinates);
+      return { ...a, distanceFromPrev, travelMinutesFromPrev: i === 0 ? null : estimateTravelMinutes(distanceFromPrev) };
+    });
+    // Time spent getting between this day's stops — real hours that are not free.
+    const travelMins = withDistance.reduce((sum, a) => sum + (a.travelMinutesFromPrev ?? 0), 0);
+    const travelHours = Math.round((travelMins / 60) * 10) / 10;
 
     const flightsDeparting = itin.flights.filter((f) => f.date === date);
     const flightsArriving = itin.flights.filter((f) => (f.arriveDate ?? f.date) === date);
@@ -175,32 +211,49 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const travelDay = flightsDeparting.length > 0 || flightsArriving.length > 0;
     const isEmpty = dayActs.length === 0 && !travelDay;
 
-    // Free hours: usable window minus scheduled activity time. A completely
-    // empty, non-travel day counts the whole usable window as open.
+    // Free hours: the usable window minus time at the stops AND the time it
+    // takes to get between them. Ignoring the driving is what used to report a
+    // packed, spread-out day as mostly free.
     const scheduled = dayActs.reduce((sum, a) => sum + (a.durationMins ? a.durationMins / 60 : DEFAULT_ACTIVITY_HOURS), 0);
+    const committed = scheduled + travelHours;
     const freeHours = dayActs.length
-      ? Math.max(0, Math.round((USABLE_DAY_HOURS - scheduled) * 10) / 10)
+      ? Math.max(0, Math.round((USABLE_DAY_HOURS - committed) * 10) / 10)
       : travelDay
         ? null
         : USABLE_DAY_HOURS;
 
-    if (isEmpty) {
-      warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
-    } else if (freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
-      warnings.push(`About ${freeHours} free hours this day — room for another stop.`);
-    }
+    const travelNote = travelHours >= 0.5 ? ` (after about ${travelHours} h of driving between stops)` : "";
 
-    // Long empty gaps between timed stops (e.g. a free afternoon in the middle).
+    // Per-leg checks first: a day whose timing already doesn't work must not
+    // also be told it has room for another stop.
+    const legWarnings: string[] = [];
+    let hasTimingConflict = false;
     const timed = dayActs.filter((a) => timeToMins(a.startTime) !== null);
     for (let i = 1; i < timed.length; i += 1) {
       const prevStart = timeToMins(timed[i - 1].startTime) ?? 0;
       const prevEnd = prevStart + (timed[i - 1].durationMins ?? DEFAULT_ACTIVITY_HOURS * 60);
       const nextStart = timeToMins(timed[i].startTime) ?? 0;
-      const gapHours = Math.round(((nextStart - prevEnd) / 60) * 10) / 10;
-      if (gapHours >= GAP_HOURS_THRESHOLD) {
-        warnings.push(`About ${gapHours} free hours after ${timed[i - 1].name}, with nothing planned until ${timed[i].name} — room for another stop.`);
+      const legMins = estimateTravelMinutes(kmBetween(timed[i - 1].coordinates, timed[i].coordinates)) ?? 0;
+      const gapHours = Math.round(((nextStart - prevEnd - legMins) / 60) * 10) / 10;
+      if (nextStart - prevEnd < legMins) {
+        // Not enough time to make it there — a scheduling conflict, not free time.
+        hasTimingConflict = true;
+        legWarnings.push(`Tight timing: leaving ${timed[i - 1].name} and driving roughly ${formatDuration(legMins)} does not leave enough time before ${timed[i].name} starts at ${timed[i].startTime}.`);
+      } else if (gapHours >= GAP_HOURS_THRESHOLD) {
+        // A "gap" that is really a long drive is not offered as free time.
+        legWarnings.push(`About ${gapHours} free hours after ${timed[i - 1].name} (not counting the ~${formatDuration(legMins)} drive), with nothing planned until ${timed[i].name} — room for another stop.`);
       }
     }
+
+    if (isEmpty) {
+      warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
+    } else if (committed > USABLE_DAY_HOURS) {
+      const over = Math.round((committed - USABLE_DAY_HOURS) * 10) / 10;
+      warnings.push(`This day is over-packed — about ${Math.round(scheduled * 10) / 10} h at the stops plus roughly ${travelHours} h of driving is about ${over} h more than a ${USABLE_DAY_HOURS}-hour day. Consider moving a stop to another day.`);
+    } else if (!hasTimingConflict && freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
+      warnings.push(`About ${freeHours} free hours this day${travelNote} — room for another stop.`);
+    }
+    warnings.push(...legWarnings);
 
     return {
       date,
@@ -212,6 +265,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       activities: withDistance,
       warnings,
       freeHours,
+      travelHours,
     };
   });
 }
@@ -221,6 +275,10 @@ export type ItinerarySummary = {
   nightsWithoutLodging: number;
   emptyDays: number;
   totalWarnings: number;
+  /** Estimated driving hours between stops across the whole trip. */
+  travelHours: number;
+  /** Days where stops + driving exceed the usable day. */
+  overpackedDays: number;
 };
 
 export function summarize(days: ItineraryDay[]): ItinerarySummary {
@@ -228,12 +286,16 @@ export function summarize(days: ItineraryDay[]): ItinerarySummary {
   let nightsWithoutLodging = 0;
   let emptyDays = 0;
   let totalWarnings = 0;
+  let travelHours = 0;
+  let overpackedDays = 0;
   days.forEach((day) => {
     // Count the same nights the day cards flag (red-eye flights / overnight
     // transit already suppress the warning), so the summary stays consistent.
     if (day.warnings.some((w) => w.startsWith("No place to sleep"))) nightsWithoutLodging += 1;
     if (day.activities.length === 0 && day.flightsDeparting.length === 0 && day.flightsArriving.length === 0) emptyDays += 1;
+    if (day.warnings.some((w) => w.startsWith("This day is over-packed"))) overpackedDays += 1;
+    travelHours += day.travelHours;
     totalWarnings += day.warnings.length;
   });
-  return { nights, nightsWithoutLodging, emptyDays, totalWarnings };
+  return { nights, nightsWithoutLodging, emptyDays, totalWarnings, travelHours: Math.round(travelHours * 10) / 10, overpackedDays };
 }
