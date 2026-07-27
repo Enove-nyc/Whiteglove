@@ -17,6 +17,37 @@ const placementOptions: Array<{ value: PromotionPlacement; label: string }> = [
   { value: "full-page-takeover", label: "Full-page takeover — not shown yet" },
 ];
 
+// Friendly page/section list for the "Show on" dropdown. Empty value = all pages.
+const PAGE_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: "All pages", value: "" },
+  { label: "Home page", value: "/" },
+  { label: "Destinations (hub)", value: "/stops" },
+  { label: "Kosher getaways", value: "/getaways" },
+  { label: "Cemeteries", value: "/cemeteries" },
+  { label: "Directory", value: "/directory" },
+  { label: "Services", value: "/services" },
+  { label: "Trip planning", value: "/planning" },
+  { label: "Honeymoon", value: "/honeymoon" },
+  { label: "Book flights, hotels & cars", value: "/book" },
+  { label: "Phone & SIM rentals", value: "/phone-rentals" },
+  { label: "Travel insurance", value: "/travel-insurance" },
+  { label: "Contact", value: "/contact" },
+  { label: "Lizhensk", value: "/lizensk" },
+  { label: "Uman", value: "/uman" },
+  { label: "Medzhybizh", value: "/medzhybizh" },
+  { label: "Belz", value: "/belz" },
+  { label: "Kerestir", value: "/kerestir" },
+  { label: "Munkatch", value: "/munkatch" },
+  { label: "Sanz", value: "/sanz" },
+  { label: "Preshburg", value: "/preshburg" },
+  { label: "Custom pages…", value: "__custom__" },
+];
+const KNOWN_PAGE_VALUES = new Set(PAGE_OPTIONS.filter((o) => o.value !== "__custom__").map((o) => o.value));
+const isCustomTarget = (targetPaths: string) => {
+  const value = targetPaths.trim();
+  return value !== "" && !KNOWN_PAGE_VALUES.has(value);
+};
+
 function emptyPromotion(): Promotion {
   const now = new Date().toISOString();
   return {
@@ -27,8 +58,8 @@ function emptyPromotion(): Promotion {
     targetHref: "/",
     imageUrl: "",
     pdfUrl: "",
-    placements: ["homepage-promo"],
-    targetPaths: "/",
+    placements: ["fixed-top-banner"],
+    targetPaths: "",
     device: "all",
     startDate: "",
     endDate: "",
@@ -61,6 +92,7 @@ export default function AdminPromotionsManager({
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing promotions.");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"image" | "pdf" | null>(null);
+  const [customTargets, setCustomTargets] = useState(isCustomTarget(emptyPromotion().targetPaths));
 
   async function uploadMedia(file: File, kind: "image" | "pdf") {
     const typeOk = kind === "image" ? file.type.startsWith("image/") : file.type === "application/pdf";
@@ -141,7 +173,6 @@ export default function AdminPromotionsManager({
         <p className="mt-3 text-sm leading-6 text-stone-600">Choose where it appears, which pages it targets, and whether it should act like a banner, popup, or full-page takeover.</p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Field label="ID" value={draft.id} onChange={(value) => setDraft((current) => ({ ...current, id: value }))} />
           <Field label="Title" value={draft.title} onChange={(value) => setDraft((current) => ({ ...current, title: value }))} />
           <Field label="Button text" value={draft.buttonText} onChange={(value) => setDraft((current) => ({ ...current, buttonText: value }))} />
           <Field label="Target link" value={draft.targetHref} onChange={(value) => setDraft((current) => ({ ...current, targetHref: value }))} />
@@ -167,7 +198,30 @@ export default function AdminPromotionsManager({
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <Field label="Description" value={draft.description} onChange={(value) => setDraft((current) => ({ ...current, description: value }))} textarea />
-          <Field label="Target pages" value={draft.targetPaths} onChange={(value) => setDraft((current) => ({ ...current, targetPaths: value }))} textarea />
+          <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            Show on which page
+            <select
+              value={customTargets ? "__custom__" : draft.targetPaths.trim()}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value === "__custom__") { setCustomTargets(true); }
+                else { setCustomTargets(false); setDraft((current) => ({ ...current, targetPaths: value })); }
+              }}
+              className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700"
+            >
+              {PAGE_OPTIONS.map((option) => <option key={option.value || "all"} value={option.value}>{option.label}</option>)}
+            </select>
+            {customTargets && (
+              <textarea
+                value={draft.targetPaths}
+                onChange={(event) => setDraft((current) => ({ ...current, targetPaths: event.target.value }))}
+                rows={3}
+                placeholder="One page path per line, e.g. /uman"
+                className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal text-stone-700 outline-none"
+              />
+            )}
+            <p className="mt-2 text-[11px] font-normal normal-case tracking-normal text-stone-500">Pick a page, or &quot;All pages&quot; to show it everywhere.</p>
+          </div>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -223,7 +277,7 @@ export default function AdminPromotionsManager({
 
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" disabled={saving} onClick={() => savePromotion(draft)} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-60">Save promotion</button>
-          <button type="button" onClick={() => setDraft(emptyPromotion())} className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Reset form</button>
+          <button type="button" onClick={() => { setDraft(emptyPromotion()); setCustomTargets(false); }} className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Reset form</button>
         </div>
       </div>
 
@@ -253,7 +307,7 @@ export default function AdminPromotionsManager({
               <span>Target: {promotion.targetHref}</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
-              <button type="button" onClick={() => setDraft(promotion)} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Edit</button>
+              <button type="button" onClick={() => { setDraft(promotion); setCustomTargets(isCustomTarget(promotion.targetPaths)); }} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Edit</button>
               <button type="button" onClick={() => savePromotion({ ...promotion, enabled: !promotion.enabled })} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
                 {promotion.enabled ? "Pause" : "Enable"}
               </button>
