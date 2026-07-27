@@ -60,9 +60,19 @@ export type Itinerary = {
   flights: ItinFlight[];
   lodging: ItinLodging[];
   activities: ItinActivity[];
+  /**
+   * Real road driving minutes per leg, keyed "fromCoords>toCoords", filled in
+   * from the routing service. Used instead of the straight-line estimate.
+   */
+  roadTimes?: Record<string, number>;
   notes?: string;
   updatedAt?: string;
 };
+
+/** Key for one leg of travel — matches lib/road-times.ts. */
+export function travelLegKey(from?: string, to?: string): string {
+  return `${(from ?? "").trim()}>${(to ?? "").trim()}`;
+}
 
 export function emptyItinerary(): Itinerary {
   return { title: "My trip", travelerName: "", startDate: "", endDate: "", flights: [], lodging: [], activities: [], notes: "" };
@@ -123,8 +133,10 @@ export function formatKm(km: number | null): string | null {
 
 export type DayActivity = ItinActivity & {
   distanceFromPrev: number | null;
-  /** Estimated door-to-door travel time from the previous stop, in minutes. */
+  /** Travel time from the previous stop, in minutes. */
   travelMinutesFromPrev: number | null;
+  /** True when the time came from real road routing, not the estimate. */
+  travelIsMeasured?: boolean;
 };
 
 export type ItineraryDay = {
@@ -197,6 +209,8 @@ export type TravelLeg = {
   km: number | null;
   fromCoordinates?: string;
   toCoordinates?: string;
+  /** True when the time is a real road time rather than an estimate. */
+  measured?: boolean;
 };
 
 function timeToMins(t?: string): number | null {
@@ -242,9 +256,19 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
   const dates = eachDate(itin.startDate, itin.endDate);
   return dates.map((date, index) => {
     const dayActs = sortDayActivities(itin.activities.filter((a) => a.date === date));
+    // Prefer a real measured road time when we have one for this leg.
+    const roadMinutes = (from?: string, to?: string) => itin.roadTimes?.[travelLegKey(from, to)];
     const withDistance: DayActivity[] = dayActs.map((a, i) => {
-      const distanceFromPrev = i === 0 ? null : kmBetween(dayActs[i - 1].coordinates, a.coordinates);
-      return { ...a, distanceFromPrev, travelMinutesFromPrev: i === 0 ? null : estimateTravelMinutes(distanceFromPrev) };
+      if (i === 0) return { ...a, distanceFromPrev: null, travelMinutesFromPrev: null };
+      const prev = dayActs[i - 1];
+      const distanceFromPrev = kmBetween(prev.coordinates, a.coordinates);
+      const measured = roadMinutes(prev.coordinates, a.coordinates);
+      return {
+        ...a,
+        distanceFromPrev,
+        travelMinutesFromPrev: measured ?? estimateTravelMinutes(distanceFromPrev),
+        travelIsMeasured: measured !== undefined,
+      };
     });
 
     const flightsDeparting = itin.flights.filter((f) => f.date === date);
@@ -279,9 +303,10 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
 
     const leg = (kind: TravelLeg["kind"], label: string, from?: string, to?: string): TravelLeg | null => {
       const km = kmBetween(from, to);
-      const minutes = estimateTravelMinutes(km);
+      const measured = roadMinutes(from, to);
+      const minutes = measured ?? estimateTravelMinutes(km);
       if (km === null || minutes === null || minutes <= 0) return null;
-      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to };
+      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined };
     };
 
     const travelLegs: TravelLeg[] = [];
@@ -350,7 +375,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       const prevStart = timeToMins(timed[i - 1].startTime) ?? 0;
       const prevEnd = prevStart + (timed[i - 1].durationMins ?? DEFAULT_ACTIVITY_HOURS * 60);
       const nextStart = timeToMins(timed[i].startTime) ?? 0;
-      const legMins = estimateTravelMinutes(kmBetween(timed[i - 1].coordinates, timed[i].coordinates)) ?? 0;
+      const legMins = roadMinutes(timed[i - 1].coordinates, timed[i].coordinates) ?? estimateTravelMinutes(kmBetween(timed[i - 1].coordinates, timed[i].coordinates)) ?? 0;
       const gapHours = Math.round(((nextStart - prevEnd - legMins) / 60) * 10) / 10;
       if (nextStart - prevEnd < legMins) {
         // Not enough time to make it there — a scheduling conflict, not free time.
