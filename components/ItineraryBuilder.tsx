@@ -9,12 +9,15 @@ import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl } from "@/data/route-utils";
+import { geocodeMissing } from "@/lib/geocode";
+import { moveStop, planRoute } from "@/lib/route-plan";
 import {
   buildDays,
   emptyItinerary,
   formatDuration,
   formatKm,
   summarize,
+  unscheduledActivities,
   type Itinerary,
   type ItinActivity,
   type ItinFlight,
@@ -38,6 +41,8 @@ export default function ItineraryBuilder() {
   const [tab, setTab] = useState<Tab>(null);
   const [loaded, setLoaded] = useState(false);
   const [savedNote, setSavedNote] = useState("");
+  const [planning, setPlanning] = useState(false);
+  const [planNote, setPlanNote] = useState("");
 
   // Load: account first, then localStorage.
   useEffect(() => {
@@ -113,6 +118,38 @@ export default function ItineraryBuilder() {
 
   const days = useMemo(() => (itin.startDate && itin.endDate ? buildDays(itin) : []), [itin]);
   const summary = useMemo(() => summarize(days), [days]);
+  const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
+  const hasDates = Boolean(itin.startDate && itin.endDate);
+
+  // Look up any missing locations, then arrange the trip: stops you gave a date
+  // stay on that date, everything else is placed and ordered for the shortest
+  // driving. Without locations we cannot measure anything, so geocode first.
+  async function planMyRoute() {
+    if (!hasDates) { setPlanNote("Set the trip start and end dates first."); return; }
+    setPlanning(true);
+    setPlanNote("Looking up locations…");
+    let working = itin;
+    const missing = itin.activities.filter((a) => !a.coordinates);
+    if (missing.length) {
+      const found = await geocodeMissing(missing.map((a) => ({ id: a.id, name: a.name, address: a.address, coordinates: a.coordinates })));
+      if (Object.keys(found).length) {
+        working = { ...working, activities: working.activities.map((a) => (found[a.id] ? { ...a, coordinates: found[a.id] } : a)) };
+      }
+    }
+    setPlanNote("Planning the fastest route…");
+    const result = planRoute(working);
+    persist(result.itinerary);
+    const stillMissing = result.unplaceable.length;
+    setPlanning(false);
+    setPlanNote(
+      `Route planned${result.placed ? ` — ${result.placed} stop${result.placed > 1 ? "s" : ""} scheduled` : ""}.` +
+        (stillMissing ? ` ${stillMissing} stop${stillMissing > 1 ? "s" : ""} still need a location or a day.` : ""),
+    );
+    setTimeout(() => setPlanNote(""), 6000);
+  }
+
+  const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
+  const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
 
   return (
     <div>
@@ -131,8 +168,14 @@ export default function ItineraryBuilder() {
           <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Hotel / where you sleep</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Activity / stop</button>
           <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import my saved route</button>
+          <button type="button" onClick={planMyRoute} disabled={planning} className="border border-[var(--gold)] bg-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--navy)] hover:border-[var(--navy)] disabled:opacity-60">{planning ? "Planning…" : "⚡ Plan my route"}</button>
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
+          {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
+        {!hasDates && <p className="mt-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">Set your <strong>start and end dates</strong> above — the planner needs them to lay out the days and work out the route.</p>}
+        <p className="mt-3 text-xs leading-5 text-stone-500">
+          <strong>Plan my route</strong> keeps every stop you gave a date on that date, and arranges everything else around it — placing undated stops on the day that adds the least driving and putting each day in the fastest order. You can still reorder any day by hand.
+        </p>
 
         {tab === "flight" && <FlightForm startDate={itin.startDate} onAdd={(f) => { addFlight(f); setTab(null); }} />}
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
@@ -164,8 +207,32 @@ export default function ItineraryBuilder() {
             </div>
           </div>
 
+          {unscheduled.length > 0 && (
+            <div className="mt-6 border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Not scheduled yet ({unscheduled.length})</p>
+              <p className="mt-1 text-sm text-stone-600">Give a stop a date to pin it to that day, or press <strong>Plan my route</strong> and we&apos;ll place it on the day that adds the least driving.</p>
+              <ul className="mt-3 space-y-2">
+                {unscheduled.map((a) => (
+                  <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] pt-2 first:border-t-0 first:pt-0">
+                    <span className="min-w-0">
+                      <span className="font-semibold text-[var(--navy)]">{a.name}</span>
+                      {!a.coordinates && <span className="ml-2 text-xs text-amber-800">no location yet</span>}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <select value="" onChange={(e) => e.target.value && scheduleStop(a.id, e.target.value)} className="rounded-md border border-[var(--gold-light)] bg-white px-2 py-1 text-xs text-[var(--navy)]">
+                        <option value="">Put on a day…</option>
+                        {days.map((d) => <option key={d.date} value={d.date}>Day {d.index + 1} — {d.label}</option>)}
+                      </select>
+                      <button type="button" onClick={() => removeActivity(a.id)} className="text-xs text-stone-400 hover:text-red-700">✕</button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-6 space-y-6">
-            {days.map((day) => <DayCard key={day.date} day={day} />)}
+            {days.map((day) => <DayCard key={day.date} day={day} onMove={moveStopBy} />)}
           </div>
         </>
       )}
@@ -182,7 +249,7 @@ export default function ItineraryBuilder() {
 
 // ---- Day card with checks + suggestions ------------------------------
 
-function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
+function DayCard({ day, onMove }: { day: ReturnType<typeof buildDays>[number]; onMove: (id: string, direction: -1 | 1) => void }) {
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -243,7 +310,20 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
                 </a>
               </p>
             )}
-            <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}{a.name}{a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}</p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
+                <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
+                {a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}
+                {a.name}
+                {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
+              </p>
+              {day.activities.length > 1 && (
+                <span className="flex shrink-0 gap-1">
+                  <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
+                  <button type="button" onClick={() => onMove(a.id, 1)} disabled={i === day.activities.length - 1} aria-label={`Move ${a.name} later`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↓</button>
+                </span>
+              )}
+            </div>
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
             {(a.phone || a.href) && (
               <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -504,7 +584,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
   }
 
   return (
-    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name && a.date) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date, startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, notes: a.notes, bookedOnSite: false }); }}>
+    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, notes: a.notes, bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list — we&apos;ll fill in the rest</span>
         <KeverPicker onPick={pickKever} />
@@ -515,7 +595,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
       <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder="https://… (map, booking, our kever page)" /></Field>
-      <Field label="Date *"><input type="date" className={inputClass} value={a.date ?? ""} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
+      <Field label="Date (leave empty to let the planner place it)"><input type="date" className={inputClass} value={a.date ?? ""} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
       <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
       <Field label="Notes"><input className={inputClass} value={a.notes ?? ""} onChange={(e) => setA({ ...a, notes: e.target.value })} /></Field>
