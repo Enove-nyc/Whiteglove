@@ -281,15 +281,59 @@ function BookingList({ title, items, onRemove }: { title: string; items: Array<{
 
 function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFlight) => void }) {
   const [f, setF] = useState<Partial<ItinFlight>>({ date: startDate });
+  const [lookupNo, setLookupNo] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState("");
+
+  async function runLookup() {
+    const flightNumber = lookupNo.trim();
+    if (!flightNumber) { setStatus("Enter a flight number to look up."); return; }
+    const date = f.date || startDate;
+    if (!date) { setStatus("Choose the flight date first."); return; }
+    setBusy(true);
+    setStatus("Looking up…");
+    try {
+      const res = await fetch("/api/flights/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flightNumber, date }),
+      });
+      const data = await res.json();
+      if (data?.available && data.flight) {
+        setF((prev) => ({ ...prev, ...data.flight }));
+        setStatus(
+          `Found: ${data.flight.airline || data.flight.flightNo} ${data.flight.from} → ${data.flight.to}` +
+            (data.moreResults ? ` (+${data.moreResults} more — edit if needed)` : ""),
+        );
+      } else {
+        setStatus(data?.reason || "Flight not found — enter the details by hand.");
+      }
+    } catch {
+      setStatus("Lookup failed — enter the details by hand.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, bookedOnSite: false }); }}>
-      <Field label="From *"><input className={inputClass} onChange={(e) => setF({ ...f, from: e.target.value })} placeholder="e.g. JFK" /></Field>
-      <Field label="To *"><input className={inputClass} onChange={(e) => setF({ ...f, to: e.target.value })} placeholder="e.g. Kyiv (KBP)" /></Field>
-      <Field label="Airline"><input className={inputClass} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
-      <Field label="Date *"><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
-      <Field label="Departs"><input type="time" className={inputClass} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
-      <Field label="Arrives"><input type="time" className={inputClass} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
-      <Field label="Lands next day?"><input type="date" className={inputClass} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} /></Field>
+    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, flightNo: f.flightNo, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, bookedOnSite: false }); }}>
+      <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
+        <span className={caption}>Auto-fill from a flight number</span>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <input className={`${inputClass} mt-0 w-32`} value={lookupNo} onChange={(e) => setLookupNo(e.target.value)} placeholder="e.g. LY1" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void runLookup(); } }} />
+          <button type="button" onClick={() => void runLookup()} disabled={busy} className="border border-[var(--navy)] bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50">{busy ? "…" : "Look up"}</button>
+          <span className="text-xs text-stone-600">Uses the date below.</span>
+        </div>
+        {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
+      </div>
+      <Field label="From *"><input className={inputClass} value={f.from ?? ""} onChange={(e) => setF({ ...f, from: e.target.value })} placeholder="e.g. JFK" /></Field>
+      <Field label="To *"><input className={inputClass} value={f.to ?? ""} onChange={(e) => setF({ ...f, to: e.target.value })} placeholder="e.g. Kyiv (KBP)" /></Field>
+      <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
+      <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
+      <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
+      <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
+      <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
+      <Field label="Lands next day?"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} /></Field>
     </FormShell>
   );
 }
