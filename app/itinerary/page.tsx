@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
+import TravelAssistantBox from "@/components/TravelAssistantBox";
 
 export const metadata: Metadata = {
   title: "Itinerary planner — White Glove Itineraries",
@@ -22,7 +23,10 @@ export default function ItineraryPage() {
         </div>
       </section>
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        <ItineraryBuilder />
+        <TravelAssistantBox />
+        <div className="mt-10">
+          <ItineraryBuilder />
+        </div>
       </section>
       <Footer />
     </main>
