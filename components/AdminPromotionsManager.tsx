@@ -60,6 +60,45 @@ export default function AdminPromotionsManager({
   const [draft, setDraft] = useState<Promotion>(emptyPromotion());
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing promotions.");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<"image" | "pdf" | null>(null);
+
+  async function uploadMedia(file: File, kind: "image" | "pdf") {
+    const typeOk = kind === "image" ? file.type.startsWith("image/") : file.type === "application/pdf";
+    if (!typeOk) {
+      setMessage(kind === "image" ? "Choose an image file (PNG, JPG, WEBP, or GIF)." : "Choose a PDF file.");
+      return;
+    }
+    if (file.size > 900 * 1024) {
+      setMessage("That file is too large (max ~900 KB). Compress it and try again.");
+      return;
+    }
+    setUploading(kind);
+    setMessage("Uploading…");
+    const dataUrl: string = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    }).catch(() => "");
+    if (!dataUrl) {
+      setUploading(null);
+      setMessage("Could not read that file.");
+      return;
+    }
+    const response = await fetch("/api/admin/media", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataUrl }),
+    });
+    const data = await response.json().catch(() => ({}));
+    setUploading(null);
+    if (!response.ok || !data.url) {
+      setMessage(data.error || "Upload failed.");
+      return;
+    }
+    setDraft((current) => (kind === "image" ? { ...current, imageUrl: data.url } : { ...current, pdfUrl: data.url }));
+    setMessage(kind === "image" ? "Image uploaded." : "PDF uploaded.");
+  }
   const totals = useMemo(() => ({
     impressions: promotions.reduce((total, item) => total + item.impressions, 0),
     clicks: promotions.reduce((total, item) => total + item.clicks, 0),
@@ -106,8 +145,24 @@ export default function AdminPromotionsManager({
           <Field label="Title" value={draft.title} onChange={(value) => setDraft((current) => ({ ...current, title: value }))} />
           <Field label="Button text" value={draft.buttonText} onChange={(value) => setDraft((current) => ({ ...current, buttonText: value }))} />
           <Field label="Target link" value={draft.targetHref} onChange={(value) => setDraft((current) => ({ ...current, targetHref: value }))} />
-          <Field label="Image URL" value={draft.imageUrl} onChange={(value) => setDraft((current) => ({ ...current, imageUrl: value }))} />
-          <Field label="PDF URL" value={draft.pdfUrl} onChange={(value) => setDraft((current) => ({ ...current, pdfUrl: value }))} />
+          <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            Image
+            <input value={draft.imageUrl} onChange={(event) => setDraft((current) => ({ ...current, imageUrl: event.target.value }))} placeholder="Upload below, or paste an image URL" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" />
+            <label className="mt-2 inline-block cursor-pointer border border-[var(--gold)] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+              {uploading === "image" ? "Uploading…" : "Upload image"}
+              <input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadMedia(file, "image"); event.target.value = ""; }} />
+            </label>
+            {draft.imageUrl ? <img src={draft.imageUrl} alt="" className="mt-2 h-20 w-auto max-w-full border border-[var(--gold-light)] object-contain" /> : null}
+          </div>
+          <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            PDF
+            <input value={draft.pdfUrl} onChange={(event) => setDraft((current) => ({ ...current, pdfUrl: event.target.value }))} placeholder="Upload below, or paste a PDF URL" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" />
+            <label className="mt-2 inline-block cursor-pointer border border-[var(--gold)] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+              {uploading === "pdf" ? "Uploading…" : "Upload PDF"}
+              <input type="file" accept="application/pdf" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadMedia(file, "pdf"); event.target.value = ""; }} />
+            </label>
+            {draft.pdfUrl ? <p className="mt-2 truncate text-[11px] font-normal normal-case text-stone-500">Attached: {draft.pdfUrl}</p> : null}
+          </div>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
