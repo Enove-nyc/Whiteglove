@@ -9,6 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default function BookPage() {
+  // Affiliate slots — set these env vars once you join the partner programs and
+  // the Book links start carrying your tracking IDs (no code change needed).
+  const affiliate = {
+    bookingAid: process.env.BOOKING_AFFILIATE_ID?.trim() || "",
+    kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
+  };
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
@@ -23,7 +29,7 @@ export default function BookPage() {
               Each search opens with a trusted partner where you compare options and pay securely. Your itinerary and saved places stay here with White Glove.
             </p>
           </div>
-          <BookPartners />
+          <BookPartners affiliate={affiliate} />
         </div>
       </section>
 
