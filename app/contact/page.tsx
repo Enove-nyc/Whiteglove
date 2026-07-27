@@ -24,7 +24,7 @@ export default function ContactPage() {
         </div>
         <p className="mt-6 text-center text-sm text-stone-500">
           Prefer email? Reach us directly at{" "}
-          <a href="mailto:contacts@whitegloveitineraries.com" className="underline decoration-[var(--gold)] underline-offset-2">contacts@whitegloveitineraries.com</a>.
+          <a href="mailto:contact@whitegloveitineraries.com" className="underline decoration-[var(--gold)] underline-offset-2">contact@whitegloveitineraries.com</a>.
         </p>
       </section>
       <Footer />

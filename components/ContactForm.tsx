@@ -38,7 +38,7 @@ export default function ContactForm() {
     return (
       <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center">
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Thank you — your message is on its way.</p>
-        <p className="mt-3 text-sm leading-7 text-stone-600">We&apos;ll be in touch soon. For anything urgent, email us directly at contacts@whitegloveitineraries.com.</p>
+        <p className="mt-3 text-sm leading-7 text-stone-600">We&apos;ll be in touch soon. For anything urgent, email us directly at contact@whitegloveitineraries.com.</p>
         <button type="button" onClick={() => setSent(false)} className="mt-6 border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Send another message</button>
       </div>
     );
