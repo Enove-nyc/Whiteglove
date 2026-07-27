@@ -11,6 +11,7 @@ import {
   PROVIDER_CATEGORY_ORDER,
   type ProviderCat,
 } from "@/data/directory";
+import { listStoredProviders } from "@/lib/directory-store";
 
 export { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER };
 export type { ProviderCat };
@@ -62,17 +63,48 @@ function sortProviders(list: PublicProvider[]): PublicProvider[] {
   });
 }
 
-/** All published providers, from the DB when available, else the static list. */
+const splitList = (v?: string) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : []);
+
+// Owner-added providers from the Redis store (works even without Postgres).
+async function fromStore(): Promise<PublicProvider[]> {
+  try {
+    const stored = await listStoredProviders();
+    return stored
+      .filter((p) => p.published !== false)
+      .map((p) => ({
+        slug: p.id,
+        name: p.name,
+        category: p.category as ProviderCat,
+        tagline: p.tagline ?? null,
+        description: [p.description, p.services].filter(Boolean).join(" — ") || null,
+        phone: p.phone ?? null,
+        whatsapp: p.whatsapp ?? null,
+        email: p.email ?? null,
+        website: p.website ?? null,
+        basedIn: p.basedIn ?? null,
+        regions: splitList(p.regions),
+        languages: splitList(p.languages),
+        specialties: splitList(p.specialties),
+        featured: Boolean(p.featured),
+        source: null,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+/** All published providers: owner-added (Redis) merged with the DB/static list. */
 export async function getPublicProviders(): Promise<PublicProvider[]> {
-  if (!DB_ENABLED) return sortProviders(fromStatic());
+  const store = await fromStore();
+  if (!DB_ENABLED) return sortProviders([...store, ...fromStatic()]);
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.directoryProvider.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [{ featured: "desc" }, { name: "asc" }],
     });
-    if (!rows.length) return sortProviders(fromStatic());
-    return rows.map((r) => ({
+    if (!rows.length) return sortProviders([...store, ...fromStatic()]);
+    const dbProviders: PublicProvider[] = rows.map((r) => ({
       slug: r.slug,
       name: r.name,
       category: r.category as ProviderCat,
@@ -89,8 +121,9 @@ export async function getPublicProviders(): Promise<PublicProvider[]> {
       featured: r.featured,
       source: r.source,
     }));
+    return sortProviders([...store, ...dbProviders]);
   } catch (error) {
     console.error("[directory] DB read failed — using static fallback", error);
-    return sortProviders(fromStatic());
+    return sortProviders([...store, ...fromStatic()]);
   }
 }
