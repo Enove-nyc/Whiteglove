@@ -177,6 +177,7 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
 
   const anchor = day.activities.find((a) => a.coordinates) || (day.lodging?.coordinates ? { coordinates: day.lodging.coordinates } : null);
   const canSuggest = Boolean(anchor?.coordinates);
+  const hasFreeTime = (day.freeHours ?? 0) >= 3;
 
   async function showNearby() {
     if (!anchor?.coordinates) return;
@@ -231,10 +232,11 @@ function DayCard({ day }: { day: ReturnType<typeof buildDays>[number] }) {
         )}
       </p>
 
-      {canSuggest && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">What&apos;s nearby?</button>
-          <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Asking AI…" : "Ask AI for ideas"}</button>
+      {(canSuggest || hasFreeTime) && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {hasFreeTime && <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Free time — fill it?</span>}
+          {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">What&apos;s nearby?</button>}
+          <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
         </div>
       )}
       {nearby && (
