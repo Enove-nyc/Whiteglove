@@ -56,6 +56,23 @@ export const SPELLING_GROUPS: SpellingGroup[] = [
   { keys: ["kisvarda"], spellings: ["kisvarda", "kleinwardein"] },
   { keys: ["bardejov"], spellings: ["bardejov", "bardiov", "bardyov"] },
   { keys: ["lviv", "lvov"], spellings: ["lviv", "lvov", "lemberg", "lwow"] },
+  // --- batch 3 towns ---
+  { keys: ["chernobyl", "chernobyl-meor-einayim"], spellings: ["chernobyl", "chornobyl", "tchernobyl", "chernobil", "meor einayim", "meor enayim", "twersky", "tversky"] },
+  { keys: ["karlin-pinsk-aharon-hagadol", "karlin"], spellings: ["karlin", "carlin", "pinsk", "karlin stolin", "stolin", "aharon hagadol", "aaron of karlin", "aharon the great"] },
+  { keys: ["zhydachiv-tzvi-hirsch", "zhydachiv"], spellings: ["zhydachiv", "zidichov", "zidichoiv", "zydaczow", "zhidachov", "zidichover", "tzvi hirsch", "eichenstein", "ateres tzvi"] },
+  { keys: ["peremyshlyany-meir", "premishlan"], spellings: ["premishlan", "premishlaner", "peremyshlyany", "przemyslany", "peremishlyany", "meir premishlan", "meir'l", "reb meirl"] },
+  { keys: ["polonne-toldos-yaakov-yosef", "polonne"], spellings: ["polonne", "polnoye", "polonnoye", "polonoe", "polonn", "toldos yaakov yosef", "toldot yaakov yosef", "yaakov yosef"] },
+  { keys: ["ostroh-maharsha", "ostroh"], spellings: ["ostroh", "ostrog", "ostra", "ostroha", "ostro", "maharsha", "shmuel eidels", "samuel edels", "eidels"] },
+  { keys: ["radomsko-tiferes-shlomo", "radomsk", "radomsko"], spellings: ["radomsk", "radomsko", "radomsker", "tiferes shlomo", "tiferet shlomo", "shlomo hakohen rabinowicz"] },
+  { keys: ["warka-yitzchak-vorki", "vorki", "warka"], spellings: ["vorki", "vorka", "warka", "vurka", "vorker", "yitzchak of vorki", "yitzchak kalish", "kalish"] },
+  { keys: ["vyzhnytsia-tzemach-tzadik", "vizhnitz"], spellings: ["vizhnitz", "vizhnits", "vyzhnytsia", "vyzhnitsa", "wiznitz", "viznitz", "tzemach tzadik", "menachem mendel hager", "hager"] },
+  { keys: ["bobowa-first-bobover-rebbe", "bobov", "bobowa"], spellings: ["bobov", "bobova", "bobowa", "bobover", "shlomo halberstam", "kedushas tzion"] },
+  { keys: ["chortkiv-dovid-moshe", "chortkov"], spellings: ["chortkov", "chortkiv", "czortkow", "tchortkov", "chortkover", "dovid moshe", "david moshe friedman"] },
+  { keys: ["sadhora-ruzhiner", "sadigura", "ruzhin"], spellings: ["sadigura", "sadhora", "sadigora", "sadygora", "sadiguro", "ruzhin", "ruzhiner", "rizhin", "yisrael friedman", "israel friedman", "friedman"] },
+  { keys: ["talne-dovid-twersky", "talne"], spellings: ["talne", "talnoye", "talna", "talner", "dovid twersky of talne", "david twersky"] },
+  { keys: ["amuka-yonasan-ben-uziel", "amuka"], spellings: ["amuka", "amukah", "amuca", "yonasan ben uziel", "yonatan ben uziel", "jonathan ben uzziel", "targum yonasan"] },
+  { keys: ["hebron-machpela", "hebron"], spellings: ["hebron", "chevron", "hevron", "chvron", "machpela", "maaras hamachpela", "meoras hamachpela", "cave of the patriarchs", "avos", "avot", "patriarchs"] },
+  { keys: ["kever-rochel-bethlehem", "kever rochel"], spellings: ["kever rochel", "kever rachel", "rachels tomb", "rochel imenu", "rachel imenu", "bethlehem", "beis lechem", "beit lechem"] },
 ];
 
 // Every spelling from groups whose keys intersect the given place identifiers.
