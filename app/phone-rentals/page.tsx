@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBody from "@/components/PageBody";
@@ -37,11 +38,12 @@ export default async function PhoneRentalsPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-        <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Development note</p>
-          <p className="mt-3 text-sm leading-7 text-stone-600">
-            We’ll keep this page simple until the vendor and fulfillment flow is chosen.
-          </p>
+        <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8 sm:flex sm:items-center sm:justify-between sm:gap-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Stay connected abroad</p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Tell us your destinations and dates and we&apos;ll recommend the right SIM, eSIM, or hotspot for your trip.</p>
+          </div>
+          <Link href="/contact" className="mt-5 inline-block shrink-0 border border-[var(--navy)] bg-[var(--navy)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] sm:mt-0">Ask us →</Link>
         </div>
       </section>
 

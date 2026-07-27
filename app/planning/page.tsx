@@ -1,4 +1,5 @@
 import Footer from "@/components/Footer";
+import InquiryForm from "@/components/InquiryForm";
 import Navbar from "@/components/Navbar";
 import PageBody from "@/components/PageBody";
 import { resolvePage } from "@/lib/pages";
@@ -69,33 +70,11 @@ export default async function PlanningPage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Tell us about the trip</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">We can turn a rough idea into a working plan.</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
-              Step 37 in the roadmap is about giving the traveler one place to explain the journey. This version keeps the page simple and sets the structure for future quote and intake forms.
+              Share your route, dates, and what matters most — flights, hotels, drivers, kosher food, and religious needs — and we&apos;ll come back to you with a plan built around it.
             </p>
           </div>
 
-          <div className="border border-[var(--gold-light)] bg-white p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-                Name
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="Your name" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-                Email
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="you@example.com" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] sm:col-span-2">
-                Travel window
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="Dates, flexibility, or season" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] sm:col-span-2">
-                What do you need?
-                <textarea rows={4} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="Flights, hotels, drivers, food, route preferences, and any religious needs." />
-              </label>
-            </div>
-            <button type="button" className="mt-4 border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-              Save planning draft
-            </button>
-          </div>
+          <InquiryForm subject="Trip planning request" detailsPlaceholder="Flights, hotels, drivers, food, route preferences, and any religious needs." />
         </div>
       </section>
 

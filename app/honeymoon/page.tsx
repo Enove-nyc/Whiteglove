@@ -1,4 +1,5 @@
 import Footer from "@/components/Footer";
+import InquiryForm from "@/components/InquiryForm";
 import Navbar from "@/components/Navbar";
 import PageBody from "@/components/PageBody";
 import { resolvePage } from "@/lib/pages";
@@ -69,42 +70,11 @@ export default async function HoneymoonPage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Request a quote</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Tell us what kind of trip you want.</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
-              We can eventually turn this into a full concierge request form. For now, this page marks the start of the Honeymoon service and gives us a dedicated place to build from.
+              Tell us your destination ideas, dates, budget, and what matters most — kosher needs, privacy, and the details that make it special — and we&apos;ll plan it end to end.
             </p>
           </div>
 
-          <div className="border border-[var(--gold-light)] bg-white p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-                Name
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="Your name" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-                Email
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="you@example.com" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] sm:col-span-2">
-                Dates
-                <input className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="When are you traveling?" />
-              </label>
-              <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] sm:col-span-2">
-                Notes
-                <textarea rows={4} className="mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none" placeholder="Destination ideas, budget, kosher needs, privacy preferences, and anything else we should know." />
-              </label>
-            </div>
-            <button type="button" className="mt-4 border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-              Save request draft
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Development note</p>
-          <p className="mt-3 max-w-3xl text-lg leading-8 text-slate-100">
-            This page is intentionally simple for now. Once the service is ready, we can connect it to the quote workflow, saved trips, and the admin review queue.
-          </p>
+          <InquiryForm subject="Honeymoon request" whenLabel="Dates" whenPlaceholder="When are you traveling?" detailsLabel="Notes" detailsPlaceholder="Destination ideas, budget, kosher needs, privacy preferences, and anything else we should know." />
         </div>
       </section>
 
