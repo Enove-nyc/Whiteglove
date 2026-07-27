@@ -25,6 +25,9 @@ export type Cemetery = {
     note: string;
   }>;
   burials: Burial[];
+  // Nearby practical listings (kosher food, lodging, minyan, mikvah, transport)
+  // — the same shape as data/practical-content.ts.
+  places?: ContentPlace[];
   sourceUrl: string;
 };
 
@@ -367,3 +370,4 @@ export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
 }
 import { cityGuides } from "@/data/city-guides";
+import type { ContentPlace } from "@/data/practical-content";
