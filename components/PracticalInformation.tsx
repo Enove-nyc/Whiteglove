@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 import type { PracticalPlace } from "@prisma/client";
 
@@ -33,8 +34,7 @@ function Status({ section }: { section: PracticalSection }) {
 
 const telHref = (phone: string) => `tel:${phone.replace(/[^+\d]/g, "")}`;
 const waHref = (phone: string) => `https://wa.me/${phone.replace(/[^\d]/g, "")}`;
-const mapHref = (address: string, coordinates?: string | null) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address} ${coordinates ?? ""}`)}`;
+const mapHref = (address: string, coordinates?: string | null) => placeMapUrl(address, coordinates);
 
 const pill = "border border-[var(--gold)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white";
 

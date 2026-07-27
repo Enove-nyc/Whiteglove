@@ -1,3 +1,5 @@
+import { placeMapUrl } from "@/data/route-utils";
+
 export type SacredStop = {
   city: string;
   traditionalName?: string;
@@ -28,5 +30,5 @@ export const sacredStops: SacredStop[] = [
 ];
 
 export function mapsUrl(stop: SacredStop) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${stop.address} ${stop.coordinates}`)}`;
+  return placeMapUrl(stop.address, stop.coordinates);
 }
