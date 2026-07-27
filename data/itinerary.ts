@@ -1,6 +1,7 @@
 // Itinerary model + pure planning helpers (shared by the builder, the print
 // view, and the account store). No DB or browser APIs here.
 
+import { AIRPORTS } from "@/data/airports";
 import { coordinatesToPoint } from "@/data/route-utils";
 
 export type LodgingType = "hotel" | "overnight-transit" | "other";
@@ -133,8 +134,10 @@ export type ItineraryDay = {
   activities: DayActivity[];
   warnings: string[];
   freeHours: number | null;
-  /** Estimated hours spent travelling between this day's stops. */
+  /** Estimated hours of ground travel this day (transfers + between stops). */
   travelHours: number;
+  /** Every ground leg of the day, in order — airport/hotel transfers included. */
+  travelLegs: TravelLeg[];
 };
 
 const USABLE_DAY_HOURS = 14; // 8am–10pm planning window
@@ -150,6 +153,9 @@ const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
 // Maps for the exact live driving time.
 const ROAD_DETOUR_FACTOR = 1.3;
 const TRANSFER_OVERHEAD_MINS = 10;
+// Beyond this, an airport isn't a ground transfer for the day — it's the other
+// end of a flight (guards against "driving" from Krakow to JFK).
+const MAX_AIRPORT_TRANSFER_KM = 300;
 
 export function estimateTravelMinutes(straightLineKm: number | null): number | null {
   if (straightLineKm === null || !Number.isFinite(straightLineKm)) return null;
@@ -168,6 +174,27 @@ export function formatDuration(mins: number | null): string | null {
   const m = total % 60;
   return m ? `${h} h ${m} m` : `${h} h`;
 }
+
+/** Coordinates for a flight's airport label ("New York (JFK)", "KBP", …). */
+function airportCoordsFor(label?: string): string | null {
+  if (!label) return null;
+  const tokens = label.toUpperCase().match(/[A-Z]{3}/g) ?? [];
+  for (const token of tokens) {
+    const airport = AIRPORTS.find((a) => a.code === token);
+    if (airport) return `${airport.lat}, ${airport.lng}`;
+  }
+  return null;
+}
+
+/** One leg of a day's travel — between stops, or to/from lodging or an airport. */
+export type TravelLeg = {
+  kind: "arrive-airport" | "from-lodging" | "stop" | "to-lodging" | "depart-airport";
+  label: string;
+  minutes: number;
+  km: number | null;
+  fromCoordinates?: string;
+  toCoordinates?: string;
+};
 
 function timeToMins(t?: string): number | null {
   const m = t && /^(\d{1,2}):(\d{2})$/.exec(t);
@@ -194,14 +221,78 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       const distanceFromPrev = i === 0 ? null : kmBetween(dayActs[i - 1].coordinates, a.coordinates);
       return { ...a, distanceFromPrev, travelMinutesFromPrev: i === 0 ? null : estimateTravelMinutes(distanceFromPrev) };
     });
-    // Time spent getting between this day's stops — real hours that are not free.
-    const travelMins = withDistance.reduce((sum, a) => sum + (a.travelMinutesFromPrev ?? 0), 0);
-    const travelHours = Math.round((travelMins / 60) * 10) / 10;
 
     const flightsDeparting = itin.flights.filter((f) => f.date === date);
     const flightsArriving = itin.flights.filter((f) => (f.arriveDate ?? f.date) === date);
     const lodging = lodgingForNight(itin, date);
     const isLastDay = index === dates.length - 1;
+
+    // --- Every ground leg of the day, not just stop-to-stop ---------------
+    // Morning: from the airport you land at, else from last night's hotel.
+    // Evening: to the airport you fly out of, else back to tonight's hotel.
+    const prevNightLodging = index > 0 ? lodgingForNight(itin, dates[index - 1]) : null;
+    const firstStop = withDistance[0];
+    const lastStop = withDistance[withDistance.length - 1];
+
+    // A same-day flight appears as both arriving and departing, so an airport is
+    // only a real ground transfer if it is actually near the day's stops —
+    // otherwise we would "drive" from Krakow to JFK. Pick the nearest candidate
+    // within a sane driving distance.
+    const nearestAirportTo = (candidates: Array<string | undefined>, stopCoordinates?: string): string | null => {
+      let best: { coords: string; km: number } | null = null;
+      for (const label of candidates) {
+        const coords = airportCoordsFor(label);
+        const km = kmBetween(coords ?? undefined, stopCoordinates);
+        if (coords && km !== null && km <= MAX_AIRPORT_TRANSFER_KM && (!best || km < best.km)) best = { coords, km };
+      }
+      return best?.coords ?? null;
+    };
+    const arrivalAirport = nearestAirportTo(flightsArriving.map((f) => f.to), firstStop?.coordinates);
+    const departureAirport = nearestAirportTo(flightsDeparting.map((f) => f.from), lastStop?.coordinates);
+    const arrivalAirportLabel = flightsArriving.find((f) => airportCoordsFor(f.to) === arrivalAirport)?.to;
+    const departureAirportLabel = flightsDeparting.find((f) => airportCoordsFor(f.from) === departureAirport)?.from;
+
+    const leg = (kind: TravelLeg["kind"], label: string, from?: string, to?: string): TravelLeg | null => {
+      const km = kmBetween(from, to);
+      const minutes = estimateTravelMinutes(km);
+      if (km === null || minutes === null || minutes <= 0) return null;
+      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to };
+    };
+
+    const travelLegs: TravelLeg[] = [];
+    if (firstStop) {
+      if (arrivalAirport) {
+        const l = leg("arrive-airport", `Airport ${arrivalAirportLabel} → ${firstStop.name}`, arrivalAirport, firstStop.coordinates);
+        if (l) travelLegs.push(l);
+      } else if (prevNightLodging?.coordinates) {
+        const l = leg("from-lodging", `${prevNightLodging.name || "Hotel"} → ${firstStop.name}`, prevNightLodging.coordinates, firstStop.coordinates);
+        if (l) travelLegs.push(l);
+      }
+    }
+    withDistance.forEach((a, i) => {
+      if (i === 0 || a.travelMinutesFromPrev === null || a.travelMinutesFromPrev <= 0) return;
+      travelLegs.push({
+        kind: "stop",
+        label: `${withDistance[i - 1].name} → ${a.name}`,
+        minutes: a.travelMinutesFromPrev,
+        km: a.distanceFromPrev,
+        fromCoordinates: withDistance[i - 1].coordinates,
+        toCoordinates: a.coordinates,
+      });
+    });
+    if (lastStop) {
+      if (departureAirport) {
+        const l = leg("depart-airport", `${lastStop.name} → airport ${departureAirportLabel}`, lastStop.coordinates, departureAirport);
+        if (l) travelLegs.push(l);
+      } else if (lodging?.coordinates && lodging.type !== "overnight-transit") {
+        const l = leg("to-lodging", `${lastStop.name} → ${lodging.name || "hotel"}`, lastStop.coordinates, lodging.coordinates);
+        if (l) travelLegs.push(l);
+      }
+    }
+
+    // All of it is real time that isn't free.
+    const travelMins = travelLegs.reduce((sum, l) => sum + l.minutes, 0);
+    const travelHours = Math.round((travelMins / 60) * 10) / 10;
 
     const warnings: string[] = [];
     // Missing place to sleep (skip the last day — you usually fly home).
@@ -222,7 +313,8 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         ? null
         : USABLE_DAY_HOURS;
 
-    const travelNote = travelHours >= 0.5 ? ` (after about ${travelHours} h of driving between stops)` : "";
+    const hasTransfer = travelLegs.some((l) => l.kind !== "stop");
+    const travelNote = travelHours >= 0.5 ? ` (after about ${travelHours} h of driving${hasTransfer ? ", including transfers" : " between stops"})` : "";
 
     // Per-leg checks first: a day whose timing already doesn't work must not
     // also be told it has room for another stop.
@@ -266,6 +358,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       warnings,
       freeHours,
       travelHours,
+      travelLegs,
     };
   });
 }

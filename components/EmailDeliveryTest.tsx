@@ -1,0 +1,126 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type Config = {
+  apiKeySet?: boolean;
+  from?: string;
+  usingTestSender?: boolean;
+  editsInbox?: string;
+  contactInbox?: string;
+  editsInboxFromEnv?: boolean;
+  contactInboxFromEnv?: boolean;
+  lastFailure?: { at: string; to: string; error?: string; status?: number } | null;
+};
+type Result = { ok?: boolean; to?: string; status?: number; id?: string; error?: string; sandboxRestricted?: boolean; config?: Config };
+
+const code = "rounded bg-[var(--cream)] px-1 font-mono text-[12px]";
+
+export default function EmailDeliveryTest() {
+  const [config, setConfig] = useState<Config | null>(null);
+  const [busy, setBusy] = useState("");
+  const [result, setResult] = useState<Result | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/email-test", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setConfig(d))
+      .catch(() => undefined);
+  }, []);
+
+  async function test(inbox: "contact" | "edits") {
+    setBusy(inbox);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/email-test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ inbox }) });
+      const data = await res.json();
+      setResult(data);
+      if (data.config) setConfig(data.config);
+    } catch {
+      setResult({ ok: false, error: "Could not reach the server." });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  return (
+    <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Email delivery</p>
+      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Do form submissions reach your inbox?</h2>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
+        Send a real test message to each inbox and see exactly what the mail service says. If it fails, the reason is shown here instead of being hidden in the server log.
+      </p>
+
+      {config && (
+        <dl className="mt-5 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Mail service key</dt>
+            <dd className={config.apiKeySet ? "text-emerald-700" : "font-semibold text-red-700"}>
+              {config.apiKeySet ? "RESEND_API_KEY is set" : "RESEND_API_KEY is missing — no email can be sent"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Sending from</dt>
+            <dd className={config.usingTestSender ? "font-semibold text-amber-800" : "text-stone-700"}>
+              {config.from}
+              {config.usingTestSender ? " — sandbox sender" : ""}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact forms go to</dt>
+            <dd className="text-stone-700">{config.contactInbox}</dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Edit suggestions go to</dt>
+            <dd className="text-stone-700">{config.editsInbox}</dd>
+          </div>
+        </dl>
+      )}
+
+      {config?.usingTestSender && (
+        <div className="mt-5 border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+          <strong>This is very likely why your mail isn&apos;t arriving.</strong> You&apos;re sending from Resend&apos;s shared sandbox address
+          (<code className={code}>onboarding@resend.dev</code>), which is only allowed to deliver to the email address that owns the Resend
+          account — messages to <code className={code}>{config.contactInbox}</code> get rejected. To fix it: verify
+          <strong> whitegloveitineraries.com</strong> in Resend (add the DNS records it gives you), then set
+          <code className={code}>RESEND_FROM_EMAIL</code> to something like
+          <code className={code}>White Glove Itineraries &lt;no-reply@whitegloveitineraries.com&gt;</code> and redeploy.
+        </div>
+      )}
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={() => test("contact")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
+          {busy === "contact" ? "Sending…" : "Send test to contact@"}
+        </button>
+        <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
+          {busy === "edits" ? "Sending…" : "Send test to edits@"}
+        </button>
+      </div>
+
+      {result && (
+        <div className={`mt-5 border-l-4 px-4 py-3 text-sm leading-6 ${result.ok ? "border-emerald-400 bg-emerald-50 text-emerald-900" : "border-red-400 bg-red-50 text-red-900"}`}>
+          {result.ok ? (
+            <>
+              <strong>Accepted by the mail service</strong> — sent to <code className={code}>{result.to}</code>
+              {result.id ? <> (id <code className={code}>{result.id}</code>)</> : null}.
+              <p className="mt-2">If it still doesn&apos;t appear, check that mailbox&apos;s spam folder, and confirm the mailbox actually exists and its MX records point to your mail host.</p>
+            </>
+          ) : (
+            <>
+              <strong>Failed to send to {result.to}</strong>
+              {result.status ? ` (HTTP ${result.status})` : ""}.
+              {result.error ? <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs">{result.error}</pre> : null}
+              {result.sandboxRestricted && <p className="mt-2 font-semibold">This is the sandbox-sender restriction described above — verify your domain in Resend and set RESEND_FROM_EMAIL.</p>}
+            </>
+          )}
+        </div>
+      )}
+
+      {!result && config?.lastFailure && (
+        <p className="mt-4 text-xs text-stone-500">
+          Last recorded failure — {new Date(config.lastFailure.at).toLocaleString()} to {config.lastFailure.to}: {config.lastFailure.error?.slice(0, 300)}
+        </p>
+      )}
+    </section>
+  );
+}
