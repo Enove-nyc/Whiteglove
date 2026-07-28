@@ -48,6 +48,8 @@ export type ItinActivity = {
   href?: string; // link (our kever page, a booking page, a map…)
   phone?: string; // contact number for this stop
   keverSlug?: string; // set when picked from our kever directory
+  /** Country this stop is in, when we know it. Used to flag border crossings. */
+  country?: string;
   notes?: string;
   bookedOnSite?: boolean;
 };
@@ -65,6 +67,14 @@ export type Itinerary = {
    * from the routing service. Used instead of the straight-line estimate.
    */
   roadTimes?: Record<string, number>;
+  /**
+   * Which engine produced each road time. "google" is a traffic-aware Google
+   * Routes answer — the number Google Maps itself would give. "osrm" is the
+   * open router, which assumes empty roads and so runs optimistic. Kept so the
+   * planner can label the two differently instead of passing an estimate off
+   * as a Maps time.
+   */
+  roadTimeSources?: Record<string, "google" | "osrm">;
   notes?: string;
   updatedAt?: string;
 };
@@ -137,6 +147,8 @@ export type DayActivity = ItinActivity & {
   travelMinutesFromPrev: number | null;
   /** True when the time came from real road routing, not the estimate. */
   travelIsMeasured?: boolean;
+  /** Which engine produced it — see Itinerary.roadTimeSources. */
+  travelSource?: "google" | "osrm";
 };
 
 export type ItineraryDay = {
@@ -161,12 +173,17 @@ const FREE_HOURS_THRESHOLD = 4; // flag a day with this many free hours overall
 const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
 
 // --- Travel-time estimate ---------------------------------------------
+// The last-resort figure, used only when routing could not be reached at all.
 // Roads are never straight, so scale the straight-line distance up, then apply
 // a speed that reflects the trip type (short hops are slow town driving; long
 // legs run closer to highway speed), plus a fixed allowance for parking and
-// getting going. This is a planning ESTIMATE — the day cards link to Google
-// Maps for the exact live driving time.
-const ROAD_DETOUR_FACTOR = 1.3;
+// getting going.
+//
+// The speeds below are deliberately on the cautious side. An estimate that runs
+// slightly long costs a traveler nothing; one that runs short hands them free
+// hours that do not exist and a kever they arrive at after it has closed. Every
+// number derived from this is shown with a "≈" and never called a Maps time.
+const ROAD_DETOUR_FACTOR = 1.35;
 const TRANSFER_OVERHEAD_MINS = 10;
 // Beyond this, an airport isn't a ground transfer for the day — it's the other
 // end of a flight (guards against "driving" from Krakow to JFK).
@@ -176,7 +193,8 @@ export function estimateTravelMinutes(straightLineKm: number | null): number | n
   if (straightLineKm === null || !Number.isFinite(straightLineKm)) return null;
   if (straightLineKm <= 0.05) return 0; // same spot
   const roadKm = straightLineKm * ROAD_DETOUR_FACTOR;
-  const kmh = roadKm < 5 ? 25 : roadKm < 25 ? 45 : roadKm < 100 ? 70 : 85;
+  // Town crawl, rural road, cross-country road, motorway.
+  const kmh = roadKm < 5 ? 22 : roadKm < 25 ? 38 : roadKm < 100 ? 58 : 88;
   return Math.round((roadKm / kmh) * 60 + TRANSFER_OVERHEAD_MINS);
 }
 
@@ -211,6 +229,8 @@ export type TravelLeg = {
   toCoordinates?: string;
   /** True when the time is a real road time rather than an estimate. */
   measured?: boolean;
+  /** Which engine produced it — see Itinerary.roadTimeSources. */
+  source?: "google" | "osrm";
 };
 
 function timeToMins(t?: string): number | null {
@@ -258,6 +278,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const dayActs = sortDayActivities(itin.activities.filter((a) => a.date === date));
     // Prefer a real measured road time when we have one for this leg.
     const roadMinutes = (from?: string, to?: string) => itin.roadTimes?.[travelLegKey(from, to)];
+    const roadSource = (from?: string, to?: string) => itin.roadTimeSources?.[travelLegKey(from, to)];
     const withDistance: DayActivity[] = dayActs.map((a, i) => {
       if (i === 0) return { ...a, distanceFromPrev: null, travelMinutesFromPrev: null };
       const prev = dayActs[i - 1];
@@ -268,6 +289,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         distanceFromPrev,
         travelMinutesFromPrev: measured ?? estimateTravelMinutes(distanceFromPrev),
         travelIsMeasured: measured !== undefined,
+        travelSource: roadSource(prev.coordinates, a.coordinates),
       };
     });
 
@@ -306,7 +328,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       const measured = roadMinutes(from, to);
       const minutes = measured ?? estimateTravelMinutes(km);
       if (km === null || minutes === null || minutes <= 0) return null;
-      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined };
+      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined, source: roadSource(from, to) };
     };
 
     const travelLegs: TravelLeg[] = [];
@@ -328,6 +350,8 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         km: a.distanceFromPrev,
         fromCoordinates: withDistance[i - 1].coordinates,
         toCoordinates: a.coordinates,
+        measured: a.travelIsMeasured,
+        source: a.travelSource,
       });
     });
     if (lastStop) {
@@ -395,6 +419,25 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       const names = missingLocation.slice(0, 3).map((a) => a.name).join(", ");
       warnings.push(
         `Travel time is not counted for ${missingLocation.length} stop${missingLocation.length > 1 ? "s" : ""} (${names}${missingLocation.length > 3 ? "…" : ""}) because ${missingLocation.length > 1 ? "they have" : "it has"} no location yet — pick the address from the dropdown, or use "Plan my route" to look them up. Until then the free hours below are too high.`,
+      );
+    }
+
+    // A day that crosses a border. No routing engine — Google Maps included —
+    // puts the queue at the crossing into its driving time, and on the frontiers
+    // this site sends people over that queue is routinely the longest part of
+    // the day. Flag it rather than fold a made-up number into the total.
+    const crossings: string[] = [];
+    for (let i = 1; i < dayActs.length; i += 1) {
+      const from = dayActs[i - 1].country?.trim();
+      const to = dayActs[i].country?.trim();
+      if (from && to && from !== to) {
+        const pair = `${from} → ${to}`;
+        if (!crossings.includes(pair)) crossings.push(pair);
+      }
+    }
+    if (crossings.length) {
+      warnings.push(
+        `This day crosses a border (${crossings.join(", ")}). The driving times below do not include waiting at the crossing, which can add anywhere from minutes to several hours — check the current wait before you commit to the day's timings.`,
       );
     }
 
