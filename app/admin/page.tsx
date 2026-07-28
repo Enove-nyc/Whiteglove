@@ -2,6 +2,7 @@ import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
+import RoutingKeyTest from "@/components/RoutingKeyTest";
 import Footer from "@/components/Footer";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import PasswordSettings from "@/components/PasswordSettings";
@@ -112,6 +113,7 @@ export default async function AdminPage() {
         </div>
 
         <div className="mt-5">
+          <RoutingKeyTest />
           <EmailDeliveryTest />
         </div>
 

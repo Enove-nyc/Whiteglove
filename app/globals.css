@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Leaflet's own stylesheet — required for tile positioning and popups. */
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --navy: #172d52;
