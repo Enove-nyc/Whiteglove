@@ -1,7 +1,5 @@
-import { bulkDestinations } from "@/data/bulk-destinations";
 import { cemeteries, type Burial } from "@/data/cemeteries";
-import { cityGuides } from "@/data/city-guides";
-import { sacredStops } from "@/data/sacred-stops";
+import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 
 export type VerificationStatus = "verified" | "unavailable" | "needs-verification";
 
@@ -71,7 +69,7 @@ const standardEssentials = () => ({
 
 const cemeteryBySlug = new Map(cemeteries.map((cemetery) => [cemetery.slug, cemetery]));
 
-const cityGuideRecords: DestinationRecord[] = cityGuides.map((guide) => {
+const cityGuideRecords: DestinationRecord[] = guidedDestinations().map(({ guide }) => {
   const cemetery = cemeteryBySlug.get(guide.slug);
   const contacts = guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : []);
 
@@ -121,7 +119,7 @@ const lizhenskRecord: DestinationRecord = {
   notes: ["A focused guide to the Noam Elimelech and the Lizhensk Jewish cemetery."],
 };
 
-const bulkRecords: DestinationRecord[] = bulkDestinations.map((destination) => ({
+const bulkRecords: DestinationRecord[] = unguidedDestinations().map((destination) => ({
   id: destination.slug,
   city: destination.city,
   yiddishCity: destination.yiddishCity,
@@ -129,37 +127,13 @@ const bulkRecords: DestinationRecord[] = bulkDestinations.map((destination) => (
   aliases: destination.aliases,
   cemeteries: [],
   ...standardEssentials(),
-  notes: [destination.summary],
+  notes: destination.summary ? [destination.summary] : [],
 }));
-
-const specialLocationRecords: DestinationRecord[] = sacredStops
-  .filter((stop) => !cityGuideRecords.some((record) => record.city === stop.city || record.aliases.includes(stop.city)))
-  .map((stop) => ({
-    id: `location-${stop.city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-    city: stop.city,
-    yiddishCity: stop.yiddishName,
-    country: stop.country,
-    aliases: stop.aliases ?? (stop.traditionalName ? [stop.traditionalName] : []),
-    cemeteries: [{
-      id: `cemetery-${stop.city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      yiddishName: "בית החיים",
-      name: stop.traditionalName ? `${stop.traditionalName} Jewish Cemetery` : `${stop.city} Jewish Cemetery`,
-      address: stop.address,
-      coordinates: stop.coordinates,
-      arrivalNotes: stop.note ? [stop.note] : [],
-      shomerContacts: [],
-      burials: [],
-      status: "needs-verification",
-    }],
-    ...standardEssentials(),
-    notes: [],
-  }));
 
 export const destinationDatabase: DestinationRecord[] = [
   lizhenskRecord,
   ...cityGuideRecords,
   ...bulkRecords,
-  ...specialLocationRecords,
 ];
 
 export function getDestinationRecord(id: string) {

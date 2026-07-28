@@ -1,3 +1,5 @@
+import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
+
 const RESEND_API_URL = "https://api.resend.com/emails";
 
 // Resend's shared sandbox sender. It can ONLY deliver to the email address that
@@ -12,15 +14,28 @@ function resendConfig() {
   return apiKey ? { apiKey, from } : null;
 }
 
-// Where notifications are delivered. Edit/suggestion submissions go to the
-// "edits" inbox; contact-form messages go to the "contact" inbox. Both can be
-// overridden by env vars without a code change.
+// Where notifications are delivered.
+//
+// Everything the site sends the owner — contact-form messages, edit
+// suggestions, business listings — goes to ONE inbox by default. Splitting them
+// across edits@ and contact@ only doubled the number of addresses that had to
+// be watched and kept working, for no gain: they are all "someone wrote in".
+//
+// OWNER_NOTIFICATION_EMAIL sets that inbox. CONTACT_NOTIFICATION_EMAIL is kept
+// as an optional override for anyone who later does want contact-form messages
+// somewhere separate; unset, it simply follows the main inbox.
+const DEFAULT_INBOX = "contact@whitegloveitineraries.com";
+
+function ownerInbox() {
+  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_INBOX;
+}
+
 function editsInbox() {
-  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || "edits@whitegloveitineraries.com";
+  return ownerInbox();
 }
 
 function contactInbox() {
-  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || "contact@whitegloveitineraries.com";
+  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || ownerInbox();
 }
 
 const escapeHtml = (v: string) =>
@@ -44,12 +59,13 @@ export function lastEmailFailure() {
 }
 
 /** POST one email to Resend and report exactly what happened. Never throws. */
-async function postResend(payload: Record<string, unknown>, to: string): Promise<SendResult> {
+async function postResend(payload: Record<string, unknown>, to: string, kind = "email"): Promise<SendResult> {
   const config = resendConfig();
   if (!config) {
     const result: SendResult = { ok: false, error: "RESEND_API_KEY is not set on the deployment, so no email can be sent." };
     lastFailure = { ...result, at: new Date().toISOString(), to };
     console.error("[email]", result.error);
+    await recordEmailAttempt({ at: new Date().toISOString(), kind, to, ok: false, error: result.error });
     return result;
   }
   try {
@@ -72,6 +88,7 @@ async function postResend(payload: Record<string, unknown>, to: string): Promise
       };
       lastFailure = { ...result, at: new Date().toISOString(), to };
       console.error("[email] send failed:", response.status, bodyText);
+      await recordEmailAttempt({ at: new Date().toISOString(), kind, to, ok: false, status: response.status, error: result.error, sandboxRestricted });
       return result;
     }
     let id: string | undefined;
@@ -80,28 +97,36 @@ async function postResend(payload: Record<string, unknown>, to: string): Promise
     } catch {
       /* body isn't JSON — fine */
     }
+    await recordEmailAttempt({ at: new Date().toISOString(), kind, to, ok: true, status: response.status });
     return { ok: true, status: response.status, id };
   } catch (error) {
     const result: SendResult = { ok: false, error: error instanceof Error ? error.message : String(error) };
     lastFailure = { ...result, at: new Date().toISOString(), to };
     console.error("[email] send threw:", error);
+    await recordEmailAttempt({ at: new Date().toISOString(), kind, to, ok: false, error: result.error });
     return result;
   }
 }
 
 /** Current delivery configuration, for the admin diagnostic panel. */
-export function emailConfigStatus() {
+export async function emailConfigStatus() {
   const apiKeySet = Boolean(process.env.RESEND_API_KEY);
   const from = process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER;
+  const split = Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim());
   return {
     apiKeySet,
     from,
     usingTestSender: from === TEST_SENDER,
+    inbox: ownerInbox(),
     editsInbox: editsInbox(),
     contactInbox: contactInbox(),
-    editsInboxFromEnv: Boolean(process.env.OWNER_NOTIFICATION_EMAIL?.trim()),
-    contactInboxFromEnv: Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim()),
+    /** False in the normal case: everything arrives in one place. */
+    inboxesSplit: split && contactInbox() !== editsInbox(),
+    inboxFromEnv: Boolean(process.env.OWNER_NOTIFICATION_EMAIL?.trim()),
     lastFailure,
+    /** Real sends from every route, not just this instance's tests. */
+    log: await readEmailLog(),
+    logAvailable: emailLogAvailable(),
   };
 }
 
@@ -117,6 +142,7 @@ export async function sendTestEmail(which: "edits" | "contact"): Promise<SendRes
       text: `Test from your White Glove admin dashboard. If you are reading this, mail to ${to} is working. Sent ${when}`,
     },
     to,
+    "test",
   );
   return { ...result, to };
 }
@@ -176,6 +202,7 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
       text,
     },
     to,
+    `submission: ${sub.kind}`,
   );
   return result.ok;
 }
@@ -188,6 +215,7 @@ export async function sendVerificationEmail(email: string, code: string) {
       html: `<p>Your verification code is:</p><h2 style="letter-spacing:4px;">${escapeHtml(code)}</h2><p>This code expires in 30 minutes.</p>`,
     },
     email,
+    "verification code",
   );
   return result.ok;
 }
@@ -218,6 +246,7 @@ export async function sendContactMessage(msg: ContactMessage): Promise<boolean> 
       text,
     },
     to,
+    "contact form",
   );
   return result.ok;
 }
@@ -242,6 +271,7 @@ export async function sendItineraryShareEmail(to: string, opts: { fromName: stri
       text: `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on White Glove Itineraries.\n\nView it here: ${opts.url}`,
     },
     to,
+    "itinerary share",
   );
   return result.ok;
 }
@@ -254,6 +284,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
       html: `<p>Your password reset code is:</p><h2 style="letter-spacing:4px;">${escapeHtml(code)}</h2><p>This code expires in 30 minutes. If you did not request this, you can ignore this email.</p>`,
     },
     email,
+    "password reset",
   );
   return result.ok;
 }

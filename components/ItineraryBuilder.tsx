@@ -688,7 +688,7 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((g, i) => (
             <li key={`${g.name}-${i}`}>
               <button
@@ -785,7 +785,7 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((k) => (
             <li key={k.slug}>
               <button

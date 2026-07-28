@@ -19,8 +19,28 @@ type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
 export type Affiliate = { bookingAid?: string; kayakParams?: string; travelpayoutsMarker?: string };
 
-const inputClass = "mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-base text-stone-700 outline-none transition focus:border-[var(--gold)]";
+// The search panel is laid out the way booking sites lay one out: fields sit
+// shoulder to shoulder inside a single bordered block, divided by hairlines,
+// rather than floating as separate boxes with gaps between them. The hairlines
+// come from a 1px grid gap over a gold background, so they stay perfectly even
+// however the grid wraps.
+const inputClass = "mt-2 w-full border border-[var(--gold-light)] px-3 py-3 text-base text-[var(--navy)] outline-none transition focus:border-[var(--gold)]";
 const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
+const fieldLabel = "text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500";
+const bareInput = "mt-1.5 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-normal normal-case tracking-normal text-[var(--navy)] outline-none placeholder:text-stone-400";
+
+function SearchGrid({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`grid gap-px border border-[var(--gold-light)] bg-[var(--gold-light)] ${className}`}>{children}</div>;
+}
+
+function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`flex min-w-0 flex-col justify-center bg-[#fcfaf6] px-4 py-3 ${className}`}>
+      <span className={fieldLabel}>{label}</span>
+      {children}
+    </label>
+  );
+}
 const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
@@ -80,34 +100,30 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
   }
 
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_20px_50px_rgba(29,47,111,.08)] sm:p-8">
-      {/* ---- Step 1: how are you paying? ---- */}
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Step 1 · How are you paying?</p>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <PayCard
-          active={pay === "cash"}
-          onClick={() => setPay("cash")}
-          title="Book with cash"
-          text="Compare and pay with a card, through a trusted booking partner."
-        />
-        <PayCard
-          active={pay === "miles"}
-          onClick={() => setPay("miles")}
-          title="Book with miles & points"
-          text="Find award availability, check it's worth the points, book in your own program."
-        />
+    <div className="border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
+      {/* ---- How are you paying? A segmented control, so the choice reads as
+           one control with two settings rather than two competing panels. ---- */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 sm:px-7">
+        <div className="inline-flex min-w-0 border border-[var(--gold-light)] bg-white p-1">
+          <PayToggle active={pay === "cash"} onClick={() => setPay("cash")}>Cash</PayToggle>
+          <PayToggle active={pay === "miles"} onClick={() => setPay("miles")}>Miles &amp; points</PayToggle>
+        </div>
+        <p className="min-w-0 text-xs leading-5 text-stone-500">
+          {pay === "cash" ? "Compare and pay by card with a trusted partner." : "Find the award, check the value, book it in your own program."}
+        </p>
       </div>
 
-      {/* ---- Step 2: what are you booking? ---- */}
-      <p className="mt-8 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Step 2 · What are you booking?</p>
-      <div className="mt-2 flex flex-wrap border-b border-[var(--gold-light)]">
+      {/* ---- What are you booking? ---- */}
+      <div className="flex flex-wrap gap-1 border-b border-[var(--gold-light)] px-5 pt-4 sm:px-7">
         <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "hotels"} onClick={() => setKind("hotels")}>Hotels</TabButton>
         <TabButton active={kind === "cars"} onClick={() => setKind("cars")}>Cars</TabButton>
       </div>
 
+      <div className="px-5 py-6 sm:px-7 sm:py-7">
+
       {added && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
           <span className="font-semibold text-[var(--navy)]">✓ Added to your trip.</span>
           <a href="/itinerary" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)]">Open my itinerary planner →</a>
         </div>
@@ -121,7 +137,9 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
       {pay === "miles" && kind === "hotels" && <MilesHotelsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "cars" && <MilesCarsForm onAdd={addToTrip} />}
 
-      <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-xs leading-6 text-stone-500">
+      </div>
+
+      <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 text-xs leading-6 text-stone-500 sm:px-7">
         {pay === "cash"
           ? "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."
           : "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."}
@@ -168,14 +186,19 @@ function FlightsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn
   }
 
   return (
-    <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption}`}>From (city or airport)<AirportAutocomplete value={from} onChange={setFrom} placeholder="e.g. NYC or New York" className={inputClass} /></label>
-      <label className={`block ${caption}`}>To (city or airport)<AirportAutocomplete value={to} onChange={setTo} placeholder="e.g. Krakow" className={inputClass} /></label>
-      <label className={`block ${caption}`}>Departure<input type="date" value={depart} onChange={(e) => setDepart(e.target.value)} className={inputClass} /></label>
-      <label className={`block ${caption}`}>Return<input type="date" value={ret} disabled={oneWay} min={depart || undefined} onChange={(e) => setRet(e.target.value)} className={`${inputClass} disabled:opacity-50`} /></label>
-      <label className="flex items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:col-span-2"><input type="checkbox" checked={oneWay} onChange={(e) => setOneWay(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />One way</label>
-      {error && <p className="text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search flights on Kayak →" />
+    <div>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <TripTypeButton active={!oneWay} onClick={() => setOneWay(false)}>Round trip</TripTypeButton>
+        <TripTypeButton active={oneWay} onClick={() => setOneWay(true)}>One way</TripTypeButton>
+      </div>
+      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-4">
+        <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="Departure"><input type="date" value={depart} onChange={(e) => setDepart(e.target.value)} className={bareInput} /></Field>
+        <Field label="Return" className={oneWay ? "opacity-45" : ""}><input type="date" value={ret} disabled={oneWay} min={depart || undefined} onChange={(e) => setRet(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
+      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search flights on Kayak" />
     </div>
   );
 }
@@ -209,13 +232,15 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
   }
 
   return (
-    <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption} sm:col-span-2`}>Destination (city)<AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="Start typing a city…" className={inputClass} /></label>
-      <label className={`block ${caption}`}>Check in<input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={inputClass} /></label>
-      <label className={`block ${caption}`}>Check out<input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={inputClass} /></label>
-      <label className={`block ${caption}`}>Guests<input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={inputClass} /></label>
-      {error && <p className="text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search hotels on Booking.com →" />
+    <div>
+      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
+        <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
+        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={bareInput} /></Field>
+        <Field label="Check out"><input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={bareInput} /></Field>
+        <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
+      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search hotels on Booking.com" />
     </div>
   );
 }
@@ -246,42 +271,61 @@ function CarsForm({ onAdd }: { onAdd: AddFn }) {
   }
 
   return (
-    <div className="mt-7 grid gap-5 sm:grid-cols-2">
-      <label className={`block ${caption} sm:col-span-2`}>Pick-up location (city)<AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="Start typing a city…" className={inputClass} /></label>
-      <label className={`block ${caption}`}>Pick-up date<input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={inputClass} /></label>
-      <label className={`block ${caption}`}>Drop-off date<input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={inputClass} /></label>
-      {error && <p className="text-sm font-semibold text-red-700 sm:col-span-2">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search cars on Kayak →" />
+    <div>
+      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
+        <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} /></Field>
+        <Field label="Drop-off date"><input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
+      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search cars on Kayak" />
     </div>
   );
 }
 
 function ActionRow({ onSearch, onAdd, searchLabel }: { onSearch: () => void; onAdd: () => void; searchLabel: string }) {
   return (
-    <div className="flex flex-wrap gap-3 sm:col-span-2">
-      <button type="button" onClick={onSearch} className="min-w-0 flex-1 bg-[var(--navy)] px-6 py-4 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--gold)]">{searchLabel}</button>
-      <button type="button" onClick={onAdd} className="border border-[var(--gold)] px-6 py-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Add to my trip</button>
+    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <button type="button" onClick={onSearch} className="min-h-[52px] min-w-0 flex-1 bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--gold)]">{searchLabel} →</button>
+      <button type="button" onClick={onAdd} className="min-h-[52px] min-w-0 border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:border-[var(--navy)] hover:text-white">+ Add to my trip</button>
     </div>
   );
 }
 
-function PayCard({ active, onClick, title, text }: { active: boolean; onClick: () => void; title: string; text: string }) {
+function TripTypeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-w-0 border p-4 text-left transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white shadow-[0_10px_24px_rgba(29,47,111,.18)]" : "border-[var(--gold-light)] bg-white text-[var(--navy)] hover:border-[var(--gold)]"}`}
+      className={`min-h-[36px] border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
     >
-      <span className="font-[family-name:var(--font-display)] text-xl leading-tight">{title}</span>
-      <span className={`mt-1 block text-xs leading-5 ${active ? "text-white/80" : "text-stone-500"}`}>{text}</span>
+      {children}
+    </button>
+  );
+}
+
+function PayToggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`min-w-0 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] transition sm:px-6 ${active ? "bg-[var(--navy)] text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}
+    >
+      {children}
     </button>
   );
 }
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className={`px-3 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 sm:tracking-[0.14em] ${active ? "border-b-2 border-[var(--gold)] text-[var(--navy)]" : "text-stone-500"}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`-mb-px min-h-[44px] border-b-2 px-3 text-xs font-bold uppercase tracking-[0.1em] transition sm:px-5 sm:tracking-[0.14em] ${active ? "border-[var(--gold)] text-[var(--navy)]" : "border-transparent text-stone-500 hover:text-[var(--navy)]"}`}
+    >
       {children}
     </button>
   );
@@ -329,12 +373,12 @@ const CAR_PROGRAMS: Array<{ label: string; award: string }> = [
 
 function ProgramSelect({ programs, value, onChange, label }: { programs: Array<{ label: string; award: string }>; value: string; onChange: (v: string) => void; label: string }) {
   return (
-    <label className={`block ${caption} sm:col-span-2`}>{label}
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
-        <option value="">Choose the program you have points with…</option>
+    <Field label={label}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={`${bareInput} -ml-0.5 cursor-pointer`}>
+        <option value="">Choose your program…</option>
         {programs.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}
       </select>
-    </label>
+    </Field>
   );
 }
 
@@ -365,16 +409,16 @@ function ValueCalculator({ unit, cashLabel, feesLabel, pointsPlaceholder, cashPl
 
   return (
     <>
-      <div className="mt-2 grid gap-4 sm:grid-cols-3">
-        <label className={`block ${caption}`}>{unit} required<input inputMode="numeric" value={points} onChange={(e) => setPoints(e.target.value)} placeholder={pointsPlaceholder} className={inputClass} /></label>
-        <label className={`block ${caption}`}>{cashLabel}<input inputMode="decimal" value={cash} onChange={(e) => setCash(e.target.value)} placeholder={cashPlaceholder} className={inputClass} /></label>
-        <label className={`block ${caption}`}>{feesLabel}<input inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" className={inputClass} /></label>
-      </div>
+      <SearchGrid className="mt-2 sm:grid-cols-3">
+        <Field label={`${unit} required`}><input inputMode="numeric" value={points} onChange={(e) => setPoints(e.target.value)} placeholder={pointsPlaceholder} className={bareInput} /></Field>
+        <Field label={cashLabel}><input inputMode="decimal" value={cash} onChange={(e) => setCash(e.target.value)} placeholder={cashPlaceholder} className={bareInput} /></Field>
+        <Field label={feesLabel}><input inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" className={bareInput} /></Field>
+      </SearchGrid>
       {cpp !== null && verdict && (
-        <div className="mt-4 border border-[var(--gold-light)] bg-white p-4">
-          <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cpp.toFixed(2)}¢ <span className="text-lg text-stone-500">per point</span></p>
-          <p className={`mt-1 text-sm font-semibold ${verdict.tone}`}>{verdict.text}</p>
-          <p className="mt-2 text-xs leading-5 text-stone-500">
+        <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-4">
+          <p className="font-[family-name:var(--font-display)] text-3xl leading-none text-[var(--navy)]">{cpp.toFixed(2)}¢ <span className="text-base text-stone-500">per point</span></p>
+          <p className={`text-sm font-semibold ${verdict.tone}`}>{verdict.text}</p>
+          <p className="mt-1 basis-full text-xs leading-5 text-stone-500">
             Worked out as (cash price − what you still pay on the award) ÷ points. Around 1.2¢ is typical; 2¢ or more is usually a good redemption.
             Compare against what your own program normally returns before you transfer anything.
           </p>
@@ -413,19 +457,19 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
   }
 
   return (
-    <div className="mt-7">
+    <div>
       <MilesNote>
         <strong className="text-[var(--navy)]">How award flights work.</strong>{" "}No website can redeem your miles for you — award seats
         come out of your own loyalty account, so the booking is always finished on the airline&apos;s own site. What we do here is help
         you find the seats and check the redemption is worth it.
       </MilesNote>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <ProgramSelect programs={FLIGHT_PROGRAMS} value={program} onChange={setProgram} label="Which miles do you have?" />
-        <label className={`block ${caption}`}>From<AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={inputClass} /></label>
-        <label className={`block ${caption}`}>To<AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={inputClass} /></label>
-        <label className={`block ${caption}`}>When<input type="date" value={when} onChange={(e) => setWhen(e.target.value)} className={inputClass} /></label>
-      </div>
+      <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ProgramSelect programs={FLIGHT_PROGRAMS} value={program} onChange={setProgram} label="Your miles" />
+        <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="When"><input type="date" value={when} onChange={(e) => setWhen(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
 
       <StepLabel n={1}>Find award seats (free tools)</StepLabel>
       <div className="mt-2 flex flex-wrap gap-3">
@@ -467,19 +511,19 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
   }
 
   return (
-    <div className="mt-7">
+    <div>
       <MilesNote>
         <strong className="text-[var(--navy)]">How award nights work.</strong>{" "}Points nights are booked inside your own hotel program,
         so the reservation is always completed on the chain&apos;s own site. Use the calculator below before you book — hotel points are
         worth very different amounts depending on the chain and the property.
       </MilesNote>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <ProgramSelect programs={HOTEL_PROGRAMS} value={program} onChange={setProgram} label="Which points do you have?" />
-        <label className={`block ${caption} sm:col-span-2`}>Destination (city)<AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="Start typing a city…" className={inputClass} /></label>
-        <label className={`block ${caption}`}>Check in<input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={inputClass} /></label>
-        <label className={`block ${caption}`}>Check out<input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={inputClass} /></label>
-      </div>
+      <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ProgramSelect programs={HOTEL_PROGRAMS} value={program} onChange={setProgram} label="Your points" />
+        <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
+        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={bareInput} /></Field>
+        <Field label="Check out"><input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
       <StepLabel n={1}>Find award availability</StepLabel>
@@ -526,19 +570,19 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
   }
 
   return (
-    <div className="mt-7">
+    <div>
       <MilesNote>
         <strong className="text-[var(--navy)]">Be honest about cars.</strong>{" "}Rental cars are usually the weakest way to spend points —
         card travel portals let you pay for one with points at a fixed rate, which is convenient but rarely good value. Run the numbers
         below before you do it; paying cash and keeping the points for a flight is very often the better trip.
       </MilesNote>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <ProgramSelect programs={CAR_PROGRAMS} value={program} onChange={setProgram} label="Which program are you using?" />
-        <label className={`block ${caption} sm:col-span-2`}>Pick-up location (city)<AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="Start typing a city…" className={inputClass} /></label>
-        <label className={`block ${caption}`}>Pick-up date<input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={inputClass} /></label>
-        <label className={`block ${caption}`}>Drop-off date<input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={inputClass} /></label>
-      </div>
+      <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ProgramSelect programs={CAR_PROGRAMS} value={program} onChange={setProgram} label="Your program" />
+        <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
+        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} /></Field>
+        <Field label="Drop-off date"><input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={bareInput} /></Field>
+      </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
       <StepLabel n={1}>Book with your points</StepLabel>

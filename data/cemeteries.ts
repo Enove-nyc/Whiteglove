@@ -447,7 +447,7 @@ export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries
 export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
 }
-import { cityGuides } from "@/data/city-guides";
+import { cityGuides } from "@/data/destinations-detailed";
 import { bulkCemeteries } from "@/data/cemeteries-bulk";
 import { bulkCemeteries2 } from "@/data/cemeteries-bulk-2";
 import { bulkCemeteries3 } from "@/data/cemeteries-bulk-3";

@@ -1,6 +1,5 @@
-import { bulkDestinations } from "@/data/bulk-destinations";
 import { cemeteries } from "@/data/cemeteries";
-import { cityGuides } from "@/data/city-guides";
+import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 
 type RedisResult<T> = { result?: T };
 
@@ -145,33 +144,33 @@ function defaultSettings(): SiteSettings {
 }
 
 function defaultLocations(): EditableLocation[] {
-  const guideLocations = cityGuides.map((guide) => ({
+  const guideLocations = guidedDestinations().map((guide) => ({
     id: `guide-${guide.slug}`,
     route: `/${guide.slug}`,
     title: guide.city,
     yiddishTitle: guide.yiddishCity,
     category: "city-guide" as const,
     country: guide.country,
-    address: guide.graveAddress ?? guide.city,
-    coordinates: guide.graveCoordinates ?? "",
-    shomerContact: guide.accessContacts?.[0]?.phone ?? guide.accessContact?.phone ?? "",
-    source: guide.sourceUrl,
-    notes: guide.overview,
+    address: guide.guide.graveAddress ?? guide.city,
+    coordinates: guide.guide.graveCoordinates ?? "",
+    shomerContact: guide.guide.accessContacts?.[0]?.phone ?? guide.guide.accessContact?.phone ?? "",
+    source: guide.guide.sourceUrl,
+    notes: guide.guide.overview,
     status: "needs-review" as const,
     lastVerified: "",
   }));
-  const destinationLocations = bulkDestinations.slice(0, 20).map((destination) => ({
+  const destinationLocations = unguidedDestinations().slice(0, 20).map((destination) => ({
     id: `destination-${destination.slug}`,
     route: `/destinations/${destination.slug}`,
     title: destination.city,
     yiddishTitle: destination.yiddishCity,
     category: "destination" as const,
     country: destination.country,
-    address: destination.summary,
+    address: destination.summary ?? "",
     coordinates: "",
     shomerContact: "",
     source: `seed:${destination.slug}`,
-    notes: destination.summary,
+    notes: destination.summary ?? "",
     status: "draft" as const,
     lastVerified: "",
   }));

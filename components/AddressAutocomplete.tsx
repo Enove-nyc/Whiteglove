@@ -97,13 +97,13 @@ export default function AddressAutocomplete({
         className={className}
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-64 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-64 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((s, i) => (
             <li key={`${s.label}-${i}`}>
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); setQuery(s.label); onChange?.(s.label, s.coordinates); setOpen(false); setResults([]); }}
-                className="block w-full px-3 py-2 text-left text-sm font-normal normal-case tracking-normal text-stone-700 hover:bg-[var(--cream)]"
+                className="block w-full px-3 py-2 text-left text-sm font-normal normal-case tracking-normal text-stone-700 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
               >
                 {s.label}
               </button>

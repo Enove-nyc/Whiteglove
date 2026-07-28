@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import PracticalInformation from "@/components/PracticalInformation";
-import { bulkDestinations, getBulkDestination } from "@/data/bulk-destinations";
+import { bulkDestinations, getBulkDestination } from "@/data/destinations-bulk";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";

@@ -35,6 +35,52 @@ html {
   color: var(--navy-deep);
 }
 
+/* ---- Form controls ----------------------------------------------------
+   Browsers paint select menus, date pickers and number steppers stark white
+   with a system-blue accent, which reads as a stray browser widget dropped
+   onto a cream page. These pull them back onto the site's own palette. */
+
+/* :where() keeps these at zero specificity, so any utility class on the
+   element still wins — this is a default, not an override. */
+:where(select, input, textarea) {
+  background-color: #fcfaf6;
+  color: var(--navy);
+}
+
+select,
+input[type="date"],
+input[type="time"],
+input[type="month"],
+input[type="week"],
+input[type="number"] {
+  /* Keeps the native picker glyphs and steppers dark rather than system blue. */
+  color-scheme: light;
+  accent-color: var(--navy);
+}
+
+select {
+  /* The native arrow is replaced with one in the site's gold. */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23aa8b52' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 0.7rem;
+  padding-right: 2.4rem;
+}
+
+/* The open menu is drawn by the operating system, so this is as far as the
+   page can reach — it lands on Windows and Linux and is ignored on macOS. */
+select option {
+  background-color: #fcfaf6;
+  color: var(--navy);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a8a29e;
+}
+
 /* ---- The White Glove mark, used through the site ----------------------
    The gloved hand from the logo, reduced to a silhouette, is the bullet
    point and the section ornament. It is applied as a CSS mask rather than
