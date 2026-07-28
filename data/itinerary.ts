@@ -54,9 +54,27 @@ export type ItinActivity = {
   bookedOnSite?: boolean;
 };
 
+/**
+ * Someone travelling on this trip.
+ *
+ * Not the same thing as sharing the itinerary. A collaborator is another
+ * account that can open and edit the plan; a traveler is a person who is
+ * actually going — a child, a parent, a spouse — who may well have no account
+ * at all. A family trip needs the second without needing the first.
+ */
+export type ItinTraveler = {
+  id: string;
+  name: string;
+  kind?: "adult" | "child" | "infant";
+  /** Passport notes, seat preference, dietary needs — whatever matters. */
+  notes?: string;
+};
+
 export type Itinerary = {
   title: string;
+  /** Superseded by `travelers`; kept so older saved trips still read. */
   travelerName?: string;
+  travelers?: ItinTraveler[];
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   flights: ItinFlight[];
@@ -85,7 +103,40 @@ export function travelLegKey(from?: string, to?: string): string {
 }
 
 export function emptyItinerary(): Itinerary {
-  return { title: "My trip", travelerName: "", startDate: "", endDate: "", flights: [], lodging: [], activities: [], notes: "" };
+  return { title: "My trip", travelerName: "", travelers: [], startDate: "", endDate: "", flights: [], lodging: [], activities: [], notes: "" };
+}
+
+// ---- Travelers -------------------------------------------------------
+
+/**
+ * The people on this trip. Trips saved before the planner could hold more than
+ * one name kept a single `travelerName`; that is read as the first traveler so
+ * nobody's existing itinerary loses the name they typed.
+ */
+export function travelersOf(itin: Itinerary): ItinTraveler[] {
+  if (itin.travelers?.length) return itin.travelers;
+  const legacy = itin.travelerName?.trim();
+  return legacy ? [{ id: "legacy-traveler", name: legacy, kind: "adult" }] : [];
+}
+
+export function travelerCount(itin: Itinerary): number {
+  return travelersOf(itin).length;
+}
+
+/** "Sarah, Dovid and 2 children" — for the header and the printed itinerary. */
+export function travelerSummary(itin: Itinerary): string {
+  const people = travelersOf(itin);
+  if (!people.length) return "";
+  const adults = people.filter((p) => (p.kind ?? "adult") === "adult");
+  const children = people.filter((p) => p.kind === "child");
+  const infants = people.filter((p) => p.kind === "infant");
+  const names = adults.map((p) => p.name).filter(Boolean);
+  const parts: string[] = [];
+  if (names.length === 1) parts.push(names[0]);
+  else if (names.length > 1) parts.push(`${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`);
+  if (children.length) parts.push(`${children.length} ${children.length === 1 ? "child" : "children"}`);
+  if (infants.length) parts.push(`${infants.length} ${infants.length === 1 ? "infant" : "infants"}`);
+  return parts.join(", ");
 }
 
 // ---- Date helpers (UTC-noon to dodge DST/timezone drift) --------------

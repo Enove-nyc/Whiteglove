@@ -19,11 +19,13 @@ import {
   formatKm,
   nextDate,
   summarize,
+  travelersOf,
   unscheduledActivities,
   type Itinerary,
   type ItinActivity,
   type ItinFlight,
   type ItinLodging,
+  type ItinTraveler,
   type LodgingType,
   type TravelLeg,
 } from "@/data/itinerary";
@@ -198,8 +200,7 @@ export default function ItineraryBuilder() {
       {/* Trip header */}
       <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
-          <label className="block"><span className={caption}>Traveler name</span><input className={inputClass} value={itin.travelerName ?? ""} onChange={(e) => set({ travelerName: e.target.value })} placeholder="Shown on the printed itinerary" /></label>
+          <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
             <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
@@ -223,6 +224,11 @@ export default function ItineraryBuilder() {
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
       </div>
+
+      <TravelersPanel
+        travelers={travelersOf(itin)}
+        onChange={(travelers) => set({ travelers, travelerName: travelers[0]?.name ?? "" })}
+      />
 
       <ShareItineraryPanel />
 
@@ -818,4 +824,113 @@ function FormShell({ title, children, onSubmit, error }: { title: string; childr
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block"><span className={caption}>{label}</span>{children}</label>;
+}
+
+
+// ---- Who is coming ---------------------------------------------------
+// Adding your family to your own trip is not the same as sharing it with
+// another account: a child has no login, and you still need their name on the
+// printed itinerary and counted when you book rooms and seats.
+
+const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: string }> = [
+  { value: "adult", label: "Adult" },
+  { value: "child", label: "Child" },
+  { value: "infant", label: "Infant" },
+];
+
+function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; onChange: (t: ItinTraveler[]) => void }) {
+  const [name, setName] = useState("");
+  const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
+
+  function add() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onChange([...travelers, { id: uid(), name: trimmed, kind }]);
+    setName("");
+    setKind("adult");
+  }
+
+  const update = (id: string, patch: Partial<ItinTraveler>) =>
+    onChange(travelers.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const remove = (id: string) => onChange(travelers.filter((t) => t.id !== id));
+
+  const adults = travelers.filter((t) => (t.kind ?? "adult") === "adult").length;
+  const children = travelers.filter((t) => t.kind === "child").length;
+  const infants = travelers.filter((t) => t.kind === "infant").length;
+
+  return (
+    <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Who&apos;s coming</h2>
+        {travelers.length > 0 && (
+          <p className="text-xs font-semibold text-stone-500">
+            {travelers.length} {travelers.length === 1 ? "traveler" : "travelers"}
+            {children || infants ? ` · ${adults} adult${adults === 1 ? "" : "s"}${children ? `, ${children} child${children === 1 ? "" : "ren"}` : ""}${infants ? `, ${infants} infant${infants === 1 ? "" : "s"}` : ""}` : ""}
+          </p>
+        )}
+      </div>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+        Everyone travelling with you. They appear on the printed itinerary and give you the head count for rooms and seats.
+        This is separate from sharing the trip below — a child doesn&apos;t need an account to be on the list.
+      </p>
+
+      {travelers.length > 0 && (
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {travelers.map((t) => (
+            <li key={t.id} className="flex min-w-0 flex-wrap items-center gap-2 border border-[var(--gold-light)] bg-white px-3 py-2">
+              <input
+                value={t.name}
+                onChange={(e) => update(t.id, { name: e.target.value })}
+                aria-label="Traveler name"
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-semibold text-[var(--navy)] outline-none"
+              />
+              <select
+                value={t.kind ?? "adult"}
+                onChange={(e) => update(t.id, { kind: e.target.value as ItinTraveler["kind"] })}
+                aria-label={`${t.name || "Traveler"} type`}
+                className="border border-[var(--gold-light)] bg-[#fcfaf6] py-1 pl-2 text-xs text-[var(--navy)] outline-none"
+              >
+                {TRAVELER_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+              </select>
+              <button
+                type="button"
+                onClick={() => remove(t.id)}
+                aria-label={`Remove ${t.name || "traveler"}`}
+                className="min-h-[32px] px-2 text-xs text-stone-400 transition hover:text-red-700"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-end gap-2">
+        <label className="min-w-0 flex-1">
+          <span className={caption}>Add a traveler</span>
+          <input
+            className={inputClass}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+            placeholder="Name"
+          />
+        </label>
+        <label>
+          <span className={caption}>Type</span>
+          <select value={kind} onChange={(e) => setKind(e.target.value as NonNullable<ItinTraveler["kind"]>)} className={inputClass}>
+            {TRAVELER_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={add}
+          disabled={!name.trim()}
+          className="min-h-[42px] border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-40"
+        >
+          + Add
+        </button>
+      </div>
+    </section>
+  );
 }

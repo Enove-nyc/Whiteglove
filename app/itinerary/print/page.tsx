@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { buildDays, emptyItinerary, formatDuration, formatKm, type Itinerary } from "@/data/itinerary";
+import { buildDays, emptyItinerary, formatDuration, formatKm, travelerSummary, type Itinerary } from "@/data/itinerary";
 
 const LS_KEY = "whiteGloveItinerary";
 
@@ -56,7 +56,7 @@ export default function PrintItineraryPage() {
         <Image src="/logo.png" alt="White Glove Itineraries" width={320} height={120} className="h-14 w-auto object-contain" />
         <div className="text-right">
           <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{itin.title || "Itinerary"}</p>
-          {itin.travelerName ? <p className="text-sm text-stone-500">Prepared for {itin.travelerName}</p> : null}
+          {travelerSummary(itin) ? <p className="text-sm text-stone-500">Prepared for {travelerSummary(itin)}</p> : null}
           {itin.startDate && itin.endDate ? <p className="text-xs text-stone-400">{itin.startDate} — {itin.endDate}</p> : null}
         </div>
       </header>
