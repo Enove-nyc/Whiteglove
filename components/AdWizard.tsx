@@ -120,6 +120,8 @@ export default function AdWizard({
   const [ad, setAd] = useState<Promotion>(initial);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [uploading, setUploading] = useState<"image" | "pdf" | null>(null);
+  const [uploadNote, setUploadNote] = useState("");
 
   const set = (patch: Partial<Promotion>) => {
     setAd((prev) => ({ ...prev, ...patch }));
@@ -130,6 +132,42 @@ export default function AdWizard({
   const problems: string[] = [];
   if (!ad.title.trim()) problems.push("Give it a headline — that is the line people read.");
   if (!ad.targetHref.trim()) problems.push("Say where the button should take them.");
+
+  // Uploading goes through the same media route the old form used, so files
+  // already uploaded keep working and nothing had to be migrated.
+  async function upload(file: File, which: "image" | "pdf") {
+    setUploading(which);
+    setUploadNote("");
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    }).catch(() => "");
+    if (!dataUrl) {
+      setUploading(null);
+      setUploadNote("Could not read that file.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataUrl }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setUploadNote(data.error || "That upload did not work. Try a smaller file.");
+        return;
+      }
+      set(which === "image" ? { imageUrl: data.url } : { pdfUrl: data.url });
+      setUploadNote(which === "image" ? "Picture added." : "PDF added.");
+    } catch {
+      setUploadNote("That upload did not work. Check the connection and try again.");
+    } finally {
+      setUploading(null);
+    }
+  }
 
   function finish(publish: boolean) {
     onSave({ ...ad, placements: writeAd(kind, spot), enabled: publish }, publish);
@@ -202,14 +240,51 @@ export default function AdWizard({
                 <span className={captionClass}>Button goes to *</span>
                 <input value={ad.targetHref} onChange={(e) => set({ targetHref: e.target.value })} className={inputClass} placeholder="/getaways or https://…" />
               </label>
-              <label className="block sm:col-span-2">
+              <div className="block sm:col-span-2">
                 <span className={captionClass}>Picture</span>
-                <input value={ad.imageUrl} onChange={(e) => set({ imageUrl: e.target.value })} className={inputClass} placeholder="Paste a picture address, or upload one below" />
-              </label>
-              <label className="block sm:col-span-2">
+                <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                  <label className={`${secondaryClass} inline-flex cursor-pointer items-center`}>
+                    {uploading === "image" ? "Adding…" : "Choose a picture"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void upload(file, "image");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <span className="text-sm text-stone-500">or paste an address</span>
+                </div>
+                <input value={ad.imageUrl} onChange={(e) => set({ imageUrl: e.target.value })} className={inputClass} placeholder="https://…" />
+              </div>
+
+              <div className="block sm:col-span-2">
                 <span className={captionClass}>A PDF to open instead</span>
-                <input value={ad.pdfUrl} onChange={(e) => set({ pdfUrl: e.target.value })} className={inputClass} placeholder="Optional" />
-              </label>
+                <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                  <label className={`${secondaryClass} inline-flex cursor-pointer items-center`}>
+                    {uploading === "pdf" ? "Adding…" : "Choose a PDF"}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void upload(file, "pdf");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <span className="text-sm text-stone-500">optional</span>
+                </div>
+                <input value={ad.pdfUrl} onChange={(e) => set({ pdfUrl: e.target.value })} className={inputClass} placeholder="https://…" />
+              </div>
+
+              {uploadNote && (
+                <p role="status" className="text-sm font-semibold text-[var(--navy)] sm:col-span-2">{uploadNote}</p>
+              )}
             </div>
           </>
         )}
