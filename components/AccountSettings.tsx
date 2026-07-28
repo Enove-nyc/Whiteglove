@@ -85,9 +85,13 @@ export default function AccountSettings({
           <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+1 ..." className={inputClass} />
         </label>
         <label className="block sm:col-span-2">
-          <span className={captionClass}>Email address</span>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className={inputClass} />
-          <span className="mt-1 block text-xs text-stone-400">Changing this updates the address you sign in with.</span>
+          <span className={captionClass}>What you sign in with</span>
+          {/* Not type="email": an account can be named by a phone number, and
+              the browser would refuse to submit a perfectly good one. */}
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" autoComplete="username" required className={inputClass} />
+          <span className="mt-1 block text-xs text-stone-400">
+            An email address or a phone number. Changing it changes what you sign in with.
+          </span>
         </label>
         <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
           <button

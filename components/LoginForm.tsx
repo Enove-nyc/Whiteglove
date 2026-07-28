@@ -11,7 +11,44 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function LoginForm() {
+type Delivery = {
+  error?: string;
+  email?: string;
+  verificationRequired?: boolean;
+  sentVia?: "text message" | "email";
+  sentTo?: string;
+  delivered?: boolean;
+  deliveryError?: string;
+};
+
+/**
+ * Tell the person where to look for the code.
+ *
+ * Somebody who signed up with a number should not be told to check their
+ * email — they never gave one. And when the send itself failed, say so here
+ * rather than leaving them staring at an inbox waiting for nothing.
+ */
+function whereTheCodeWent(data: Delivery | null, what: string): string {
+  if (data?.delivered === false) {
+    return `Your account is ready, but the ${what} could not be sent${data.sentTo ? ` to ${data.sentTo}` : ""}. ${data.deliveryError ?? ""} Try “Resend code”, or use a different address.`.trim();
+  }
+  const via = data?.sentVia ?? "email";
+  const to = data?.sentTo ? ` to ${data.sentTo}` : "";
+  return via === "text message"
+    ? `We sent the ${what} by text${to}. Enter it below.`
+    : `Check your email${to} for the ${what}, then enter it below.`;
+}
+
+/**
+ * Signing in with an email address or a phone number.
+ *
+ * One field takes both, because asking somebody to choose "email or phone"
+ * before they have typed anything is a decision they should not have to make.
+ * The phone half only appears when a text service is actually connected —
+ * offering it otherwise would take a number and then leave the person waiting
+ * for a code that was never going to arrive.
+ */
+export default function LoginForm({ phoneSignupAvailable = false }: { phoneSignupAvailable?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -47,14 +84,14 @@ export default function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await response.json().catch(() => null) as { error?: string } | null;
+      const data = await response.json().catch(() => null) as Delivery | null;
       setSaving(false);
       if (!response.ok) {
         setMessage(data?.error || "Please try again.");
         return;
       }
       setMode("reset");
-      setMessage("Check your email for the reset code, then enter it below with a new password.");
+      setMessage(whereTheCodeWent(data, "reset code"));
       return;
     }
 
@@ -85,7 +122,7 @@ export default function LoginForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const data = await response.json().catch(() => null) as { error?: string; email?: string; verificationRequired?: boolean } | null;
+    const data = await response.json().catch(() => null) as Delivery | null;
     if (!response.ok) {
       setMessage(data?.error || "Please try again.");
       setSaving(false);
@@ -94,7 +131,7 @@ export default function LoginForm() {
     }
     if (mode === "signup") {
       setMode("verify");
-      setMessage("Check your email for the verification code, then enter it below.");
+      setMessage(whereTheCodeWent(data, "verification code"));
       setSaving(false);
       return;
     }
@@ -117,8 +154,25 @@ export default function LoginForm() {
         </label>
       )}
 
-      <label className="block text-sm font-semibold text-[var(--navy)]">Email address
-        <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required placeholder="you@example.com" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
+      <label className="block text-sm font-semibold text-[var(--navy)]">
+        {phoneSignupAvailable ? "Email address or phone number" : "Email address"}
+        <input
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          // Not type="email" once numbers are allowed: the browser would
+          // refuse to submit a perfectly good phone number.
+          type={phoneSignupAvailable ? "text" : "email"}
+          inputMode={phoneSignupAvailable ? "text" : "email"}
+          autoComplete="username"
+          required
+          placeholder={phoneSignupAvailable ? "you@example.com or +1 555 123 4567" : "you@example.com"}
+          className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]"
+        />
+        {phoneSignupAvailable && mode === "signup" && (
+          <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
+            Either one. Whichever you use, that is where the code comes — by text if you give a number.
+          </span>
+        )}
       </label>
 
       {(mode === "signup" || mode === "login") && (
@@ -167,7 +221,7 @@ export default function LoginForm() {
           {saving ? "Checking..." : mode === "signup" ? "Create account" : mode === "verify" ? "Verify account" : mode === "forgot" ? "Send reset code" : mode === "reset" ? "Update password" : "Log in"}
         </button>
         {mode === "verify" && (
-          <button type="button" disabled={saving} onClick={async () => { setSaving(true); const response = await fetch("/api/account/resend-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const data = await response.json().catch(() => null) as { error?: string } | null; setSaving(false); setMessage(response.ok ? "A new verification code was sent." : data?.error || "Please try again."); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Resend code</button>
+          <button type="button" disabled={saving} onClick={async () => { setSaving(true); const response = await fetch("/api/account/resend-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const data = await response.json().catch(() => null) as Delivery | null; setSaving(false); setMessage(response.ok ? whereTheCodeWent(data, "verification code") : data?.error || "Please try again."); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Resend code</button>
         )}
         {(mode === "forgot" || mode === "reset") && (
           <button type="button" disabled={saving} onClick={() => { setMode("login"); setMessage(""); }} className="w-full border border-[var(--gold-light)] px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Back to log in</button>

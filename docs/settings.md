@@ -69,6 +69,34 @@ recorded, and the screen says so rather than showing an empty list.
 The admin dashboard has a diagnostic panel that sends a test message to either
 inbox and reports exactly what Resend said, including the sandbox restriction.
 
+## Text messages (Twilio)
+
+Signing up with a phone number instead of an email address. The verification
+code goes by text to whichever the person used; with none of this set, the
+sign-up form asks for an email only and never offers a choice it cannot honour.
+
+| Variable | What it does |
+| --- | --- |
+| `TWILIO_ACCOUNT_SID` | The Twilio account. Required. |
+| `TWILIO_AUTH_TOKEN` | Its auth token. Required. |
+| `TWILIO_FROM_NUMBER` | The number texts come from, in E.164 (`+15551234567`). Either this or a messaging service is required. |
+| `TWILIO_MESSAGING_SERVICE_SID` | A Twilio messaging service, instead of a single from-number. |
+| `DEFAULT_PHONE_COUNTRY` | Calling code assumed for a number typed without one — `1` unless set. A ten-digit number is read as this country; anyone can always type the `+` themselves. |
+
+Two things to know before switching it on. **Texting US mobiles requires A2P
+10DLC registration first** — Twilio runs it as an application and it takes days,
+not minutes; until it clears, messages to US numbers are rejected. And **each
+text costs money**, unlike email.
+
+Sent codes are written to the same delivery log as the emails, so a text that
+never arrived shows up on the Connections screen with whatever Twilio said.
+
+An account is stored under whichever identifier it was made with, so
+`(555) 123-4567` and `+1 555 123 4567` are the same account, not two. Somebody
+who signs up by phone can still be added to a shared trip; they just do not get
+the "somebody shared a trip with you" message, because a share link is not worth
+a text — the trip is waiting when they next sign in.
+
 ## Booking partners
 
 | Variable | What it does |

@@ -376,6 +376,72 @@ export function flightArrivalDate(flight: ItinFlight): string {
 }
 
 /**
+ * What the planner has worked out about a flight crossing a night.
+ *
+ * The rules live in flightArrivalDate() and overnightFlightFor(); this puts a
+ * sentence around them. A traveler should not have to know that leaving the
+ * arrival-date box empty still gets them the right day — they should be told
+ * what was worked out, and be able to correct it when it is wrong.
+ */
+export type OvernightReading = {
+  /** The date it lands, whether stated or worked out. */
+  arrivalDate: string;
+  /** True when the night is spent getting there. */
+  overnight: boolean;
+  /** False when the traveler told us outright. */
+  detected: boolean;
+  /** One line saying what was worked out, and why. */
+  note?: string;
+};
+
+export function readOvernightFlight(flight: ItinFlight): OvernightReading {
+  const arrivalDate = flightArrivalDate(flight);
+  const landsLater = arrivalDate > flight.date;
+
+  if (flight.arriveDate && flight.arriveDate > flight.date) {
+    return { arrivalDate, overnight: true, detected: false, note: `You have said it lands on ${formatDateLong(arrivalDate)}.` };
+  }
+
+  const held = (flight.stops ?? []).find((s) => s.overnight || (layoverMinutes(s) ?? 0) >= 8 * 60);
+  if (held) {
+    const hours = layoverMinutes(held);
+    const wait = hours ? ` — about ${Math.round(hours / 60)} hours` : "";
+    return {
+      arrivalDate,
+      overnight: true,
+      detected: true,
+      note: `The connection in ${held.airport || "the connecting airport"} is held overnight${wait}, so this journey lands on ${formatDateLong(arrivalDate)}. No hotel is needed on the way.`,
+    };
+  }
+
+  const depart = timeToMins(flight.departTime);
+  const arrive = timeToMins(flight.arriveTime);
+
+  if (depart !== null && arrive !== null && arrive <= depart) {
+    return {
+      arrivalDate,
+      overnight: true,
+      detected: true,
+      note: `Lands at ${flight.arriveTime}, earlier in the day than it leaves at ${flight.departTime} — so it crosses midnight and lands on ${formatDateLong(arrivalDate)}. That night counts as slept aboard.`,
+    };
+  }
+
+  // Leaving late enough that the night is spent in the air, but with no
+  // landing time we cannot say which day it lands — and putting the landing on
+  // the wrong page is worse than leaving it where it is.
+  if (depart !== null && depart >= 21 * 60) {
+    return {
+      arrivalDate,
+      overnight: true,
+      detected: true,
+      note: `Leaves at ${flight.departTime}, so the night is spent in the air. Add the landing time and the day it arrives will be worked out too.`,
+    };
+  }
+
+  return { arrivalDate, overnight: landsLater, detected: landsLater };
+}
+
+/**
  * The flight that carries the traveler through the night that begins on
  * `date`, if there is one.
  *

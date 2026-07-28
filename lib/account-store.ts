@@ -1,13 +1,26 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { identityKey, normalizeIdentity } from "@/lib/identity";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
 type RedisResult<T> = { result?: T };
 
 export type AccountRecord = {
+  /**
+   * What the account is called and stored under: an email address, or a phone
+   * number in E.164.
+   *
+   * The field keeps the name `email` because everything in the site and every
+   * record already written uses it, and renaming it would break accounts that
+   * exist. Read it as "the thing they sign in with"; `identityKind` says which
+   * it is, and `describeIdentity` spells it for a person.
+   */
   email: string;
+  /** "email" or "phone". Absent on accounts made before phones were allowed. */
+  identityKind?: "email" | "phone";
   name?: string;
+  /** A contact number, whether or not it is what they sign in with. */
   phone?: string;
   passwordHash: string;
   salt: string;
@@ -107,8 +120,19 @@ function dataKey(email: string) {
   return `white-glove:account-data:${email}`;
 }
 
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
+/**
+ * The one spelling an account is stored under.
+ *
+ * An account is named by an email address or by a phone number, and both are
+ * just strings — so both work as the key, provided each has exactly one
+ * spelling. "(555) 123-4567" and "+1 555 123 4567" have to land on the same
+ * account, or somebody signs up twice without meaning to.
+ *
+ * Anything unreadable falls back to trimmed lower case rather than being
+ * rejected here, so an account made before this existed still looks itself up.
+ */
+function normalizeId(identifier: string) {
+  return identityKey(identifier);
 }
 
 function hashPassword(password: string, salt: string) {
@@ -124,7 +148,7 @@ function verificationCode() {
 }
 
 function hashVerificationCode(email: string, code: string) {
-  return createHmac("sha256", verificationSecret()).update(`${normalizeEmail(email)}:${code}`).digest("base64url");
+  return createHmac("sha256", verificationSecret()).update(`${normalizeId(email)}:${code}`).digest("base64url");
 }
 
 export function hasAccountStorage() {
@@ -156,7 +180,7 @@ async function writeJson(key: string, value: unknown) {
 }
 
 export async function getAccountRecord(email: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   return readJson<AccountRecord>(accountKey(normalized));
 }
 
@@ -216,17 +240,37 @@ export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
 
-export async function createAccount(email: string, password: string, name?: string) {
+/**
+ * Make an account, named by an email address or a phone number.
+ *
+ * The identifier is checked properly here rather than accepted and puzzled
+ * over later: a number too short to dial, or an address with no domain, means
+ * a code sent nowhere and somebody waiting for it.
+ */
+export async function createAccount(identifier: string, password: string, name?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
-  if (!normalized || !password) return { ok: false as const, error: "Enter an email and password." };
+  const identity = normalizeIdentity(identifier ?? "");
+  if (!identity) {
+    return { ok: false as const, error: "Enter an email address or a phone number we can reach you on." };
+  }
+  if (!password) return { ok: false as const, error: "Choose a password." };
+  const normalized = identity.value;
   const existing = await getAccountRecord(normalized);
-  if (existing) return { ok: false as const, error: "An account already exists for that email." };
+  if (existing) {
+    return {
+      ok: false as const,
+      error: identity.kind === "phone" ? "An account already exists for that number." : "An account already exists for that email.",
+    };
+  }
   const salt = randomBytes(16).toString("hex");
   const cleanName = name?.trim();
   const record: AccountRecord = {
     email: normalized,
+    identityKind: identity.kind,
     name: cleanName || undefined,
+    // Signing in with a number makes it the contact number too — there is no
+    // sense asking for it twice.
+    phone: identity.kind === "phone" ? normalized : undefined,
     salt,
     passwordHash: hashPassword(password, salt),
     createdAt: new Date().toISOString(),
@@ -242,14 +286,14 @@ export async function createAccount(email: string, password: string, name?: stri
 }
 
 export async function verifyAccount(email: string, password: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return false;
   return hashPassword(password, record.salt) === record.passwordHash;
 }
 
 export async function verifyAccountStatus(email: string, password: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return { ok: false as const, reason: "missing" as const };
   if (hashPassword(password, record.salt) !== record.passwordHash) return { ok: false as const, reason: "credentials" as const };
@@ -259,9 +303,9 @@ export async function verifyAccountStatus(email: string, password: string) {
 
 export async function requestPasswordReset(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   const code = verificationCode();
   const next: AccountRecord = {
     ...record,
@@ -274,9 +318,9 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function resetPassword(email: string, code: string, newPassword: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   if (!record.resetCodeHash || !record.resetCodeExpiresAt) return { ok: false as const, error: "No reset code is active. Request a new one." };
   if (new Date(record.resetCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That reset code has expired. Request a new one." };
   if (hashVerificationCode(normalized, code) !== record.resetCodeHash) return { ok: false as const, error: "That reset code is not correct." };
@@ -296,9 +340,9 @@ export async function resetPassword(email: string, code: string, newPassword: st
 
 export async function verifyEmailCode(email: string, code: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   if (!record.verificationCodeHash || !record.verificationCodeExpiresAt) return { ok: false as const, error: "No verification code is active. Request a new one." };
   if (new Date(record.verificationCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That verification code has expired. Request a new one." };
   if (hashVerificationCode(normalized, code) !== record.verificationCodeHash) return { ok: false as const, error: "That verification code is not correct." };
@@ -315,9 +359,9 @@ export async function verifyEmailCode(email: string, code: string) {
 
 export async function resendVerificationCode(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   const code = verificationCode();
   const next: AccountRecord = {
     ...record,
@@ -336,14 +380,14 @@ export async function isAccountVerified(email: string) {
 }
 
 export async function getAccountData(email: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await readJson<AccountData>(dataKey(normalized));
   return data ?? { route: [], favorites: [] };
 }
 
 export async function saveAccountCollection(email: string, collection: "route" | "favorites", items: SavedPlace[]) {
   if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
   const capped = items.slice(0, 200);
   const next: AccountData = {
@@ -452,7 +496,7 @@ export async function getTripItinerary(email: string, id?: string) {
  * print view or a share link quietly shows a different trip than the builder.
  */
 async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
   const open = trips.find((t) => t.id === activeId) ?? trips[0];
   const next: AccountData = {
@@ -545,7 +589,7 @@ export async function duplicateTrip(email: string, id: string) {
 
 export async function deleteTrip(email: string, id: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   const { trips, activeId } = withTrips(data);
   if (trips.length <= 1) return { ok: false as const, error: "This is your only trip. Start another one first." };
@@ -567,7 +611,7 @@ export async function deleteTrip(email: string, id: string) {
 /** Save an itinerary into one trip, or into the open one. */
 export async function saveAccountItinerary(email: string, itinerary: Itinerary, id?: string) {
   if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   const { trips, activeId } = withTrips(data);
   const targetId = id && trips.some((t) => t.id === id) ? id : activeId;
@@ -586,7 +630,7 @@ function shareKey(shareId: string) {
   return `white-glove:itinerary-share:${shareId}`;
 }
 function sharedWithKey(email: string) {
-  return `white-glove:shared-with:${normalizeEmail(email)}`;
+  return `white-glove:shared-with:${normalizeId(email)}`;
 }
 function shareToken() {
   return randomBytes(9).toString("base64url"); // ~12 url-safe chars
@@ -600,7 +644,7 @@ function shareToken() {
  * would hand the open trip's share link back to whatever it used to be.
  */
 async function patchAccountData(email: string, patch: Partial<AccountData>) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
   const next: AccountData = { ...current, ...patch, updatedAt: new Date().toISOString() };
   const touchesShare = "itineraryShareId" in patch || "itineraryCollaborators" in patch;
@@ -631,7 +675,7 @@ export async function getItineraryShareState(email: string) {
 /** Ensure a public share token exists for this account's trip; returns it. */
 export async function ensureItineraryShare(email: string): Promise<string | null> {
   if (!hasAccountStorage()) return null;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   if (data.itineraryShareId) {
     // Make sure the reverse lookup exists (self-heal).
@@ -648,7 +692,7 @@ export async function ensureItineraryShare(email: string): Promise<string | null
 /** Stop sharing: remove the public link and every collaborator's access. */
 export async function stopItineraryShare(email: string) {
   if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   if (data.itineraryShareId) await deleteKey(shareKey(data.itineraryShareId));
   for (const collaborator of data.itineraryCollaborators ?? []) {
@@ -675,22 +719,30 @@ export async function getSharedItineraryByShareId(shareId: string) {
 async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {
   const key = sharedWithKey(collaboratorEmail);
   const list = (await readJson<SharedTrip[]>(key)) ?? [];
-  const next = [entry, ...list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(entry.ownerEmail))].slice(0, 50);
+  const next = [entry, ...list.filter((e) => normalizeId(e.ownerEmail) !== normalizeId(entry.ownerEmail))].slice(0, 50);
   await writeJson(key, next);
 }
 async function removeFromSharedWith(collaboratorEmail: string, ownerEmail: string) {
   const key = sharedWithKey(collaboratorEmail);
   const list = (await readJson<SharedTrip[]>(key)) ?? [];
-  const next = list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(ownerEmail));
+  const next = list.filter((e) => normalizeId(e.ownerEmail) !== normalizeId(ownerEmail));
   await writeJson(key, next);
 }
 
-/** Add a person (by email) to the owner's trip. Returns the share token + list. */
+/**
+ * Add a person to the owner's trip, by whatever they sign in with.
+ *
+ * A phone number is allowed, because somebody who signed up with one has no
+ * email to be added by. Only an email gets the "somebody shared a trip with
+ * you" message, though — a share link is not worth a text message, and the
+ * trip is waiting for them either way when they next sign in.
+ */
 export async function addItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const owner = normalizeEmail(ownerEmail);
-  const person = normalizeEmail(collaboratorEmail);
-  if (!person || !person.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  const owner = normalizeId(ownerEmail);
+  const identity = normalizeIdentity(collaboratorEmail ?? "");
+  if (!identity) return { ok: false as const, error: "Enter an email address or a phone number." };
+  const person = identity.value;
   if (person === owner) return { ok: false as const, error: "That's your own account." };
   const shareId = await ensureItineraryShare(owner);
   if (!shareId) return { ok: false as const, error: "Could not create the share link." };
@@ -705,8 +757,8 @@ export async function addItineraryCollaborator(ownerEmail: string, collaboratorE
 
 export async function removeItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const owner = normalizeEmail(ownerEmail);
-  const person = normalizeEmail(collaboratorEmail);
+  const owner = normalizeId(ownerEmail);
+  const person = normalizeId(collaboratorEmail);
   const data = await getAccountData(owner);
   const collaborators = (data.itineraryCollaborators ?? []).filter((e) => e !== person);
   await patchAccountData(owner, { itineraryCollaborators: collaborators });
@@ -720,10 +772,10 @@ export async function listSharedWithMe(email: string): Promise<SharedTrip[]> {
   const valid = await Promise.all(
     list.map(async (e): Promise<SharedTrip | null> => {
       const owner = await getShareOwnerEmail(e.shareId);
-      if (!owner || normalizeEmail(owner) !== normalizeEmail(e.ownerEmail)) return null;
+      if (!owner || normalizeId(owner) !== normalizeId(e.ownerEmail)) return null;
       const data = await getAccountData(owner);
       // Confirm the person is still a collaborator (owner may have removed them).
-      if (!(data.itineraryCollaborators ?? []).includes(normalizeEmail(email))) return null;
+      if (!(data.itineraryCollaborators ?? []).includes(normalizeId(email))) return null;
       return { ...e, title: data.itinerary?.title || e.title };
     }),
   );
@@ -761,7 +813,7 @@ async function deleteKey(key: string) {
 
 export async function updateAccountProfile(email: string, updates: { name?: string; phone?: string }) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return { ok: false as const, error: "Account not found." };
   const next: AccountRecord = {
@@ -774,20 +826,32 @@ export async function updateAccountProfile(email: string, updates: { name?: stri
   return { ok: true as const };
 }
 
-// Move the account (and its saved data) to a new email key. Email is the
-// record key, so changing it re-keys both records and removes the old ones.
+// Move the account (and its saved data) to a new identifier — an email address
+// or a phone number. It is the record key, so changing it re-keys both records
+// and removes the old ones.
 export async function changeAccountEmail(currentEmail: string, newEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const from = normalizeEmail(currentEmail);
-  const to = normalizeEmail(newEmail);
-  if (!to || !to.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  const from = normalizeId(currentEmail);
+  const identity = normalizeIdentity(newEmail ?? "");
+  if (!identity) return { ok: false as const, error: "Enter an email address or a phone number." };
+  const to = identity.value;
   if (to === from) return { ok: true as const, email: from };
-  if (await getAccountRecord(to)) return { ok: false as const, error: "An account already exists for that email." };
+  if (await getAccountRecord(to)) {
+    return {
+      ok: false as const,
+      error: identity.kind === "phone" ? "An account already exists for that number." : "An account already exists for that email.",
+    };
+  }
   const record = await getAccountRecord(from);
   if (!record) return { ok: false as const, error: "Account not found." };
   const data = await getAccountData(from);
-  const moved = await writeJson(accountKey(to), { ...record, email: to });
-  if (!moved) return { ok: false as const, error: "Could not update your email." };
+  const moved = await writeJson(accountKey(to), {
+    ...record,
+    email: to,
+    identityKind: identity.kind,
+    phone: identity.kind === "phone" ? to : record.phone,
+  });
+  if (!moved) return { ok: false as const, error: "Could not update your sign-in details." };
   await writeJson(dataKey(to), data);
   await deleteKey(accountKey(from));
   await deleteKey(dataKey(from));
@@ -796,7 +860,7 @@ export async function changeAccountEmail(currentEmail: string, newEmail: string)
 
 export async function deleteAccount(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   await deleteKey(accountKey(normalized));
   await deleteKey(dataKey(normalized));
   return { ok: true as const };

@@ -7,6 +7,7 @@ import LogoutButton from "@/components/LogoutButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { isAdminAccount } from "@/lib/admin-roles";
+import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
 export default async function AccountPage() {
   const cookieStore = await cookies();
@@ -19,7 +20,11 @@ export default async function AccountPage() {
   // Someone who helps run the site gets a way through to the admin from their
   // own account, rather than having to remember a separate address.
   const canAdmin = await isAdminAccount(account?.email || sessionEmail);
-  const displayName = account?.name || sessionEmail?.split("@")[0] || account?.email?.split("@")[0] || "Traveler";
+  // A phone account has no "@" to cut a name out of, so fall back to the
+  // number spelled readably rather than to a blank greeting.
+  const identity = account?.email ?? sessionEmail ?? "";
+  const displayName =
+    account?.name || (isPhoneIdentity(identity) ? describeIdentity(identity) : identity.split("@")[0]) || "Traveler";
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -45,9 +50,9 @@ export default async function AccountPage() {
         </div>
         <div className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600">
           {account ? (
-            <p>Signed in as {account.email}. {account.verifiedAt ? "Email verified." : "Email verification pending."} {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
+            <p>Signed in as {describeIdentity(account.email)}. {account.verifiedAt ? "Verified." : "Still waiting for its verification code."} {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
           ) : signedIn ? (
-            <p>Signed in as {sessionEmail}. Your saved route and favorites will appear here once your account data loads.</p>
+            <p>Signed in as {describeIdentity(sessionEmail ?? "")}. Your saved route and favorites will appear here once your account data loads.</p>
           ) : (
             <p>You are viewing the local preview. Sign in to store your route and favorites across devices.</p>
           )}

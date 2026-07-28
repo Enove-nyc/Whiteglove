@@ -7,6 +7,7 @@ import {
   removeItineraryCollaborator,
 } from "@/lib/account-store";
 import { sendItineraryShareEmail } from "@/lib/email";
+import { isPhoneIdentity, normalizeIdentity } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
@@ -20,24 +21,32 @@ async function requireAccount() {
   return getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
 }
 
-// Add a person (by email) to the signed-in traveler's trip, and email them the link.
+// Add a person to the signed-in traveler's trip, and email them the link.
+//
+// Somebody who signed up with a phone number can be added too — they have no
+// email to be added by. They simply do not get the "somebody shared a trip with
+// you" message; the trip is waiting for them when they next sign in.
 export async function POST(request: NextRequest) {
   const account = await requireAccount();
   if (!account) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const body = (await request.json().catch(() => null)) as { email?: string } | null;
-  const email = body?.email?.trim();
-  if (!email) return NextResponse.json({ error: "Enter an email address." }, { status: 400 });
+  const typed = body?.email?.trim();
+  if (!typed) return NextResponse.json({ error: "Enter an email address or a phone number." }, { status: 400 });
 
-  const result = await addItineraryCollaborator(account.email, email);
+  const result = await addItineraryCollaborator(account.email, typed);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
-  // Best-effort email; sharing still succeeds even if the email can't be sent.
+  const person = normalizeIdentity(typed)?.value ?? typed;
   const url = shareUrl(request, result.shareId);
-  const emailed = await sendItineraryShareEmail(email, {
-    fromName: account.record.name || account.email,
-    url,
-    title: account.data.itinerary?.title || "Shared trip",
-  });
+
+  // Best-effort email; sharing still succeeds even if the email can't be sent.
+  const emailed = isPhoneIdentity(person)
+    ? false
+    : await sendItineraryShareEmail(person, {
+        fromName: account.record.name || account.email,
+        url,
+        title: account.data.itinerary?.title || "Shared trip",
+      });
 
   return NextResponse.json({ ok: true, collaborators: result.collaborators, url, emailed });
 }

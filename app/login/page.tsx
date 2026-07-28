@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer";
 import LoginForm from "@/components/LoginForm";
+import { smsConfigured } from "@/lib/sms";
 import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
@@ -20,7 +21,7 @@ export default function LoginPage() {
         <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Sign in or create an account</p>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Your personal travel book.</h2>
-          <LoginForm />
+          <LoginForm phoneSignupAvailable={smsConfigured()} />
         </div>
       </section>
       <Footer />

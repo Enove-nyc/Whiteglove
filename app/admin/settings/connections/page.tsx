@@ -1,6 +1,7 @@
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
+import SmsStatus from "@/components/SmsStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default function ConnectionSettings() {
       <header>
         <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Connections</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Three outside services the website leans on. Each one tells you whether it is working right now, and what to
+          The outside services the website leans on. Each one tells you whether it is working right now, and what to
           do if it is not. Nothing here is needed day to day.
         </p>
         <p className="mt-4 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
@@ -21,6 +22,7 @@ export default function ConnectionSettings() {
 
       <div className="mt-8 space-y-5">
         <EmailDeliveryTest />
+        <SmsStatus />
         <RoutingKeyTest />
         <AiConnectionTest />
       </div>

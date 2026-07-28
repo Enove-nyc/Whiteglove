@@ -22,6 +22,7 @@ import {
   formatKm,
   layoverMinutes,
   nextDate,
+  readOvernightFlight,
   summarize,
   travelersOf,
   unscheduledActivities,
@@ -246,7 +247,22 @@ export default function ItineraryBuilder() {
       {/* Bookings summary + print */}
       {(itin.flights.length + itin.lodging.length + itin.activities.length) > 0 && (
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <BookingList title="Flights" items={itin.flights.map((f) => ({ id: f.id, label: `${f.from} → ${f.to}`, sub: `${f.date}${f.departTime ? " · " + f.departTime : ""}` }))} onRemove={removeFlight} />
+          <BookingList
+            title="Flights"
+            items={itin.flights.map((f) => {
+              // A red-eye reads as leaving and landing on the same day unless
+              // the list says otherwise, which is how a night in the air went
+              // missing from the plan.
+              const night = readOvernightFlight(f);
+              const lands = night.arrivalDate > f.date ? ` → lands ${night.arrivalDate}` : "";
+              return {
+                id: f.id,
+                label: `${f.from} → ${f.to}`,
+                sub: `${f.date}${f.departTime ? " · " + f.departTime : ""}${lands}${night.overnight ? " · overnight" : ""}`,
+              };
+            })}
+            onRemove={removeFlight}
+          />
           <BookingList title="Lodging" items={itin.lodging.map((l) => ({ id: l.id, label: l.type === "overnight-transit" ? `Overnight ${l.name || "transit"}` : l.name, sub: `${l.checkIn} → ${l.checkOut}` }))} onRemove={removeLodging} />
           <BookingList title="Activities" items={itin.activities.map((a) => ({ id: a.id, label: a.name, sub: `${a.date}${a.startTime ? " · " + a.startTime : ""}` }))} onRemove={removeActivity} />
         </div>
@@ -607,6 +623,28 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
+  // A red-eye is worked out from the times rather than asked about — almost
+  // nobody fills in an arrival date, and a flight landing the morning after is
+  // the normal way to reach Europe. This shows what was worked out while the
+  // times are being typed, so a wrong reading can be corrected on the spot
+  // instead of quietly putting the landing on the wrong day.
+  const overnight = useMemo(
+    () =>
+      f.date
+        ? readOvernightFlight({
+            id: "draft",
+            from: f.from ?? "",
+            to: f.to ?? "",
+            date: f.date,
+            departTime: f.departTime,
+            arriveTime: f.arriveTime,
+            arriveDate: f.arriveDate,
+            stops: f.stops,
+          })
+        : null,
+    [f],
+  );
+
   async function runLookup() {
     const flightNumber = lookupNo.trim();
     if (!flightNumber) { setStatus("Enter a flight number to look up."); return; }
@@ -655,7 +693,14 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
       <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
-      <Field label="Lands next day?"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} /></Field>
+      <Field label="Landing date"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} placeholder={overnight?.arrivalDate} /></Field>
+
+      {overnight?.note && (
+        <p className={`sm:col-span-2 lg:col-span-3 border-l-4 px-3 py-2 text-xs leading-5 ${overnight.detected ? "border-[var(--gold)] bg-[var(--cream)] text-[var(--navy)]" : "border-stone-300 bg-stone-50 text-stone-600"}`}>
+          <strong>{overnight.detected ? "Overnight flight" : "Landing date"}</strong> — {overnight.note}
+          {overnight.detected && " Leave the landing date empty and this is what will be used; fill it in only to correct it."}
+        </p>
+      )}
 
       {/* Connections belong to this one journey. Entering them as separate
           flights made the planner think the traveler had arrived, needed a bed
@@ -715,6 +760,20 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
                   <input type="checkbox" checked={Boolean(stop.overnight)} onChange={(e) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, overnight: e.target.checked } : x)) })} className="h-4 w-4 accent-[var(--navy)]" />
                   The onward flight leaves the next day
                 </label>
+                {/* Both times given is enough to say how long the wait is, and
+                    a wait past eight hours is treated as a night in transit
+                    without anybody having to tick the box. */}
+                {(() => {
+                  const wait = layoverMinutes(stop);
+                  if (wait === null) return null;
+                  const held = stop.overnight || wait >= 8 * 60;
+                  return (
+                    <p className={`sm:col-span-4 text-xs leading-5 ${held ? "font-semibold text-[var(--navy)]" : "text-stone-500"}`}>
+                      {formatDuration(wait)} between flights
+                      {held ? " — long enough that this counts as the night, so no hotel is asked for here." : "."}
+                    </p>
+                  );
+                })()}
               </div>
             ))}
           </div>
