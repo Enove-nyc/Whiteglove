@@ -80,3 +80,70 @@ session to clear an expired one would be a trap.
 Server actions under `app/admin/*/actions.ts` check the same cookie inside each
 action, not only at the page. A server action is a POST endpoint, so guarding
 only the page that renders the form would leave the action itself open.
+
+## Findings from the portal audit, and what was done
+
+A survey of every admin route and mutation, checked a second time against the
+code, turned up the following. All are fixed unless stated.
+
+### The admin cookie could be computed by anyone — fixed
+
+`lib/secure-access.ts` fell back to a constant secret compiled into the source
+when neither `WHITE_GLOVE_SESSION_SECRET` nor `ADMIN_PASSWORD` was set. On such
+a deployment the admin cookie was a fixed value anybody could work out from the
+repository and paste into a cookie jar — and signing in was *impossible* in that
+state, so the front door was bolted while the window stood open.
+
+The secret is now null when nothing is configured, in production. No token is
+minted and none validates: the site fails closed. Development keeps a local
+fallback so `next dev` still works.
+
+### The site password could be changed on the cookie alone — fixed
+
+`/api/admin/password` asked for the current admin password only when changing
+the *admin* password. Changing the *site* password skipped it, so a stolen
+cookie was enough to lock every visitor out. Both now require it.
+
+### No cross-site request protection on the API routes — fixed
+
+Next checks `Origin` against `Host` for server actions, but a plain API route
+gets no such check, and the admin cookie is `SameSite=Lax`, which a browser
+still sends on a top-level cross-site POST. `sameOrigin()` now guards every
+mutating admin route and the sign-in route. A request with no `Origin` is
+allowed — that is a same-origin form post or a server-to-server call, neither of
+which a hostile page can produce.
+
+### Unlimited password guessing — fixed
+
+`/api/access` had no attempt limit. `lib/access-attempts.ts` counts failures per
+caller per scope in Redis, with a 15-minute window and 8 attempts. With no Redis
+there is no counter and behaviour is unchanged, so this can never be the reason
+somebody cannot sign in.
+
+### The admin pages trusted middleware alone — fixed
+
+No page under `app/admin/` checked the session itself; `/admin/accounts` served
+every visitor's name, email and phone on the strength of a middleware redirect.
+Next's own documentation in this repo says not to use middleware as the only
+authorisation boundary. `app/admin/layout.tsx` now verifies the cookie and
+renders the sign-in form instead of the page when it is missing.
+
+### Signing out from another site — fixed
+
+`/api/admin/logout` took no request at all, so any page could force the owner
+out. Nuisance only, and now origin-checked. It still needs no session, because
+an expired session must remain clearable.
+
+### Known and not fixed
+
+- **The admin cookie is a bearer token with no server-side session.** It does
+  not change, so signing out on one device does not invalidate a copy taken from
+  another, and rotating the password does not invalidate it. Fixing this
+  properly means per-session records with revocation. Until then, treat
+  `WHITE_GLOVE_SESSION_SECRET` as the revocation lever: changing it invalidates
+  every outstanding cookie at once.
+- **`/api/*` is exempt from the site lock** (`middleware.ts`), so public API
+  routes answer while the site is closed. No admin route is affected — those
+  check the cookie themselves.
+- **`SITE_OPEN_HOSTS` trusts the `Host` header**, which a caller can set. It
+  only affects the site lock, never admin authorisation.

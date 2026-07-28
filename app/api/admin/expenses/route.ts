@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addExpense, deleteExpense, expensesAvailable, listExpenses, summarizeExpenses } from "@/lib/expenses";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   if (!expensesAvailable()) return NextResponse.json({ error: "The private store isn't connected." }, { status: 503 });
   const body = (await request.json().catch(() => null)) as
     | { date?: string; description?: string; amount?: string | number; currency?: string; category?: string; notes?: string }
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
   const ok = await deleteExpense(id);

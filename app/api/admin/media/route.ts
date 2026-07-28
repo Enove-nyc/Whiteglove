@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAllowedMediaType, MAX_MEDIA_BYTES, mediaStoreAvailable, putMedia } from "@/lib/media";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +13,7 @@ function admin(request: NextRequest) {
 // a same-origin URL to store in the promotion's image/PDF field.
 export async function POST(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   if (!mediaStoreAvailable()) return NextResponse.json({ error: "Connect the private store before uploading." }, { status: 503 });
 
   const body = (await request.json().catch(() => null)) as { dataUrl?: string } | null;

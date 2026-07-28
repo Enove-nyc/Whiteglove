@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { changeAccountEmail, updateAccountProfile } from "@/lib/account-store";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,7 @@ function admin(request: NextRequest) {
 // re-keys the account (email is the storage key), preserving saved data.
 export async function POST(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const body = (await request.json().catch(() => null)) as
     | { email?: string; name?: string; phone?: string; newEmail?: string }
     | null;

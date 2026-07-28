@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 import { setAccessPassword, verifyAccessPassword } from "@/lib/access-passwords";
 
 function isAdmin(request: NextRequest) {
@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
   if (!isAdmin(request)) {
     return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   }
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const body = (await request.json().catch(() => null)) as
     | { scope?: "admin" | "site"; currentPassword?: string; newPassword?: string }
     | null;

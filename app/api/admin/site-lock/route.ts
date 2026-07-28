@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 import { setSiteLock } from "@/lib/site-analytics";
 
 export async function POST(request: NextRequest) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   if (!isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   const body = await request.json().catch(() => null) as { locked?: boolean } | null;
   if (!body || typeof body.locked !== "boolean") return NextResponse.json({ error: "Choose whether to lock the site." }, { status: 400 });

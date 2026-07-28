@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { isDbEnabled } from "@/lib/content-admin";
 import { ensureTables, seedDatabase } from "@/lib/db-setup";
 import { redact } from "@/lib/redact";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // One-time (re-runnable) setup: create tables and import data/*.ts.
 export async function POST(request: NextRequest) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   if (!isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value)) {
     return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   }

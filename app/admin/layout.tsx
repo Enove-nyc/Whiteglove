@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import AccessForm from "@/components/AccessForm";
 import AdminShell from "@/components/AdminShell";
 import IdleLogout from "@/components/IdleLogout";
+import { isValidAccessToken } from "@/lib/secure-access";
 
 // The admin area is its own installable app: a separate "White Glove Admin"
 // home-screen icon (scoped to /admin) that opens straight to the dashboard,
@@ -17,7 +20,32 @@ export const metadata: Metadata = {
 // "go to" box, no visitor navigation and no public footer. Auto sign-out after
 // 20 minutes of inactivity, so /admin asks for the code again rather than
 // staying open on a shared screen.
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // The middleware already blocks these paths. This checks again anyway,
+  // because middleware is routing, not authorisation — anything that stops it
+  // running (a matcher change, a basePath, a platform-level bypass) would
+  // otherwise serve every visitor account's name, email and phone number
+  // straight out of /admin/accounts. Next's own documentation in this repo says
+  // not to rely on it as the only boundary.
+  //
+  // It renders the sign-in rather than redirecting: this layout also wraps
+  // /admin/login, and redirecting there from here would loop forever.
+  const signedIn = isValidAccessToken("admin", (await cookies()).get("white_glove_admin")?.value);
+  if (!signedIn) {
+    return (
+      <main className="flex min-h-screen flex-col bg-[var(--cream)]">
+        <div className="grid flex-1 place-items-center px-5 py-16">
+          <section className="w-full max-w-md border border-[var(--gold-light)] bg-[#fcfaf6] p-8 shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove Itineraries</p>
+            <h1 className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Owner&apos;s dashboard</h1>
+            <p className="mt-5 leading-7 text-stone-600">Private access for website activity and launch controls.</p>
+            <AccessForm scope="admin" />
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <>
       <AdminShell>{children}</AdminShell>

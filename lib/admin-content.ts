@@ -394,6 +394,13 @@ export async function recordPromotionEvent(id: string, kind: "impression" | "cli
   return writeBundle({ ...bundle, promotions });
 }
 
+/** Remove an advertisement for good. */
+export async function deletePromotion(id: string) {
+  const bundle = await readBundle();
+  if (!bundle) return null;
+  return writeBundle({ ...bundle, promotions: bundle.promotions.filter((p) => p.id !== id) });
+}
+
 export async function getActivePromotions(placement: PromotionPlacement, pathname: string, device: PromotionDevice) {
   const bundle = await readBundle();
   return bundle.promotions

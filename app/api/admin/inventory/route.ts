@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { inventoryStatuses, type InventoryStatus } from "@/data/page-inventory";
 import { getEditableInventory, saveInventoryOverride } from "@/lib/admin-inventory";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 function isAdmin(request: NextRequest) {
   return isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value);
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const body = await request.json().catch(() => null) as { id?: string; status?: unknown; ownerNotes?: unknown } | null;
   if (!body?.id) return NextResponse.json({ error: "Choose an inventory item to update." }, { status: 400 });
   if (body.status !== undefined && !isInventoryStatus(body.status)) return NextResponse.json({ error: "Choose a valid status." }, { status: 400 });

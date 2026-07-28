@@ -85,6 +85,24 @@ describe("admin authorisation", () => {
   }
 });
 
+describe("every mutating admin route refuses a cross-site request", () => {
+  const files = routeFiles(ADMIN_API);
+
+  for (const file of files) {
+    const rel = path.relative(process.cwd(), file);
+    const source = readFileSync(file, "utf8");
+    const mutating = exportedMethods(source).filter((m) => m !== "GET");
+    if (!mutating.length) continue;
+
+    it(`${rel} checks the origin`, () => {
+      // Next checks Origin against Host for server actions, but a plain API
+      // route gets no such check, and the admin cookie is SameSite=Lax — which
+      // a browser will still send on a top-level cross-site POST.
+      assert.match(source, /sameOrigin\(/, `${rel} accepts a POST from any website`);
+    });
+  }
+});
+
 describe("secrets never reach the browser", () => {
   const files = routeFiles(ADMIN_API);
 
