@@ -15,8 +15,10 @@ import { fetchRoadTimes } from "@/lib/road-times";
 import {
   buildDays,
   emptyItinerary,
+  flightRouteLabel,
   formatDuration,
   formatKm,
+  layoverMinutes,
   nextDate,
   summarize,
   travelersOf,
@@ -24,6 +26,7 @@ import {
   type Itinerary,
   type ItinActivity,
   type ItinFlight,
+  type FlightStop,
   type ItinLodging,
   type ItinTraveler,
   type LodgingType,
@@ -361,7 +364,7 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
       ))}
 
       <div className="mt-4 space-y-3">
-        {day.flightsArriving.map((f) => <p key={`a-${f.id}`} className="text-sm text-[var(--navy)]">✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} — {f.from} → {f.to}{f.airline ? ` (${f.airline})` : ""}</p>)}
+        {day.flightsArriving.map((f) => <FlightLine key={`a-${f.id}`} flight={f} direction="arrive" />)}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging")} />
         {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
@@ -432,7 +435,7 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
           </div>
         ))}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />
-        {day.flightsDeparting.map((f) => <p key={`d-${f.id}`} className="text-sm text-[var(--navy)]">✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} — {f.from} → {f.to}{f.airline ? ` (${f.airline})` : ""}</p>)}
+        {day.flightsDeparting.map((f) => <FlightLine key={`d-${f.id}`} flight={f} direction="depart" />)}
       </div>
 
       <p className="mt-4 border-t border-[var(--gold-light)] pt-3 text-sm">
@@ -441,7 +444,7 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
           <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}</span>
         ) : day.overnightFlight ? (
           <span className="text-[var(--navy)]">
-            ✈️ On the flight — {day.overnightFlight.from} → {day.overnightFlight.to}
+            ✈️ On the flight — {flightRouteLabel(day.overnightFlight)}
             {day.overnightFlight.airline ? ` (${day.overnightFlight.airline}${day.overnightFlight.flightNo ? ` ${day.overnightFlight.flightNo}` : ""})` : ""}
             {day.overnightFlight.departTime ? `, departing ${day.overnightFlight.departTime}` : ""}
             <span className="ml-2 text-xs text-stone-500">no hotel needed tonight</span>
@@ -612,7 +615,7 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
   }
 
   return (
-    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, flightNo: f.flightNo, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, bookedOnSite: false }); }}>
+    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, flightNo: f.flightNo, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: (f.stops ?? []).filter((x) => x.airport.trim()), bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Auto-fill from a flight number</span>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -630,6 +633,70 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
       <Field label="Lands next day?"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} /></Field>
+
+      {/* Connections belong to this one journey. Entering them as separate
+          flights made the planner think the traveler had arrived, needed a bed
+          in the connecting city, and had a free day there. */}
+      <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className={caption}>Stops on the way (connections)</span>
+          <button
+            type="button"
+            onClick={() => setF({ ...f, stops: [...(f.stops ?? []), { airport: "" }] })}
+            className="border border-[var(--navy)] bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+          >
+            + Add a stop
+          </button>
+        </div>
+        {(f.stops ?? []).length === 0 ? (
+          <p className="mt-2 text-xs leading-5 text-stone-600">
+            Direct flight. If it connects somewhere, add the stop here rather than entering two flights — it is one journey,
+            and the planner will not ask you for a hotel in the connecting city.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            {(f.stops ?? []).map((stop, i) => (
+              <div key={i} className="grid gap-2 border border-[var(--gold-light)] bg-white p-3 sm:grid-cols-[1.4fr_1fr_1fr_auto]">
+                <label className="block">
+                  <span className={caption}>Stop {i + 1}</span>
+                  <AirportAutocomplete
+                    value={stop.airport}
+                    onChange={(v) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, airport: v } : x)) })}
+                    className={inputClass}
+                    placeholder="Connecting airport"
+                  />
+                </label>
+                <label className="block">
+                  <span className={caption}>Lands</span>
+                  <input type="time" className={inputClass} value={stop.arriveTime ?? ""} onChange={(e) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, arriveTime: e.target.value } : x)) })} />
+                </label>
+                <label className="block">
+                  <span className={caption}>Leaves</span>
+                  <input type="time" className={inputClass} value={stop.departTime ?? ""} onChange={(e) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, departTime: e.target.value } : x)) })} />
+                </label>
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => setF({ ...f, stops: (f.stops ?? []).filter((_, j) => j !== i) })}
+                    aria-label={`Remove stop ${i + 1}`}
+                    className="min-h-[38px] px-2 text-xs text-stone-400 transition hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <label className="block sm:col-span-4">
+                  <span className={caption}>Notes for this stop</span>
+                  <input className={inputClass} value={stop.notes ?? ""} onChange={(e) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, notes: e.target.value } : x)) })} placeholder="Terminal change, long wait, whether you can leave the airport" />
+                </label>
+                <label className="flex items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:col-span-4">
+                  <input type="checkbox" checked={Boolean(stop.overnight)} onChange={(e) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, overnight: e.target.checked } : x)) })} className="h-4 w-4 accent-[var(--navy)]" />
+                  The onward flight leaves the next day
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </FormShell>
   );
 }
@@ -953,5 +1020,52 @@ function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; on
         </button>
       </div>
     </section>
+  );
+}
+
+
+/**
+ * One journey on a day card — connections included.
+ *
+ * A flight with a stopover is one journey, so it reads as one line:
+ * JFK → WAW → KRK, with the wait on the ground shown under it. Entering it as
+ * two separate flights used to make the planner believe the traveler had
+ * arrived, spent a day in the connecting city, and needed a hotel there.
+ */
+function FlightLine({ flight, direction }: { flight: ItinFlight; direction: "arrive" | "depart" }) {
+  const stops = flight.stops ?? [];
+  const airline = [flight.airline, flight.flightNo].filter(Boolean).join(" ");
+  return (
+    <div className="text-sm text-[var(--navy)]">
+      <p>
+        ✈️{" "}
+        {direction === "depart"
+          ? <>Depart {flight.from}{flight.departTime ? ` at ${flight.departTime}` : ""}</>
+          : <>Arrive {flight.to}{flight.arriveTime ? ` at ${flight.arriveTime}` : ""}</>}
+        {" — "}
+        <span className="font-semibold">{flightRouteLabel(flight)}</span>
+        {airline ? ` (${airline})` : ""}
+        {stops.length > 0 && (
+          <span className="ml-2 text-xs font-semibold text-[var(--gold)]">
+            {stops.length === 1 ? "1 stop" : `${stops.length} stops`}
+          </span>
+        )}
+      </p>
+      {stops.map((stop, i) => <LayoverLine key={`${stop.airport}-${i}`} stop={stop} />)}
+    </div>
+  );
+}
+
+function LayoverLine({ stop }: { stop: FlightStop }) {
+  const mins = layoverMinutes(stop);
+  const long = stop.overnight || (mins ?? 0) >= 8 * 60;
+  const tight = mins !== null && mins < 60;
+  return (
+    <p className="ml-5 mt-0.5 text-xs leading-5 text-stone-500">
+      ↳ Stop in {stop.airport}
+      {stop.arriveTime && stop.departTime ? ` — in ${stop.arriveTime}, out ${stop.departTime}` : ""}
+      {mins !== null && <span className={`ml-1 font-semibold ${tight ? "text-red-700" : long ? "text-amber-800" : "text-stone-500"}`}>({formatDuration(mins)}{long ? " · overnight in transit" : tight ? " · tight connection" : ""})</span>}
+      {stop.notes ? <span className="ml-1">· {stop.notes}</span> : null}
+    </p>
   );
 }

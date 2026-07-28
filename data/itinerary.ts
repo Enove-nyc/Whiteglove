@@ -19,19 +19,60 @@ export type ItinLodging = {
   bookedOnSite?: boolean;
 };
 
+/**
+ * A place the plane touches down on the way, without the journey being over.
+ *
+ * A connection is one journey, not two flights. Entering it as two made the
+ * planner think the traveler had landed and had a day in the connecting city,
+ * and on a red-eye it put a night in the wrong place entirely.
+ */
+export type FlightStop = {
+  /** The connecting airport, e.g. "WAW" or "Warsaw (WAW)". */
+  airport: string;
+  arriveTime?: string; // HH:MM — when this leg lands
+  departTime?: string; // HH:MM — when the onward leg leaves
+  /** True when the onward leg leaves the following day. */
+  overnight?: boolean;
+  notes?: string; // terminal change, long layover, visa needed to leave airside
+};
+
 export type ItinFlight = {
   id: string;
   airline?: string;
   flightNo?: string;
+  /** Where the journey starts. Not a connecting airport — see `stops`. */
   from: string;
+  /** Where the journey ends. */
   to: string;
   date: string; // YYYY-MM-DD (departure date)
   departTime?: string; // HH:MM
-  arriveTime?: string; // HH:MM
+  arriveTime?: string; // HH:MM — arrival at the FINAL destination
   arriveDate?: string; // YYYY-MM-DD if it lands the next day (red-eye)
+  /** Connections along the way, in order. */
+  stops?: FlightStop[];
   notes?: string;
   bookedOnSite?: boolean;
 };
+
+/** "JFK → WAW → KRK" — the whole journey, connections included. */
+export function flightRouteLabel(flight: ItinFlight): string {
+  return [flight.from, ...(flight.stops ?? []).map((s) => s.airport), flight.to].filter(Boolean).join(" → ");
+}
+
+/** How long the traveler is on the ground at a connection, in minutes. */
+export function layoverMinutes(stop: FlightStop): number | null {
+  const inn = timeToMins(stop.arriveTime);
+  const out = timeToMins(stop.departTime);
+  if (inn === null || out === null) return null;
+  const raw = out - inn;
+  // A connection that departs at or before it arrives ran past midnight.
+  return raw > 0 ? raw : raw + 24 * 60;
+}
+
+/** True when any part of the journey is spent airside overnight. */
+export function hasOvernightLayover(flight: ItinFlight): boolean {
+  return (flight.stops ?? []).some((s) => s.overnight || (layoverMinutes(s) ?? 0) >= 8 * 60);
+}
 
 export type ItinActivity = {
   id: string;
@@ -325,6 +366,9 @@ function minsToTime(mins: number): string {
  */
 export function flightArrivalDate(flight: ItinFlight): string {
   if (flight.arriveDate) return flight.arriveDate;
+  // A connection held overnight lands the traveler on a later day even when
+  // the final arrival time looks earlier in the clock than the departure.
+  if (hasOvernightLayover(flight)) return nextDate(flight.date);
   const depart = timeToMins(flight.departTime);
   const arrive = timeToMins(flight.arriveTime);
   if (depart !== null && arrive !== null && arrive <= depart) return nextDate(flight.date);
@@ -348,6 +392,8 @@ export function overnightFlightFor(itin: Itinerary, date: string): ItinFlight | 
     if (flight.date !== date) continue;
     // Stated outright: it lands on a later date.
     if (flight.arriveDate && flight.arriveDate > flight.date) return flight;
+    // Held at a connection overnight — the night is spent in transit.
+    if (hasOvernightLayover(flight)) return flight;
     const depart = timeToMins(flight.departTime);
     const arrive = timeToMins(flight.arriveTime);
     // Lands at or before the hour it left — it crossed midnight.
