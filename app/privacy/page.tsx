@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
 
         <Section title="Information we collect">
           <p>We collect only what we need to run the service:</p>
-          <ul className="list-disc space-y-2 pl-5">
+          <ul className="glove-list space-y-2">
             <li><strong className="text-[var(--navy)]">Account details</strong> — your email address and a password. Passwords are stored only in a hashed form; we never store or see your plain password.</li>
             <li><strong className="text-[var(--navy)]">Content you save</strong> — the destinations, routes, and favorites you add to your account.</li>
             <li><strong className="text-[var(--navy)]">Searches and trip details</strong> — the cities, flights, and hotels you search for, so we can show relevant results and tools.</li>
@@ -49,7 +49,7 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section title="How we use your information">
-          <ul className="list-disc space-y-2 pl-5">
+          <ul className="glove-list space-y-2">
             <li>To create and secure your account and keep you signed in.</li>
             <li>To send account emails — verification codes and password-reset codes.</li>
             <li>To provide planning features such as saved routes, favorites, and flight and hotel search.</li>
@@ -59,7 +59,7 @@ export default function PrivacyPolicyPage() {
 
         <Section title="Service providers we share with">
           <p>We use a small number of trusted providers to operate the service. We share only what each needs to do its job, and we do not sell your personal information.</p>
-          <ul className="list-disc space-y-2 pl-5">
+          <ul className="glove-list space-y-2">
             <li><strong className="text-[var(--navy)]">Email delivery</strong> — to send verification and password-reset messages.</li>
             <li><strong className="text-[var(--navy)]">Flight and hotel search</strong> — a travel-technology partner processes your travel searches and any booking you choose to make.</li>
             <li><strong className="text-[var(--navy)]">Hosting and data storage</strong> — our website host and database provider store the data described above securely on our behalf.</li>

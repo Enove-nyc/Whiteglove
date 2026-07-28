@@ -8,7 +8,7 @@ import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
-import { directionsBetweenUrl } from "@/data/route-utils";
+import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { fetchRoadTimes } from "@/lib/road-times";
@@ -19,11 +19,13 @@ import {
   formatKm,
   nextDate,
   summarize,
+  travelersOf,
   unscheduledActivities,
   type Itinerary,
   type ItinActivity,
   type ItinFlight,
   type ItinLodging,
+  type ItinTraveler,
   type LodgingType,
   type TravelLeg,
 } from "@/data/itinerary";
@@ -135,7 +137,12 @@ export default function ItineraryBuilder() {
     if (missing.length) {
       const found = await geocodeMissing(missing.map((a) => ({ id: a.id, name: a.name, address: a.address, coordinates: a.coordinates })));
       if (Object.keys(found).length) {
-        working = { ...working, activities: working.activities.map((a) => (found[a.id] ? { ...a, coordinates: found[a.id] } : a)) };
+        working = {
+          ...working,
+          activities: working.activities.map((a) =>
+            found[a.id] ? { ...a, coordinates: found[a.id].coordinates, country: a.country || found[a.id].country } : a,
+          ),
+        };
       }
     }
     setPlanNote("Planning the fastest route…");
@@ -151,15 +158,32 @@ export default function ItineraryBuilder() {
         return [legs[0].fromCoordinates ?? "", ...legs.map((l) => l.toCoordinates ?? "")];
       })
       .filter((chain) => chain.length > 1 && chain.every(Boolean));
-    const measured = await fetchRoadTimes(chains, planned.roadTimes ?? {});
-    if (Object.keys(measured).length) planned = { ...planned, roadTimes: { ...(planned.roadTimes ?? {}), ...measured } };
+    const measured = await fetchRoadTimes(chains, planned.roadTimes ?? {}, planned.startDate);
+    const measuredCount = Object.keys(measured.times).length;
+    if (measuredCount) {
+      planned = {
+        ...planned,
+        roadTimes: { ...(planned.roadTimes ?? {}), ...measured.times },
+        roadTimeSources: { ...(planned.roadTimeSources ?? {}), ...measured.sources },
+      };
+    }
 
     persist(planned);
     const stillMissing = result.unplaceable.length;
     setPlanning(false);
+    // Say which engine answered. A Google time is the number Maps would give;
+    // an OSRM one assumes empty roads, and a traveler deserves to know which
+    // of those they are looking at before they build a day around it.
+    const timesNote = !measuredCount
+      ? measured.partial
+        ? " Driving times could not be looked up just now, so the times shown are our own estimates."
+        : ""
+      : measured.engine === "google"
+        ? " Driving times taken from Google Maps for an ordinary day's traffic."
+        : " Driving times measured on real roads (no traffic allowance — treat them as a floor).";
     setPlanNote(
       `Route planned${result.placed ? ` — ${result.placed} stop${result.placed > 1 ? "s" : ""} scheduled` : ""}.` +
-        (Object.keys(measured).length ? " Driving times measured on real roads." : "") +
+        timesNote +
         (stillMissing ? ` ${stillMissing} stop${stillMissing > 1 ? "s" : ""} still need a location or a day.` : ""),
     );
     setTimeout(() => setPlanNote(""), 8000);
@@ -176,11 +200,11 @@ export default function ItineraryBuilder() {
       {/* Trip header */}
       <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
-          <label className="block"><span className={caption}>Traveler name</span><input className={inputClass} value={itin.travelerName ?? ""} onChange={(e) => set({ travelerName: e.target.value })} placeholder="Shown on the printed itinerary" /></label>
-          <div className="grid grid-cols-2 gap-3">
+          <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
+          <div className="grid grid-cols-3 gap-3">
             <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
             <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
+            <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -201,6 +225,11 @@ export default function ItineraryBuilder() {
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
       </div>
+
+      <TravelersPanel
+        travelers={travelersOf(itin)}
+        onChange={(travelers) => set({ travelers, travelerName: travelers[0]?.name ?? "" })}
+      />
 
       <ShareItineraryPanel />
 
@@ -311,7 +340,19 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
         <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h3>
         <p className="text-sm font-semibold text-stone-500">
           {day.label}
-          {day.travelHours > 0 ? <span className="ml-3 text-xs font-normal text-stone-400">≈{day.travelHours} h driving between stops</span> : null}
+          {day.startTime && day.activities.length > 0 ? (
+            <span className="ml-3 text-xs font-normal text-stone-500">
+              {day.startsFrom ? `From ${day.startsFrom}, ` : ""}{day.startTime}
+              {day.endTime ? ` → ${day.endTime}` : ""}
+            </span>
+          ) : null}
+          {day.travelHours > 0 ? (
+            <span className="ml-3 text-xs font-normal text-stone-400">
+              {day.travelLegs.every((l) => l.measured) ? "" : "≈"}
+              {day.travelHours} h driving
+              {day.travelLegs.every((l) => l.source === "google") ? " (Google Maps)" : ""}
+            </span>
+          ) : null}
         </p>
       </div>
 
@@ -326,7 +367,7 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
             {a.distanceFromPrev !== null && (
               <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-                ↓ {formatKm(a.distanceFromPrev)} · {a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} drive from previous stop{" "}
+                ↓ {formatKm(a.distanceFromPrev)} · {a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} drive from previous stop <TimeSource source={a.travelSource} />{" "}
                 <a
                   href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
                   target="_blank"
@@ -340,7 +381,14 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
             <div className="flex items-start justify-between gap-3">
               <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                 <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
-                {a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}
+                {a.arrivalTime ? (
+                  <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
+                    {a.arrivalTime}
+                    {a.departureTime ? <span className="font-normal text-stone-400">–{a.departureTime}</span> : null}
+                  </span>
+                ) : a.startTime ? (
+                  <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span>
+                ) : null}
                 {a.name}
                 {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
               </p>
@@ -366,8 +414,16 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
               />
             )}
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
-            {(a.phone || a.href) && (
+            {(a.phone || a.href || a.address || a.coordinates) && (
               <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {/* Every stop gets its own navigate link, including the first
+                    one of the day. Leaving the destination alone lets Google
+                    Maps route from wherever the traveler actually is, which is
+                    the only sensible origin for the first stop — there is no
+                    previous stop to start from. */}
+                {(a.address || a.coordinates) && (
+                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🧭 Navigate here →</a>
+                )}
                 {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">📞 {a.phone}</a>}
                 {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Link →</a>)}
               </p>
@@ -383,6 +439,13 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
         <span className={caption}>Tonight</span>{" "}
         {day.lodging ? (
           <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}</span>
+        ) : day.overnightFlight ? (
+          <span className="text-[var(--navy)]">
+            ✈️ On the flight — {day.overnightFlight.from} → {day.overnightFlight.to}
+            {day.overnightFlight.airline ? ` (${day.overnightFlight.airline}${day.overnightFlight.flightNo ? ` ${day.overnightFlight.flightNo}` : ""})` : ""}
+            {day.overnightFlight.departTime ? `, departing ${day.overnightFlight.departTime}` : ""}
+            <span className="ml-2 text-xs text-stone-500">no hotel needed tonight</span>
+          </span>
         ) : (
           <span className="text-stone-400">— not set —</span>
         )}
@@ -454,12 +517,27 @@ function EditStopForm({ activity, allDates, onSave, onRemove, onCancel }: {
   );
 }
 
+/**
+ * Where a driving time came from. A traveler planning a day around a number
+ * should be able to see whether it is Google's own answer for typical traffic,
+ * an open-router figure that assumes the roads are empty, or our own estimate.
+ */
+function TimeSource({ source }: { source?: "google" | "osrm" }) {
+  if (source === "google") {
+    return <span className="normal-case tracking-normal text-emerald-700" title="From Google Maps, for an ordinary day's traffic">· Google Maps</span>;
+  }
+  if (source === "osrm") {
+    return <span className="normal-case tracking-normal text-stone-400" title="Measured on real roads, but with no traffic allowance — treat it as a floor">· road routing, no traffic</span>;
+  }
+  return <span className="normal-case tracking-normal text-stone-400" title="Our own estimate — routing was not available for this leg">· estimate</span>;
+}
+
 // A transfer to/from the hotel or the airport — travel that also eats the day.
 function TransferLine({ leg }: { leg?: TravelLeg }) {
   if (!leg) return null;
   return (
     <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-      🚗 {leg.label} — {formatKm(leg.km)} · {leg.measured ? "" : "≈"}{formatDuration(leg.minutes)}{" "}
+      🚗 {leg.label} — {formatKm(leg.km)} · {leg.measured ? "" : "≈"}{formatDuration(leg.minutes)} <TimeSource source={leg.source} />{" "}
       <a
         href={directionsBetweenUrl({ coordinates: leg.fromCoordinates }, { coordinates: leg.toCoordinates })}
         target="_blank"
@@ -637,7 +715,7 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((g, i) => (
             <li key={`${g.name}-${i}`}>
               <button
@@ -669,12 +747,13 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       href: k.href,
       phone: k.phone ?? prev.phone,
       keverSlug: k.slug,
+      country: k.country,
       notes: prev.notes || k.notes,
     }));
   }
 
   return (
-    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, notes: a.notes, bookedOnSite: false }); }}>
+    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list — we&apos;ll fill in the rest</span>
         <KeverPicker onPick={pickKever} />
@@ -733,7 +812,7 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((k) => (
             <li key={k.slug}>
               <button
@@ -766,4 +845,113 @@ function FormShell({ title, children, onSubmit, error }: { title: string; childr
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block"><span className={caption}>{label}</span>{children}</label>;
+}
+
+
+// ---- Who is coming ---------------------------------------------------
+// Adding your family to your own trip is not the same as sharing it with
+// another account: a child has no login, and you still need their name on the
+// printed itinerary and counted when you book rooms and seats.
+
+const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: string }> = [
+  { value: "adult", label: "Adult" },
+  { value: "child", label: "Child" },
+  { value: "infant", label: "Infant" },
+];
+
+function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; onChange: (t: ItinTraveler[]) => void }) {
+  const [name, setName] = useState("");
+  const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
+
+  function add() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onChange([...travelers, { id: uid(), name: trimmed, kind }]);
+    setName("");
+    setKind("adult");
+  }
+
+  const update = (id: string, patch: Partial<ItinTraveler>) =>
+    onChange(travelers.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const remove = (id: string) => onChange(travelers.filter((t) => t.id !== id));
+
+  const adults = travelers.filter((t) => (t.kind ?? "adult") === "adult").length;
+  const children = travelers.filter((t) => t.kind === "child").length;
+  const infants = travelers.filter((t) => t.kind === "infant").length;
+
+  return (
+    <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Who&apos;s coming</h2>
+        {travelers.length > 0 && (
+          <p className="text-xs font-semibold text-stone-500">
+            {travelers.length} {travelers.length === 1 ? "traveler" : "travelers"}
+            {children || infants ? ` · ${adults} adult${adults === 1 ? "" : "s"}${children ? `, ${children} child${children === 1 ? "" : "ren"}` : ""}${infants ? `, ${infants} infant${infants === 1 ? "" : "s"}` : ""}` : ""}
+          </p>
+        )}
+      </div>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+        Everyone travelling with you. They appear on the printed itinerary and give you the head count for rooms and seats.
+        This is separate from sharing the trip below — a child doesn&apos;t need an account to be on the list.
+      </p>
+
+      {travelers.length > 0 && (
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {travelers.map((t) => (
+            <li key={t.id} className="flex min-w-0 flex-wrap items-center gap-2 border border-[var(--gold-light)] bg-white px-3 py-2">
+              <input
+                value={t.name}
+                onChange={(e) => update(t.id, { name: e.target.value })}
+                aria-label="Traveler name"
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-semibold text-[var(--navy)] outline-none"
+              />
+              <select
+                value={t.kind ?? "adult"}
+                onChange={(e) => update(t.id, { kind: e.target.value as ItinTraveler["kind"] })}
+                aria-label={`${t.name || "Traveler"} type`}
+                className="border border-[var(--gold-light)] bg-[#fcfaf6] py-1 pl-2 text-xs text-[var(--navy)] outline-none"
+              >
+                {TRAVELER_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+              </select>
+              <button
+                type="button"
+                onClick={() => remove(t.id)}
+                aria-label={`Remove ${t.name || "traveler"}`}
+                className="min-h-[32px] px-2 text-xs text-stone-400 transition hover:text-red-700"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-end gap-2">
+        <label className="min-w-0 flex-1">
+          <span className={caption}>Add a traveler</span>
+          <input
+            className={inputClass}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+            placeholder="Name"
+          />
+        </label>
+        <label>
+          <span className={caption}>Type</span>
+          <select value={kind} onChange={(e) => setKind(e.target.value as NonNullable<ItinTraveler["kind"]>)} className={inputClass}>
+            {TRAVELER_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={add}
+          disabled={!name.trim()}
+          className="min-h-[42px] border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-40"
+        >
+          + Add
+        </button>
+      </div>
+    </section>
+  );
 }

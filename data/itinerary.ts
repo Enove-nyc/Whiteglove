@@ -48,13 +48,33 @@ export type ItinActivity = {
   href?: string; // link (our kever page, a booking page, a map…)
   phone?: string; // contact number for this stop
   keverSlug?: string; // set when picked from our kever directory
+  /** Country this stop is in, when we know it. Used to flag border crossings. */
+  country?: string;
   notes?: string;
   bookedOnSite?: boolean;
 };
 
+/**
+ * Someone travelling on this trip.
+ *
+ * Not the same thing as sharing the itinerary. A collaborator is another
+ * account that can open and edit the plan; a traveler is a person who is
+ * actually going — a child, a parent, a spouse — who may well have no account
+ * at all. A family trip needs the second without needing the first.
+ */
+export type ItinTraveler = {
+  id: string;
+  name: string;
+  kind?: "adult" | "child" | "infant";
+  /** Passport notes, seat preference, dietary needs — whatever matters. */
+  notes?: string;
+};
+
 export type Itinerary = {
   title: string;
+  /** Superseded by `travelers`; kept so older saved trips still read. */
   travelerName?: string;
+  travelers?: ItinTraveler[];
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   flights: ItinFlight[];
@@ -65,6 +85,16 @@ export type Itinerary = {
    * from the routing service. Used instead of the straight-line estimate.
    */
   roadTimes?: Record<string, number>;
+  /**
+   * Which engine produced each road time. "google" is a traffic-aware Google
+   * Routes answer — the number Google Maps itself would give. "osrm" is the
+   * open router, which assumes empty roads and so runs optimistic. Kept so the
+   * planner can label the two differently instead of passing an estimate off
+   * as a Maps time.
+   */
+  roadTimeSources?: Record<string, "google" | "osrm">;
+  /** When the traveler gets going each morning, HH:MM. Drives arrival times. */
+  dayStartTime?: string;
   notes?: string;
   updatedAt?: string;
 };
@@ -75,7 +105,40 @@ export function travelLegKey(from?: string, to?: string): string {
 }
 
 export function emptyItinerary(): Itinerary {
-  return { title: "My trip", travelerName: "", startDate: "", endDate: "", flights: [], lodging: [], activities: [], notes: "" };
+  return { title: "My trip", travelerName: "", travelers: [], startDate: "", endDate: "", flights: [], lodging: [], activities: [], notes: "" };
+}
+
+// ---- Travelers -------------------------------------------------------
+
+/**
+ * The people on this trip. Trips saved before the planner could hold more than
+ * one name kept a single `travelerName`; that is read as the first traveler so
+ * nobody's existing itinerary loses the name they typed.
+ */
+export function travelersOf(itin: Itinerary): ItinTraveler[] {
+  if (itin.travelers?.length) return itin.travelers;
+  const legacy = itin.travelerName?.trim();
+  return legacy ? [{ id: "legacy-traveler", name: legacy, kind: "adult" }] : [];
+}
+
+export function travelerCount(itin: Itinerary): number {
+  return travelersOf(itin).length;
+}
+
+/** "Sarah, Dovid and 2 children" — for the header and the printed itinerary. */
+export function travelerSummary(itin: Itinerary): string {
+  const people = travelersOf(itin);
+  if (!people.length) return "";
+  const adults = people.filter((p) => (p.kind ?? "adult") === "adult");
+  const children = people.filter((p) => p.kind === "child");
+  const infants = people.filter((p) => p.kind === "infant");
+  const names = adults.map((p) => p.name).filter(Boolean);
+  const parts: string[] = [];
+  if (names.length === 1) parts.push(names[0]);
+  else if (names.length > 1) parts.push(`${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`);
+  if (children.length) parts.push(`${children.length} ${children.length === 1 ? "child" : "children"}`);
+  if (infants.length) parts.push(`${infants.length} ${infants.length === 1 ? "infant" : "infants"}`);
+  return parts.join(", ");
 }
 
 // ---- Date helpers (UTC-noon to dodge DST/timezone drift) --------------
@@ -137,6 +200,14 @@ export type DayActivity = ItinActivity & {
   travelMinutesFromPrev: number | null;
   /** True when the time came from real road routing, not the estimate. */
   travelIsMeasured?: boolean;
+  /** Which engine produced it — see Itinerary.roadTimeSources. */
+  travelSource?: "google" | "osrm";
+  /** Worked-out clock time the traveler reaches this stop, HH:MM. */
+  arrivalTime?: string;
+  /** …and leaves it. */
+  departureTime?: string;
+  /** True when the schedule only works by arriving after the stated start time. */
+  arrivesLate?: boolean;
 };
 
 export type ItineraryDay = {
@@ -153,20 +224,35 @@ export type ItineraryDay = {
   travelHours: number;
   /** Every ground leg of the day, in order — airport/hotel transfers included. */
   travelLegs: TravelLeg[];
+  /** Where the day begins — last night's hotel, or the airport you landed at. */
+  startsFrom?: string;
+  /** Clock time the day begins, HH:MM. */
+  startTime?: string;
+  /** Clock time the traveler is back at the hotel / at the airport. */
+  endTime?: string;
+  /** The flight the traveler spends this night on, if any. */
+  overnightFlight?: ItinFlight | null;
 };
 
 const USABLE_DAY_HOURS = 14; // 8am–10pm planning window
 const DEFAULT_ACTIVITY_HOURS = 1.5;
+const DEFAULT_DAY_START_MINS = 8 * 60; // 08:00 unless the traveler says otherwise
+const LATE_FINISH_MINS = 21 * 60; // a day ending after 21:00 is worth flagging
 const FREE_HOURS_THRESHOLD = 4; // flag a day with this many free hours overall
 const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
 
 // --- Travel-time estimate ---------------------------------------------
+// The last-resort figure, used only when routing could not be reached at all.
 // Roads are never straight, so scale the straight-line distance up, then apply
 // a speed that reflects the trip type (short hops are slow town driving; long
 // legs run closer to highway speed), plus a fixed allowance for parking and
-// getting going. This is a planning ESTIMATE — the day cards link to Google
-// Maps for the exact live driving time.
-const ROAD_DETOUR_FACTOR = 1.3;
+// getting going.
+//
+// The speeds below are deliberately on the cautious side. An estimate that runs
+// slightly long costs a traveler nothing; one that runs short hands them free
+// hours that do not exist and a kever they arrive at after it has closed. Every
+// number derived from this is shown with a "≈" and never called a Maps time.
+const ROAD_DETOUR_FACTOR = 1.35;
 const TRANSFER_OVERHEAD_MINS = 10;
 // Beyond this, an airport isn't a ground transfer for the day — it's the other
 // end of a flight (guards against "driving" from Krakow to JFK).
@@ -176,7 +262,8 @@ export function estimateTravelMinutes(straightLineKm: number | null): number | n
   if (straightLineKm === null || !Number.isFinite(straightLineKm)) return null;
   if (straightLineKm <= 0.05) return 0; // same spot
   const roadKm = straightLineKm * ROAD_DETOUR_FACTOR;
-  const kmh = roadKm < 5 ? 25 : roadKm < 25 ? 45 : roadKm < 100 ? 70 : 85;
+  // Town crawl, rural road, cross-country road, motorway.
+  const kmh = roadKm < 5 ? 22 : roadKm < 25 ? 38 : roadKm < 100 ? 58 : 88;
   return Math.round((roadKm / kmh) * 60 + TRANSFER_OVERHEAD_MINS);
 }
 
@@ -211,12 +298,64 @@ export type TravelLeg = {
   toCoordinates?: string;
   /** True when the time is a real road time rather than an estimate. */
   measured?: boolean;
+  /** Which engine produced it — see Itinerary.roadTimeSources. */
+  source?: "google" | "osrm";
 };
 
 function timeToMins(t?: string): number | null {
   const m = t && /^(\d{1,2}):(\d{2})$/.exec(t);
   if (!m) return null;
   return Number(m[1]) * 60 + Number(m[2]);
+}
+
+function minsToTime(mins: number): string {
+  const wrapped = ((Math.round(mins) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(wrapped / 60)).padStart(2, "0")}:${String(wrapped % 60).padStart(2, "0")}`;
+}
+
+/**
+ * The date a flight actually lands.
+ *
+ * `arriveDate` is optional and almost nobody fills it in, so a red-eye used to
+ * be listed as arriving on the day it left. When the arrival time is at or
+ * before the departure time the flight crossed midnight, and that is enough to
+ * place it on the following day. A late departure with no arrival time is left
+ * alone — we know the night is spent aboard, but not what day it lands, and
+ * guessing a date would put the landing on the wrong page.
+ */
+export function flightArrivalDate(flight: ItinFlight): string {
+  if (flight.arriveDate) return flight.arriveDate;
+  const depart = timeToMins(flight.departTime);
+  const arrive = timeToMins(flight.arriveTime);
+  if (depart !== null && arrive !== null && arrive <= depart) return nextDate(flight.date);
+  return flight.date;
+}
+
+/**
+ * The flight that carries the traveler through the night that begins on
+ * `date`, if there is one.
+ *
+ * A red-eye is a place to sleep. The planner used to notice this only when the
+ * traveler had filled in an arrival DATE, which almost nobody does — so an
+ * overnight flight still drew "No place to sleep this night". Now the arrival
+ * time is enough: landing at or before the hour you left means you landed the
+ * next day, and a departure late in the evening means the night is spent in
+ * the air either way.
+ */
+export function overnightFlightFor(itin: Itinerary, date: string): ItinFlight | null {
+  const LATE_DEPARTURE_MINS = 21 * 60; // 21:00
+  for (const flight of itin.flights) {
+    if (flight.date !== date) continue;
+    // Stated outright: it lands on a later date.
+    if (flight.arriveDate && flight.arriveDate > flight.date) return flight;
+    const depart = timeToMins(flight.departTime);
+    const arrive = timeToMins(flight.arriveTime);
+    // Lands at or before the hour it left — it crossed midnight.
+    if (depart !== null && arrive !== null && arrive <= depart) return flight;
+    // Leaves late enough that the night is spent aboard.
+    if (depart !== null && depart >= LATE_DEPARTURE_MINS) return flight;
+  }
+  return null;
 }
 
 /** The lodging covering the night that begins on `date` (you sleep here). */
@@ -258,6 +397,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const dayActs = sortDayActivities(itin.activities.filter((a) => a.date === date));
     // Prefer a real measured road time when we have one for this leg.
     const roadMinutes = (from?: string, to?: string) => itin.roadTimes?.[travelLegKey(from, to)];
+    const roadSource = (from?: string, to?: string) => itin.roadTimeSources?.[travelLegKey(from, to)];
     const withDistance: DayActivity[] = dayActs.map((a, i) => {
       if (i === 0) return { ...a, distanceFromPrev: null, travelMinutesFromPrev: null };
       const prev = dayActs[i - 1];
@@ -268,11 +408,12 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         distanceFromPrev,
         travelMinutesFromPrev: measured ?? estimateTravelMinutes(distanceFromPrev),
         travelIsMeasured: measured !== undefined,
+        travelSource: roadSource(prev.coordinates, a.coordinates),
       };
     });
 
     const flightsDeparting = itin.flights.filter((f) => f.date === date);
-    const flightsArriving = itin.flights.filter((f) => (f.arriveDate ?? f.date) === date);
+    const flightsArriving = itin.flights.filter((f) => flightArrivalDate(f) === date);
     const lodging = lodgingForNight(itin, date);
     const isLastDay = index === dates.length - 1;
 
@@ -306,7 +447,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       const measured = roadMinutes(from, to);
       const minutes = measured ?? estimateTravelMinutes(km);
       if (km === null || minutes === null || minutes <= 0) return null;
-      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined };
+      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined, source: roadSource(from, to) };
     };
 
     const travelLegs: TravelLeg[] = [];
@@ -328,6 +469,8 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         km: a.distanceFromPrev,
         fromCoordinates: withDistance[i - 1].coordinates,
         toCoordinates: a.coordinates,
+        measured: a.travelIsMeasured,
+        source: a.travelSource,
       });
     });
     if (lastStop) {
@@ -344,10 +487,71 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const travelMins = travelLegs.reduce((sum, l) => sum + l.minutes, 0);
     const travelHours = Math.round((travelMins / 60) * 10) / 10;
 
+    // --- What time you actually get there --------------------------------
+    // Roll a clock forward from the moment the day starts: leave the hotel (or
+    // the airport you landed at), drive, arrive, spend time at the stop, drive
+    // on. A stop with its own start time holds the clock until then — you wait
+    // rather than arrive early — and if the drive means you cannot make it,
+    // the arrival is marked late instead of being quietly moved.
+    const startsFrom = arrivalAirport
+      ? `airport ${arrivalAirportLabel ?? ""}`.trim()
+      : prevNightLodging
+        ? prevNightLodging.name || "last night's hotel"
+        : undefined;
+    // You cannot set off before you have landed. When the day begins at an
+    // airport, it begins when the plane does — not at the traveler's usual
+    // morning hour.
+    const landedAt = arrivalAirport
+      ? flightsArriving.map((f) => timeToMins(f.arriveTime)).filter((v): v is number => v !== null).sort((a, b) => a - b)[0] ?? null
+      : null;
+    const dayStart = Math.max(timeToMins(itin.dayStartTime) ?? DEFAULT_DAY_START_MINS, landedAt ?? 0);
+    let clock = dayStart;
+    const openingLeg = travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging");
+    if (openingLeg) clock += openingLeg.minutes;
+
+    withDistance.forEach((a, i) => {
+      if (i > 0) clock += a.travelMinutesFromPrev ?? 0;
+      const stated = timeToMins(a.startTime);
+      if (stated !== null) {
+        a.arrivesLate = clock > stated;
+        // Waiting is fine; being late is not, and pretending otherwise would
+        // make every later stop on the day wrong too.
+        clock = Math.max(clock, stated);
+      }
+      a.arrivalTime = minsToTime(clock);
+      clock += a.durationMins ?? DEFAULT_ACTIVITY_HOURS * 60;
+      a.departureTime = minsToTime(clock);
+    });
+    const closingLeg = travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport");
+    if (closingLeg) clock += closingLeg.minutes;
+    const dayEnd = clock;
+
     const warnings: string[] = [];
+    // A red-eye IS the night's accommodation.
+    const overnightFlight = overnightFlightFor(itin, date);
     // Missing place to sleep (skip the last day — you usually fly home).
-    if (!lodging && !isLastDay && !flightsDeparting.some((f) => (f.arriveDate ?? f.date) !== f.date)) {
+    if (!lodging && !isLastDay && !overnightFlight) {
       warnings.push("No place to sleep this night — add a hotel, or mark an overnight bus/flight.");
+    }
+    if (landedAt !== null && withDistance.length) {
+      // Deliberately not folded into the clock: how long a border, baggage and
+      // a car-hire desk take varies far too much to put a number on, and an
+      // invented one would be worse than none.
+      warnings.push(
+        `This day starts from the airport at ${minsToTime(dayStart)}, the moment the flight lands — it does not include clearing passport control, baggage, or collecting a car. Add that time yourself before relying on the arrival times below.`,
+      );
+    }
+    if (withDistance.length) {
+      const late = withDistance.filter((a) => a.arrivesLate);
+      if (late.length) {
+        warnings.push(
+          `Running late: leaving at ${minsToTime(dayStart)} you reach ${late[0].name} after its ${late[0].startTime} start. Start earlier, drop a stop, or move it to another day.`,
+        );
+      } else if (dayEnd > LATE_FINISH_MINS) {
+        warnings.push(
+          `This day finishes around ${minsToTime(dayEnd)} — later than most kevarim and hotels expect. Consider starting earlier or moving a stop.`,
+        );
+      }
     }
     const travelDay = flightsDeparting.length > 0 || flightsArriving.length > 0;
     const isEmpty = dayActs.length === 0 && !travelDay;
@@ -398,6 +602,25 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       );
     }
 
+    // A day that crosses a border. No routing engine — Google Maps included —
+    // puts the queue at the crossing into its driving time, and on the frontiers
+    // this site sends people over that queue is routinely the longest part of
+    // the day. Flag it rather than fold a made-up number into the total.
+    const crossings: string[] = [];
+    for (let i = 1; i < dayActs.length; i += 1) {
+      const from = dayActs[i - 1].country?.trim();
+      const to = dayActs[i].country?.trim();
+      if (from && to && from !== to) {
+        const pair = `${from} → ${to}`;
+        if (!crossings.includes(pair)) crossings.push(pair);
+      }
+    }
+    if (crossings.length) {
+      warnings.push(
+        `This day crosses a border (${crossings.join(", ")}). The driving times below do not include waiting at the crossing, which can add anywhere from minutes to several hours — check the current wait before you commit to the day's timings.`,
+      );
+    }
+
     if (isEmpty) {
       warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
     } else if (committed > USABLE_DAY_HOURS) {
@@ -420,6 +643,10 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       freeHours,
       travelHours,
       travelLegs,
+      startsFrom,
+      startTime: minsToTime(dayStart),
+      endTime: withDistance.length ? minsToTime(dayEnd) : undefined,
+      overnightFlight,
     };
   });
 }

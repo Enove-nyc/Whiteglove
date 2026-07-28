@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 
+type LogEntry = { at: string; kind: string; to: string; ok: boolean; status?: number; error?: string; sandboxRestricted?: boolean };
 type Config = {
   apiKeySet?: boolean;
   from?: string;
   usingTestSender?: boolean;
+  inbox?: string;
   editsInbox?: string;
   contactInbox?: string;
-  editsInboxFromEnv?: boolean;
-  contactInboxFromEnv?: boolean;
+  inboxesSplit?: boolean;
+  inboxFromEnv?: boolean;
   lastFailure?: { at: string; to: string; error?: string; status?: number } | null;
+  log?: LogEntry[];
+  logAvailable?: boolean;
 };
 type Result = { ok?: boolean; to?: string; status?: number; id?: string; error?: string; sandboxRestricted?: boolean; config?: Config };
 
@@ -66,14 +70,26 @@ export default function EmailDeliveryTest() {
               {config.usingTestSender ? " — sandbox sender" : ""}
             </dd>
           </div>
-          <div>
-            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact forms go to</dt>
-            <dd className="text-stone-700">{config.contactInbox}</dd>
-          </div>
-          <div>
-            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Edit suggestions go to</dt>
-            <dd className="text-stone-700">{config.editsInbox}</dd>
-          </div>
+          {config.inboxesSplit ? (
+            <>
+              <div>
+                <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact forms go to</dt>
+                <dd className="text-stone-700">{config.contactInbox}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Everything else goes to</dt>
+                <dd className="text-stone-700">{config.editsInbox}</dd>
+              </div>
+            </>
+          ) : (
+            <div className="sm:col-span-2">
+              <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Everything arrives at</dt>
+              <dd className="text-stone-700">
+                {config.inbox}
+                <span className="ml-2 text-xs text-stone-500">contact form, edit suggestions and listings — one inbox</span>
+              </dd>
+            </div>
+          )}
         </dl>
       )}
 
@@ -90,11 +106,13 @@ export default function EmailDeliveryTest() {
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button type="button" onClick={() => test("contact")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
-          {busy === "contact" ? "Sending…" : "Send test to contact@"}
+          {busy === "contact" ? "Sending…" : `Send a test to ${config?.inbox ?? "your inbox"}`}
         </button>
-        <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
-          {busy === "edits" ? "Sending…" : "Send test to edits@"}
-        </button>
+        {config?.inboxesSplit && (
+          <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
+            {busy === "edits" ? "Sending…" : "Send a test to the other inbox"}
+          </button>
+        )}
       </div>
 
       {result && (
@@ -116,11 +134,31 @@ export default function EmailDeliveryTest() {
         </div>
       )}
 
-      {!result && config?.lastFailure && (
-        <p className="mt-4 text-xs text-stone-500">
-          Last recorded failure — {new Date(config.lastFailure.at).toLocaleString()} to {config.lastFailure.to}: {config.lastFailure.error?.slice(0, 300)}
-        </p>
-      )}
+      {/* Real sends, from every route. A test can succeed while the contact
+          form quietly fails, and until this existed there was nowhere that
+          difference showed up: each serverless instance only remembered its
+          own sends, so the dashboard never saw what /api/contact did. */}
+      <div className="mt-8 border-t border-[var(--gold-light)] pt-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Recent messages the site actually tried to send</p>
+        {!config?.logAvailable ? (
+          <p className="mt-2 text-sm text-stone-500">
+            Needs the shared store (UPSTASH_REDIS_REST_URL / _TOKEN) to keep a history — without it, each request is forgotten as soon as it finishes.
+          </p>
+        ) : config?.log?.length ? (
+          <ul className="mt-3 space-y-2">
+            {config.log.slice(0, 12).map((e, i) => (
+              <li key={i} className={`border-l-4 px-3 py-2 text-sm leading-6 ${e.ok ? "border-emerald-300 bg-emerald-50/60 text-emerald-900" : "border-red-400 bg-red-50 text-red-900"}`}>
+                <span className="font-semibold">{e.ok ? "Sent" : "Failed"}</span>
+                {" · "}{e.kind}{" → "}<code className={code}>{e.to}</code>
+                <span className="ml-2 text-xs opacity-70">{new Date(e.at).toLocaleString()}</span>
+                {e.error && <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words text-xs">{e.error.slice(0, 400)}</pre>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-stone-500">Nothing sent yet. Submit the contact form, or send a test above, and it will appear here.</p>
+        )}
+      </div>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import SubBrandBanner from "@/components/SubBrand";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import SectionHeading from "@/components/SectionHeading";
@@ -64,6 +65,7 @@ export default function LizenskPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      <SubBrandBanner />
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl"><p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Featured destination · Poland</p><h1 dir="rtl" className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">ליזענסק</h1><p className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-stone-500 sm:text-4xl">Lizhensk</p><p className="mt-5 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Journey to the Noam Elimelech</p><p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">A practical, respectful guide to Lizhensk—designed around your tefillos and every essential detail of the visit.</p>
           <div className="mt-12 grid border-y border-[var(--gold-light)] sm:grid-cols-3"><a href="#tefillos" className="border-b border-[var(--gold-light)] px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-b-0 sm:border-r">Tefillos & preparation</a><a href="#essentials" className="border-b border-[var(--gold-light)] px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-b-0 sm:border-r">Food, minyan & mikvah</a><a href="#contacts" className="px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Contacts & transport</a></div>

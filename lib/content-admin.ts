@@ -290,6 +290,86 @@ export async function createBurial(fields: NewBurialFields) {
   });
 }
 
+// ---- Shomer / access contacts on a beis hachaim -----------------------
+//
+// The 97 built-in batei hachaim live in code and have no database row, so a
+// contact had nowhere to attach and their phone numbers could never be
+// corrected. Saving one now creates a stub row for that slug on demand; the
+// public page layers stored contacts over the built-in ones (see
+// lib/cemeteries-view.ts), so re-saving a label replaces that number.
+
+export type CemeteryContactFields = {
+  label: string;
+  phone: string | null;
+  email: string | null;
+  note: string | null;
+};
+
+/**
+ * The database row for a cemetery slug, created if this is a built-in one that
+ * has never been edited. Only the fields needed to satisfy the schema are set —
+ * everything the traveler sees still comes from the built-in record.
+ */
+async function cemeteryRowForSlug(slug: string, fallback: { city: string; yiddishCity: string; name: string; yiddishName: string; country: string }) {
+  const prisma = await db();
+  const existing = await prisma.cemetery.findUnique({ where: { slug }, select: { id: true } });
+  if (existing) return existing;
+  return prisma.cemetery.create({
+    data: {
+      slug,
+      city: fallback.city,
+      yiddishCity: fallback.yiddishCity,
+      name: fallback.name,
+      yiddishName: fallback.yiddishName,
+      country: fallback.country,
+      status: "NEEDS_VERIFICATION",
+    },
+    select: { id: true },
+  });
+}
+
+/** Contacts already stored for a cemetery slug (empty for an untouched one). */
+export async function listCemeteryContacts(slug: string) {
+  const prisma = await db();
+  const row = await prisma.cemetery.findUnique({
+    where: { slug },
+    select: { contacts: { orderBy: { label: "asc" }, select: { id: true, label: true, phone: true, email: true, note: true } } },
+  });
+  return row?.contacts ?? [];
+}
+
+/**
+ * Save a contact for a cemetery. Matching an existing stored label updates it
+ * rather than adding a second one, which is what makes this an edit.
+ */
+export async function saveCemeteryContact(
+  slug: string,
+  fallback: { city: string; yiddishCity: string; name: string; yiddishName: string; country: string },
+  fields: CemeteryContactFields,
+) {
+  const prisma = await db();
+  const cemetery = await cemeteryRowForSlug(slug, fallback);
+  const existing = await prisma.contact.findFirst({
+    where: { cemeteryId: cemetery.id, label: { equals: fields.label.trim(), mode: "insensitive" } },
+    select: { id: true },
+  });
+  const data = {
+    label: fields.label.trim(),
+    phone: fields.phone?.trim() || null,
+    email: fields.email?.trim() || null,
+    note: fields.note?.trim() || null,
+    status: "NEEDS_VERIFICATION" as const,
+  };
+  if (existing) return prisma.contact.update({ where: { id: existing.id }, data });
+  return prisma.contact.create({ data: { ...data, cemeteryId: cemetery.id } });
+}
+
+/** Remove a stored contact. The built-in one, if any, reappears. */
+export async function deleteCemeteryContact(id: string) {
+  const prisma = await db();
+  await prisma.contact.delete({ where: { id } });
+}
+
 export type NewPageFields = {
   title: string;
   body: string;

@@ -1,6 +1,7 @@
 import DestinationCard from "@/components/DestinationCard";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
+import GloveMark, { GloveList } from "@/components/GloveMark";
 import PromotionBanner from "@/components/PromotionBanner";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
@@ -37,10 +38,18 @@ const travelServices = [
 ];
 
 const services = [
-  ["01", "At the kever", "Tefillos, practical preparation, visiting guidance, and the details that help you arrive ready."],
-  ["02", "Kosher essentials", "Food, Shabbos arrangements, minyanim, mikvaos, and the information travelers look for first."],
-  ["03", "People you can reach", "Drivers, local contacts, and important numbers collected in one dependable place."],
-  ["04", "A smoother journey", "Clear travel planning from airport to hotel, so the logistics stay out of the way."],
+  ["At the kever", "Tefillos, practical preparation, visiting guidance, and the details that help you arrive ready."],
+  ["Kosher essentials", "Food, Shabbos arrangements, minyanim, mikvaos, and the information travelers look for first."],
+  ["People you can reach", "Drivers, local contacts, and important numbers collected in one dependable place."],
+  ["A smoother journey", "Clear travel planning from airport to hotel, so the logistics stay out of the way."],
+];
+
+// What "white glove" actually means on this site, said plainly.
+const promise = [
+  "Kevarim we have verified — never an address we guessed at.",
+  "Coordinates that open the pin in Google Maps, not the nearest street.",
+  "Driving times taken from real road routing, so a day's plan holds up.",
+  "Kosher food, minyanim and mikvaos found around your route, not the other way round.",
 ];
 
 export default async function Home() {
@@ -135,9 +144,9 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl">
         <SectionHeading centered eyebrow="The White Glove way" title="The essentials, thoughtfully gathered." description="Practical, respectful guidance for a journey with purpose." />
           <div className="mt-14 grid gap-x-10 gap-y-8 md:grid-cols-2">
-            {services.map(([number, title, description]) => (
-              <div key={number} className="flex gap-5 border-t border-[var(--gold-light)] pt-6">
-                <span className="pt-1 text-xs font-bold tracking-[0.14em] text-[var(--gold)]">{number}</span>
+            {services.map(([title, description]) => (
+              <div key={title} className="flex gap-5 border-t border-[var(--gold-light)] pt-6">
+                <GloveMark size="md" className="mt-1" />
                 <div><h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{title}</h3><p className="mt-2 leading-7 text-stone-600">{description}</p></div>
               </div>
             ))}
@@ -147,7 +156,11 @@ export default async function Home() {
 
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="grid gap-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 sm:p-12 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
-          <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Our promise</p><h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">The details should never distract from the reason you came.</h2></div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Our promise</p>
+            <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">The details should never distract from the reason you came.</h2>
+            <GloveList items={promise} className="mt-8 space-y-3 leading-7 text-stone-600" />
+          </div>
           <p className="border-l border-[var(--gold)] pl-6 text-lg leading-8 text-stone-600">We gather the essentials in one calm, dependable guide, leaving you free to focus on your tefillos and the meaning of the journey.</p>
         </div>
       </section>

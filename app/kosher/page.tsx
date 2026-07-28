@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import GloveMark from "@/components/GloveMark";
 import KosherFinder from "@/components/KosherFinder";
 import Navbar from "@/components/Navbar";
 
@@ -14,7 +15,7 @@ export default function KosherPage() {
       <Navbar />
       <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Kosher, everywhere you go</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]"><GloveMark size="xs" />Kosher, everywhere you go</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Find kosher food anywhere.</h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
             Search any city and see kosher restaurants, bakeries, butchers, and groceries nearby — pulled live from OpenStreetMap&apos;s worldwide map data. Open any one straight to its exact spot in Maps, call it, or add it to your trip.

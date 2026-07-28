@@ -3,9 +3,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
-import { cityGuides } from "@/data/city-guides";
-import { bulkDestinations } from "@/data/bulk-destinations";
-import { sacredStops } from "@/data/sacred-stops";
+import { destinationHref, guidedDestinations, unguidedDestinations } from "@/data/destinations";
+import { cemeteries } from "@/data/cemeteries";
 import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
 
 type SearchMatch = {
@@ -30,24 +29,24 @@ const featuredMatches: SearchMatch[] = [
     href: "/lizensk",
     kind: "Guide",
   },
-  ...cityGuides.map((guide) => ({
+  ...guidedDestinations().map((guide) => ({
     id: guide.slug,
     title: guide.city,
     yiddish: guide.yiddishCity,
-    subtitle: `${guide.tzaddik} - ${guide.country}`,
-    yiddishSubtitle: guide.yiddishTzaddik,
+    subtitle: `${guide.guide?.tzaddik ?? guide.city} - ${guide.country}`,
+    yiddishSubtitle: guide.guide?.yiddishTzaddik,
     aliases: guide.aliases,
-    href: `/${guide.slug}`,
+    href: destinationHref(guide),
     kind: "Guide" as const,
   })),
-  ...bulkDestinations.map((destination) => ({
+  ...unguidedDestinations().map((destination) => ({
     id: `directory-${destination.slug}`,
     title: destination.city,
     yiddish: destination.yiddishCity,
     subtitle: `${destination.country} - Directory entry`,
     yiddishSubtitle: undefined,
     aliases: destination.aliases,
-    href: `/destinations/${destination.slug}`,
+    href: destinationHref(destination),
     kind: "Location" as const,
   })),
 ];
@@ -64,16 +63,18 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
     const guideMatches = featuredMatches.filter((match) =>
       fuzzyMatch(normalized, `${match.title} ${match.yiddish} ${match.subtitle} ${match.aliases?.join(" ") ?? ""} ${extraSpellings([match.id, match.title])}`),
     );
-    const stopMatches = sacredStops
-      .filter((stop) => fuzzyMatch(normalized, `${stop.city} ${stop.traditionalName ?? ""} ${stop.yiddishName} ${stop.country} ${stop.address} ${stop.aliases?.join(" ") ?? ""} ${extraSpellings([stop.city, stop.traditionalName])}`))
-      .map((stop) => ({
-        id: `stop-${stop.city}-${stop.address}`,
-        title: stop.city,
-        yiddish: stop.yiddishName,
-        subtitle: `${stop.traditionalName ? `${stop.traditionalName} - ` : ""}${stop.country}`,
+    // Kevarim come straight from the cemetery database, so a search lands on
+    // the beis hachaim page itself rather than back on a filtered list.
+    const stopMatches = cemeteries
+      .filter((c) => fuzzyMatch(normalized, `${c.city} ${c.yiddishCity} ${c.name} ${c.yiddishName} ${c.country} ${extraSpellings([c.slug, c.city])}`))
+      .map((c) => ({
+        id: `cemetery-${c.slug}`,
+        title: c.city,
+        yiddish: c.yiddishCity,
+        subtitle: c.country,
         yiddishSubtitle: undefined,
-        href: `/stops?q=${encodeURIComponent(stop.city)}`,
-        kind: "Location" as const,
+        href: `/cemeteries/${c.slug}`,
+        kind: "Beis hachaim" as const,
       }));
 
     return [...guideMatches, ...stopMatches.filter((stop) => !guideMatches.some((guide) => guide.title === stop.title))].slice(0, 6);

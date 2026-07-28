@@ -5,12 +5,10 @@
 
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
-import { bulkDestinations } from "@/data/bulk-destinations";
 import { cemeteries } from "@/data/cemeteries";
-import { cityGuides } from "@/data/city-guides";
+import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 import { directoryProviders } from "@/data/directory";
 import { practicalContent } from "@/data/practical-content";
-import { sacredStops } from "@/data/sacred-stops";
 
 function slugify(value: string) {
   return value
@@ -38,7 +36,8 @@ export function buildSeedRows(): SeedRows {
   const slugToDestId = new Map<string, string>();
 
   // City guides — rich records with a primary tzaddik + access contacts.
-  for (const g of cityGuides) {
+  for (const { guide: g } of guidedDestinations()) {
+    if (!g) continue;
     const id = randomUUID();
     slugToDestId.set(g.slug, id);
     destinations.push({
@@ -85,7 +84,7 @@ export function buildSeedRows(): SeedRows {
   }
 
   // Bulk destinations — compact entries (skip slugs a guide already owns).
-  for (const b of bulkDestinations) {
+  for (const b of unguidedDestinations()) {
     if (slugToDestId.has(b.slug)) continue;
     const id = randomUUID();
     slugToDestId.set(b.slug, id);
@@ -98,25 +97,6 @@ export function buildSeedRows(): SeedRows {
       country: b.country,
       aliases: b.aliases ?? [],
       summary: b.summary,
-      status: "PUBLISHED",
-    });
-  }
-
-  // Sacred stops — waypoints not already covered.
-  for (const s of sacredStops) {
-    const slug = slugify(s.city);
-    if (slugToDestId.has(slug)) continue;
-    const id = randomUUID();
-    slugToDestId.set(slug, id);
-    destinations.push({
-      id,
-      slug,
-      kind: "SACRED_STOP",
-      city: s.city,
-      yiddishCity: s.yiddishName,
-      country: s.country,
-      aliases: s.aliases ?? (s.traditionalName ? [s.traditionalName] : []),
-      summary: s.note ?? null,
       status: "PUBLISHED",
     });
   }

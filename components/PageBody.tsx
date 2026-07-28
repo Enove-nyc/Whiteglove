@@ -38,7 +38,7 @@ export default function PageBody({ body, className }: { body: string; className?
             <h2 className="mt-8 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{block.text}</h2>
           )}
           {block.kind === "list" && (
-            <ul className="mt-3 list-disc space-y-2 pl-5">
+            <ul className="glove-list mt-3 space-y-2">
               {block.items.map((item, itemIndex) => (
                 <li key={itemIndex}>{item}</li>
               ))}

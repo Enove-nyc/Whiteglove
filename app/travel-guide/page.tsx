@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-guide";
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
@@ -36,7 +37,7 @@ export default async function TravelGuidePage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Before you travel</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]"><GloveMark size="xs" />Before you travel</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Travel guide</h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
             Entry documents, live government safety advisories, and how to pay for the trip. The advisory levels below update automatically from the U.S. State Department.
@@ -51,7 +52,7 @@ export default async function TravelGuidePage() {
 
       {/* ---- Live advisories ---- */}
       <section id="advisories" className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Live · U.S. State Department</p>
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Live · U.S. State Department</p>
         <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Safety advisories</h2>
         {feed.available ? (
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
@@ -88,7 +89,7 @@ export default async function TravelGuidePage() {
       {/* ---- Documents ---- */}
       <section id="documents" className="border-y border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-14 sm:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Passports, visas &amp; entry</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Passports, visas &amp; entry</p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Documents</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
             Entry rules depend on the passport you hold and change without warning, so we don&apos;t restate them here — a wrong answer can leave you at a border. Below is what to check, and the official source for each country we travel to.
@@ -144,7 +145,7 @@ export default async function TravelGuidePage() {
 
       {/* ---- Paying ---- */}
       <section id="paying" className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Points &amp; money</p>
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Points &amp; money</p>
         <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Paying for the trip</h2>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
           General practice for using points and cards well. Program rules and transfer partners change often — always confirm current terms with your own card and airline programs before moving points.

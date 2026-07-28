@@ -46,13 +46,13 @@ export default function AirportAutocomplete({
         className={className}
       />
       {open && matches.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold-light)] bg-white shadow-lg">
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {matches.map((a) => (
             <li key={a.code}>
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); const label = `${a.city} (${a.code})`; setQuery(label); onChange(label); setOpen(false); }}
-                className="block w-full px-3 py-2 text-left text-sm font-normal normal-case tracking-normal text-stone-700 hover:bg-[var(--cream)]"
+                className="block w-full px-3 py-2 text-left text-sm font-normal normal-case tracking-normal text-stone-700 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
               >
                 {a.city} — {a.name} <strong className="text-[var(--navy)]">({a.code})</strong>
               </button>

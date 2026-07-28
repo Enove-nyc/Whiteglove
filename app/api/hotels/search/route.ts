@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cityGuides, getCityGuide } from "@/data/city-guides";
+import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { getDestinationRecord } from "@/data/destination-database";
 
 export async function POST(request: Request) {

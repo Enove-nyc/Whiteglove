@@ -3,12 +3,18 @@
 // spells it differently — via a spelling database plus fuzzy (typo) matching.
 
 // Strip accents/punctuation and lowercase, so "Sátoraljaújhely" ~ "satoraljaujhely".
+//
+// Hebrew and Yiddish letters are kept. Stripping them left a Yiddish query as
+// an empty string, and an empty query matches everything — so searching
+// "ליזענסק" silently returned the entire directory rather than Lizhensk.
+const HEBREW = "\\u0590-\\u05ff\\ufb1d-\\ufb4f"; // Hebrew block + presentation forms
+
 export function normalize(value: string): string {
   return value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(new RegExp(`[^a-z0-9${HEBREW}\\s]`, "g"), " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -152,7 +158,12 @@ export function fuzzyMatch(query: string, haystack: string): boolean {
   return qTokens.every((qt) => {
     if (qt.length < 3) return hTokens.some((ht) => ht.startsWith(qt));
     return hTokens.some((ht) => {
-      if (ht.includes(qt) || qt.includes(ht)) return true;
+      if (ht.includes(qt)) return true;
+      // The reverse — a haystack word sitting inside the query — is only
+      // meaningful for a real word. Allowing any length matched everything:
+      // "on" is a substring of "zzzznonsense", and "on" appears in almost
+      // every description, so nonsense queries returned results.
+      if (ht.length >= 4 && qt.includes(ht)) return true;
       return editDistance(qt, ht) <= maxDistanceFor(qt);
     });
   });

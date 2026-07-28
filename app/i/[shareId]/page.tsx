@@ -2,7 +2,7 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
-import { buildDays, emptyItinerary, formatKm } from "@/data/itinerary";
+import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{itin.title || "A trip"}</h1>
           <p className="mt-2 text-sm text-stone-600">
             Shared by <strong className="text-[var(--navy)]">{sharedByName}</strong>
-            {itin.travelerName ? <> · for {itin.travelerName}</> : null}
+            {travelerSummary(itin) ? <> · for {travelerSummary(itin)}</> : null}
             {itin.startDate && itin.endDate ? <> · {itin.startDate} → {itin.endDate}</> : null}
           </p>
           <SharedItineraryActions itinerary={itin} />

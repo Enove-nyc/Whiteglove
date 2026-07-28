@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import GloveMark from "@/components/GloveMark";
 import InquiryForm from "@/components/InquiryForm";
 import KosherFinder from "@/components/KosherFinder";
 import Navbar from "@/components/Navbar";
@@ -42,7 +43,7 @@ export default async function HoneymoonPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{page.eyebrow}</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]"><GloveMark size="xs" />{page.eyebrow}</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">{page.title}</h1>
           <PageBody body={page.body} className="mt-7 max-w-2xl text-lg leading-8 text-stone-600" />
         </div>
@@ -62,7 +63,7 @@ export default async function HoneymoonPage() {
       {/* Curated destination ideas */}
       <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-16 sm:px-8">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Where to go</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Where to go</p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Kosher-friendly honeymoon destinations</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Ideas to start from — every one has kosher food you can plan around. Use the finder below to see real kosher places in any city you&apos;re considering.</p>
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -79,7 +80,7 @@ export default async function HoneymoonPage() {
 
       {/* Sample plans */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Sample plans</p>
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Sample plans</p>
         <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">A shape to start from</h2>
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
           {honeymoonPlans.map((plan) => (
@@ -101,7 +102,7 @@ export default async function HoneymoonPage() {
       {/* Live kosher finder */}
       <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-16 sm:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Kosher wherever you land</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Kosher wherever you land</p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Find kosher food in any city</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">Search a destination you&apos;re considering to see real kosher restaurants and shops nearby.</p>
           <div className="mt-8"><KosherFinder showAddToTrip={false} /></div>
@@ -111,7 +112,7 @@ export default async function HoneymoonPage() {
       <section className="border-y border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-16 sm:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_.95fr]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Request a quote</p>
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]"><GloveMark size="xs" />Request a quote</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Tell us what kind of trip you want.</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
               Tell us your destination ideas, dates, budget, and what matters most — kosher needs, privacy, and the details that make it special — and we&apos;ll plan it end to end.

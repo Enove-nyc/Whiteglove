@@ -1,12 +1,31 @@
 import type { Metadata } from "next";
 import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
+import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "Book flights, hotels & cars — White Glove Itineraries",
-  description: "Search and book flights, hotels, and rental cars for your kosher-travel journey, then keep the rest of your trip organized with White Glove.",
+  title: "Book with cash or with miles — White Glove Itineraries",
+  description: "Book flights, hotels and rental cars for your kosher-travel journey — paying with cash, or with your miles and points — then keep the rest of your trip organized with White Glove.",
 };
+
+const COMPARISON: Array<[string, string, string]> = [
+  [
+    "Flights",
+    "Compare airlines and routes to the towns your trip is built around, and pay by card.",
+    "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
+  ],
+  [
+    "Hotels",
+    "Find kosher-friendly stays near the kever or in the city, for your dates.",
+    "See which chains have a property in town, and whether the points beat the cash rate for that stay.",
+  ],
+  [
+    "Cars",
+    "Arrange a rental for getting between towns and kevarim at your own pace.",
+    "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
+  ],
+];
 
 export default function BookPage() {
   // Affiliate slots — set these env vars once you join the partner programs and
@@ -20,33 +39,57 @@ export default function BookPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
-      <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
-          <div className="min-w-0">
-            <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book flights, hotels &amp; cars</h1>
-            <p className="mt-7 max-w-xl text-lg leading-8 text-stone-600">
-              Everything for the travel side of your journey in one place. Search flights, hotels, and rental cars, then keep your kevarim, shomer details, and guidance together in White Glove.
-            </p>
-            <p className="mt-6 border-l-2 border-[var(--gold)] pl-4 text-sm leading-7 text-stone-600">
-              Each search opens with a trusted partner where you compare options and pay securely. Your itinerary and saved places stay here with White Glove.
+      {/* The search panel is the page. Putting it beside the copy left a
+          column of dead space under the paragraph and squeezed the fields;
+          the heading now sits above it and the panel runs the full width. */}
+      <section className="border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-2xl">
+            <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book with cash, or with miles</h1>
+            <p className="mt-5 text-lg leading-8 text-stone-600">
+              Choose how you&apos;re paying, then book flights, hotels or a rental car — and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="min-w-0"><BookPartners affiliate={affiliate} /></div>
+          <div className="mt-9"><BookPartners affiliate={affiliate} /></div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            ["Flights", "Compare airlines and routes to the destinations that matter for your trip."],
-            ["Hotels", "Find kosher-friendly stays near the kever or in the city, for your dates."],
-            ["Cars", "Arrange a rental for getting between towns and kevarim at your own pace."],
-          ].map(([title, text]) => (
-            <article key={title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{title}</h2>
-              <p className="mt-3 text-sm leading-6 text-stone-600">{text}</p>
-            </article>
+      {/* Cash and points, set side by side per category. Two independent
+          columns of cards never lined up — each card sized to its own text —
+          so the comparison is one grid, where a row is a row by construction. */}
+      {/* Same padding-then-centre order as the hero above, so both sections
+          share one left edge. Putting the padding inside max-w-5xl instead
+          shifted this block 32px in from the panel. */}
+      <section className="px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-5xl">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Cash or points, side by side</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          What each route actually gets you, so you can tell which is worth using before you spend either.
+        </p>
+
+        <div className="mt-8 grid gap-px border border-[var(--gold-light)] bg-[var(--gold-light)]">
+          <div className="hidden bg-[var(--navy)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)] sm:grid sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
+            <span />
+            <span>With cash</span>
+            <span>With miles &amp; points</span>
+          </div>
+          {COMPARISON.map(([category, cash, points]) => (
+            <div key={category} className="grid gap-4 bg-[#fcfaf6] px-5 py-5 sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
+              <h3 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+                <GloveMark size="sm" />
+                {category}
+              </h3>
+              <p className="text-sm leading-6 text-stone-600">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)] sm:hidden">With cash</span>
+                {cash}
+              </p>
+              <p className="text-sm leading-6 text-stone-600">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)] sm:hidden">With miles &amp; points</span>
+                {points}
+              </p>
+            </div>
           ))}
+        </div>
         </div>
       </section>
       <Footer />
