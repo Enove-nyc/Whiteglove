@@ -2,6 +2,7 @@
 
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { type ActionResult, addCemeteryAction, addInfoPageAction } from "@/app/admin/add/actions";
 
@@ -56,7 +57,7 @@ export default function AddEntryForms() {
           Adding a person has its own screen now, so you can pick any beis hachaim on the site — including the
           built-in ones — see who is already listed there, and take someone off again if you add him by mistake.
         </p>
-        <a href="/admin/kevarim" className={`mt-5 inline-block ${submitClass}`}>Open the kevarim screen</a>
+        <Link href="/admin/kevarim" className={`mt-5 inline-block ${submitClass}`}>Open the kevarim screen</Link>
       </div>
 
       {/* New page */}

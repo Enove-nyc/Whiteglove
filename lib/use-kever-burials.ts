@@ -12,26 +12,27 @@ import type { ItinActivity } from "@/data/itinerary";
  *
  * Returns an empty map until it loads, so callers render the stop either way.
  */
+const EMPTY: Record<string, string[]> = {};
+
 export function useKeverBurials(activities: ItinActivity[]): Record<string, string[]> {
   const slugs = useMemo(
     () => [...new Set(activities.map((a) => a.keverSlug).filter((s): s is string => Boolean(s)))].sort(),
     [activities],
   );
   const key = slugs.join(",");
-  const [burials, setBurials] = useState<Record<string, string[]>>({});
+  // Keyed by the slug list it was fetched for, so a stale answer for a
+  // different set of stops is never shown while a new one is in flight.
+  const [loaded, setLoaded] = useState<{ key: string; burials: Record<string, string[]> }>({ key: "", burials: {} });
 
   useEffect(() => {
-    if (!key) {
-      setBurials({});
-      return;
-    }
+    if (!key) return;
     let live = true;
     (async () => {
       try {
         const res = await fetch(`/api/kevarim/burials?slugs=${encodeURIComponent(key)}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (live && data?.burials) setBurials(data.burials);
+        if (live && data?.burials) setLoaded({ key, burials: data.burials });
       } catch {
         /* the stop still renders without the names */
       }
@@ -41,7 +42,7 @@ export function useKeverBurials(activities: ItinActivity[]): Record<string, stri
     };
   }, [key]);
 
-  return burials;
+  return loaded.key === key ? loaded.burials : EMPTY;
 }
 
 /** "Noam Elimelech, the Bach and 4 more" — a whole ohel on one line. */

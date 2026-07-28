@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { redact } from "@/lib/redact";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -26,13 +27,19 @@ export async function POST(request: NextRequest) {
   const testPrompt = "Reply with just the word OK.";
   try {
     if (geminiKey) {
+      // The key goes in a header, not the query string: a URL travels into
+      // error messages, proxy logs and referrers, and a key in one is burned.
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(geminiKey)}`,
-        { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }], generationConfig: { maxOutputTokens: 256 } }) },
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-goog-api-key": geminiKey },
+          body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }], generationConfig: { maxOutputTokens: 256 } }),
+        },
       );
       if (!res.ok) {
         const reason = await res.json().catch(() => null) as { error?: { message?: string } } | null;
-        const detail = reason?.error?.message ? ` ${reason.error.message}` : " The key may be wrong or restricted.";
+        const detail = reason?.error?.message ? ` ${redact(reason.error.message)}` : " The key may be wrong or restricted.";
         return NextResponse.json({ configured: true, provider, ok: false, message: `Gemini rejected the request (HTTP ${res.status}).${detail}` });
       }
       const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };

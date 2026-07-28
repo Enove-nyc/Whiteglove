@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isDbEnabled } from "@/lib/content-admin";
 import { ensureTables, seedDatabase } from "@/lib/db-setup";
+import { redact } from "@/lib/redact";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[db-setup] failed:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Setup failed." },
+      { error: error instanceof Error ? redact(error.message) : "Setup failed." },
       { status: 500 },
     );
   }

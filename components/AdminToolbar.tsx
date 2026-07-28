@@ -27,8 +27,6 @@ export default function AdminToolbar() {
     return ADMIN_TOOLS.filter((t) => `${t.name} ${t.blurb} ${t.keywords}`.toLowerCase().includes(q));
   }, [query]);
 
-  useEffect(() => setActive(0), [query]);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
@@ -76,6 +74,7 @@ export default function AdminToolbar() {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
+              setActive(0);
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { redact, redactError } from "@/lib/redact";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 // Is the Google Routes key actually working?
@@ -84,14 +85,16 @@ export async function GET(request: NextRequest) {
         advice =
           "The key's Application restrictions are blocking this. Requests come from the server, not a browser, so set Application restrictions to None and rely on the API restriction instead.";
       }
-      return NextResponse.json({ keySet: true, ok: false, engine: "google", status: res.status, error: body.slice(0, 800), advice });
+      // Google quotes the request back in some refusals, so the key can appear
+      // in its own error text. Never let that reach the browser.
+      return NextResponse.json({ keySet: true, ok: false, engine: "google", status: res.status, error: redact(body).slice(0, 800), advice });
     }
 
     const data = JSON.parse(body) as { routes?: Array<{ duration?: string; distanceMeters?: number }> };
     const route = data.routes?.[0];
     const seconds = Number(/^(\d+(?:\.\d+)?)s$/.exec(route?.duration ?? "")?.[1]);
     if (!Number.isFinite(seconds)) {
-      return NextResponse.json({ keySet: true, ok: false, engine: "google", error: "Google answered but without a usable duration.", raw: body.slice(0, 400) });
+      return NextResponse.json({ keySet: true, ok: false, engine: "google", error: "Google answered but without a usable duration.", raw: redact(body).slice(0, 400) });
     }
 
     const minutes = Math.round(seconds / 60);
@@ -110,7 +113,7 @@ export async function GET(request: NextRequest) {
       keySet: true,
       ok: false,
       engine: "google",
-      error: error instanceof Error ? error.message : String(error),
+      error: redactError(error),
       advice: "The request to Google could not be completed. If this persists, check the deployment has outbound network access.",
     });
   }

@@ -58,10 +58,6 @@ export default function SearchableSelect({
   }, [options, query]);
 
   useEffect(() => {
-    setActive(0);
-  }, [query]);
-
-  useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
         setOpen(false);
@@ -121,6 +117,7 @@ export default function SearchableSelect({
         type="text"
         role="combobox"
         aria-expanded={open}
+        aria-controls={`${id ?? "picker"}-list`}
         aria-autocomplete="list"
         autoComplete="off"
         className={`${label ? "mt-1.5 " : ""}${base} ${className}`}
@@ -128,6 +125,7 @@ export default function SearchableSelect({
         placeholder={selected ? selected.label : placeholder}
         onChange={(e) => {
           setQuery(e.target.value);
+          setActive(0);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
@@ -143,7 +141,7 @@ export default function SearchableSelect({
           {matches.length === 0 ? (
             <p className="px-3 py-3 text-sm text-stone-600">{emptyText}</p>
           ) : (
-            <ul ref={listRef} role="listbox" className="max-h-72 overflow-auto">
+            <ul ref={listRef} id={`${id ?? "picker"}-list`} role="listbox" className="max-h-72 overflow-auto">
               {matches.map((o, i) => (
                 <li key={o.value} data-index={i}>
                   <button
