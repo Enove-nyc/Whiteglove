@@ -2,9 +2,22 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { buildDays, emptyItinerary, formatDuration, formatKm, travelerSummary, type Itinerary } from "@/data/itinerary";
+import { buildDays, emptyItinerary, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
+import { buildPrintTimeline, coverDates, dayCountries, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
+
+// The printed itinerary — a keepsake document, not a screen dump.
+//
+// A cover, then one page per day laid out as a single running schedule: the
+// time down the left, a marker, then what it is, where, and the one line of
+// detail that matters. Everything comes from the planner; nothing is invented.
 
 const LS_KEY = "whiteGloveItinerary";
+
+const INK = "#16293a";
+const MAROON = "#6f2b3e";
+const GOLD = "#b0894f";
+const GOLD_RULE = "#e3d9cc";
+const BODY = "#545454";
 
 export default function PrintItineraryPage() {
   const [itin, setItin] = useState<Itinerary | null>(null);
@@ -21,7 +34,7 @@ export default function PrintItineraryPage() {
           }
         }
       } catch {
-        /* fall through */
+        /* not signed in */
       }
       try {
         const local = localStorage.getItem(LS_KEY);
@@ -32,69 +45,197 @@ export default function PrintItineraryPage() {
     })();
   }, []);
 
-  if (!itin) return null;
+  if (!itin) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
+
   const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
+  const title = itin.title || "Itinerary";
+  const countries = tripCountries(itin);
+  const dates = coverDates(itin.startDate, itin.endDate);
+  const year = itin.startDate.slice(0, 4);
+  const month = dates ? dates.split(" ")[0] : "";
+  const footerRight = [title, month && year ? `${month.charAt(0)}${month.slice(1).toLowerCase()} ${year}` : ""].filter(Boolean).join(" · ");
 
   return (
-    <main className="mx-auto max-w-3xl bg-white px-8 py-10 text-stone-800 print:px-0 print:py-0">
-      <style>{`
-        @media print {
-          @page { margin: 16mm 14mm 22mm 14mm; }
-          .no-print { display: none !important; }
-          .print-footer { position: fixed; bottom: 0; left: 0; right: 0; }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
-      `}</style>
+    <>
+      <style>{css}</style>
 
-      <div className="no-print mb-6 flex items-center justify-between gap-4 rounded-md border border-[var(--gold-light)] bg-[var(--cream)] p-4">
-        <p className="text-sm text-stone-600">Use your browser&apos;s <strong>Print → Save as PDF</strong> for a clean copy.</p>
-        <button type="button" onClick={() => window.print()} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white">Print / Save as PDF</button>
+      <div className="wg-toolbar">
+        <p>
+          Use your browser&apos;s <strong>Print → Save as PDF</strong>. Choose <strong>Letter</strong>, margins{" "}
+          <strong>None</strong>, and tick <strong>Background graphics</strong>.
+        </p>
+        <button type="button" onClick={() => window.print()}>Print / Save as PDF</button>
       </div>
 
-      {/* Header with logo */}
-      <header className="flex items-center justify-between gap-4 border-b border-[var(--gold-light)] pb-5">
-        <Image src="/logo.png" alt="White Glove Itineraries" width={320} height={120} className="h-14 w-auto object-contain" />
-        <div className="text-right">
-          <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{itin.title || "Itinerary"}</p>
-          {travelerSummary(itin) ? <p className="text-sm text-stone-500">Prepared for {travelerSummary(itin)}</p> : null}
-          {itin.startDate && itin.endDate ? <p className="text-xs text-stone-400">{itin.startDate} — {itin.endDate}</p> : null}
-        </div>
-      </header>
+      {/* ---------------- Cover ---------------- */}
+      <section className="wg-page wg-cover">
+        <div className="wg-frame" />
+        <svg className="wg-arc" viewBox="0 0 260 260" aria-hidden="true">
+          <path d="M260 0 A260 260 0 0 0 0 260" fill="none" stroke={GOLD_RULE} strokeWidth="1.2" />
+        </svg>
 
-      {days.length === 0 ? (
-        <p className="mt-8 text-sm text-stone-500">Add start and end dates and some stops to generate the itinerary.</p>
-      ) : (
-        <div className="mt-6 space-y-6">
-          {days.map((day) => (
-            <section key={day.date} className="break-inside-avoid">
-              <div className="flex items-baseline justify-between border-b border-[var(--gold-light)] pb-1">
-                <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Day {day.index + 1}</h2>
-                <p className="text-sm font-semibold text-stone-500">{day.label}</p>
+        <div className="wg-cover-inner">
+          <Image src="/logo.png" alt="White Glove Itineraries" width={480} height={320} className="wg-crest" priority />
+          <p className="wg-cover-eyebrow">A White Glove Itineraries journey</p>
+          <h1 className="wg-cover-title">{title}</h1>
+          {countries && <p className="wg-cover-countries">{countries}</p>}
+          <div className="wg-cover-rule" />
+          {dates && <p className="wg-cover-dates">{dates}</p>}
+          {travelerSummary(itin) && <p className="wg-cover-for">Prepared for {travelerSummary(itin)}</p>}
+        </div>
+
+        <p className="wg-cover-foot">Thoughtfully arranged · meaningfully traveled</p>
+      </section>
+
+      {/* ---------------- One page per day ---------------- */}
+      {days.map((day, index) => {
+        const timeline = buildPrintTimeline(day);
+        return (
+          <section className="wg-page wg-day" key={day.date}>
+            <header className="wg-head">
+              <Image src="/logo.png" alt="" width={160} height={110} className="wg-head-mark" />
+              <span className="wg-head-name">White Glove Itineraries · {title}</span>
+              <span className="wg-head-day">Day {String(index + 1).padStart(2, "0")}</span>
+            </header>
+
+            <div className="wg-titleblock">
+              <div>
+                <p className="wg-eyebrow">{formatDateLong(day.date)}</p>
+                <h2 className="wg-daytitle">{dayRouteTitle(day)}</h2>
               </div>
-              <div className="mt-2 space-y-1.5 text-sm">
-                {day.flightsArriving.map((f) => <p key={`a${f.id}`}>✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
-                {day.activities.map((a) => (
-                  <div key={a.id}>
-                    {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)} · ≈{formatDuration(a.travelMinutesFromPrev)} drive</p>}
-                    <p><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}{a.address ? <span className="text-stone-500"> — {a.address}</span> : null}</p>
-                    {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
-                    {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}
-                  </div>
+              {dayCountries(day) && <p className="wg-daymeta">{dayCountries(day)}</p>}
+            </div>
+
+            <div className="wg-bar" />
+
+            {timeline.length === 0 ? (
+              <p className="wg-empty">Nothing scheduled for this day yet.</p>
+            ) : (
+              <ol className="wg-timeline">
+                {timeline.map((e, i) => (
+                  <li key={i}>
+                    <span className="wg-time">{e.time}</span>
+                    <span className="wg-dot" aria-hidden="true" />
+                    <span className="wg-entry">
+                      <span className="wg-kind">{e.kind}</span>
+                      <span className="wg-what">{e.title}</span>
+                      {e.detail && <span className="wg-detail">{e.detail}</span>}
+                    </span>
+                  </li>
                 ))}
-                {day.flightsDeparting.map((f) => <p key={`d${f.id}`}>✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
-                <p className="pt-1 text-stone-600">🛏️ <strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</p>
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+              </ol>
+            )}
 
-      {/* Footer with contact info (repeats on each printed page) */}
-      <footer className="print-footer mt-10 border-t border-[var(--gold-light)] pt-3 text-center text-xs text-stone-500">
-        <p className="font-semibold text-[var(--navy)]">White Glove Itineraries</p>
-        <p>whitegloveitineraries@gmail.com · Personalized kosher travel &amp; Jewish heritage journeys</p>
-        <p className="mt-1 text-[10px] text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
-      </footer>
-    </main>
+            <footer className="wg-foot">
+              <span>White Glove Itineraries</span>
+              <span>{footerRight}</span>
+            </footer>
+          </section>
+        );
+      })}
+
+      {days.length === 0 && (
+        <section className="wg-page wg-day">
+          <p className="wg-empty">Add start and end dates and some stops in the planner, then come back here.</p>
+        </section>
+      )}
+    </>
   );
 }
+
+const css = `
+  @page { size: letter; margin: 0; }
+
+  .wg-toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 14px 22px; background: #f7f3eb; border-bottom: 1px solid ${GOLD_RULE};
+    font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: ${BODY};
+  }
+  .wg-toolbar button {
+    border: 1px solid ${INK}; background: ${INK}; color: #fff; padding: 10px 18px;
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+  }
+
+  .wg-page {
+    position: relative; box-sizing: border-box;
+    width: 8.5in; min-height: 11in; margin: 24px auto; padding: 0.62in 0.72in;
+    background: #fff; color: ${INK};
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  }
+  .wg-page + .wg-page { break-before: page; }
+
+  /* ---- cover ---- */
+  .wg-cover { align-items: center; justify-content: center; text-align: center; }
+  .wg-frame { position: absolute; inset: 0.3in; border: 1px solid ${GOLD_RULE}; pointer-events: none; }
+  .wg-arc { position: absolute; top: 0; right: 0; width: 2.6in; height: 2.6in; }
+  .wg-cover-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
+  .wg-crest { width: 2.1in; height: auto; object-fit: contain; }
+  .wg-cover-eyebrow {
+    margin-top: 26px; font-size: 9px; font-weight: 700; letter-spacing: .26em;
+    text-transform: uppercase; color: ${GOLD};
+  }
+  .wg-cover-title {
+    margin-top: 20px; font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+    font-size: 42px; line-height: 1.08; color: ${INK}; max-width: 6in;
+  }
+  .wg-cover-countries {
+    margin-top: 12px; font-family: Georgia, "Times New Roman", serif; font-size: 21px; color: ${MAROON};
+  }
+  .wg-cover-rule { margin-top: 22px; width: 155px; height: 1.5px; background: ${GOLD}; }
+  .wg-cover-dates { margin-top: 20px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: ${BODY}; }
+  .wg-cover-for { margin-top: 12px; font-size: 11px; color: ${BODY}; }
+  .wg-cover-foot {
+    position: absolute; bottom: 0.95in; left: 0; right: 0;
+    font-size: 10px; letter-spacing: .08em; color: ${BODY};
+  }
+
+  /* ---- day header ---- */
+  .wg-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid ${GOLD_RULE}; }
+  .wg-head-mark { width: 34px; height: auto; object-fit: contain; }
+  .wg-head-name { flex: 1; font-family: Georgia, "Times New Roman", serif; font-size: 15px; color: ${INK}; }
+  .wg-head-day { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${MAROON}; }
+
+  .wg-titleblock { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-top: 30px; }
+  .wg-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: ${GOLD}; }
+  .wg-daytitle {
+    margin-top: 12px; font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+    font-size: 31px; line-height: 1.14; color: ${INK}; max-width: 5.4in;
+  }
+  .wg-daymeta {
+    flex-shrink: 0; padding-top: 2px; font-size: 9px; letter-spacing: .16em;
+    text-transform: uppercase; color: ${GOLD}; text-align: right; max-width: 2in;
+  }
+
+  .wg-bar {
+    margin-top: 26px; height: 3.5px; background: ${MAROON};
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  /* ---- timeline ---- */
+  .wg-timeline { margin-top: 26px; list-style: none; padding: 0; }
+  .wg-timeline li { display: grid; grid-template-columns: 0.78in 22px 1fr; align-items: start; padding-bottom: 20px; }
+  .wg-time { text-align: right; font-size: 10.5px; font-weight: 700; color: ${INK}; padding-top: 8px; }
+  .wg-dot {
+    justify-self: center; margin-top: 11px; width: 7px; height: 7px; border-radius: 50%;
+    border: 1.6px solid ${MAROON};
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .wg-entry { display: block; }
+  .wg-kind { display: block; font-size: 8px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${GOLD}; }
+  .wg-what { display: block; margin-top: 3px; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 15.5px; color: ${INK}; }
+  .wg-detail { display: block; margin-top: 3px; font-size: 10.5px; line-height: 1.5; color: ${BODY}; }
+
+  .wg-empty { margin-top: 40px; font-size: 12px; color: ${BODY}; }
+
+  .wg-foot {
+    margin-top: auto; padding-top: 12px; border-top: 1px solid ${GOLD_RULE};
+    display: flex; justify-content: space-between; font-size: 8.5px; color: ${BODY};
+  }
+
+  @media print {
+    .wg-toolbar { display: none; }
+    .wg-page { margin: 0; box-shadow: none; width: auto; min-height: 100vh; }
+  }
+`;
