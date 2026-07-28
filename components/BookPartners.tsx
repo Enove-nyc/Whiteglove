@@ -10,8 +10,8 @@ import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type Itin
 // A traveler can also save the item to their itinerary before booking, so it
 // comes back to their account.
 
-type Tab = "flights" | "hotels" | "cars";
-export type Affiliate = { bookingAid?: string; kayakParams?: string };
+type Tab = "flights" | "hotels" | "cars" | "points";
+export type Affiliate = { bookingAid?: string; kayakParams?: string; travelpayoutsMarker?: string };
 
 const inputClass = "mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-base text-stone-700 outline-none transition focus:border-[var(--gold)]";
 const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
@@ -78,6 +78,7 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
         <TabButton active={tab === "flights"} onClick={() => setTab("flights")}>Flights</TabButton>
         <TabButton active={tab === "hotels"} onClick={() => setTab("hotels")}>Hotels</TabButton>
         <TabButton active={tab === "cars"} onClick={() => setTab("cars")}>Cars</TabButton>
+        <TabButton active={tab === "points"} onClick={() => setTab("points")}>Pay with points</TabButton>
       </div>
 
       {added && (
@@ -90,6 +91,7 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
       {tab === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} />}
       {tab === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} />}
       {tab === "cars" && <CarsForm onAdd={addToTrip} />}
+      {tab === "points" && <PointsForm />}
 
       <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-xs leading-6 text-stone-500">
         Searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary.
@@ -236,5 +238,101 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     <button type="button" onClick={onClick} className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] ${active ? "border-b-2 border-[var(--gold)] text-[var(--navy)]" : "text-stone-500"}`}>
       {children}
     </button>
+  );
+}
+
+// ---- Pay with points -------------------------------------------------
+// Award seats can only be redeemed inside your own loyalty account — no site
+// can book them for you. So this does the two things that actually help:
+// works out whether a redemption is good value, and hands off to the free
+// award-search tools and the program's own award page.
+
+const POINTS_PROGRAMS: Array<{ label: string; award: string }> = [
+  { label: "Choose the program you have points with…", award: "" },
+  { label: "Amex Membership Rewards", award: "https://www.americanexpress.com/en-us/travel/" },
+  { label: "Chase Ultimate Rewards", award: "https://ultimaterewards.chase.com/" },
+  { label: "Capital One Miles", award: "https://travel.capitalone.com/" },
+  { label: "United MileagePlus", award: "https://www.united.com/en/us/book-flight/united-award-travel" },
+  { label: "Delta SkyMiles", award: "https://www.delta.com/" },
+  { label: "American AAdvantage", award: "https://www.aa.com/" },
+  { label: "Air Canada Aeroplan", award: "https://www.aircanada.com/aeroplan" },
+  { label: "Flying Blue (Air France/KLM)", award: "https://wwws.airfrance.us/flying-blue" },
+  { label: "El Al Matmid", award: "https://www.elal.com/" },
+  { label: "Marriott Bonvoy", award: "https://www.marriott.com/" },
+  { label: "Hilton Honors", award: "https://www.hilton.com/" },
+  { label: "World of Hyatt", award: "https://www.hyatt.com/" },
+];
+
+function PointsForm() {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [when, setWhen] = useState("");
+  const [program, setProgram] = useState("");
+  const [miles, setMiles] = useState("");
+  const [cash, setCash] = useState("");
+  const [taxes, setTaxes] = useState("");
+
+  const milesNum = Number(miles.replace(/[^\d.]/g, ""));
+  const cashNum = Number(cash.replace(/[^\d.]/g, ""));
+  const taxNum = Number(taxes.replace(/[^\d.]/g, "")) || 0;
+  // Cents per point = (what the cash ticket costs, minus what you still pay in
+  // taxes) divided by the points it takes. The standard way to judge a redemption.
+  const cpp = milesNum > 0 && cashNum > 0 ? ((cashNum - taxNum) / milesNum) * 100 : null;
+  const verdict =
+    cpp === null ? null : cpp >= 2 ? { text: "Strong value — worth redeeming.", tone: "text-emerald-700" }
+    : cpp >= 1.2 ? { text: "Reasonable value.", tone: "text-[var(--navy)]" }
+    : { text: "Weak value — paying cash is probably better.", tone: "text-amber-800" };
+
+  const route = [from.trim(), to.trim()].filter(Boolean).join(" to ");
+  const selected = POINTS_PROGRAMS.find((p) => p.label === program);
+
+  return (
+    <div className="mt-7">
+      <div className="border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
+        <strong className="text-[var(--navy)]">How booking with points works.</strong> No website can redeem your points for you —
+        award seats come out of your own loyalty account, so the booking is always finished on the airline or hotel&apos;s own site.
+        What we do here is help you find the seats and check the redemption is worth it.
+      </div>
+
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+        <label className={`block ${caption} sm:col-span-2`}>Which points do you have?
+          <select value={program} onChange={(e) => setProgram(e.target.value)} className={inputClass}>
+            {POINTS_PROGRAMS.map((p) => <option key={p.label} value={p.label === POINTS_PROGRAMS[0].label ? "" : p.label}>{p.label}</option>)}
+          </select>
+        </label>
+        <label className={`block ${caption}`}>From<AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={inputClass} /></label>
+        <label className={`block ${caption}`}>To<AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={inputClass} /></label>
+        <label className={`block ${caption}`}>When<input type="date" value={when} onChange={(e) => setWhen(e.target.value)} className={inputClass} /></label>
+      </div>
+
+      <p className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">1 · Find award seats (free tools)</p>
+      <div className="mt-2 flex flex-wrap gap-3">
+        <a href={`https://www.pointsyeah.com/search${route ? `?from=${encodeURIComponent(from.trim())}&to=${encodeURIComponent(to.trim())}` : ""}`} target="_blank" rel="noreferrer" className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Search award seats on PointsYeah →</a>
+        <a href="https://seats.aero/search" target="_blank" rel="noreferrer" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Search on seats.aero →</a>
+        {selected?.award && <a href={selected.award} target="_blank" rel="noreferrer" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Open {program} →</a>}
+      </div>
+      <p className="mt-2 text-xs text-stone-500">Independent award-search sites, free to use. We don&apos;t see your balances or your account.</p>
+
+      <p className="mt-8 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">2 · Is it worth using your points?</p>
+      <div className="mt-2 grid gap-4 sm:grid-cols-3">
+        <label className={`block ${caption}`}>Points required<input inputMode="numeric" value={miles} onChange={(e) => setMiles(e.target.value)} placeholder="45000" className={inputClass} /></label>
+        <label className={`block ${caption}`}>Cash price of the same ticket<input inputMode="decimal" value={cash} onChange={(e) => setCash(e.target.value)} placeholder="900" className={inputClass} /></label>
+        <label className={`block ${caption}`}>Taxes/fees you still pay<input inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="90" className={inputClass} /></label>
+      </div>
+      {cpp !== null && verdict && (
+        <div className="mt-4 border border-[var(--gold-light)] bg-white p-4">
+          <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cpp.toFixed(2)}¢ <span className="text-lg text-stone-500">per point</span></p>
+          <p className={`mt-1 text-sm font-semibold ${verdict.tone}`}>{verdict.text}</p>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            Worked out as (cash price − taxes you still pay) ÷ points. Around 1.2¢ is typical; 2¢ or more is usually a good redemption.
+            Compare against what your own program normally returns before you transfer anything.
+          </p>
+        </div>
+      )}
+
+      <p className="mt-8 text-xs leading-5 text-stone-500">
+        Transfers from a card program to an airline are almost always one-way. Confirm the award seat exists first, then transfer, then book.
+      </p>
+    </div>
   );
 }
