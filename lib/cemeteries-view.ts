@@ -59,6 +59,48 @@ export async function getCemeteryList(): Promise<CemeteryListItem[]> {
   }
 }
 
+type StoredContact = { label: string; phone: string | null; email: string | null; note: string | null };
+type ViewContact = NonNullable<Cemetery["accessContacts"]>[number];
+
+const contactKey = (label: string) => label.trim().toLowerCase();
+
+/**
+ * Built-in contacts, with stored ones layered over the top.
+ *
+ * Matching is by label, so re-saving "Shomer" replaces the built-in "Shomer"
+ * rather than adding a second one. A stored contact with neither a phone nor an
+ * email means "this contact is gone" and hides the built-in entry — otherwise a
+ * number that has stopped working could never be taken off the page, and a
+ * traveler standing at a locked gate would keep calling it.
+ */
+function mergeContacts(builtIn: ViewContact[], stored: StoredContact[]): ViewContact[] {
+  if (!stored.length) return builtIn;
+  const overrides = new Map(stored.map((c) => [contactKey(c.label), c]));
+  const out: ViewContact[] = [];
+
+  for (const contact of builtIn) {
+    const override = overrides.get(contactKey(contact.label));
+    if (!override) {
+      out.push(contact);
+      continue;
+    }
+    overrides.delete(contactKey(contact.label));
+    const phone = override.phone?.trim() || undefined;
+    const email = override.email?.trim() || undefined;
+    if (!phone && !email) continue; // retired
+    out.push({ label: override.label, phone, email, note: override.note ?? contact.note });
+  }
+
+  // Anything stored that didn't match a built-in label is a new contact.
+  for (const contact of overrides.values()) {
+    const phone = contact.phone?.trim() || undefined;
+    const email = contact.email?.trim() || undefined;
+    if (!phone && !email) continue;
+    out.push({ label: contact.label, phone, email, note: contact.note ?? "" });
+  }
+  return out;
+}
+
 /** One cemetery for its detail page. For a built-in cemetery, returns the rich
  *  static record with any owner-added tzaddikim appended; for an owner-added
  *  cemetery, builds the record from the database. */
@@ -78,17 +120,32 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
     });
 
     if (staticRecord) {
-      // Append owner-added tzaddikim (names not already listed statically).
       if (!row) return staticRecord;
+
+      // Append owner-added tzaddikim (names not already listed statically).
       const known = new Set(staticRecord.burials.map((b) => b.name.toLowerCase()));
-      const extra = row.burials
+      const extraBurials = row.burials
         .filter((b) => !known.has(b.name.toLowerCase()))
         .map((b) => ({
           name: b.name, yiddishName: b.yiddishName, knownAs: b.knownAs ?? undefined,
           seforim: b.seforim ?? undefined, yahrzeit: b.yahrzeit ?? undefined, note: b.note ?? undefined,
         }));
-      if (!extra.length) return staticRecord;
-      return { ...staticRecord, burials: [...staticRecord.burials, ...extra] };
+
+      // Contacts saved against a built-in cemetery used to be dropped on the
+      // floor here, which meant a shomer's phone number could be added but
+      // never corrected — the built-in one is in code and always won. A stored
+      // contact now takes precedence over the built-in one with the same
+      // label, so editing a number is simply saving it again. Clearing both
+      // the phone and the email removes the built-in contact from the page,
+      // which is the only way to retire a number that no longer works.
+      const accessContacts = mergeContacts(staticRecord.accessContacts ?? [], row.contacts);
+
+      if (!extraBurials.length && accessContacts === staticRecord.accessContacts) return staticRecord;
+      return {
+        ...staticRecord,
+        burials: extraBurials.length ? [...staticRecord.burials, ...extraBurials] : staticRecord.burials,
+        accessContacts,
+      };
     }
 
     if (!row) return null;
