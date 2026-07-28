@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import KeverCoordinates from "@/components/KeverCoordinates";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
+import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
@@ -45,6 +46,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      <SubBrandBanner />
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">

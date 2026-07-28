@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 
@@ -9,14 +10,18 @@ export default async function CemeteriesPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      <SubBrandBanner />
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Cemetery directory</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Open a cemetery page to see the known kevarim, direct navigation, and arrival notes. Each list is researched and will grow as more records are verified.
-          </p>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Cemetery directory</p>
+            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
+              Open a cemetery page to see the known kevarim, direct navigation, and arrival notes. Each list is researched and will grow as more records are verified.
+            </p>
+          </div>
+          <SubBrandCrest className="hidden shrink-0 sm:block" />
         </div>
       </section>
 

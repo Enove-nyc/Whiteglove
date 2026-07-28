@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import SubBrandBanner from "@/components/SubBrand";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
@@ -37,6 +38,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      <SubBrandBanner />
 
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl">
