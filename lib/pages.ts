@@ -1,30 +1,41 @@
-// Content-access layer for DB-backed general/marketing pages.
+// Reading an editable page.
 //
-// Like lib/content.ts, every read FAILS SAFE: if DATABASE_URL is unset, the DB
-// is unreachable, or the page isn't stored yet, it falls back to the built-in
-// default from data/pages.ts. The public site keeps working before Neon is
-// connected and upgrades to DB-backed, editable content afterwards.
+// Every read FAILS SAFE. With no DATABASE_URL, an unreachable database, a page
+// never edited, or a stored draft rather than a published version, the page
+// renders the built-in blocks from data/pages.ts — which are the page exactly
+// as it ships. A visitor can never see a blank page because an edit went wrong.
 
 import { editablePages, getPageDef, type PageDef } from "@/data/pages";
+import { parseBlocks, type PageBlock } from "@/data/page-blocks";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
+const PREDEFINED_SLUGS = new Set(editablePages.map((p) => p.slug));
+
 export type ResolvedPage = {
   slug: string;
-  eyebrow: string;
-  title: string;
-  body: string;
+  href: string;
+  label: string;
+  seoTitle: string;
+  seoDescription: string;
+  blocks: PageBlock[];
+  /** True when the owner's own version is being shown rather than the built-in one. */
+  edited: boolean;
 };
 
 function fromDef(def: PageDef): ResolvedPage {
-  return { slug: def.slug, eyebrow: def.eyebrow, title: def.title, body: def.body };
+  return {
+    slug: def.slug,
+    href: def.href,
+    label: def.label,
+    seoTitle: def.seoTitle,
+    seoDescription: def.seoDescription,
+    blocks: def.blocks,
+    edited: false,
+  };
 }
 
-/**
- * The heading + intro for one page, merging any DB override over the built-in
- * default. Never throws — returns the default on any DB problem. Returns null
- * only for a slug that isn't a known editable page.
- */
+/** One page for the public site. Null only for a slug that is not editable. */
 export async function resolvePage(slug: string): Promise<ResolvedPage | null> {
   const def = getPageDef(slug);
   if (!def) return null;
@@ -33,47 +44,103 @@ export async function resolvePage(slug: string): Promise<ResolvedPage | null> {
     const { prisma } = await import("@/lib/prisma");
     const row = await prisma.page.findUnique({ where: { slug } });
     if (!row || row.status !== "PUBLISHED") return fromDef(def);
+    const blocks = parseBlocks(row.blocks);
     return {
       slug,
-      eyebrow: def.eyebrow,
-      title: row.title || def.title,
-      body: row.body || def.body,
+      href: def.href,
+      label: def.label,
+      seoTitle: row.seoTitle || def.seoTitle,
+      seoDescription: row.seoDescription || def.seoDescription,
+      blocks: blocks ?? def.blocks,
+      edited: Boolean(blocks),
     };
   } catch (error) {
-    console.error("[pages] DB read failed for", slug, "- using default", error);
+    console.error("[pages] read failed for", slug, "— showing the built-in version", error);
     return fromDef(def);
   }
 }
 
-/** All editable pages merged with any DB overrides, for the admin list. */
-export async function listPagesForAdmin() {
-  if (!DB_ENABLED) {
-    return editablePages.map((def) => ({ ...fromDef(def), status: "PUBLISHED" as const, stored: false }));
-  }
+export type AdminPageRow = {
+  slug: string;
+  href: string;
+  label: string;
+  title: string;
+  status: "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW";
+  updatedAt: string | null;
+  edited: boolean;
+};
+
+/** The heading a page is showing, for the admin list. */
+function headingOf(blocks: PageBlock[], fallback: string): string {
+  const hero = blocks.find((b) => b.kind === "hero");
+  return (hero && hero.kind === "hero" && hero.heading) || fallback;
+}
+
+/** Every editable page, with any stored version layered over the built-in one. */
+export async function listPagesForAdmin(): Promise<AdminPageRow[]> {
+  const base = (def: PageDef): AdminPageRow => ({
+    slug: def.slug,
+    href: def.href,
+    label: def.label,
+    title: headingOf(def.blocks, def.label),
+    status: "PUBLISHED",
+    updatedAt: null,
+    edited: false,
+  });
+
+  if (!DB_ENABLED) return editablePages.map(base);
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.page.findMany();
-    const bySlug = new Map(rows.map((row) => [row.slug, row]));
+    const bySlug = new Map(rows.map((r) => [r.slug, r]));
     return editablePages.map((def) => {
       const row = bySlug.get(def.slug);
+      if (!row) return base(def);
+      const blocks = parseBlocks(row.blocks);
       return {
         slug: def.slug,
-        eyebrow: def.eyebrow,
-        title: row?.title || def.title,
-        body: row?.body || def.body,
-        status: (row?.status ?? "PUBLISHED") as "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW",
-        stored: Boolean(row),
+        href: def.href,
+        label: def.label,
+        title: headingOf(blocks ?? def.blocks, def.label),
+        status: (row.status ?? "PUBLISHED") as AdminPageRow["status"],
+        updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null,
+        edited: Boolean(blocks),
       };
     });
   } catch {
-    return editablePages.map((def) => ({ ...fromDef(def), status: "PUBLISHED" as const, stored: false }));
+    return editablePages.map(base);
   }
 }
 
-const PREDEFINED_SLUGS = new Set(editablePages.map((p) => p.slug));
+/** One page for the editor — the stored version if there is one, else the built-in. */
+export async function getPageForAdmin(
+  slug: string,
+): Promise<(ResolvedPage & { status: AdminPageRow["status"] }) | null> {
+  const def = getPageDef(slug);
+  if (!def) return null;
+  const fallback = { ...fromDef(def), status: "PUBLISHED" as const };
+  if (!DB_ENABLED) return fallback;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const row = await prisma.page.findUnique({ where: { slug } });
+    if (!row) return fallback;
+    const blocks = parseBlocks(row.blocks);
+    return {
+      slug,
+      href: def.href,
+      label: def.label,
+      seoTitle: row.seoTitle || def.seoTitle,
+      seoDescription: row.seoDescription || def.seoDescription,
+      blocks: blocks ?? def.blocks,
+      edited: Boolean(blocks),
+      status: (row.status ?? "PUBLISHED") as AdminPageRow["status"],
+    };
+  } catch {
+    return fallback;
+  }
+}
 
-/** A standalone, owner-created info page (rendered at /info/[slug]). Returns
- *  null when the DB is off, the slug is a predefined page, or it isn't found. */
+/** A standalone, owner-created info page (rendered at /info/[slug]). */
 export async function getInfoPage(slug: string): Promise<{ slug: string; title: string; body: string } | null> {
   if (!DB_ENABLED || PREDEFINED_SLUGS.has(slug)) return null;
   try {
@@ -97,21 +164,5 @@ export async function listInfoPages() {
       .map((row) => ({ slug: row.slug, title: row.title, status: row.status as string }));
   } catch {
     return [];
-  }
-}
-
-/** One editable page (default merged with DB) for the admin editor. */
-export async function getPageForAdmin(slug: string) {
-  const def = getPageDef(slug);
-  if (!def) return null;
-  const base = { slug: def.slug, eyebrow: def.eyebrow, title: def.title, body: def.body, status: "PUBLISHED" as string, stored: false };
-  if (!DB_ENABLED) return base;
-  try {
-    const { prisma } = await import("@/lib/prisma");
-    const row = await prisma.page.findUnique({ where: { slug } });
-    if (!row) return base;
-    return { slug, eyebrow: def.eyebrow, title: row.title, body: row.body, status: row.status as string, stored: true };
-  } catch {
-    return base;
   }
 }

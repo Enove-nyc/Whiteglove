@@ -220,12 +220,23 @@ CREATE TABLE "Page" (
     "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "body" TEXT NOT NULL DEFAULT '',
+    "blocks" JSONB,
+    "seoTitle" TEXT NOT NULL DEFAULT '',
+    "seoDescription" TEXT NOT NULL DEFAULT '',
     "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Page_pkey" PRIMARY KEY ("id")
 );
+
+-- Columns added after the first release. CREATE TABLE above covers a fresh
+-- database; these cover one provisioned before the column existed. Both are
+-- idempotent, and every one is nullable or defaulted, so no existing row
+-- changes meaning. See docs/pages-migration.md.
+ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "blocks" JSONB;
+ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "seoTitle" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "seoDescription" TEXT NOT NULL DEFAULT '';
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Destination_slug_key" ON "Destination"("slug");

@@ -49,7 +49,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/kevarim", label: "Kevarim", blurb: "Who is buried where." },
       { href: "/admin/shomrim", label: "Shomer numbers", blurb: "Getting into a cemetery." },
       { href: "/admin/destinations", label: "Towns", blurb: "Kosher food, lodging, minyanim." },
-      { href: "/admin/directory-listings", label: "Businesses", blurb: "Operators, planners, guides." },
+      { href: "/admin/directory/businesses", label: "Businesses", blurb: "Operators, planners, guides." },
     ],
   },
   {

@@ -293,6 +293,13 @@ model Page {
   slug      String        @unique
   title     String
   body      String        @default("")
+  // The page rebuilt as a list of blocks, once the owner has edited it here.
+  // Nullable and additive: null means "never edited", and the page renders from
+  // its built-in version in code. See docs/pages-migration.md.
+  blocks    Json?
+  // What a search engine shows. Empty falls back to the page's own heading.
+  seoTitle       String   @default("")
+  seoDescription String   @default("")
   status    ContentStatus @default(DRAFT)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
