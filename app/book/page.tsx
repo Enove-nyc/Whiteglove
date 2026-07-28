@@ -14,6 +14,8 @@ export default function BookPage() {
   const affiliate = {
     bookingAid: process.env.BOOKING_AFFILIATE_ID?.trim() || "",
     kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
+    // Travelpayouts: one free account covering flights, hotels and insurance.
+    travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
   };
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
