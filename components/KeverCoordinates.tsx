@@ -43,18 +43,18 @@ export default function KeverCoordinates({
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{label}</p>
       <p className="mt-1 select-all font-mono text-lg font-semibold leading-tight text-[var(--navy)]">{dms}</p>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-        <button type="button" onClick={() => copy(dms, "dms")} className="font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        <button type="button" onClick={() => copy(dms, "dms")} className="inline-flex min-h-[44px] items-center font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           {copied === "dms" ? "Copied!" : "Copy coordinates"}
         </button>
-        <a href={placeDirectionsUrl(address, coordinates)} target="_blank" rel="noreferrer" className="font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        <a href={placeDirectionsUrl(address, coordinates)} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Navigate →
         </a>
-        <a href={placeMapUrl(address, coordinates)} target="_blank" rel="noreferrer" className="font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        <a href={placeMapUrl(address, coordinates)} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Show on map →
         </a>
       </div>
       {decimal && (
-        <button type="button" onClick={() => copy(decimal, "decimal")} className="mt-2 block font-mono text-[11px] text-stone-400 hover:text-[var(--navy)]">
+        <button type="button" onClick={() => copy(decimal, "decimal")} className="mt-1 inline-flex min-h-[40px] items-center font-mono text-[11px] text-stone-400 hover:text-[var(--navy)]">
           {copied === "decimal" ? "Copied!" : decimal}
         </button>
       )}

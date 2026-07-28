@@ -37,9 +37,9 @@ export default function NearestAirports({
               {km !== null && <span className="text-xs font-semibold text-[var(--gold)]">· {formatKm(km)} straight-line</span>}
               <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-stone-400">· {airport.size === "major" ? "major hub" : "regional"}</span>
             </div>
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-              <a href={airportDirectionsUrl(airport, address, coordinates, "driving")} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🚗 By car →</a>
-              <a href={airportDirectionsUrl(airport, address, coordinates, "transit")} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🚆 Public transit →</a>
+            <div className="mt-1 flex flex-wrap gap-x-5 gap-y-0">
+              <a href={airportDirectionsUrl(airport, address, coordinates, "driving")} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🚗 By car →</a>
+              <a href={airportDirectionsUrl(airport, address, coordinates, "transit")} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🚆 Public transit →</a>
             </div>
           </li>
         ))}
