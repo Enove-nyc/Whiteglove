@@ -46,7 +46,7 @@ export default function TermsOfUsePage() {
 
         <Section title="Acceptable use">
           <p>You agree not to misuse the Service. In particular, you will not:</p>
-          <ul className="list-disc space-y-2 pl-5">
+          <ul className="glove-list space-y-2">
             <li>use the Service for any unlawful purpose or in violation of these terms;</li>
             <li>attempt to access accounts, data, or systems that are not yours;</li>
             <li>scrape, copy, or redistribute our content in bulk without permission;</li>

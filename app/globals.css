@@ -34,3 +34,58 @@ html {
   background: var(--gold-light);
   color: var(--navy-deep);
 }
+
+/* ---- The White Glove mark, used through the site ----------------------
+   The gloved hand from the logo, reduced to a silhouette, is the bullet
+   point and the section ornament. It is applied as a CSS mask rather than
+   an <img> so the same file takes whatever colour the surrounding section
+   needs — gold on cream, gold-light on navy. */
+
+.glove-mark {
+  display: inline-block;
+  background-color: var(--glove-tone, var(--gold));
+  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
+  mask: url("/glove-bullet.svg") no-repeat center / contain;
+}
+
+.glove-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.glove-list > li {
+  position: relative;
+  padding-left: 1.85rem;
+}
+
+.glove-list > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.24em;
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--glove-tone, var(--gold));
+  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
+  mask: url("/glove-bullet.svg") no-repeat center / contain;
+}
+
+/* On a navy ground the gold is too dark to read; lighten the bullet only. */
+.glove-on-navy {
+  --glove-tone: var(--gold-light);
+}
+
+/* A section divider: hairline, glove, hairline. */
+.glove-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.glove-rule::before,
+.glove-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--gold-light);
+}

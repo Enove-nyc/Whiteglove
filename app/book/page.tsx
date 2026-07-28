@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
+import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
@@ -64,7 +65,7 @@ export default function BookPage() {
               <div className="mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
                 {col.rows.map(([title, text]) => (
                   <article key={title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-                    <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{title}</h3>
+                    <h3 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-xl text-[var(--navy)]"><GloveMark size="sm" />{title}</h3>
                     <p className="mt-2 text-sm leading-6 text-stone-600">{text}</p>
                   </article>
                 ))}
