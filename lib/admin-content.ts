@@ -72,6 +72,7 @@ export type PromotionPlacement =
   | "destination-specific"
   | "accommodation-page"
   | "sponsored-listing"
+  | "itinerary-footer"
   | "full-page-takeover";
 
 export type PromotionDevice = "all" | "mobile" | "desktop";
@@ -307,6 +308,7 @@ function placementLabels() {
     ["destination-specific", "Destination page"],
     ["accommodation-page", "Accommodation page"],
     ["sponsored-listing", "Sponsored listing"],
+    ["itinerary-footer", "Bottom of the itinerary"],
     ["full-page-takeover", "Full-page takeover"],
   ]);
 }
@@ -390,6 +392,13 @@ export async function recordPromotionEvent(id: string, kind: "impression" | "cli
     return { ...item, clicks: item.clicks + 1, lastClickedAt: new Date().toISOString() };
   });
   return writeBundle({ ...bundle, promotions });
+}
+
+/** Remove an advertisement for good. */
+export async function deletePromotion(id: string) {
+  const bundle = await readBundle();
+  if (!bundle) return null;
+  return writeBundle({ ...bundle, promotions: bundle.promotions.filter((p) => p.id !== id) });
 }
 
 export async function getActivePromotions(placement: PromotionPlacement, pathname: string, device: PromotionDevice) {

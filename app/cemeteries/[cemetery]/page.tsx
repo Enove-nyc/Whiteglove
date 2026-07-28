@@ -3,6 +3,7 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import KeverCoordinates from "@/components/KeverCoordinates";
 import KosherNearby from "@/components/KosherNearby";
+import MixedText from "@/components/MixedText";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
@@ -110,7 +111,11 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
                   {burial.knownAs && <p className="mt-3 text-sm font-semibold text-stone-700">{burial.knownAs}</p>}
                   {burial.seforim && <p dir="rtl" className="mt-3 text-lg text-[var(--navy)]">{burial.seforim}</p>}
-                  {burial.yahrzeit && <p className="mt-3 text-sm text-stone-600">Yahrzeit: {burial.yahrzeit}</p>}
+                  {burial.yahrzeit && (
+                    <p className="mt-3 text-sm text-stone-600">
+                      Yahrzeit: <MixedText text={burial.yahrzeit} />
+                    </p>
+                  )}
                   {burial.note && <p className="mt-3 text-sm leading-6 text-stone-600">{burial.note}</p>}
                 </article>
               ))}

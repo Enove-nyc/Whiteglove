@@ -97,10 +97,12 @@ export const bulkCemeteries3: Cemetery[] = [
     airportRef: "50.130, 27.515",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Yosef HaKohen of Polonne, the foremost disciple and recorder of the Baal Shem Tov's teachings.",
+      "He and the Mochiach of Polonne lie together in one stone ohel in the cemetery.",
       "Confirm the cemetery and exact grave location locally.",
     ],
     burials: [
       { name: "Rabbi Yaakov Yosef HaKohen of Polonne", yiddishName: "רבי יעקב יוסף הכהן מפולנאה", knownAs: "The Toldos", seforim: "תולדות יעקב יוסף · בן פורת יוסף · צפנת פענח", yahrzeit: "24 Tishrei · c. 5543 / 1783", note: "His Toldos Yaakov Yosef was the first published work of chassidic thought, preserving teachings of the Baal Shem Tov." },
+      { name: "Rabbi Aryeh Yehuda Leib of Polonne", yiddishName: "רבי אריה יהודה לייב מפולנאה", knownAs: "The Mochiach of Polonne", yahrzeit: "1770", note: "The preacher who carried chassidus through the Ukraine and Galicia, and among the first to accept the Baal Shem Tov; he lies in the same ohel as the Toldos." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Jacob_Joseph_of_Polonne",
   },

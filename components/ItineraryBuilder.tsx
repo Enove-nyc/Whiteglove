@@ -12,6 +12,7 @@ import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { fetchRoadTimes } from "@/lib/road-times";
+import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
 import {
   buildDays,
   emptyItinerary,
@@ -126,6 +127,8 @@ export default function ItineraryBuilder() {
   const days = useMemo(() => (itin.startDate && itin.endDate ? buildDays(itin) : []), [itin]);
   const summary = useMemo(() => summarize(days), [days]);
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
+  // Who is buried at each beis hachaim on the trip, looked up by slug.
+  const burials = useKeverBurials(itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
 
   // Look up any missing locations, then arrange the trip: stops you gave a date
@@ -284,7 +287,7 @@ export default function ItineraryBuilder() {
           )}
 
           <div className="mt-6 space-y-6">
-            {days.map((day) => <DayCard key={day.date} day={day} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
+            {days.map((day) => <DayCard key={day.date} day={day} burials={burials} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
           </div>
         </>
       )}
@@ -301,8 +304,9 @@ export default function ItineraryBuilder() {
 
 // ---- Day card with checks + suggestions ------------------------------
 
-function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
+function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
   day: ReturnType<typeof buildDays>[number];
+  burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
   onRemove: (id: string) => void;
@@ -417,6 +421,14 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
               />
             )}
             {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
+            {/* Who you are going to daven by. The reason for the stop belongs
+                on the stop, not one click away on the cemetery page. */}
+            {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
+              <p className="mt-1 text-sm text-stone-700">
+                <span className="font-semibold text-[var(--gold)]">Buried here: </span>
+                {burials[a.keverSlug].join(" · ")}
+              </p>
+            )}
             {(a.phone || a.href || a.address || a.coordinates) && (
               <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 {/* Every stop gets its own navigate link, including the first
@@ -890,6 +902,7 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
                 <span className="text-sm font-semibold text-[var(--navy)]">{k.name}</span>
                 {k.yiddishName ? <span className="ml-2 text-sm text-stone-500">{k.yiddishName}</span> : null}
                 <span className="block text-xs text-stone-500">{[k.city, k.country].filter(Boolean).join(", ")}{k.coordinates ? "" : " · location — confirm locally"}</span>
+                {k.burials?.length ? <span className="block text-xs text-[var(--gold)]">{burialSummary(k.burials)}</span> : null}
               </button>
             </li>
           ))}

@@ -41,19 +41,40 @@ export async function getCemeteryList(): Promise<CemeteryListItem[]> {
   if (!DB_ENABLED) return base;
   try {
     const { prisma } = await import("@/lib/prisma");
-    const rows = await prisma.cemetery.findMany({
-      where: { slug: { notIn: [...staticSlugs] } },
-      select: {
-        slug: true, city: true, yiddishCity: true, name: true, yiddishName: true, country: true,
-        _count: { select: { burials: true } },
-      },
-      orderBy: [{ country: "asc" }, { city: "asc" }],
+    const [rows, storedOnBuiltIn] = await Promise.all([
+      prisma.cemetery.findMany({
+        where: { slug: { notIn: [...staticSlugs] } },
+        select: {
+          slug: true, city: true, yiddishCity: true, name: true, yiddishName: true, country: true,
+          _count: { select: { burials: true } },
+        },
+        orderBy: [{ country: "asc" }, { city: "asc" }],
+      }),
+      // A person added to a built-in beis hachaim shows on its page, so the
+      // count beside it in the directory has to know about him too — otherwise
+      // the card says two kevarim and the page lists three.
+      prisma.cemetery.findMany({
+        where: { slug: { in: [...staticSlugs] } },
+        select: { slug: true, burials: { select: { name: true } } },
+      }),
+    ]);
+
+    const extraBySlug = new Map(storedOnBuiltIn.map((r) => [r.slug, r.burials.map((b) => b.name.toLowerCase())]));
+    const withExtras = base.map((item) => {
+      const extras = extraBySlug.get(item.slug);
+      if (!extras?.length) return item;
+      const known = new Set(
+        (staticCemeteries.find((c) => c.slug === item.slug)?.burials ?? []).map((b) => b.name.toLowerCase()),
+      );
+      const added = extras.filter((name) => !known.has(name)).length;
+      return added ? { ...item, burialCount: item.burialCount + added } : item;
     });
+
     const added = rows.map((r) => ({
       slug: r.slug, city: r.city, yiddishCity: r.yiddishCity, name: r.name,
       yiddishName: r.yiddishName, country: r.country, burialCount: r._count.burials, ownerAdded: true,
     }));
-    return [...base, ...added];
+    return [...withExtras, ...added];
   } catch {
     return base;
   }

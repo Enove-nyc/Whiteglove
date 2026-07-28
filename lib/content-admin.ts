@@ -253,40 +253,13 @@ export async function createCemetery(fields: NewCemeteryFields) {
   });
 }
 
-/** All cemeteries in the DB (built-in + owner-added), for the add-tzadik picker. */
+/** Cemeteries that have a database row — the owner-added ones, plus any
+ *  built-in one something has already been saved against. */
 export async function listCemeteriesForAdmin() {
   const prisma = await db();
   return prisma.cemetery.findMany({
     orderBy: [{ country: "asc" }, { city: "asc" }],
     select: { id: true, slug: true, name: true, city: true, country: true },
-  });
-}
-
-export type NewBurialFields = {
-  cemeteryId: string;
-  name: string;
-  yiddishName: string;
-  knownAs: string | null;
-  seforim: string | null;
-  yahrzeit: string | null;
-  note: string | null;
-};
-
-/** Add a tzadik (burial) to a cemetery. */
-export async function createBurial(fields: NewBurialFields) {
-  const prisma = await db();
-  return prisma.tzaddik.create({
-    data: {
-      name: fields.name,
-      yiddishName: fields.yiddishName || fields.name,
-      knownAs: fields.knownAs,
-      seforim: fields.seforim,
-      yahrzeit: fields.yahrzeit,
-      note: fields.note,
-      isPrimary: false,
-      status: "NEEDS_VERIFICATION",
-      cemeteryId: fields.cemeteryId,
-    },
   });
 }
 
@@ -368,6 +341,115 @@ export async function saveCemeteryContact(
 export async function deleteCemeteryContact(id: string) {
   const prisma = await db();
   await prisma.contact.delete({ where: { id } });
+}
+
+// ---- Tzaddikim on a beis hachaim --------------------------------------
+//
+// The same problem the shomer numbers had. `listCemeteriesForAdmin` lists
+// database rows, and the 97 built-in batei hachaim have none, so the old
+// "add a tzadik" picker could only ever offer the handful of owner-added
+// cemeteries — there was no way to say "this person is buried in Lizhensk".
+//
+// A person is attached by SLUG instead, and the row is created on demand,
+// exactly as saving a shomer's number does.
+
+export type BurialFields = {
+  name: string;
+  yiddishName: string;
+  knownAs: string | null;
+  seforim: string | null;
+  yahrzeit: string | null;
+  note: string | null;
+};
+
+/** Tzaddikim stored against a cemetery slug (empty for an untouched one). */
+export async function listCemeteryBurials(slug: string) {
+  const prisma = await db();
+  const row = await prisma.cemetery.findUnique({
+    where: { slug },
+    select: {
+      burials: {
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, yiddishName: true, knownAs: true, seforim: true, yahrzeit: true, note: true },
+      },
+    },
+  });
+  return row?.burials ?? [];
+}
+
+/**
+ * Add a person to a beis hachaim, or correct one already added.
+ *
+ * Saving the same name twice updates that person rather than listing him
+ * twice — a spelling fix should not leave two matzeivos on the page.
+ */
+export async function saveCemeteryBurial(
+  slug: string,
+  fallback: { city: string; yiddishCity: string; name: string; yiddishName: string; country: string },
+  fields: BurialFields,
+) {
+  const prisma = await db();
+  const cemetery = await cemeteryRowForSlug(slug, fallback);
+  const existing = await prisma.tzaddik.findFirst({
+    where: { cemeteryId: cemetery.id, name: { equals: fields.name.trim(), mode: "insensitive" } },
+    select: { id: true },
+  });
+  const data = {
+    name: fields.name.trim(),
+    yiddishName: fields.yiddishName.trim() || fields.name.trim(),
+    knownAs: fields.knownAs?.trim() || null,
+    seforim: fields.seforim?.trim() || null,
+    yahrzeit: fields.yahrzeit?.trim() || null,
+    note: fields.note?.trim() || null,
+    status: "NEEDS_VERIFICATION" as const,
+  };
+  if (existing) return prisma.tzaddik.update({ where: { id: existing.id }, data });
+  return prisma.tzaddik.create({ data: { ...data, isPrimary: false, cemeteryId: cemetery.id } });
+}
+
+/** Take a person off a beis hachaim. Built-in burials are in code and untouched. */
+export async function deleteCemeteryBurial(id: string) {
+  const prisma = await db();
+  await prisma.tzaddik.delete({ where: { id } });
+}
+
+/**
+ * The other direction: you know who the person is and where he is buried, but
+ * that beis hachaim isn't on the site yet. Creates both in one write, so a
+ * failure can't leave a nameless cemetery behind.
+ */
+export async function createCemeteryWithBurial(cemetery: NewCemeteryFields, burial: BurialFields) {
+  const prisma = await db();
+  return prisma.cemetery.create({
+    data: {
+      slug: newSlug(cemetery.city || cemetery.name, "cemetery"),
+      name: cemetery.name,
+      yiddishName: cemetery.yiddishName || cemetery.name,
+      city: cemetery.city,
+      yiddishCity: cemetery.yiddishCity || cemetery.city,
+      country: cemetery.country,
+      address: cemetery.address,
+      coordinates: cemetery.coordinates,
+      accessNote: cemetery.accessNote,
+      sourceUrl: cemetery.sourceUrl,
+      status: "NEEDS_VERIFICATION",
+      burials: {
+        create: [
+          {
+            name: burial.name.trim(),
+            yiddishName: burial.yiddishName.trim() || burial.name.trim(),
+            knownAs: burial.knownAs?.trim() || null,
+            seforim: burial.seforim?.trim() || null,
+            yahrzeit: burial.yahrzeit?.trim() || null,
+            note: burial.note?.trim() || null,
+            isPrimary: true,
+            status: "NEEDS_VERIFICATION",
+          },
+        ],
+      },
+    },
+    select: { slug: true, name: true, city: true },
+  });
 }
 
 export type NewPageFields = {

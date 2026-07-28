@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { redact } from "@/lib/redact";
+import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -7,6 +8,7 @@ export const maxDuration = 30;
 // Admin-only: confirms the AI key is configured AND makes a tiny live call so
 // the owner can verify the key actually works after adding it.
 export async function POST(request: NextRequest) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   if (!isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value)) {
     return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   }
@@ -26,13 +28,19 @@ export async function POST(request: NextRequest) {
   const testPrompt = "Reply with just the word OK.";
   try {
     if (geminiKey) {
+      // The key goes in a header, not the query string: a URL travels into
+      // error messages, proxy logs and referrers, and a key in one is burned.
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(geminiKey)}`,
-        { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }], generationConfig: { maxOutputTokens: 256 } }) },
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-goog-api-key": geminiKey },
+          body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }], generationConfig: { maxOutputTokens: 256 } }),
+        },
       );
       if (!res.ok) {
         const reason = await res.json().catch(() => null) as { error?: { message?: string } } | null;
-        const detail = reason?.error?.message ? ` ${reason.error.message}` : " The key may be wrong or restricted.";
+        const detail = reason?.error?.message ? ` ${redact(reason.error.message)}` : " The key may be wrong or restricted.";
         return NextResponse.json({ configured: true, provider, ok: false, message: `Gemini rejected the request (HTTP ${res.status}).${detail}` });
       }
       const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };

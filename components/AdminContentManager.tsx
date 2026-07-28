@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import AdminPromotionsManager from "@/components/AdminPromotionsManager";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
 
 type Tab = "settings" | "locations" | "bulk" | "accommodations" | "suggestions" | "promotions" | "report";
@@ -347,7 +346,9 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
 
       {tab === "promotions" && (
         <div className="mt-6">
-          <AdminPromotionsManager initialPromotions={bundle.promotions} configured={configured} />
+          <p className="text-sm leading-6 text-stone-600">
+            Advertisements have their own section now — go to <strong>Advertisements</strong> in the menu.
+          </p>
         </div>
       )}
     </section>

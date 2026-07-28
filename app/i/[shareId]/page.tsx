@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import Footer from "@/components/Footer";
+import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { getActivePromotions } from "@/lib/admin-content";
+import { burialsForSlugs } from "@/lib/kever-search";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +32,13 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   const itin = { ...emptyItinerary(), ...shared.itinerary };
   const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
   const sharedByName = shared.ownerName || shared.ownerEmail;
+
+  // Read straight from the data here — this page renders on the server, so it
+  // needs no round trip the way the planner does.
+  const burials = burialsForSlugs(itin.activities.map((a) => a.keverSlug ?? ""));
+  const userAgent = (await headers()).get("user-agent") || "";
+  const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
+  const footerPromotions = await getActivePromotions("itinerary-footer", `/i/${shareId}`, device);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -61,6 +72,9 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
                       {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)} from previous stop</p>}
                       <p className="text-base"><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}</p>
                       {a.address ? <p className="text-stone-600">{a.address}</p> : null}
+                      {a.keverSlug && burials[a.keverSlug]?.length ? (
+                        <p className="text-stone-700"><span className="font-semibold text-[var(--gold)]">Buried here: </span>{burials[a.keverSlug].join(" · ")}</p>
+                      ) : null}
                       {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
                       {a.href ? <p><a href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2" target="_blank" rel="noreferrer">Details →</a></p> : null}
                       {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}
@@ -75,6 +89,8 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
         )}
 
         <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
+
+        <ItineraryFooter promotion={footerPromotions[0] ?? null} />
       </section>
       <Footer />
     </main>

@@ -17,10 +17,42 @@ export type KeverResult = {
   href: string;
   phone?: string;
   notes?: string;
+  /** Who is buried there, shortest recognisable form first. */
+  burials?: string[];
 };
 
 function firstPhone(c: (typeof cemeteries)[number]): string | undefined {
   return c.accessContacts?.find((x) => x.phone)?.phone;
+}
+
+/**
+ * How a tzaddik is named on an itinerary line: the title he is known by when
+ * there is one, because that is what a traveler recognises, and his name
+ * otherwise.
+ */
+function burialLabel(b: (typeof cemeteries)[number]["burials"][number]): string {
+  return (b.knownAs || b.name).trim();
+}
+
+export function burialsOf(slug: string): string[] {
+  const c = cemeteries.find((x) => x.slug === slug);
+  return c ? c.burials.map(burialLabel).filter(Boolean) : [];
+}
+
+/**
+ * Who is buried at each of these batei hachaim.
+ *
+ * Read live rather than copied onto the stop when it was added, so an itinerary
+ * saved last month shows a kever we have since added to that beis hachaim —
+ * the Mochiach of Polonne, for instance, who shares an ohel with the Toldos.
+ */
+export function burialsForSlugs(slugs: string[]): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const slug of new Set(slugs.filter(Boolean))) {
+    const names = burialsOf(slug);
+    if (names.length) out[slug] = names;
+  }
+  return out;
 }
 
 export function searchKevarim(query: string, limit = 12): KeverResult[] {
@@ -37,6 +69,7 @@ export function searchKevarim(query: string, limit = 12): KeverResult[] {
     href: `/cemeteries/${c.slug}`,
     phone: firstPhone(c),
     notes: c.accessNote || c.arrivalNotes?.[0],
+    burials: c.burials.map(burialLabel).filter(Boolean),
   });
 
   if (!q) {

@@ -1,153 +1,216 @@
 import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
-import AiConnectionTest from "@/components/AiConnectionTest";
-import EmailDeliveryTest from "@/components/EmailDeliveryTest";
-import RoutingKeyTest from "@/components/RoutingKeyTest";
-import Footer from "@/components/Footer";
-import LockedSectionsControl from "@/components/LockedSectionsControl";
-import PasswordSettings from "@/components/PasswordSettings";
-import SiteLockControl from "@/components/SiteLockControl";
-import { passwordStorageAvailable } from "@/lib/access-passwords";
+import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
 import { getEditableInventory } from "@/lib/admin-inventory";
-import { getPromotionsDashboard } from "@/lib/admin-content";
-import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
+import { listPagesForAdmin } from "@/lib/pages";
+import { getDashboardStats } from "@/lib/site-analytics";
 
-function RankedList({ title, rows, empty }: { title: string; rows: Array<{ label: string; count: number }>; empty: string }) {
+export const dynamic = "force-dynamic";
+
+// Home is "what needs you today", not a control panel.
+//
+// Three things you might have come here to do, then anything actually waiting
+// on you, then a short honest sentence about how the site is doing. Passwords,
+// keys and connection tests live in Settings — none of that belongs on the
+// first screen you see.
+
+const actionClass =
+  "group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]";
+
+function BigAction({ href, title, detail }: { href: string; title: string; detail: string }) {
+  return (
+    <Link href={href} className={actionClass}>
+      <span>
+        <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+          {title}
+        </span>
+        <span className="mt-2 block text-sm leading-6 text-stone-600">{detail}</span>
+      </span>
+      <span className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] transition group-hover:text-[var(--navy)]">
+        Start →
+      </span>
+    </Link>
+  );
+}
+
+function Panel({
+  title,
+  count,
+  children,
+  href,
+  hrefLabel,
+}: {
+  title: string;
+  count?: number;
+  children: React.ReactNode;
+  href?: string;
+  hrefLabel?: string;
+}) {
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Activity</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{title}</h2>
-      {rows.length ? (
-        <ol className="mt-5 divide-y divide-[var(--gold-light)]">
-          {rows.map((row, index) => (
-            <li className="flex items-center justify-between gap-4 py-3" key={row.label}>
-              <span className="min-w-0 truncate text-stone-700">
-                <span className="mr-3 text-xs font-bold text-[var(--gold)]">{index + 1}</span>
-                {row.label}
-              </span>
-              <strong className="text-[var(--navy)]">{row.count}</strong>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="mt-5 text-sm leading-6 text-stone-600">{empty}</p>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{title}</h2>
+        {typeof count === "number" && count > 0 && (
+          <span className="rounded-full bg-[var(--navy)] px-2.5 py-0.5 text-xs font-bold text-white">{count}</span>
+        )}
+      </div>
+      <div className="mt-3 text-sm leading-6 text-stone-600">{children}</div>
+      {href && (
+        <Link
+          href={href}
+          className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+        >
+          {hrefLabel ?? "Open"} →
+        </Link>
       )}
     </section>
   );
 }
 
-export default async function AdminPage() {
-  const [stats, inventory, promotions, lockedPaths] = await Promise.all([getDashboardStats(), getEditableInventory(), getPromotionsDashboard(), getLockedPaths()]);
-  const allSearches = stats.topSearches.reduce((total, item) => total + item.count, 0);
-  const openInventory = inventory.items.filter((item) => item.status !== "complete").length;
-  const overview = [
-    { label: "Visits today", value: stats.visitsToday, detail: "Fresh activity since midnight UTC." },
-    { label: "Searches today", value: stats.searchesToday, detail: "The places visitors are looking for right now." },
-    { label: "All recorded visits", value: stats.visits, detail: "One visit per browser session, per page." },
-    { label: "All recorded searches", value: allSearches, detail: "Use this to decide what to update next." },
-    { label: "Open checklist items", value: openInventory, detail: "Pages and issues still marked not completed." },
-    { label: "Promotions live", value: promotions.enabledPromotions, detail: "Ad placements currently active on the public site." },
-  ];
+export default async function AdminHome() {
+  const [stats, inventory, promotions, content, pages] = await Promise.all([
+    getDashboardStats(),
+    getEditableInventory(),
+    getPromotionsDashboard(),
+    getAdminContent(),
+    listPagesForAdmin(),
+  ]);
+
+  const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
+  const unfinished = inventory.items.filter((item) => item.status !== "complete");
+  const unpublishedPages = pages.filter((p) => p.status !== "PUBLISHED");
+
+  // Only things the owner can actually act on. "The database is not connected"
+  // is worth saying because it stops edits from saving; a missing API key is a
+  // Settings matter and stays there.
+  const alerts: Array<{ text: string; href: string; label: string }> = [];
+  if (stats.siteLocked) {
+    alerts.push({
+      text: "The website is closed to the public right now. Visitors see the access screen instead of the site.",
+      href: "/admin/settings/website",
+      label: "Open the website",
+    });
+  }
+  if (!stats.configured) {
+    alerts.push({
+      text: "The private store is not connected, so visitor numbers and some of your edits are not being saved.",
+      href: "/admin/settings/connections",
+      label: "See what is missing",
+    });
+  }
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-6 sm:px-8 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove Itineraries</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Owner&apos;s dashboard</h1>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/admin/inventory" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page inventory</Link>
-            <Link href="/admin/content" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Content manager</Link>
-            <Link href="/admin/destinations" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Destination editor</Link>
-            <Link href="/admin/pages" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page editor</Link>
-            <Link href="/admin/directory-listings" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Directory</Link>
-            <Link href="/admin/add" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">+ Add new entry</Link>
-            <Link href="/admin/shomrim" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Shomer numbers</Link>
-            <Link href="/admin/accounts" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Accounts</Link>
-            <Link href="/admin/finances" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Finances</Link>
-            <Link href="/admin/advertisements" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Advertisements</Link>
-            <Link href="/" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">View website</Link>
-            <AdminSignOut />
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-6">
-          {overview.map((item) => (
-            <div key={item.label} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">{item.label}</p>
-              <p className="mt-3 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)]">{item.value}</p>
-              <p className="mt-3 text-sm leading-6 text-stone-600">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
-          <SiteLockControl initialLocked={stats.siteLocked} configured={stats.configured} />
-          <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Data connection</p>
-            <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{stats.configured ? "Connected" : "Not connected"}</p>
-            <p className="mt-3 text-sm leading-6 text-stone-600">
-              {stats.configured
-                ? "Visitor activity, search interest, and inventory notes are being saved privately."
-                : "Connect the private analytics store to begin collecting real traffic and inventory edits."}
-            </p>
-          </section>
-          <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Advertisements</p>
-            <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{promotions.enabledPromotions} live</p>
-            <p className="mt-3 text-sm leading-6 text-stone-600">Create and target banners, popups, and full-page ads by page and device.</p>
-            <Link href="/admin/advertisements" className="mt-4 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Open advertisements →</Link>
-          </section>
-        </div>
-
-        <div className="mt-5">
-          <LockedSectionsControl initialPaths={lockedPaths} available={stats.configured} />
-        </div>
-
-        <div className="mt-5">
-          <PasswordSettings available={passwordStorageAvailable()} />
-        </div>
-
-        <div className="mt-5">
-          <RoutingKeyTest />
-          <EmailDeliveryTest />
-        </div>
-
-        <div className="mt-5">
-          <AiConnectionTest />
-        </div>
-
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <RankedList
-            title="Most searched places"
-            rows={stats.topSearches}
-            empty="No searches have been recorded yet. Once connected, each completed destination search will appear here."
-          />
-          <RankedList
-            title="Most visited pages"
-            rows={stats.topPages}
-            empty="No page visits have been recorded yet. Once connected, you will see the pages visitors use most."
-          />
-        </div>
-
-        <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Owner&apos;s use</p>
-          <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work from the inventory, then deepen the destinations.</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
-            The inventory shows every page and issue by status. Use it to find incomplete pages, add your notes, and decide what should be updated next.
+    <>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">
+            Good to see you
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            Everything about the website is in the five places down the left. Start with one of these.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/admin/inventory" className="inline-block border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open page inventory</Link>
-            <Link href="/admin/content" className="inline-block border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open content manager</Link>
-            <Link href="/stops" className="inline-block border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open destination directory</Link>
-          </div>
+        </div>
+        <AdminSignOut />
+      </div>
+
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <BigAction href="/admin/pages" title="Edit a page" detail="Change the words or pictures on any page of the website." />
+        <BigAction href="/admin/directory" title="Add a directory entry" detail="A town, a beis hachaim, a contact or a business." />
+        <BigAction href="/admin/advertisements" title="Create an advertisement" detail="A banner, a popup, or a promotion on the itineraries." />
+      </div>
+
+      {alerts.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Needs your attention</h2>
+          <ul className="mt-4 space-y-3">
+            {alerts.map((a) => (
+              <li key={a.href} className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3">
+                <p className="text-sm leading-6 text-amber-900">{a.text}</p>
+                <Link
+                  href={a.href}
+                  className="mt-2 inline-block text-xs font-bold uppercase tracking-[0.12em] text-amber-900 underline underline-offset-4"
+                >
+                  {a.label} →
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
+      )}
+
+      <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        <Panel title="Waiting to be published" count={unpublishedPages.length} href="/admin/pages" hrefLabel="Open pages">
+          {unpublishedPages.length === 0 ? (
+            <p>Every page is published. Nothing is sitting as a draft.</p>
+          ) : (
+            <ul className="space-y-1">
+              {unpublishedPages.slice(0, 5).map((p) => (
+                <li key={p.slug}>
+                  <span className="font-semibold text-[var(--navy)]">{p.title}</span>{" "}
+                  <span className="text-stone-500">— {p.status === "DRAFT" ? "draft" : "needs review"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel title="Suggestions from visitors" count={pendingSuggestions.length} href="/admin/content" hrefLabel="Read them">
+          {pendingSuggestions.length === 0 ? (
+            <p>Nobody has sent in a correction that is still waiting.</p>
+          ) : (
+            <ul className="space-y-1">
+              {pendingSuggestions.slice(0, 5).map((s) => (
+                <li key={s.id}>
+                  <span className="font-semibold text-[var(--navy)]">{s.title || s.targetId}</span>{" "}
+                  <span className="text-stone-500">— {(s.issue || s.suggestedInfo || "no note").slice(0, 60)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel title="Still unfinished" count={unfinished.length} href="/admin/inventory" hrefLabel="See the checklist">
+          {unfinished.length === 0 ? (
+            <p>Nothing on the checklist is outstanding.</p>
+          ) : (
+            <p>
+              {unfinished.length} {unfinished.length === 1 ? "item is" : "items are"} marked not finished — pages to
+              write, details to confirm.
+            </p>
+          )}
+        </Panel>
+      </div>
+
+      <section className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">How the site is doing</h2>
+        {stats.configured ? (
+          <>
+            <p className="mt-3 text-sm leading-7 text-stone-600">
+              <strong className="text-[var(--navy)]">{stats.visitsToday}</strong>{" "}
+              {stats.visitsToday === 1 ? "visit" : "visits"} today, and{" "}
+              <strong className="text-[var(--navy)]">{stats.searchesToday}</strong>{" "}
+              {stats.searchesToday === 1 ? "search" : "searches"}.{" "}
+              {promotions.enabledPromotions > 0
+                ? `${promotions.enabledPromotions} ${promotions.enabledPromotions === 1 ? "advertisement is" : "advertisements are"} running.`
+                : "No advertisements are running."}
+            </p>
+            {stats.topSearches.length > 0 && (
+              <p className="mt-3 text-sm leading-7 text-stone-600">
+                People are searching most for{" "}
+                <strong className="text-[var(--navy)]">
+                  {stats.topSearches.slice(0, 3).map((s) => s.label).join(", ")}
+                </strong>
+                . Worth checking those pages are as good as they can be.
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="mt-3 text-sm leading-7 text-stone-600">
+            Visitor numbers are not being recorded yet. There is nothing wrong with the website — it simply has
+            nowhere private to write them down.
+          </p>
+        )}
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }
