@@ -577,17 +577,20 @@ function Stat({ label, value, warn }: { label: string; value: number | string; w
 
 function BookingList({ title, items, onRemove }: { title: string; items: Array<{ id: string; label: string; sub: string }>; onRemove: (id: string) => void }) {
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-      <p className={caption}>{title} ({items.length})</p>
-      <ul className="mt-2 space-y-2">
+    <details className="group border border-[var(--gold-light)] bg-[#fcfaf6]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none">
+        <span className={caption}>{title} ({items.length})</span>
+        <span aria-hidden="true" className="text-lg leading-none text-[var(--gold)] transition-transform group-open:rotate-180">⌄</span>
+      </summary>
+      <ul className="space-y-2 border-t border-[var(--gold-light)] px-4 pb-4 pt-3">
         {items.length === 0 ? <li className="text-sm text-stone-400">None yet.</li> : items.map((it) => (
           <li key={it.id} className="flex items-start justify-between gap-2 text-sm">
             <span className="min-w-0"><span className="font-semibold text-[var(--navy)]">{it.label}</span><br /><span className="text-xs text-stone-500">{it.sub}</span></span>
-            <button type="button" onClick={() => onRemove(it.id)} className="shrink-0 text-xs text-stone-400 hover:text-red-700">✕</button>
+            <button type="button" onClick={() => onRemove(it.id)} aria-label={`Remove ${it.label}`} className="shrink-0 text-xs text-stone-400 hover:text-red-700">✕</button>
           </li>
         ))}
       </ul>
-    </div>
+    </details>
   );
 }
 

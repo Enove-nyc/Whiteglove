@@ -33,16 +33,16 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
               <span className="font-semibold text-[var(--navy)]">whitegloveitineraries.com</span>
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
             <Link
               href="/contact"
-              className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              className="inline-flex min-h-11 w-full items-center justify-center border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] sm:w-44"
             >
               Have us plan it
             </Link>
             <Link
               href="/cemeteries"
-              className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+              className="inline-flex min-h-11 w-full items-center justify-center border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white sm:w-44"
             >
               Browse kevarim
             </Link>
