@@ -11,7 +11,13 @@
 
 import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
 
-type Scope = "admin" | "site";
+/**
+ * "preview" is the five-minute code — a second way into the closed site, for
+ * handing to somebody who needs to check one thing. It is stored and changed
+ * exactly like the others; all that differs is how long the cookie it issues
+ * survives, which is decided in lib/site-access.ts.
+ */
+type Scope = "admin" | "site" | "preview";
 type Stored = { salt: string; hash: string };
 
 type RedisResult<T> = { result?: T };
@@ -46,7 +52,9 @@ function hashPassword(password: string, salt: string) {
 }
 
 function envPassword(scope: Scope) {
-  return scope === "admin" ? process.env.ADMIN_PASSWORD : process.env.SITE_ACCESS_PASSWORD;
+  if (scope === "admin") return process.env.ADMIN_PASSWORD;
+  if (scope === "preview") return process.env.SITE_PREVIEW_PASSWORD;
+  return process.env.SITE_ACCESS_PASSWORD;
 }
 
 async function readStored(scope: Scope): Promise<Stored | null> {
@@ -83,7 +91,22 @@ export async function verifyAccessPassword(scope: Scope, password: string): Prom
 }
 
 export function minPasswordLength(scope: Scope) {
-  return scope === "site" ? 4 : 6;
+  return scope === "admin" ? 6 : 4;
+}
+
+/**
+ * Which code was entered, if any.
+ *
+ * The two site codes are checked in turn so one form field can accept either —
+ * the visitor should not have to be told which kind of code they were given.
+ * The full code is tried first: if the same string were somehow set as both,
+ * the longer-lasting reading is the one the owner meant.
+ */
+export async function identifySiteCode(password: string): Promise<"full" | "preview" | null> {
+  if (!password) return null;
+  if (await verifyAccessPassword("site", password)) return "full";
+  if (await verifyAccessPassword("preview", password)) return "preview";
+  return null;
 }
 
 export async function setAccessPassword(scope: Scope, newPassword: string) {

@@ -11,8 +11,8 @@ import { emptyItinerary } from "../data/itinerary";
 describe("an account that predates trips", () => {
   const legacy: AccountData = {
     route: [
-      { id: "a", name: "Lizhensk", href: "/kevarim/lizhensk" },
-      { id: "b", name: "Kraków", href: "/kevarim/krakow" },
+      { id: "a", name: "Lizhensk", address: "Lezajsk, Poland", href: "/kevarim/lizhensk" },
+      { id: "b", name: "Kraków", address: "Kraków, Poland", href: "/kevarim/krakow" },
     ],
     favorites: [],
     itinerary: { ...emptyItinerary(), title: "Poland, Elul" },

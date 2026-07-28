@@ -30,7 +30,8 @@ per leg, so re-planning the same trip does not re-bill it.
 
 | Variable | What it does |
 | --- | --- |
-| `SITE_ACCESS_PASSWORD` | The password on the whole site. |
+| `SITE_ACCESS_PASSWORD` | The **full** code on the whole site: type it once and stay in. Both site codes can also be changed from **Settings → Passwords**, which takes priority over these variables. |
+| `SITE_PREVIEW_PASSWORD` | The **five-minute** code — for handing to somebody who needs to look at one thing. Access stops five minutes after they use it. The expiry is signed into the cookie and checked on every request, so it cannot be kept by copying the cookie or editing its lifetime. Must be a different word from `SITE_ACCESS_PASSWORD`. |
 | `SITE_LOCK_ENABLED` | Whether the lock is on at all. |
 | `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `enovenyc.com`. Lets one domain stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
 | `SITE_PREVIEW_TOKEN` | At least 12 characters. Anyone opening `?preview=<token>` gets in for 30 days without being told the password, and the token is stripped from the URL straight away. Change it to revoke every outstanding link at once. Never works on `/admin`. |
@@ -38,6 +39,23 @@ per leg, so re-planning the same trip does not re-bill it.
 | `ADMIN_HOST` | Optional. A hostname that serves the admin area on its own, e.g. `admin.whitegloveitineraries.com`. On that hostname every path is an admin path — `/` is the dashboard, `/shomrim` is the shomer screen — and the `/admin/…` paths keep working there too, so no saved link breaks. The hostname is never indexed. Unset by default, and with it unset nothing changes. **Add the domain in Vercel and point the DNS first**; the variable does nothing until the hostname actually reaches the site. |
 | `ADMIN_HOST_ONLY` | Optional, `1` to turn on. Sends `/admin/…` on the main domain to `ADMIN_HOST`, so there is one place to sign in. Leave it off until you have opened the admin hostname and signed in there successfully — switching it on before DNS resolves leaves no way into the admin area at all. |
 | `WHITE_GLOVE_SESSION_SECRET` | Signs the access and admin cookies. Changing it signs everybody out. |
+
+**Letting somebody in without a code at all.** Add them on **Settings → People
+with access** and they get in by signing in to their own account. Nothing is
+shared, and taking it back from the same screen does not change anybody else's
+code.
+
+**Signing everybody out.** **Settings → Website access** has a button that
+revokes every cookie at once — every code already handed out stops working and
+anyone still on the site has to enter one again. It does not change the codes
+themselves; do that on the Passwords screen if somebody has one they should not.
+
+**Who has been in.** The same screen lists recent sign-ins: when, how they got
+in, and roughly where from (country and town, out of the CDN's own headers).
+The address is stored without its last part — `203.0.x.x` — so one visitor can
+be told from another without the site keeping a record of anybody's connection.
+Both the log and the revoke need Upstash Redis connected; without it nothing is
+recorded, and the screen says so rather than showing an empty list.
 
 ## Email (Resend)
 

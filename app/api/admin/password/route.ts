@@ -12,19 +12,34 @@ export async function POST(request: NextRequest) {
   }
   if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const body = (await request.json().catch(() => null)) as
-    | { scope?: "admin" | "site"; currentPassword?: string; newPassword?: string }
+    | { scope?: "admin" | "site" | "preview"; currentPassword?: string; newPassword?: string }
     | null;
-  if (!body || (body.scope !== "admin" && body.scope !== "site")) {
+  const scopes = ["admin", "site", "preview"] as const;
+  if (!body || !scopes.includes(body.scope as (typeof scopes)[number])) {
     return NextResponse.json({ error: "Choose which password to change." }, { status: 400 });
   }
+  const scope = body.scope as (typeof scopes)[number];
 
   // Changing the admin password requires confirming the current admin password.
-  if (body.scope === "admin") {
+  if (scope === "admin") {
     const ok = await verifyAccessPassword("admin", body.currentPassword || "");
     if (!ok) return NextResponse.json({ error: "Your current admin password is not correct." }, { status: 400 });
   }
 
-  const result = await setAccessPassword(body.scope, body.newPassword || "");
+  // The two site codes must not be the same string. They would still both
+  // work, but whichever was checked first would decide how long access lasts —
+  // so the five-minute code would silently become permanent.
+  if (scope === "site" || scope === "preview") {
+    const other = scope === "site" ? "preview" : "site";
+    if (await verifyAccessPassword(other, body.newPassword || "")) {
+      return NextResponse.json(
+        { error: "That is already your other website code. Give the two codes different words." },
+        { status: 400 },
+      );
+    }
+  }
+
+  const result = await setAccessPassword(scope, body.newPassword || "");
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.error.includes("database") ? 503 : 400 });
   }

@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { edgeAccessToken, edgeAccountEmail, edgeAccountHasSiteAccess, edgeLockedPaths, edgeSiteIsLocked } from "@/lib/edge-lock";
+import {
+  edgeAccessGeneration,
+  edgeAccessToken,
+  edgeAccountEmail,
+  edgeAccountHasSiteAccess,
+  edgeLockedPaths,
+  edgeMintSiteAccess,
+  edgeSiteAccessValid,
+  edgeSiteIsLocked,
+} from "@/lib/edge-lock";
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
@@ -98,11 +107,12 @@ export async function middleware(request: NextRequest) {
     const clean = new URL(request.url);
     clean.searchParams.delete("preview");
     const response = NextResponse.redirect(clean);
-    response.cookies.set("white_glove_site_access", await edgeAccessToken("site"), {
+    const month = 60 * 24 * 30; // a reviewer should not be locked out mid-review
+    response.cookies.set("white_glove_site_access", await edgeMintSiteAccess(await edgeAccessGeneration(), month), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // a month, so a reviewer isn't locked out mid-review
+      maxAge: month * 60,
       path: "/",
     });
     return response;
@@ -120,8 +130,8 @@ export async function middleware(request: NextRequest) {
       });
     }
     if (locked) {
-      const token = await edgeAccessToken("site");
-      let allowed = request.cookies.get("white_glove_site_access")?.value === token;
+      const generation = await edgeAccessGeneration();
+      let allowed = await edgeSiteAccessValid(request.cookies.get("white_glove_site_access")?.value, generation);
 
       // Someone the owner has let in by name gets through without being told
       // the shared password — they just sign in to their own account.

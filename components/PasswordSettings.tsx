@@ -12,11 +12,12 @@ function ChangeForm({
   hint,
   requireCurrent,
 }: {
-  scope: "admin" | "site";
+  scope: "admin" | "site" | "preview";
   title: string;
   hint: string;
   requireCurrent: boolean;
 }) {
+  const minLength = scope === "admin" ? 6 : 4;
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -55,7 +56,7 @@ function ChangeForm({
         )}
         <label className="block">
           <span className={captionClass}>New password</span>
-          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" required minLength={scope === "site" ? 4 : 6} placeholder={`At least ${scope === "site" ? 4 : 6} characters`} className={inputClass} />
+          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" required minLength={minLength} placeholder={`At least ${minLength} characters`} className={inputClass} />
         </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -78,10 +79,14 @@ export default function PasswordSettings({ available }: { available: boolean }) 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
       <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Passwords</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Change your passwords</h2>
+      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Change your codes</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+        Three codes. One opens this admin area. The other two both open the closed website — the difference is how long
+        they last, and the visitor types whichever one you gave them into the same box.
+      </p>
       {!available ? (
         <p className="mt-4 text-sm leading-6 text-stone-600">
-          Connect the private database (Upstash Redis) to change passwords from here. Until then they come from the site&apos;s environment settings.
+          Connect the private database (Upstash Redis) to change codes from here. Until then they come from the site&apos;s environment settings.
         </p>
       ) : (
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -93,8 +98,14 @@ export default function PasswordSettings({ available }: { available: boolean }) 
           />
           <ChangeForm
             scope="site"
-            title="Website access password"
-            hint="The password visitors enter when the site is locked."
+            title="Full website code"
+            hint="Type it once and you stay in. This is the code for people who should keep coming back."
+            requireCurrent={false}
+          />
+          <ChangeForm
+            scope="preview"
+            title="Five-minute code"
+            hint="For handing to somebody who needs to look at one thing. It stops working five minutes after they use it, whatever they do with their browser."
             requireCurrent={false}
           />
         </div>
