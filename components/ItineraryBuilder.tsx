@@ -201,9 +201,10 @@ export default function ItineraryBuilder() {
       <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
             <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
+            <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -339,6 +340,12 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
         <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h3>
         <p className="text-sm font-semibold text-stone-500">
           {day.label}
+          {day.startTime && day.activities.length > 0 ? (
+            <span className="ml-3 text-xs font-normal text-stone-500">
+              {day.startsFrom ? `From ${day.startsFrom}, ` : ""}{day.startTime}
+              {day.endTime ? ` → ${day.endTime}` : ""}
+            </span>
+          ) : null}
           {day.travelHours > 0 ? (
             <span className="ml-3 text-xs font-normal text-stone-400">
               {day.travelLegs.every((l) => l.measured) ? "" : "≈"}
@@ -374,7 +381,14 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
             <div className="flex items-start justify-between gap-3">
               <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                 <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
-                {a.startTime ? <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span> : null}
+                {a.arrivalTime ? (
+                  <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
+                    {a.arrivalTime}
+                    {a.departureTime ? <span className="font-normal text-stone-400">–{a.departureTime}</span> : null}
+                  </span>
+                ) : a.startTime ? (
+                  <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span>
+                ) : null}
                 {a.name}
                 {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
               </p>
@@ -425,6 +439,13 @@ function DayCard({ day, onMove, onUpdate, onRemove, allDates }: {
         <span className={caption}>Tonight</span>{" "}
         {day.lodging ? (
           <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}</span>
+        ) : day.overnightFlight ? (
+          <span className="text-[var(--navy)]">
+            ✈️ On the flight — {day.overnightFlight.from} → {day.overnightFlight.to}
+            {day.overnightFlight.airline ? ` (${day.overnightFlight.airline}${day.overnightFlight.flightNo ? ` ${day.overnightFlight.flightNo}` : ""})` : ""}
+            {day.overnightFlight.departTime ? `, departing ${day.overnightFlight.departTime}` : ""}
+            <span className="ml-2 text-xs text-stone-500">no hotel needed tonight</span>
+          </span>
         ) : (
           <span className="text-stone-400">— not set —</span>
         )}
