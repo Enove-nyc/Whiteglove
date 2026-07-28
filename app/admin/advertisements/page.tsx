@@ -1,6 +1,5 @@
 import Link from "next/link";
 import AdminPromotionsManager from "@/components/AdminPromotionsManager";
-import Footer from "@/components/Footer";
 import { getAdminContent } from "@/lib/admin-content";
 
 export const dynamic = "force-dynamic";
@@ -9,9 +8,9 @@ export default async function AdminAdvertisementsPage() {
   const { configured, bundle } = await getAdminContent();
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Advertisements</h1>
@@ -32,7 +31,6 @@ export default async function AdminAdvertisementsPage() {
       )}
 
       <AdminPromotionsManager initialPromotions={bundle.promotions} configured={configured} />
-      <Footer />
-    </main>
+    </>
   );
 }

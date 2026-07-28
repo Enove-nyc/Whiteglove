@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import LogoutButton from "@/components/LogoutButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { isAdminAccount } from "@/lib/admin-roles";
 
 export default async function AccountPage() {
   const cookieStore = await cookies();
@@ -15,6 +16,9 @@ export default async function AccountPage() {
   // can't be read at this moment.
   const sessionEmail = readSessionEmail(cookie);
   const signedIn = Boolean(account || sessionEmail);
+  // Someone who helps run the site gets a way through to the admin from their
+  // own account, rather than having to remember a separate address.
+  const canAdmin = await isAdminAccount(account?.email || sessionEmail);
   const displayName = account?.name || sessionEmail?.split("@")[0] || account?.email?.split("@")[0] || "Traveler";
 
   return (
@@ -27,7 +31,17 @@ export default async function AccountPage() {
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Welcome, {displayName}.</h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">This is where your saved destinations, personal notes, and future itineraries live.</p>
           </div>
-          <LogoutButton />
+          <div className="flex flex-wrap items-center gap-3">
+            {canAdmin && (
+              <Link
+                href="/admin"
+                className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              >
+                Open the admin area →
+              </Link>
+            )}
+            <LogoutButton />
+          </div>
         </div>
         <div className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600">
           {account ? (

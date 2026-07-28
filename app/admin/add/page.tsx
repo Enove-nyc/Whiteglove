@@ -1,6 +1,5 @@
 import Link from "next/link";
 import AddEntryForms from "@/components/AddEntryForms";
-import Footer from "@/components/Footer";
 import { isDbEnabled } from "@/lib/content-admin";
 import { listInfoPages } from "@/lib/pages";
 
@@ -19,9 +18,9 @@ export default async function AdminAddPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-5xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Add a new entry</h1>
@@ -29,14 +28,10 @@ export default async function AdminAddPage() {
               Add a cemetery, a tzadik, or a new page — save what you have now and fill in the rest later. Your additions are kept even when built-in content is re-imported.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/admin" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Dashboard</Link>
-            <Link href="/admin/content" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Review submissions</Link>
-          </div>
         </div>
       </header>
 
-      <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+      <section className="mt-8">
         {!dbReady ? (
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Not connected yet</p>
@@ -67,7 +62,6 @@ export default async function AdminAddPage() {
           </>
         )}
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }

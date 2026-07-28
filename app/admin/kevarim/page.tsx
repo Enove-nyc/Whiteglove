@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Footer from "@/components/Footer";
 import KeverEditor, { type EditorCemetery } from "@/components/KeverEditor";
 import { cemeteries } from "@/data/cemeteries";
 import { isDbEnabled, listCemeteriesForAdmin, listCemeteryBurials } from "@/lib/content-admin";
@@ -38,9 +37,9 @@ export default async function AdminKevarimPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-5xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
@@ -59,7 +58,7 @@ export default async function AdminKevarimPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+      <section className="mt-8">
         {!dbReady ? (
           <p className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             Adding kevarim needs the database. Set <code>DATABASE_URL</code> on the deployment; until then the
@@ -74,8 +73,6 @@ export default async function AdminKevarimPage() {
           <KeverEditor cemeteries={rows} />
         )}
       </section>
-
-      <Footer />
-    </main>
+    </>
   );
 }

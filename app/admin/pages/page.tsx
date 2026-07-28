@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Footer from "@/components/Footer";
 import PageEditor from "@/components/PageEditor";
 import { isDbEnabled } from "@/lib/content-admin";
 import { getPageForAdmin, listPagesForAdmin } from "@/lib/pages";
@@ -18,19 +17,15 @@ export default async function AdminPagesPage({
   const selected = slug ? await getPageForAdmin(slug) : null;
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Page editor</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Edit the heading and intro text on the general pages — Services, Planning, Honeymoon, Getaways, and the service pages. Changes go live within a minute.
             </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/admin" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Dashboard</Link>
-            <Link href="/admin/destinations" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Destination editor</Link>
           </div>
         </div>
       </header>
@@ -84,7 +79,6 @@ export default async function AdminPagesPage({
           )}
         </div>
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }

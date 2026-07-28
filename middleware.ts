@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { edgeAccessToken, edgeLockedPaths, edgeSiteIsLocked } from "@/lib/edge-lock";
+import { edgeAccessToken, edgeAccountEmail, edgeAccountHasSiteAccess, edgeLockedPaths, edgeSiteIsLocked } from "@/lib/edge-lock";
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
@@ -121,7 +121,16 @@ export async function middleware(request: NextRequest) {
     }
     if (locked) {
       const token = await edgeAccessToken("site");
-      if (request.cookies.get("white_glove_site_access")?.value !== token) {
+      let allowed = request.cookies.get("white_glove_site_access")?.value === token;
+
+      // Someone the owner has let in by name gets through without being told
+      // the shared password — they just sign in to their own account.
+      if (!allowed) {
+        const email = await edgeAccountEmail(request.cookies.get("white_glove_account")?.value);
+        allowed = await edgeAccountHasSiteAccess(email);
+      }
+
+      if (!allowed) {
         const url = new URL("/access", request.url);
         url.searchParams.set("next", pathname);
         return NextResponse.redirect(url);

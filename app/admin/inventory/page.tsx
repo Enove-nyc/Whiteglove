@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Footer from "@/components/Footer";
 import AdminInventoryManager from "@/components/AdminInventoryManager";
 import { getEditableInventory } from "@/lib/admin-inventory";
 
@@ -7,9 +6,9 @@ export default async function AdminInventoryPage() {
   const inventory = await getEditableInventory();
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <header className="border-b border-[var(--gold-light)]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Page inventory</h1>
@@ -22,7 +21,6 @@ export default async function AdminInventoryPage() {
         </div>
       </header>
       <AdminInventoryManager initialItems={inventory.items} configured={inventory.configured} />
-      <Footer />
-    </main>
+    </>
   );
 }
