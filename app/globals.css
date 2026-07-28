@@ -1,5 +1,4 @@
 @import "tailwindcss";
-/* Leaflet's own stylesheet — required for tile positioning and popups. */
 @import "leaflet/dist/leaflet.css";
 
 :root {
@@ -10,6 +9,7 @@
   --cream: #f7f3eb;
   --cream-deep: #eee6d7;
   --ink: #2d2c2a;
+  --surface: #fffdf9;
   --font-sans: Arial, Helvetica, sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
 }
@@ -21,15 +21,18 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--cream);
   color: var(--ink);
   font-family: var(--font-sans);
+  line-height: 1.6;
   overflow-x: hidden;
-}
-
-html {
-  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -37,13 +40,15 @@ html {
   color: var(--navy-deep);
 }
 
-/* ---- Form controls ----------------------------------------------------
-   Browsers paint select menus, date pickers and number steppers stark white
-   with a system-blue accent, which reads as a stray browser widget dropped
-   onto a cream page. These pull them back onto the site's own palette. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
 
-/* :where() keeps these at zero specificity, so any utility class on the
-   element still wins — this is a default, not an override. */
+:where(button, a) {
+  -webkit-tap-highlight-color: rgba(170, 139, 82, 0.16);
+}
+
 :where(select, input, textarea) {
   background-color: #fcfaf6;
   color: var(--navy);
@@ -55,13 +60,11 @@ input[type="time"],
 input[type="month"],
 input[type="week"],
 input[type="number"] {
-  /* Keeps the native picker glyphs and steppers dark rather than system blue. */
   color-scheme: light;
   accent-color: var(--navy);
 }
 
 select {
-  /* The native arrow is replaced with one in the site's gold. */
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23aa8b52' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -71,8 +74,6 @@ select {
   padding-right: 2.4rem;
 }
 
-/* The open menu is drawn by the operating system, so this is as far as the
-   page can reach — it lands on Windows and Linux and is ignored on macOS. */
 select option {
   background-color: #fcfaf6;
   color: var(--navy);
@@ -80,14 +81,8 @@ select option {
 
 input::placeholder,
 textarea::placeholder {
-  color: #a8a29e;
+  color: #78716c;
 }
-
-/* ---- The White Glove mark, used through the site ----------------------
-   The gloved hand from the logo, reduced to a silhouette, is the bullet
-   point and the section ornament. It is applied as a CSS mask rather than
-   an <img> so the same file takes whatever colour the surrounding section
-   needs — gold on cream, gold-light on navy. */
 
 .glove-mark {
   display: inline-block;
@@ -118,12 +113,10 @@ textarea::placeholder {
   mask: url("/glove-bullet.svg") no-repeat center / contain;
 }
 
-/* On a navy ground the gold is too dark to read; lighten the bullet only. */
 .glove-on-navy {
   --glove-tone: var(--gold-light);
 }
 
-/* A section divider: hairline, glove, hairline. */
 .glove-rule {
   display: flex;
   align-items: center;
@@ -136,4 +129,19 @@ textarea::placeholder {
   flex: 1;
   height: 1px;
   background: var(--gold-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
