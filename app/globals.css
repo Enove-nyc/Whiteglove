@@ -21,11 +21,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html {
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-}
-
+html { overflow-x: hidden; scroll-behavior: smooth; }
 body {
   background: var(--cream);
   color: var(--ink);
@@ -35,34 +31,17 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection {
-  background: var(--gold-light);
-  color: var(--navy-deep);
-}
-
-:where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 3px;
-}
-
-:where(button, a) {
-  -webkit-tap-highlight-color: rgba(170, 139, 82, 0.16);
-}
-
-:where(select, input, textarea) {
-  background-color: #fcfaf6;
-  color: var(--navy);
-}
+::selection { background: var(--gold-light); color: var(--navy-deep); }
+:where(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+:where(button, a) { -webkit-tap-highlight-color: rgba(170, 139, 82, 0.16); }
+:where(select, input, textarea) { background-color: #fcfaf6; color: var(--navy); }
 
 select,
 input[type="date"],
 input[type="time"],
 input[type="month"],
 input[type="week"],
-input[type="number"] {
-  color-scheme: light;
-  accent-color: var(--navy);
-}
+input[type="number"] { color-scheme: light; accent-color: var(--navy); }
 
 select {
   appearance: none;
@@ -74,15 +53,8 @@ select {
   padding-right: 2.4rem;
 }
 
-select option {
-  background-color: #fcfaf6;
-  color: var(--navy);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #78716c;
-}
+select option { background-color: #fcfaf6; color: var(--navy); }
+input::placeholder, textarea::placeholder { color: #78716c; }
 
 .glove-mark {
   display: inline-block;
@@ -91,16 +63,8 @@ textarea::placeholder {
   mask: url("/glove-bullet.svg") no-repeat center / contain;
 }
 
-.glove-list {
-  list-style: none;
-  padding-left: 0;
-}
-
-.glove-list > li {
-  position: relative;
-  padding-left: 1.85rem;
-}
-
+.glove-list { list-style: none; padding-left: 0; }
+.glove-list > li { position: relative; padding-left: 1.85rem; }
 .glove-list > li::before {
   content: "";
   position: absolute;
@@ -113,32 +77,49 @@ textarea::placeholder {
   mask: url("/glove-bullet.svg") no-repeat center / contain;
 }
 
-.glove-on-navy {
-  --glove-tone: var(--gold-light);
+.glove-on-navy { --glove-tone: var(--gold-light); }
+.glove-rule { display: flex; align-items: center; gap: 0.9rem; }
+.glove-rule::before, .glove-rule::after { content: ""; flex: 1; height: 1px; background: var(--gold-light); }
+
+/* The planner keeps all of its existing controls and behavior. These scoped
+   rules make its dense working areas easier to scan and use on every screen. */
+.itinerary-planner > div > div,
+.itinerary-planner article {
+  border-radius: 0.75rem;
+  box-shadow: 0 5px 20px rgba(23, 45, 82, 0.045);
 }
 
-.glove-rule {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
+.itinerary-planner button,
+.itinerary-planner a[class*="border"] {
+  border-radius: 0.375rem;
+  min-height: 2.5rem;
 }
 
-.glove-rule::before,
-.glove-rule::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--gold-light);
+.itinerary-planner input,
+.itinerary-planner select,
+.itinerary-planner textarea {
+  min-height: 2.6rem;
+}
+
+.itinerary-planner article {
+  background: var(--surface);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.itinerary-planner article + article { margin-top: 1rem; }
+
+@media (max-width: 640px) {
+  .itinerary-planner button,
+  .itinerary-planner a[class*="border"] {
+    min-height: 2.75rem;
+  }
+
+  .itinerary-planner article { padding: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
