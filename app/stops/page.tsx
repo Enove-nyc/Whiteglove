@@ -38,11 +38,11 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {matchingGuides.length > 0 && (
           <div className="mt-12">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Destination guides</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination guides</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingGuides.map((guide) => (
-                <Link key={guide.slug} href={`/${guide.slug}`} className="border border-[var(--gold-light)] bg-[var(--navy)] p-7 text-white transition hover:bg-[var(--gold)]">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-light)]">{guide.country}</p>
+                <Link key={guide.slug} href={`/${guide.slug}`} className="min-w-0 border border-[var(--gold-light)] bg-[var(--navy)] p-5 text-white transition hover:bg-[var(--gold)] sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-light)] sm:tracking-[0.18em]">{guide.country}</p>
                   <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight">{guide.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-slate-300">{guide.city}</p>
                   <p dir="rtl" className="mt-5 text-2xl leading-tight text-slate-100">{guide.yiddishTzaddik}</p>
@@ -56,12 +56,12 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {matchingStops.length > 0 && (
           <div className={matchingGuides.length > 0 ? "mt-14" : "mt-12"}>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Locations</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Locations</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingStops.map((stop, index) => (
-                <article key={`${stop.city}-${stop.address}`} className="flex min-h-72 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{String(index + 1).padStart(2, "0")} · {stop.country}</p>
-                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{stop.yiddishName}</h2>
+                <article key={`${stop.city}-${stop.address}`} className="flex min-h-72 min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">{String(index + 1).padStart(2, "0")} · {stop.country}</p>
+                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{stop.yiddishName}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{stop.city}</p>
                   {stop.traditionalName && <p className="mt-1 text-base text-stone-500">Also known as {stop.traditionalName}</p>}
                   <p className="mt-4 leading-7 text-stone-600">{stop.address}</p>
@@ -77,12 +77,12 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {matchingBulk.length > 0 && (
           <div className={matchingGuides.length > 0 || matchingStops.length > 0 ? "mt-14" : "mt-12"}>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Destination research queue</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination research queue</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingBulk.map((destination) => (
-                <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-7 transition hover:border-[var(--gold)]">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{destination.country}</p>
-                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{destination.yiddishCity}</h2>
+                <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">{destination.country}</p>
+                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{destination.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{destination.city}</p>
                   <p className="mt-4 text-sm leading-6 text-stone-600">Practical details are being checked.</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open destination →</span>

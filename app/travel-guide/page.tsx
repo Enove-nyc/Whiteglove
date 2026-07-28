@@ -104,7 +104,23 @@ export default async function TravelGuidePage() {
           </div>
 
           <h3 className="mt-12 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Official source by country</h3>
-          <div className="mt-4 overflow-x-auto border border-[var(--gold-light)] bg-white">
+
+          {/* On a phone a three-column table means constant side-scrolling, so
+              the same information stacks into cards instead. */}
+          <div className="mt-4 grid gap-3 sm:hidden">
+            {COUNTRY_DOCS.map((c) => (
+              <div key={c.country} className="border border-[var(--gold-light)] bg-white p-4">
+                <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{c.country}</p>
+                {c.note && <p className="mt-1 text-xs leading-5 text-amber-800">{c.note}</p>}
+                <div className="mt-3 flex flex-col gap-1">
+                  <a href={c.officialUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Government source →</a>
+                  <a href={c.stateDeptUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">State Dept page →</a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 hidden overflow-x-auto border border-[var(--gold-light)] bg-white sm:block">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="border-b border-[var(--gold-light)] text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
                 <tr><th className="px-4 py-3">Country</th><th className="px-4 py-3">Official entry information</th><th className="px-4 py-3">U.S. country page</th></tr>

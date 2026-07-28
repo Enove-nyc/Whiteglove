@@ -22,7 +22,7 @@ export default function BookPage() {
       <Navbar />
       <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
-          <div>
+          <div className="min-w-0">
             <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book flights, hotels &amp; cars</h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-stone-600">
               Everything for the travel side of your journey in one place. Search flights, hotels, and rental cars, then keep your kevarim, shomer details, and guidance together in White Glove.
@@ -31,7 +31,7 @@ export default function BookPage() {
               Each search opens with a trusted partner where you compare options and pay securely. Your itinerary and saved places stay here with White Glove.
             </p>
           </div>
-          <BookPartners affiliate={affiliate} />
+          <div className="min-w-0"><BookPartners affiliate={affiliate} /></div>
         </div>
       </section>
 
