@@ -13,7 +13,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname !== "/access" && !pathname.startsWith("/admin")) {
+  // /version reports only the deployed commit — no private content. It stays
+  // reachable while the site is locked so the build can always be checked.
+  if (pathname !== "/access" && pathname !== "/version" && !pathname.startsWith("/admin")) {
     let locked = await edgeSiteIsLocked();
     if (!locked) {
       const lockedPaths = await edgeLockedPaths();
