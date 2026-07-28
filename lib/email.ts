@@ -16,26 +16,24 @@ function resendConfig() {
 
 // Where notifications are delivered.
 //
-// Everything the site sends the owner — contact-form messages, edit
-// suggestions, business listings — goes to ONE inbox by default. Splitting them
-// across edits@ and contact@ only doubled the number of addresses that had to
-// be watched and kept working, for no gain: they are all "someone wrote in".
+// Two inboxes, because they are two different jobs. Somebody writing in about a
+// trip needs an answer; somebody correcting a shomer's number or sending in a
+// kever is a queue of work to check against a source. Mixing them buries the
+// corrections under the enquiries.
 //
-// OWNER_NOTIFICATION_EMAIL sets that inbox. CONTACT_NOTIFICATION_EMAIL is kept
-// as an optional override for anyone who later does want contact-form messages
-// somewhere separate; unset, it simply follows the main inbox.
-const DEFAULT_INBOX = "contact@whitegloveitineraries.com";
-
-function ownerInbox() {
-  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_INBOX;
-}
+//   edit suggestions, submitted entries, business listings → edits@
+//   contact-form messages                                  → contact@
+//
+// OWNER_NOTIFICATION_EMAIL and CONTACT_NOTIFICATION_EMAIL override each side.
+const DEFAULT_EDITS_INBOX = "edits@whitegloveitineraries.com";
+const DEFAULT_CONTACT_INBOX = "contact@whitegloveitineraries.com";
 
 function editsInbox() {
-  return ownerInbox();
+  return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_EDITS_INBOX;
 }
 
 function contactInbox() {
-  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || ownerInbox();
+  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || DEFAULT_CONTACT_INBOX;
 }
 
 const escapeHtml = (v: string) =>
@@ -112,17 +110,16 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
 export async function emailConfigStatus() {
   const apiKeySet = Boolean(process.env.RESEND_API_KEY);
   const from = process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER;
-  const split = Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim());
   return {
     apiKeySet,
     from,
     usingTestSender: from === TEST_SENDER,
-    inbox: ownerInbox(),
     editsInbox: editsInbox(),
     contactInbox: contactInbox(),
-    /** False in the normal case: everything arrives in one place. */
-    inboxesSplit: split && contactInbox() !== editsInbox(),
-    inboxFromEnv: Boolean(process.env.OWNER_NOTIFICATION_EMAIL?.trim()),
+    /** True in the normal case: the two queues stay apart. */
+    inboxesSplit: contactInbox() !== editsInbox(),
+    editsInboxFromEnv: Boolean(process.env.OWNER_NOTIFICATION_EMAIL?.trim()),
+    contactInboxFromEnv: Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim()),
     lastFailure,
     /** Real sends from every route, not just this instance's tests. */
     log: await readEmailLog(),

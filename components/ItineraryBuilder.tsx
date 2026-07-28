@@ -6,6 +6,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
+import TripSwitcher from "@/components/TripSwitcher";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
@@ -51,6 +52,8 @@ export default function ItineraryBuilder() {
   const [savedNote, setSavedNote] = useState("");
   const [planning, setPlanning] = useState(false);
   const [planNote, setPlanNote] = useState("");
+  // Bumped when the traveler opens a different trip, so the loader runs again.
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Load: account first, then localStorage.
   useEffect(() => {
@@ -60,11 +63,13 @@ export default function ItineraryBuilder() {
         const res = await fetch("/api/account/itinerary", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          if (active && data?.itinerary) {
-            setItin({ ...emptyItinerary(), ...data.itinerary });
-            setLoaded(true);
-            return;
-          }
+          if (!active) return;
+          // Signed in — the account is the answer, even when the answer is an
+          // empty trip. Falling through to localStorage here would drag the
+          // last trip's stops into a newly started one.
+          setItin(data?.itinerary ? { ...emptyItinerary(), ...data.itinerary } : emptyItinerary());
+          setLoaded(true);
+          return;
         }
       } catch {
         /* not logged in / offline */
@@ -80,7 +85,7 @@ export default function ItineraryBuilder() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   function persist(next: Itinerary) {
     setItin(next);
@@ -233,6 +238,8 @@ export default function ItineraryBuilder() {
         travelers={travelersOf(itin)}
         onChange={(travelers) => set({ travelers, travelerName: travelers[0]?.name ?? "" })}
       />
+
+      <TripSwitcher onSwitched={() => setReloadKey((k) => k + 1)} />
 
       <ShareItineraryPanel />
 

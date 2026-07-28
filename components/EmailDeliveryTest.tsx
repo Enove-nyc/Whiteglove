@@ -7,11 +7,11 @@ type Config = {
   apiKeySet?: boolean;
   from?: string;
   usingTestSender?: boolean;
-  inbox?: string;
   editsInbox?: string;
   contactInbox?: string;
   inboxesSplit?: boolean;
-  inboxFromEnv?: boolean;
+  editsInboxFromEnv?: boolean;
+  contactInboxFromEnv?: boolean;
   lastFailure?: { at: string; to: string; error?: string; status?: number } | null;
   log?: LogEntry[];
   logAvailable?: boolean;
@@ -70,24 +70,23 @@ export default function EmailDeliveryTest() {
               {config.usingTestSender ? " — sandbox sender" : ""}
             </dd>
           </div>
-          {config.inboxesSplit ? (
-            <>
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact forms go to</dt>
-                <dd className="text-stone-700">{config.contactInbox}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Everything else goes to</dt>
-                <dd className="text-stone-700">{config.editsInbox}</dd>
-              </div>
-            </>
-          ) : (
-            <div className="sm:col-span-2">
-              <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Everything arrives at</dt>
-              <dd className="text-stone-700">
-                {config.inbox}
-                <span className="ml-2 text-xs text-stone-500">contact form, edit suggestions and listings — one inbox</span>
-              </dd>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact form messages</dt>
+            <dd className="text-stone-700">
+              {config.contactInbox}
+              <span className="ml-2 text-xs text-stone-500">somebody writing in — these need an answer</span>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Edits, listings and submissions</dt>
+            <dd className="text-stone-700">
+              {config.editsInbox}
+              <span className="ml-2 text-xs text-stone-500">corrections to check against a source</span>
+            </dd>
+          </div>
+          {!config.inboxesSplit && (
+            <div className="sm:col-span-2 text-xs text-amber-800">
+              Both are pointing at the same mailbox. Corrections will sit in with the enquiries.
             </div>
           )}
         </dl>
@@ -106,13 +105,11 @@ export default function EmailDeliveryTest() {
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button type="button" onClick={() => test("contact")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
-          {busy === "contact" ? "Sending…" : `Send a test to ${config?.inbox ?? "your inbox"}`}
+          {busy === "contact" ? "Sending…" : "Test the contact inbox"}
         </button>
-        {config?.inboxesSplit && (
-          <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
-            {busy === "edits" ? "Sending…" : "Send a test to the other inbox"}
-          </button>
-        )}
+        <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
+          {busy === "edits" ? "Sending…" : "Test the edits inbox"}
+        </button>
       </div>
 
       {result && (

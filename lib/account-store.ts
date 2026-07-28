@@ -1,5 +1,5 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
-import type { Itinerary } from "@/data/itinerary";
+import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
@@ -20,12 +20,43 @@ export type AccountRecord = {
   resetCodeExpiresAt?: string;
 };
 
+/**
+ * One trip in the account: an itinerary, the route of places behind it, and
+ * whoever it has been shared with.
+ *
+ * A person planning Poland in the spring and Ukraine in the autumn was, until
+ * now, planning over the top of themselves — there was one itinerary per
+ * account and saving the second lost the first.
+ */
+export type SavedTrip = {
+  id: string;
+  name: string;
+  itinerary: Itinerary;
+  route: SavedPlace[];
+  /** Public read-only token, when this particular trip is shared. */
+  shareId?: string;
+  collaborators?: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AccountData = {
+  /**
+   * The open trip's route and itinerary, kept as they always were.
+   *
+   * Everything else in the site reads these two fields — the print view, the
+   * share links, the admin account list. Rather than rewrite all of it, the
+   * trips layer keeps them pointing at whichever trip is open, so an account
+   * that has never made a second trip behaves exactly as before.
+   */
   route: SavedPlace[];
   favorites: SavedPlace[];
   itinerary?: Itinerary;
-  itineraryShareId?: string; // public read-only share token for this account's trip
-  itineraryCollaborators?: string[]; // emails the owner added to the trip
+  itineraryShareId?: string;
+  itineraryCollaborators?: string[];
+  /** Every trip in the account. Absent on accounts made before this existed. */
+  trips?: SavedTrip[];
+  activeTripId?: string;
   updatedAt?: string;
 };
 
@@ -314,24 +345,239 @@ export async function saveAccountCollection(email: string, collection: "route" |
   if (!hasAccountStorage()) return false;
   const normalized = normalizeEmail(email);
   const current = await getAccountData(normalized);
+  const capped = items.slice(0, 200);
   const next: AccountData = {
     ...current,
-    [collection]: items.slice(0, 200),
+    [collection]: capped,
     updatedAt: new Date().toISOString(),
   };
+  // The route belongs to whichever trip is open. Favorites belong to the
+  // person, so they stay outside the trips.
+  if (collection === "route") {
+    const { trips, activeId } = withTrips(current);
+    next.trips = trips.map((t) => (t.id === activeId ? { ...t, route: capped, updatedAt: new Date().toISOString() } : t));
+    next.activeTripId = activeId;
+  }
   return writeJson(dataKey(normalized), next);
 }
 
-export async function saveAccountItinerary(email: string, itinerary: Itinerary) {
-  if (!hasAccountStorage()) return false;
+// ---- Trips -------------------------------------------------------------
+
+function tripId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/**
+ * The account's trips, migrating an older single-itinerary account on read.
+ *
+ * Nothing is written by this — an account that has never opened the switcher
+ * keeps its record exactly as it was, and only starts carrying a `trips` array
+ * the first time something is saved.
+ */
+export function withTrips(data: AccountData): { trips: SavedTrip[]; activeId: string } {
+  const existing = data.trips?.filter((t) => t && t.id) ?? [];
+  if (existing.length) {
+    const activeId = existing.some((t) => t.id === data.activeTripId) ? data.activeTripId! : existing[0].id;
+    return { trips: existing, activeId };
+  }
+  const now = data.updatedAt || new Date().toISOString();
+  const itinerary = data.itinerary ?? emptyItinerary();
+  const first: SavedTrip = {
+    id: tripId(),
+    name: itinerary.title?.trim() || "My trip",
+    itinerary,
+    route: data.route ?? [],
+    // The old single share link belongs to this first trip.
+    shareId: data.itineraryShareId,
+    collaborators: data.itineraryCollaborators ?? [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  return { trips: [first], activeId: first.id };
+}
+
+export type TripSummary = {
+  id: string;
+  name: string;
+  active: boolean;
+  /** Stops in the itinerary itself. */
+  stops: number;
+  /** Places saved to this trip's route but not yet placed on a day. */
+  places: number;
+  days: number;
+  shared: boolean;
+  updatedAt: string;
+};
+
+/** How many days the trip covers, from its dates. Zero until both are set. */
+function dayCount(itinerary?: Itinerary): number {
+  const start = Date.parse(`${itinerary?.startDate ?? ""}T00:00:00Z`);
+  const end = Date.parse(`${itinerary?.endDate ?? ""}T00:00:00Z`);
+  if (Number.isNaN(start) || Number.isNaN(end) || end < start) return 0;
+  return Math.round((end - start) / 86_400_000) + 1;
+}
+
+function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
+  return trips.map((t) => ({
+    id: t.id,
+    name: t.name,
+    active: t.id === activeId,
+    stops: t.itinerary?.activities?.length ?? 0,
+    places: t.route?.length ?? 0,
+    days: dayCount(t.itinerary),
+    shared: Boolean(t.shareId),
+    updatedAt: t.updatedAt,
+  }));
+}
+
+export async function getTrips(email: string): Promise<TripSummary[]> {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  return summarize(trips, activeId);
+}
+
+/** One trip's itinerary, or the open one when no id is given. */
+export async function getTripItinerary(email: string, id?: string) {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === (id || activeId)) ?? trips[0];
+  return trip ? { itinerary: trip.itinerary, tripId: trip.id, tripName: trip.name } : null;
+}
+
+/**
+ * Write the trips back, keeping the legacy fields in step with the open one.
+ *
+ * Everything outside this file still reads `data.itinerary` and `data.route`,
+ * so the open trip is mirrored there on every write. Get that wrong and the
+ * print view or a share link quietly shows a different trip than the builder.
+ */
+async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
   const normalized = normalizeEmail(email);
   const current = await getAccountData(normalized);
+  const open = trips.find((t) => t.id === activeId) ?? trips[0];
   const next: AccountData = {
     ...current,
-    itinerary: { ...itinerary, updatedAt: new Date().toISOString() },
+    trips,
+    activeTripId: open?.id,
+    route: open?.route ?? [],
+    itinerary: open?.itinerary,
+    itineraryShareId: open?.shareId,
+    itineraryCollaborators: open?.collaborators ?? [],
     updatedAt: new Date().toISOString(),
   };
-  return writeJson(dataKey(normalized), next);
+  const ok = await writeJson(dataKey(normalized), next);
+  return ok ? summarize(trips, open?.id ?? activeId) : null;
+}
+
+export async function createTrip(email: string, name?: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const now = new Date().toISOString();
+  const clean = name?.trim() || `Trip ${trips.length + 1}`;
+  const trip: SavedTrip = {
+    id: tripId(),
+    name: clean,
+    itinerary: { ...emptyItinerary(), title: clean },
+    route: [],
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, trip], trip.id);
+  if (!saved) return { ok: false as const, error: "Could not start the trip." };
+  return { ok: true as const, trips: saved, activeId: trip.id };
+}
+
+export async function renameTrip(email: string, id: string, name: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const clean = name.trim();
+  if (!clean) return { ok: false as const, error: "Give the trip a name." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === id)) return { ok: false as const, error: "That trip is gone." };
+  const next = trips.map((t) =>
+    t.id === id
+      ? { ...t, name: clean, itinerary: { ...t.itinerary, title: clean }, updatedAt: new Date().toISOString() }
+      : t,
+  );
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not rename the trip." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+export async function switchTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (!trips.some((t) => t.id === id)) return { ok: false as const, error: "That trip is gone." };
+  const saved = await writeTrips(email, trips, id);
+  if (!saved) return { ok: false as const, error: "Could not open that trip." };
+  return { ok: true as const, trips: saved, activeId: id };
+}
+
+export async function duplicateTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const source = trips.find((t) => t.id === id);
+  if (!source) return { ok: false as const, error: "That trip is gone." };
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const now = new Date().toISOString();
+  const name = `${source.name} (copy)`;
+  const copy: SavedTrip = {
+    id: tripId(),
+    name,
+    itinerary: { ...source.itinerary, title: name },
+    route: [...(source.route ?? [])],
+    // A copy is not shared. Handing someone a link to one trip should not
+    // hand them every copy of it made afterwards.
+    shareId: undefined,
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, copy], activeId);
+  if (!saved) return { ok: false as const, error: "Could not copy the trip." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+export async function deleteTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeEmail(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (trips.length <= 1) return { ok: false as const, error: "This is your only trip. Start another one first." };
+  const going = trips.find((t) => t.id === id);
+  if (!going) return { ok: false as const, error: "That trip is already gone." };
+  // Take its share link down with it, or the link would keep resolving to the
+  // account and show whatever trip happened to be open.
+  if (going.shareId) await deleteKey(shareKey(going.shareId));
+  for (const collaborator of going.collaborators ?? []) {
+    await removeFromSharedWith(collaborator, normalized);
+  }
+  const remaining = trips.filter((t) => t.id !== id);
+  const nextActive = activeId === id ? remaining[0].id : activeId;
+  const saved = await writeTrips(normalized, remaining, nextActive);
+  if (!saved) return { ok: false as const, error: "Could not delete the trip." };
+  return { ok: true as const, trips: saved, activeId: nextActive };
+}
+
+/** Save an itinerary into one trip, or into the open one. */
+export async function saveAccountItinerary(email: string, itinerary: Itinerary, id?: string) {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeEmail(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const targetId = id && trips.some((t) => t.id === id) ? id : activeId;
+  const stamped = { ...itinerary, updatedAt: new Date().toISOString() };
+  const next = trips.map((t) =>
+    t.id === targetId
+      ? { ...t, itinerary: stamped, name: stamped.title?.trim() || t.name, updatedAt: new Date().toISOString() }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
 }
 
 // ---- Itinerary sharing ------------------------------------------------
@@ -346,10 +592,32 @@ function shareToken() {
   return randomBytes(9).toString("base64url"); // ~12 url-safe chars
 }
 
+/**
+ * Patch the account record, mirroring share changes onto the open trip.
+ *
+ * Sharing is written in the legacy fields, and the trips array is written from
+ * those same fields when a trip is opened. Without this mirror the next switch
+ * would hand the open trip's share link back to whatever it used to be.
+ */
 async function patchAccountData(email: string, patch: Partial<AccountData>) {
   const normalized = normalizeEmail(email);
   const current = await getAccountData(normalized);
   const next: AccountData = { ...current, ...patch, updatedAt: new Date().toISOString() };
+  const touchesShare = "itineraryShareId" in patch || "itineraryCollaborators" in patch;
+  if (touchesShare) {
+    const { trips, activeId } = withTrips(current);
+    next.trips = trips.map((t) =>
+      t.id === activeId
+        ? {
+            ...t,
+            shareId: "itineraryShareId" in patch ? patch.itineraryShareId : t.shareId,
+            collaborators: "itineraryCollaborators" in patch ? (patch.itineraryCollaborators ?? []) : t.collaborators,
+            updatedAt: new Date().toISOString(),
+          }
+        : t,
+    );
+    next.activeTripId = activeId;
+  }
   const ok = await writeJson(dataKey(normalized), next);
   return ok ? next : null;
 }
