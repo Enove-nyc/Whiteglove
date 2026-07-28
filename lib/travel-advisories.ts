@@ -117,6 +117,9 @@ export async function fetchAdvisories(): Promise<AdvisoryFetch> {
       headers: { "user-agent": "WhiteGloveItineraries/1.0 (+https://www.whitegloveitineraries.com)" },
       // Re-read at most hourly; advisories change rarely and the feed is public.
       next: { revalidate: 3600 },
+      // Never let a slow government feed hang a page render or a build: this
+      // runs while ~100 kever pages are generated, so it must fail fast.
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return { available: false, reason: `The State Department feed returned HTTP ${res.status}.` };
     const xml = await res.text();
