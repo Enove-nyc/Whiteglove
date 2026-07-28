@@ -33,12 +33,9 @@ export default async function ItineraryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
-        <details className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.05)]">
-          <summary className="cursor-pointer text-sm font-semibold text-[var(--navy)]">Need help planning?</summary>
-          <div className="mt-4">
+        <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.05)] sm:p-6">
           <TravelAssistantBox />
-          </div>
-        </details>
+        </div>
 
         <div className="itinerary-planner mt-8">
           <SharedWithMe />

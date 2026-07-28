@@ -339,19 +339,19 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
   }
 
   return (
-    <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+    <article className="overflow-hidden border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="flex flex-col gap-1 border-b border-[var(--gold-light)] pb-4 sm:flex-row sm:items-baseline sm:justify-between">
         <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h3>
-        <p className="text-sm font-semibold text-stone-500">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-stone-500">
           {day.label}
           {day.startTime && day.activities.length > 0 ? (
-            <span className="ml-3 text-xs font-normal text-stone-500">
+            <span className="text-xs font-normal text-stone-500">
               {day.startsFrom ? `From ${day.startsFrom}, ` : ""}{day.startTime}
               {day.endTime ? ` → ${day.endTime}` : ""}
             </span>
           ) : null}
           {day.travelHours > 0 ? (
-            <span className="ml-3 text-xs font-normal text-stone-400">
+            <span className="text-xs font-normal text-stone-400">
               {day.travelLegs.every((l) => l.measured) ? "" : "≈"}
               {day.travelHours} h driving
               {day.travelLegs.every((l) => l.source === "google") ? " (Google Maps)" : ""}
@@ -370,8 +370,12 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
         {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
             {a.distanceFromPrev !== null && (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-                ↓ {formatKm(a.distanceFromPrev)} · {a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} drive from previous stop <TimeSource source={a.travelSource} />{" "}
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-stone-500">
+                <span aria-hidden="true">↓</span>
+                <span>{formatKm(a.distanceFromPrev)}</span>
+                <span>·</span>
+                <span>{a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} from previous stop</span>
+                <TimeSource source={a.travelSource} />{" "}
                 <a
                   href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
                   target="_blank"
@@ -382,8 +386,8 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 </a>
               </p>
             )}
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <p className="min-w-0 font-[family-name:var(--font-display)] text-xl leading-snug text-[var(--navy)]">
                 <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
                 {a.arrivalTime ? (
                   <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
@@ -396,7 +400,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 {a.name}
                 {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
               </p>
-              <span className="flex shrink-0 items-center gap-1">
+              <span className="flex flex-wrap items-center gap-1 sm:justify-end">
                 {day.activities.length > 1 && (
                   <>
                     <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
@@ -417,30 +421,30 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 onCancel={() => setEditingId(null)}
               />
             )}
-            {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
+            {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
             {/* Who you are going to daven by. The reason for the stop belongs
                 on the stop, not one click away on the cemetery page. */}
             {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
-              <p className="mt-1 text-sm text-stone-700">
-                <span className="font-semibold text-[var(--gold)]">Buried here: </span>
-                {burials[a.keverSlug].join(" · ")}
-              </p>
+              <div className="mt-3 rounded-md bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
+                <span className="font-semibold text-[var(--gold)]">Buried here</span>
+                <span className="mt-0.5 block break-words">{burials[a.keverSlug].join(" · ")}</span>
+              </div>
             )}
             {(a.phone || a.href || a.address || a.coordinates) && (
-              <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <p className="mt-3 flex flex-wrap gap-2 text-sm">
                 {/* Every stop gets its own navigate link, including the first
                     one of the day. Leaving the destination alone lets Google
                     Maps route from wherever the traveler actually is, which is
                     the only sensible origin for the first stop — there is no
                     previous stop to start from. */}
                 {(a.address || a.coordinates) && (
-                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🧭 Navigate here →</a>
+                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
                 )}
-                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">📞 {a.phone}</a>}
-                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Link →</a>)}
+                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
+                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
               </p>
             )}
-            {a.notes && <p className="mt-1 text-sm text-stone-500">{a.notes}</p>}
+            {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
           </div>
         ))}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />

@@ -31,6 +31,33 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+main,
+section,
+article,
+header,
+footer,
+nav,
+div {
+  min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+li,
+a {
+  overflow-wrap: break-word;
+}
+
 ::selection { background: var(--gold-light); color: var(--navy-deep); }
 :where(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 :where(button, a) { -webkit-tap-highlight-color: rgba(170, 139, 82, 0.16); }
@@ -104,6 +131,14 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 .itinerary-planner article {
   background: var(--surface);
   padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.itinerary-planner {
+  overflow-x: clip;
+}
+
+.itinerary-planner > * {
+  max-width: 100%;
 }
 
 .itinerary-planner article + article { margin-top: 1rem; }
