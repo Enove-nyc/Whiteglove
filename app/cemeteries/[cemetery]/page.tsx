@@ -5,6 +5,7 @@ import KeverCoordinates from "@/components/KeverCoordinates";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import NearestAirports from "@/components/NearestAirports";
+import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries } from "@/data/cemeteries";
@@ -75,6 +76,8 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             </ol>
 
             {cemetery.accessNote && <p className="mt-6 border-t border-[var(--gold-light)] pt-5 text-sm leading-6 text-stone-600">{cemetery.accessNote}</p>}
+
+            <TravelAdvisoryBadge country={cemetery.country} />
 
             <NearestAirports coordinates={cemetery.coordinates} rankCoordinates={cemetery.airportRef} address={cemetery.address} country={cemetery.country} />
 

@@ -13,6 +13,7 @@ const menuItems = [
   { yiddish: "וואַקאַציעס", english: "Getaways", href: "/getaways" },
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
   { yiddish: "כשר עסן", english: "Kosher food", href: "/kosher" },
+  { yiddish: "רײַזע פֿירער", english: "Travel guide", href: "/travel-guide" },
   { yiddish: "דירעקטאָרי", english: "Directory", href: "/directory" },
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
   { yiddish: "פּלאַנירונג", english: "Planning", href: "/planning" },
