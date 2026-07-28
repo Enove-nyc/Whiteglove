@@ -35,7 +35,7 @@ export default async function TravelGuidePage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]"><GloveMark size="xs" />Before you travel</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Travel guide</h1>
@@ -97,7 +97,7 @@ export default async function TravelGuidePage() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {DOCUMENT_CHECKLIST.map((item) => (
-              <article key={item.title} className="border border-[var(--gold-light)] bg-white p-5">
+              <article key={item.title} className="wg-card border border-[var(--gold-light)] bg-white p-5">
                 <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{item.title}</p>
                 <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
               </article>
@@ -152,7 +152,7 @@ export default async function TravelGuidePage() {
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {PAYMENT_GUIDE.map((item) => (
-            <article key={item.title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+            <article key={item.title} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
               <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{item.title}</p>
               <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
             </article>

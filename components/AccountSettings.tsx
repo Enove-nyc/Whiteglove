@@ -55,7 +55,7 @@ export default function AccountSettings({
   }
 
   return (
-    <div className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
+    <div className="wg-card mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Account settings</p>

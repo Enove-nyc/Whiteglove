@@ -28,7 +28,7 @@ export default function SharedWithMe() {
   if (trips.length === 0) return null;
 
   return (
-    <div className="mb-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+    <div className="wg-card mb-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Shared with you</p>
       <ul className="mt-3 divide-y divide-[var(--gold-light)]">
         {trips.map((t) => (

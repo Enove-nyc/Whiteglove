@@ -22,15 +22,15 @@ export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">White Glove Itineraries</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Privacy Policy</h1>
+          <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Privacy Policy</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
       </section>
 
-      <article className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
+      <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
           White Glove Itineraries (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides travel guides and planning
           tools for kosher travel and Jewish heritage journeys at enovenyc.com. This policy explains what information we collect,

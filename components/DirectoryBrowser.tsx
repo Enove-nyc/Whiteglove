@@ -72,7 +72,7 @@ export default function DirectoryBrowser({ providers }: { providers: PublicProvi
 
       <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((p) => (
-          <article key={p.slug} className="flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+          <article key={p.slug} className="wg-card flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{PROVIDER_CATEGORY_LABELS[p.category].english}</p>
               {p.featured && <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">★ Featured</span>}

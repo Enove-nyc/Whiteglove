@@ -83,7 +83,7 @@ export default function PracticalInformation({
         {sections.map(({ yiddish, english, key, categories }) => {
           const dbPlaces = places.filter((place) => categories.includes(place.category));
           return (
-            <article key={key} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+            <article key={key} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{yiddish}</h3>
               <p className="mt-1 text-sm text-stone-500">{english}</p>
               {dbPlaces.length ? (

@@ -31,11 +31,11 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <SubBrandBanner />
-      <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Kevarim &amp; nesios directory</p>
-            <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Find the destination you are looking for.</h1>
+            <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Find the destination you are looking for.</h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
               Search in English or יידיש for kevarim, cities, and essential locations. Each entry grows into a complete guide as its practical and historical details are verified.
             </p>
@@ -44,7 +44,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow={query ? "Search results" : "Destination directory"}
           title={query ? `Results for “${q.trim()}”` : `${allCemeteries.length + destinations.length} destinations available.`}

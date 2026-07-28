@@ -22,15 +22,15 @@ export default function TermsOfUsePage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">White Glove Itineraries</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Terms of Use</h1>
+          <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Terms of Use</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
       </section>
 
-      <article className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
+      <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
           These Terms of Use govern your access to and use of White Glove Itineraries at enovenyc.com (the &ldquo;Service&rdquo;).
           By using the Service, you agree to these terms. If you do not agree, please do not use the Service.

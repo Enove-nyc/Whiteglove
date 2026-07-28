@@ -86,14 +86,14 @@ export default function MyRouteDashboard() {
       <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">Save the places that matter to you, set any kever you must reach on a specific date, then organize the flexible stops around it.</p>
 
       {activeRoute.length === 0 ? (
-        <div className="mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
+        <div className="wg-card mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your route is waiting.</h2>
           <p className="mt-3 leading-7 text-stone-600">Open a destination or location and choose Add to My Route.</p>
           <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Browse destinations</Link>
         </div>
       ) : (
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_.6fr]">
-          <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7 sm:p-9">
+          <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-9">
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Saved places</p>

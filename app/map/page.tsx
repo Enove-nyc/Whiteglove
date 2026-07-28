@@ -42,7 +42,7 @@ export default function MapPage() {
       <Navbar />
       <SubBrandBanner />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
             <GloveMark size="xs" />
