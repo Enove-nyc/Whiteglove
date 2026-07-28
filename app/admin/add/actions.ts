@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { ContentStatus } from "@prisma/client";
-import { createBurial, createCemetery, createInfoPage } from "@/lib/content-admin";
+import { createCemetery, createInfoPage } from "@/lib/content-admin";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -43,30 +43,6 @@ export async function addCemeteryAction(_prev: ActionResult | null, formData: Fo
     revalidatePath("/cemeteries");
     revalidatePath("/admin/add");
     return { ok: true, message: `Added “${name}”. You can fill in more details anytime.` };
-  } catch (error) {
-    return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
-  }
-}
-
-export async function addBurialAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
-  const cemeteryId = str(formData, "cemeteryId");
-  const name = str(formData, "name");
-  if (!cemeteryId) return { ok: false, message: "Choose which cemetery this tzadik is in." };
-  if (!name) return { ok: false, message: "A name is required." };
-  try {
-    await createBurial({
-      cemeteryId,
-      name,
-      yiddishName: str(formData, "yiddishName"),
-      knownAs: nullable(formData, "knownAs"),
-      seforim: nullable(formData, "seforim"),
-      yahrzeit: nullable(formData, "yahrzeit"),
-      note: nullable(formData, "note"),
-    });
-    revalidatePath("/cemeteries");
-    revalidatePath("/admin/add");
-    return { ok: true, message: `Added “${name}”.` };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
   }

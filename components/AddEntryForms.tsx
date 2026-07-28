@@ -3,9 +3,7 @@
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 import { useActionState } from "react";
-import { type ActionResult, addBurialAction, addCemeteryAction, addInfoPageAction } from "@/app/admin/add/actions";
-
-type CemeteryOption = { id: string; slug: string; name: string; city: string; country: string };
+import { type ActionResult, addCemeteryAction, addInfoPageAction } from "@/app/admin/add/actions";
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -19,9 +17,8 @@ function Status({ state }: { state: ActionResult | null }) {
   return <span className={`text-sm font-semibold ${state.ok ? "text-emerald-700" : "text-red-700"}`}>{state.message}</span>;
 }
 
-export default function AddEntryForms({ cemeteries }: { cemeteries: CemeteryOption[] }) {
+export default function AddEntryForms() {
   const [cemState, cemAction, cemPending] = useActionState<ActionResult | null, FormData>(addCemeteryAction, null);
-  const [burState, burAction, burPending] = useActionState<ActionResult | null, FormData>(addBurialAction, null);
   const [pageState, pageAction, pagePending] = useActionState<ActionResult | null, FormData>(addInfoPageAction, null);
 
   return (
@@ -48,36 +45,19 @@ export default function AddEntryForms({ cemeteries }: { cemeteries: CemeteryOpti
         </div>
       </form>
 
-      {/* New tzadik */}
-      <form action={burAction} className={cardClass}>
+      {/* New tzadik — this screen's picker could only ever list cemeteries that
+          had a database row, which the 97 built-in batei hachaim don't. Adding a
+          person now lives on /admin/kevarim, where every beis hachaim on the
+          site is offered and the row is created on demand. */}
+      <div className={cardClass}>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New kever</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add a tzadik</h2>
-        <p className="mt-2 text-sm leading-6 text-stone-600">Add a burial to any cemetery. It shows on that cemetery&apos;s page.</p>
-        {cemeteries.length === 0 ? (
-          <p className="mt-4 text-sm text-amber-700">Add a cemetery first (or run the database import), then you can attach a tzadik to it.</p>
-        ) : (
-          <>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2"><span className={captionClass}>Cemetery *</span>
-                <select name="cemeteryId" className={inputClass} required defaultValue="">
-                  <option value="" disabled>Choose a cemetery…</option>
-                  {cemeteries.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.city}, {c.country}</option>)}
-                </select>
-              </label>
-              <label className="block"><span className={captionClass}>Name *</span><input name="name" className={inputClass} required /></label>
-              <label className="block"><span className={captionClass}>Yiddish/Hebrew name</span><input name="yiddishName" dir="rtl" className={inputClass} /></label>
-              <label className="block"><span className={captionClass}>Known as</span><input name="knownAs" className={inputClass} placeholder="e.g. the Noam Elimelech" /></label>
-              <label className="block"><span className={captionClass}>Yahrzeit</span><input name="yahrzeit" className={inputClass} /></label>
-              <label className="block sm:col-span-2"><span className={captionClass}>Seforim</span><input name="seforim" dir="rtl" className={inputClass} /></label>
-              <label className="block sm:col-span-2"><span className={captionClass}>Note</span><textarea name="note" rows={2} className={inputClass} /></label>
-            </div>
-            <div className="mt-5 flex items-center gap-4">
-              <button type="submit" disabled={burPending} className={submitClass}>{burPending ? "Adding…" : "Add tzadik"}</button>
-              <Status state={burState} />
-            </div>
-          </>
-        )}
-      </form>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          Adding a person has its own screen now, so you can pick any beis hachaim on the site — including the
+          built-in ones — see who is already listed there, and take someone off again if you add him by mistake.
+        </p>
+        <a href="/admin/kevarim" className={`mt-5 inline-block ${submitClass}`}>Open the kevarim screen</a>
+      </div>
 
       {/* New page */}
       <form action={pageAction} className={cardClass}>

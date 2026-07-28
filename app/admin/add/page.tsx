@@ -1,19 +1,18 @@
 import Link from "next/link";
 import AddEntryForms from "@/components/AddEntryForms";
 import Footer from "@/components/Footer";
-import { isDbEnabled, listCemeteriesForAdmin } from "@/lib/content-admin";
+import { isDbEnabled } from "@/lib/content-admin";
 import { listInfoPages } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAddPage() {
   const dbReady = isDbEnabled();
-  let cemeteries: Awaited<ReturnType<typeof listCemeteriesForAdmin>> = [];
   let infoPages: Awaited<ReturnType<typeof listInfoPages>> = [];
   let needsSetup = false;
   if (dbReady) {
     try {
-      [cemeteries, infoPages] = await Promise.all([listCemeteriesForAdmin(), listInfoPages()]);
+      infoPages = await listInfoPages();
     } catch {
       needsSetup = true;
     }
@@ -50,7 +49,7 @@ export default async function AdminAddPage() {
           </div>
         ) : (
           <>
-            <AddEntryForms cemeteries={cemeteries} />
+            <AddEntryForms />
 
             {infoPages.length > 0 && (
               <div className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
