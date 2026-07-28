@@ -26,11 +26,11 @@ export default async function CemeteriesPage() {
             <Link
               key={cemetery.slug}
               href={`/cemeteries/${cemetery.slug}`}
-              className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7 transition hover:border-[var(--gold)] hover:shadow-md"
+              className="min-w-0 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7"
             >
               <p dir="rtl" className="text-xl font-semibold leading-tight text-[var(--navy)]">{cemetery.yiddishCity}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{cemetery.city} · {cemetery.country}</p>
-              <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h2>
+              <p className="mt-1 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
+              <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
               <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
               <p className="mt-5 text-sm leading-6 text-stone-600">{cemetery.burialCount} known {cemetery.burialCount === 1 ? "kever" : "kevarim"} listed</p>
               {cemetery.ownerAdded && (

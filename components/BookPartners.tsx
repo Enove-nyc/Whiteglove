@@ -74,7 +74,7 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 shadow-[0_20px_50px_rgba(29,47,111,.08)] sm:p-8">
-      <div className="flex border-b border-[var(--gold-light)]">
+      <div className="flex flex-wrap border-b border-[var(--gold-light)]">
         <TabButton active={tab === "flights"} onClick={() => setTab("flights")}>Flights</TabButton>
         <TabButton active={tab === "hotels"} onClick={() => setTab("hotels")}>Hotels</TabButton>
         <TabButton active={tab === "cars"} onClick={() => setTab("cars")}>Cars</TabButton>
@@ -235,7 +235,7 @@ function ActionRow({ onSearch, onAdd, searchLabel }: { onSearch: () => void; onA
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] ${active ? "border-b-2 border-[var(--gold)] text-[var(--navy)]" : "text-stone-500"}`}>
+    <button type="button" onClick={onClick} className={`px-3 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 sm:tracking-[0.14em] ${active ? "border-b-2 border-[var(--gold)] text-[var(--navy)]" : "text-stone-500"}`}>
       {children}
     </button>
   );
