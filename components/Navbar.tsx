@@ -98,7 +98,7 @@ export default function Navbar() {
       </div>
       {showSearch && <div className="mx-auto max-w-7xl px-5 pb-4 sm:hidden"><DestinationSearch compact /></div>}
       {menuOpen && (
-        <div className="absolute right-5 top-[4.6rem] z-30 w-64 border border-[var(--gold-light)] bg-[#fcfaf6] p-3 shadow-xl sm:right-8">
+        <div className="absolute right-5 top-[4.6rem] z-30 max-h-[75vh] w-64 overflow-y-auto overscroll-contain border border-[var(--gold-light)] bg-[#fcfaf6] p-3 shadow-xl sm:right-8">
           {menuItems.map((item) => (
             <Link key={item.href} onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]" href={item.href}>
               {item.english}
