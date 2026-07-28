@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Footer from "@/components/Footer";
 import ItineraryFooter from "@/components/ItineraryFooter";
-import GloveMark from "@/components/GloveMark";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
@@ -22,23 +21,30 @@ export default async function ItineraryPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
+
+      <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]"><GloveMark size="xs" />White Glove planner</p>
-          <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Build your whole trip, day by day.</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Add your flights, hotels, and stops — even ones you booked elsewhere — and we&apos;ll lay out each day, flag any night with nowhere to sleep, show how far each place is from the next, spot free hours, and print a beautiful itinerary.
-          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Itinerary planner</p>
+          <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            Plan your trip.
+          </h1>
+          <p className="mt-3 text-sm text-stone-600">Add your dates and stops. We’ll organize the route.</p>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        <TravelAssistantBox />
-        <div className="mt-10">
+
+      <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
+        <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.05)] sm:p-6">
+          <TravelAssistantBox />
+        </div>
+
+        <div className="itinerary-planner mt-8">
           <SharedWithMe />
           <ItineraryBuilder />
         </div>
+
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />
       </section>
+
       <Footer />
     </main>
   );

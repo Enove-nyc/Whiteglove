@@ -19,7 +19,7 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
       )}
 
       <div className="border-t border-[var(--gold-light)] pt-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
               <GloveMark size="xs" />
@@ -33,16 +33,16 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
               <span className="font-semibold text-[var(--navy)]">whitegloveitineraries.com</span>
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:shrink-0">
             <Link
               href="/contact"
-              className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] lg:w-52"
             >
               Have us plan it
             </Link>
             <Link
               href="/cemeteries"
-              className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+              className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white lg:w-52"
             >
               Browse kevarim
             </Link>

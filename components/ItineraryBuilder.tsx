@@ -204,28 +204,25 @@ export default function ItineraryBuilder() {
   return (
     <div>
       {/* Trip header */}
-      <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.06)] sm:p-6">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
             <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
             <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button type="button" onClick={() => setTab(tab === "flight" ? null : "flight")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Flight</button>
-          <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Hotel / where you sleep</button>
-          <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Activity / stop</button>
-          <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import my saved route</button>
-          <button type="button" onClick={planMyRoute} disabled={planning} className="border border-[var(--gold)] bg-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--navy)] hover:border-[var(--navy)] disabled:opacity-60">{planning ? "Planning…" : "⚡ Plan my route"}</button>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setTab(tab === "flight" ? null : "flight")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Flight</button>
+          <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Hotel</button>
+          <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Stop</button>
+          <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import saved route</button>
+          <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan route"}</button>
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
-        {!hasDates && <p className="mt-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">Set your <strong>start and end dates</strong> above — the planner needs them to lay out the days and work out the route.</p>}
-        <p className="mt-3 text-xs leading-5 text-stone-500">
-          <strong>Plan my route</strong> keeps every stop you gave a date on that date, and arranges everything else around it — placing undated stops on the day that adds the least driving and putting each day in the fastest order. You can still reorder any day by hand.
-        </p>
+        {!hasDates && <p className="mt-3 text-xs font-semibold text-[var(--gold)]">Choose start and end dates to begin.</p>}
 
         {tab === "flight" && <FlightForm startDate={itin.startDate} onAdd={(f) => { addFlight(f); setTab(null); }} />}
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
@@ -253,9 +250,9 @@ export default function ItineraryBuilder() {
         <>
           <div className="mt-8 flex flex-wrap items-center gap-4 border border-[var(--gold-light)] bg-[var(--cream-deep)] p-5">
             <Stat label="Nights" value={summary.nights} />
-            <Stat label="Nights without lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
+            <Stat label="Missing lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
-            <Stat label="Driving (stops + transfers)" value={`${summary.travelHours} h`} />
+            <Stat label="Driving" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
             <div className="ml-auto flex gap-3">
               <Link href="/itinerary/print" target="_blank" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Print itinerary (PDF)</Link>
@@ -265,7 +262,7 @@ export default function ItineraryBuilder() {
           {unscheduled.length > 0 && (
             <div className="mt-6 border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-5">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Not scheduled yet ({unscheduled.length})</p>
-              <p className="mt-1 text-sm text-stone-600">Give a stop a date to pin it to that day, or press <strong>Plan my route</strong> and we&apos;ll place it on the day that adds the least driving.</p>
+              <p className="mt-1 text-sm text-stone-600">Choose a day, or use <strong>Plan route</strong>.</p>
               <ul className="mt-3 space-y-2">
                 {unscheduled.map((a) => (
                   <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] pt-2 first:border-t-0 first:pt-0">
@@ -294,8 +291,8 @@ export default function ItineraryBuilder() {
 
       {loaded && days.length === 0 && (
         <div className="mt-8 border border-dashed border-[var(--gold-light)] p-10 text-center">
-          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Set your start and end dates to build the day-by-day plan.</p>
-          <p className="mt-2 text-sm text-stone-600">Then add your flights, hotels, and stops above — we&apos;ll lay them out and flag anything missing.</p>
+          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Choose your dates to begin.</p>
+          <p className="mt-2 text-sm text-stone-600">Then add flights, hotels, and stops.</p>
         </div>
       )}
     </div>
@@ -342,19 +339,19 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
   }
 
   return (
-    <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+    <article className="overflow-hidden border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="flex flex-col gap-1 border-b border-[var(--gold-light)] pb-4 sm:flex-row sm:items-baseline sm:justify-between">
         <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h3>
-        <p className="text-sm font-semibold text-stone-500">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-stone-500">
           {day.label}
           {day.startTime && day.activities.length > 0 ? (
-            <span className="ml-3 text-xs font-normal text-stone-500">
+            <span className="text-xs font-normal text-stone-500">
               {day.startsFrom ? `From ${day.startsFrom}, ` : ""}{day.startTime}
               {day.endTime ? ` → ${day.endTime}` : ""}
             </span>
           ) : null}
           {day.travelHours > 0 ? (
-            <span className="ml-3 text-xs font-normal text-stone-400">
+            <span className="text-xs font-normal text-stone-400">
               {day.travelLegs.every((l) => l.measured) ? "" : "≈"}
               {day.travelHours} h driving
               {day.travelLegs.every((l) => l.source === "google") ? " (Google Maps)" : ""}
@@ -373,8 +370,12 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
         {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
             {a.distanceFromPrev !== null && (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-stone-400">
-                ↓ {formatKm(a.distanceFromPrev)} · {a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} drive from previous stop <TimeSource source={a.travelSource} />{" "}
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-stone-500">
+                <span aria-hidden="true">↓</span>
+                <span>{formatKm(a.distanceFromPrev)}</span>
+                <span>·</span>
+                <span>{a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} from previous stop</span>
+                <TimeSource source={a.travelSource} />{" "}
                 <a
                   href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
                   target="_blank"
@@ -385,8 +386,8 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 </a>
               </p>
             )}
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <p className="min-w-0 font-[family-name:var(--font-display)] text-xl leading-snug text-[var(--navy)]">
                 <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
                 {a.arrivalTime ? (
                   <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
@@ -399,7 +400,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 {a.name}
                 {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
               </p>
-              <span className="flex shrink-0 items-center gap-1">
+              <span className="flex flex-wrap items-center gap-1 sm:justify-end">
                 {day.activities.length > 1 && (
                   <>
                     <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
@@ -420,30 +421,30 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 onCancel={() => setEditingId(null)}
               />
             )}
-            {a.address && <p className="text-sm text-stone-600">{a.address}</p>}
+            {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
             {/* Who you are going to daven by. The reason for the stop belongs
                 on the stop, not one click away on the cemetery page. */}
             {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
-              <p className="mt-1 text-sm text-stone-700">
-                <span className="font-semibold text-[var(--gold)]">Buried here: </span>
-                {burials[a.keverSlug].join(" · ")}
-              </p>
+              <div className="mt-3 rounded-md bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
+                <span className="font-semibold text-[var(--gold)]">Buried here</span>
+                <span className="mt-0.5 block break-words">{burials[a.keverSlug].join(" · ")}</span>
+              </div>
             )}
             {(a.phone || a.href || a.address || a.coordinates) && (
-              <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <p className="mt-3 flex flex-wrap gap-2 text-sm">
                 {/* Every stop gets its own navigate link, including the first
                     one of the day. Leaving the destination alone lets Google
                     Maps route from wherever the traveler actually is, which is
                     the only sensible origin for the first stop — there is no
                     previous stop to start from. */}
                 {(a.address || a.coordinates) && (
-                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">🧭 Navigate here →</a>
+                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
                 )}
-                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">📞 {a.phone}</a>}
-                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Link →</a>)}
+                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
+                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
               </p>
             )}
-            {a.notes && <p className="mt-1 text-sm text-stone-500">{a.notes}</p>}
+            {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
           </div>
         ))}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />
@@ -576,17 +577,20 @@ function Stat({ label, value, warn }: { label: string; value: number | string; w
 
 function BookingList({ title, items, onRemove }: { title: string; items: Array<{ id: string; label: string; sub: string }>; onRemove: (id: string) => void }) {
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-      <p className={caption}>{title} ({items.length})</p>
-      <ul className="mt-2 space-y-2">
+    <details className="group border border-[var(--gold-light)] bg-[#fcfaf6]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none">
+        <span className={caption}>{title} ({items.length})</span>
+        <span aria-hidden="true" className="text-lg leading-none text-[var(--gold)] transition-transform group-open:rotate-180">⌄</span>
+      </summary>
+      <ul className="space-y-2 border-t border-[var(--gold-light)] px-4 pb-4 pt-3">
         {items.length === 0 ? <li className="text-sm text-stone-400">None yet.</li> : items.map((it) => (
           <li key={it.id} className="flex items-start justify-between gap-2 text-sm">
             <span className="min-w-0"><span className="font-semibold text-[var(--navy)]">{it.label}</span><br /><span className="text-xs text-stone-500">{it.sub}</span></span>
-            <button type="button" onClick={() => onRemove(it.id)} className="shrink-0 text-xs text-stone-400 hover:text-red-700">✕</button>
+            <button type="button" onClick={() => onRemove(it.id)} aria-label={`Remove ${it.label}`} className="shrink-0 text-xs text-stone-400 hover:text-red-700">✕</button>
           </li>
         ))}
       </ul>
-    </div>
+    </details>
   );
 }
 

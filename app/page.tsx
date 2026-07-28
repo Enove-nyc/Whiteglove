@@ -29,12 +29,12 @@ const destinations = [
 ];
 
 const travelServices = [
-  { title: "Phone & SIM rentals", yiddish: "פאָון־רענטאַלס", href: "/phone-rentals", text: "SIMs, eSIMs, and hotspots so you stay reachable abroad without the setup hassle." },
-  { title: "Travel insurance", yiddish: "רײַזע־אינשוראַנס", href: "/travel-insurance", text: "Understand your coverage options — medical, cancellation, and baggage — clearly." },
-  { title: "Flights, hotels & cars", yiddish: "פליגערס און האטעלן", href: "/book", text: "Search and book flights, hotels, and rental cars that fit your route, dates, and kosher needs." },
-  { title: "Trip planning", yiddish: "פּלאַנירונג", href: "/planning", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
-  { title: "Honeymoon", yiddish: "האָנימאָן", href: "/honeymoon", text: "A calm, private, well-planned kosher honeymoon, arranged end to end." },
-  { title: "Kosher getaways", yiddish: "וואַקאַציעס", href: "/getaways", text: "Resorts, beaches, and cities like Rome and Paris — planned kosher, start to finish." },
+  { title: "Phone & SIM rentals", href: "/phone-rentals", text: "SIMs, eSIMs, and hotspots so you stay reachable abroad without the setup hassle." },
+  { title: "Travel insurance", href: "/travel-insurance", text: "Understand your coverage options — medical, cancellation, and baggage — clearly." },
+  { title: "Flights, hotels & cars", href: "/book", text: "Search and book flights, hotels, and rental cars that fit your route, dates, and kosher needs." },
+  { title: "Trip planning", href: "/planning", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
+  { title: "Honeymoon", href: "/honeymoon", text: "A calm, private, well-planned kosher honeymoon, arranged end to end." },
+  { title: "Kosher getaways", href: "/getaways", text: "Resorts, beaches, and cities like Rome and Paris — planned kosher, start to finish." },
 ];
 
 const services = [
@@ -44,7 +44,6 @@ const services = [
   ["A smoother journey", "Clear travel planning from airport to hotel, so the logistics stay out of the way."],
 ];
 
-// What "white glove" actually means on this site, said plainly.
 const promise = [
   "Kevarim we have verified — never an address we guessed at.",
   "Coordinates that open the pin in Google Maps, not the nearest street.",
@@ -56,52 +55,67 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const homepagePromotions = await getActivePromotions("homepage-promo", "/", device);
-  const inlinePromotions = await getActivePromotions("inline-content", "/", device);
+  const [homepagePromotions, inlinePromotions, topVisitedPaths] = await Promise.all([
+    getActivePromotions("homepage-promo", "/", device),
+    getActivePromotions("inline-content", "/", device),
+    getTopVisitedPaths(60),
+  ]);
 
-  // Six most-visited kevarim, ranked by real site visits (falls back to the
-  // default order when analytics is off or has little data yet).
-  const visitCounts = new Map((await getTopVisitedPaths(60)).map((p) => [p.path, p.count]));
+  const visitCounts = new Map(topVisitedPaths.map((path) => [path.path, path.count]));
   const mostVisited = [...destinations]
-    .map((d) => ({ d, count: visitCounts.get(d.href) ?? 0 }))
+    .map((destination) => ({ destination, count: visitCounts.get(destination.href) ?? 0 }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 6)
-    .map((x) => x.d);
+    .map(({ destination }) => destination);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
 
-      <section className="relative border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
+      <section className="relative border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-24">
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">Kosher travel, considered</p>
-          <h1 className="mt-6 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-[1.05] text-[var(--navy)] sm:text-6xl lg:text-7xl">Every journey, planned with purpose.</h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">Kevarim and nesios, and kosher getaways — every detail handled with care, from the first tefillah to the ride home.</p>
+          <div className="max-w-4xl">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">Two kinds of journeys. One standard of care.</p>
+            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-[1.04] text-[var(--navy)] sm:text-6xl lg:text-7xl">
+              Travel planned around what matters to you.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">
+              Jewish heritage nesios to kevarim, and personalized destination planning for kosher travel — with every practical detail handled thoughtfully.
+            </p>
+          </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <Link href="/stops" className="group flex flex-col justify-between border border-[var(--navy)] bg-[var(--navy)] p-8 text-white transition hover:bg-[var(--navy-deep)]">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+            <Link href="/stops" className="group flex min-h-72 flex-col justify-between rounded-xl bg-[var(--navy)] p-7 text-white shadow-[0_14px_35px_rgba(23,45,82,.16)] transition hover:-translate-y-0.5 hover:bg-[var(--navy-deep)] sm:p-9">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Kevarim &amp; Nesios</p>
-                <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">Guides to tzaddikim &amp; kevarim</h2>
-                <p className="mt-4 leading-7 text-slate-200">Tefillos, kosher food, minyanim, mikvaos, local contacts, and the practical details that matter most.</p>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Jewish heritage nesios</p>
+                  <span className="rounded-full border border-white/20 px-3 py-1 text-xs text-slate-200">01</span>
+                </div>
+                <h2 className="mt-6 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">Kevarim, tzaddikim and heritage journeys</h2>
+                <p className="mt-4 max-w-xl leading-7 text-slate-200">Verified locations, tefillos, kosher food, minyanim, mikvaos, local contacts, and practical guidance for a meaningful journey.</p>
               </div>
-              <span className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold-light)] transition group-hover:text-white">Explore the guides →</span>
+              <span className="mt-7 text-sm font-semibold text-[var(--gold-light)] transition group-hover:text-white">Explore Jewish heritage guides →</span>
             </Link>
-            <Link href="/getaways" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-8 transition hover:border-[var(--gold)]">
+
+            <Link href="/planning" className="group flex min-h-72 flex-col justify-between rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-7 shadow-[0_8px_26px_rgba(23,45,82,.07)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_14px_35px_rgba(23,45,82,.11)] sm:p-9">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Kosher Getaways</p>
-                <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Vacations, resorts &amp; cities</h2>
-                <p className="mt-4 leading-7 text-stone-600">Rome, Paris, and restful getaways — planned kosher, from start to finish.</p>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Destination planning</p>
+                  <span className="rounded-full border border-[var(--gold-light)] px-3 py-1 text-xs text-stone-500">02</span>
+                </div>
+                <h2 className="mt-6 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Personalized kosher trips and getaways</h2>
+                <p className="mt-4 max-w-xl leading-7 text-stone-600">Routes, flights, hotels, cars, kosher needs, and destination details planned around your dates and priorities.</p>
               </div>
-              <span className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">See getaways →</span>
+              <span className="mt-7 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold)]">Plan a destination →</span>
             </Link>
           </div>
 
-          <div className="mt-10">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Search kevarim &amp; destinations</p>
+          <div className="mt-9 rounded-xl border border-[var(--gold-light)] bg-[rgba(255,253,249,.78)] p-5 sm:p-6">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Looking for a kever or destination?</p>
             <DestinationSearch />
           </div>
+
           <div className="mt-8">
             <PromotionBanner promotion={homepagePromotions[0] ?? null} placement="homepage-promo" />
           </div>
@@ -109,59 +123,55 @@ export default async function Home() {
       </section>
 
       <section id="most-visited" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-        <SectionHeading eyebrow="Most visited" title="Where travelers are going most." description="The six kevarim frum travelers are visiting most on White Glove right now." />
+        <SectionHeading eyebrow="Popular heritage guides" title="Where travelers are going most." description="The six kevarim travelers are visiting most on White Glove right now." />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {mostVisited.map((destination) => <DestinationCard key={destination.name} {...destination} />)}
         </div>
-      </section>
-
-      <section id="travel-services" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-        <SectionHeading eyebrow="Travel services" title="Everything around the trip, handled." description="Beyond the destination guides, White Glove helps with the practical parts of getting there and staying connected." />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {travelServices.map((service) => (
-            <Link key={service.href} href={service.href} className="group flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
-              <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{service.title}</p>
-              <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{service.text}</p>
-              <span className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Learn more →</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section id="destinations" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-        <SectionHeading eyebrow="Destination directory" title="The information you need when it matters." description="Browse by city or tzaddik—every guide is built around the questions frum travelers actually ask before and during a visit." />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {destinations.map((destination) => <DestinationCard key={destination.name} {...destination} />)}
-        </div>
-        <div className="mt-12 text-center">
-          <Link href="/stops" className="inline-block border border-[var(--gold)] px-8 py-4 text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
-            Browse all destinations →
+        <div className="mt-9">
+          <Link href="/stops" className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+            Browse every heritage guide →
           </Link>
         </div>
       </section>
 
-      <section id="services" className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
+      <section id="travel-services" className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
-        <SectionHeading centered eyebrow="The White Glove way" title="The essentials, thoughtfully gathered." description="Practical, respectful guidance for a journey with purpose." />
-          <div className="mt-14 grid gap-x-10 gap-y-8 md:grid-cols-2">
-            {services.map(([title, description]) => (
-              <div key={title} className="flex gap-5 border-t border-[var(--gold-light)] pt-6">
-                <GloveMark size="md" className="mt-1" />
-                <div><h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{title}</h3><p className="mt-2 leading-7 text-stone-600">{description}</p></div>
-              </div>
+          <SectionHeading eyebrow="Destination planning" title="Everything around the trip, handled." description="Practical support for getting there, staying connected, and enjoying a kosher journey with less uncertainty." />
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {travelServices.map((service) => (
+              <Link key={service.href} href={service.href} className="group flex flex-col rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-6 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md">
+                <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{service.title}</p>
+                <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{service.text}</p>
+                <span className="mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold)]">Learn more →</span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-        <div className="grid gap-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 sm:p-12 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
+      <section id="services" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <SectionHeading centered eyebrow="The White Glove way" title="The essentials, thoughtfully gathered." description="Practical, respectful guidance for a journey with purpose." />
+        <div className="mt-14 grid gap-x-10 gap-y-8 md:grid-cols-2">
+          {services.map(([title, description]) => (
+            <div key={title} className="flex gap-5 border-t border-[var(--gold-light)] pt-6">
+              <GloveMark size="md" className="mt-1" />
+              <div>
+                <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{title}</h3>
+                <p className="mt-2 leading-7 text-stone-600">{description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+        <div className="grid gap-10 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-8 sm:p-12 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Our promise</p>
             <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">The details should never distract from the reason you came.</h2>
             <GloveList items={promise} className="mt-8 space-y-3 leading-7 text-stone-600" />
           </div>
-          <p className="border-l border-[var(--gold)] pl-6 text-lg leading-8 text-stone-600">We gather the essentials in one calm, dependable guide, leaving you free to focus on your tefillos and the meaning of the journey.</p>
+          <p className="border-l border-[var(--gold)] pl-6 text-lg leading-8 text-stone-600">We gather the essentials in one calm, dependable guide, leaving you free to focus on your journey.</p>
         </div>
       </section>
 
