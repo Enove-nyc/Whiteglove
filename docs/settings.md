@@ -35,6 +35,8 @@ per leg, so re-planning the same trip does not re-bill it.
 | `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `enovenyc.com`. Lets one domain stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
 | `SITE_PREVIEW_TOKEN` | At least 12 characters. Anyone opening `?preview=<token>` gets in for 30 days without being told the password, and the token is stripped from the URL straight away. Change it to revoke every outstanding link at once. Never works on `/admin`. |
 | `ADMIN_PASSWORD` | The admin dashboard password. |
+| `ADMIN_HOST` | Optional. A hostname that serves the admin area on its own, e.g. `admin.whitegloveitineraries.com`. On that hostname every path is an admin path — `/` is the dashboard, `/shomrim` is the shomer screen — and the `/admin/…` paths keep working there too, so no saved link breaks. The hostname is never indexed. Unset by default, and with it unset nothing changes. **Add the domain in Vercel and point the DNS first**; the variable does nothing until the hostname actually reaches the site. |
+| `ADMIN_HOST_ONLY` | Optional, `1` to turn on. Sends `/admin/…` on the main domain to `ADMIN_HOST`, so there is one place to sign in. Leave it off until you have opened the admin hostname and signed in there successfully — switching it on before DNS resolves leaves no way into the admin area at all. |
 | `WHITE_GLOVE_SESSION_SECRET` | Signs the access and admin cookies. Changing it signs everybody out. |
 
 ## Email (Resend)

@@ -120,12 +120,14 @@ export default function AdminToolbar() {
           )}
         </div>
 
-        <Link
-          href="/"
+        {/* An absolute URL when one is configured: on an admin hostname "/" is
+            the dashboard, so a relative link would never leave the admin area. */}
+        <a
+          href={process.env.NEXT_PUBLIC_SITE_URL || "/"}
           className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
         >
           View site
-        </Link>
+        </a>
       </div>
     </div>
   );
