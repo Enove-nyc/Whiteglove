@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Footer from "@/components/Footer";
+import ItineraryFooter from "@/components/ItineraryFooter";
 import GloveMark from "@/components/GloveMark";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
+import { getActivePromotions } from "@/lib/admin-content";
 
 export const metadata: Metadata = {
   title: "Itinerary planner — White Glove Itineraries",
   description: "Build your trip day by day — flights, hotels, and stops — with automatic checks and a printable itinerary.",
 };
 
-export default function ItineraryPage() {
+export default async function ItineraryPage() {
+  const userAgent = (await headers()).get("user-agent") || "";
+  const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
+  const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
+
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -30,6 +37,7 @@ export default function ItineraryPage() {
           <SharedWithMe />
           <ItineraryBuilder />
         </div>
+        <ItineraryFooter promotion={footerPromotions[0] ?? null} />
       </section>
       <Footer />
     </main>

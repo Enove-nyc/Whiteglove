@@ -38,7 +38,7 @@ export function clock(t?: string): string {
   return `${h12}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
-export function buildPrintTimeline(day: ItineraryDay): PrintEntry[] {
+export function buildPrintTimeline(day: ItineraryDay, burials: Record<string, string[]> = {}): PrintEntry[] {
   const entries: PrintEntry[] = [];
   const add = (time: string | undefined, kind: string, title: string, detail?: string) => {
     if (!title) return;
@@ -74,7 +74,12 @@ export function buildPrintTimeline(day: ItineraryDay): PrintEntry[] {
     if (i > 0 && a.travelMinutesFromPrev) {
       add(day.activities[i - 1].departureTime, "Drive", a.name, formatDuration(a.travelMinutesFromPrev) ?? undefined);
     }
-    add(a.arrivalTime ?? a.startTime, "Visit", a.name, a.notes || a.address || undefined);
+    // Who is buried here comes first in the detail line — on a printed page it
+    // is the reason the stop is on the trip at all, and the address is on the
+    // navigate link either way.
+    const who = a.keverSlug ? burials[a.keverSlug] : undefined;
+    const detail = [who?.length ? who.join(" · ") : null, a.notes || a.address || null].filter(Boolean).join(" — ");
+    add(a.arrivalTime ?? a.startTime, "Visit", a.name, detail || undefined);
   });
 
   if (day.lodging && day.lodging.type !== "overnight-transit") {

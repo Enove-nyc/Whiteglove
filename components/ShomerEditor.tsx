@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import SearchableSelect from "@/components/SearchableSelect";
 import { removeShomerAction, retireShomerAction, saveShomerAction, type ActionResult } from "@/app/admin/shomrim/actions";
 
 export type ShomerCemetery = {
@@ -47,16 +48,20 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
   return (
     <div className="space-y-8">
       <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <label className="block">
-          <span className={captionClass}>Beis hachaim</span>
-          <select value={slug} onChange={(e) => setSlug(e.target.value)} className={inputClass}>
-            {cemeteries.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.city} · {c.country} — {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {/* 146 batei hachaim: type the town rather than scrolling for it. */}
+        <SearchableSelect
+          id="shomer-cemetery"
+          label="Beis hachaim"
+          value={slug}
+          onChange={setSlug}
+          placeholder="Type a town — Lizhensk, Kraków, Uman…"
+          options={cemeteries.map((c) => ({
+            value: c.slug,
+            label: `${c.city} · ${c.country}`,
+            hint: c.name,
+            keywords: c.slug,
+          }))}
+        />
         {selected && (
           <p className="mt-3 text-sm text-stone-600">
             <a href={`/cemeteries/${selected.slug}`} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">

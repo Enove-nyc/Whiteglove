@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
+import AdminToolGrid from "@/components/AdminToolGrid";
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
@@ -58,25 +59,17 @@ export default async function AdminPage() {
             <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Owner&apos;s dashboard</h1>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/admin/inventory" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page inventory</Link>
-            <Link href="/admin/content" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Content manager</Link>
-            <Link href="/admin/destinations" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Destination editor</Link>
-            <Link href="/admin/pages" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Page editor</Link>
-            <Link href="/admin/directory-listings" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Directory</Link>
             <Link href="/admin/add" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">+ Add new entry</Link>
-            <Link href="/admin/kevarim" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Kevarim</Link>
-            <Link href="/admin/shomrim" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Shomer numbers</Link>
-            <Link href="/admin/accounts" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Accounts</Link>
-            <Link href="/admin/finances" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Finances</Link>
-            <Link href="/admin/advertisements" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Advertisements</Link>
-            <Link href="/" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">View website</Link>
             <AdminSignOut />
           </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-6">
+        <AdminToolGrid />
+
+        <h2 className="mt-12 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">How the site is doing</h2>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {overview.map((item) => (
             <div key={item.label} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">{item.label}</p>
@@ -86,7 +79,7 @@ export default async function AdminPage() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
+        <div className="mt-5 grid gap-5 lg:grid-cols-3">
           <SiteLockControl initialLocked={stats.siteLocked} configured={stats.configured} />
           <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
             <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Data connection</p>
@@ -104,6 +97,12 @@ export default async function AdminPage() {
             <Link href="/admin/advertisements" className="mt-4 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Open advertisements →</Link>
           </section>
         </div>
+
+        <h2 className="mt-12 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Setup and checks</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          Passwords, which parts of the site are locked, and whether the keys the site depends on are actually
+          working. You only need these when something has changed.
+        </p>
 
         <div className="mt-5">
           <LockedSectionsControl initialPaths={lockedPaths} available={stats.configured} />
@@ -135,18 +134,6 @@ export default async function AdminPage() {
           />
         </div>
 
-        <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Owner&apos;s use</p>
-          <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work from the inventory, then deepen the destinations.</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
-            The inventory shows every page and issue by status. Use it to find incomplete pages, add your notes, and decide what should be updated next.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/admin/inventory" className="inline-block border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open page inventory</Link>
-            <Link href="/admin/content" className="inline-block border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open content manager</Link>
-            <Link href="/stops" className="inline-block border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Open destination directory</Link>
-          </div>
-        </section>
       </section>
       <Footer />
     </main>

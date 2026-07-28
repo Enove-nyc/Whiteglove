@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { buildDays, emptyItinerary, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
 import { buildPrintTimeline, coverDates, dayCountries, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
+import { useKeverBurials } from "@/lib/use-kever-burials";
 
 // The printed itinerary — a keepsake document, not a screen dump.
 //
@@ -18,6 +19,10 @@ const MAROON = "#6f2b3e";
 const GOLD = "#b0894f";
 const GOLD_RULE = "#e3d9cc";
 const BODY = "#545454";
+
+// A stable empty array, so the burials hook does not re-fetch every render
+// while the itinerary is still loading.
+const EMPTY_ACTIVITIES: Itinerary["activities"] = [];
 
 export default function PrintItineraryPage() {
   const [itin, setItin] = useState<Itinerary | null>(null);
@@ -44,6 +49,10 @@ export default function PrintItineraryPage() {
       }
     })();
   }, []);
+
+  // Hooks must run before the early return, so this reads from the itinerary
+  // once it is loaded and from an empty list until then.
+  const burials = useKeverBurials(itin?.activities ?? EMPTY_ACTIVITIES);
 
   if (!itin) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
 
@@ -84,12 +93,15 @@ export default function PrintItineraryPage() {
           {travelerSummary(itin) && <p className="wg-cover-for">Prepared for {travelerSummary(itin)}</p>}
         </div>
 
-        <p className="wg-cover-foot">Thoughtfully arranged · meaningfully traveled</p>
+        <p className="wg-cover-foot">
+          Thoughtfully arranged · meaningfully traveled
+          <span className="wg-cover-site">whitegloveitineraries.com</span>
+        </p>
       </section>
 
       {/* ---------------- One page per day ---------------- */}
       {days.map((day, index) => {
-        const timeline = buildPrintTimeline(day);
+        const timeline = buildPrintTimeline(day, burials);
         return (
           <section className="wg-page wg-day" key={day.date}>
             <header className="wg-head">
@@ -127,7 +139,7 @@ export default function PrintItineraryPage() {
             )}
 
             <footer className="wg-foot">
-              <span>White Glove Itineraries</span>
+              <span>White Glove Itineraries · whitegloveitineraries.com</span>
               <span>{footerRight}</span>
             </footer>
           </section>
@@ -187,8 +199,12 @@ const css = `
   .wg-cover-dates { margin-top: 20px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: ${BODY}; }
   .wg-cover-for { margin-top: 12px; font-size: 11px; color: ${BODY}; }
   .wg-cover-foot {
-    position: absolute; bottom: 0.95in; left: 0; right: 0;
+    position: absolute; bottom: 0.8in; left: 0; right: 0;
     font-size: 10px; letter-spacing: .08em; color: ${BODY};
+  }
+  .wg-cover-site {
+    display: block; margin-top: 6px; font-size: 10px; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: ${GOLD};
   }
 
   /* ---- day header ---- */

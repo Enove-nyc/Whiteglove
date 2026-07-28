@@ -81,7 +81,7 @@ const featuredCemeteries: Cemetery[] = [
       { name: "Rabbi Yom Tov Lipmann Heller", yiddishName: "רבי יום טוב ליפמן העלער", knownAs: "Tosafos Yom Tov", seforim: "תוספות יום טוב", yahrzeit: "1654" },
       { name: "Rabbi Natan Nata Shapira", yiddishName: "רבי נתן נטע שפירא", knownAs: "Megaleh Amukos", seforim: "מגלה עמוקות", yahrzeit: "1633" },
       { name: "Rabbi Yehoshua ben Yosef", yiddishName: "רבי יהושע בן יוסף", knownAs: "Meginei Shlomo", seforim: "מגיני שלמה", yahrzeit: "1648" },
-      { name: "Rabbi Mordechai Saba", yiddishName: "רבי מרדכי סבא", knownAs: "Singer", note: "Head of the Kraków Talmudic Academy after the Rema." },
+      { name: "Rabbi Mordechai Saba", yiddishName: "רבי מרדכי סבא", knownAs: "Mekubal of Kraków", yahrzeit: "1576", note: "A mekubal versed in dikduk who succeeded the Rema as head of the Kraków rabbinical academy." },
       { name: "Rabbi Yosef Kac", yiddishName: "רבי יוסף כ״ץ", note: "Head of the Kraków Talmudic Academy." },
       { name: "Rabbi Yitzchak Yaakovovich", yiddishName: "רבי יצחק יעקובוביץ", knownAs: "Founder of the Izaak Synagogue" },
     ],

@@ -72,6 +72,7 @@ export type PromotionPlacement =
   | "destination-specific"
   | "accommodation-page"
   | "sponsored-listing"
+  | "itinerary-footer"
   | "full-page-takeover";
 
 export type PromotionDevice = "all" | "mobile" | "desktop";
@@ -307,6 +308,7 @@ function placementLabels() {
     ["destination-specific", "Destination page"],
     ["accommodation-page", "Accommodation page"],
     ["sponsored-listing", "Sponsored listing"],
+    ["itinerary-footer", "Bottom of the itinerary"],
     ["full-page-takeover", "Full-page takeover"],
   ]);
 }

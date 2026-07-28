@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useState } from "react";
 import MixedText from "@/components/MixedText";
+import SearchableSelect from "@/components/SearchableSelect";
 import {
   addCemeteryForPersonAction,
   addPersonToCemeteryAction,
@@ -78,24 +79,13 @@ function PersonFields({ idPrefix }: { idPrefix: string }) {
 }
 
 export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery[] }) {
-  const [query, setQuery] = useState("");
   const [slug, setSlug] = useState(cemeteries[0]?.slug ?? "");
 
   const [addState, addAction, addPending] = useFormAction(addPersonToCemeteryAction);
   const [newState, newAction, newPending] = useFormAction(addCemeteryForPersonAction);
   const [removeState, removeAction] = useFormAction(removePersonAction);
 
-  // 97 batei hachaim in one dropdown is a scroll, not a choice. Typing narrows
-  // it; the selection is kept if it still matches so it can't silently jump to
-  // a different cemetery mid-edit.
-  const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return cemeteries;
-    return cemeteries.filter((c) => `${c.city} ${c.country} ${c.name}`.toLowerCase().includes(q));
-  }, [cemeteries, query]);
-
-  const visible = matches.length ? matches : cemeteries;
-  const selected = visible.find((c) => c.slug === slug) ?? visible[0];
+  const selected = cemeteries.find((c) => c.slug === slug) ?? cemeteries[0];
   const activeSlug = selected?.slug ?? "";
 
   return (
@@ -109,28 +99,22 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
           cemetery&apos;s page straight away.
         </p>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className={captionClass}>Find a beis hachaim</span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={inputClass}
-              placeholder="Lizhensk, Kraków, Ukraine…"
-            />
-          </label>
-          <label className="block">
-            <span className={captionClass}>
-              Beis hachaim {matches.length !== cemeteries.length && `· ${matches.length} of ${cemeteries.length}`}
-            </span>
-            <select value={activeSlug} onChange={(e) => setSlug(e.target.value)} className={inputClass}>
-              {visible.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.city} · {c.country} — {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        {/* One control instead of a search box beside a dropdown: type the
+            town and pick it. */}
+        <div className="mt-5 max-w-xl">
+          <SearchableSelect
+            id="kever-cemetery"
+            label="Beis hachaim"
+            value={activeSlug}
+            onChange={setSlug}
+            placeholder="Type a town — Lizhensk, Kraków, Uman…"
+            options={cemeteries.map((c) => ({
+              value: c.slug,
+              label: `${c.city} · ${c.country}`,
+              hint: c.name,
+              keywords: c.slug,
+            }))}
+          />
         </div>
 
         {selected && (
