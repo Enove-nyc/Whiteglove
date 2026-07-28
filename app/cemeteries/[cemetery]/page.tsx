@@ -49,10 +49,10 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
       <Navbar />
       <SubBrandBanner />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Beis hachaim · {cemetery.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-6xl leading-tight text-[var(--navy)] sm:text-7xl">{cemetery.yiddishName}</h1>
+          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{cemetery.name}</p>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{cemetery.city} · {cemetery.yiddishCity}</p>
           <a href={mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to this beis hachaim →</a>
@@ -62,7 +62,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
-          <aside className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
+          <aside className="wg-card h-fit border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7 lg:sticky lg:top-28">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">How to get there</p>
             <div className="mt-4">
               <KeverCoordinates coordinates={cemetery.coordinates} address={cemetery.address} />
@@ -106,7 +106,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => (
-                <article key={burial.name} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+                <article key={burial.name} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
                   <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{burial.yiddishName}</h3>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
                   {burial.knownAs && <p className="mt-3 text-sm font-semibold text-stone-700">{burial.knownAs}</p>}
@@ -152,7 +152,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                   </h3>
                   <div className="mt-5 grid gap-5 md:grid-cols-2">
                     {group.items.map((place) => (
-                      <article key={`${place.name}-${place.address ?? ""}`} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+                      <article key={`${place.name}-${place.address ?? ""}`} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
                         <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{place.name}</p>
                         {place.address && <p className="mt-2 text-sm leading-6 text-stone-600">{place.address}</p>}
                         {place.hours && <p className="mt-2 text-sm text-stone-600">Hours: {place.hours}</p>}
@@ -182,7 +182,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
         )}
 
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
-          <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+          <section className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Verification and source</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">
               {hasAccessContacts ? "This cemetery has a public access contact listed above. Please confirm it before traveling." : "No public access contact has been verified for this cemetery yet."}

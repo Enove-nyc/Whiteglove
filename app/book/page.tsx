@@ -42,7 +42,7 @@ export default function BookPage() {
       {/* The search panel is the page. Putting it beside the copy left a
           column of dead space under the paragraph and squeezed the fields;
           the heading now sits above it and the panel runs the full width. */}
-      <section className="border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book with cash, or with miles</h1>

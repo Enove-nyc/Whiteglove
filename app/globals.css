@@ -108,6 +108,57 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 .glove-rule { display: flex; align-items: center; gap: 0.9rem; }
 .glove-rule::before, .glove-rule::after { content: ""; flex: 1; height: 1px; background: var(--gold-light); }
 
+/* Shared public-page finish. These classes are used by database-built pages
+   and provide the same visual rhythm as the hand-built destination pages. */
+.wg-page-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(170, 139, 82, 0.10), transparent 28rem),
+    linear-gradient(180deg, rgba(255, 253, 249, 0.72), rgba(247, 243, 235, 0));
+}
+
+.wg-page-section + .wg-page-section {
+  border-top: 1px solid rgba(217, 199, 163, 0.55);
+}
+
+.wg-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 28px rgba(23, 45, 82, 0.055);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+@media (hover: hover) {
+  .wg-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 14px 38px rgba(23, 45, 82, 0.09);
+    transform: translateY(-2px);
+  }
+}
+
+.wg-prose {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: #57534e;
+}
+
+.wg-prose > * + * { margin-top: 1.1rem; }
+.wg-prose h2,
+.wg-prose h3 {
+  color: var(--navy);
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+.wg-prose h2 { margin-top: 2.5rem; font-size: clamp(1.75rem, 4vw, 2.35rem); }
+.wg-prose h3 { margin-top: 2rem; font-size: 1.45rem; }
+.wg-prose ul,
+.wg-prose ol { padding-left: 1.35rem; }
+.wg-prose li + li { margin-top: 0.55rem; }
+.wg-prose a {
+  color: var(--navy);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 0.2em;
+}
+
 /* The planner keeps all of its existing controls and behavior. These scoped
    rules make its dense working areas easier to scan and use on every screen. */
 .itinerary-planner > div > div,

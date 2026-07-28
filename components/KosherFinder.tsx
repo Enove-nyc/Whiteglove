@@ -15,7 +15,7 @@ export default function KosherFinder({ showAddToTrip = true }: { showAddToTrip?:
 
   return (
     <div>
-      <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <label className="block">
           <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">City or place</span>
           <AddressAutocomplete

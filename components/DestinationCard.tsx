@@ -21,7 +21,7 @@ export default function DestinationCard({
   return (
     <Link
       href={href}
-      className={`group block overflow-hidden border border-[var(--gold-light)] bg-[#fcfaf6] transition duration-300 hover:-translate-y-1 hover:shadow-xl ${featured ? "md:col-span-2" : ""}`}
+      className={`wg-card group block overflow-hidden border border-[var(--gold-light)] bg-[#fcfaf6] transition duration-300 ${featured ? "md:col-span-2" : ""}`}
     >
       <div className={`h-32 bg-[radial-gradient(circle_at_75%_25%,rgba(217,199,163,.8),transparent_24%),linear-gradient(125deg,#18345d,${featured ? "#5d6480" : "#344461"})] p-6 ${featured ? "sm:h-40" : ""}`}>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f2e9d8]">{country}</p>

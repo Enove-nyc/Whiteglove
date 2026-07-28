@@ -17,10 +17,10 @@ export default async function DirectoryPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">White Glove directory</p>
-          <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">
+          <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">
             Find the people who make the trip happen.
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">

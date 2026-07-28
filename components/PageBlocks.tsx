@@ -15,13 +15,13 @@ function Block({ block }: { block: PageBlock }) {
   switch (block.kind) {
     case "hero":
       return (
-        <section className="border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-20">
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             {block.eyebrow && (
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{block.eyebrow}</p>
             )}
             {block.heading && (
-              <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">
+              <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.25rem)] leading-[1.08] text-[var(--navy)]">
                 {block.heading}
               </h1>
             )}
@@ -32,9 +32,9 @@ function Block({ block }: { block: PageBlock }) {
 
     case "text":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
           {block.heading && (
-            <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">
+            <h2 className="max-w-3xl font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
               {block.heading}
             </h2>
           )}
@@ -44,16 +44,16 @@ function Block({ block }: { block: PageBlock }) {
 
     case "cards":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
           {block.heading && (
-            <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">
+            <h2 className="max-w-3xl font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
               {block.heading}
             </h2>
           )}
           {block.intro && <p className="mt-4 max-w-3xl text-lg leading-8 text-stone-600">{block.intro}</p>}
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {block.items.map((item, i) => (
-              <article key={i} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+              <article key={i} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                   {item.title}
                 </h3>
@@ -66,9 +66,9 @@ function Block({ block }: { block: PageBlock }) {
 
     case "list":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
           {block.heading && (
-            <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">
+            <h2 className="max-w-3xl font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
               {block.heading}
             </h2>
           )}
@@ -83,15 +83,15 @@ function Block({ block }: { block: PageBlock }) {
     case "image":
       if (!block.url) return null;
       return (
-        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-          <figure>
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+          <figure className="overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-2 shadow-[0_12px_35px_rgba(23,45,82,.07)]">
             <Image
               src={block.url}
               alt={block.alt}
               width={1600}
               height={900}
               unoptimized
-              className="h-auto w-full border border-[var(--gold-light)] object-cover"
+              className="h-auto w-full rounded-lg object-cover"
             />
             {block.caption && <figcaption className="mt-3 text-sm text-stone-500">{block.caption}</figcaption>}
           </figure>
@@ -100,15 +100,15 @@ function Block({ block }: { block: PageBlock }) {
 
     case "buttons":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
-          <div className="flex flex-wrap gap-3">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-8 sm:px-8">
+          <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
             {block.items
               .filter((i) => i.label && i.href)
               .map((item, i) => {
                 const className =
                   item.style === "outline"
-                    ? "border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
-                    : "border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
+                    ? "inline-flex min-h-12 items-center justify-center whitespace-normal border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+                    : "inline-flex min-h-12 items-center justify-center whitespace-normal border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
                 return item.href.startsWith("/") ? (
                   <Link key={i} href={item.href} className={className}>
                     {item.label}
@@ -125,8 +125,8 @@ function Block({ block }: { block: PageBlock }) {
 
     case "quote":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-          <blockquote className="max-w-3xl border-l-4 border-[var(--gold)] pl-6">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+          <blockquote className="max-w-3xl rounded-r-xl border-l-4 border-[var(--gold)] bg-[var(--surface)] px-6 py-7 shadow-[0_8px_25px_rgba(23,45,82,.05)]">
             <p className="font-[family-name:var(--font-display)] text-2xl leading-9 text-[var(--navy)]">{block.text}</p>
             {block.attribution && <footer className="mt-3 text-sm text-stone-500">{block.attribution}</footer>}
           </blockquote>
@@ -135,9 +135,9 @@ function Block({ block }: { block: PageBlock }) {
 
     case "note":
       return (
-        <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
+        <section className="wg-page-section mx-auto max-w-7xl px-5 py-8 sm:px-8">
           <p
-            className={`max-w-3xl border-l-4 px-4 py-3 text-sm leading-7 ${
+            className={`max-w-3xl rounded-r-lg border-l-4 px-5 py-4 text-sm leading-7 ${
               block.tone === "warn" ? "border-amber-400 bg-amber-50 text-amber-900" : "border-[var(--gold)] bg-[#fcfaf6] text-stone-700"
             }`}
           >

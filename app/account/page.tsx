@@ -24,11 +24,11 @@ export default async function AccountPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Your White Glove account</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Welcome, {displayName}.</h1>
+            <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Welcome, {displayName}.</h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">This is where your saved destinations, personal notes, and future itineraries live.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

@@ -150,7 +150,7 @@ export default function MapExplorer({
         ) : (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {nearbyKevarim.map((m) => (
-              <li key={m.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+              <li key={m.id} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
                 <a href={m.href} className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
                   {m.name}
                 </a>

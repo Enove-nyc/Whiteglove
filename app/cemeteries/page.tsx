@@ -12,7 +12,7 @@ export default async function CemeteriesPage() {
       <Navbar />
       <SubBrandBanner />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Cemetery directory</p>
@@ -25,7 +25,7 @@ export default async function CemeteriesPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <div className="grid gap-5 md:grid-cols-2">
           {cemeteries.map((cemetery) => (
             <Link
