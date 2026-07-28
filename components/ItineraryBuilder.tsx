@@ -204,28 +204,25 @@ export default function ItineraryBuilder() {
   return (
     <div>
       {/* Trip header */}
-      <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.06)] sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
             <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
             <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button type="button" onClick={() => setTab(tab === "flight" ? null : "flight")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Flight</button>
-          <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Hotel / where you sleep</button>
-          <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">+ Activity / stop</button>
-          <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import my saved route</button>
-          <button type="button" onClick={planMyRoute} disabled={planning} className="border border-[var(--gold)] bg-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--navy)] hover:border-[var(--navy)] disabled:opacity-60">{planning ? "Planning…" : "⚡ Plan my route"}</button>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setTab(tab === "flight" ? null : "flight")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Flight</button>
+          <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Hotel</button>
+          <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Stop</button>
+          <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import saved route</button>
+          <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan route"}</button>
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
-        {!hasDates && <p className="mt-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">Set your <strong>start and end dates</strong> above — the planner needs them to lay out the days and work out the route.</p>}
-        <p className="mt-3 text-xs leading-5 text-stone-500">
-          <strong>Plan my route</strong> keeps every stop you gave a date on that date, and arranges everything else around it — placing undated stops on the day that adds the least driving and putting each day in the fastest order. You can still reorder any day by hand.
-        </p>
+        {!hasDates && <p className="mt-3 text-xs font-semibold text-[var(--gold)]">Choose start and end dates to begin.</p>}
 
         {tab === "flight" && <FlightForm startDate={itin.startDate} onAdd={(f) => { addFlight(f); setTab(null); }} />}
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
@@ -253,9 +250,9 @@ export default function ItineraryBuilder() {
         <>
           <div className="mt-8 flex flex-wrap items-center gap-4 border border-[var(--gold-light)] bg-[var(--cream-deep)] p-5">
             <Stat label="Nights" value={summary.nights} />
-            <Stat label="Nights without lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
+            <Stat label="Missing lodging" value={summary.nightsWithoutLodging} warn={summary.nightsWithoutLodging > 0} />
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
-            <Stat label="Driving (stops + transfers)" value={`${summary.travelHours} h`} />
+            <Stat label="Driving" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
             <div className="ml-auto flex gap-3">
               <Link href="/itinerary/print" target="_blank" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Print itinerary (PDF)</Link>
@@ -265,7 +262,7 @@ export default function ItineraryBuilder() {
           {unscheduled.length > 0 && (
             <div className="mt-6 border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-5">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Not scheduled yet ({unscheduled.length})</p>
-              <p className="mt-1 text-sm text-stone-600">Give a stop a date to pin it to that day, or press <strong>Plan my route</strong> and we&apos;ll place it on the day that adds the least driving.</p>
+              <p className="mt-1 text-sm text-stone-600">Choose a day, or use <strong>Plan route</strong>.</p>
               <ul className="mt-3 space-y-2">
                 {unscheduled.map((a) => (
                   <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] pt-2 first:border-t-0 first:pt-0">
@@ -294,8 +291,8 @@ export default function ItineraryBuilder() {
 
       {loaded && days.length === 0 && (
         <div className="mt-8 border border-dashed border-[var(--gold-light)] p-10 text-center">
-          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Set your start and end dates to build the day-by-day plan.</p>
-          <p className="mt-2 text-sm text-stone-600">Then add your flights, hotels, and stops above — we&apos;ll lay them out and flag anything missing.</p>
+          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Choose your dates to begin.</p>
+          <p className="mt-2 text-sm text-stone-600">Then add flights, hotels, and stops.</p>
         </div>
       )}
     </div>
