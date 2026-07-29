@@ -451,7 +451,7 @@ const guideCemeteries: Cemetery[] = cityGuides
     sourceUrl: guide.sourceUrl,
   }));
 
-export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9];
+export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9, ...bulkCemeteries10];
 
 export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
@@ -466,4 +466,5 @@ import { bulkCemeteries6 } from "@/data/cemeteries-bulk-6";
 import { bulkCemeteries7 } from "@/data/cemeteries-bulk-7";
 import { bulkCemeteries8 } from "@/data/cemeteries-bulk-8";
 import { bulkCemeteries9 } from "@/data/cemeteries-bulk-9";
+import { bulkCemeteries10 } from "@/data/cemeteries-bulk-10";
 import type { ContentPlace } from "@/data/practical-content";

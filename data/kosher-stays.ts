@@ -217,6 +217,112 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     note: "Nice has a real kosher community, which is what makes the Côte d'Azur workable for a family when most of the French coast is not.",
     sourceUrl: "https://en.wikipedia.org/wiki/Nice",
   },
+  // ---- The countries the kevarim are in -------------------------------
+  //
+  // Added after the attractions batch, because a family with eleven batei
+  // hachaim and eleven things to do in Poland still had nowhere to sleep.
+  //
+  // These are not all the same kind of place, and the notes say which is which.
+  // Antwerp is a living kehilla you can walk a Shabbos in. Berlin's Jewish life
+  // is scattered across a very large city and the big shul is not where the food
+  // is. Kraków and Prague are historic quarters that are now largely tourist
+  // districts with a working shul inside them. Somebody choosing a hotel needs
+  // to know the difference before they book, not after.
+  {
+    slug: "antwerp-jewish-quarter",
+    city: "Antwerp",
+    country: "Belgium",
+    name: "The Jewish quarter — around Bouwmeestersstraat and the diamond district",
+    coordinates: "51.20777, 4.39698",
+    note: "The strongest kehilla in this batch by a distance, and the one place in Western Europe where Yiddish is still a working street language. Some twenty thousand Jews live in the streets between Central Station and the bourses, with the butchers, bakers, seforim shops and a choice of shuls all inside a few blocks. If you want a trip where Shabbos looks like Shabbos, stay here rather than in Brussels and travel out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Hollandse_Synagoge",
+  },
+  {
+    slug: "frankfurt-westend",
+    city: "Frankfurt",
+    country: "Germany",
+    name: "The Westend, around the Westend Synagogue",
+    coordinates: "50.12111, 8.66439",
+    note: "Frankfurt has the most usable kosher infrastructure in Germany and it sits in the Westend, around the one large pre-war shul that survived 1938 and the bombing. Walkable, central, and about fifteen minutes from the Hauptbahnhof — which matters because Frankfurt is the natural gateway for a ShUM trip to Worms, Speyer and Mainz, all within an hour.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Westend_Synagogue",
+  },
+  {
+    slug: "munich-jakobsplatz",
+    city: "Munich",
+    country: "Germany",
+    name: "Around St.-Jakobs-Platz and the Ohel Jakob synagogue",
+    coordinates: "48.13444, 11.57250",
+    note: "The community centre, the shul and the Jewish Museum are one complex on Jakobsplatz, five minutes' walk from Marienplatz — unusually central for a European kehilla. This is the base for the Bavarian Alps: Neuschwanstein is two hours out and the Zugspitze an hour and a half, and neither has anything kosher, so the day's food comes from here.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Ohel_Jakob_synagogue_(Munich)",
+  },
+  {
+    slug: "berlin-jewish-life",
+    city: "Berlin",
+    country: "Germany",
+    name: "Charlottenburg for the food, Prenzlauer Berg for the big shul",
+    coordinates: "52.53528, 13.41861",
+    note: "Berlin is the one city here where naming a single quarter would mislead you. Germany's largest shul is the Rykestrasse synagogue in Prenzlauer Berg — the coordinate here — but most of the kosher shopping and the community services are across the city in Charlottenburg and Wilmersdorf, and Berlin is very large. Decide which you are optimising for and check the distance on a map before booking; a hotel that is walking distance to one is a journey from the other.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Rykestrasse_Synagogue",
+  },
+  {
+    slug: "prague-josefov",
+    city: "Prague",
+    country: "Czechia",
+    name: "Josefov, around the Altneuschul",
+    coordinates: "50.09000, 14.41861",
+    note: "The old Jewish town, and now also one of the busiest tourist districts in Europe — both things are true at once. What makes it worth staying in is that the Altneuschul still has daily minyanim, the kosher restaurants are in the same few streets, and the Maharal's kever is a few minutes' walk. It is also five minutes from the Old Town Square, so the sightseeing needs no travel at all.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Old_New_Synagogue",
+  },
+  {
+    slug: "budapest-seventh-district",
+    city: "Budapest",
+    country: "Hungary",
+    name: "The 7th district, around the Kazinczy Street synagogue",
+    coordinates: "47.49833, 19.06250",
+    note: "The Kazinczy Street shul is the centre of Budapest's orthodox kehilla and its complex holds a beis midrash, a school and a kosher kitchen. The surrounding 7th district is the old Jewish quarter and Budapest's kosher food is here. One thing to know before booking a room: these same streets are now the city's nightlife district, so ask where the hotel sits within them.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Kazinczy_Street_Synagogue,_Budapest",
+  },
+  {
+    slug: "krakow-kazimierz-quarter",
+    city: "Kraków",
+    country: "Poland",
+    name: "Kazimierz, around the Remuh on Szeroka",
+    coordinates: "50.05264, 19.94731",
+    note: "Where a Kraków trip is based. The Remuh is a working shul of 1557 with the Remuh's own kever behind it, the kosher food is on the same streets, and Wawel is ten minutes' walk with the Main Square twenty. It is also the base for Auschwitz — an hour and a half west, and a day that needs food carried from here.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Remah_Synagogue",
+  },
+  {
+    slug: "warsaw-nozyk",
+    city: "Warsaw",
+    country: "Poland",
+    name: "Śródmieście, around the Nożyk synagogue on Twarda",
+    coordinates: "52.23611, 21.00111",
+    note: "The Nożyk is the only pre-war shul in Warsaw still standing — the Germans used it as a stable, which is what saved it — and it is the centre of what Jewish Warsaw there now is. Central, and within reach of POLIN and the Old Town on foot or one tram. Warsaw's kosher provision is thinner than Kraków's; check what is open for the days you are there rather than assuming.",
+    sourceUrl: "https://en.wikipedia.org/wiki/No%C5%BCyk_Synagogue",
+  },
+  // ---- Israel ---------------------------------------------------------
+  //
+  // Yerushalayim was the only Israeli quarter listed, and the country had no
+  // stays at all — for the place this audience travels to most, and where the
+  // site carries sixty kevarim.
+  {
+    slug: "bnei-brak-rabbi-akiva",
+    city: "Bnei Brak",
+    country: "Israel",
+    name: "Around Rabbi Akiva Street",
+    coordinates: "32.08603, 34.83194",
+    note: "There is nowhere in the world with more kosher food per square metre. Rabbi Akiva Street runs the length of the city and everything is on it or off it, and the whole town keeps Shabbos, so nothing has to be arranged or asked about. What Bnei Brak does not have is hotels — it is a city of flats, and what visitors take are short-term apartments. Ten minutes from Tel Aviv and forty-five from Yerushalayim.",
+    sourceUrl: "https://www.wikidata.org/wiki/Q6907785",
+  },
+  {
+    slug: "tiberias-centre",
+    city: "Tiberias (Teverya)",
+    country: "Israel",
+    name: "Central Teverya, around the Rambam's kever",
+    coordinates: "32.79015, 35.53734",
+    note: "The base for the Galilee kevarim, and the reason is geography: the Rambam and the Shelah are in the city centre, Rabbi Meir Baal HaNes is two and a half kilometres south, and Meron, Tzfat and Amuka are all inside an hour. Teverya has real hotels, which Tzfat and Bnei Brak largely do not, and kosher food is the default rather than something to hunt for. Note that the Kinneret beaches are mixed bathing; the town is worth staying in for the kevarim and the position, and that is what it is listed for.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Tomb_of_Maimonides",
+  },
 ];
 
 export const kosherStays: KosherStay[] = [
@@ -373,6 +479,182 @@ export const kosherStays: KosherStay[] = [
     ],
     kosherClaim: "none",
     sourceUrl: "https://swissjews.ch/en/jewishlife/religion/kosher/restaurants_hotels/",
+  },
+
+  // ---- Germany, Belgium, Czechia, Hungary, Poland, Israel -------------
+  //
+  // WHY THESE NAME A QUARTER AND NOT A HOTEL. A hotel's kosher arrangement, its
+  // ownership and whether it is still trading all change from year to year, and
+  // a named hotel printed here on the strength of a directory listing is a
+  // recommendation this site cannot stand behind. What does not change from year
+  // to year is which streets the shul, the food and the walk are in — so that is
+  // what is listed, and the hotel is left to the traveler and a booking site.
+  //
+  // Every one of these is kosherClaim "none". None of them claims a kosher
+  // kitchen, and none is given a kashrus caveat it never invited: what you are
+  // buying is the position.
+  {
+    slug: "antwerp-quarter-stays",
+    name: "Staying in the Antwerp Jewish quarter",
+    city: "Antwerp",
+    country: "Belgium",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Hotels and apartment lets in the streets between Central Station and the diamond bourses, inside a kehilla of some twenty thousand people with a full week of shuls, shops and schools.",
+    anchor: { name: "Shomre Hadas — the Hollandse Synagoge, Bouwmeestersstraat", coordinates: "51.20777, 4.39698" },
+    notes: [
+      "This is the strongest position in Western Europe for a Shabbos away from home: several shuls to choose from, butchers and bakers within a few blocks, and a community that lives there rather than visits.",
+      "Ask about the eruv locally. Do not assume it from anything printed here.",
+      "Brussels is forty minutes by train and Bruges an hour, so the sightseeing works from here — the reverse does not, because Brussels has far less kosher food.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Hollandse_Synagoge",
+  },
+  {
+    slug: "frankfurt-westend-stays",
+    name: "Staying in the Frankfurt Westend",
+    city: "Frankfurt",
+    country: "Germany",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Central Frankfurt hotels within walking distance of the Westend Synagogue and the city's kosher shopping — the most usable kosher base in Germany.",
+    anchor: { name: "Westend Synagogue, Freiherr-vom-Stein-Straße 30", coordinates: "50.12111, 8.66439" },
+    notes: [
+      "The Westend is an expensive district and the hotels reflect that; the compensation is that everything is walkable and the Hauptbahnhof is fifteen minutes away.",
+      "This is the right base for a ShUM trip — Worms, Speyer and Mainz are each within an hour, and none of the three has kosher food.",
+      "Frankfurt Airport is one of the largest in Europe, so the flight options are better than anywhere else in this list.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Westend_Synagogue",
+  },
+  {
+    slug: "munich-jakobsplatz-stays",
+    name: "Staying near Jakobsplatz, Munich",
+    city: "Munich",
+    country: "Germany",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Hotels in Munich's old town within a few minutes of the Ohel Jakob synagogue and community centre, five minutes from Marienplatz.",
+    anchor: { name: "Ohel Jakob synagogue, St.-Jakobs-Platz", coordinates: "48.13444, 11.57250" },
+    notes: [
+      "Unusually central for a European kehilla — the shul, the community centre and the Jewish Museum are one complex right by Marienplatz, so a hotel by the sights is also a hotel by the shul.",
+      "This is the base for the Alps. Neuschwanstein is two hours, the Zugspitze an hour and a half, and there is nothing kosher at either — carry the day's food from here.",
+      "Confirm what is open for the days you are travelling; Munich's kosher provision is real but small.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Ohel_Jakob_synagogue_(Munich)",
+  },
+  {
+    slug: "berlin-stays",
+    name: "Staying in Berlin — Charlottenburg or Prenzlauer Berg",
+    city: "Berlin",
+    country: "Germany",
+    kind: "Ordinary hotel, well placed",
+    summary: "Berlin has no single Jewish quarter to stay in. The largest shul is in Prenzlauer Berg and most of the kosher shopping is in Charlottenburg, and the two are a long way apart — so this entry is the choice rather than an answer.",
+    anchor: { name: "Rykestrasse Synagogue, Prenzlauer Berg — Germany's largest shul", coordinates: "52.53528, 13.41861" },
+    notes: [
+      "Charlottenburg and Wilmersdorf, in the west, is where most of the kosher shopping and the community services are. Prenzlauer Berg, in the east, has the big shul. Berlin is large enough that this is a real decision and not a detail.",
+      "Whichever you pick, check the distance to the other on a map before booking — a hotel that is a walk from one is a journey from the other.",
+      "Listed as an ordinary hotel district rather than a Jewish quarter, because Berlin does not have one in the sense that Antwerp does.",
+      "Everything on the things-to-do list for Berlin — the Brandenburg Gate, Museum Island, the Jewish Museum — is central and reachable from either.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Rykestrasse_Synagogue",
+  },
+  {
+    slug: "prague-josefov-stays",
+    name: "Staying in Josefov, Prague",
+    city: "Prague",
+    country: "Czechia",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Hotels inside the old Jewish town, minutes from the Altneuschul, the kosher restaurants and the Maharal's kever — and five minutes from the Old Town Square.",
+    anchor: { name: "The Altneuschul (Old-New Synagogue), Červená 2", coordinates: "50.09000, 14.41861" },
+    notes: [
+      "The best position of any city in this batch for combining kevarim and sightseeing: the Maharal, the shul, the food and the Charles Bridge are all inside a fifteen-minute walk.",
+      "Josefov is also one of the busiest tourist quarters in Europe. Expect crowds outside your door in season, and book early.",
+      "The Altneuschul has daily minyanim and is a working shul, not a museum — ask the kehilla about times rather than relying on visitor hours.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Old_New_Synagogue",
+  },
+  {
+    slug: "budapest-seventh-stays",
+    name: "Staying in Budapest's 7th district",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "The old Jewish quarter around the Kazinczy Street shul, where Budapest's kosher food is, and a natural base for the Hungarian kevarim.",
+    anchor: { name: "Kazinczy Street Synagogue, Kazinczy utca 29-31", coordinates: "47.49833, 19.06250" },
+    notes: [
+      "One caution that decides which street you book on: the same few blocks are now Budapest's nightlife district. Ask the hotel exactly where it sits, and expect noise if it is on the wrong corner.",
+      "This is the base for Kerestir, Ujhely, Kaliv and Liska — all of them two to three hours east, and all needing food carried from here.",
+      "The Kazinczy complex holds a beis midrash and a kosher kitchen alongside the shul.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Kazinczy_Street_Synagogue,_Budapest",
+  },
+  {
+    slug: "krakow-kazimierz-stays",
+    name: "Staying in Kazimierz, Kraków",
+    city: "Kraków",
+    country: "Poland",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Apartments and small hotels in Kazimierz, on the streets around the Remuh — the shul, the kever, the kosher food and the walk into the old town all from one place.",
+    anchor: { name: "Remuh Synagogue, Szeroka 40", coordinates: "50.05264, 19.94731" },
+    notes: [
+      "Kazimierz is where a Polish kevarim trip is based, and the reason is simple: it is the one place in Poland with a working shul, kosher food and a real choice of lodging on the same streets.",
+      "Auschwitz is an hour and a half west and Wieliczka half an hour east — both are day trips from here.",
+      "Szeroka itself is lively in the evenings. A flat one street back is quieter for the same money.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Remah_Synagogue",
+  },
+  {
+    slug: "warsaw-nozyk-stays",
+    name: "Staying near the Nożyk synagogue, Warsaw",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Ordinary hotel, well placed",
+    summary: "Central Śródmieście hotels within reach of the Nożyk — the only pre-war shul left in Warsaw — and of POLIN and the Old Town.",
+    anchor: { name: "Nożyk Synagogue, Twarda 6", coordinates: "52.23611, 21.00111" },
+    notes: [
+      "Listed as an ordinary hotel district rather than a Jewish quarter, because that is what it is. There is a shul and a community here; there is not a neighbourhood you can do a whole Shabbos in the way you can in Antwerp or Kazimierz.",
+      "Warsaw's kosher provision is thinner than Kraków's. Establish what is actually open for your dates before you rely on it, and consider bringing what you need.",
+      "Treblinka is two hours north-east with nothing on the way, and Warsaw is the only sensible base for it.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/No%C5%BCyk_Synagogue",
+  },
+  {
+    slug: "bnei-brak-stays",
+    name: "Staying in Bnei Brak",
+    city: "Bnei Brak",
+    country: "Israel",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary: "Short-term apartments off Rabbi Akiva Street. Not a hotel town — a city of flats where the whole week is already kosher and the whole city already keeps Shabbos.",
+    anchor: { name: "Rabbi Akiva Street, the spine of the city", coordinates: "32.08603, 34.83194" },
+    notes: [
+      "Set expectations correctly: there is very little hotel stock here. What visitors rent are apartments, usually by the week, and usually through the community rather than a booking site.",
+      "The compensation is that nothing needs arranging. Food, shuls, minyanim at every hour, and a Shabbos that requires no planning at all.",
+      "Ten minutes from Tel Aviv and about forty-five from Yerushalayim, so it works as a base for both.",
+      "The Chazon Ish, the Ponevezh bais hachaim and Zichron Meir are all in the city; three of this site's kever pages are within a short walk.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.wikidata.org/wiki/Q6907785",
+  },
+  {
+    slug: "tiberias-stays",
+    name: "Staying in central Teverya",
+    city: "Tiberias (Teverya)",
+    country: "Israel",
+    kind: "Ordinary hotel, well placed",
+    summary: "Hotels in the centre of Teverya, minutes from the Rambam and within an hour of Meron, Tzfat and Amuka — the practical base for a Galilee kevarim trip.",
+    anchor: { name: "Kever HaRambam, central Teverya", coordinates: "32.79015, 35.53734" },
+    notes: [
+      "Teverya has actual hotels, at a range of prices, which is why people base here rather than in Tzfat — Tzfat's lodging is mostly tzimmerim and small guesthouses that book out.",
+      "Kosher food is the default here rather than something to find. Confirm the hechsher of any particular place as you would anywhere.",
+      "Rabbi Meir Baal HaNes is two and a half kilometres south; Meron, Tzfat and Amuka are each within about an hour.",
+      "One thing to know before booking on the water: the Kinneret beaches are mixed bathing. A hotel on the promenade is a hotel beside them.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Tomb_of_Maimonides",
   },
 ];
 
