@@ -8,6 +8,71 @@ import { INIT_SQL } from "@/lib/init-sql";
 import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data";
 
 /**
+ * Split a SQL script into statements on the semicolons that actually end one.
+ *
+ * A plain `split(";")` was doing this, on the assumption that no semicolon ever
+ * appeared inside a literal or a comment. One did — a comment above the Page
+ * columns read "…covers a fresh database; these cover one provisioned before
+ * the column existed." The split cut the comment in half, so the next statement
+ * began with the bare words "these cover one provisioned…", Postgres rejected
+ * it as a syntax error, and because that is not an "already exists" error the
+ * whole run stopped there. Setup and re-import both failed, and the three Page
+ * columns the page editor needs were never added.
+ *
+ * So: semicolons inside single-quoted literals, double-quoted identifiers, and
+ * both kinds of comment are left alone. Fragments that turn out to hold no SQL
+ * at all — a trailing run of comments — are dropped rather than sent to the
+ * database as an empty query.
+ */
+export function splitSql(sql: string): string[] {
+  const statements: string[] = [];
+  let current = "";
+  let quote: "'" | '"' | null = null;
+  let comment: "line" | "block" | null = null;
+
+  for (let i = 0; i < sql.length; i += 1) {
+    const c = sql[i];
+    const next = sql[i + 1];
+
+    if (comment === "line") {
+      current += c;
+      if (c === "\n") comment = null;
+      continue;
+    }
+    if (comment === "block") {
+      current += c;
+      if (c === "*" && next === "/") { current += next; i += 1; comment = null; }
+      continue;
+    }
+    if (quote) {
+      current += c;
+      // '' inside a literal is an escaped quote, not the end of it.
+      if (c === quote && next === quote) { current += next; i += 1; continue; }
+      if (c === quote) quote = null;
+      continue;
+    }
+    if (c === "-" && next === "-") { current += c + next; i += 1; comment = "line"; continue; }
+    if (c === "/" && next === "*") { current += c + next; i += 1; comment = "block"; continue; }
+    if (c === "'" || c === '"') { current += c; quote = c; continue; }
+    if (c === ";") { statements.push(current); current = ""; continue; }
+    current += c;
+  }
+  statements.push(current);
+
+  return statements.filter((s) => hasSql(s)).map((s) => s.trim());
+}
+
+/** True when a fragment holds something other than whitespace and comments. */
+function hasSql(fragment: string): boolean {
+  return (
+    fragment
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/--[^\n]*/g, " ")
+      .trim().length > 0
+  );
+}
+
+/**
  * Create any missing tables/enums. Idempotent: it runs the full init SQL every
  * time, swallowing "already exists" errors, so it both provisions a fresh
  * database AND adds newly-introduced tables (e.g. DirectoryProvider) to a
@@ -25,10 +90,7 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
   );
   const alreadyProvisioned = Boolean(existing?.[0]?.present);
 
-  // The init SQL has one statement per ";" with no semicolons inside literals,
-  // so a plain split is safe. Comments (-- ...) are valid inside a statement.
-  const statements = INIT_SQL.split(";").map((s) => s.trim()).filter(Boolean);
-  for (const statement of statements) {
+  for (const statement of splitSql(INIT_SQL)) {
     try {
       await prisma.$executeRawUnsafe(statement);
     } catch (error) {
@@ -36,7 +98,11 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
       // re-runs and incremental schema additions are safe; rethrow anything else.
       const message = error instanceof Error ? error.message : String(error);
       if (/already exists/i.test(message)) continue;
-      throw error;
+      // Say WHICH statement failed. Without this the admin screen showed a bare
+      // Postgres error with nothing to connect it to, and the only way to find
+      // out what had broken was to read the whole script by hand.
+      const first = statement.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("--")) ?? statement.trim();
+      throw new Error(`${message} — while running: ${first.slice(0, 120)}`);
     }
   }
   return { created: !alreadyProvisioned };
