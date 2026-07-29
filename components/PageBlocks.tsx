@@ -52,14 +52,33 @@ function Block({ block }: { block: PageBlock }) {
           )}
           {block.intro && <p className="mt-4 max-w-3xl text-lg leading-8 text-stone-600">{block.intro}</p>}
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {block.items.map((item, i) => (
-              <article key={i} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-                <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                  {item.title}
-                </h3>
-                <p className="mt-3 leading-7 text-stone-600">{item.body}</p>
-              </article>
-            ))}
+            {block.items.map((item, i) => {
+              const card = (
+                <>
+                  <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 leading-7 text-stone-600">{item.body}</p>
+                  {item.href && (
+                    <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+                      Open &rarr;
+                    </p>
+                  )}
+                </>
+              );
+              const shell = "wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6";
+              // A card with somewhere to go is a link; one without stays an
+              // article, so nothing looks clickable that is not.
+              return item.href ? (
+                <Link key={i} href={item.href} className={`${shell} block transition hover:border-[var(--gold)]`}>
+                  {card}
+                </Link>
+              ) : (
+                <article key={i} className={shell}>
+                  {card}
+                </article>
+              );
+            })}
           </div>
         </section>
       );

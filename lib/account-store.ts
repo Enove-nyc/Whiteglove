@@ -1,13 +1,26 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
-import type { Itinerary } from "@/data/itinerary";
+import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { identityKey, normalizeIdentity } from "@/lib/identity";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
 type RedisResult<T> = { result?: T };
 
 export type AccountRecord = {
+  /**
+   * What the account is called and stored under: an email address, or a phone
+   * number in E.164.
+   *
+   * The field keeps the name `email` because everything in the site and every
+   * record already written uses it, and renaming it would break accounts that
+   * exist. Read it as "the thing they sign in with"; `identityKind` says which
+   * it is, and `describeIdentity` spells it for a person.
+   */
   email: string;
+  /** "email" or "phone". Absent on accounts made before phones were allowed. */
+  identityKind?: "email" | "phone";
   name?: string;
+  /** A contact number, whether or not it is what they sign in with. */
   phone?: string;
   passwordHash: string;
   salt: string;
@@ -20,12 +33,43 @@ export type AccountRecord = {
   resetCodeExpiresAt?: string;
 };
 
+/**
+ * One trip in the account: an itinerary, the route of places behind it, and
+ * whoever it has been shared with.
+ *
+ * A person planning Poland in the spring and Ukraine in the autumn was, until
+ * now, planning over the top of themselves — there was one itinerary per
+ * account and saving the second lost the first.
+ */
+export type SavedTrip = {
+  id: string;
+  name: string;
+  itinerary: Itinerary;
+  route: SavedPlace[];
+  /** Public read-only token, when this particular trip is shared. */
+  shareId?: string;
+  collaborators?: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AccountData = {
+  /**
+   * The open trip's route and itinerary, kept as they always were.
+   *
+   * Everything else in the site reads these two fields — the print view, the
+   * share links, the admin account list. Rather than rewrite all of it, the
+   * trips layer keeps them pointing at whichever trip is open, so an account
+   * that has never made a second trip behaves exactly as before.
+   */
   route: SavedPlace[];
   favorites: SavedPlace[];
   itinerary?: Itinerary;
-  itineraryShareId?: string; // public read-only share token for this account's trip
-  itineraryCollaborators?: string[]; // emails the owner added to the trip
+  itineraryShareId?: string;
+  itineraryCollaborators?: string[];
+  /** Every trip in the account. Absent on accounts made before this existed. */
+  trips?: SavedTrip[];
+  activeTripId?: string;
   updatedAt?: string;
 };
 
@@ -76,8 +120,19 @@ function dataKey(email: string) {
   return `white-glove:account-data:${email}`;
 }
 
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
+/**
+ * The one spelling an account is stored under.
+ *
+ * An account is named by an email address or by a phone number, and both are
+ * just strings — so both work as the key, provided each has exactly one
+ * spelling. "(555) 123-4567" and "+1 555 123 4567" have to land on the same
+ * account, or somebody signs up twice without meaning to.
+ *
+ * Anything unreadable falls back to trimmed lower case rather than being
+ * rejected here, so an account made before this existed still looks itself up.
+ */
+function normalizeId(identifier: string) {
+  return identityKey(identifier);
 }
 
 function hashPassword(password: string, salt: string) {
@@ -93,7 +148,7 @@ function verificationCode() {
 }
 
 function hashVerificationCode(email: string, code: string) {
-  return createHmac("sha256", verificationSecret()).update(`${normalizeEmail(email)}:${code}`).digest("base64url");
+  return createHmac("sha256", verificationSecret()).update(`${normalizeId(email)}:${code}`).digest("base64url");
 }
 
 export function hasAccountStorage() {
@@ -125,7 +180,7 @@ async function writeJson(key: string, value: unknown) {
 }
 
 export async function getAccountRecord(email: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   return readJson<AccountRecord>(accountKey(normalized));
 }
 
@@ -185,17 +240,37 @@ export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
 
-export async function createAccount(email: string, password: string, name?: string) {
+/**
+ * Make an account, named by an email address or a phone number.
+ *
+ * The identifier is checked properly here rather than accepted and puzzled
+ * over later: a number too short to dial, or an address with no domain, means
+ * a code sent nowhere and somebody waiting for it.
+ */
+export async function createAccount(identifier: string, password: string, name?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
-  if (!normalized || !password) return { ok: false as const, error: "Enter an email and password." };
+  const identity = normalizeIdentity(identifier ?? "");
+  if (!identity) {
+    return { ok: false as const, error: "Enter an email address or a phone number we can reach you on." };
+  }
+  if (!password) return { ok: false as const, error: "Choose a password." };
+  const normalized = identity.value;
   const existing = await getAccountRecord(normalized);
-  if (existing) return { ok: false as const, error: "An account already exists for that email." };
+  if (existing) {
+    return {
+      ok: false as const,
+      error: identity.kind === "phone" ? "An account already exists for that number." : "An account already exists for that email.",
+    };
+  }
   const salt = randomBytes(16).toString("hex");
   const cleanName = name?.trim();
   const record: AccountRecord = {
     email: normalized,
+    identityKind: identity.kind,
     name: cleanName || undefined,
+    // Signing in with a number makes it the contact number too — there is no
+    // sense asking for it twice.
+    phone: identity.kind === "phone" ? normalized : undefined,
     salt,
     passwordHash: hashPassword(password, salt),
     createdAt: new Date().toISOString(),
@@ -211,14 +286,14 @@ export async function createAccount(email: string, password: string, name?: stri
 }
 
 export async function verifyAccount(email: string, password: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return false;
   return hashPassword(password, record.salt) === record.passwordHash;
 }
 
 export async function verifyAccountStatus(email: string, password: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return { ok: false as const, reason: "missing" as const };
   if (hashPassword(password, record.salt) !== record.passwordHash) return { ok: false as const, reason: "credentials" as const };
@@ -228,9 +303,9 @@ export async function verifyAccountStatus(email: string, password: string) {
 
 export async function requestPasswordReset(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   const code = verificationCode();
   const next: AccountRecord = {
     ...record,
@@ -243,9 +318,9 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function resetPassword(email: string, code: string, newPassword: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   if (!record.resetCodeHash || !record.resetCodeExpiresAt) return { ok: false as const, error: "No reset code is active. Request a new one." };
   if (new Date(record.resetCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That reset code has expired. Request a new one." };
   if (hashVerificationCode(normalized, code) !== record.resetCodeHash) return { ok: false as const, error: "That reset code is not correct." };
@@ -265,9 +340,9 @@ export async function resetPassword(email: string, code: string, newPassword: st
 
 export async function verifyEmailCode(email: string, code: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   if (!record.verificationCodeHash || !record.verificationCodeExpiresAt) return { ok: false as const, error: "No verification code is active. Request a new one." };
   if (new Date(record.verificationCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That verification code has expired. Request a new one." };
   if (hashVerificationCode(normalized, code) !== record.verificationCodeHash) return { ok: false as const, error: "That verification code is not correct." };
@@ -284,9 +359,9 @@ export async function verifyEmailCode(email: string, code: string) {
 
 export async function resendVerificationCode(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  if (!record) return { ok: false as const, error: "No account exists for that email." };
+  if (!record) return { ok: false as const, error: "We have no account with those details." };
   const code = verificationCode();
   const next: AccountRecord = {
     ...record,
@@ -305,33 +380,290 @@ export async function isAccountVerified(email: string) {
 }
 
 export async function getAccountData(email: string) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await readJson<AccountData>(dataKey(normalized));
   return data ?? { route: [], favorites: [] };
 }
 
 export async function saveAccountCollection(email: string, collection: "route" | "favorites", items: SavedPlace[]) {
   if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
+  const capped = items.slice(0, 200);
   const next: AccountData = {
     ...current,
-    [collection]: items.slice(0, 200),
+    [collection]: capped,
     updatedAt: new Date().toISOString(),
   };
+  // The route belongs to whichever trip is open. Favorites belong to the
+  // person, so they stay outside the trips.
+  if (collection === "route") {
+    const { trips, activeId } = withTrips(current);
+    next.trips = trips.map((t) => (t.id === activeId ? { ...t, route: capped, updatedAt: new Date().toISOString() } : t));
+    next.activeTripId = activeId;
+  }
   return writeJson(dataKey(normalized), next);
 }
 
-export async function saveAccountItinerary(email: string, itinerary: Itinerary) {
-  if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+// ---- Trips -------------------------------------------------------------
+
+function tripId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/**
+ * The account's trips, migrating an older single-itinerary account on read.
+ *
+ * Nothing is written by this — an account that has never opened the switcher
+ * keeps its record exactly as it was, and only starts carrying a `trips` array
+ * the first time something is saved.
+ */
+export function withTrips(data: AccountData): { trips: SavedTrip[]; activeId: string } {
+  const existing = data.trips?.filter((t) => t && t.id) ?? [];
+  if (existing.length) {
+    const activeId = existing.some((t) => t.id === data.activeTripId) ? data.activeTripId! : existing[0].id;
+    return { trips: existing, activeId };
+  }
+  const now = data.updatedAt || new Date().toISOString();
+  const itinerary = data.itinerary ?? emptyItinerary();
+  const first: SavedTrip = {
+    id: tripId(),
+    name: itinerary.title?.trim() || "My trip",
+    itinerary,
+    route: data.route ?? [],
+    // The old single share link belongs to this first trip.
+    shareId: data.itineraryShareId,
+    collaborators: data.itineraryCollaborators ?? [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  return { trips: [first], activeId: first.id };
+}
+
+export type TripSummary = {
+  id: string;
+  name: string;
+  active: boolean;
+  /** Stops in the itinerary itself. */
+  stops: number;
+  /** Places saved to this trip's route but not yet placed on a day. */
+  places: number;
+  days: number;
+  /** The trip's dates, so the account page can say when each one is. */
+  startDate: string;
+  endDate: string;
+  shared: boolean;
+  updatedAt: string;
+};
+
+/** How many days the trip covers, from its dates. Zero until both are set. */
+function dayCount(itinerary?: Itinerary): number {
+  const start = Date.parse(`${itinerary?.startDate ?? ""}T00:00:00Z`);
+  const end = Date.parse(`${itinerary?.endDate ?? ""}T00:00:00Z`);
+  if (Number.isNaN(start) || Number.isNaN(end) || end < start) return 0;
+  return Math.round((end - start) / 86_400_000) + 1;
+}
+
+function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
+  return trips.map((t) => ({
+    id: t.id,
+    name: t.name,
+    active: t.id === activeId,
+    stops: t.itinerary?.activities?.length ?? 0,
+    places: t.route?.length ?? 0,
+    days: dayCount(t.itinerary),
+    startDate: t.itinerary?.startDate ?? "",
+    endDate: t.itinerary?.endDate ?? "",
+    shared: Boolean(t.shareId),
+    updatedAt: t.updatedAt,
+  }));
+}
+
+export async function getTrips(email: string): Promise<TripSummary[]> {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  return summarize(trips, activeId);
+}
+
+/** One trip's itinerary, or the open one when no id is given. */
+export async function getTripItinerary(email: string, id?: string) {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === (id || activeId)) ?? trips[0];
+  return trip ? { itinerary: trip.itinerary, tripId: trip.id, tripName: trip.name } : null;
+}
+
+/**
+ * Write the trips back, keeping the legacy fields in step with the open one.
+ *
+ * Everything outside this file still reads `data.itinerary` and `data.route`,
+ * so the open trip is mirrored there on every write. Get that wrong and the
+ * print view or a share link quietly shows a different trip than the builder.
+ */
+async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
+  const open = trips.find((t) => t.id === activeId) ?? trips[0];
   const next: AccountData = {
     ...current,
-    itinerary: { ...itinerary, updatedAt: new Date().toISOString() },
+    trips,
+    activeTripId: open?.id,
+    route: open?.route ?? [],
+    itinerary: open?.itinerary,
+    itineraryShareId: open?.shareId,
+    itineraryCollaborators: open?.collaborators ?? [],
     updatedAt: new Date().toISOString(),
   };
-  return writeJson(dataKey(normalized), next);
+  const ok = await writeJson(dataKey(normalized), next);
+  return ok ? summarize(trips, open?.id ?? activeId) : null;
+}
+
+export async function createTrip(email: string, name?: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const now = new Date().toISOString();
+  const clean = name?.trim() || `Trip ${trips.length + 1}`;
+  const trip: SavedTrip = {
+    id: tripId(),
+    name: clean,
+    itinerary: { ...emptyItinerary(), title: clean },
+    route: [],
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, trip], trip.id);
+  if (!saved) return { ok: false as const, error: "Could not start the trip." };
+  return { ok: true as const, trips: saved, activeId: trip.id };
+}
+
+/**
+ * Put a trip somebody shared into this account, as a trip of its own.
+ *
+ * Never over the top of what is already there. Somebody who has spent an hour
+ * planning Poland and is then sent a friend's Uman itinerary should end up
+ * with two trips, not one — losing the first to gain the second is the worst
+ * possible reading of "add this to my account".
+ *
+ * It is opened straight away, because adding it is how somebody says they want
+ * to look at it. The one already open is still there, untouched, in the
+ * switcher.
+ */
+export async function importTrip(email: string, itinerary: Itinerary, name?: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+
+  const now = new Date().toISOString();
+  const clean = (name?.trim() || itinerary.title?.trim() || "Shared trip").slice(0, 80);
+  const trip: SavedTrip = {
+    id: tripId(),
+    name: clean,
+    // The copy is theirs. No share link and no collaborators come across — a
+    // link handed to them is not a link they may hand on.
+    itinerary: { ...itinerary, title: clean, updatedAt: now },
+    route: [],
+    shareId: undefined,
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, trip], trip.id);
+  if (!saved) return { ok: false as const, error: "Could not add the trip." };
+  return { ok: true as const, trips: saved, activeId: trip.id };
+}
+
+export async function renameTrip(email: string, id: string, name: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const clean = name.trim();
+  if (!clean) return { ok: false as const, error: "Give the trip a name." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === id)) return { ok: false as const, error: "That trip is gone." };
+  const next = trips.map((t) =>
+    t.id === id
+      ? { ...t, name: clean, itinerary: { ...t.itinerary, title: clean }, updatedAt: new Date().toISOString() }
+      : t,
+  );
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not rename the trip." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+export async function switchTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (!trips.some((t) => t.id === id)) return { ok: false as const, error: "That trip is gone." };
+  const saved = await writeTrips(email, trips, id);
+  if (!saved) return { ok: false as const, error: "Could not open that trip." };
+  return { ok: true as const, trips: saved, activeId: id };
+}
+
+export async function duplicateTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const source = trips.find((t) => t.id === id);
+  if (!source) return { ok: false as const, error: "That trip is gone." };
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const now = new Date().toISOString();
+  const name = `${source.name} (copy)`;
+  const copy: SavedTrip = {
+    id: tripId(),
+    name,
+    itinerary: { ...source.itinerary, title: name },
+    route: [...(source.route ?? [])],
+    // A copy is not shared. Handing someone a link to one trip should not
+    // hand them every copy of it made afterwards.
+    shareId: undefined,
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, copy], activeId);
+  if (!saved) return { ok: false as const, error: "Could not copy the trip." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+export async function deleteTrip(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (trips.length <= 1) return { ok: false as const, error: "This is your only trip. Start another one first." };
+  const going = trips.find((t) => t.id === id);
+  if (!going) return { ok: false as const, error: "That trip is already gone." };
+  // Take its share link down with it, or the link would keep resolving to the
+  // account and show whatever trip happened to be open.
+  if (going.shareId) await deleteKey(shareKey(going.shareId));
+  for (const collaborator of going.collaborators ?? []) {
+    await removeFromSharedWith(collaborator, normalized);
+  }
+  const remaining = trips.filter((t) => t.id !== id);
+  const nextActive = activeId === id ? remaining[0].id : activeId;
+  const saved = await writeTrips(normalized, remaining, nextActive);
+  if (!saved) return { ok: false as const, error: "Could not delete the trip." };
+  return { ok: true as const, trips: saved, activeId: nextActive };
+}
+
+/** Save an itinerary into one trip, or into the open one. */
+export async function saveAccountItinerary(email: string, itinerary: Itinerary, id?: string) {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const targetId = id && trips.some((t) => t.id === id) ? id : activeId;
+  const stamped = { ...itinerary, updatedAt: new Date().toISOString() };
+  const next = trips.map((t) =>
+    t.id === targetId
+      ? { ...t, itinerary: stamped, name: stamped.title?.trim() || t.name, updatedAt: new Date().toISOString() }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
 }
 
 // ---- Itinerary sharing ------------------------------------------------
@@ -340,16 +672,38 @@ function shareKey(shareId: string) {
   return `white-glove:itinerary-share:${shareId}`;
 }
 function sharedWithKey(email: string) {
-  return `white-glove:shared-with:${normalizeEmail(email)}`;
+  return `white-glove:shared-with:${normalizeId(email)}`;
 }
 function shareToken() {
   return randomBytes(9).toString("base64url"); // ~12 url-safe chars
 }
 
+/**
+ * Patch the account record, mirroring share changes onto the open trip.
+ *
+ * Sharing is written in the legacy fields, and the trips array is written from
+ * those same fields when a trip is opened. Without this mirror the next switch
+ * would hand the open trip's share link back to whatever it used to be.
+ */
 async function patchAccountData(email: string, patch: Partial<AccountData>) {
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const current = await getAccountData(normalized);
   const next: AccountData = { ...current, ...patch, updatedAt: new Date().toISOString() };
+  const touchesShare = "itineraryShareId" in patch || "itineraryCollaborators" in patch;
+  if (touchesShare) {
+    const { trips, activeId } = withTrips(current);
+    next.trips = trips.map((t) =>
+      t.id === activeId
+        ? {
+            ...t,
+            shareId: "itineraryShareId" in patch ? patch.itineraryShareId : t.shareId,
+            collaborators: "itineraryCollaborators" in patch ? (patch.itineraryCollaborators ?? []) : t.collaborators,
+            updatedAt: new Date().toISOString(),
+          }
+        : t,
+    );
+    next.activeTripId = activeId;
+  }
   const ok = await writeJson(dataKey(normalized), next);
   return ok ? next : null;
 }
@@ -363,7 +717,7 @@ export async function getItineraryShareState(email: string) {
 /** Ensure a public share token exists for this account's trip; returns it. */
 export async function ensureItineraryShare(email: string): Promise<string | null> {
   if (!hasAccountStorage()) return null;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   if (data.itineraryShareId) {
     // Make sure the reverse lookup exists (self-heal).
@@ -380,7 +734,7 @@ export async function ensureItineraryShare(email: string): Promise<string | null
 /** Stop sharing: remove the public link and every collaborator's access. */
 export async function stopItineraryShare(email: string) {
   if (!hasAccountStorage()) return false;
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   if (data.itineraryShareId) await deleteKey(shareKey(data.itineraryShareId));
   for (const collaborator of data.itineraryCollaborators ?? []) {
@@ -407,22 +761,30 @@ export async function getSharedItineraryByShareId(shareId: string) {
 async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {
   const key = sharedWithKey(collaboratorEmail);
   const list = (await readJson<SharedTrip[]>(key)) ?? [];
-  const next = [entry, ...list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(entry.ownerEmail))].slice(0, 50);
+  const next = [entry, ...list.filter((e) => normalizeId(e.ownerEmail) !== normalizeId(entry.ownerEmail))].slice(0, 50);
   await writeJson(key, next);
 }
 async function removeFromSharedWith(collaboratorEmail: string, ownerEmail: string) {
   const key = sharedWithKey(collaboratorEmail);
   const list = (await readJson<SharedTrip[]>(key)) ?? [];
-  const next = list.filter((e) => normalizeEmail(e.ownerEmail) !== normalizeEmail(ownerEmail));
+  const next = list.filter((e) => normalizeId(e.ownerEmail) !== normalizeId(ownerEmail));
   await writeJson(key, next);
 }
 
-/** Add a person (by email) to the owner's trip. Returns the share token + list. */
+/**
+ * Add a person to the owner's trip, by whatever they sign in with.
+ *
+ * A phone number is allowed, because somebody who signed up with one has no
+ * email to be added by. Only an email gets the "somebody shared a trip with
+ * you" message, though — a share link is not worth a text message, and the
+ * trip is waiting for them either way when they next sign in.
+ */
 export async function addItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const owner = normalizeEmail(ownerEmail);
-  const person = normalizeEmail(collaboratorEmail);
-  if (!person || !person.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  const owner = normalizeId(ownerEmail);
+  const identity = normalizeIdentity(collaboratorEmail ?? "");
+  if (!identity) return { ok: false as const, error: "Enter an email address or a phone number." };
+  const person = identity.value;
   if (person === owner) return { ok: false as const, error: "That's your own account." };
   const shareId = await ensureItineraryShare(owner);
   if (!shareId) return { ok: false as const, error: "Could not create the share link." };
@@ -437,8 +799,8 @@ export async function addItineraryCollaborator(ownerEmail: string, collaboratorE
 
 export async function removeItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const owner = normalizeEmail(ownerEmail);
-  const person = normalizeEmail(collaboratorEmail);
+  const owner = normalizeId(ownerEmail);
+  const person = normalizeId(collaboratorEmail);
   const data = await getAccountData(owner);
   const collaborators = (data.itineraryCollaborators ?? []).filter((e) => e !== person);
   await patchAccountData(owner, { itineraryCollaborators: collaborators });
@@ -452,10 +814,10 @@ export async function listSharedWithMe(email: string): Promise<SharedTrip[]> {
   const valid = await Promise.all(
     list.map(async (e): Promise<SharedTrip | null> => {
       const owner = await getShareOwnerEmail(e.shareId);
-      if (!owner || normalizeEmail(owner) !== normalizeEmail(e.ownerEmail)) return null;
+      if (!owner || normalizeId(owner) !== normalizeId(e.ownerEmail)) return null;
       const data = await getAccountData(owner);
       // Confirm the person is still a collaborator (owner may have removed them).
-      if (!(data.itineraryCollaborators ?? []).includes(normalizeEmail(email))) return null;
+      if (!(data.itineraryCollaborators ?? []).includes(normalizeId(email))) return null;
       return { ...e, title: data.itinerary?.title || e.title };
     }),
   );
@@ -493,7 +855,7 @@ async function deleteKey(key: string) {
 
 export async function updateAccountProfile(email: string, updates: { name?: string; phone?: string }) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
   if (!record) return { ok: false as const, error: "Account not found." };
   const next: AccountRecord = {
@@ -506,20 +868,32 @@ export async function updateAccountProfile(email: string, updates: { name?: stri
   return { ok: true as const };
 }
 
-// Move the account (and its saved data) to a new email key. Email is the
-// record key, so changing it re-keys both records and removes the old ones.
+// Move the account (and its saved data) to a new identifier — an email address
+// or a phone number. It is the record key, so changing it re-keys both records
+// and removes the old ones.
 export async function changeAccountEmail(currentEmail: string, newEmail: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const from = normalizeEmail(currentEmail);
-  const to = normalizeEmail(newEmail);
-  if (!to || !to.includes("@")) return { ok: false as const, error: "Enter a valid email address." };
+  const from = normalizeId(currentEmail);
+  const identity = normalizeIdentity(newEmail ?? "");
+  if (!identity) return { ok: false as const, error: "Enter an email address or a phone number." };
+  const to = identity.value;
   if (to === from) return { ok: true as const, email: from };
-  if (await getAccountRecord(to)) return { ok: false as const, error: "An account already exists for that email." };
+  if (await getAccountRecord(to)) {
+    return {
+      ok: false as const,
+      error: identity.kind === "phone" ? "An account already exists for that number." : "An account already exists for that email.",
+    };
+  }
   const record = await getAccountRecord(from);
   if (!record) return { ok: false as const, error: "Account not found." };
   const data = await getAccountData(from);
-  const moved = await writeJson(accountKey(to), { ...record, email: to });
-  if (!moved) return { ok: false as const, error: "Could not update your email." };
+  const moved = await writeJson(accountKey(to), {
+    ...record,
+    email: to,
+    identityKind: identity.kind,
+    phone: identity.kind === "phone" ? to : record.phone,
+  });
+  if (!moved) return { ok: false as const, error: "Could not update your sign-in details." };
   await writeJson(dataKey(to), data);
   await deleteKey(accountKey(from));
   await deleteKey(dataKey(from));
@@ -528,7 +902,7 @@ export async function changeAccountEmail(currentEmail: string, newEmail: string)
 
 export async function deleteAccount(email: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const normalized = normalizeEmail(email);
+  const normalized = normalizeId(email);
   await deleteKey(accountKey(normalized));
   await deleteKey(dataKey(normalized));
   return { ok: true as const };

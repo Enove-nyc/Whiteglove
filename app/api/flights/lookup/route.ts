@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseLocal, readAmadeusFlight, splitFlightNumber, type AmadeusDated, type LookupFlight } from "@/lib/flight-lookup";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
@@ -13,32 +14,7 @@ export const maxDuration = 20;
 //      — email sign-up, no RapidAPI, and its schedule API covers future dates.
 //   2. AeroDataBox via RapidAPI (AERODATABOX_API_KEY).
 
-type Flight = {
-  airline: string;
-  flightNo: string;
-  from: string;
-  to: string;
-  date: string;
-  departTime: string;
-  arriveTime: string;
-  arriveDate: string;
-};
-type LookupResult = { flight?: Flight; reason?: string; moreResults?: number };
-
-// Parse "2024-05-02 00:50+03:00" or "2024-05-02T00:50:00+03:00" → date + HH:MM.
-function parseLocal(value?: string): { date: string; time: string } | null {
-  if (!value || value.length < 16) return null;
-  const date = value.slice(0, 10);
-  const time = value.slice(11, 16);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
-  return { date, time };
-}
-
-// Split "LY1" / "BA 2490" into carrier code + numeric part for Amadeus.
-function splitFlightNumber(flightNumber: string): { carrierCode: string; number: string } | null {
-  const m = /^([0-9A-Z]{2})\s*(\d{1,4})$/.exec(flightNumber);
-  return m ? { carrierCode: m[1], number: m[2] } : null;
-}
+type LookupResult = { flight?: LookupFlight; reason?: string; moreResults?: number };
 
 async function lookupAmadeus(flightNumber: string, date: string): Promise<LookupResult> {
   const clientId = process.env.AMADEUS_CLIENT_ID?.trim();
@@ -66,31 +42,10 @@ async function lookupAmadeus(flightNumber: string, date: string): Promise<Lookup
   if (res.status === 429) return { reason: "Flight lookups are rate-limited right now — try again shortly, or enter the details by hand." };
   if (!res.ok) return { reason: `No flight ${flightNumber} found on ${date}. Check the number and date.` };
 
-  type Timing = { value?: string };
-  type Point = { iataCode?: string; departure?: { timings?: Timing[] }; arrival?: { timings?: Timing[] } };
-  type Dated = { flightPoints?: Point[]; flightDesignator?: { carrierCode?: string; flightNumber?: number } };
-  const data = ((await res.json().catch(() => null)) as { data?: Dated[] } | null)?.data ?? [];
-  const dated = data[0];
-  const points = dated?.flightPoints ?? [];
-  const depPoint = points.find((p) => p.departure?.timings?.length);
-  const arrPoint = points.find((p) => p.arrival?.timings?.length);
-  if (!depPoint || !arrPoint) return { reason: `No flight ${flightNumber} found on ${date}. Check the number and date.` };
-
-  const dep = parseLocal(depPoint.departure?.timings?.[0]?.value);
-  const arr = parseLocal(arrPoint.arrival?.timings?.[0]?.value);
-  return {
-    flight: {
-      airline: dated?.flightDesignator?.carrierCode || parts.carrierCode,
-      flightNo: `${dated?.flightDesignator?.carrierCode || parts.carrierCode}${dated?.flightDesignator?.flightNumber ?? parts.number}`,
-      from: depPoint.iataCode || "",
-      to: arrPoint.iataCode || "",
-      date: dep?.date || date,
-      departTime: dep?.time || "",
-      arriveTime: arr?.time || "",
-      arriveDate: arr && dep && arr.date > dep.date ? arr.date : "",
-    },
-    moreResults: Math.max(0, data.length - 1),
-  };
+  const data = ((await res.json().catch(() => null)) as { data?: AmadeusDated[] } | null)?.data ?? [];
+  const flight = readAmadeusFlight(data[0], { ...parts, date });
+  if (!flight) return { reason: `No flight ${flightNumber} found on ${date}. Check the number and date.` };
+  return { flight, moreResults: Math.max(0, data.length - 1) };
 }
 
 type AdbAirport = { iata?: string; icao?: string; name?: string; shortName?: string };
@@ -126,6 +81,9 @@ async function lookupAeroDataBox(flightNumber: string, date: string): Promise<Lo
       departTime: dep?.time || "",
       arriveTime: arr?.time || "",
       arriveDate: arr && dep && arr.date > dep.date ? arr.date : "",
+      // This endpoint reports one leg at a time, so a connection comes back as
+      // its own flight number. Nothing to carry through.
+      stops: [],
     },
     moreResults: Math.max(0, list.length - 1),
   };

@@ -33,6 +33,16 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
   const sharedByName = shared.ownerName || shared.ownerEmail;
 
+  // The same short list the printed cover carries.
+  const summary = [
+    { label: "Shared by", value: sharedByName },
+    itin.startDate && itin.endDate ? { label: "When", value: `${itin.startDate} → ${itin.endDate}` } : null,
+    days.length ? { label: "Days", value: String(days.length) } : null,
+    travelerSummary(itin) ? { label: "Travelling", value: travelerSummary(itin) } : null,
+    itin.flights.length ? { label: "Flights", value: String(itin.flights.length) } : null,
+    itin.activities.length ? { label: "Stops", value: String(itin.activities.length) } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+
   // Read straight from the data here — this page renders on the server, so it
   // needs no round trip the way the planner does.
   const burials = burialsForSlugs(itin.activities.map((a) => a.keverSlug ?? ""));
@@ -46,13 +56,23 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Shared itinerary</p>
-          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{itin.title || "A trip"}</h1>
-          <p className="mt-2 text-sm text-stone-600">
-            Shared by <strong className="text-[var(--navy)]">{sharedByName}</strong>
-            {travelerSummary(itin) ? <> · for {travelerSummary(itin)}</> : null}
-            {itin.startDate && itin.endDate ? <> · {itin.startDate} → {itin.endDate}</> : null}
-          </p>
-          <SharedItineraryActions itinerary={itin} />
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
+            {itin.title || "A trip"}
+          </h1>
+
+          {/* The summary as a short list rather than a paragraph of headline
+              type. It is the same handful of facts the printed cover carries,
+              said the same way. */}
+          <dl className="mt-4 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+            {summary.map((item) => (
+              <div key={item.label} className="flex flex-wrap items-baseline gap-x-2 border-b border-[var(--gold-light)] pb-1.5">
+                <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{item.label}</dt>
+                <dd className="text-sm text-stone-600">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <SharedItineraryActions itinerary={itin} shareId={shareId} />
         </div>
 
         {days.length === 0 ? (

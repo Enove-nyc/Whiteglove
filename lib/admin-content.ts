@@ -201,7 +201,7 @@ function defaultPromotions(): Promotion[] {
       title: "Need help planning the rest of the trip?",
       description: "Ask White Glove for flights, hotels, drivers, and itinerary help in one place.",
       buttonText: "Start planning",
-      targetHref: "/planning",
+      targetHref: "/services",
       imageUrl: "",
       pdfUrl: "",
       placements: ["homepage-promo", "inline-content"],

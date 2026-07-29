@@ -21,6 +21,85 @@ export async function edgeAccessToken(scope: "admin" | "site") {
   return toBase64Url(signature);
 }
 
+/**
+ * Which round of access cookies is current, read in the edge runtime.
+ *
+ * Mirrors accessGeneration() in lib/signin-log.ts. The middleware is the only
+ * thing standing between a revoked cookie and the site, so it has to read this
+ * itself rather than trust what the cookie claims.
+ */
+export async function edgeAccessGeneration(): Promise<number> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return 0;
+  try {
+    const response = await fetch(`${url.replace(/\/$/, "")}/get/white-glove:access-generation`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    const payload = (await response.json()) as { result?: string };
+    const value = Number(payload.result);
+    return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Mint a site-access cookie in the edge runtime.
+ *
+ * Mirrors mintSiteAccess() in lib/site-access.ts. `minutes` undefined means it
+ * does not expire.
+ */
+export async function edgeMintSiteAccess(generation: number, minutes?: number): Promise<string> {
+  const expires = minutes === undefined ? 0 : Date.now() + minutes * 60_000;
+  const secret = process.env.WHITE_GLOVE_SESSION_SECRET || process.env.ADMIN_PASSWORD || "white-glove-development-secret";
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const bytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`white-glove:site:${expires}:${generation}`));
+  return `${expires}.${generation}.${toBase64Url(bytes)}`;
+}
+
+/**
+ * Is this site-access cookie still good?
+ *
+ * Mirrors checkSiteAccess() in lib/site-access.ts, which uses node's crypto and
+ * so cannot run here. Same secret, same input, same output — a cookie minted by
+ * one verifies against the other. If these two ever disagree, either a
+ * five-minute code lasts forever or somebody is thrown out mid-visit.
+ */
+export async function edgeSiteAccessValid(value: string | undefined, generation: number): Promise<boolean> {
+  if (!value) return false;
+
+  // The old bare token, from before expiries existed. Honoured until the first
+  // revoke, so shipping this does not sign everybody out.
+  if (generation === 0 && value === (await edgeAccessToken("site"))) return true;
+
+  const parts = value.split(".");
+  if (parts.length !== 3) return false;
+  const expires = Number(parts[0]);
+  const cookieGeneration = Number(parts[1]);
+  if (!Number.isFinite(expires) || !Number.isFinite(cookieGeneration)) return false;
+  if (cookieGeneration !== generation) return false;
+
+  const secret = process.env.WHITE_GLOVE_SESSION_SECRET || process.env.ADMIN_PASSWORD || "white-glove-development-secret";
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const signatureBytes = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`white-glove:site:${expires}:${cookieGeneration}`),
+  );
+  const expected = toBase64Url(signatureBytes);
+
+  if (parts[2].length !== expected.length) return false;
+  let differences = 0;
+  for (let i = 0; i < expected.length; i += 1) differences |= parts[2].charCodeAt(i) ^ expected.charCodeAt(i);
+  if (differences !== 0) return false;
+
+  // The whole point of the five-minute code: the expiry is checked here, not
+  // left to the browser to honour.
+  return expires === 0 || Date.now() <= expires;
+}
+
 export async function edgeLockedPaths(): Promise<string[]> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;

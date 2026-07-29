@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { forgetSignedIn } from "@/lib/use-signed-in";
 
 export default function LogoutButton() {
   const router = useRouter();
 
   async function logout() {
     await fetch("/api/account/logout", { method: "POST" });
+    // The route buttons cache the answer for the life of the page.
+    forgetSignedIn();
     router.push("/login");
     router.refresh();
   }

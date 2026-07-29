@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { coordinatesToPoint, placeMapUrl } from "@/data/route-utils";
 import type { ItinActivity } from "@/data/itinerary";
 import { fetchKosherPlaces, type KosherPlace } from "@/lib/kosher-osm";
+import HechsherBadge from "@/components/HechsherBadge";
+import { hechsherOf, useHechsherim } from "@/lib/use-hechsherim";
 
 const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
@@ -56,6 +58,8 @@ export default function KosherNearby({
   const [places, setPlaces] = useState<KosherPlace[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState<Record<string, boolean>>({});
+  const shown = useMemo(() => (places ?? []).slice(0, limit), [places, limit]);
+  const confirmed = useHechsherim(useMemo(() => shown.map((p) => p.id), [shown]));
 
   async function load() {
     if (!point) return;
@@ -87,13 +91,16 @@ export default function KosherNearby({
           <p className="mt-3 text-sm text-stone-500">No kosher places are listed in OpenStreetMap within {radiusKm} km of here yet. Try a wider search on the <a href="/kosher" className="underline decoration-[var(--gold)] underline-offset-2">kosher finder</a>, or check the local kehilla.</p>
         ) : (
           <ul className="mt-3 divide-y divide-[var(--gold-light)]">
-            {places.slice(0, limit).map((p) => (
+            {shown.map((p) => (
               <li key={p.id} className="py-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                   <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{p.name}</span>
                   <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">{p.category}{p.km !== undefined ? ` · ${formatKm(p.km)}` : ""}</span>
                 </div>
                 {(p.cuisine || p.address) && <p className="mt-0.5 text-sm text-stone-600">{[p.cuisine, p.address].filter(Boolean).join(" — ")}</p>}
+                <div className="mt-1.5">
+                  <HechsherBadge status={hechsherOf(confirmed, p)} size="sm" />
+                </div>
                 <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                   <a href={placeMapUrl(p.address, `${p.lat}, ${p.lng}`)} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Open in Maps →</a>
                   {p.phone && <a href={`tel:${p.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">📞 {p.phone}</a>}
@@ -110,7 +117,11 @@ export default function KosherNearby({
         )
       )}
       {places !== null && places.length > 0 && (
-        <p className="mt-3 text-[11px] text-stone-400">Live from OpenStreetMap — community data; please confirm kosher status, supervision, and hours directly before relying on it.</p>
+        <p className="mt-3 text-[11px] leading-5 text-stone-400">
+          Live from OpenStreetMap — community data. The circle is the hechsher: gold means we checked it against a teudah,
+          the rov or the agency&apos;s own list. <strong>Unverified</strong> means nobody here has checked, whether or not a
+          name is shown — ask to see the teudah before you eat. Hours and supervision change; confirm directly.
+        </p>
       )}
     </div>
   );

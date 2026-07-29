@@ -30,44 +30,101 @@ export const editablePages: PageDef[] = [
     href: "/services",
     label: "Services",
     seoTitle: "Services — White Glove Itineraries",
-    seoDescription: "This hub gathers the service pages that sit alongside the destination directory and itinerary tools.",
+    seoDescription:
+      "Everything White Glove does, on one page: trip planning, flights, hotels, kosher food, phones, insurance, honeymoons, and Jewish heritage journeys.",
     blocks: [
-    { id: "services-hero", kind: "hero", eyebrow: "White Glove services", heading: "Services", intro: "This hub gathers the service pages that sit alongside the destination directory and itinerary tools." },
-    {
-      id: "services-cards",
-      kind: "cards",
-      heading: "What we help with",
-      items: [
-        { title: "Planning", body: "Personalized trip planning and route guidance." },
-        { title: "Honeymoon", body: "A premium honeymoon planning landing page." },
-        { title: "Phone Rentals", body: "SIM, eSIM, and hotspot support for travel." },
-        { title: "Travel Insurance", body: "Explain coverage and referral options clearly." },
-        { title: "Flight Booking Assistance", body: "Collect details for a human-assisted flight booking request." },
-      ],
-    },
-    ],
-  },
-  {
-    slug: "planning",
-    href: "/planning",
-    label: "Planning",
-    seoTitle: "Your Route Traveler — White Glove Itineraries",
-    seoDescription: "This page is the start of the personalized planning service. Travelers can describe what they need, and White Glove can shape the route, hotels, fligh",
-    blocks: [
-    { id: "planning-hero", kind: "hero", eyebrow: "White Glove concierge", heading: "Your Route Traveler", intro: "This page is the start of the personalized planning service. Travelers can describe what they need, and White Glove can shape the route, hotels, flights, and practical details around that trip." },
-    {
-      id: "planning-cards",
-      kind: "cards",
-      heading: "What planning covers",
-      items: [
-        { title: "Route planning", body: "Tell us where you are going, what matters most, and how much flexibility you want. We’ll shape the trip around the actual route." },
-        { title: "Flights", body: "Keep air travel aligned with the rest of the trip, including arrival times, departure buffers, and connection details." },
-        { title: "Hotels", body: "Choose stays that work with your schedule, kosher needs, and walking or transport preferences." },
-        { title: "Kosher food", body: "Food planning for the whole journey, including Shabbos, travel days, and destination-specific arrangements." },
-        { title: "Religious needs", body: "Minyanim, mikvaos, tefillos, and access notes all kept in the same trip plan." },
-        { title: "Saved itinerary", body: "A single place to keep the trip organized, with room for notes, bookings, and future edits." },
-      ],
-    },
+      {
+        id: "services-hero",
+        kind: "hero",
+        eyebrow: "White Glove services",
+        heading: "Services",
+        intro:
+          "Everything we do, in one place. Tell us what matters and we shape the route, the flights, the hotels and the kosher details around it — or use the tools here and plan it yourself.",
+      },
+      {
+        id: "services-planning",
+        kind: "cards",
+        heading: "Planning a trip",
+        intro:
+          "The heart of it: you say where you are going and what matters most, and the trip is built around the actual route rather than around a template.",
+        items: [
+          {
+            title: "Route planning",
+            body: "Tell us where you are going, what matters most, and how much flexibility you want. We shape the trip around the actual route.",
+            href: "/itinerary",
+          },
+          {
+            title: "Flights",
+            body: "Air travel kept in step with the rest of the trip — arrival times, departure buffers, and connections that do not strand you.",
+            href: "/flight-booking-assistance",
+          },
+          {
+            title: "Hotels",
+            body: "Stays that work with your schedule, your kosher needs, and how far you are willing to walk.",
+            href: "/book",
+          },
+          {
+            title: "Kosher food",
+            body: "Food for the whole journey, including Shabbos, travel days, and whatever the destination does and does not have.",
+            href: "/kosher",
+          },
+          {
+            title: "Religious needs",
+            body: "Minyanim, mikvaos, tefillos and access notes, kept in the same plan as everything else.",
+            href: "/directory",
+          },
+          {
+            title: "Your saved itinerary",
+            body: "One place to keep the trip organised, with room for notes, bookings and changes. As many trips as you need.",
+            href: "/itinerary",
+          },
+        ],
+      },
+      {
+        id: "services-more",
+        kind: "cards",
+        heading: "The rest of what we do",
+        items: [
+          {
+            title: "שתוליכנו לשלום — Jewish heritage journeys",
+            body: "Kevarim and nesios across Europe and Asia: who is buried where, how to get in, who holds the key, and what is around it.",
+            href: "/stops",
+          },
+          {
+            title: "Honeymoon",
+            body: "A quiet, well-planned honeymoon with the kosher details handled from the start.",
+            href: "/honeymoon",
+          },
+          {
+            title: "Kosher getaways",
+            body: "Shorter trips and programmes, with the food and the davening already worked out.",
+            href: "/getaways",
+          },
+          {
+            title: "Phone rentals",
+            body: "SIMs, eSIMs and hotspots, so you land with a working phone instead of hunting for one.",
+            href: "/phone-rentals",
+          },
+          {
+            title: "Travel insurance",
+            body: "What the cover actually includes, said plainly, and where to get it.",
+            href: "/travel-insurance",
+          },
+          {
+            title: "Flight booking assistance",
+            body: "Send us the details and a person books it, rather than you fighting a booking engine.",
+            href: "/flight-booking-assistance",
+          },
+        ],
+      },
+      {
+        id: "services-cta",
+        kind: "buttons",
+        items: [
+          { label: "Plan it with us", href: "/contact", style: "solid" },
+          { label: "Plan it yourself", href: "/itinerary", style: "outline" },
+        ],
+      },
     ],
   },
   {

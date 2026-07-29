@@ -15,6 +15,27 @@ without it, it just does less.
 | `OSRM_ROUTER_URL` | Optional. Where to reach OSRM, the fallback router used when there is no Google key. Defaults to the public demo server, which is fair-use only and has no uptime promise — point this at a self-hosted instance if the planner is busy. |
 | `GOOGLE_ROUTES_URL` | Testing seam only. Leave unset in production. |
 
+## The map
+
+| Variable | What it does |
+| --- | --- |
+| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | Draws the map with Google Maps instead of OpenStreetMap tiles. Without it, or if Google's script cannot be reached, the map still appears — it falls back to OpenStreetMap, which needs no key. |
+
+**This must be a different key from `GOOGLE_MAPS_API_KEY`.** The Maps
+JavaScript API runs in the browser, so its key goes out in the page and cannot
+be hidden; that is normal, and Google's own answer is restriction rather than
+secrecy. `GOOGLE_MAPS_API_KEY` is a server-only key with Routes API access and
+must never be used here — anyone opening the page source would have it.
+
+To set it up: in the Google Cloud console enable the **Maps JavaScript API**,
+create a **second** key, and restrict it to that one API and to your own
+hostnames (`whitegloveitineraries.com`, `*.whitegloveitineraries.com`, and your
+Vercel preview domain). Then set the variable and redeploy —
+`NEXT_PUBLIC_` variables are read at build time, so a redeploy is required.
+
+Note that the Maps JavaScript API bills separately from the Routes API, and
+every map load counts.
+
 Without a Google key the planner falls back to OSRM, which routes on speed
 limits and assumes empty roads, so its times run short. Without either, it uses
 its own straight-line estimate. **All three are labelled differently in the UI**
@@ -30,7 +51,8 @@ per leg, so re-planning the same trip does not re-bill it.
 
 | Variable | What it does |
 | --- | --- |
-| `SITE_ACCESS_PASSWORD` | The password on the whole site. |
+| `SITE_ACCESS_PASSWORD` | The **full** code on the whole site: type it once and stay in. Both site codes can also be changed from **Settings → Passwords**, which takes priority over these variables. |
+| `SITE_PREVIEW_PASSWORD` | The **five-minute** code — for handing to somebody who needs to look at one thing. Access stops five minutes after they use it. The expiry is signed into the cookie and checked on every request, so it cannot be kept by copying the cookie or editing its lifetime. Must be a different word from `SITE_ACCESS_PASSWORD`. |
 | `SITE_LOCK_ENABLED` | Whether the lock is on at all. |
 | `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `enovenyc.com`. Lets one domain stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
 | `SITE_PREVIEW_TOKEN` | At least 12 characters. Anyone opening `?preview=<token>` gets in for 30 days without being told the password, and the token is stripped from the URL straight away. Change it to revoke every outstanding link at once. Never works on `/admin`. |
@@ -38,6 +60,23 @@ per leg, so re-planning the same trip does not re-bill it.
 | `ADMIN_HOST` | Optional. A hostname that serves the admin area on its own, e.g. `admin.whitegloveitineraries.com`. On that hostname every path is an admin path — `/` is the dashboard, `/shomrim` is the shomer screen — and the `/admin/…` paths keep working there too, so no saved link breaks. The hostname is never indexed. Unset by default, and with it unset nothing changes. **Add the domain in Vercel and point the DNS first**; the variable does nothing until the hostname actually reaches the site. |
 | `ADMIN_HOST_ONLY` | Optional, `1` to turn on. Sends `/admin/…` on the main domain to `ADMIN_HOST`, so there is one place to sign in. Leave it off until you have opened the admin hostname and signed in there successfully — switching it on before DNS resolves leaves no way into the admin area at all. |
 | `WHITE_GLOVE_SESSION_SECRET` | Signs the access and admin cookies. Changing it signs everybody out. |
+
+**Letting somebody in without a code at all.** Add them on **Settings → People
+with access** and they get in by signing in to their own account. Nothing is
+shared, and taking it back from the same screen does not change anybody else's
+code.
+
+**Signing everybody out.** **Settings → Website access** has a button that
+revokes every cookie at once — every code already handed out stops working and
+anyone still on the site has to enter one again. It does not change the codes
+themselves; do that on the Passwords screen if somebody has one they should not.
+
+**Who has been in.** The same screen lists recent sign-ins: when, how they got
+in, and roughly where from (country and town, out of the CDN's own headers).
+The address is stored without its last part — `203.0.x.x` — so one visitor can
+be told from another without the site keeping a record of anybody's connection.
+Both the log and the revoke need Upstash Redis connected; without it nothing is
+recorded, and the screen says so rather than showing an empty list.
 
 ## Email (Resend)
 
@@ -50,6 +89,34 @@ per leg, so re-planning the same trip does not re-bill it.
 
 The admin dashboard has a diagnostic panel that sends a test message to either
 inbox and reports exactly what Resend said, including the sandbox restriction.
+
+## Text messages (Twilio)
+
+Signing up with a phone number instead of an email address. The verification
+code goes by text to whichever the person used; with none of this set, the
+sign-up form asks for an email only and never offers a choice it cannot honour.
+
+| Variable | What it does |
+| --- | --- |
+| `TWILIO_ACCOUNT_SID` | The Twilio account. Required. |
+| `TWILIO_AUTH_TOKEN` | Its auth token. Required. |
+| `TWILIO_FROM_NUMBER` | The number texts come from, in E.164 (`+15551234567`). Either this or a messaging service is required. |
+| `TWILIO_MESSAGING_SERVICE_SID` | A Twilio messaging service, instead of a single from-number. |
+| `DEFAULT_PHONE_COUNTRY` | Calling code assumed for a number typed without one — `1` unless set. A ten-digit number is read as this country; anyone can always type the `+` themselves. |
+
+Two things to know before switching it on. **Texting US mobiles requires A2P
+10DLC registration first** — Twilio runs it as an application and it takes days,
+not minutes; until it clears, messages to US numbers are rejected. And **each
+text costs money**, unlike email.
+
+Sent codes are written to the same delivery log as the emails, so a text that
+never arrived shows up on the Connections screen with whatever Twilio said.
+
+An account is stored under whichever identifier it was made with, so
+`(555) 123-4567` and `+1 555 123 4567` are the same account, not two. Somebody
+who signs up by phone can still be added to a shared trip; they just do not get
+the "somebody shared a trip with you" message, because a share link is not worth
+a text — the trip is waiting when they next sign in.
 
 ## Booking partners
 
@@ -69,5 +136,7 @@ tracking and earn nothing.
 | `DATABASE_URL` | Postgres, via Prisma — the directory content. |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Accounts, itineraries, share links, ads, analytics, media. |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | The travel assistant. Without either it says it is unavailable rather than guessing. |
-| `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET`, `AMADEUS_HOSTNAME`, `DUFFEL_ACCESS_TOKEN`, `AERODATABOX_API_KEY` | Flight data providers. Optional. |
+| `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET` | **Turns on "look up by flight number" in the planner.** Free to sign up for at developers.amadeus.com — email registration, no card. Without these the box is still there and answers "Flight lookup is off", and everything is typed by hand. `AMADEUS_HOSTNAME` switches between the test and production hosts; the test host carries a limited schedule. |
+| `AERODATABOX_API_KEY` | An alternative provider, via RapidAPI. Used only when Amadeus is not set. It reports one leg at a time, so a connecting flight comes back as two separate numbers. |
+| `DUFFEL_ACCESS_TOKEN` | Flight data provider. Optional. |
 | `NEXT_PUBLIC_SITE_URL` | Absolute base URL, used in shared itinerary links and emails. |

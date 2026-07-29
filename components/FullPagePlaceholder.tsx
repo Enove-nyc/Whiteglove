@@ -16,7 +16,7 @@ export default function FullPagePlaceholder({
         <div className="mt-10 flex flex-wrap gap-3">
           <Link href="/" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">Return home</Link>
           <Link href="/stops" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">Browse destinations</Link>
-          <Link href="/planning" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">Join the update list</Link>
+          <Link href="/services" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">Join the update list</Link>
           <Link href="/services" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">Contact us</Link>
         </div>
       </section>

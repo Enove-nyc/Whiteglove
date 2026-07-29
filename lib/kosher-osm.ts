@@ -16,6 +16,14 @@ export type KosherPlace = {
   phone?: string;
   website?: string;
   kosherTag?: string; // yes / only / limited / dairy / meat, when present
+  /**
+   * Who OSM says certifies it, when a mapper has recorded that.
+   *
+   * "diet:kosher=yes" means someone believes the food is kosher; it does not
+   * say under whose hechsher. A handful of these tags do, and that is worth
+   * showing — attributed to OSM, never as something confirmed here.
+   */
+  reportedHechsher?: string;
   km?: number;
 };
 
@@ -63,6 +71,28 @@ function addressFrom(tags: Record<string, string>): string | undefined {
     tags["addr:country"],
   ].filter(Boolean);
   return parts.length ? parts.join(", ") : undefined;
+}
+
+// The tags mappers actually use to record supervision. None is standard, so
+// all of them are read and the first with a real value wins.
+const CERT_TAGS = [
+  "kosher:certification",
+  "kosher:certificate",
+  "kosher:supervision",
+  "diet:kosher:certification",
+  "hechsher",
+  "kashrut",
+  "kashrut:certification",
+  "supervision",
+];
+
+function certificationFrom(tags: Record<string, string>): string | undefined {
+  for (const key of CERT_TAGS) {
+    const value = tags[key]?.trim();
+    // "yes" only repeats that it is kosher; it names nobody.
+    if (value && !/^(yes|no|true|false)$/i.test(value)) return value.replace(/[_;]+/g, " ");
+  }
+  return undefined;
 }
 
 function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
@@ -115,6 +145,7 @@ export function parseOverpass(elements: OverpassElement[], center?: { lat: numbe
       phone: tags.phone || tags["contact:phone"] || tags["contact:mobile"],
       website: tags.website || tags["contact:website"],
       kosherTag: tags["diet:kosher"] || tags.kosher,
+      reportedHechsher: certificationFrom(tags),
       km: center ? haversineKm(center.lat, center.lng, lat, lng) : undefined,
     });
   }

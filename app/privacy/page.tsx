@@ -89,7 +89,7 @@ export default function PrivacyPolicyPage() {
         <Section title="Contact us">
           <p>
             Questions about this policy or your information? Email{" "}
-            <a href="mailto:whitegloveitineraries@gmail.com" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">whitegloveitineraries@gmail.com</a>.
+            <a href="mailto:contact@whitegloveitineraries.com" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">contact@whitegloveitineraries.com</a>.
           </p>
         </Section>
       </article>
