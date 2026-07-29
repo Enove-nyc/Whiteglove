@@ -96,6 +96,29 @@ describe("the planner's hotel picker", () => {
   });
 });
 
+describe("what does not go in the list", () => {
+  // The rule is written at the top of data/attractions.ts. This is the part of
+  // it a test can hold: a batch added in a hurry should fail here rather than
+  // ship. It cannot judge whether something belongs — only catch the obvious.
+  const BARRED = /\b(bar|bars|pub|pubs|nightclub|nightlife|casino|cassino|gambling|striptease|burlesque)\b/i;
+
+  test("no bars, nightlife or gambling anywhere in an entry", () => {
+    for (const a of attractions) {
+      const text = [a.name, a.summary, (a.notes ?? []).join(" "), a.shabbos ?? ""].join(" ");
+      const hit = BARRED.exec(text);
+      assert.equal(hit, null, `${a.slug} mentions "${hit?.[0]}"`);
+    }
+  });
+
+  test("mixed bathing is never the reason an entry is here", () => {
+    // Naming it to warn somebody off is fine — selling it is not. So the test
+    // is on the summary, which is what the entry is for, not on the notes.
+    for (const a of attractions) {
+      assert.ok(!/\b(thermal bath|spa|beach resort|water ?park)\b/i.test(a.summary), `${a.slug}`);
+    }
+  });
+});
+
 describe("what the seed puts in the database", () => {
   const rows = buildSeedRows();
 
