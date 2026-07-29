@@ -599,6 +599,44 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
   const [lookupNo, setLookupNo] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (startDate) setF((prev) => (prev.date ? prev : { ...prev, date: startDate }));
+  }, [startDate]);
+
+  function updateFlight(patch: Partial<ItinFlight>) {
+    setF((prev) => ({ ...prev, ...patch }));
+    if (error) setError("");
+  }
+
+  function submitFlight() {
+    const from = f.from?.trim();
+    const to = f.to?.trim();
+    const date = f.date?.trim();
+    const missing = [
+      !from ? "departure airport" : "",
+      !to ? "arrival airport" : "",
+      !date ? "flight date" : "",
+    ].filter(Boolean);
+    if (missing.length) {
+      setError(`Please add the ${missing.join(", ")}.`);
+      return;
+    }
+    onAdd({
+      id: uid(),
+      from: from!,
+      to: to!,
+      date: date!,
+      airline: f.airline?.trim() || undefined,
+      flightNo: f.flightNo?.trim() || undefined,
+      departTime: f.departTime,
+      arriveTime: f.arriveTime,
+      arriveDate: f.arriveDate,
+      stops: (f.stops ?? []).filter((x) => x.airport.trim()),
+      bookedOnSite: false,
+    });
+  }
 
   async function runLookup() {
     const flightNumber = lookupNo.trim();
@@ -616,6 +654,7 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
       const data = await res.json();
       if (data?.available && data.flight) {
         setF((prev) => ({ ...prev, ...data.flight }));
+        setError("");
         setStatus(
           `Found: ${data.flight.airline || data.flight.flightNo} ${data.flight.from} → ${data.flight.to}` +
             (data.moreResults ? ` (+${data.moreResults} more — edit if needed)` : ""),
@@ -631,7 +670,7 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
   }
 
   return (
-    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, flightNo: f.flightNo, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: (f.stops ?? []).filter((x) => x.airport.trim()), bookedOnSite: false }); }}>
+    <FormShell title="Add a flight" onSubmit={submitFlight} error={error} submitLabel="Add flight">
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Auto-fill from a flight number</span>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -641,11 +680,11 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
-      <Field label="From *"><AirportAutocomplete value={f.from ?? ""} onChange={(v) => setF({ ...f, from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
-      <Field label="To *"><AirportAutocomplete value={f.to ?? ""} onChange={(v) => setF({ ...f, to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
+      <Field label="From *"><AirportAutocomplete value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
+      <Field label="To *"><AirportAutocomplete value={f.to ?? ""} onChange={(v) => updateFlight({ to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
-      <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
+      <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => updateFlight({ date: e.target.value })} /></Field>
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
       <Field label="Lands next day?"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} /></Field>
@@ -916,13 +955,13 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
   );
 }
 
-function FormShell({ title, children, onSubmit, error }: { title: string; children: React.ReactNode; onSubmit: () => void; error?: string }) {
+function FormShell({ title, children, onSubmit, error, submitLabel = "Add" }: { title: string; children: React.ReactNode; onSubmit: () => void; error?: string; submitLabel?: string }) {
   return (
     <div className="mt-5 border-t border-[var(--gold-light)] pt-5">
       <p className="text-sm font-bold text-[var(--navy)]">{title}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <button type="button" onClick={onSubmit} disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">Add</button>
+      <button type="button" onClick={onSubmit} disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">{submitLabel}</button>
     </div>
   );
 }
