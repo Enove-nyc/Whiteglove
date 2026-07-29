@@ -433,12 +433,19 @@ const guideCemeteries: Cemetery[] = cityGuides
     accessNote: (guide.accessContacts?.length || guide.accessContact)
       ? "Current public shomer / cemetery-access contacts are listed below. Please confirm access before traveling."
       : "A current public שומר / cemetery-access number has not yet been verified for this בית החיים. Confirm access before traveling.",
-    burials: [{
-      name: guide.tzaddik,
-      yiddishName: guide.yiddishTzaddik,
-      seforim: guide.seforim,
-      yahrzeit: `${guide.yahrzeit} · ${guide.niftar}`,
-    }],
+    // The tzaddik the town is known for, then anybody else the guide places in
+    // the same ground. This used to be a hardcoded array of one, which is why
+    // so many of these pages showed a single name for a bais hachaim holding
+    // several.
+    burials: [
+      {
+        name: guide.tzaddik,
+        yiddishName: guide.yiddishTzaddik,
+        seforim: guide.seforim,
+        yahrzeit: `${guide.yahrzeit} · ${guide.niftar}`,
+      },
+      ...(guide.alsoBuried ?? []),
+    ],
     sourceUrl: guide.sourceUrl,
   }));
 

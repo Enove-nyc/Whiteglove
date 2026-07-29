@@ -65,6 +65,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
   // trip you spent an hour on would be alarming.
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const syncLocal = () => {
@@ -104,6 +105,37 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
   const activeRoute = loggedIn ? account?.route ?? [] : account?.route ?? route;
   const activeFavorites = loggedIn ? account?.favorites ?? [] : account?.favorites ?? favorites;
   const sourceLabel = account ? `Synced to ${account.email}` : loggedIn ? "Synced to your account" : "Saved in this browser";
+
+  /**
+   * Start a genuinely new trip, then open it.
+   *
+   * This used to be a plain link to the planner, which opened whichever trip
+   * was already active — so "New itinerary" showed you the itinerary you
+   * already had. Creating the trip is a call the account has to make: it is
+   * what mints a blank one and makes it the open one.
+   */
+  async function newTrip() {
+    setOpening("new");
+    try {
+      const res = await fetch("/api/account/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create" }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        setError(data?.error ?? "Could not start a new itinerary.");
+        setOpening(null);
+        return;
+      }
+      setTrips(data.trips);
+    } catch {
+      setError("Could not reach the server.");
+      setOpening(null);
+      return;
+    }
+    router.push("/itinerary");
+  }
 
   // Switching trip and opening the page in one press. Without the switch, the
   // page would open whichever trip was last active rather than the one pressed.
@@ -179,8 +211,9 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
           eyebrow="My itineraries"
           heading={trips === null ? "Your day-by-day plan." : trips.length > 1 ? `${trips.length} trips on the go.` : "One trip on the go."}
           blurb="Each trip keeps its own dates, flights, hotels and share link, so a week in Switzerland, a fortnight in Kraków and a month in Poland can all be planned at once."
-          newLabel="New itinerary"
-          newHref="/itinerary"
+          newLabel={opening === "new" ? "Starting…" : "New itinerary"}
+          onNew={newTrip}
+          error={error}
           trips={trips}
           fallback={
             <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
@@ -208,12 +241,16 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
  * is what stands in when there are no trips to list, which is the case for a
  * visitor who is not signed in.
  */
-function TripBox({ eyebrow, heading, blurb, newLabel, newHref, trips, fallback, line, busy, onOpen }: {
+function TripBox({ eyebrow, heading, blurb, newLabel, newHref, onNew, error, trips, fallback, line, busy, onOpen }: {
   eyebrow: string;
   heading: string;
   blurb: string;
   newLabel: string;
-  newHref: string;
+  /** Where the top button goes, when it only opens a page. */
+  newHref?: string;
+  /** What the top button does, when it has to change something first. */
+  onNew?: () => void;
+  error?: string;
   trips: Trip[] | null;
   fallback: React.ReactNode;
   line: (trip: Trip) => string;
@@ -227,14 +264,26 @@ function TripBox({ eyebrow, heading, blurb, newLabel, newHref, trips, fallback, 
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{eyebrow}</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{heading}</h2>
         </div>
-        <Link
-          href={newHref}
-          className="shrink-0 border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
-        >
-          {newLabel}
-        </Link>
+        {onNew ? (
+          <button
+            type="button"
+            onClick={onNew}
+            disabled={busy !== null}
+            className="shrink-0 border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
+          >
+            {newLabel}
+          </button>
+        ) : (
+          <Link
+            href={newHref ?? "/"}
+            className="shrink-0 border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+          >
+            {newLabel}
+          </Link>
+        )}
       </div>
       <p className="mt-2 text-sm leading-6 text-stone-600">{blurb}</p>
+      {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
 
       {trips === null || trips.length === 0 ? (
         fallback

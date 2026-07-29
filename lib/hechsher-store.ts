@@ -123,3 +123,121 @@ export async function clearHechsher(placeId: string): Promise<boolean> {
   delete all[placeId];
   return (await redis(`set/${KEY}`, JSON.stringify(all))) !== null;
 }
+
+// ---- The list of agencies itself ---------------------------------------
+//
+// The site ships with a list of hechsherim, but no list of certifying bodies
+// is ever finished — a town has its own vaad, a rov gives his own hechsher,
+// and neither is in anybody's table. So the owner can add one, and can attach
+// a picture of the mark to any agency, built-in or added.
+//
+// The picture is held as a data URI rather than written to a file. The site
+// runs on a filesystem that is discarded on every deploy, so a written file
+// would not survive the next one; a few kilobytes in the store does.
+
+const AGENCY_KEY = "white-glove:hechsher-agencies";
+
+/** An agency the owner added, or fields overlaid on one that ships with the site. */
+export type StoredAgency = {
+  id: string;
+  name?: string;
+  mark?: string;
+  region?: string;
+  aliases?: string[];
+  /** data:image/… — see assertUsableLogo for what is allowed through. */
+  logo?: string;
+};
+
+/**
+ * How big an uploaded mark may be.
+ *
+ * These are circles about thirty pixels across. Anything approaching this
+ * limit is a photograph somebody has not resized, and the editor shrinks the
+ * picture in the browser before it ever gets here.
+ */
+const MAX_LOGO_BYTES = 64 * 1024;
+
+/**
+ * Is this something we are willing to put in an <img> on the site?
+ *
+ * Raster only, and deliberately so. An SVG is a document that can carry script
+ * and external references; it is the one image format where "just show the
+ * file somebody uploaded" is a decision with consequences. The editor produces
+ * a PNG from a canvas, so refusing SVG costs the owner nothing.
+ */
+export function assertUsableLogo(logo: string): { ok: true } | { ok: false; message: string } {
+  const match = /^data:image\/(png|jpeg|jpg|webp);base64,([A-Za-z0-9+/=]+)$/.exec(logo.trim());
+  if (!match) {
+    return /^data:image\/svg/i.test(logo.trim())
+      ? { ok: false, message: "SVG marks are not accepted — save it as a PNG and upload that." }
+      : { ok: false, message: "That does not look like a PNG, JPEG or WebP picture." };
+  }
+  // base64 encodes 3 bytes as 4 characters.
+  if (Math.floor((match[2].length * 3) / 4) > MAX_LOGO_BYTES) {
+    return { ok: false, message: "That picture is too big. A mark only needs to be a couple of hundred pixels across." };
+  }
+  return { ok: true };
+}
+
+async function readAgencies(): Promise<Record<string, StoredAgency>> {
+  const raw = await redis<string>(`get/${AGENCY_KEY}`);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, StoredAgency>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writeAgencies(all: Record<string, StoredAgency>): Promise<boolean> {
+  const body = JSON.stringify(all);
+  const res = await redis<string>(`set/${AGENCY_KEY}`, body);
+  return res !== null;
+}
+
+/** Everything the owner has added or changed. Empty without a store, which reads as "only the built-in list". */
+export async function listAgencies(): Promise<StoredAgency[]> {
+  return Object.values(await readAgencies());
+}
+
+/** An id from a name: "Vaad of Golders Green" → "vaad-of-golders-green". */
+export function agencyIdFrom(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
+export async function saveAgency(agency: StoredAgency): Promise<{ ok: boolean; message: string }> {
+  if (!hechsherStoreAvailable()) return { ok: false, message: "Connect the private store first (UPSTASH_REDIS_REST_URL and _TOKEN)." };
+  const id = agency.id.trim();
+  if (!id) return { ok: false, message: "That needs a name." };
+  if (agency.logo) {
+    const check = assertUsableLogo(agency.logo);
+    if (!check.ok) return { ok: false, message: check.message };
+  }
+  const all = await readAgencies();
+  // Keep the logo already stored when this save is only changing the wording.
+  const existing = all[id];
+  all[id] = { ...existing, ...agency, id, logo: agency.logo ?? existing?.logo };
+  const ok = await writeAgencies(all);
+  return ok
+    ? { ok: true, message: `Saved ${agency.name ?? id}.` }
+    : { ok: false, message: "Could not save it. Is the private store connected?" };
+}
+
+/**
+ * Forget an agency the owner added, or the changes overlaid on a built-in one.
+ *
+ * A place already marked with it keeps its record — the circle falls back to
+ * the letters typed in its note. Deleting the agency is not a statement about
+ * the kashrus of anywhere, and it must not quietly become one.
+ */
+export async function deleteAgency(id: string): Promise<boolean> {
+  const all = await readAgencies();
+  if (!(id in all)) return true;
+  delete all[id];
+  return writeAgencies(all);
+}

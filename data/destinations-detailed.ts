@@ -26,6 +26,25 @@ export type CityGuide = {
     note: string;
   }>;
   safetyNote?: string;
+  /**
+   * Others buried in the same bais hachaim.
+   *
+   * A city guide names the tzaddik the town is known for, and until now the
+   * kever page built from it could show only that one name — not because the
+   * ground holds one kever, but because the mapping hardcoded an array of one.
+   * Somebody standing in Medzhybizh saw the Baal Shem Tov and nothing about the
+   * Apter Rov a few paces away.
+   *
+   * Only people a source actually places in THIS ground belong here.
+   */
+  alsoBuried?: Array<{
+    name: string;
+    yiddishName: string;
+    knownAs?: string;
+    seforim?: string;
+    yahrzeit?: string;
+    note?: string;
+  }>;
   sourceUrl: string;
 };
 
@@ -72,6 +91,21 @@ export const cityGuides: CityGuide[] = [
       "Once inside the cemetery, look for the ohel over the Baal Shem Tov's kever.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      {
+        name: "Rabbi Avraham Yehoshua Heshel of Apta",
+        yiddishName: "רבי אברהם יהושע העשיל מאפטא",
+        knownAs: "The Apter Rov — the Ohev Yisroel",
+        seforim: "אוהב ישראל",
+        note: "1748–1825. He moved to Medzhybizh in 1813 and asked to be buried near the Baal Shem Tov; his ohel stands a few paces from it. He signed himself Ohev Yisroel, and the sefer carries the name.",
+      },
+      {
+        name: "Rabbi Ze'ev Wolf Kitzes",
+        yiddishName: "רבי זאב װאלף קיצס",
+        knownAs: "Talmid of the Baal Shem Tov",
+        note: "Circa 1685–1788. One of the Baal Shem Tov's closest talmidim in Medzhybizh, and buried beside him.",
+      },
+    ],
     sourceUrl: "https://encyclopedia.yivo.org/article.aspx/Baal_Shem_Tov",
   },
   {
@@ -94,6 +128,20 @@ export const cityGuides: CityGuide[] = [
       "Confirm current gate and access arrangements before traveling, as cemetery access can change.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      {
+        name: "Rabbi Yehoshua Rokeach",
+        yiddishName: "רבי יהושע רוקח",
+        knownAs: "The Mittler Rov — second Belzer Rebbe",
+        note: "1825–1894. Son of the Sar Shalom and Belzer Rebbe from 1856 until his petirah.",
+      },
+      {
+        name: "Rabbi Yissachar Dov Rokeach",
+        yiddishName: "רבי יששכר דוב רוקח",
+        knownAs: "The third Belzer Rebbe",
+        note: "1854–1926. Belzer Rebbe from his father's petirah in 1894. The kevarim of all three — the Sar Shalom, the Mittler Rov and him — were restored in 2015.",
+      },
+    ],
     sourceUrl: "https://worldofbelz.org/history/the-holy-sar-shalom/",
   },
   {
@@ -142,6 +190,7 @@ export const cityGuides: CityGuide[] = [
       "Set navigation to the Chatam Sofer Memorial at the address above; it preserves the central section of Preshburg's historic Jewish cemetery.",
       "The memorial is a dedicated underground site near the Danube embankment, rather than an open cemetery visit.",
       "Confirm current opening and entry arrangements before travel, especially for a group or a yahrzeit visit.",
+          "What survives is underground and is only the rabbinic section: twenty-three kevarim, the Chasam Sofer's and twenty-two around it. The rest of the Preshburg cemetery was destroyed in 1943–44 when a road tunnel was cut through the hill, and those kevarim were moved elsewhere. Do not go looking on the surface for a family matzeivah — it is not there.",
     ],
     accessContact: {
       label: "Chatam Sofer Memorial reservations",
@@ -149,6 +198,23 @@ export const cityGuides: CityGuide[] = [
       email: "memorial@znoba.sk",
       note: "Entry is by advance reservation. This is the official memorial booking contact, not a general local phone line.",
     },
+    alsoBuried: [
+      // The memorial is not the Chasam Sofer alone. It is the rabbinic section
+      // of the old Pressburg cemetery — twenty-two kevarim around his, the men
+      // who held the town before him.
+      {
+        name: "Rabbi Meshulam Igra of Tysmenitsa",
+        yiddishName: "רבי משולם איגרא",
+        knownAs: "Rov of Preshburg before the Chasam Sofer",
+        note: "1742–1801. Rov of Preshburg in the years directly before the Chasam Sofer took the town.",
+      },
+      {
+        name: "Rabbi Meir Barby",
+        yiddishName: "רבי מאיר ברבי",
+        knownAs: "Rov of Preshburg",
+        note: "Circa 1725–1789. Rov of Preshburg and rosh yeshiva there, from Halberstadt.",
+      },
+    ],
     sourceUrl: "https://www.chabad.org/library/article_cdo/aid/455336/jewish/Rabbi-Moses-Sofer.htm",
   },
   {
@@ -190,8 +256,27 @@ export const cityGuides: CityGuide[] = [
       "Set GPS to the exact coordinates for the old Jewish cemetery; street labels in the area can vary between maps.",
       "The ohel of the Shapiro Rebbes is within the cemetery. Confirm the current entrance and access details locally before setting out.",
       "Allow extra time for the final approach and follow current local guidance rather than an older online route.",
+          "Worth confirming before you set out: sources record that in the 1970s the Munkács Jewish cemetery, the Admorim's ohel included, was moved to a new cemetery at Kerepec next to the town. Ask locally which ground the ohel stands in now rather than assuming the address you were given last time still holds.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      // The ohel is three generations of Munkatcher Rebbes, father and
+      // grandfather with him. Somebody coming for the Minchas Elazar is
+      // standing at all three.
+      {
+        name: "Rabbi Tzvi Hirsh Shapira",
+        yiddishName: "רבי צבי הירש שפירא",
+        knownAs: "The Darkei Teshuva",
+        seforim: "דרכי תשובה",
+        note: "1840–1913. Munkatcher Rov and father of the Minchas Elazar. Darkei Teshuva on Yoreh Deah is one of the standard works on hilchos issur v'heter, and the Munkatcher yeshiva carried its name.",
+      },
+      {
+        name: "Rabbi Shlomo Shapira",
+        yiddishName: "רבי שלמה שפירא",
+        knownAs: "The first Munkatcher Rebbe",
+        note: "Grandfather of the Minchas Elazar and an einikel of the Bnei Yissaschar of Dynów. He began the Munkatcher line.",
+      },
+    ],
     sourceUrl: "https://collections.yadvashem.org/en/untold-stories/community/14622219-Munkacs",
   },
   {
@@ -211,6 +296,20 @@ export const cityGuides: CityGuide[] = [
       "The Jewish cemetery is at the end of Słowackiego Street; use the map link rather than only the city center.",
       "The tziyun is in the cemetery with other historic kevarim of Rymanów.",
       "For a yahrzeit visit or group, confirm current cemetery access before traveling.",
+          "There are TWO ohels at the top of the cemetery hill, not one. Reb Mendele is in his own; Reb Hirshele Rymanover and his son Reb Yosef are in the second. Looking for Reb Hirshele inside Reb Mendele's ohel is the usual way people miss him.",
+    ],
+    alsoBuried: [
+      {
+        name: "Rabbi Tzvi Hirsh Kohen of Rymanów",
+        yiddishName: "רבי צבי הירש מרימינוב",
+        knownAs: "Reb Hirshele Rymanover",
+        note: "Niftar 1847. Reb Mendele's attendant, and Rebbe in Rymanów from 1827 after him. He lies in the second ohel, not in Reb Mendele's.",
+      },
+      {
+        name: "Rabbi Yosef Friedman",
+        yiddishName: "רבי יוסף פרידמאן",
+        note: "Niftar 1913. Son of Reb Hirshele, buried beside him in the same ohel.",
+      },
     ],
     sourceUrl: "https://nertzaddik.com/tzadik-info?id=3188",
   },
@@ -264,6 +363,27 @@ export const cityGuides: CityGuide[] = [
         label: "Cemetery shomer",
         phone: "+48-18-441-9381",
         note: "Please call ahead to confirm current access.",
+      },
+    ],
+    alsoBuried: [
+      // The Sanzer ohel is a family, not one kever. Four generations of the
+      // Halberstams lie in it, and a Sanzer chosid coming for the Divrei Chaim
+      // is standing beside all of them.
+      {
+        name: "Rabbi Aron Halberstam",
+        yiddishName: "רבי אהרן האלבערשטאם",
+        knownAs: "The second Sanzer Rov",
+        note: "Niftar 1903. Son of the Divrei Chaim, and Rov of Sanz after him.",
+      },
+      {
+        name: "Rabbi Meir Nosson Halberstam",
+        yiddishName: "רבי מאיר נתן האלבערשטאם",
+        note: "Niftar 1855, in his father's lifetime. Son of the Divrei Chaim.",
+      },
+      {
+        name: "Rabbi Sholom Halberstam",
+        yiddishName: "רבי שלום האלבערשטאם",
+        note: "Niftar 1931. Son of Reb Aron and an einikel of the Divrei Chaim.",
       },
     ],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/nowy-sacz-new-jewish-cemetery/",

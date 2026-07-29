@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { matchHechsher, UNVERIFIED, type HechsherStatus } from "@/data/hechsherim";
+import { allHechsherim, matchHechsher, UNVERIFIED, type Hechsher, type HechsherStatus } from "@/data/hechsherim";
 
 /**
  * What the owner has confirmed about each of these places.
@@ -14,9 +14,13 @@ import { matchHechsher, UNVERIFIED, type HechsherStatus } from "@/data/hechsheri
  * Returns a plain object; use `hechsherOf` to read from it so a missing entry
  * comes back as unverified rather than undefined.
  */
-export function useHechsherim(placeIds: string[]): Record<string, HechsherStatus> {
+export function useHechsherim(placeIds: string[]): { statuses: Record<string, HechsherStatus>; agencies: Hechsher[] } {
   const key = useMemo(() => [...new Set(placeIds.filter(Boolean))].sort().join(","), [placeIds]);
-  const [loaded, setLoaded] = useState<{ key: string; map: Record<string, HechsherStatus> }>({ key: "", map: {} });
+  const [loaded, setLoaded] = useState<{ key: string; map: Record<string, HechsherStatus>; agencies: Hechsher[] }>({
+    key: "",
+    map: {},
+    agencies: allHechsherim(),
+  });
 
   useEffect(() => {
     if (!key) return;
@@ -26,7 +30,7 @@ export function useHechsherim(placeIds: string[]): Record<string, HechsherStatus
         const res = await fetch(`/api/kosher/hechsherim?ids=${encodeURIComponent(key)}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (live && data?.hechsherim) setLoaded({ key, map: data.hechsherim });
+        if (live && data?.hechsherim) setLoaded({ key, map: data.hechsherim, agencies: allHechsherim(data.agencies) });
       } catch {
         /* everything stays unverified, which is the safe reading */
       }
@@ -36,7 +40,7 @@ export function useHechsherim(placeIds: string[]): Record<string, HechsherStatus
     };
   }, [key]);
 
-  return loaded.key === key ? loaded.map : {};
+  return loaded.key === key ? { statuses: loaded.map, agencies: loaded.agencies } : { statuses: {}, agencies: loaded.agencies };
 }
 
 /**
@@ -50,13 +54,14 @@ export function useHechsherim(placeIds: string[]): Record<string, HechsherStatus
 export function hechsherOf(
   confirmed: Record<string, HechsherStatus>,
   place: { id: string; reportedHechsher?: string },
+  agencies?: Hechsher[],
 ): HechsherStatus {
   const own = confirmed[place.id];
   if (own) return own;
   if (place.reportedHechsher) {
     // Land it on a known agency where the text names one, so the circle can
     // carry that agency's mark instead of four arbitrary letters.
-    const matched = matchHechsher(place.reportedHechsher);
+    const matched = matchHechsher(place.reportedHechsher, agencies);
     return {
       state: "reported",
       hechsherId: matched?.id,

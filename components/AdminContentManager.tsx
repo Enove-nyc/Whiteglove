@@ -71,17 +71,22 @@ function parseLocationsCsv(text: string): EditableLocation[] {
   }).filter((item) => item.title.trim() || item.yiddishTitle.trim() || item.route.trim());
 }
 
-export default function AdminContentManager({ initialBundle, configured }: { initialBundle: AdminContentBundle; configured: boolean }) {
+export default function AdminContentManager({ initialBundle, configured, initialTab, initialMissing }: {
+  initialBundle: AdminContentBundle;
+  configured: boolean;
+  /** From the page's own query string, so the server and the browser agree. */
+  initialTab?: Tab;
+  initialMissing?: "" | "address" | "coordinates" | "shomer";
+}) {
   const [bundle, setBundle] = useState(initialBundle);
-  const [tab, setTab] = useState<Tab>(() => {
-    if (typeof window !== "undefined" && window.location.hash.replace("#", "") === "promotions") {
-      return "promotions";
-    }
-    return "report";
-  });
+  const [tab, setTab] = useState<Tab>(initialTab ?? "report");
   const [savingKey, setSavingKey] = useState("");
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing site content.");
   const [locationQuery, setLocationQuery] = useState("");
+  // Which gap the locations list is narrowed to. Set by pressing a count, so a
+  // number on this page is a way into the records it counts rather than a
+  // figure you then have to go and find by hand.
+  const [missingOnly, setMissingOnly] = useState<"" | "address" | "coordinates" | "shomer">(initialMissing ?? "");
   const [accommodationQuery, setAccommodationQuery] = useState("");
   const [bulkCsv, setBulkCsv] = useState(locationCsvTemplate);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(bundle.settings);
@@ -148,7 +153,24 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
     setMessage("Saved.");
   }
 
-  const filteredLocations = bundle.locations.filter((item) => `${item.title} ${item.yiddishTitle} ${item.route} ${item.country}`.toLowerCase().includes(locationQuery.toLowerCase()));
+  const lacks = (item: EditableLocation) =>
+    missingOnly === "address"
+      ? !item.address.trim()
+      : missingOnly === "coordinates"
+        ? !item.coordinates.trim()
+        : missingOnly === "shomer"
+          ? !item.shomerContact.trim()
+          : true;
+  const filteredLocations = bundle.locations
+    .filter(lacks)
+    .filter((item) => `${item.title} ${item.yiddishTitle} ${item.route} ${item.country}`.toLowerCase().includes(locationQuery.toLowerCase()));
+
+  /** Show the records behind a count, rather than only the count. */
+  function showMissing(which: "" | "address" | "coordinates" | "shomer") {
+    setMissingOnly(which);
+    setLocationQuery("");
+    setTab("locations");
+  }
   const filteredAccommodations = bundle.accommodations.filter((item) => `${item.name} ${item.locationId} ${item.address}`.toLowerCase().includes(accommodationQuery.toLowerCase()));
 
   function addLocation() {
@@ -183,11 +205,11 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Metric label="Locations" value={bundle.locations.length} />
-        <Metric label="Accommodations" value={bundle.accommodations.length} />
-        <Metric label="Pending suggestions" value={missing.pendingSuggestions} />
-        <Metric label="Missing addresses" value={missing.locationsMissingAddress} />
-        <Metric label="Missing shomer numbers" value={missing.locationsMissingShomer} />
+        <Metric label="Locations" value={bundle.locations.length} onClick={() => showMissing("")} />
+        <Metric label="Accommodations" value={bundle.accommodations.length} onClick={() => setTab("accommodations")} />
+        <Metric label="Pending suggestions" value={missing.pendingSuggestions} onClick={() => setTab("suggestions")} />
+        <Metric label="Missing addresses" value={missing.locationsMissingAddress} onClick={() => showMissing("address")} />
+        <Metric label="Missing shomer numbers" value={missing.locationsMissingShomer} onClick={() => showMissing("shomer")} />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2 border-b border-[var(--gold-light)] pb-4">
@@ -202,11 +224,11 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
 
       {tab === "report" && (
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <ReportCard title="Needs address" value={missing.locationsMissingAddress} note="Location records with blank addresses." />
-          <ReportCard title="Needs coordinates" value={missing.locationsMissingCoordinates} note="Location records missing map-ready coordinates." />
-          <ReportCard title="Needs shomer" value={missing.locationsMissingShomer} note="Location records without a contact number." />
-          <ReportCard title="Needs accommodation" value={missing.accommodationsMissing} note="Accommodation records missing required fields." />
-          <ReportCard title="Pending suggestions" value={missing.pendingSuggestions} note="Visitor edits waiting for review." />
+          <ReportCard title="Needs address" value={missing.locationsMissingAddress} note="Location records with blank addresses." onClick={() => showMissing("address")} />
+          <ReportCard title="Needs coordinates" value={missing.locationsMissingCoordinates} note="Location records missing map-ready coordinates." onClick={() => showMissing("coordinates")} />
+          <ReportCard title="Needs shomer" value={missing.locationsMissingShomer} note="Location records without a contact number." onClick={() => showMissing("shomer")} />
+          <ReportCard title="Needs accommodation" value={missing.accommodationsMissing} note="Accommodation records missing required fields." onClick={() => setTab("accommodations")} />
+          <ReportCard title="Pending suggestions" value={missing.pendingSuggestions} note="Visitor edits waiting for review." onClick={() => setTab("suggestions")} />
         </div>
       )}
 
@@ -227,7 +249,21 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
 
       {tab === "locations" && (
         <div className="mt-6 space-y-4">
-          <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} placeholder="Search locations" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
+          {/* Say what is being shown and how to stop showing only that.
+              A filtered list that does not admit it is filtered reads as a
+              list that has lost most of its records. */}
+          {missingOnly && (
+            <p className="flex flex-wrap items-center gap-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-4 py-3 text-sm text-[var(--navy)]">
+              <span>
+                Showing only the {filteredLocations.length} of {bundle.locations.length} with no{" "}
+                {missingOnly === "shomer" ? "shomer number" : missingOnly === "address" ? "address" : "coordinates"}.
+              </span>
+              <button type="button" onClick={() => setMissingOnly("")} className="border border-[var(--gold-light)] bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">
+                Show all {bundle.locations.length}
+              </button>
+            </p>
+          )}
+          <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} placeholder="Search locations by name, route or country" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
             <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add location</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -355,12 +391,26 @@ export default function AdminContentManager({ initialBundle, configured }: { ini
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p><p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p></div>;
+// A count is a question — which ones? — so it is a button that answers it.
+function Metric({ label, value, onClick }: { label: string; value: number; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p>
+      <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
+      <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
+    </button>
+  );
 }
 
-function ReportCard({ title, value, note }: { title: string; value: number; note: string }) {
-  return <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{title}</p><p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p><p className="mt-3 text-sm leading-6 text-stone-600">{note}</p></article>;
+function ReportCard({ title, value, note, onClick }: { title: string; value: number; note: string; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{title}</p>
+      <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
+      <p className="mt-3 text-sm leading-6 text-stone-600">{note}</p>
+      <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
+    </button>
+  );
 }
 
 function Field({ label, value, onChange, textarea = false }: { label: string; value: string; onChange: (value: string) => void; textarea?: boolean }) {

@@ -160,7 +160,12 @@ function defaultLocations(): EditableLocation[] {
     status: "needs-review" as const,
     lastVerified: "",
   }));
-  const destinationLocations = unguidedDestinations().slice(0, 20).map((destination) => ({
+  // Not a sample. These lists are what the "missing address / missing shomer"
+  // counts are computed from, so truncating them made the report quietly
+  // describe the first twenty of each rather than the site: 156 batei hachaim
+  // were on the page and 20 of them were being counted, which is why the
+  // missing-shomer figure read far lower than the real one.
+  const destinationLocations = unguidedDestinations().map((destination) => ({
     id: `destination-${destination.slug}`,
     route: `/destinations/${destination.slug}`,
     title: destination.city,
@@ -175,7 +180,7 @@ function defaultLocations(): EditableLocation[] {
     status: "draft" as const,
     lastVerified: "",
   }));
-  const cemeteryLocations = cemeteries.slice(0, 20).map((cemetery) => ({
+  const cemeteryLocations = cemeteries.map((cemetery) => ({
     id: `cemetery-${cemetery.slug}`,
     route: `/cemeteries/${cemetery.slug}`,
     title: cemetery.name,

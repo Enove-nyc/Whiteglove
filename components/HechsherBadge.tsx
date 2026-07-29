@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { describeHechsher, getHechsher, hechsherLabel, type HechsherStatus } from "@/data/hechsherim";
+import { describeHechsher, getHechsher, hechsherLabel, HECHSHERIM, type Hechsher, type HechsherStatus } from "@/data/hechsherim";
 
 // The little round mark beside a kosher place.
 //
@@ -25,18 +25,24 @@ export default function HechsherBadge({
   status,
   size = "md",
   showLabel = true,
+  agencies = HECHSHERIM,
 }: {
   status: HechsherStatus;
   size?: "sm" | "md";
   showLabel?: boolean;
+  /** The full list, including any the owner has added. Defaults to the built-in one. */
+  agencies?: Hechsher[];
 }) {
   // Most agencies have no logo file yet. The letters are shown until one
   // appears, and if a file is added but fails to load we fall back to them
   // rather than leaving a broken image in the circle.
   const [logoFailed, setLogoFailed] = useState(false);
-  const hechsher = getHechsher(status.hechsherId);
-  const title = describeHechsher(status);
-  const label = hechsherLabel(status);
+  const hechsher = getHechsher(status.hechsherId, agencies);
+  const title = describeHechsher(status, agencies);
+  const label = hechsherLabel(status, agencies);
+  // An uploaded picture wins over the file that ships with the site, so
+  // replacing a mark does not mean editing the repository.
+  const logoSrc = hechsher ? (hechsher.logo ?? `/hechsherim/${hechsher.id}.svg`) : null;
   const px = size === "sm" ? 28 : 36;
   const markSize = size === "sm" ? 9 : 11;
 
@@ -71,7 +77,7 @@ export default function HechsherBadge({
              so onError can fall back to the letters; these are tiny local SVGs
              with nothing for the image optimizer to do. */
           <img
-            src={`/hechsherim/${hechsher.id}.svg`}
+            src={logoSrc ?? ""}
             alt=""
             onError={() => setLogoFailed(true)}
             style={{ maxWidth: "72%", maxHeight: "72%" }}

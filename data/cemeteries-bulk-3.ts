@@ -28,6 +28,7 @@ export const bulkCemeteries3: Cemetery[] = [
     accessNote: "Inside the Chernobyl exclusion zone — access is restricted and must be arranged with authorized escorts. Confirm current permissions and the exact grave location before traveling.",
     burials: [
       { name: "Rabbi Menachem Nachum Twersky", yiddishName: "רבי מנחם נחום טווערסקי", knownAs: "The Me'or Einayim", seforim: "מאור עינים · ישמח לב", yahrzeit: "י״א חשון · 5558 / 1797", note: "Founder of the Chernobyl dynasty and a disciple of the Baal Shem Tov and the Maggid of Mezritch." },
+      { name: "Rabbi Mordechai Twersky", yiddishName: "רבי מרדכי טווערסקי", knownAs: "The Chernobyler Maggid", note: "Son of the Me'or Einayim and Rebbe of Chernobyl after him. His eight sons each founded a dynasty of their own — Chernobyl's line runs through him." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Menachem_Nachum_Twersky",
   },
