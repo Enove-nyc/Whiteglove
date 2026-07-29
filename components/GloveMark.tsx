@@ -1,6 +1,6 @@
-// The complete hand-and-compass mark from the White Glove logo, reused as a
-// small brand mark throughout the site. The shared CSS uses the same artwork as
-// the site's app icon, so bullets, headings, and dividers all match the logo.
+// The hand-and-compass artwork from the White Glove logo, isolated on a
+// transparent background so it can sit directly on the site's gold surfaces
+// without an app-icon tile or surrounding box.
 
 const SIZES = {
   xs: "h-4 w-4",
@@ -31,7 +31,7 @@ export function GloveRule({ className = "" }: { className?: string }) {
 
 /**
  * An unordered list that uses the logo mark as its bullet. `onNavy` remains in
- * the public API for existing callers; the mark already carries its navy tile.
+ * the public API for existing callers.
  */
 export function GloveList({
   items,

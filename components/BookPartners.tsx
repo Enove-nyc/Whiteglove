@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
@@ -65,6 +65,11 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>("flights");
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("type");
+    if (requested === "flights" || requested === "hotels" || requested === "cars") setKind(requested);
+  }, []);
 
   // Save items into the traveler's itinerary (localStorage + account sync).
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {

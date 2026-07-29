@@ -17,7 +17,6 @@ const menuItems = [
   { yiddish: "רײַזע פֿירער", english: "Travel guide", href: "/travel-guide" },
   { yiddish: "דירעקטאָרי", english: "Directory", href: "/directory" },
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
-  { yiddish: "פּלאַנירונג", english: "Planning", href: "/planning" },
   { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
   { yiddish: "פליגערס און האטעלן", english: "Book flights, hotels & cars", href: "/book" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
@@ -28,7 +27,8 @@ const primaryLinks = [
   { label: "Getaways", href: "/getaways" },
   { label: "Directory", href: "/directory" },
   { label: "Services", href: "/services" },
-  { label: "Planning", href: "/planning" },
+  { label: "Flights", href: "/book?type=flights" },
+  { label: "Cars", href: "/book?type=cars" },
 ];
 
 const menuGroups = [
@@ -38,7 +38,7 @@ const menuGroups = [
   },
   {
     title: "Plan & book",
-    links: menuItems.filter((item) => ["/services", "/planning", "/book", "/getaways", "/honeymoon"].includes(item.href)),
+    links: menuItems.filter((item) => ["/services", "/book", "/getaways", "/honeymoon"].includes(item.href)),
   },
   {
     title: "White Glove",
@@ -85,20 +85,20 @@ export default function Navbar() {
   return (
     <>
       <nav ref={navRef} className="sticky top-0 z-40 border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md">
-        <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-5 px-5 sm:px-8">
+        <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-5 sm:px-8">
           <Link href="/" className="flex shrink-0 items-center" aria-label="White Glove Itineraries home">
             <Image src="/logo.png" alt="White Glove Itineraries" width={500} height={300} className="h-14 w-auto object-contain" priority />
           </Link>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex">
+          <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex">
             {primaryLinks.map((link) => {
-              const current = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const current = !link.href.includes("?") && (pathname === link.href || pathname.startsWith(`${link.href}/`));
               return (
                 <Link
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
                   aria-current={current ? "page" : undefined}
-                  className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                  className={`rounded-full px-3 py-2 text-sm font-semibold transition ${
                     current ? "bg-[var(--cream-deep)] text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                   }`}
                 >
@@ -109,7 +109,7 @@ export default function Navbar() {
           </div>
 
           {showSearch && (
-            <div className="mx-auto hidden w-full max-w-xs min-w-0 md:block xl:max-w-sm">
+            <div className="mx-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-7 xl:mr-5 xl:max-w-sm">
               <DestinationSearch compact />
             </div>
           )}
