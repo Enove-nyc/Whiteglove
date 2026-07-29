@@ -267,6 +267,7 @@ export const bulkCemeteries: Cemetery[] = [
       { name: "Rabbi David Gans", yiddishName: "רבי דוד גנז", knownAs: "Author of Tzemach David", seforim: "צמח דוד · נחמד ונעים", note: "Historian, mathematician and astronomer (c. 1541–1613), a disciple of the Maharal." },
       { name: "Rabbi David Oppenheim", yiddishName: "רבי דוד אופנהיים", knownAs: "Chief Rabbi of Prague and bibliophile", note: "Chief Rabbi of Prague and famed collector of Hebrew manuscripts (1664–1736)." },
       { name: "Mordechai Maisel", yiddishName: "מרדכי מייזל", knownAs: "Mayor and benefactor of the Jewish Town", note: "Leader and philanthropist under Rudolf II (1528–1601); financed synagogues, the Jewish Town Hall and paving of the quarter." },
+          { name: "Rabbi Shlomo Ephraim Luntschitz", yiddishName: "רבי שלמה אפרים לונטשיץ", knownAs: "The Kli Yakar", seforim: "כלי יקר", note: "1550–1619. Rov of Prague from 1604 until his petirah. The Kli Yakar on Chumash is printed in most Mikraos Gedolos." },
     ],
     places: [
       { category: "KOSHER_FOOD", name: "Dinitz Kosher Restaurant", address: "Bílkova 869/12, 110 00 Josefov, Prague 1", phone: "+420 222 244 000", notes: "Glatt kosher Israeli/Middle-Eastern restaurant under the Chief Rabbinate of the Czech Republic; popular for Shabbat meals. Closed Saturday.", source: "https://www.worldjewishtravel.org/listing/dinitz-kosher-restaurant/" },
