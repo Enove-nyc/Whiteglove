@@ -13,6 +13,8 @@ type Result = {
   status?: number;
   error?: string;
   advice?: string;
+  /** Set when the check passed but the stored value had to be cleaned first. */
+  warning?: string;
 };
 
 const code = "rounded bg-[var(--cream)] px-1 font-mono text-[12px]";
@@ -70,6 +72,15 @@ export default function RoutingKeyTest() {
               <strong>Working.</strong> {result.route} came back as <strong>{result.readable}</strong>
               {result.km ? ` over ${result.km} km` : ""}, for typical traffic.
               <p className="mt-2">Driving times in the planner are now the same numbers Google Maps would give.</p>
+              {/* It works, but only because the value was repaired on the way
+                  out. Said here so the variable itself gets fixed — otherwise
+                  the fault sits there until somebody copies it somewhere the
+                  repair does not happen. */}
+              {result.warning ? (
+                <p className="mt-3 border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-amber-900">
+                  <strong>Worth fixing anyway.</strong> {result.warning}
+                </p>
+              ) : null}
             </>
           ) : (
             <>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readApiKey } from "@/lib/api-key";
 import { redact, redactError } from "@/lib/redact";
 import { isValidAccessToken } from "@/lib/secure-access";
 
@@ -36,8 +37,8 @@ function nextTuesday9am(): string {
 export async function GET(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
 
-  const key = process.env.GOOGLE_MAPS_API_KEY?.trim();
-  if (!key) {
+  const read = readApiKey("GOOGLE_MAPS_API_KEY");
+  if (!read.key && !read.unusable) {
     return NextResponse.json({
       keySet: false,
       ok: false,
@@ -46,6 +47,20 @@ export async function GET(request: NextRequest) {
         "GOOGLE_MAPS_API_KEY is not set on this deployment. Driving times are falling back to the open router, which assumes empty roads and runs short. Add the variable in Vercel, then redeploy — environment variables are read at build time.",
     });
   }
+
+  // The value is set but is not a key. Say that here rather than sending it and
+  // reporting whatever fetch throws — "invalid header value" told the owner
+  // nothing, and the advice underneath it sent them looking at the network.
+  if (read.unusable || !read.key) {
+    return NextResponse.json({
+      keySet: true,
+      ok: false,
+      engine: "google",
+      error: "The value in GOOGLE_MAPS_API_KEY is not a usable key.",
+      advice: read.problems.join(" "),
+    });
+  }
+  const key = read.key;
 
   const point = (p: { lat: number; lng: number }) => ({ location: { latLng: { latitude: p.lat, longitude: p.lng } } });
 
@@ -106,15 +121,27 @@ export async function GET(request: NextRequest) {
       minutes,
       readable: `${Math.floor(minutes / 60)} h ${minutes % 60} m`,
       km: route?.distanceMeters ? Math.round(route.distanceMeters / 1000) : null,
-      advice: "Working. The planner is showing the same driving times Google Maps would give for typical traffic.",
+      // Working, but say so if it only worked because the value was cleaned on
+      // the way out — the next person to copy that variable inherits the fault.
+      advice: read.cleaned
+        ? `Working, but the stored value needed cleaning first. ${read.problems.join(" ")}`
+        : "Working. The planner is showing the same driving times Google Maps would give for typical traffic.",
+      warning: read.cleaned ? read.problems.join(" ") : undefined,
     });
   } catch (error) {
-    return NextResponse.json({
-      keySet: true,
-      ok: false,
-      engine: "google",
-      error: redactError(error),
-      advice: "The request to Google could not be completed. If this persists, check the deployment has outbound network access.",
-    });
+    const message = redactError(error);
+    // Not every failure here is the network, and saying it is sends people to
+    // look in the wrong place. Separate the request that never left this
+    // process from the one that left and got nowhere.
+    let advice = "The request to Google could not be completed. If this persists, check the deployment has outbound network access.";
+    if (/invalid header|Headers\.append|invalid character/i.test(message)) {
+      advice =
+        "The request was never sent — it could not even be assembled, because the stored key is not something that can go in an HTTP header. That is almost always an invisible character pasted in with the key. Delete the variable in Vercel, type or paste the key again, and redeploy.";
+    } else if (/aborted|timeout|timed out/i.test(message)) {
+      advice = "Google did not answer within twelve seconds. That is usually Google being slow rather than anything wrong with the key — try again.";
+    } else if (/ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(message)) {
+      advice = "The deployment could not resolve routes.googleapis.com. This one really is the network.";
+    }
+    return NextResponse.json({ keySet: true, ok: false, engine: "google", error: message, advice });
   }
 }

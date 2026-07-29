@@ -17,6 +17,8 @@
 // With no browser key set, this reports so and the map falls back to
 // OpenStreetMap tiles, which need no key at all.
 
+import { cleanKey } from "@/lib/api-key";
+
 /**
  * Just enough of Google's map to draw ours.
  *
@@ -60,12 +62,27 @@ export function googleMaps(): GoogleMapsApi | null {
 let pending: Promise<boolean> | null = null;
 
 export function googleMapsBrowserKey(): string | null {
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY?.trim();
-  return key ? key : null;
+  // Read as a literal so Next inlines it at build time, then cleaned — a key
+  // pasted with an invisible character in it would otherwise go into the script
+  // URL percent-encoded, and Google would answer InvalidKey with no hint why.
+  // See lib/api-key.ts.
+  return cleanKey(process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY);
 }
 
 export function googleMapsAvailable(): boolean {
   return googleMapsBrowserKey() !== null;
+}
+
+/**
+ * The variable is set, but what is in it is not a key.
+ *
+ * Worth distinguishing from "not set at all": cleanKey refuses a value with a
+ * character that cannot be in a key, and without this the diagnostic would tell
+ * the owner to add a variable they can plainly see is already there.
+ */
+export function googleMapsBrowserKeyMalformed(): boolean {
+  const raw = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
+  return Boolean(raw && raw.trim()) && cleanKey(raw) === null;
 }
 
 /**
