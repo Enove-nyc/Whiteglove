@@ -350,12 +350,12 @@ export default function ItineraryBuilder() {
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
             <Stat label="Driving" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
-            <div className="ml-auto flex flex-wrap gap-2">
-              <span className="inline-flex rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
-                <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`rounded-full px-4 py-2 text-xs font-bold transition ${view === "days" ? "bg-[var(--navy)] text-white shadow-sm" : "text-stone-500 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"}`}>Day view</button>
-                <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`rounded-full px-4 py-2 text-xs font-bold transition ${view === "calendar" ? "bg-[var(--navy)] text-white shadow-sm" : "text-stone-500 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"}`}>Calendar</button>
+            <div className="ml-auto flex flex-wrap items-center gap-3">
+              <span className="grid min-h-14 w-[14rem] grid-cols-2 rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+                <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`flex h-full items-center justify-center rounded-full px-4 text-xs font-bold transition ${view === "days" ? "bg-[var(--navy)] text-white shadow-sm" : "text-stone-500 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"}`}>Day view</button>
+                <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`flex h-full items-center justify-center rounded-full px-4 text-xs font-bold transition ${view === "calendar" ? "bg-[var(--navy)] text-white shadow-sm" : "text-stone-500 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"}`}>Calendar</button>
               </span>
-              <Link href="/itinerary/print" target="_blank" className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Print / PDF</Link>
+              <Link href="/itinerary/print" target="_blank" className="inline-flex min-h-14 items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Print / PDF</Link>
             </div>
           </div>
 
