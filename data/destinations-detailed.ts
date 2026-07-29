@@ -26,6 +26,25 @@ export type CityGuide = {
     note: string;
   }>;
   safetyNote?: string;
+  /**
+   * Others buried in the same bais hachaim.
+   *
+   * A city guide names the tzaddik the town is known for, and until now the
+   * kever page built from it could show only that one name — not because the
+   * ground holds one kever, but because the mapping hardcoded an array of one.
+   * Somebody standing in Medzhybizh saw the Baal Shem Tov and nothing about the
+   * Apter Rov a few paces away.
+   *
+   * Only people a source actually places in THIS ground belong here.
+   */
+  alsoBuried?: Array<{
+    name: string;
+    yiddishName: string;
+    knownAs?: string;
+    seforim?: string;
+    yahrzeit?: string;
+    note?: string;
+  }>;
   sourceUrl: string;
 };
 
@@ -72,6 +91,21 @@ export const cityGuides: CityGuide[] = [
       "Once inside the cemetery, look for the ohel over the Baal Shem Tov's kever.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      {
+        name: "Rabbi Avraham Yehoshua Heshel of Apta",
+        yiddishName: "רבי אברהם יהושע העשיל מאפטא",
+        knownAs: "The Apter Rov — the Ohev Yisroel",
+        seforim: "אוהב ישראל",
+        note: "1748–1825. He moved to Medzhybizh in 1813 and asked to be buried near the Baal Shem Tov; his ohel stands a few paces from it. He signed himself Ohev Yisroel, and the sefer carries the name.",
+      },
+      {
+        name: "Rabbi Ze'ev Wolf Kitzes",
+        yiddishName: "רבי זאב װאלף קיצס",
+        knownAs: "Talmid of the Baal Shem Tov",
+        note: "Circa 1685–1788. One of the Baal Shem Tov's closest talmidim in Medzhybizh, and buried beside him.",
+      },
+    ],
     sourceUrl: "https://encyclopedia.yivo.org/article.aspx/Baal_Shem_Tov",
   },
   {
@@ -94,6 +128,20 @@ export const cityGuides: CityGuide[] = [
       "Confirm current gate and access arrangements before traveling, as cemetery access can change.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      {
+        name: "Rabbi Yehoshua Rokeach",
+        yiddishName: "רבי יהושע רוקח",
+        knownAs: "The Mittler Rov — second Belzer Rebbe",
+        note: "1825–1894. Son of the Sar Shalom and Belzer Rebbe from 1856 until his petirah.",
+      },
+      {
+        name: "Rabbi Yissachar Dov Rokeach",
+        yiddishName: "רבי יששכר דוב רוקח",
+        knownAs: "The third Belzer Rebbe",
+        note: "1854–1926. Belzer Rebbe from his father's petirah in 1894. The kevarim of all three — the Sar Shalom, the Mittler Rov and him — were restored in 2015.",
+      },
+    ],
     sourceUrl: "https://worldofbelz.org/history/the-holy-sar-shalom/",
   },
   {
@@ -264,6 +312,27 @@ export const cityGuides: CityGuide[] = [
         label: "Cemetery shomer",
         phone: "+48-18-441-9381",
         note: "Please call ahead to confirm current access.",
+      },
+    ],
+    alsoBuried: [
+      // The Sanzer ohel is a family, not one kever. Four generations of the
+      // Halberstams lie in it, and a Sanzer chosid coming for the Divrei Chaim
+      // is standing beside all of them.
+      {
+        name: "Rabbi Aron Halberstam",
+        yiddishName: "רבי אהרן האלבערשטאם",
+        knownAs: "The second Sanzer Rov",
+        note: "Niftar 1903. Son of the Divrei Chaim, and Rov of Sanz after him.",
+      },
+      {
+        name: "Rabbi Meir Nosson Halberstam",
+        yiddishName: "רבי מאיר נתן האלבערשטאם",
+        note: "Niftar 1855, in his father's lifetime. Son of the Divrei Chaim.",
+      },
+      {
+        name: "Rabbi Sholom Halberstam",
+        yiddishName: "רבי שלום האלבערשטאם",
+        note: "Niftar 1931. Son of Reb Aron and an einikel of the Divrei Chaim.",
       },
     ],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/nowy-sacz-new-jewish-cemetery/",

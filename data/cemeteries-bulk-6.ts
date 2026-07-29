@@ -43,6 +43,13 @@ export const bulkCemeteries6: Cemetery[] = [
     ],
     burials: [
       { name: "Rabbi Yaakov Yitzchak Horowitz", yiddishName: "רבי יעקב יצחק הורוביץ", knownAs: "The Chozeh (Seer) of Lublin", seforim: "זאת זכרון · זכרון זאת · דברי אמת", yahrzeit: "ט׳ אב · 5575 / 1815", note: "Teacher of the Yid HaKadosh, the Kozhnitzer Maggid's circle, and many of the great Polish rebbes." },
+      // The Chozeh is the name Lublin is known for, but this ground is three
+      // centuries older than him and holds the men who made Lublin a Torah
+      // centre in the first place. Somebody coming only for the Chozeh walks
+      // past them.
+      { name: "Rabbi Shlomo Luria", yiddishName: "רבי שלמה לוריא", knownAs: "The Maharshal", seforim: "ים של שלמה · חכמת שלמה", note: "Niftar 1573. Rosh yeshiva in Lublin and one of the foremost poskim of Ashkenaz; the Maharshal shul in Lublin carried his name." },
+      { name: "Rabbi Shalom Shachna ben Yosef", yiddishName: "רבי שלום שכנא", knownAs: "Founder of the Lublin yeshiva", note: "Niftar 1558. Rebbe of the Rema, and the man who made Lublin a place people came to learn." },
+      { name: "Rabbi Yaakov Kopelman ben Yehuda HaLevi", yiddishName: "רבי יעקב קאפעלמאן הלוי", note: "Niftar 1541. His matzeivah is the oldest Jewish gravestone in Poland still standing where it was set." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Jacob_Isaac_Horowitz",
   },
