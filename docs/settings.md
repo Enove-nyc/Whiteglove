@@ -136,5 +136,7 @@ tracking and earn nothing.
 | `DATABASE_URL` | Postgres, via Prisma — the directory content. |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Accounts, itineraries, share links, ads, analytics, media. |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | The travel assistant. Without either it says it is unavailable rather than guessing. |
-| `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET`, `AMADEUS_HOSTNAME`, `DUFFEL_ACCESS_TOKEN`, `AERODATABOX_API_KEY` | Flight data providers. Optional. |
+| `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET` | **Turns on "look up by flight number" in the planner.** Free to sign up for at developers.amadeus.com — email registration, no card. Without these the box is still there and answers "Flight lookup is off", and everything is typed by hand. `AMADEUS_HOSTNAME` switches between the test and production hosts; the test host carries a limited schedule. |
+| `AERODATABOX_API_KEY` | An alternative provider, via RapidAPI. Used only when Amadeus is not set. It reports one leg at a time, so a connecting flight comes back as two separate numbers. |
+| `DUFFEL_ACCESS_TOKEN` | Flight data provider. Optional. |
 | `NEXT_PUBLIC_SITE_URL` | Absolute base URL, used in shared itinerary links and emails. |

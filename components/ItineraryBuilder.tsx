@@ -53,6 +53,8 @@ type Tab = "flight" | "hotel" | "activity" | null;
 export default function ItineraryBuilder() {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
+  // Which flight the top form is editing, if any. Null means adding a new one.
+  const [editingFlightId, setEditingFlightId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [savedNote, setSavedNote] = useState("");
   const [planning, setPlanning] = useState(false);
@@ -118,6 +120,9 @@ export default function ItineraryBuilder() {
   const addLodging = (l: ItinLodging) => persist({ ...itin, lodging: [...itin.lodging, l] });
   const addActivity = (a: ItinActivity) => persist({ ...itin, activities: [...itin.activities, a] });
   const removeFlight = (id: string) => persist({ ...itin, flights: itin.flights.filter((x) => x.id !== id) });
+  // Editing keeps the id, so the flight is changed rather than swapped for a
+  // new one — its connections and its booking reference come with it.
+  const updateFlight = (next: ItinFlight) => persist({ ...itin, flights: itin.flights.map((x) => (x.id === next.id ? next : x)) });
   const removeLodging = (id: string) => persist({ ...itin, lodging: itin.lodging.filter((x) => x.id !== id) });
   const removeActivity = (id: string) => persist({ ...itin, activities: itin.activities.filter((x) => x.id !== id) });
 
@@ -228,7 +233,7 @@ export default function ItineraryBuilder() {
           </div>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => setTab(tab === "flight" ? null : "flight")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Flight</button>
+          <button type="button" onClick={() => { setEditingFlightId(null); setTab(tab === "flight" ? null : "flight"); }} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Flight</button>
           <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">+ Stop</button>
           <button type="button" onClick={importSavedRoute} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Import saved route</button>
@@ -238,7 +243,24 @@ export default function ItineraryBuilder() {
         </div>
         {!hasDates && <p className="mt-3 text-xs font-semibold text-[var(--gold)]">Choose start and end dates to begin.</p>}
 
-        {tab === "flight" && <FlightForm startDate={itin.startDate} onAdd={(f) => { addFlight(f); setTab(null); }} />}
+        {tab === "flight" && (() => {
+          const editing = itin.flights.find((x) => x.id === editingFlightId);
+          return (
+            <FlightForm
+              key={editing?.id ?? "new"}
+              startDate={itin.startDate}
+              initial={editing}
+              onAdd={(f) => {
+                if (editing) updateFlight(f);
+                else addFlight(f);
+                setEditingFlightId(null);
+                setTab(null);
+              }}
+              onRemove={editing ? () => { removeFlight(editing.id); setEditingFlightId(null); setTab(null); } : undefined}
+              onCancel={() => { setEditingFlightId(null); setTab(null); }}
+            />
+          );
+        })()}
         {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
       </div>
@@ -277,6 +299,7 @@ export default function ItineraryBuilder() {
               };
             })}
             onRemove={removeFlight}
+            onEdit={(id) => { setEditingFlightId(id); setTab("flight"); }}
           />
           <BookingList title="Lodging" items={itin.lodging.map((l) => ({ id: l.id, label: l.type === "overnight-transit" ? `Overnight ${l.name || "transit"}` : l.name, sub: `${l.checkIn} → ${l.checkOut}` }))} onRemove={removeLodging} />
           <BookingList title="Activities" items={itin.activities.map((a) => ({ id: a.id, label: a.name, sub: `${a.date}${a.startTime ? " · " + a.startTime : ""}` }))} onRemove={removeActivity} />
@@ -332,6 +355,9 @@ export default function ItineraryBuilder() {
                 onRemove={removeActivity}
                 onAddStop={addActivity}
                 onAddLodging={addLodging}
+                onAddFlight={addFlight}
+                onUpdateFlight={updateFlight}
+                onRemoveFlight={removeFlight}
                 allDates={days.map((d) => ({ date: d.date, label: d.label }))}
               />
             ))}
@@ -351,7 +377,7 @@ export default function ItineraryBuilder() {
 
 // ---- Day card with checks + suggestions ------------------------------
 
-function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLodging, allDates }: {
+function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
@@ -360,9 +386,13 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
   /** Add straight onto this day, so a gap is filled where it is noticed. */
   onAddStop: (a: ItinActivity) => void;
   onAddLodging: (l: ItinLodging) => void;
+  onAddFlight: (f: ItinFlight) => void;
+  onUpdateFlight: (f: ItinFlight) => void;
+  onRemoveFlight: (id: string) => void;
   allDates: Array<{ date: string; label: string }>;
 }) {
-  const [adding, setAdding] = useState<"stop" | "hotel" | null>(null);
+  const [adding, setAdding] = useState<"stop" | "hotel" | "flight" | null>(null);
+  const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -454,7 +484,20 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
       })}
 
       <div className="mt-4 space-y-3">
-        {day.flightsArriving.map((f) => <FlightLine key={`a-${f.id}`} flight={f} direction="arrive" />)}
+        {day.flightsArriving.map((f) => (
+          <div key={`a-${f.id}`}>
+            <FlightLine flight={f} direction="arrive" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
+            {editingFlight === f.id && (
+              <FlightForm
+                startDate={day.date}
+                initial={f}
+                onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
+                onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
+                onCancel={() => setEditingFlight(null)}
+              />
+            )}
+          </div>
+        ))}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging")} />
         {day.activities.map((a, i) => (
           <div key={a.id} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
@@ -551,7 +594,20 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
           </div>
         ))}
         <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />
-        {day.flightsDeparting.map((f) => <FlightLine key={`d-${f.id}`} flight={f} direction="depart" />)}
+        {day.flightsDeparting.map((f) => (
+          <div key={`d-${f.id}`}>
+            <FlightLine flight={f} direction="depart" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
+            {editingFlight === f.id && (
+              <FlightForm
+                startDate={day.date}
+                initial={f}
+                onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
+                onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
+                onCancel={() => setEditingFlight(null)}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
       <p className="mt-4 border-t border-[var(--gold-light)] pt-3 text-sm">
@@ -580,6 +636,9 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
         <button type="button" onClick={() => setAdding(adding === "hotel" ? null : "hotel")} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">
           {adding === "hotel" ? "Close" : day.lodging ? "+ Change where you sleep" : "+ Where you sleep"}
         </button>
+        <button type="button" onClick={() => setAdding(adding === "flight" ? null : "flight")} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">
+          {adding === "flight" ? "Close" : "+ Flight"}
+        </button>
       </div>
 
       {adding === "stop" && (
@@ -598,6 +657,19 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
             onAddLodging(l);
             setAdding(null);
           }}
+        />
+      )}
+      {/* The same form as the one at the top, so the flight-number lookup is
+          here too — the day you are looking at is the day you have the
+          booking email open for. */}
+      {adding === "flight" && (
+        <FlightForm
+          startDate={day.date}
+          onAdd={(f) => {
+            onAddFlight(f);
+            setAdding(null);
+          }}
+          onCancel={() => setAdding(null)}
         />
       )}
 
@@ -719,7 +791,13 @@ function Stat({ label, value, warn }: { label: string; value: number | string; w
   );
 }
 
-function BookingList({ title, items, onRemove }: { title: string; items: Array<{ id: string; label: string; sub: string }>; onRemove: (id: string) => void }) {
+function BookingList({ title, items, onRemove, onEdit }: {
+  title: string;
+  items: Array<{ id: string; label: string; sub: string }>;
+  onRemove: (id: string) => void;
+  /** Present when the entry can be opened and changed rather than only deleted. */
+  onEdit?: (id: string) => void;
+}) {
   return (
     <details className="group border border-[var(--gold-light)] bg-[#fcfaf6]">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 marker:content-none">
@@ -730,7 +808,12 @@ function BookingList({ title, items, onRemove }: { title: string; items: Array<{
         {items.length === 0 ? <li className="text-sm text-stone-400">None yet.</li> : items.map((it) => (
           <li key={it.id} className="flex items-start justify-between gap-2 text-sm">
             <span className="min-w-0"><span className="font-semibold text-[var(--navy)]">{it.label}</span><br /><span className="text-xs text-stone-500">{it.sub}</span></span>
-            <button type="button" onClick={() => onRemove(it.id)} aria-label={`Remove ${it.label}`} className="shrink-0 text-xs text-stone-400 hover:text-red-700">✕</button>
+            <span className="flex shrink-0 items-center gap-2">
+              {onEdit && (
+                <button type="button" onClick={() => onEdit(it.id)} className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Edit</button>
+              )}
+              <button type="button" onClick={() => onRemove(it.id)} aria-label={`Remove ${it.label}`} className="text-xs text-stone-400 hover:text-red-700">✕</button>
+            </span>
           </li>
         ))}
       </ul>
@@ -738,8 +821,23 @@ function BookingList({ title, items, onRemove }: { title: string; items: Array<{
   );
 }
 
-function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFlight) => void }) {
-  const [f, setF] = useState<Partial<ItinFlight>>({ date: startDate });
+/**
+ * Adding a flight, and editing one already on the trip.
+ *
+ * The same form does both on purpose. A flight that can only be deleted and
+ * re-entered loses its connections and its booking reference, and a second
+ * form built just for editing would drift away from this one — different
+ * fields, a lookup on one and not the other.
+ */
+function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
+  startDate: string;
+  /** The flight being edited. Absent when adding a new one. */
+  initial?: ItinFlight;
+  onAdd: (f: ItinFlight) => void;
+  onRemove?: () => void;
+  onCancel?: () => void;
+}) {
+  const [f, setF] = useState<Partial<ItinFlight>>(initial ?? { date: startDate });
   const [lookupNo, setLookupNo] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
@@ -797,7 +895,32 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
   }
 
   return (
-    <FormShell title="Add a flight" onSubmit={() => { if (f.from && f.to && f.date) onAdd({ id: uid(), from: f.from, to: f.to, date: f.date, airline: f.airline, flightNo: f.flightNo, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: (f.stops ?? []).filter((x) => x.airport.trim()), bookedOnSite: false }); }}>
+    <FormShell
+      title={initial ? "Edit this flight" : "Add a flight"}
+      submitLabel={initial ? "Save the flight" : "Add"}
+      onRemove={onRemove}
+      onCancel={onCancel}
+      onSubmit={() => {
+        if (!f.from || !f.to || !f.date) return;
+        onAdd({
+          // Keeping the id means editing changes the flight rather than
+          // replacing it, so anything pointing at it still does.
+          id: initial?.id ?? uid(),
+          from: f.from,
+          to: f.to,
+          date: f.date,
+          airline: f.airline,
+          flightNo: f.flightNo,
+          departTime: f.departTime,
+          arriveTime: f.arriveTime,
+          arriveDate: f.arriveDate,
+          stops: (f.stops ?? []).filter((x) => x.airport.trim()),
+          notes: f.notes,
+          confirmation: f.confirmation,
+          bookedOnSite: initial?.bookedOnSite ?? false,
+        });
+      }}
+    >
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Auto-fill from a flight number</span>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -815,6 +938,7 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
       <Field label="Landing date"><DateField ariaLabel="Landing date" className={inputClass} min={f.date} value={f.arriveDate ?? ""} onChange={(arriveDate) => setF({ ...f, arriveDate })} /></Field>
+      <Field label="Booking reference"><input className={inputClass} value={f.confirmation ?? ""} onChange={(e) => setF({ ...f, confirmation: e.target.value })} placeholder="e.g. XR4K9T" /></Field>
 
       {overnight?.note && (
         <p className={`sm:col-span-2 lg:col-span-3 border-l-4 px-3 py-2 text-xs leading-5 ${overnight.detected ? "border-[var(--gold)] bg-[var(--cream)] text-[var(--navy)]" : "border-stone-300 bg-stone-50 text-stone-600"}`}>
@@ -1116,7 +1240,16 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
  * that checked the fields itself and simply did nothing when one was empty —
  * you pressed Add, nothing happened, and there was nothing to say why.
  */
-function FormShell({ title, children, onSubmit, error }: { title: string; children: React.ReactNode; onSubmit: () => void; error?: string }) {
+function FormShell({ title, children, onSubmit, error, submitLabel = "Add", onRemove, onCancel }: {
+  title: string;
+  children: React.ReactNode;
+  onSubmit: () => void;
+  error?: string;
+  submitLabel?: string;
+  /** Editing an existing entry: delete it, or back out without saving. */
+  onRemove?: () => void;
+  onCancel?: () => void;
+}) {
   return (
     <form
       onSubmit={(e) => {
@@ -1128,7 +1261,15 @@ function FormShell({ title, children, onSubmit, error }: { title: string; childr
       <p className="text-sm font-bold text-[var(--navy)]">{title}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <button type="submit" disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">Add</button>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button type="submit" disabled={Boolean(error)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">{submitLabel}</button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="border border-[var(--gold-light)] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Cancel</button>
+        )}
+        {onRemove && (
+          <button type="button" onClick={onRemove} className="ml-auto px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-stone-400 transition hover:text-red-700">Remove</button>
+        )}
+      </div>
     </form>
   );
 }
@@ -1369,7 +1510,7 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
  * two separate flights used to make the planner believe the traveler had
  * arrived, spent a day in the connecting city, and needed a hotel there.
  */
-function FlightLine({ flight, direction }: { flight: ItinFlight; direction: "arrive" | "depart" }) {
+function FlightLine({ flight, direction, onEdit }: { flight: ItinFlight; direction: "arrive" | "depart"; onEdit?: () => void }) {
   const stops = flight.stops ?? [];
   const airline = [flight.airline, flight.flightNo].filter(Boolean).join(" ");
   return (
@@ -1386,6 +1527,18 @@ function FlightLine({ flight, direction }: { flight: ItinFlight; direction: "arr
           <span className="ml-2 text-xs font-semibold text-[var(--gold)]">
             {stops.length === 1 ? "1 stop" : `${stops.length} stops`}
           </span>
+        )}
+        {flight.confirmation && (
+          <span className="ml-2 text-xs font-semibold text-stone-500">ref {flight.confirmation}</span>
+        )}
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="ml-2 border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+          >
+            Edit
+          </button>
         )}
       </p>
       {stops.map((stop, i) => <LayoverLine key={`${stop.airport}-${i}`} stop={stop} />)}
