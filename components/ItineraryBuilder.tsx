@@ -1029,6 +1029,10 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  // The onward segment, looked up by its own number.
+  const [legNo, setLegNo] = useState("");
+  const [legBusy, setLegBusy] = useState(false);
+  const [legStatus, setLegStatus] = useState("");
 
   useEffect(() => {
     if (startDate) setF((prev) => (prev.date ? prev : { ...prev, date: startDate }));
@@ -1124,6 +1128,69 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
     }
   }
 
+  /**
+   * Add the next segment of the same ticket by its flight number.
+   *
+   * A ticket routed JFK → Amsterdam → Kraków is two flight numbers, and both
+   * are printed on it, so the natural thing is to type the second one. Doing
+   * that in the box at the top would overwrite the first segment; entering it
+   * as a separate flight is what made the planner invent a free day in
+   * Amsterdam. This extends the journey instead: where it lands now becomes a
+   * connection, and the journey now ends where the new segment ends.
+   */
+  async function addNextSegment() {
+    const flightNumber = legNo.trim();
+    if (!flightNumber) { setLegStatus("Enter the next flight number."); return; }
+    if (!f.to?.trim()) { setLegStatus("Fill in where this flight lands first — that becomes the connection."); return; }
+    // The onward leg leaves on the day this one lands, which is not always the
+    // day it left. Asking Amadeus for the wrong date finds nothing.
+    const date = f.date
+      ? flightArrivalDate({ id: "draft", from: f.from ?? "", to: f.to ?? "", date: f.date, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: f.stops })
+      : startDate;
+    if (!date) { setLegStatus("Choose the flight date first."); return; }
+    setLegBusy(true);
+    setLegStatus("Looking up…");
+    try {
+      const res = await fetch("/api/flights/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flightNumber, date }),
+      });
+      const data = await res.json();
+      const next = data?.available ? data.flight : null;
+      if (!next) {
+        setLegStatus(data?.reason || `No flight ${flightNumber} found on ${date} — add the stop by hand below.`);
+        return;
+      }
+      setF((prev) => ({
+        ...prev,
+        stops: [
+          ...(prev.stops ?? []),
+          {
+            // Where the journey stands now is the connection. The airport comes
+            // from the segment just looked up, so "AMS" and "Amsterdam (AMS)"
+            // cannot disagree with each other later.
+            airport: next.from || prev.to || "",
+            arriveTime: prev.arriveTime,
+            departTime: next.departTime,
+            overnight: Boolean(next.date && prev.arriveDate && next.date > prev.arriveDate),
+          },
+          ...(next.stops ?? []),
+        ],
+        to: next.to,
+        arriveTime: next.arriveTime,
+        arriveDate: next.arriveDate || (next.date && prev.date && next.date > prev.date ? next.date : prev.arriveDate),
+      }));
+      setLegNo("");
+      setError("");
+      setLegStatus(`Added: ${next.airline || next.flightNo} ${next.from} → ${next.to}. The journey now ends at ${next.to}.`);
+    } catch {
+      setLegStatus("Lookup failed — add the stop by hand below.");
+    } finally {
+      setLegBusy(false);
+    }
+  }
+
   return (
     <FormShell
       title={initial ? "Edit this flight" : "Add a flight"}
@@ -1173,6 +1240,29 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
             + Add a stop
           </button>
         </div>
+
+        {/* The second flight number on the ticket, entered as what it is: the
+            next segment of this journey, not a second journey. */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-stone-600">Next segment by flight number</span>
+          <input
+            className={`${inputClass} mt-0 w-32`}
+            value={legNo}
+            onChange={(e) => setLegNo(e.target.value)}
+            placeholder="e.g. KL1361"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void addNextSegment(); } }}
+          />
+          <button
+            type="button"
+            onClick={() => void addNextSegment()}
+            disabled={legBusy}
+            className="border border-[var(--navy)] bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
+          >
+            {legBusy ? "…" : "Add segment"}
+          </button>
+        </div>
+        {legStatus && <p className="mt-2 text-xs text-[var(--navy)]">{legStatus}</p>}
+
         {(f.stops ?? []).length === 0 ? (
           <p className="mt-2 text-xs leading-5 text-stone-600">
             Direct flight. If it connects somewhere, add the stop here rather than entering two flights — it is one journey,

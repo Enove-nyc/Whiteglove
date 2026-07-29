@@ -52,9 +52,20 @@ have your driving-times quota too.
 1. [Google Cloud Console](https://console.cloud.google.com/). Top left, make
    sure the **project** shown is the one your existing key is in — the picker
    is next to the Google Cloud logo.
-2. **APIs & Services → Library** → search **Maps JavaScript API** → open it →
-   **Enable**. (Only this one. Not "Maps Embed", not "Places".)
-3. **APIs & Services → Credentials → Create credentials → API key.** A box
+2. Open the API straight from this link:
+   **<https://console.cloud.google.com/apis/library/maps-backend.googleapis.com>**
+   It says **Enable** if it is off and **Manage** if it is already on.
+
+   That URL looks wrong and is not. The Maps JavaScript API's internal name is
+   `maps-backend.googleapis.com`, which is why searching the API list for "Maps
+   JavaScript" and scrolling the enabled ones can fail to turn it up even when
+   it is switched on. Two other places to look, both of which list it under the
+   name you expect:
+   - Every Maps API and its state:
+     <https://console.cloud.google.com/google/maps-apis/api-list>
+   - Everything enabled on the project:
+     <https://console.cloud.google.com/apis/dashboard>
+3. **[Credentials](https://console.cloud.google.com/apis/credentials) → Create credentials → API key.** A box
    appears with the new key. Copy it, then press **Edit API key** in that same
    box.
 4. Give it a name you will recognise later — *Map — browser* — and set:
