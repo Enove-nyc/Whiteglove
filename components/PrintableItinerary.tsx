@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { buildDays, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
-import { buildPrintTimeline, coverDates, dayCountries, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
+import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
 
 // The printed itinerary — a keepsake document, not a screen dump.
 //
@@ -109,7 +109,14 @@ export default function PrintableItinerary({
             <div className="wg-titleblock">
               <div>
                 <p className="wg-eyebrow">{formatDateLong(day.date)}</p>
-                <h2 className="wg-daytitle">{dayRouteTitle(day)}</h2>
+                <h2
+                  className="wg-daytitle"
+                  dir={day.activities.some((activity) => activity.yiddishName) ? "rtl" : undefined}
+                  lang={day.activities.some((activity) => activity.yiddishName) ? "yi" : undefined}
+                >
+                  {dayRouteTitle(day)}
+                </h2>
+                {dayRouteEnglishTitle(day) && <p className="wg-daytitle-en">{dayRouteEnglishTitle(day)}</p>}
               </div>
               {dayCountries(day) && <p className="wg-daymeta">{dayCountries(day)}</p>}
             </div>
@@ -126,7 +133,8 @@ export default function PrintableItinerary({
                     <span className="wg-dot" aria-hidden="true" />
                     <span className="wg-entry">
                       <span className="wg-kind">{e.kind}</span>
-                      <span className="wg-what">{e.title}</span>
+                      <span className="wg-what" dir={e.secondaryTitle ? "rtl" : undefined} lang={e.secondaryTitle ? "yi" : undefined}>{e.title}</span>
+                      {e.secondaryTitle && <span className="wg-secondary">{e.secondaryTitle}</span>}
                       {e.detail && <span className="wg-detail">{e.detail}</span>}
                     </span>
                   </li>
@@ -226,6 +234,7 @@ const css = `
     margin-top: 12px; font-family: Georgia, "Times New Roman", serif; font-weight: 700;
     font-size: 31px; line-height: 1.14; color: ${INK}; max-width: 5.4in;
   }
+  .wg-daytitle-en { margin-top: 5px; font-size: 10px; line-height: 1.4; color: ${BODY}; }
   .wg-daymeta {
     flex-shrink: 0; padding-top: 2px; font-size: 9px; letter-spacing: .16em;
     text-transform: uppercase; color: ${GOLD}; text-align: right; max-width: 2in;
@@ -248,6 +257,7 @@ const css = `
   .wg-entry { display: block; }
   .wg-kind { display: block; font-size: 8px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${GOLD}; }
   .wg-what { display: block; margin-top: 3px; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 15.5px; color: ${INK}; }
+  .wg-secondary { display: block; margin-top: 2px; font-size: 9.5px; line-height: 1.4; color: ${BODY}; }
   .wg-detail { display: block; margin-top: 3px; font-size: 10.5px; line-height: 1.5; color: ${BODY}; }
 
   .wg-empty { margin-top: 40px; font-size: 12px; color: ${BODY}; }
