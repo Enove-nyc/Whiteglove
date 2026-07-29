@@ -48,7 +48,7 @@ export default async function AccountPage() {
             <LogoutButton />
           </div>
         </div>
-        <div className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600">
+        <div className="mt-8 rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm leading-7 text-stone-600 shadow-[0_8px_26px_rgba(23,45,82,.05)]">
           {account ? (
             <p>Signed in as {describeIdentity(account.email)}. {account.verifiedAt ? "Verified." : "Still waiting for its verification code."} {account.routeCount} route items and {account.favoriteCount} favorites are stored in your account.</p>
           ) : signedIn ? (
@@ -58,7 +58,7 @@ export default async function AccountPage() {
           )}
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          <Link href="/itinerary" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
+          <Link href="/itinerary" className="group flex flex-col justify-between rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Plan your trip</p>
               <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Itinerary planner</h2>
@@ -66,7 +66,7 @@ export default async function AccountPage() {
             </div>
             <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Open the planner →</span>
           </Link>
-          <Link href="/my-route" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
+          <Link href="/my-route" className="group flex flex-col justify-between rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Your saved places</p>
               <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">My Route</h2>
@@ -79,12 +79,12 @@ export default async function AccountPage() {
         {(account || sessionEmail) && (
           <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
         )}
-        <div className="mt-10 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8">
+        <div className="mt-10 rounded-3xl border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white shadow-[0_16px_40px_rgba(23,45,82,.16)] sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">Start exploring</p>
             <p className="mt-2 text-xl">Choose a destination to begin building your own collection.</p>
           </div>
-          <Link href="/stops" className="mt-5 inline-block shrink-0 border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] transition hover:bg-[var(--gold)] hover:text-[var(--navy)] sm:mt-0">Browse destinations</Link>
+          <Link href="/stops" className="mt-5 inline-block shrink-0 rounded-full border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] transition hover:bg-[var(--gold)] hover:text-[var(--navy)] sm:mt-0">Browse destinations</Link>
         </div>
       </section>
       <Footer />

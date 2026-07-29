@@ -58,7 +58,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
         {shown.map((a) => (
           // The id is what /stops and the planner link to — this page is one
           // page with an anchor per entry, not a page each.
-          <article key={a.slug} id={a.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
+          <article key={a.slug} id={a.slug} className="min-w-0 scroll-mt-24 rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] sm:p-7">
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">
               {a.city} · {a.country} · {a.kind}
             </p>

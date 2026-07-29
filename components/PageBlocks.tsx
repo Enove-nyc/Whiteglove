@@ -66,7 +66,7 @@ function Block({ block }: { block: PageBlock }) {
                   )}
                 </>
               );
-              const shell = "wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6";
+              const shell = "wg-card rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6";
               // A card with somewhere to go is a link; one without stays an
               // article, so nothing looks clickable that is not.
               return item.href ? (
@@ -126,8 +126,8 @@ function Block({ block }: { block: PageBlock }) {
               .map((item, i) => {
                 const className =
                   item.style === "outline"
-                    ? "inline-flex min-h-12 items-center justify-center whitespace-normal border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
-                    : "inline-flex min-h-12 items-center justify-center whitespace-normal border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
+                    ? "inline-flex min-h-12 items-center justify-center whitespace-normal rounded-full border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+                    : "inline-flex min-h-12 items-center justify-center whitespace-normal rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
                 return item.href.startsWith("/") ? (
                   <Link key={i} href={item.href} className={className}>
                     {item.label}
@@ -145,7 +145,7 @@ function Block({ block }: { block: PageBlock }) {
     case "quote":
       return (
         <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
-          <blockquote className="max-w-3xl rounded-r-xl border-l-4 border-[var(--gold)] bg-[var(--surface)] px-6 py-7 shadow-[0_8px_25px_rgba(23,45,82,.05)]">
+          <blockquote className="max-w-3xl rounded-3xl border border-[var(--gold-light)] border-l-4 border-l-[var(--gold)] bg-[var(--surface)] px-6 py-7 shadow-[0_8px_25px_rgba(23,45,82,.05)]">
             <p className="font-[family-name:var(--font-display)] text-2xl leading-9 text-[var(--navy)]">{block.text}</p>
             {block.attribution && <footer className="mt-3 text-sm text-stone-500">{block.attribution}</footer>}
           </blockquote>
@@ -156,7 +156,7 @@ function Block({ block }: { block: PageBlock }) {
       return (
         <section className="wg-page-section mx-auto max-w-7xl px-5 py-8 sm:px-8">
           <p
-            className={`max-w-3xl rounded-r-lg border-l-4 px-5 py-4 text-sm leading-7 ${
+            className={`max-w-3xl rounded-2xl border border-l-4 px-5 py-4 text-sm leading-7 ${
               block.tone === "warn" ? "border-amber-400 bg-amber-50 text-amber-900" : "border-[var(--gold)] bg-[#fcfaf6] text-stone-700"
             }`}
           >
