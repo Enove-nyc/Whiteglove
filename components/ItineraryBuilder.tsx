@@ -33,6 +33,7 @@ import {
   type Itinerary,
   type ItinActivity,
   type ItinFlight,
+  type ItinJourney,
   type FlightStop,
   type ItinLodging,
   type ItinTraveler,
@@ -62,6 +63,7 @@ export default function ItineraryBuilder() {
   const [planNote, setPlanNote] = useState("");
   // Bumped when the traveler opens a different trip, so the loader runs again.
   const [reloadKey, setReloadKey] = useState(0);
+  const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
   const [view, setView] = useState<ItineraryView>("days");
 
@@ -120,7 +122,13 @@ export default function ItineraryBuilder() {
 
   const set = (patch: Partial<Itinerary>) => persist({ ...itin, ...patch });
   const addFlight = (f: ItinFlight) => persist({ ...itin, flights: [...itin.flights, f] });
-  const addLodging = (l: ItinLodging) => persist({ ...itin, lodging: [...itin.lodging, l] });
+  // Adds a stay, or replaces the one with the same id. Editing keeps the id, so
+  // changing a hotel changes it rather than leaving two on the same night.
+  const saveLodging = (l: ItinLodging) =>
+    persist({
+      ...itin,
+      lodging: itin.lodging.some((x) => x.id === l.id) ? itin.lodging.map((x) => (x.id === l.id ? l : x)) : [...itin.lodging, l],
+    });
   const addActivity = (a: ItinActivity) => persist({ ...itin, activities: [...itin.activities, a] });
   const removeFlight = (id: string) => persist({ ...itin, flights: itin.flights.filter((x) => x.id !== id) });
   // Editing keeps the id, so the flight is changed rather than swapped for a
@@ -238,7 +246,7 @@ export default function ItineraryBuilder() {
         <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[var(--gold-light)] pt-4">
           <span className={`${caption} mr-1`}>Add to trip</span>
           <button type="button" onClick={() => { setEditingFlightId(null); setTab(tab === "flight" ? null : "flight"); }} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Flight</button>
-          <button type="button" onClick={() => setTab(tab === "hotel" ? null : "hotel")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Hotel</button>
+          <button type="button" onClick={() => { setEditingLodgingId(null); setTab(tab === "hotel" ? null : "hotel"); }} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Stop</button>
           <button type="button" onClick={importSavedRoute} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Saved route</button>
           <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan my route"}</button>
@@ -265,7 +273,15 @@ export default function ItineraryBuilder() {
             />
           );
         })()}
-        {tab === "hotel" && <LodgingForm startDate={itin.startDate} onAdd={(l) => { addLodging(l); setTab(null); }} />}
+        {tab === "hotel" && (
+          <LodgingForm
+            startDate={itin.startDate}
+            initial={itin.lodging.find((l) => l.id === editingLodgingId)}
+            onAdd={(l) => { saveLodging(l); setTab(null); setEditingLodgingId(null); }}
+            onRemove={editingLodgingId ? () => { removeLodging(editingLodgingId); setTab(null); setEditingLodgingId(null); } : undefined}
+            onCancel={() => { setTab(null); setEditingLodgingId(null); }}
+          />
+        )}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
       </section>
 
@@ -320,7 +336,7 @@ export default function ItineraryBuilder() {
             onRemove={removeFlight}
             onEdit={(id) => { setEditingFlightId(id); setTab("flight"); }}
           />
-          <BookingList title="Lodging" items={itin.lodging.map((l) => ({ id: l.id, label: l.type === "overnight-transit" ? `Overnight ${l.name || "transit"}` : l.name, sub: `${l.checkIn} → ${l.checkOut}` }))} onRemove={removeLodging} />
+          <BookingList title="Lodging" items={itin.lodging.map((l) => ({ id: l.id, label: l.type === "overnight-transit" ? `Overnight ${l.name || "transit"}` : l.name, sub: `${l.checkIn} → ${l.checkOut}` }))} onRemove={removeLodging} onEdit={(id) => { setEditingLodgingId(id); setTab("hotel"); }} />
           <BookingList title="Activities" items={itin.activities.map((a) => ({ id: a.id, label: a.name, sub: `${a.date}${a.startTime ? " · " + a.startTime : ""}` }))} onRemove={removeActivity} />
         </div>
       )}
@@ -385,7 +401,8 @@ export default function ItineraryBuilder() {
                   onUpdate={updateActivity}
                   onRemove={removeActivity}
                   onAddStop={addActivity}
-                  onAddLodging={addLodging}
+                  onSaveLodging={saveLodging}
+                  onRemoveLodging={removeLodging}
                   onAddFlight={addFlight}
                   onUpdateFlight={updateFlight}
                   onRemoveFlight={removeFlight}
@@ -459,7 +476,7 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
@@ -467,7 +484,8 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
   onRemove: (id: string) => void;
   /** Add straight onto this day, so a gap is filled where it is noticed. */
   onAddStop: (a: ItinActivity) => void;
-  onAddLodging: (l: ItinLodging) => void;
+  onSaveLodging: (l: ItinLodging) => void;
+  onRemoveLodging: (id: string) => void;
   onAddFlight: (f: ItinFlight) => void;
   onUpdateFlight: (f: ItinFlight) => void;
   onRemoveFlight: (id: string) => void;
@@ -475,6 +493,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
 }) {
   const [adding, setAdding] = useState<"stop" | "hotel" | "flight" | null>(null);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
+  const [editingLodging, setEditingLodging] = useState(false);
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -538,6 +557,35 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
   const timeline: Array<{ at: number; node: React.ReactNode }> = [];
   const place = (at: number, node: React.ReactNode) => timeline.push({ at, node });
 
+  // One journey may have been entered as two flights — JFK → AMS and then
+  // AMS → KRK. The line drawn is the journey; the form opened is whichever LEG
+  // was pressed, because the legs are what the traveler actually saved and
+  // editing the journey would write one flight over both.
+  const flightBlock = (f: ItinJourney, direction: "arrive" | "depart") => {
+    const openLeg = f.legs.find((l) => l.id === editingFlight);
+    const toggleLeg = (id: string) => setEditingFlight(editingFlight === id ? null : id);
+    return (
+      <div key={`${direction}-${f.id}`}>
+        <FlightLine
+          flight={f}
+          direction={direction}
+          landsSameDay={direction === "depart" && day.flightsArriving.some((a) => a.id === f.id)}
+          onEdit={() => toggleLeg(f.legs[0].id)}
+          onEditLeg={toggleLeg}
+        />
+        {openLeg && (
+          <FlightForm
+            startDate={day.date}
+            initial={openLeg}
+            onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
+            onRemove={() => { onRemoveFlight(openLeg.id); setEditingFlight(null); }}
+            onCancel={() => setEditingFlight(null)}
+          />
+        )}
+      </div>
+    );
+  };
+
   for (const f of day.flightsArriving) {
     // A flight that takes off and lands on the same day is one flight, not
     // two. It belongs to both of the day's lists, and while departures were
@@ -546,20 +594,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
     // other, so it is drawn once — on its departure, which carries the
     // landing time — and skipped here.
     if (day.flightsDeparting.some((d) => d.id === f.id)) continue;
-    place(clockMins(f.arriveTime) ?? OPENS_THE_DAY, (
-      <div key={`a-${f.id}`}>
-        <FlightLine flight={f} direction="arrive" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
-        {editingFlight === f.id && (
-          <FlightForm
-            startDate={day.date}
-            initial={f}
-            onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
-            onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
-            onCancel={() => setEditingFlight(null)}
-          />
-        )}
-      </div>
-    ));
+    place(clockMins(f.arriveTime) ?? OPENS_THE_DAY, flightBlock(f, "arrive"));
   }
 
   // The drive that opens the day happens at the moment the day starts, and the
@@ -671,20 +706,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
   if (closingLeg) place(Math.max(cursor, clockMins(day.endTime) ?? cursor), <TransferLine key="closing-leg" leg={closingLeg} />);
 
   for (const f of day.flightsDeparting) {
-    place(clockMins(f.departTime) ?? CLOSES_THE_DAY, (
-      <div key={`d-${f.id}`}>
-        <FlightLine flight={f} direction="depart" landsSameDay={day.flightsArriving.some((a) => a.id === f.id)} onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
-        {editingFlight === f.id && (
-          <FlightForm
-            startDate={day.date}
-            initial={f}
-            onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
-            onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
-            onCancel={() => setEditingFlight(null)}
-          />
-        )}
-      </div>
-    ));
+    place(clockMins(f.departTime) ?? CLOSES_THE_DAY, flightBlock(f, "depart"));
   }
 
   // Same time means the order they were added in — the drive to a stop before
@@ -750,7 +772,19 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
       <p className="mt-5 rounded-lg bg-[var(--cream)] px-3 py-2.5 text-sm">
         <span className={caption}>Tonight</span>{" "}
         {day.lodging ? (
-          <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}</span>
+          <span className="text-[var(--navy)]">🛏️ {day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name}{day.lodging.address ? ` — ${day.lodging.address}` : ""}{day.lodging.phone ? <> · <a href={`tel:${day.lodging.phone.replace(/[^\d+]/g, "")}`} className="underline decoration-[var(--gold)] underline-offset-2">📞 {day.lodging.phone}</a></> : null}
+            {day.lodging.confirmation ? <span className="ml-2 text-xs font-semibold text-stone-500">ref {day.lodging.confirmation}</span> : null}
+            {/* Changed here, on the night it is about. The hotel was the one
+                thing on a day that could only be edited from the top of the
+                page, which meant scrolling away from the day to fix it. */}
+            <button
+              type="button"
+              onClick={() => setEditingLodging((v) => !v)}
+              className="ml-2 border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+            >
+              {editingLodging ? "Close" : "Edit"}
+            </button>
+          </span>
         ) : day.overnightFlight ? (
           <span className="text-[var(--navy)]">
             ✈️ On the flight — {flightRouteLabel(day.overnightFlight)}
@@ -762,6 +796,15 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
           <span className="text-stone-400">— not set —</span>
         )}
       </p>
+      {day.lodging && editingLodging && (
+        <LodgingForm
+          startDate={day.date}
+          initial={day.lodging}
+          onAdd={(l) => { onSaveLodging(l); setEditingLodging(false); }}
+          onRemove={() => { onRemoveLodging(day.lodging!.id); setEditingLodging(false); }}
+          onCancel={() => setEditingLodging(false)}
+        />
+      )}
 
       {/* Filling the day in, on the day. Both forms open with this date
           already set, so nothing has to be chosen twice. */}
@@ -791,7 +834,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
         <LodgingForm
           startDate={day.date}
           onAdd={(l) => {
-            onAddLodging(l);
+            onSaveLodging(l);
             setAdding(null);
           }}
         />
@@ -1197,8 +1240,15 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
   );
 }
 
-function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinLodging) => void }) {
-  const [l, setL] = useState<Partial<ItinLodging>>({ type: "hotel", checkIn: startDate });
+function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
+  startDate: string;
+  /** The stay being changed. Absent when adding a new one. */
+  initial?: ItinLodging;
+  onAdd: (l: ItinLodging) => void;
+  onRemove?: () => void;
+  onCancel?: () => void;
+}) {
+  const [l, setL] = useState<Partial<ItinLodging>>(initial ?? { type: "hotel", checkIn: startDate });
   const overnight = l.type === "overnight-transit";
 
   function pickLodging(g: LodgingResult) {
@@ -1213,12 +1263,29 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
 
   return (
     <FormShell
-      title="Add lodging / where you sleep"
+      title={initial ? "Edit where you sleep" : "Add lodging / where you sleep"}
+      submitLabel={initial ? "Save" : "Add"}
       error={checkOutTooEarly ? "Check-out has to be at least the day after check-in." : ""}
+      onRemove={onRemove}
+      onCancel={onCancel}
       onSubmit={() => {
         if (checkOutTooEarly) return;
         if ((overnight || l.name) && checkIn) {
-          onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn, checkOut: overnight ? nextDate(checkIn) : l.checkOut || nextDate(checkIn), notes: l.notes, bookedOnSite: false });
+          onAdd({
+            // Editing keeps the id, so the stay is changed rather than replaced
+            // and a second hotel does not appear on the same night.
+            id: initial?.id ?? uid(),
+            type: (l.type as LodgingType) || "hotel",
+            name: l.name || (overnight ? "bus/flight" : ""),
+            address: l.address,
+            coordinates: l.coordinates,
+            phone: l.phone,
+            checkIn,
+            checkOut: overnight ? nextDate(checkIn) : l.checkOut || nextDate(checkIn),
+            notes: l.notes,
+            confirmation: l.confirmation?.trim() || undefined,
+            bookedOnSite: initial?.bookedOnSite ?? false,
+          });
         }
       }}
     >
@@ -1229,7 +1296,7 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
           <p className="mt-2 text-[11px] text-stone-500">Kosher-friendly guesthouses and hotels we&apos;ve gathered — confirm rates and availability directly. Or just type your own below.</p>
         </div>
       )}
-      <Field label="Type"><select className={inputClass} defaultValue="hotel" onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
+      <Field label="Type"><select className={inputClass} value={l.type ?? "hotel"} onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
       {!overnight && <Field label="Name *"><input required className={inputClass} value={l.name ?? ""} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
@@ -1239,6 +1306,8 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
         setL({ ...l, checkIn: nextIn, checkOut: correctedEnd(nextIn, l.checkOut ?? "", "exclusive") });
       }} /></Field>
       {!overnight && <Field label="Check-out *"><DateField ariaLabel="Check-out date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(checkOut) => setL({ ...l, checkOut: correctedEnd(checkIn, checkOut, "exclusive") })} /></Field>}
+      {!overnight && <Field label="Booking reference"><input className={inputClass} value={l.confirmation ?? ""} onChange={(e) => setL({ ...l, confirmation: e.target.value })} placeholder="What the hotel gave you" /></Field>}
+      <Field label="Notes"><input className={inputClass} value={l.notes ?? ""} onChange={(e) => setL({ ...l, notes: e.target.value })} placeholder="Late check-in, kitchen, minyan times…" /></Field>
     </FormShell>
   );
 }
@@ -1677,15 +1746,21 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
  * two separate flights used to make the planner believe the traveler had
  * arrived, spent a day in the connecting city, and needed a hotel there.
  */
-function FlightLine({ flight, direction, landsSameDay, onEdit }: {
-  flight: ItinFlight;
+function FlightLine({ flight, direction, landsSameDay, onEdit, onEditLeg }: {
+  flight: ItinFlight & { legs?: ItinFlight[] };
   direction: "arrive" | "depart";
   /** Takes off and lands the same day, so this one line is the whole journey. */
   landsSameDay?: boolean;
   onEdit?: () => void;
+  /** Open one leg of a journey that was entered as more than one flight. */
+  onEditLeg?: (id: string) => void;
 }) {
   const stops = flight.stops ?? [];
   const airline = [flight.airline, flight.flightNo].filter(Boolean).join(" ");
+  // Entered as separate flights and read back as one. Say so, because a
+  // traveler who typed two lines and sees one needs to know nothing was lost —
+  // and because the way to undo it is to book a room in the connecting city.
+  const joinedFrom = flight.legs && flight.legs.length > 1 ? flight.legs.length : 0;
   return (
     <div className="text-sm text-[var(--navy)]">
       <p>
@@ -1714,12 +1789,18 @@ function FlightLine({ flight, direction, landsSameDay, onEdit }: {
           </button>
         )}
       </p>
-      {stops.map((stop, i) => <LayoverLine key={`${stop.airport}-${i}`} stop={stop} />)}
+      {stops.map((stop, i) => <LayoverLine key={`${stop.airport}-${i}`} stop={stop} onEditLeg={onEditLeg} />)}
+      {joinedFrom > 0 && (
+        <p className="ml-5 mt-1 text-xs leading-5 text-stone-500">
+          {joinedFrom} flights you entered, read as one journey. Booking a hotel or planning a stop in the
+          connecting city separates them again.
+        </p>
+      )}
     </div>
   );
 }
 
-function LayoverLine({ stop }: { stop: FlightStop }) {
+function LayoverLine({ stop, onEditLeg }: { stop: FlightStop; onEditLeg?: (id: string) => void }) {
   const mins = layoverMinutes(stop);
   const long = stop.overnight || (mins ?? 0) >= 8 * 60;
   const tight = mins !== null && mins < 60;
@@ -1729,6 +1810,17 @@ function LayoverLine({ stop }: { stop: FlightStop }) {
       {stop.arriveTime && stop.departTime ? ` — in ${stop.arriveTime}, out ${stop.departTime}` : ""}
       {mins !== null && <span className={`ml-1 font-semibold ${tight ? "text-red-700" : long ? "text-amber-800" : "text-stone-500"}`}>({formatDuration(mins)}{long ? " · overnight in transit" : tight ? " · tight connection" : ""})</span>}
       {stop.notes ? <span className="ml-1">· {stop.notes}</span> : null}
+      {/* The onward flight is a record of its own, so it can be opened and
+          changed here rather than only from the top of the page. */}
+      {stop.legId && onEditLeg && (
+        <button
+          type="button"
+          onClick={() => onEditLeg(stop.legId!)}
+          className="ml-2 border border-[var(--gold-light)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+        >
+          Edit onward leg
+        </button>
+      )}
     </p>
   );
 }

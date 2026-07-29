@@ -449,6 +449,9 @@ export type TripSummary = {
   /** Places saved to this trip's route but not yet placed on a day. */
   places: number;
   days: number;
+  /** The trip's dates, so the account page can say when each one is. */
+  startDate: string;
+  endDate: string;
   shared: boolean;
   updatedAt: string;
 };
@@ -469,6 +472,8 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     stops: t.itinerary?.activities?.length ?? 0,
     places: t.route?.length ?? 0,
     days: dayCount(t.itinerary),
+    startDate: t.itinerary?.startDate ?? "",
+    endDate: t.itinerary?.endDate ?? "",
     shared: Boolean(t.shareId),
     updatedAt: t.updatedAt,
   }));

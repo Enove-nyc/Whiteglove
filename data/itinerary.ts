@@ -42,6 +42,12 @@ export type FlightStop = {
   /** True when the onward leg leaves the following day. */
   overnight?: boolean;
   notes?: string; // terminal change, long layover, visa needed to leave airside
+  /**
+   * Set only when this connection was read from a SECOND flight the traveler
+   * entered — the id of that flight, so the planner can offer to edit the leg
+   * that continues the journey rather than only the one that started it.
+   */
+  legId?: string;
 };
 
 export type ItinFlight = {
@@ -276,8 +282,9 @@ export type ItineraryDay = {
   date: string;
   label: string;
   index: number;
-  flightsDeparting: ItinFlight[];
-  flightsArriving: ItinFlight[];
+  /** Journeys, not legs — a connection entered as two flights reads as one. */
+  flightsDeparting: ItinJourney[];
+  flightsArriving: ItinJourney[];
   lodging: ItinLodging | null; // where they sleep THIS night
   activities: DayActivity[];
   warnings: string[];
@@ -473,9 +480,12 @@ export function readOvernightFlight(flight: ItinFlight): OvernightReading {
  * next day, and a departure late in the evening means the night is spent in
  * the air either way.
  */
-export function overnightFlightFor(itin: Itinerary, date: string): ItinFlight | null {
+export function overnightFlightFor(itin: Itinerary, date: string, journeys?: ItinJourney[]): ItinFlight | null {
   const LATE_DEPARTURE_MINS = 21 * 60; // 21:00
-  for (const flight of itin.flights) {
+  // Whole journeys, not single legs: a JFK → AMS → KRK ticket entered as two
+  // flights spends its night on the first leg, and the second leg leaving
+  // Amsterdam in the morning is not a night in the air of its own.
+  for (const flight of journeys ?? readJourneys(itin)) {
     if (flight.date !== date) continue;
     // Stated outright: it lands on a later date.
     if (flight.arriveDate && flight.arriveDate > flight.date) return flight;
@@ -489,6 +499,192 @@ export function overnightFlightFor(itin: Itinerary, date: string): ItinFlight | 
     if (depart !== null && depart >= LATE_DEPARTURE_MINS) return flight;
   }
   return null;
+}
+
+// ---- A connection entered as two flights -------------------------------
+//
+// Nobody books "JFK → Kraków". They book a ticket that happens to route through
+// Amsterdam, and when they copy it into the planner they copy what the airline
+// showed them: two flights, JFK → AMS and AMS → KRK.
+//
+// Read literally that is two journeys. It made the planner believe the traveler
+// landed in Amsterdam, had the whole of the next day free there, and then flew
+// out again at the end of it — so the day showed a free day in a city the
+// traveler never leaves the airport of, and asked where they were sleeping.
+//
+// So the two are read back together. The tests are deliberately narrow: the
+// second leg has to start from the airport the first one landed at, it has to
+// leave after that landing, and the wait has to be short enough to be a
+// connection rather than a visit. A booked hotel or a planned stop in the
+// connecting city says plainly that it IS a visit, and then they stay apart.
+//
+// Nothing is rewritten. Both flights stay exactly as they were entered, and
+// both stay editable — this only changes how they are read.
+
+const CONNECTION_LIMIT_MINS = 24 * 60; // over a day on the ground is a stopover, not a connection
+
+/**
+ * One journey, and the flight records it was read from.
+ *
+ * It is an ItinFlight, so everything that already draws a flight draws this
+ * unchanged. `legs` has more than one entry only when a connection was entered
+ * as separate flights.
+ */
+export type ItinJourney = ItinFlight & { legs: ItinFlight[] };
+
+/**
+ * The airport a label names, as one comparable key.
+ *
+ * The picker writes "Amsterdam (AMS)", the flight lookup writes "AMS", and
+ * somebody typing fast writes "Amsterdam". Those are one airport. Anything not
+ * recognised is compared as written rather than guessed at — matching a
+ * three-letter run inside a name would make "Bordeaux" an airport code.
+ */
+function airportKey(label?: string): string {
+  const upper = (label ?? "").trim().toUpperCase();
+  if (!upper) return "";
+  const parenthesised = /\(([A-Z]{3})\)/.exec(upper);
+  if (parenthesised && AIRPORTS.some((a) => a.code === parenthesised[1])) return parenthesised[1];
+  if (/^[A-Z]{3}$/.test(upper) && AIRPORTS.some((a) => a.code === upper)) return upper;
+  const named = AIRPORTS.find((a) => a.city.toUpperCase() === upper || a.name.toUpperCase() === upper);
+  if (named) return named.code;
+  return upper.replace(/\s+/g, " ");
+}
+
+/** Days since the epoch, so two dates can be compared as numbers. */
+function dayNumber(date?: string): number | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((date ?? "").trim());
+  return m ? Math.round(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / 86400000) : null;
+}
+
+/** A date and a clock time as one number of minutes, for comparing across days. */
+function momentMins(date?: string, time?: string): number | null {
+  const day = dayNumber(date);
+  const mins = timeToMins(time);
+  return day === null || mins === null ? null : day * 1440 + mins;
+}
+
+/**
+ * Does `next` continue `leg`, or is it a separate flight?
+ *
+ * Returns the minutes on the ground when it continues, `null` when it does not.
+ * A connection whose times are not filled in still counts if the onward leg
+ * leaves on the day the first one lands — the wait is then unknown, not absent.
+ */
+function connectionMinutes(leg: ItinFlight, next: ItinFlight): number | null | undefined {
+  const via = airportKey(leg.to);
+  if (!via || via !== airportKey(next.from)) return undefined;
+
+  const landsOn = flightArrivalDate(leg);
+  const landed = momentMins(landsOn, leg.arriveTime);
+  const leaves = momentMins(next.date, next.departTime);
+
+  if (landed !== null && leaves !== null) {
+    const wait = leaves - landed;
+    if (wait < 0 || wait > CONNECTION_LIMIT_MINS) return undefined;
+    return wait;
+  }
+  // Times missing on one side: the same day is the most we can go on.
+  if (!landsOn || landsOn !== next.date) return undefined;
+  return null;
+}
+
+/**
+ * A night booked, or a stop planned, in the connecting city while the traveler
+ * would supposedly be waiting airside. Either one means it is a visit.
+ *
+ * Both tests need a night or a whole day inside the wait before they mean
+ * anything. A ticket that lands at 07:30 and leaves again at 10:45 the same
+ * morning has neither, and the hotel checking in that day is the one at the
+ * far end of the journey — reading it as a room in the connecting city was
+ * exactly what stopped a real Amsterdam connection from being recognised.
+ */
+function staysOver(itin: Itinerary, leg: ItinFlight, next: ItinFlight): boolean {
+  const from = flightArrivalDate(leg);
+  const to = next.date;
+  if (!from || !to || from === to) return false;
+  // A room booked for the night that starts on the day the traveler lands.
+  const sleeping = itin.lodging.some((l) => l.type !== "overnight-transit" && l.checkIn >= from && l.checkIn < to);
+  if (sleeping) return true;
+  // A stop planned on a day that falls WHOLLY inside the wait. A stop on the
+  // landing day or the departure day could be anywhere, so it proves nothing.
+  return itin.activities.some((a) => a.date && a.date > from && a.date < to);
+}
+
+/** The airline and number of a leg — "KL 1361" — for the connection note. */
+function legLabel(flight: ItinFlight): string {
+  return [flight.airline, flight.flightNo].filter(Boolean).join(" ").trim();
+}
+
+/** Fold connecting legs into the single journey they make. */
+function foldLegs(legs: ItinFlight[]): ItinJourney {
+  const first = legs[0];
+  const last = legs[legs.length - 1];
+  const stops: FlightStop[] = [];
+  legs.forEach((leg, i) => {
+    // Connections the traveler recorded inside a leg stay where they were.
+    for (const stop of leg.stops ?? []) stops.push(stop);
+    const next = legs[i + 1];
+    if (!next) return;
+    const onward = legLabel(next);
+    stops.push({
+      airport: leg.to,
+      arriveTime: leg.arriveTime,
+      departTime: next.departTime,
+      overnight: flightArrivalDate(leg) !== next.date,
+      // Nothing the traveler typed on the second leg is lost — its flight
+      // number and its booking reference are what they read out at the desk.
+      notes: [onward ? `then ${onward}` : null, next.confirmation ? `ref ${next.confirmation}` : null, next.notes]
+        .filter(Boolean)
+        .join(" · ") || undefined,
+      legId: next.id,
+    });
+  });
+  const landsOn = flightArrivalDate(last);
+  return {
+    ...first,
+    to: last.to,
+    arriveTime: last.arriveTime,
+    arriveDate: landsOn !== first.date ? landsOn : undefined,
+    stops,
+    legs,
+  };
+}
+
+/**
+ * The trip's flights, with connections entered separately read as one journey.
+ *
+ * Everything derived from a trip goes through this — the day cards, the printed
+ * itinerary, where the traveler sleeps. The stored flights are untouched.
+ */
+export function readJourneys(itin: Itinerary): ItinJourney[] {
+  // Earliest departure first, so a leg is only ever joined to one that follows
+  // it. Flights with no date sort last and simply never connect to anything.
+  const ordered = [...itin.flights]
+    .map((f, i) => ({ f, i }))
+    .sort((a, b) => (momentMins(a.f.date, a.f.departTime ?? "00:00") ?? Infinity) - (momentMins(b.f.date, b.f.departTime ?? "00:00") ?? Infinity) || a.i - b.i)
+    .map((x) => x.f);
+
+  const taken = new Set<string>();
+  const journeys: ItinJourney[] = [];
+  for (const flight of ordered) {
+    if (taken.has(flight.id)) continue;
+    taken.add(flight.id);
+    const legs = [flight];
+    for (;;) {
+      const last = legs[legs.length - 1];
+      const next = ordered.find(
+        (c) => !taken.has(c.id) && connectionMinutes(last, c) !== undefined && !staysOver(itin, last, c),
+      );
+      if (!next) break;
+      taken.add(next.id);
+      legs.push(next);
+    }
+    journeys.push(legs.length === 1 ? { ...flight, legs } : foldLegs(legs));
+  }
+  // Back into the order the traveler entered them, so nothing jumps about.
+  const position = new Map(itin.flights.map((f, i) => [f.id, i]));
+  return journeys.sort((a, b) => (position.get(a.id) ?? 0) - (position.get(b.id) ?? 0));
 }
 
 /** The lodging covering the night that begins on `date` (you sleep here). */
@@ -526,6 +722,9 @@ export function unscheduledActivities(itin: Itinerary): ItinActivity[] {
 
 export function buildDays(itin: Itinerary): ItineraryDay[] {
   const dates = eachDate(itin.startDate, itin.endDate);
+  // Worked out once for the whole trip, not per day: whether two flights are
+  // one journey depends on both of them, and on where the traveler sleeps.
+  const journeys = readJourneys(itin);
   return dates.map((date, index) => {
     const dayActs = sortDayActivities(itin.activities.filter((a) => a.date === date));
     // Prefer a real measured road time when we have one for this leg.
@@ -545,8 +744,8 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       };
     });
 
-    const flightsDeparting = itin.flights.filter((f) => f.date === date);
-    const flightsArriving = itin.flights.filter((f) => flightArrivalDate(f) === date);
+    const flightsDeparting = journeys.filter((f) => f.date === date);
+    const flightsArriving = journeys.filter((f) => flightArrivalDate(f) === date);
     const lodging = lodgingForNight(itin, date);
     const isLastDay = index === dates.length - 1;
 
@@ -661,7 +860,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
 
     const warnings: string[] = [];
     // A red-eye IS the night's accommodation.
-    const overnightFlight = overnightFlightFor(itin, date);
+    const overnightFlight = overnightFlightFor(itin, date, journeys);
     // Missing place to sleep (skip the last day — you usually fly home).
     if (!lodging && !isLastDay && !overnightFlight) {
       warnings.push("No place to sleep this night — add a hotel, or mark an overnight bus/flight.");
