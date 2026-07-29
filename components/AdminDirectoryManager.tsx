@@ -70,7 +70,7 @@ export default function AdminDirectoryManager() {
       <form onSubmit={save} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{form.id ? "Edit provider" : "Add a provider"}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2"><span className={caption}>Business / person name *</span><input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Reb Yossi's Uman Tours" /></label>
+          <label className="block sm:col-span-2"><span className={caption}>Business / person name *</span><input required className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Reb Yossi's Uman Tours" /></label>
           <label className="block"><span className={caption}>Category</span><select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as StoredProvider["category"] })}>{CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
           <label className="block"><span className={caption}>Based in (city, country)</span><input className={inputClass} value={form.basedIn} onChange={(e) => setForm({ ...form, basedIn: e.target.value })} placeholder="Uman, Ukraine" /></label>
           <label className="block sm:col-span-2"><span className={caption}>Services offered</span><input className={inputClass} value={form.services} onChange={(e) => setForm({ ...form, services: e.target.value })} placeholder="Airport pickup, kever transport, hotel booking, guided tours…" /></label>

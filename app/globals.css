@@ -83,11 +83,23 @@ select {
 select option { background-color: #fcfaf6; color: var(--navy); }
 input::placeholder, textarea::placeholder { color: #78716c; }
 
+/* The brand mark used as a bullet and as a small ornament.
+ *
+ * This is the favicon itself — the gloved hand holding the compass — not a
+ * drawing of it. It used to be a hand-drawn silhouette masked in gold, which
+ * was a different hand from the one on the tab and in the logo, so the site
+ * carried two marks that were nearly the same and not quite.
+ *
+ * Being the real image it keeps its own navy tile and gold line work, so it no
+ * longer takes its colour from the section around it. That is why it reads the
+ * same on cream and on navy, and why --glove-tone no longer does anything. */
 .glove-mark {
   display: inline-block;
-  background-color: var(--glove-tone, var(--gold));
-  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
-  mask: url("/glove-bullet.svg") no-repeat center / contain;
+  background-image: url("/icon-192.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border-radius: 3px;
 }
 
 .glove-list { list-style: none; padding-left: 0; }
@@ -96,15 +108,21 @@ input::placeholder, textarea::placeholder { color: #78716c; }
   content: "";
   position: absolute;
   left: 0;
-  top: 0.24em;
-  width: 1rem;
-  height: 1rem;
-  background-color: var(--glove-tone, var(--gold));
-  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
-  mask: url("/glove-bullet.svg") no-repeat center / contain;
+  top: 0.18em;
+  width: 1.1rem;
+  height: 1.1rem;
+  background-image: url("/icon-192.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border-radius: 3px;
 }
 
-.glove-on-navy { --glove-tone: var(--gold-light); }
+/* The mark carries its own navy tile, so on a navy section it needs an edge to
+ * sit against rather than a lighter colour — there is no colour left to set. */
+.glove-on-navy > li::before {
+  box-shadow: 0 0 0 1px var(--gold-light);
+}
 .glove-rule { display: flex; align-items: center; gap: 0.9rem; }
 .glove-rule::before, .glove-rule::after { content: ""; flex: 1; height: 1px; background: var(--gold-light); }
 

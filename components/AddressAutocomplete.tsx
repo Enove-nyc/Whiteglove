@@ -42,6 +42,7 @@ export default function AddressAutocomplete({
   className,
   name,
   mode = "address",
+  required = false,
 }: {
   value?: string;
   onChange?: (address: string, coordinates?: string) => void;
@@ -49,6 +50,8 @@ export default function AddressAutocomplete({
   className?: string;
   name?: string; // when used inside a plain <form> (server action), submits by this name
   mode?: "address" | "city";
+  /** Passed straight to the input, so a starred label is actually enforced. */
+  required?: boolean;
 }) {
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<Suggestion[]>([]);
@@ -94,6 +97,7 @@ export default function AddressAutocomplete({
         onFocus={() => setOpen(true)}
         placeholder={placeholder || "Start typing an address…"}
         autoComplete="off"
+        required={required}
         className={className}
       />
       {open && results.length > 0 && (

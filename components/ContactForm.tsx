@@ -47,11 +47,11 @@ export default function ContactForm() {
   return (
     <form onSubmit={submit} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block"><span className={caption}>Your name *</span><input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
-        <label className="block"><span className={caption}>Email *</span><input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
+        <label className="block"><span className={caption}>Your name *</span><input required className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
+        <label className="block"><span className={caption}>Email *</span><input type="email" required className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
         <label className="block"><span className={caption}>Phone (optional)</span><input className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label>
         <label className="block"><span className={caption}>Subject (optional)</span><input className={inputClass} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="e.g. Trip to Uman" /></label>
-        <label className="block sm:col-span-2"><span className={caption}>Message *</span><textarea className={`${inputClass} min-h-[140px]`} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Tell us how we can help — dates, destinations, and what matters most." /></label>
+        <label className="block sm:col-span-2"><span className={caption}>Message *</span><textarea required className={`${inputClass} min-h-[140px]`} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Tell us how we can help — dates, destinations, and what matters most." /></label>
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-4">
         <button type="submit" disabled={busy} className="border border-[var(--navy)] bg-[var(--navy)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">{busy ? "Sending…" : "Send message"}</button>

@@ -1,7 +1,11 @@
-// The gloved hand from the White Glove logo, reused as a small brand mark:
-// a bullet, a section ornament, a marker beside a heading. It is a CSS mask
-// (see .glove-mark in globals.css), so it inherits whatever colour the
-// surrounding section sets and never fights a dark background.
+// The White Glove mark — the gloved hand holding the compass — reused small:
+// as a bullet, a section ornament, a marker beside a heading.
+//
+// It is the favicon image itself (see .glove-mark in globals.css), so the mark
+// on the browser tab and the mark down the side of a list are the same picture
+// rather than two drawings of the same idea. Because it carries its own navy
+// tile it reads on cream and on navy alike, and does not take a colour from
+// the section around it.
 
 const SIZES = {
   xs: "h-3 w-3",
@@ -31,8 +35,9 @@ export function GloveRule({ className = "" }: { className?: string }) {
 }
 
 /**
- * An unordered list that uses the glove as its bullet. Pass `onNavy` when the
- * list sits on a dark background so the mark lightens enough to read.
+ * An unordered list that uses the mark as its bullet. Pass `onNavy` when the
+ * list sits on a dark background, so each mark gets a hairline edge to sit
+ * against instead of blending into it.
  */
 export function GloveList({
   items,

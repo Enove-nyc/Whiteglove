@@ -11,11 +11,14 @@ export default function AirportAutocomplete({
   onChange,
   placeholder,
   className,
+  required = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  /** Passed straight to the input, so a starred label is actually enforced. */
+  required?: boolean;
 }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
@@ -43,6 +46,7 @@ export default function AirportAutocomplete({
         onFocus={() => setOpen(true)}
         placeholder={placeholder || "City or airport"}
         autoComplete="off"
+        required={required}
         className={className}
       />
       {open && matches.length > 0 && (

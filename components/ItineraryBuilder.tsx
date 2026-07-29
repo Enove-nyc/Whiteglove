@@ -686,11 +686,11 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
-      <Field label="From *"><AirportAutocomplete value={f.from ?? ""} onChange={(v) => setF({ ...f, from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
-      <Field label="To *"><AirportAutocomplete value={f.to ?? ""} onChange={(v) => setF({ ...f, to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
+      <Field label="From *"><AirportAutocomplete required value={f.from ?? ""} onChange={(v) => setF({ ...f, from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
+      <Field label="To *"><AirportAutocomplete required value={f.to ?? ""} onChange={(v) => setF({ ...f, to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
-      <Field label="Date *"><input type="date" className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
+      <Field label="Date *"><input type="date" required className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
       <Field label="Landing date"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} placeholder={overnight?.arrivalDate} /></Field>
@@ -814,12 +814,12 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
         </div>
       )}
       <Field label="Type"><select className={inputClass} defaultValue="hotel" onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
-      {!overnight && <Field label="Name *"><input className={inputClass} value={l.name ?? ""} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
+      {!overnight && <Field label="Name *"><input required className={inputClass} value={l.name ?? ""} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
       <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setL({ ...l, checkIn: e.target.value })} /></Field>
-      {!overnight && <Field label="Check-out *"><input type="date" className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
+      {!overnight && <Field label="Check-out *"><input type="date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
     </FormShell>
   );
 }
@@ -908,7 +908,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
         <KeverPicker onPick={pickKever} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}. Edit anything below if you like.</p>}
       </div>
-      <Field label="Name *"><input className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
+      <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
@@ -982,19 +982,47 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
   );
 }
 
+/**
+ * The shell around "add a flight / a hotel / a stop".
+ *
+ * A real <form> with a real submit button, so the browser stops on a missing
+ * required field and points at it. It used to be a div with a plain button
+ * that checked the fields itself and simply did nothing when one was empty —
+ * you pressed Add, nothing happened, and there was nothing to say why.
+ */
 function FormShell({ title, children, onSubmit, error }: { title: string; children: React.ReactNode; onSubmit: () => void; error?: string }) {
   return (
-    <div className="mt-5 border-t border-[var(--gold-light)] pt-5">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="mt-5 border-t border-[var(--gold-light)] pt-5"
+    >
       <p className="text-sm font-bold text-[var(--navy)]">{title}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <button type="button" onClick={onSubmit} disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">Add</button>
-    </div>
+      <button type="submit" disabled={Boolean(error)} className="mt-4 border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-50">Add</button>
+    </form>
   );
 }
 
+/**
+ * One labelled field. A label ending in "*" marks it required and colours the
+ * star, so the promise on the label and the rule in the box are the same
+ * thing rather than two things that can drift apart.
+ */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block"><span className={caption}>{label}</span>{children}</label>;
+  const required = label.trim().endsWith("*");
+  return (
+    <label className="block">
+      <span className={caption}>
+        {required ? label.trim().slice(0, -1).trim() : label}
+        {required && <span className="ml-0.5 text-red-600" aria-hidden="true">*</span>}
+      </span>
+      {children}
+    </label>
+  );
 }
 
 

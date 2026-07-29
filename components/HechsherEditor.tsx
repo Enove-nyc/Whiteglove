@@ -171,6 +171,7 @@ export default function HechsherEditor({ confirmed, storeReady }: { confirmed: C
                           <span className={captionClass}>How you know *</span>
                           <input
                             name="source"
+                            required
                             defaultValue={status.source ?? ""}
                             className={inputClass}
                             placeholder="Saw the teudah, spoke to the rov, the agency's own list…"

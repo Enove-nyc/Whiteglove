@@ -133,6 +133,21 @@ export default function AdWizard({
   if (!ad.title.trim()) problems.push("Give it a headline — that is the line people read.");
   if (!ad.targetHref.trim()) problems.push("Say where the button should take them.");
 
+  /**
+   * What is missing on the step you are looking at.
+   *
+   * The starred fields all live on step 2, so being told about them on step 5
+   * means walking back through three screens to fix something you were never
+   * stopped on. Next is held on the step that owns the field instead.
+   */
+  const missingHere: string[] =
+    step === 1
+      ? [
+          !ad.title.trim() ? "a headline" : "",
+          !ad.targetHref.trim() ? "where the button goes" : "",
+        ].filter(Boolean)
+      : [];
+
   // Uploading goes through the same media route the old form used, so files
   // already uploaded keep working and nothing had to be migrated.
   async function upload(file: File, which: "image" | "pdf") {
@@ -226,7 +241,7 @@ export default function AdWizard({
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="block sm:col-span-2">
                 <span className={captionClass}>Headline *</span>
-                <input value={ad.title} onChange={(e) => set({ title: e.target.value })} className={inputClass} placeholder="Kosher Pesach in Kraków" />
+                <input required value={ad.title} onChange={(e) => set({ title: e.target.value })} className={inputClass} placeholder="Kosher Pesach in Kraków" />
               </label>
               <label className="block sm:col-span-2">
                 <span className={captionClass}>A line underneath</span>
@@ -238,7 +253,7 @@ export default function AdWizard({
               </label>
               <label className="block">
                 <span className={captionClass}>Button goes to *</span>
-                <input value={ad.targetHref} onChange={(e) => set({ targetHref: e.target.value })} className={inputClass} placeholder="/getaways or https://…" />
+                <input required value={ad.targetHref} onChange={(e) => set({ targetHref: e.target.value })} className={inputClass} placeholder="/getaways or https://…" />
               </label>
               <div className="block sm:col-span-2">
                 <span className={captionClass}>Picture</span>
@@ -385,9 +400,21 @@ export default function AdWizard({
           </button>
         )}
         {step < STEPS.length - 1 ? (
-          <button type="button" onClick={() => setStep((s) => s + 1)} className={primaryClass}>
-            Next
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={missingHere.length > 0}
+              onClick={() => setStep((s) => s + 1)}
+              className={primaryClass}
+            >
+              Next
+            </button>
+            {missingHere.length > 0 && (
+              <span className="text-sm font-semibold text-red-700">
+                Still needs {missingHere.join(" and ")}.
+              </span>
+            )}
+          </>
         ) : (
           <>
             <button type="button" disabled={saving || problems.length > 0} onClick={() => finish(true)} className={primaryClass}>
