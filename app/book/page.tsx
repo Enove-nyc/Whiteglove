@@ -61,15 +61,15 @@ export default async function BookPage({
       {/* The search panel is the page. Putting it beside the copy left a
           column of dead space under the paragraph and squeezed the fields;
           the heading now sits above it and the panel runs the full width. */}
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="max-w-2xl">
-            <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Book with cash, or with miles</h1>
-            <p className="mt-5 text-lg leading-8 text-stone-600">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
+            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">Book with cash, or with miles</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               Choose how you&apos;re paying, then book flights, hotels or a rental car — and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="mt-9"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} /></div>
+          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} /></div>
         </div>
       </section>
 
@@ -79,21 +79,21 @@ export default async function BookPage({
       {/* Same padding-then-centre order as the hero above, so both sections
           share one left edge. Putting the padding inside max-w-5xl instead
           shifted this block 32px in from the panel. */}
-      <section className="px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-5xl">
+      <section className="px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Cash or points, side by side</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           What each route actually gets you, so you can tell which is worth using before you spend either.
         </p>
 
-        <div className="mt-8 grid gap-px border border-[var(--gold-light)] bg-[var(--gold-light)]">
+        <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_18px_45px_rgba(23,45,82,.07)]">
           <div className="hidden bg-[var(--navy)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)] sm:grid sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
             <span />
             <span>With cash</span>
             <span>With miles &amp; points</span>
           </div>
           {COMPARISON.map(([category, cash, points]) => (
-            <div key={category} className="grid gap-4 bg-[#fcfaf6] px-5 py-5 sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
+            <div key={category} className="grid gap-4 bg-[#fcfaf6] px-5 py-6 sm:grid-cols-[8rem_1fr_1fr] sm:gap-6 sm:px-6">
               <h3 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
                 <GloveMark size="sm" />
                 {category}
