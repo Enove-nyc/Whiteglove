@@ -49,7 +49,10 @@ export function burialsOf(slug: string): string[] {
 export function burialsForSlugs(slugs: string[]): Record<string, string[]> {
   const out: Record<string, string[]> = {};
   for (const slug of new Set(slugs.filter(Boolean))) {
-    const names = burialsOf(slug);
+    const cemetery = cemeteries.find((x) => x.slug === slug);
+    // The itinerary and its printed version show tzaddikim in Yiddish only.
+    // Every burial record carries that spelling; fall back only for legacy data.
+    const names = cemetery?.burials.map((burial) => burial.yiddishName.trim() || burial.name.trim()).filter(Boolean) ?? [];
     if (names.length) out[slug] = names;
   }
   return out;

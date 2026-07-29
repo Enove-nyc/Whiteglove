@@ -14,6 +14,7 @@ export type PrintEntry = {
   /** FLIGHT, CONNECTION, VISIT, DRIVE, EVENING … */
   kind: string;
   title: string;
+  secondaryTitle?: string;
   detail?: string;
   /** Minutes since midnight, for ordering. */
   sortKey: number;
@@ -40,9 +41,9 @@ export function clock(t?: string): string {
 
 export function buildPrintTimeline(day: ItineraryDay, burials: Record<string, string[]> = {}): PrintEntry[] {
   const entries: PrintEntry[] = [];
-  const add = (time: string | undefined, kind: string, title: string, detail?: string) => {
+  const add = (time: string | undefined, kind: string, title: string, detail?: string, secondaryTitle?: string) => {
     if (!title) return;
-    entries.push({ time: clock(time), kind, title, detail, sortKey: toMins(time) ?? NO_TIME });
+    entries.push({ time: clock(time), kind, title, secondaryTitle, detail, sortKey: toMins(time) ?? NO_TIME });
   };
 
   // Departures, with each connection as its own line — a stopover is part of
@@ -79,7 +80,7 @@ export function buildPrintTimeline(day: ItineraryDay, burials: Record<string, st
     // navigate link either way.
     const who = a.keverSlug ? burials[a.keverSlug] : undefined;
     const detail = [who?.length ? who.join(" · ") : null, a.notes || a.address || null].filter(Boolean).join(" — ");
-    add(a.arrivalTime ?? a.startTime, "Visit", a.name, detail || undefined);
+    add(a.arrivalTime ?? a.startTime, "Visit", a.yiddishName || a.name, detail || undefined, a.yiddishName ? a.name : undefined);
   });
 
   if (day.lodging && day.lodging.type !== "overnight-transit") {
@@ -109,7 +110,7 @@ export function dayRouteTitle(day: ItineraryDay): string {
     const clean = (name ?? "").trim();
     if (clean && places[places.length - 1] !== clean) places.push(clean);
   };
-  for (const a of day.activities) push(a.name);
+  for (const a of day.activities) push(a.yiddishName || a.name);
   if (day.lodging && day.lodging.type !== "overnight-transit" && !places.length) push(day.lodging.name);
   if (!places.length) {
     for (const f of day.flightsDeparting) {
@@ -119,6 +120,16 @@ export function dayRouteTitle(day: ItineraryDay): string {
     for (const f of day.flightsArriving) push(f.to);
   }
   return places.slice(0, 4).join(" → ") || "A day to plan";
+}
+
+/** English place names sit below the Yiddish route title in the smaller line. */
+export function dayRouteEnglishTitle(day: ItineraryDay): string {
+  const places: string[] = [];
+  for (const activity of day.activities) {
+    const name = activity.name.trim();
+    if (name && places[places.length - 1] !== name) places.push(name);
+  }
+  return places.slice(0, 4).join(" → ");
 }
 
 /** "POLAND · UKRAINE" — the countries this day touches, when we know them. */
