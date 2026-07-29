@@ -109,8 +109,10 @@ export default function Navbar() {
             })}
           </div>
 
+          {showSearch && <span aria-hidden="true" className="hidden w-10 shrink-0 xl:block" />}
+
           {showSearch && (
-            <div className="ml-12 mr-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-20 xl:mr-5 xl:max-w-sm">
+            <div className="mr-3 hidden w-full max-w-xs min-w-0 md:block xl:mr-5 xl:max-w-sm">
               <DestinationSearch compact />
             </div>
           )}
