@@ -27,18 +27,18 @@ export type Affiliate = { bookingAid?: string; kayakParams?: string; travelpayou
 // rather than floating as separate boxes with gaps between them. The hairlines
 // come from a 1px grid gap over a gold background, so they stay perfectly even
 // however the grid wraps.
-const inputClass = "mt-2 w-full border border-[var(--gold-light)] px-3 py-3 text-base text-[var(--navy)] outline-none transition focus:border-[var(--gold)]";
+const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(23,45,82,.04)] outline-none transition focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
 const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
 const fieldLabel = "text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500";
 const bareInput = "mt-1.5 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-normal normal-case tracking-normal text-[var(--navy)] outline-none placeholder:text-stone-400";
 
 function SearchGrid({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`grid gap-px border border-[var(--gold-light)] bg-[var(--gold-light)] ${className}`}>{children}</div>;
+  return <div className={`grid gap-px overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_8px_24px_rgba(23,45,82,.06)] ${className}`}>{children}</div>;
 }
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <label className={`flex min-w-0 flex-col justify-center bg-[#fcfaf6] px-4 py-3 ${className}`}>
+    <label className={`flex min-w-0 flex-col justify-center bg-[#fcfaf6] px-4 py-4 transition focus-within:bg-white ${className}`}>
       <span className={fieldLabel}>{label}</span>
       {children}
     </label>
@@ -126,10 +126,10 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
   }
 
   return (
-    <div className="border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
+    <div className="overflow-hidden rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
       {/* ---- How are you paying? A segmented control, so the choice reads as
            one control with two settings rather than two competing panels. ---- */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 sm:px-7">
+      <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 sm:px-8 sm:py-6">
         <div className="relative grid h-14 w-full max-w-[21rem] min-w-0 grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
           <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${pay === "miles" ? "translate-x-full" : "translate-x-0"}`} />
           <PayToggle active={pay === "cash"} onClick={() => setPay("cash")}>Cash</PayToggle>
@@ -141,18 +141,18 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
       </div>
 
       {/* ---- What are you booking? ---- */}
-      <div className="flex flex-wrap gap-1 border-b border-[var(--gold-light)] px-5 pt-4 sm:px-7">
+      <div className="grid grid-cols-3 gap-1.5 border-b border-[var(--gold-light)] bg-white px-5 py-4 sm:px-8">
         <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "hotels"} onClick={() => setKind("hotels")}>Hotels</TabButton>
         <TabButton active={kind === "cars"} onClick={() => setKind("cars")}>Cars</TabButton>
       </div>
 
-      <div className="px-5 py-6 sm:px-7 sm:py-7">
+      <div className="px-5 py-7 sm:px-8 sm:py-9">
 
       {added && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
           <span className="font-semibold text-[var(--navy)]">✓ Added to your trip.</span>
-          <a href="/itinerary" className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)]">Open my itinerary planner →</a>
+          <a href="/itinerary" className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Open my itinerary planner →</a>
         </div>
       )}
 
@@ -186,7 +186,7 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
         />
       )}
 
-      <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 text-xs leading-6 text-stone-500 sm:px-7">
+      <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "cash"
           ? flightsVia === "duffel" && kind === "flights"
             ? "Flights are searched and booked here, through our own airline connection. Hotels and cars open with a trusted partner where you compare and pay securely."
@@ -383,7 +383,7 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(13,31,59,.45)] p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="booked-title">
-      <div className="w-full max-w-lg border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] sm:p-8">
+      <div className="w-full max-w-lg rounded-3xl border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Searching in the other tab</p>
         <h2 id="booked-title" className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
           When you have booked, come back and tell us.
@@ -403,7 +403,7 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
             onChange={(e) => setConfirmation(e.target.value)}
             placeholder="e.g. XR4K9T"
             autoFocus
-            className="mt-1.5 w-full border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+            className="mt-1.5 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]"
           />
         </label>
 
@@ -414,14 +414,14 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
               booking.save(confirmation.trim());
               onDone();
             }}
-            className="min-h-[46px] flex-1 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            className="min-h-[46px] flex-1 rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
             I booked it — add it to my trip
           </button>
           <button
             type="button"
             onClick={onDismiss}
-            className="min-h-[46px] border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+            className="min-h-[46px] rounded-full border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
           >
             Not yet
           </button>
@@ -437,8 +437,8 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
 function ActionRow({ onSearch, onAdd, searchLabel }: { onSearch: () => void; onAdd: () => void; searchLabel: string }) {
   return (
     <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <button type="button" onClick={onSearch} className="min-h-[52px] min-w-0 flex-1 bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--gold)]">{searchLabel} →</button>
-      <button type="button" onClick={onAdd} className="min-h-[52px] min-w-0 border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:border-[var(--navy)] hover:text-white">+ Add to my trip</button>
+      <button type="button" onClick={onSearch} className="min-h-[52px] min-w-0 flex-1 rounded-full bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-[0_8px_20px_rgba(23,45,82,.14)] transition hover:bg-[var(--gold)]">{searchLabel} →</button>
+      <button type="button" onClick={onAdd} className="min-h-[52px] min-w-0 rounded-full border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:border-[var(--navy)] hover:bg-[var(--navy)] hover:text-white">+ Add to my trip</button>
     </div>
   );
 }
@@ -449,7 +449,7 @@ function TripTypeButton({ active, onClick, children }: { active: boolean; onClic
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-[36px] border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
+      className={`min-h-[38px] rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>
@@ -475,7 +475,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`-mb-px min-h-[44px] border-b-2 px-3 text-xs font-bold uppercase tracking-[0.1em] transition sm:px-5 sm:tracking-[0.14em] ${active ? "border-[var(--gold)] text-[var(--navy)]" : "border-transparent text-stone-500 hover:text-[var(--navy)]"}`}
+      className={`min-h-11 rounded-full px-3 text-xs font-bold uppercase tracking-[0.1em] transition sm:px-5 sm:tracking-[0.14em] ${active ? "bg-[var(--cream-deep)] text-[var(--navy)] shadow-[inset_0_0_0_1px_var(--gold-light)]" : "text-stone-500 hover:bg-[var(--cream)] hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>
@@ -589,8 +589,8 @@ function StepLabel({ n, children }: { n: number; children: React.ReactNode }) {
   return <p className="mt-8 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{n} · {children}</p>;
 }
 
-const linkPrimary = "inline-flex min-h-[44px] items-center border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]";
-const linkGhost = "inline-flex min-h-[44px] items-center border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white";
+const linkPrimary = "inline-flex min-h-[44px] items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
+const linkGhost = "inline-flex min-h-[44px] items-center rounded-full border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white";
 
 function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
   const [program, setProgram] = useState("");
