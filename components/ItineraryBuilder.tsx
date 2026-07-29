@@ -43,6 +43,7 @@ const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-50
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 type Tab = "flight" | "hotel" | "activity" | null;
+type ItineraryView = "days" | "calendar";
 
 export default function ItineraryBuilder() {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
@@ -52,6 +53,7 @@ export default function ItineraryBuilder() {
   const [planning, setPlanning] = useState(false);
   const [planNote, setPlanNote] = useState("");
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
+  const [view, setView] = useState<ItineraryView>("days");
 
   // Load: account first, then localStorage.
   useEffect(() => {
@@ -271,7 +273,11 @@ export default function ItineraryBuilder() {
             <Stat label="Empty days" value={summary.emptyDays} warn={summary.emptyDays > 0} />
             <Stat label="Driving" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
-            <div className="ml-auto flex gap-3">
+            <div className="ml-auto flex flex-wrap gap-2">
+              <span className="inline-flex rounded-full border border-[var(--gold-light)] bg-white p-1">
+                <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${view === "days" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Day view</button>
+                <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${view === "calendar" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Calendar</button>
+              </span>
               <Link href="/itinerary/print" target="_blank" className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Print / PDF</Link>
             </div>
           </div>
@@ -305,9 +311,13 @@ export default function ItineraryBuilder() {
             </details>
           )}
 
-          <div className="space-y-4">
-            {days.map((day) => <DayCard key={day.date} day={day} burials={burials} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
-          </div>
+          {view === "calendar" ? (
+            <CalendarView days={days} />
+          ) : (
+            <div className="space-y-4">
+              {days.map((day) => <DayCard key={day.date} day={day} burials={burials} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
+            </div>
+          )}
         </>
       )}
 
@@ -322,6 +332,44 @@ export default function ItineraryBuilder() {
 }
 
 // ---- Day card with checks + suggestions ------------------------------
+
+function CalendarView({ days }: { days: ReturnType<typeof buildDays> }) {
+  const firstDate = days[0]?.date ? new Date(`${days[0].date}T12:00:00Z`) : null;
+  const leading = firstDate ? firstDate.getUTCDay() : 0;
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  return (
+    <section className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-3 sm:p-4">
+      <div className="hidden grid-cols-7 gap-2 border-b border-[var(--gold-light)] pb-2 sm:grid">
+        {weekdays.map((weekday) => <p key={weekday} className="text-center text-[10px] font-bold uppercase tracking-[0.12em] text-stone-400">{weekday}</p>)}
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-7">
+        {Array.from({ length: leading }).map((_, index) => <span key={`blank-${index}`} className="hidden min-h-28 sm:block" />)}
+        {days.map((day) => {
+          const date = new Date(`${day.date}T12:00:00Z`);
+          return (
+            <article key={day.date} className="min-h-28 rounded-xl border border-[var(--gold-light)] bg-white p-3">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-xs font-bold text-[var(--navy)] sm:text-sm">{date.getUTCDate()}</p>
+                <p className="text-[10px] text-stone-400 sm:hidden">{weekdays[date.getUTCDay()]}</p>
+              </div>
+              <div className="mt-2 space-y-1.5">
+                {day.flightsArriving.length + day.flightsDeparting.length > 0 && <p className="truncate text-[10px] font-semibold text-[var(--gold)]">✈ Flight</p>}
+                {day.activities.slice(0, 3).map((activity) => (
+                  <p key={activity.id} className="truncate text-xs font-semibold text-[var(--navy)]" lang={activity.yiddishName ? "yi" : undefined} dir={activity.yiddishName ? "rtl" : undefined}>
+                    {activity.yiddishName || activity.name}
+                  </p>
+                ))}
+                {day.activities.length > 3 && <p className="text-[10px] text-stone-400">+{day.activities.length - 3} more</p>}
+                {day.lodging && <p className="truncate text-[10px] text-stone-500">🛏 {day.lodging.name}</p>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
   day: ReturnType<typeof buildDays>[number];
@@ -426,8 +474,8 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
                 ) : a.startTime ? (
                   <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span>
                 ) : null}
-                {a.name}
-                {a.yiddishName ? <span className="ml-2 text-base text-stone-500">{a.yiddishName}</span> : null}
+                <span lang={a.yiddishName ? "yi" : undefined} dir={a.yiddishName ? "rtl" : undefined}>{a.yiddishName || a.name}</span>
+                {a.yiddishName ? <span className="ml-2 font-sans text-xs font-medium text-stone-500" lang="en" dir="ltr">{a.name}</span> : null}
               </p>
               <span className="flex flex-wrap items-center gap-1 sm:justify-end">
                 {day.activities.length > 1 && (
