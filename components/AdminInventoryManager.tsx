@@ -83,10 +83,13 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
       <div className="mt-6 grid gap-3 border border-[var(--gold-light)] bg-[#fcfaf6] p-4 lg:grid-cols-3">
         <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
           Show
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            <button type="button" onClick={() => setFilter("open")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "open" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Not completed</button>
-            <button type="button" onClick={() => setFilter("complete")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "complete" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Completed</button>
-            <button type="button" onClick={() => setFilter("all")} className={`border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "all" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>All</button>
+          {/* Sized to their labels rather than to three equal thirds. Forced
+              into a third, "Not completed" — uppercase, letter-spaced — was
+              wider than its column and ran outside the border. */}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" onClick={() => setFilter("open")} className={`whitespace-nowrap border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "open" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Not completed</button>
+            <button type="button" onClick={() => setFilter("complete")} className={`whitespace-nowrap border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "complete" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>Completed</button>
+            <button type="button" onClick={() => setFilter("all")} className={`whitespace-nowrap border px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${filter === "all" ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}>All</button>
           </div>
         </div>
         <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Area
