@@ -80,6 +80,29 @@ select {
   padding-right: 2.4rem;
 }
 
+/* Date fields.
+ *
+ * The browser's own date control cannot be restyled — every browser draws its
+ * own white box with bold black type, which is why the dates were the one part
+ * of the planner that looked like it came from somewhere else. So on anything
+ * with a pointer, the site's own calendar is laid over the top of the real
+ * input; the input is still there, still holds the value, still validates.
+ *
+ * On a touch screen the native control is left alone. A hand-drawn popover is
+ * worse than the one built into the phone when you are choosing with a thumb. */
+.wg-date-face { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .wg-date-native {
+    /* Kept in the layout so it still sizes the field, but invisible under the
+       face. Not `hidden`, which would take it out of form validation. */
+    color: transparent;
+  }
+  .wg-date-native::-webkit-calendar-picker-indicator,
+  .wg-date-native::-webkit-datetime-edit { opacity: 0; }
+  .wg-date-face { display: flex; }
+}
+
 select option { background-color: #fcfaf6; color: var(--navy); }
 input::placeholder, textarea::placeholder { color: #78716c; }
 

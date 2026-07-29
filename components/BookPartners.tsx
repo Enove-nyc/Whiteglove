@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import DateField from "@/components/DateField";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd } from "@/lib/date-range";
 
@@ -57,6 +58,15 @@ function openPartner(url: string) {
   if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer");
 }
 
+/** What a form would put on the trip, once we know it was actually booked. */
+export type PendingBooking = {
+  kind: "flight" | "hotel" | "car";
+  /** A line the traveler will recognise: "JFK → KRK, 11 Aug". */
+  summary: string;
+  /** Puts it on the trip, with the reference they were given. */
+  save: (confirmation: string) => void;
+};
+
 function withKayakAffiliate(url: string, params?: string) {
   if (!params) return url;
   return `${url}${url.includes("?") ? "&" : "?"}${params.replace(/^[?&]/, "")}`;
@@ -66,6 +76,7 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>("flights");
   const [added, setAdded] = useState(false);
+  const [pending, setPending] = useState<PendingBooking | null>(null);
 
   // Save items into the traveler's itinerary (localStorage + account sync).
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {
@@ -130,15 +141,23 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
         </div>
       )}
 
-      {pay === "cash" && kind === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} prefill={prefill} />}
-      {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} />}
-      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} />}
+      {pay === "cash" && kind === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />}
+      {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "hotels" && <MilesHotelsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "cars" && <MilesCarsForm onAdd={addToTrip} />}
 
       </div>
+
+      {pending && (
+        <BookedPrompt
+          booking={pending}
+          onDone={() => setPending(null)}
+          onDismiss={() => setPending(null)}
+        />
+      )}
 
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 text-xs leading-6 text-stone-500 sm:px-7">
         {pay === "cash"
@@ -162,7 +181,7 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 
 // ---- Cash --------------------------------------------------------------
 
-function FlightsForm({ affiliate, onAdd, prefill }: { affiliate?: Affiliate; onAdd: AddFn; prefill?: Prefill }) {
+function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
   const [from, setFrom] = useState(prefill?.from ?? "");
   const [to, setTo] = useState(prefill?.to ?? "");
   const [depart, setDepart] = useState(prefill?.depart ?? "");
@@ -185,13 +204,21 @@ function FlightsForm({ affiliate, onAdd, prefill }: { affiliate?: Affiliate; onA
     if (!v) return;
     const url = withKayakAffiliate(`https://www.kayak.com/flights/${v.o}-${v.d}/${depart}${!oneWay && ret ? `/${ret}` : ""}?sort=bestflight_a`, affiliate?.kayakParams);
     openPartner(url);
+    // The booking itself happens on the other site, where we cannot see it.
+    // So ask for it back, with the reference, rather than letting the trip
+    // quietly not know about the flight they just paid for.
+    onOpened({
+      kind: "flight",
+      summary: `${v.o} → ${v.d}${depart ? `, ${depart}` : ""}${!oneWay && ret ? ` and back ${ret}` : ""}`,
+      save: (confirmation) => addToTrip(confirmation),
+    });
   }
 
-  function addToTrip() {
+  function addToTrip(confirmation?: string) {
     const v = validate();
     if (!v) return;
-    const flights: ItinFlight[] = [{ id: uid(), from: v.o, to: v.d, date: depart, bookedOnSite: false }];
-    if (!oneWay && ret) flights.push({ id: uid(), from: v.d, to: v.o, date: ret, bookedOnSite: false });
+    const flights: ItinFlight[] = [{ id: uid(), from: v.o, to: v.d, date: depart, bookedOnSite: false, confirmation }];
+    if (!oneWay && ret) flights.push({ id: uid(), from: v.d, to: v.o, date: ret, bookedOnSite: false, confirmation });
     onAdd({ flights, dates: [depart, ret] });
   }
 
@@ -204,16 +231,16 @@ function FlightsForm({ affiliate, onAdd, prefill }: { affiliate?: Affiliate; onA
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-4">
         <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
         <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Departure"><input type="date" value={depart} onChange={(e) => { const v = e.target.value; setDepart(v); setRet((r) => correctedEnd(v, r)); }} className={bareInput} /></Field>
-        <Field label="Return" className={oneWay ? "opacity-45" : ""}><input type="date" value={ret} disabled={oneWay} min={earliestEnd(depart)} onChange={(e) => setRet(correctedEnd(depart, e.target.value))} className={bareInput} /></Field>
+        <Field label="Departure"><DateField ariaLabel="Departure date" value={depart} onChange={(v) => { setDepart(v); setRet((r) => correctedEnd(v, r)); }} className={bareInput} /></Field>
+        <Field label="Return" className={oneWay ? "opacity-45" : ""}><DateField ariaLabel="Return date" value={ret} disabled={oneWay} min={earliestEnd(depart)} onChange={(v) => setRet(correctedEnd(depart, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search flights on Kayak" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search flights on Kayak" />
     </div>
   );
 }
 
-function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn }) {
+function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
   const [dest, setDest] = useState("");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
@@ -233,11 +260,16 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
     let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
     if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
     openPartner(url);
+    onOpened({
+      kind: "hotel",
+      summary: `${dest.trim()}, ${checkin} → ${checkout}`,
+      save: (confirmation) => addToTrip(confirmation),
+    });
   }
 
-  function addToTrip() {
+  function addToTrip(confirmation?: string) {
     if (!validate()) return;
-    const lodging: ItinLodging[] = [{ id: uid(), type: "hotel", name: `Hotel in ${dest.trim()}`, address: dest.trim(), checkIn: checkin, checkOut: checkout, bookedOnSite: false }];
+    const lodging: ItinLodging[] = [{ id: uid(), type: "hotel", name: `Hotel in ${dest.trim()}`, address: dest.trim(), checkIn: checkin, checkOut: checkout, bookedOnSite: false, confirmation }];
     onAdd({ lodging, dates: [checkin, checkout] });
   }
 
@@ -245,17 +277,17 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
-        <Field label="Check out"><input type="date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(e) => setCheckout(correctedEnd(checkin, e.target.value, "exclusive"))} className={bareInput} /></Field>
+        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search hotels on Booking.com" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search hotels on Booking.com" />
     </div>
   );
 }
 
-function CarsForm({ onAdd }: { onAdd: AddFn }) {
+function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
   const [loc, setLoc] = useState("");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
@@ -272,11 +304,22 @@ function CarsForm({ onAdd }: { onAdd: AddFn }) {
   function search() {
     if (!validate()) return;
     openPartner(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`);
+    onOpened({
+      kind: "car",
+      summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
+      save: (confirmation) => addToTrip(confirmation),
+    });
   }
 
-  function addToTrip() {
+  function addToTrip(confirmation?: string) {
     if (!validate()) return;
-    const activities: ItinActivity[] = [{ id: uid(), name: `Rental car — ${loc.trim()}`, date: pickup, notes: `Drop-off ${dropoff}`, bookedOnSite: false }];
+    const activities: ItinActivity[] = [{
+      id: uid(),
+      name: `Rental car — ${loc.trim()}`,
+      date: pickup,
+      notes: [`Drop-off ${dropoff}`, confirmation ? `Reference ${confirmation}` : ""].filter(Boolean).join(" · "),
+      bookedOnSite: false,
+    }];
     onAdd({ activities, dates: [pickup, dropoff] });
   }
 
@@ -284,11 +327,80 @@ function CarsForm({ onAdd }: { onAdd: AddFn }) {
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => { const v = e.target.value; setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
-        <Field label="Drop-off date"><input type="date" value={dropoff} min={earliestEnd(pickup)} onChange={(e) => setDropoff(correctedEnd(pickup, e.target.value))} className={bareInput} /></Field>
+        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={earliestEnd(pickup)} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search cars on Kayak" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search cars on Kayak" />
+    </div>
+  );
+}
+
+/**
+ * "Did you book it?"
+ *
+ * The booking happens on the partner's site, in another tab, where we cannot
+ * see it. So the trip has no idea about the flight somebody just paid for
+ * unless they come back and say — and nobody thinks to, because as far as they
+ * are concerned the job is done.
+ *
+ * This asks while it is still fresh. It appears the moment the partner opens,
+ * behind them, and is waiting when they come back. Not booked, or not yet, is
+ * one click; there is nothing to dismiss twice.
+ */
+function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking; onDone: () => void; onDismiss: () => void }) {
+  const [confirmation, setConfirmation] = useState("");
+  const what = booking.kind === "flight" ? "flight" : booking.kind === "hotel" ? "hotel" : "car";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(13,31,59,.45)] p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="booked-title">
+      <div className="w-full max-w-lg border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Searching in the other tab</p>
+        <h2 id="booked-title" className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
+          When you have booked, come back and tell us.
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-stone-600">
+          The booking happens on their site, so your itinerary does not know about it. Add the {what} here and it goes on
+          your trip with everything else — and the reference is somewhere you can find it without digging through email.
+        </p>
+        <p className="mt-3 border-l-4 border-[var(--gold-light)] bg-white px-3 py-2 text-sm font-semibold text-[var(--navy)]">
+          {booking.summary}
+        </p>
+
+        <label className="mt-5 block">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Booking reference (if you have it)</span>
+          <input
+            value={confirmation}
+            onChange={(e) => setConfirmation(e.target.value)}
+            placeholder="e.g. XR4K9T"
+            autoFocus
+            className="mt-1.5 w-full border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+          />
+        </label>
+
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => {
+              booking.save(confirmation.trim());
+              onDone();
+            }}
+            className="min-h-[46px] flex-1 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          >
+            I booked it — add it to my trip
+          </button>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="min-h-[46px] border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+          >
+            Not yet
+          </button>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-stone-500">
+          Still looking? Close this, book in the other tab, then use <strong>+ Add to my trip</strong> when you get back.
+        </p>
+      </div>
     </div>
   );
 }
@@ -478,7 +590,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
         <ProgramSelect programs={FLIGHT_PROGRAMS} value={program} onChange={setProgram} label="Your miles" />
         <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
         <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="When"><input type="date" value={when} onChange={(e) => setWhen(e.target.value)} className={bareInput} /></Field>
+        <Field label="When"><DateField ariaLabel="Date" value={when} onChange={setWhen} className={bareInput} /></Field>
       </SearchGrid>
 
       <StepLabel n={1}>Find award seats (free tools)</StepLabel>
@@ -531,8 +643,8 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={HOTEL_PROGRAMS} value={program} onChange={setProgram} label="Your points" />
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
-        <Field label="Check out"><input type="date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(e) => setCheckout(correctedEnd(checkin, e.target.value, "exclusive"))} className={bareInput} /></Field>
+        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
@@ -590,8 +702,8 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={CAR_PROGRAMS} value={program} onChange={setProgram} label="Your program" />
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => { const v = e.target.value; setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
-        <Field label="Drop-off date"><input type="date" value={dropoff} min={earliestEnd(pickup)} onChange={(e) => setDropoff(correctedEnd(pickup, e.target.value))} className={bareInput} /></Field>
+        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={earliestEnd(pickup)} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 

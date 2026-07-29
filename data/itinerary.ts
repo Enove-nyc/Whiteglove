@@ -17,6 +17,14 @@ export type ItinLodging = {
   checkOut: string; // YYYY-MM-DD (for overnight-transit, the morning after)
   notes?: string;
   bookedOnSite?: boolean;
+  /**
+   * The booking reference the hotel or airline gave them.
+   *
+   * Kept because it is the one thing a traveler standing at a desk actually
+   * needs to read out, and the confirmation email it came in is the hardest
+   * thing to find on a phone with one bar of signal.
+   */
+  confirmation?: string;
 };
 
 /**
@@ -52,6 +60,8 @@ export type ItinFlight = {
   stops?: FlightStop[];
   notes?: string;
   bookedOnSite?: boolean;
+  /** The airline's booking reference. See ItinLodging.confirmation. */
+  confirmation?: string;
 };
 
 /** "JFK → WAW → KRK" — the whole journey, connections included. */

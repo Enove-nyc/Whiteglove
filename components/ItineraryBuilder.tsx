@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import TripSwitcher from "@/components/TripSwitcher";
@@ -19,6 +20,7 @@ import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
 import {
   buildDays,
   emptyItinerary,
+  flightArrivalDate,
   flightRouteLabel,
   formatDuration,
   formatKm,
@@ -216,13 +218,12 @@ export default function ItineraryBuilder() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => {
+            <label className="block"><span className={caption}>Start date</span><DateField ariaLabel="Trip start date" className={inputClass} value={itin.startDate} onChange={(startDate) => {
               // Moving the start past the end takes the end with it, rather
               // than leaving a trip that finishes before it begins.
-              const startDate = e.target.value;
               set({ startDate, endDate: correctedEnd(startDate, itin.endDate) });
             }} /></label>
-            <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} min={earliestEnd(itin.startDate)} value={itin.endDate} onChange={(e) => set({ endDate: correctedEnd(itin.startDate, e.target.value) })} /></label>
+            <label className="block"><span className={caption}>End date</span><DateField ariaLabel="Trip end date" className={inputClass} min={earliestEnd(itin.startDate)} value={itin.endDate} onChange={(endDate) => set({ endDate: correctedEnd(itin.startDate, endDate) })} /></label>
             <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
@@ -321,7 +322,19 @@ export default function ItineraryBuilder() {
           )}
 
           <div className="mt-6 space-y-6">
-            {days.map((day) => <DayCard key={day.date} day={day} burials={burials} onMove={moveStopBy} onUpdate={updateActivity} onRemove={removeActivity} allDates={days.map((d) => ({ date: d.date, label: d.label }))} />)}
+            {days.map((day) => (
+              <DayCard
+                key={day.date}
+                day={day}
+                burials={burials}
+                onMove={moveStopBy}
+                onUpdate={updateActivity}
+                onRemove={removeActivity}
+                onAddStop={addActivity}
+                onAddLodging={addLodging}
+                allDates={days.map((d) => ({ date: d.date, label: d.label }))}
+              />
+            ))}
           </div>
         </>
       )}
@@ -338,14 +351,18 @@ export default function ItineraryBuilder() {
 
 // ---- Day card with checks + suggestions ------------------------------
 
-function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
+function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLodging, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
   onRemove: (id: string) => void;
+  /** Add straight onto this day, so a gap is filled where it is noticed. */
+  onAddStop: (a: ItinActivity) => void;
+  onAddLodging: (l: ItinLodging) => void;
   allDates: Array<{ date: string; label: string }>;
 }) {
+  const [adding, setAdding] = useState<"stop" | "hotel" | null>(null);
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -354,6 +371,22 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
   const anchor = day.activities.find((a) => a.coordinates) || (day.lodging?.coordinates ? { coordinates: day.lodging.coordinates } : null);
   const canSuggest = Boolean(anchor?.coordinates);
   const hasFreeTime = (day.freeHours ?? 0) >= 3;
+
+  /**
+   * A day spent entirely in the air has no free time to fill.
+   *
+   * Not "there is a flight today" — a morning landing leaves the whole day.
+   * It is a day with flights and nothing else possible on the ground: no
+   * stops, nowhere to sleep but the plane, or a flight that takes off and
+   * lands on different days. Offering to fill that day is offering something
+   * nobody can use.
+   */
+  const flyingAllDay =
+    (day.flightsDeparting.length > 0 || day.flightsArriving.length > 0) &&
+    day.activities.length === 0 &&
+    (Boolean(day.overnightFlight) ||
+      day.flightsDeparting.some((f) => flightArrivalDate(f) !== f.date) ||
+      day.flightsArriving.some((f) => flightArrivalDate(f) !== f.date));
 
   async function showNearby() {
     if (!anchor?.coordinates) return;
@@ -397,9 +430,28 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
         </p>
       </div>
 
-      {day.warnings.map((w, i) => (
-        <p key={i} className={`mt-3 border-l-4 px-3 py-2 text-sm ${w.startsWith("No place") ? "border-red-400 bg-red-50 text-red-800" : "border-[var(--gold)] bg-[var(--cream)] text-stone-700"}`}>{w}</p>
-      ))}
+      {/* A warning that can be acted on carries the button to act on it, on
+          the day it is about. Being told on day 4 that day 4 has nowhere to
+          sleep, and then having to scroll back to the top of the page and pick
+          the date again, is how a gap stays a gap. */}
+      {day.warnings.map((w, i) => {
+        const needsBed = w.startsWith("No place");
+        const needsStops = w.startsWith("Nothing planned");
+        return (
+          <div key={i} className={`mt-3 border-l-4 px-3 py-2 text-sm ${needsBed ? "border-red-400 bg-red-50 text-red-800" : "border-[var(--gold)] bg-[var(--cream)] text-stone-700"}`}>
+            <p>{w}</p>
+            {(needsBed || needsStops) && (
+              <button
+                type="button"
+                onClick={() => setAdding(needsBed ? "hotel" : "stop")}
+                className="mt-2 border border-[var(--navy)] bg-[var(--navy)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              >
+                {needsBed ? "Add where you sleep" : "Add a stop to this day"}
+              </button>
+            )}
+          </div>
+        );
+      })}
 
       <div className="mt-4 space-y-3">
         {day.flightsArriving.map((f) => <FlightLine key={`a-${f.id}`} flight={f} direction="arrive" />)}
@@ -459,6 +511,20 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
               />
             )}
             {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
+            {/* No location means no driving time and an overstated free day.
+                Say it on the stop, with the way to fix it right there. */}
+            {!a.coordinates && editingId !== a.id && (
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-amber-800">
+                <span>No address yet, so the driving to it is not counted.</span>
+                <button
+                  type="button"
+                  onClick={() => setEditingId(a.id)}
+                  className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+                >
+                  Add the address
+                </button>
+              </p>
+            )}
             {/* Who you are going to daven by. The reason for the stop belongs
                 on the stop, not one click away on the cemetery page. */}
             {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
@@ -504,9 +570,50 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, allDates }: {
         )}
       </p>
 
-      {(canSuggest || hasFreeTime) && (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {hasFreeTime && <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Free time — fill it?</span>}
+      {/* Filling the day in, on the day. Both forms open with this date
+          already set, so nothing has to be chosen twice. */}
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--gold-light)] pt-3">
+        <span className={caption}>Add to this day</span>
+        <button type="button" onClick={() => setAdding(adding === "stop" ? null : "stop")} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">
+          {adding === "stop" ? "Close" : "+ Stop"}
+        </button>
+        <button type="button" onClick={() => setAdding(adding === "hotel" ? null : "hotel")} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">
+          {adding === "hotel" ? "Close" : day.lodging ? "+ Change where you sleep" : "+ Where you sleep"}
+        </button>
+      </div>
+
+      {adding === "stop" && (
+        <ActivityForm
+          startDate={day.date}
+          onAdd={(a) => {
+            onAddStop({ ...a, date: a.date || day.date });
+            setAdding(null);
+          }}
+        />
+      )}
+      {adding === "hotel" && (
+        <LodgingForm
+          startDate={day.date}
+          onAdd={(l) => {
+            onAddLodging(l);
+            setAdding(null);
+          }}
+        />
+      )}
+
+      {/* Free time is offered on every day, because a day with three stops
+          still has an evening in it and the traveler is the one who knows.
+          The single exception is a day spent in the air, where there is no
+          free time to fill. */}
+      {flyingAllDay ? (
+        <p className="mt-4 border-t border-[var(--gold-light)] pt-3 text-xs leading-5 text-stone-500">
+          In the air most of this day — nothing to fill.
+        </p>
+      ) : (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--gold-light)] pt-3">
+          <span className={`text-[11px] font-bold uppercase tracking-[0.1em] ${hasFreeTime ? "text-[var(--gold)]" : "text-stone-400"}`}>
+            {hasFreeTime ? `Free time — about ${day.freeHours} h` : "Free time"}
+          </span>
           {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">What&apos;s nearby?</button>}
           <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
         </div>
@@ -704,10 +811,10 @@ function FlightForm({ startDate, onAdd }: { startDate: string; onAdd: (f: ItinFl
       <Field label="To *"><AirportAutocomplete required value={f.to ?? ""} onChange={(v) => setF({ ...f, to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
-      <Field label="Date *"><input type="date" required className={inputClass} value={f.date ?? ""} onChange={(e) => setF({ ...f, date: e.target.value })} /></Field>
+      <Field label="Date *"><DateField ariaLabel="Flight date" required className={inputClass} value={f.date ?? ""} onChange={(date) => setF({ ...f, date })} /></Field>
       <Field label="Departs"><input type="time" className={inputClass} value={f.departTime ?? ""} onChange={(e) => setF({ ...f, departTime: e.target.value })} /></Field>
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
-      <Field label="Landing date"><input type="date" className={inputClass} value={f.arriveDate ?? ""} onChange={(e) => setF({ ...f, arriveDate: e.target.value })} placeholder={overnight?.arrivalDate} /></Field>
+      <Field label="Landing date"><DateField ariaLabel="Landing date" className={inputClass} min={f.date} value={f.arriveDate ?? ""} onChange={(arriveDate) => setF({ ...f, arriveDate })} /></Field>
 
       {overnight?.note && (
         <p className={`sm:col-span-2 lg:col-span-3 border-l-4 px-3 py-2 text-xs leading-5 ${overnight.detected ? "border-[var(--gold)] bg-[var(--cream)] text-[var(--navy)]" : "border-stone-300 bg-stone-50 text-stone-600"}`}>
@@ -834,12 +941,11 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
       {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
-      <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" required className={inputClass} value={checkIn} onChange={(e) => {
+      <Field label={overnight ? "Night of *" : "Check-in *"}><DateField ariaLabel="Check-in date" required className={inputClass} value={checkIn} onChange={(nextIn) => {
         // Pushing check-in past check-out carries check-out with it.
-        const nextIn = e.target.value;
         setL({ ...l, checkIn: nextIn, checkOut: correctedEnd(nextIn, l.checkOut ?? "", "exclusive") });
       }} /></Field>
-      {!overnight && <Field label="Check-out *"><input type="date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: correctedEnd(checkIn, e.target.value, "exclusive") })} /></Field>}
+      {!overnight && <Field label="Check-out *"><DateField ariaLabel="Check-out date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(checkOut) => setL({ ...l, checkOut: correctedEnd(checkIn, checkOut, "exclusive") })} /></Field>}
     </FormShell>
   );
 }
@@ -933,7 +1039,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
       <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder="https://… (map, booking, our kever page)" /></Field>
-      <Field label="Date (leave empty to let the planner place it)"><input type="date" className={inputClass} value={a.date ?? ""} onChange={(e) => setA({ ...a, date: e.target.value })} /></Field>
+      <Field label="Date (leave empty to let the planner place it)"><DateField ariaLabel="Stop date" className={inputClass} value={a.date ?? ""} onChange={(date) => setA({ ...a, date })} /></Field>
       <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
       <Field label="Notes"><input className={inputClass} value={a.notes ?? ""} onChange={(e) => setA({ ...a, notes: e.target.value })} /></Field>

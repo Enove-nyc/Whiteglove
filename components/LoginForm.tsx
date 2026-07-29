@@ -159,7 +159,7 @@ export default function LoginForm({
 
       {mode === "signup" && (
         <label className="block text-sm font-semibold text-[var(--navy)]">Your name
-          <input value={name} onChange={(event) => setName(event.target.value)} type="text" required placeholder="e.g. Yaakov Cohen" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
+          <input value={name} onChange={(event) => setName(event.target.value)} type="text" required autoComplete="off" name="new-account-name" placeholder="e.g. Yaakov Cohen" className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]" />
         </label>
       )}
 
@@ -172,7 +172,12 @@ export default function LoginForm({
           // refuse to submit a perfectly good phone number.
           type={phoneSignupAvailable ? "text" : "email"}
           inputMode={phoneSignupAvailable ? "text" : "email"}
-          autoComplete="username"
+          // Saved details are offered when logging in and never when signing
+          // up. Autofilling a sign-up form with an account somebody already
+          // has is how people end up making a second one, or typing their
+          // existing password into a "choose a password" box.
+          autoComplete={mode === "login" ? "username" : "off"}
+          name={mode === "login" ? "username" : "new-account-id"}
           required
           placeholder={phoneSignupAvailable ? "you@example.com or +1 555 123 4567" : "you@example.com"}
           className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]"
@@ -187,7 +192,16 @@ export default function LoginForm({
       {(mode === "signup" || mode === "login") && (
         <label className="block text-sm font-semibold text-[var(--navy)]">Password
           <div className="relative mt-2">
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type={showPassword ? "text" : "password"} required placeholder="Choose a password" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]" />
+            <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              name={mode === "login" ? "password" : "new-password"}
+              placeholder={mode === "login" ? "Your password" : "Choose a password"}
+              className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]"
+            />
             <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--navy)] hover:text-[var(--gold)]">
               <EyeIcon open={showPassword} />
             </button>
@@ -214,7 +228,7 @@ export default function LoginForm({
           </label>
           <label className="block text-sm font-semibold text-[var(--navy)]">New password
             <div className="relative mt-2">
-              <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type={showPassword ? "text" : "password"} required placeholder="Choose a new password" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]" />
+              <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type={showPassword ? "text" : "password"} required autoComplete="new-password" name="new-password" placeholder="Choose a new password" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]" />
               <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--navy)] hover:text-[var(--gold)]">
                 <EyeIcon open={showPassword} />
               </button>
