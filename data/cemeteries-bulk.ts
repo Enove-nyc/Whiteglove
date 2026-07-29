@@ -32,6 +32,8 @@ export const bulkCemeteries: Cemetery[] = [
       { name: "Rabbi Naftali Zvi Yehuda Berlin", yiddishName: "רבי נפתלי צבי יהודה ברלין", knownAs: "The Netziv of Volozhin", seforim: "העמק דבר · העמק שאלה · משיב דבר", yahrzeit: "כ״ח אב · 5653 / 1893", note: "Rosh Yeshiva of Volozhin; died in Warsaw and buried at Okopowa." },
       { name: "Rabbi Chaim Soloveitchik", yiddishName: "רבי חיים הלוי סאלאווייטשיק", knownAs: "Reb Chaim Brisker", seforim: "חידושי רבינו חיים הלוי", yahrzeit: "כ״א אב · 5678 / 1918", note: "Founder of the Brisker method of Talmud study; buried beside the Netziv." },
       { name: "Rabbi Dov Ber Meisels", yiddishName: "רבי דוב בער מייזלש", knownAs: "Chief Rabbi of Warsaw (formerly of Kraków)", yahrzeit: "1870", note: "His funeral became a demonstration of Polish–Jewish unity." },
+          { name: "Rabbi Shlomo Zalman Lipszyc", yiddishName: "רבי שלמה זלמן ליפשיץ", knownAs: "The first rov of Warsaw", seforim: "חמדת שלמה", note: "Niftar 1839. The first chief rabbi of Warsaw; his kever has an ohel of its own." },
+      { name: "Ber Sonnenberg", yiddishName: "בער זאננענבערג", knownAs: "Son of Shmuel Zbytkower", note: "Niftar 1822. His ohel is the most worked matzeivah in the cemetery, carved with views of the Warsaw the family lived in." },
     ],
     places: [
       { category: "MINYAN", name: "Nożyk Synagogue", address: "ul. Twarda 6, Warszawa", phone: "+48 22 620 43 24", notes: "Warsaw's only surviving pre-war synagogue; daily minyanim; Fri night ~19:00, Shabbat morning ~10:00.", source: "https://www.godaven.com/shul-details/1536/nozyk-synagogue" },
@@ -172,6 +174,7 @@ export const bulkCemeteries: Cemetery[] = [
       "The old Jewish cemetery sits just before the railway crossing; the ohel is reached by a long curving road from the entrance and stands out with white masonry and fencing.",
       "Roughly 100,000 pilgrims visit each year (per Chabad of Berdichev).",
       "Ukraine wartime travel advisories apply — confirm conditions and access before traveling.",
+          "Read this before you go, and before you tell anybody else where to stand. Work around the ohel uncovered the original matzeivos of the Kedushas Levi and his three sons — in a different place from the matzeivah people have been davening at since after the churban. The ohel was put up in 1991 over a spot chosen in Soviet times, and it is reported not to be the grave. Nobody who davened there did anything wrong and the tefillos are not worth less. But if you are going specifically to stand at the kever, ask whoever is looking after the site now where the uncovered matzeivos are, rather than walking to the ohel and assuming.",
     ],
     accessNote: "The ohel was built in 1991. In 2020 the original grave (with his three sons) was rediscovered a few meters away. Maintained by Chabad of Berdichev — contact them for current access.",
     accessContacts: [
