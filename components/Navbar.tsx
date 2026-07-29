@@ -18,6 +18,7 @@ const menuItems = [
   { yiddish: "דירעקטאָרי", english: "Directory", href: "/directory" },
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
   { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
+  { yiddish: "וואו צו גיין", english: "Things to do", href: "/attractions" },
   { yiddish: "פליגערס און האטעלן", english: "Book flights, hotels & cars", href: "/book" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
@@ -33,7 +34,7 @@ const primaryLinks = [
 const menuGroups = [
   {
     title: "Explore",
-    links: menuItems.filter((item) => ["/stops", "/cemeteries", "/map", "/kosher", "/travel-guide", "/directory"].includes(item.href)),
+    links: menuItems.filter((item) => ["/stops", "/cemeteries", "/attractions", "/map", "/kosher", "/travel-guide", "/directory"].includes(item.href)),
   },
   {
     title: "Plan & book",
