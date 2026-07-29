@@ -300,4 +300,80 @@ ALTER TABLE "Contact" ADD CONSTRAINT "Contact_cemeteryId_fkey" FOREIGN KEY ("cem
 
 -- AddForeignKey
 ALTER TABLE "PracticalPlace" ADD CONSTRAINT "PracticalPlace_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- The rest of the trip: things to do, places to sleep, and the Jewish quarters
+-- they are measured from. Added after the first release, so these are written
+-- IF NOT EXISTS rather than assumed absent. No foreign keys — an attraction in
+-- Interlaken belongs to no kever destination, and forcing it under one would
+-- have meant inventing a destination row to hold it.
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "Attraction" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "address" TEXT,
+    "coordinates" TEXT,
+    "website" TEXT,
+    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "shabbos" TEXT,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "KosherStay" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "anchorName" TEXT NOT NULL,
+    "anchorCoords" TEXT NOT NULL,
+    "season" TEXT,
+    "kosherClaim" TEXT NOT NULL DEFAULT 'none',
+    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "website" TEXT,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "KosherStay_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "KosherArea" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "coordinates" TEXT NOT NULL,
+    "note" TEXT NOT NULL,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "KosherArea_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX IF NOT EXISTS "Attraction_slug_key" ON "Attraction"("slug");
+CREATE INDEX IF NOT EXISTS "Attraction_country_city_idx" ON "Attraction"("country", "city");
+CREATE UNIQUE INDEX IF NOT EXISTS "KosherStay_slug_key" ON "KosherStay"("slug");
+CREATE INDEX IF NOT EXISTS "KosherStay_country_city_idx" ON "KosherStay"("country", "city");
+CREATE UNIQUE INDEX IF NOT EXISTS "KosherArea_slug_key" ON "KosherArea"("slug");
+CREATE INDEX IF NOT EXISTS "KosherArea_country_city_idx" ON "KosherArea"("country", "city");
 `;

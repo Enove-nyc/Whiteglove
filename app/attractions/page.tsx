@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
-import { attractions } from "@/data/attractions";
+import { getAttractionList } from "@/lib/attractions-view";
 
 export const metadata: Metadata = {
   title: "Things to do — White Glove Itineraries",
@@ -12,7 +12,10 @@ export const metadata: Metadata = {
     "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
 };
 
-export default function AttractionsPage() {
+export default async function AttractionsPage() {
+  // Read through the view, not the data file, so anything the owner adds in the
+  // admin appears here and in every search without a redeploy.
+  const attractions = await getAttractionList();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />

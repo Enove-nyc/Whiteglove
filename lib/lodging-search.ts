@@ -9,6 +9,7 @@
 
 import { cemeteries } from "@/data/cemeteries";
 import { practicalContent } from "@/data/practical-content";
+import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { fuzzyMatch, normalize } from "@/lib/place-search";
 
 export type LodgingResult = {
@@ -26,7 +27,7 @@ function cityForSlug(slug: string): string {
   return slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");
 }
 
-function collect(): LodgingResult[] {
+async function collect(): Promise<LodgingResult[]> {
   const out: LodgingResult[] = [];
   const seen = new Set<string>();
   const push = (r: LodgingResult) => {
@@ -46,18 +47,43 @@ function collect(): LodgingResult[] {
       if (p.category === "ACCOMMODATION") push({ name: p.name, city: cityForSlug(slug), address: p.address, phone: p.phone ?? p.whatsapp, notes: p.notes });
     }
   }
+
+  // The researched stays and Jewish quarters (data/kosher-stays.ts plus
+  // anything the owner has added). Read through the view rather than the data
+  // file so a stay added in the admin turns up in this picker too — which is
+  // the whole point of having one read layer.
+  //
+  // No coordinates are carried across. A stay's anchor coordinate belongs to
+  // the SHUL it is measured from, not to the hotel, and putting it on the
+  // lodging row would drop the map pin and every drive time on the wrong
+  // building. The anchor is named in the note instead, which is the true thing
+  // we know: near this, not at this.
+  for (const s of await getStayList()) {
+    push({
+      name: s.name,
+      city: s.city,
+      notes: [s.season ? `Seasonal — ${s.season}` : null, s.summary, `Near ${s.anchor.name}.`].filter(Boolean).join(" "),
+    });
+  }
+  for (const a of await getAreaList()) {
+    push({ name: a.name, city: a.city, notes: a.note });
+  }
+
   return out.sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 }
 
-let cache: LodgingResult[] | null = null;
-function all(): LodgingResult[] {
+// Cached per process. The stay/area half can come from the database, so the
+// cache holds the promise rather than the value — two searches arriving at once
+// on a cold process would otherwise both query.
+let cache: Promise<LodgingResult[]> | null = null;
+function all(): Promise<LodgingResult[]> {
   if (!cache) cache = collect();
   return cache;
 }
 
-export function searchLodging(query: string, limit = 12): LodgingResult[] {
+export async function searchLodging(query: string, limit = 12): Promise<LodgingResult[]> {
   const q = query.trim();
-  const list = all();
+  const list = await all();
   if (!q) return list.slice(0, limit);
   return list.filter((r) => fuzzyMatch(q, `${r.name} ${r.city} ${r.notes ?? ""}`)).slice(0, limit);
 }

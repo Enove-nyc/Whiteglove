@@ -470,3 +470,90 @@ export async function createInfoPage(fields: NewPageFields) {
     },
   });
 }
+
+// ---- The rest of the trip ---------------------------------------------
+//
+// Things to do and places to stay, added by the owner. These write to the same
+// tables the built-in data seeds into, and everything on the site reads them
+// back through lib/attractions-view.ts — so an entry added here shows on its
+// directory page, in the /stops search, and in the planner's pickers straight
+// away, with no redeploy and nothing to copy into a data file.
+//
+// Coordinates here are public landmarks and are safe to navigate to. That is
+// not true of a kever, and the difference is why the two are separate screens.
+
+export type NewAttractionFields = {
+  name: string;
+  city: string;
+  country: string;
+  kind: string;
+  summary: string;
+  address: string | null;
+  coordinates: string | null;
+  website: string | null;
+  shabbos: string | null;
+  notes: string[];
+  sourceUrl: string;
+};
+
+export async function createAttraction(fields: NewAttractionFields) {
+  const prisma = await db();
+  return prisma.attraction.create({
+    data: {
+      slug: newSlug(`${fields.city}-${fields.name}`, "attraction"),
+      name: fields.name,
+      city: fields.city,
+      country: fields.country,
+      kind: fields.kind,
+      summary: fields.summary,
+      address: fields.address,
+      coordinates: fields.coordinates,
+      website: fields.website,
+      shabbos: fields.shabbos,
+      notes: fields.notes,
+      sourceUrl: fields.sourceUrl,
+      status: "PUBLISHED",
+    },
+    select: { slug: true, name: true },
+  });
+}
+
+export type NewStayFields = {
+  name: string;
+  city: string;
+  country: string;
+  kind: string;
+  summary: string;
+  anchorName: string;
+  anchorCoords: string;
+  season: string | null;
+  kosherClaim: string;
+  website: string | null;
+  notes: string[];
+  sourceUrl: string;
+};
+
+export async function createKosherStay(fields: NewStayFields) {
+  const prisma = await db();
+  return prisma.kosherStay.create({
+    data: {
+      slug: newSlug(`${fields.city}-${fields.name}`, "stay"),
+      name: fields.name,
+      city: fields.city,
+      country: fields.country,
+      kind: fields.kind,
+      summary: fields.summary,
+      anchorName: fields.anchorName,
+      anchorCoords: fields.anchorCoords,
+      season: fields.season,
+      // "confirmed" means the owner checked it with the hotel or its mashgiach.
+      // It is never reached by default, and never inferred from a source.
+      kosherClaim: ["none", "reported", "confirmed"].includes(fields.kosherClaim) ? fields.kosherClaim : "none",
+      website: fields.website,
+      notes: fields.notes,
+      sourceUrl: fields.sourceUrl,
+      status: "PUBLISHED",
+    },
+    select: { slug: true, name: true },
+  });
+}

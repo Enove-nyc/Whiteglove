@@ -81,8 +81,9 @@ export type KosherStay = {
  * These answer "which part of town do I stay in", which is the question people
  * ask before they have picked a hotel at all.
  */
-export const kosherAreas: Array<{ city: string; country: string; name: string; coordinates: string; note: string; sourceUrl: string }> = [
+export const kosherAreas: Array<{ slug: string; city: string; country: string; name: string; coordinates: string; note: string; sourceUrl: string }> = [
   {
+    slug: "rome-ghetto",
     city: "Rome",
     country: "Italy",
     name: "The Ghetto — around the Great Synagogue and Via del Portico d'Ottavia",
@@ -91,6 +92,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Rome",
   },
   {
+    slug: "milan-via-sally-mayer",
     city: "Milan",
     country: "Italy",
     name: "Around Via Sally Mayer and the Via Guastalla synagogue",
@@ -99,6 +101,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Milan_Synagogue",
   },
   {
+    slug: "paris-pletzl",
     city: "Paris",
     country: "France",
     name: "The Pletzl — rue des Rosiers and the Marais",
@@ -107,6 +110,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Marais",
   },
   {
+    slug: "zurich-wiedikon",
     city: "Zurich",
     country: "Switzerland",
     name: "Wiedikon",
@@ -115,6 +119,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Z%C3%BCrich-Wiedikon",
   },
   {
+    slug: "venice-cannaregio",
     city: "Venice",
     country: "Italy",
     name: "Cannaregio, around the Ghetto",
@@ -123,6 +128,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Venetian_Ghetto",
   },
   {
+    slug: "florence-great-synagogue",
     city: "Florence",
     country: "Italy",
     name: "Around the Great Synagogue, east of the centre",
@@ -131,6 +137,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
   },
   {
+    slug: "geneva-tranchees",
     city: "Geneva",
     country: "Switzerland",
     name: "Around the Beth Yaacov synagogue, Les Tranchées",
@@ -139,6 +146,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Grande_Synagogue_de_Gen%C3%A8ve",
   },
   {
+    slug: "lucerne-central",
     city: "Lucerne",
     country: "Switzerland",
     name: "Central Lucerne, near the synagogue on Bruchstrasse",
@@ -147,6 +155,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://www.chabadluzern.com/",
   },
   {
+    slug: "london-golders-green",
     city: "London",
     country: "United Kingdom",
     name: "Golders Green, Hendon and Stamford Hill",
@@ -155,6 +164,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Golders_Green",
   },
   {
+    slug: "manchester-prestwich",
     city: "Manchester",
     country: "United Kingdom",
     name: "Prestwich, Broughton Park and Whitefield",
@@ -163,6 +173,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Prestwich",
   },
   {
+    slug: "vienna-leopoldstadt",
     city: "Vienna",
     country: "Austria",
     name: "The 2nd district, Leopoldstadt",
@@ -171,6 +182,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Leopoldstadt",
   },
   {
+    slug: "madrid-chamberi",
     city: "Madrid",
     country: "Spain",
     name: "Chamberi, around the Beth Yaacov synagogue",
@@ -179,6 +191,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Madrid_Synagogue",
   },
   {
+    slug: "athens-thiseio",
     city: "Athens",
     country: "Greece",
     name: "Around the Beth Shalom synagogue, Thiseio",
@@ -187,6 +200,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Athens_Synagogue",
   },
   {
+    slug: "jerusalem-quarters",
     city: "Jerusalem",
     country: "Israel",
     name: "The Old City, Rechavia, Geula and Har Nof",
@@ -195,6 +209,7 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Jerusalem",
   },
   {
+    slug: "nice-dubouchage",
     city: "Nice",
     country: "France",
     name: "Around the Boulevard Dubouchage synagogue",
