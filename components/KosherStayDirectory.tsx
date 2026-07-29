@@ -58,11 +58,24 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 <strong>Seasonal</strong> — {s.season}
               </p>
             )}
-            <p className="mt-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-[var(--navy)]">
-              {s.ownerVerified
-                ? "The kashrus here has been confirmed by us."
-                : "We have not confirmed the kashrus here ourselves — this is what the source says. Check with the hotel or its mashgiach before you rely on it."}
-            </p>
+            {/* Only where a kosher claim was actually made. A plain hotel
+                gets no kashrus caveat, because it never claimed anything. */}
+            {s.kosherClaim === "reported" && (
+              <p className="mt-3 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-[var(--navy)]">
+                We have not confirmed the kashrus here ourselves — this is what the source says. Check with the hotel or
+                its mashgiach before you rely on it.
+              </p>
+            )}
+            {s.kosherClaim === "confirmed" && (
+              <p className="mt-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
+                The kashrus here has been confirmed by us.
+              </p>
+            )}
+            {s.kosherClaim === "none" && (
+              <p className="mt-3 text-sm leading-6 text-stone-500">
+                No kosher kitchen — listed for where it stands, not for its food.
+              </p>
+            )}
 
             {s.notes && s.notes.length > 0 && (
               <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-600">
@@ -101,7 +114,7 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
 
             {openNearby === s.slug && (
               <div className="mt-4">
-                <KosherNearby coordinates={s.anchor.coordinates} radiusKm={2} autoLoad showAddToTrip heading={`Kosher within walking distance of ${s.anchor.name}`} />
+                <KosherNearby coordinates={s.anchor.coordinates} radiusKm={3} autoLoad showAddToTrip heading={`Kosher within walking distance of ${s.anchor.name}`} />
               </div>
             )}
           </article>

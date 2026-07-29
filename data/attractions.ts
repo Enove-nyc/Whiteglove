@@ -22,6 +22,29 @@
 // season and by year, every entry carries the official site, and a stale hour
 // printed here would be worse than none.
 
+// WHAT GOES IN, AND WHAT DOES NOT.
+//
+// An attraction does not have to be kosher or Jewish to belong here. Most of
+// these are ordinary sights — mountains, museums, castles, waterfalls — and
+// that is the point: a family on a two-week trip needs somewhere to be on the
+// days that are not kevarim.
+//
+// What does not go in, at any price:
+//
+//   • bars, clubs and nightlife
+//   • mixed swimming and mixed dancing venues, and beach resorts sold on that
+//   • anything explicit, and anything whose draw is immodest
+//   • gambling
+//
+// The test is not "is it forbidden" — it is "would this be promoted in the
+// community this site is for". If it would not be, it is not listed, and no
+// entry is included with a warning attached instead. A caveat is not a filter.
+//
+// Where something is a genuine question rather than a line — a church that is
+// also one of the great art collections, say — it is listed with the question
+// named and left to the reader and their rov. Deciding that quietly, in either
+// direction, is not the site's job.
+
 export type AttractionKind =
   | "Jewish heritage"
   | "Museum"
@@ -397,14 +420,288 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Lauterbrunnen",
   },
+
+  // ---- Italy, added ---------------------------------------------------
+  {
+    slug: "lake-como",
+    name: "Lake Como",
+    city: "Como",
+    country: "Italy",
+    kind: "Nature",
+    summary: "Mountains straight down into the water, with boats between the villages — the walking is flat and the scenery does the work.",
+    address: "Como, Lombardy",
+    coordinates: "45.9860, 9.2570",
+    notes: [
+      "About an hour by train from Milan, so it is a day trip from the largest kosher base in Italy rather than a place to stay.",
+      "The lake boats are the sightseeing. Varenna and Bellagio are the usual stops and both are walkable villages.",
+      "Take the day's food from Milan — there is nothing kosher on the lake.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lake_Como",
+  },
+  {
+    slug: "cinque-terre",
+    name: "Cinque Terre",
+    city: "La Spezia",
+    country: "Italy",
+    kind: "Nature",
+    summary: "Five villages stacked on cliffs above the sea, joined by a train and by footpaths.",
+    address: "Cinque Terre National Park, Liguria",
+    coordinates: "44.1270, 9.7100",
+    website: "https://www.parconazionale5terre.it/Eindex.php",
+    notes: [
+      "The train between the villages runs every few minutes and is the easy way to do it; the coastal footpaths are the harder and better way.",
+      "Very steep and very stepped. Not a day for a pushchair or for anybody who cannot manage stairs.",
+      "The beaches are not the point here and are not what to plan around — the villages and the paths are.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Cinque_Terre",
+  },
+  {
+    slug: "verona-arena",
+    name: "The Verona Arena",
+    city: "Verona",
+    country: "Italy",
+    kind: "Landmark",
+    summary: "A Roman amphitheatre older than the Colosseum and still standing almost whole, in the middle of a walkable town.",
+    address: "Piazza Bra 1, 37121 Verona",
+    coordinates: "45.4390, 10.9944",
+    website: "https://www.arena.it/en/",
+    notes: [
+      "Smaller and far less crowded than the Colosseum, and you can walk the tiers.",
+      "Verona sits between Milan and Venice on the fast line, so it works as a stop rather than a detour.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Verona_Arena",
+  },
+  {
+    slug: "siena-piazza-del-campo",
+    name: "Siena and the Piazza del Campo",
+    city: "Siena",
+    country: "Italy",
+    kind: "Landmark",
+    summary: "A medieval town almost unchanged, built round a sloping shell-shaped square.",
+    address: "Piazza del Campo, 53100 Siena",
+    coordinates: "43.3186, 11.3316",
+    notes: [
+      "The old town is closed to traffic, so it is a walking day. Good shoes; the streets are steep.",
+      "About 1h15 from Florence by bus, which is the practical way in — the train station is well below the town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Piazza_del_Campo",
+  },
+  {
+    slug: "rome-pantheon-trevi",
+    name: "The Pantheon and the Trevi Fountain",
+    city: "Rome",
+    country: "Italy",
+    kind: "Landmark",
+    summary: "Two of Rome's set pieces, ten minutes' walk apart and both free to stand in front of.",
+    address: "Piazza della Rotonda, 00186 Roma",
+    coordinates: "41.8986, 12.4769",
+    notes: [
+      "Both are about a fifteen-minute walk from the Ghetto, which makes them the easiest thing to do from a kosher base in Rome.",
+      "The Pantheon now charges and is timed; the fountain is a street corner and is free.",
+      "Go early. By eleven the Trevi is shoulder to shoulder.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Pantheon,_Rome",
+  },
+  {
+    slug: "murano-burano",
+    name: "Murano and Burano",
+    city: "Venice",
+    country: "Italy",
+    kind: "Family",
+    summary: "Two islands in the lagoon — glassblowing on one, painted houses on the other. The best half day in Venice with children.",
+    address: "Murano and Burano, Venetian Lagoon",
+    coordinates: "45.4854, 12.4170",
+    notes: [
+      "Reached by vaporetto from the Fondamente Nove, which is a short walk from the Ghetto.",
+      "The glass furnaces run demonstrations through the day; children who are finished with churches and museums will sit through this one.",
+      "Burano is about colour and canals and needs no ticket for anything.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Burano",
+  },
+
+  // ---- France, added --------------------------------------------------
+  {
+    slug: "mont-saint-michel",
+    name: "Mont-Saint-Michel",
+    city: "Normandy",
+    country: "France",
+    kind: "Landmark",
+    summary: "An island that becomes a peninsula and back again with the tide, with a walled village climbing it.",
+    address: "50170 Le Mont-Saint-Michel",
+    coordinates: "48.6361, -1.5115",
+    website: "https://www.ot-montsaintmichel.com/en/",
+    notes: [
+      "The tides here are among the largest in Europe and the causeway and car parks are managed around them — check the tide table for the day.",
+      "A long way from Paris: roughly four hours by road. This is an overnight or a very long day, not an afternoon.",
+      "Steep and heavily stepped inside the walls.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Mont-Saint-Michel",
+  },
+  {
+    slug: "chateau-de-chambord",
+    name: "Château de Chambord",
+    city: "Loire Valley",
+    country: "France",
+    kind: "Landmark",
+    summary: "The largest of the Loire châteaux, with a double-helix staircase you can climb up one side while somebody else climbs the other without meeting.",
+    address: "41250 Chambord",
+    coordinates: "47.6161, 1.5170",
+    website: "https://www.chambord.org/en/",
+    notes: [
+      "The staircase is the thing children remember. Let them do it twice.",
+      "The grounds are enormous and largely free to walk; bicycles and boats are hired on site.",
+      "About two hours from Paris by car. Bring the day's food.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ch%C3%A2teau_de_Chambord",
+  },
+  {
+    slug: "annecy",
+    name: "Annecy and its lake",
+    city: "Annecy",
+    country: "France",
+    kind: "Nature",
+    summary: "One of the cleanest lakes in Europe, with an old town of canals behind it and the Alps around it.",
+    address: "74000 Annecy",
+    coordinates: "45.8992, 6.1294",
+    notes: [
+      "The lakeside path is flat, long and pushchair-friendly — a rare easy day in the mountains.",
+      "Close to Geneva, which is the practical kosher base for this corner of France.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lake_Annecy",
+  },
+  {
+    slug: "chamonix-aiguille-du-midi",
+    name: "Chamonix and the Aiguille du Midi",
+    city: "Chamonix",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "A cable car from the valley floor to 3,842 m, under Mont Blanc, in about twenty minutes.",
+    address: "100 Place de l'Aiguille du Midi, 74400 Chamonix",
+    coordinates: "45.8786, 6.8875",
+    website: "https://www.montblancnaturalresort.com/en",
+    notes: [
+      "One of the steepest cable-car ascents anywhere, and the altitude at the top is felt immediately. Go slowly; think twice with small children.",
+      "Weather-dependent — check the summit webcam before you set out or you will pay a great deal to stand in cloud.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Aiguille_du_Midi",
+  },
+  {
+    slug: "giverny-monet-garden",
+    name: "Monet's garden at Giverny",
+    city: "Giverny",
+    country: "France",
+    kind: "Nature",
+    summary: "The water-lily pond and the flower garden the paintings were made from, kept as they were.",
+    address: "84 Rue Claude Monet, 27620 Giverny",
+    coordinates: "49.0757, 1.5330",
+    website: "https://fondation-monet.com/en/",
+    notes: [
+      "Open roughly April to November only — it is a garden and it closes for the winter.",
+      "About an hour and a quarter from Paris. Timed tickets; it is small and it fills.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Giverny",
+  },
+
+  // ---- Switzerland, added ---------------------------------------------
+  {
+    slug: "zermatt-gornergrat",
+    name: "Zermatt and the Gornergrat",
+    city: "Zermatt",
+    country: "Switzerland",
+    kind: "Viewpoint",
+    summary: "A car-free village under the Matterhorn, and a cog railway to 3,089 m facing it.",
+    address: "3920 Zermatt",
+    coordinates: "46.0207, 7.7491",
+    website: "https://www.gornergratbahn.ch/en",
+    notes: [
+      "Zermatt allows no petrol cars at all — you leave the car at Täsch and take the shuttle train up. Plan for that; people are caught by it.",
+      "The Gornergrat railway is gentler than Jungfraujoch, cheaper, and the Matterhorn view is the better one.",
+      "No kosher food. Zurich or Geneva is the base; this is a long day trip or an overnight with food carried in.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Gornergrat",
+  },
+  {
+    slug: "chateau-de-chillon",
+    name: "Château de Chillon",
+    city: "Montreux",
+    country: "Switzerland",
+    kind: "Landmark",
+    summary: "An island castle on Lake Geneva, walked through room by room from the dungeons to the towers.",
+    address: "Avenue de Chillon 21, 1820 Veytaux",
+    coordinates: "46.4143, 6.9276",
+    website: "https://www.chillon.ch/en/",
+    notes: [
+      "One of the most visited historic buildings in Switzerland, and one of the few that holds children right through.",
+      "The lakeside walk from Montreux takes about forty-five minutes and is flat.",
+      "Geneva, about ninety minutes away, is the nearest kosher base.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ch%C3%A2teau_de_Chillon",
+  },
+  {
+    slug: "schilthorn-piz-gloria",
+    name: "Schilthorn",
+    city: "Mürren",
+    country: "Switzerland",
+    kind: "Viewpoint",
+    summary: "A revolving summit terrace at 2,970 m looking straight across at the Eiger, Mönch and Jungfrau.",
+    address: "Schilthorn, 3826 Lauterbrunnen",
+    coordinates: "46.5578, 7.8353",
+    website: "https://schilthorn.ch/en",
+    notes: [
+      "Cheaper than Jungfraujoch and the view is of the mountains rather than from inside them — many people prefer it.",
+      "Reached by cable car in stages from Stechelberg in the Lauterbrunnen valley, so the two combine into one day.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Schilthorn",
+  },
+  {
+    slug: "trummelbach-falls",
+    name: "Trümmelbach Falls",
+    city: "Lauterbrunnen",
+    country: "Switzerland",
+    kind: "Nature",
+    summary: "Ten glacier waterfalls inside the mountain, reached by a lift cut into the rock.",
+    address: "3824 Lauterbrunnen",
+    coordinates: "46.5769, 7.9059",
+    website: "https://www.truemmelbachfaelle.ch/en/",
+    notes: [
+      "Indoors and inside the rock, which makes it the answer to a wet day in the Alps when everything else is in cloud.",
+      "Loud, wet and cold even in August. Take a jacket.",
+      "Open roughly April to November.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Tr%C3%BCmmelbach_Falls",
+  },
+  {
+    slug: "glacier-express",
+    name: "The Glacier Express",
+    city: "Zermatt to St Moritz",
+    country: "Switzerland",
+    kind: "Nature",
+    summary: "Eight hours across the Alps by panoramic train, over nearly three hundred bridges and through ninety-one tunnels.",
+    address: "Zermatt / St. Moritz",
+    coordinates: "46.4908, 9.8355",
+    website: "https://www.glacierexpress.ch/en/",
+    notes: [
+      "Seat reservations are compulsory and the good seats go months ahead.",
+      "A whole day sitting down, which makes it the easiest possible day with elderly parents or a baby.",
+      "Take food. The catering is not kosher and eight hours is a long time.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Glacier_Express",
+  },
+  {
+    slug: "grindelwald-first",
+    name: "Grindelwald First",
+    city: "Grindelwald",
+    country: "Switzerland",
+    kind: "Family",
+    summary: "A cable car to a ridge with a cliff walkway, and a mountain cart and a toboggan run back down.",
+    address: "3818 Grindelwald",
+    coordinates: "46.6659, 8.0530",
+    website: "https://www.jungfrau.ch/en-gb/grindelwald-first/",
+    notes: [
+      "The one in the Jungfrau region built for children rather than for the view alone.",
+      "The Cliff Walk is a railed walkway out over the drop — safe, and not for anybody who dislikes heights.",
+      "Grindelwald has kosher hotel programmes in season; out of season, carry food.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/First_(mountain)",
+  },
 ];
-
-/** One attraction by slug. */
-export function getAttraction(slug: string) {
-  return attractions.find((a) => a.slug === slug);
-}
-
-/** Everything in one country, in city order. */
-export function attractionsIn(country: string) {
-  return attractions.filter((a) => a.country === country).sort((a, b) => a.city.localeCompare(b.city));
-}

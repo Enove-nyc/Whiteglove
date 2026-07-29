@@ -6,7 +6,10 @@
 // 1. WHETHER A HOTEL IS KOSHER IS A KASHRUS CLAIM. It is the same kind of claim
 //    as a hechsher on a restaurant, and this site does not make it on its own
 //    authority. Every entry says what the source says and who the source is,
-//    and `ownerVerified` stays false until somebody here has actually checked.
+//    and `kosherClaim` records how far it has been checked. A hotel that makes
+//    no kosher claim carries no kashrus caveat either — a disclaimer under a
+//    plain hotel reads as a doubt about something, and there is nothing there
+//    to doubt.
 //
 // 2. MOST ALPINE KOSHER HOTELS ARE SEASONS, NOT PLACES. A hotel in Arosa or
 //    Engelberg is an ordinary hotel that a caterer turns into a kosher one for
@@ -29,7 +32,23 @@ export type StayKind =
   | "Kosher hotel"
   | "Kosher B&B"
   | "Seasonal kosher programme"
-  | "Kosher-friendly, in the Jewish quarter";
+  | "Kosher-friendly, in the Jewish quarter"
+  | "Ordinary hotel, well placed";
+
+/**
+ * What, if anything, this place claims about kashrus.
+ *
+ * A hotel does not have to be kosher to be worth listing — most of the good
+ * ones are ordinary hotels chosen for where they stand. But a plain hotel
+ * should not carry a kashrus disclaimer it never invited: "we have not
+ * confirmed the kashrus here" printed under a hotel that makes no such claim
+ * reads as a doubt about something, and there is nothing to doubt.
+ *
+ *   none      — makes no kosher claim, and none is implied
+ *   reported  — a source says it is kosher; nobody here has checked
+ *   confirmed — checked by the owner against the hotel or its mashgiach
+ */
+export type KosherClaim = "none" | "reported" | "confirmed";
 
 /** The shul or quarter a stay is measured from. Public, published locations. */
 export type StayAnchor = {
@@ -49,13 +68,10 @@ export type KosherStay = {
   anchor: StayAnchor;
   /** Present only for a seasonal programme. Absence means "not seasonal". */
   season?: string;
+  /** What it claims about kashrus, and how far that has been checked. */
+  kosherClaim: KosherClaim;
   notes?: string[];
   website?: string;
-  /**
-   * False until somebody here has confirmed the kashrus with the hotel or its
-   * mashgiach. Nothing on the site presents an unverified stay as certified.
-   */
-  ownerVerified: boolean;
   sourceUrl: string;
 };
 
@@ -99,6 +115,38 @@ export const kosherAreas: Array<{ city: string; country: string; name: string; c
     sourceUrl: "https://en.wikipedia.org/wiki/Z%C3%BCrich-Wiedikon",
   },
   {
+    city: "Venice",
+    country: "Italy",
+    name: "Cannaregio, around the Ghetto",
+    coordinates: "45.4453, 12.3265",
+    note: "The Ghetto and the little kosher provision there are in Cannaregio. Venice is walked everywhere, so staying here means Shabbos works — but order food ahead, because there is very little of it.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Venetian_Ghetto",
+  },
+  {
+    city: "Florence",
+    country: "Italy",
+    name: "Around the Great Synagogue, east of the centre",
+    coordinates: "43.7714, 11.2665",
+    note: "Ten minutes' walk from the Duomo, which is unusual — in most Italian cities the Jewish quarter and the sights are not the same walk. In Florence they are.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
+  },
+  {
+    city: "Geneva",
+    country: "Switzerland",
+    name: "Around the Beth Yaacov synagogue, Les Tranchées",
+    coordinates: "46.2000, 6.1500",
+    note: "Geneva is the practical base for the French Alps and Lake Geneva — Annecy, Chamonix and Chillon are all day trips, and unlike the resorts the kosher food here is year-round.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Grande_Synagogue_de_Gen%C3%A8ve",
+  },
+  {
+    city: "Lucerne",
+    country: "Switzerland",
+    name: "Central Lucerne, near the synagogue on Bruchstrasse",
+    coordinates: "47.0480, 8.3050",
+    note: "A small kehilla, but it makes Lucerne workable as a base for Pilatus, Rigi and the lake. Confirm what food is available before relying on it — this is not Zurich.",
+    sourceUrl: "https://www.chabadluzern.com/",
+  },
+  {
     city: "Nice",
     country: "France",
     name: "Around the Boulevard Dubouchage synagogue",
@@ -125,7 +173,7 @@ export const kosherStays: KosherStay[] = [
       "Rome's kosher restaurants are almost all in these streets, so the walk to dinner is minutes rather than a journey.",
     ],
     website: "https://www.totallyjewishtravel.com/kosherhotels-TJ7742-Roman_Ghetto_Rome-Observant_Friendly_Accommodation.html",
-    ownerVerified: false,
+    kosherClaim: "none",
     sourceUrl: "https://www.totallyjewishtravel.com/kosherhotels-TJ7742-Roman_Ghetto_Rome-Observant_Friendly_Accommodation.html",
   },
   {
@@ -140,7 +188,7 @@ export const kosherStays: KosherStay[] = [
       "Small, so it books out; Milan's kosher accommodation is thin and this is one of the few named options.",
       "Confirm the hechsher on the breakfast directly with the owners before relying on it.",
     ],
-    ownerVerified: false,
+    kosherClaim: "reported",
     sourceUrl: "https://www.booking.com/hotel/it/chezromyk-the-kosher-b-amp-b.html",
   },
 
@@ -159,10 +207,58 @@ export const kosherStays: KosherStay[] = [
       "For Shabbos the walkability is the whole point — food, shul and somewhere to walk on Shabbos afternoon, without a metro.",
       "None of the hotels here is under supervision. As in Rome, what you are choosing is the position.",
     ],
-    ownerVerified: false,
+    kosherClaim: "none",
     sourceUrl: "https://en.wikipedia.org/wiki/Marais",
   },
 
+  {
+    slug: "florence-centre-stays",
+    name: "Staying near the Great Synagogue, Florence",
+    city: "Florence",
+    country: "Italy",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Florence is the rare Italian city where the shul and the sights are the same walk — ten minutes between the Great Synagogue and the Duomo. Ordinary hotels in that stretch put both within reach on foot.",
+    anchor: { name: "Great Synagogue of Florence", coordinates: "43.7714, 11.2665" },
+    notes: [
+      "Nothing here is under supervision. What the position buys is a Shabbos you can walk and a Sunday you can walk too.",
+      "Kosher food in Florence is limited and worth arranging before you arrive rather than on the day.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.jewishflorence.it/",
+  },
+  {
+    slug: "venice-cannaregio-stays",
+    name: "Staying in Cannaregio, by the Ghetto",
+    city: "Venice",
+    country: "Italy",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Venice has no cars, so where you sleep decides what you can reach on Shabbos more sharply than in any other city. Cannaregio puts you by the Ghetto and its shuls.",
+    anchor: { name: "Campo di Ghetto Nuovo", coordinates: "45.4453, 12.3265" },
+    notes: [
+      "Everything in Venice is carried or walked. A hotel on the far side of the city is not a short journey on Shabbos, it is no journey at all.",
+      "Kosher food here is very limited and usually needs ordering in advance. Sort it before you book the room, not after.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.museoebraico.it/en/",
+  },
+  {
+    slug: "geneva-stays",
+    name: "Staying in Geneva",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "The base that makes the French Alps and Lake Geneva work: Annecy, Chamonix and Chillon are day trips, and the kosher food is there all year rather than for six weeks in summer.",
+    anchor: { name: "Beth Yaacov synagogue, Geneva", coordinates: "46.2000, 6.1500" },
+    notes: [
+      "The alpine resorts have kosher food only in season. A city base solves that, at the cost of an hour or two of travel each way.",
+      "Geneva airport sits on the border and has a French exit as well as a Swiss one — worth knowing if the hire car is booked on the French side.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Grande_Synagogue_de_Gen%C3%A8ve",
+  },
   // ---- Switzerland ----------------------------------------------------
   {
     slug: "arosa-levin-metropol",
@@ -178,7 +274,7 @@ export const kosherStays: KosherStay[] = [
       "Confirm the supervision and the dates with the operator directly; a programme that ran last winter is not a promise about this one.",
     ],
     website: "http://www.levinarosa.com/",
-    ownerVerified: false,
+    kosherClaim: "reported",
     sourceUrl: "http://www.levinarosa.com/",
   },
   {
@@ -195,7 +291,7 @@ export const kosherStays: KosherStay[] = [
       "Confirm dates and supervision with the hotel for the specific year. This is the failure people have: booking the hotel because it 'is kosher' and arriving in a month when it is not.",
     ],
     website: "https://www.kempinski.com/en/kempinski-palace-engelberg/exclusive/kosher-offer",
-    ownerVerified: false,
+    kosherClaim: "reported",
     sourceUrl: "https://www.kempinski.com/en/kempinski-palace-engelberg/exclusive/kosher-offer",
   },
   {
@@ -212,7 +308,7 @@ export const kosherStays: KosherStay[] = [
       "For Shabbos, staying in the old town means no shul within walking distance. This is the single most common mistake on a Swiss trip.",
       "A Swiss Travel Pass usually beats separate tickets once you are doing day trips from a city base.",
     ],
-    ownerVerified: false,
+    kosherClaim: "none",
     sourceUrl: "https://swissjews.ch/en/jewishlife/religion/kosher/restaurants_hotels/",
   },
 ];
