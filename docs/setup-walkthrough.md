@@ -37,26 +37,65 @@ test is green, and only then delete the old one.
 
 ## 2. A second Google key, for the map
 
-The map on the site draws with Google now, but the Maps JavaScript API runs in
-the visitor's browser, so its key goes out in the page. That is normal and
-unavoidable — Google's answer is to restrict the key rather than hide it.
+Until this is set the map still works — it draws with OpenStreetMap, which
+needs no key. What you gain is Google's map: the one people already navigate
+by, so a kever pinned on it sits where they expect it to.
 
-**It must not be the key from step 1.** That one can call the Routes API, and
-anyone reading the page source would have it.
+**It must not be the key from step 1.** Google's map runs in the visitor's
+browser, so its key goes out in the page — that is normal and unavoidable, and
+Google's answer is to restrict the key rather than hide it. But it means anyone
+reading the page source has that key. If it were the step-1 key, they would
+have your driving-times quota too.
 
-1. Google Cloud Console → **APIs & Services → Library** → search **Maps
-   JavaScript API** → **Enable**.
-2. **Credentials → Create credentials → API key.** Copy it.
-3. **Edit** it:
-   - *API restrictions* → **Restrict key** → tick **Maps JavaScript API** only.
-   - *Application restrictions* → **Websites**, and add:
-     `whitegloveitineraries.com/*`, `*.whitegloveitineraries.com/*`, and your
-     Vercel preview domain `*.vercel.app/*`.
-4. Vercel → add `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` → paste → **redeploy**.
+### Getting it
 
-Until this is set the map still works; it draws with OpenStreetMap instead.
-Note that Maps JavaScript bills separately from Routes, and every map load
-counts.
+1. [Google Cloud Console](https://console.cloud.google.com/). Top left, make
+   sure the **project** shown is the one your existing key is in — the picker
+   is next to the Google Cloud logo.
+2. **APIs & Services → Library** → search **Maps JavaScript API** → open it →
+   **Enable**. (Only this one. Not "Maps Embed", not "Places".)
+3. **APIs & Services → Credentials → Create credentials → API key.** A box
+   appears with the new key. Copy it, then press **Edit API key** in that same
+   box.
+4. Give it a name you will recognise later — *Map — browser* — and set:
+   - **Application restrictions** → **Websites** → **Add**, one entry at a
+     time:
+     - `https://whitegloveitineraries.com/*`
+     - `https://www.whitegloveitineraries.com/*`
+     - `https://*.vercel.app/*`  ← so preview deploys work too
+     - your admin hostname, if you have set one
+   - **API restrictions** → **Restrict key** → tick **Maps JavaScript API**,
+     and nothing else.
+5. **Save.** Restrictions can take a few minutes to take effect.
+
+### Putting it in
+
+6. Vercel → your project → **Settings → Environment Variables → Add**:
+   - Key: `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY`
+   - Value: the key you just copied
+   - Environments: **Production** (and **Preview**, if you want maps on preview
+     links)
+7. **Deployments → ⋯ → Redeploy.** This one especially: a `NEXT_PUBLIC_`
+   variable is written into the pages when the site is built, so before the
+   redeploy the key does not exist as far as the browser is concerned.
+8. Admin → **Settings → Connections** → **The map**. It loads Google's map
+   script exactly as the site does and tells you what happened: drawing with
+   Google, drawing with OpenStreetMap, or a key that Google refused — with the
+   three things that cause a refusal.
+
+### Billing, and what it costs
+
+Google will not serve the map at all unless the project has a **billing
+account** attached, even inside the free allowance. Billing → **Link a billing
+account** if there is not one.
+
+The Maps JavaScript API gives **10,000 map loads a month free**, then about
+**$7 per 1,000**. A map load is counted when a page with a map on it opens. At
+this site's traffic that is comfortably inside the free tier, and it is
+separate from the driving-times key in step 1, which has its own allowance.
+
+Worth doing while you are there: **Billing → Budgets & alerts** → a budget with
+an email alert. It will not cap a spend, but it tells you the same day.
 
 ## 3. Flight lookup by flight number — done
 

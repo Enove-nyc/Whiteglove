@@ -1,5 +1,6 @@
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
+import MapKeyStatus from "@/components/MapKeyStatus";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
 import SmsStatus from "@/components/SmsStatus";
 
@@ -15,8 +16,8 @@ export default function ConnectionSettings() {
           do if it is not. Nothing here is needed day to day.
         </p>
         <p className="mt-4 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
-          These run on the server and report back a plain answer. Keys and passwords are never sent to your browser,
-          so nothing on this screen can leak one.
+          These run on the server and report back a plain answer. Keys and passwords are never sent to your browser
+          — with one deliberate exception, the map key, which is public by design and explained in its own panel.
         </p>
       </header>
 
@@ -24,6 +25,7 @@ export default function ConnectionSettings() {
         <EmailDeliveryTest />
         <SmsStatus />
         <RoutingKeyTest />
+        <MapKeyStatus />
         <AiConnectionTest />
       </div>
     </>
