@@ -25,6 +25,12 @@ const SECRET_ENV_VARS = [
   "ADMIN_PASSWORD",
   "SITE_ACCESS_PASSWORD",
   "SITE_PREVIEW_TOKEN",
+  // DUFFEL_ACCESS_TOKEN is the name the code actually reads; DUFFEL_API_KEY was
+  // listed here and is not set anywhere, so until now a Duffel error quoting
+  // the token back would have gone to the browser unstruck. Both are listed
+  // rather than one swapped for the other, in case an older deployment still
+  // carries the old name.
+  "DUFFEL_ACCESS_TOKEN",
   "DUFFEL_API_KEY",
   "BOOKING_AFFILIATE_ID",
   "TRAVELPAYOUTS_MARKER",
@@ -45,6 +51,8 @@ const PATTERNS: Array<[RegExp, string]> = [
   [/\bsk-[0-9A-Za-z]{20,}/g, MASK],
   // Resend.
   [/\bre_[0-9A-Za-z_-]{10,}/g, MASK],
+  // Duffel, both modes. Its errors quote the request back on some failures.
+  [/\bduffel_(?:test|live)_[0-9A-Za-z_-]{10,}/g, MASK],
   // A key handed over in a query string, whatever it is called.
   [/([?&](?:key|api_?key|token|access_token|password|secret)=)[^&\s"']+/gi, `$1${MASK}`],
   // Authorization / api-key headers quoted back in an error.

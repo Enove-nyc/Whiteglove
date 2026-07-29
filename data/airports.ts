@@ -19,20 +19,49 @@ export type Airport = {
   lng: number;
   size: AirportSize;
   aliases: string[];
+  /**
+   * The IATA METROPOLITAN code for this airport's city, where one exists.
+   *
+   * These are real IATA codes for a whole city rather than one airport — LON
+   * covers Heathrow, Gatwick, Stansted, Luton and City. Duffel accepts them in
+   * place of an airport code and searches every airport in the area, which is
+   * the whole point: somebody flying to London does not care which of the five
+   * they land at, and searching only Heathrow hides the cheap flight.
+   *
+   * Set only where the metropolitan code is its own code. Istanbul and Kyiv are
+   * deliberately left off: their city codes are also the codes of one of their
+   * airports, so sending one would silently search that airport alone.
+   */
+  cityCode?: string;
+};
+
+/**
+ * The cities where searching the whole area is offered, and what to call it.
+ *
+ * Keyed by metropolitan code so the label is written once rather than derived
+ * from whichever airport happened to sort first.
+ */
+export const METRO_AREAS: Record<string, { label: string; country: string }> = {
+  NYC: { label: "New York — all airports", country: "USA" },
+  CHI: { label: "Chicago — all airports", country: "USA" },
+  WAS: { label: "Washington DC — all airports", country: "USA" },
+  LON: { label: "London — all airports", country: "UK" },
+  PAR: { label: "Paris — all airports", country: "France" },
+  MIL: { label: "Milan — all airports", country: "Italy" },
 };
 
 export const AIRPORTS: Airport[] = [
   // --- United States ---
-  { code: "JFK", name: "John F. Kennedy International", city: "New York", country: "USA", lat: 40.6413, lng: -73.7781, size: "major", aliases: ["nyc", "new york city", "manhattan", "brooklyn", "queens"] },
-  { code: "EWR", name: "Newark Liberty International", city: "Newark / New York", country: "USA", lat: 40.6895, lng: -74.1745, size: "major", aliases: ["nyc", "new york", "new york city", "new jersey", "lakewood"] },
-  { code: "LGA", name: "LaGuardia", city: "New York", country: "USA", lat: 40.7769, lng: -73.874, size: "major", aliases: ["nyc", "new york city", "queens"] },
+  { code: "JFK", name: "John F. Kennedy International", city: "New York", country: "USA", lat: 40.6413, lng: -73.7781, size: "major", aliases: ["nyc", "new york city", "manhattan", "brooklyn", "queens"], cityCode: "NYC" },
+  { code: "EWR", name: "Newark Liberty International", city: "Newark / New York", country: "USA", lat: 40.6895, lng: -74.1745, size: "major", aliases: ["nyc", "new york", "new york city", "new jersey", "lakewood"], cityCode: "NYC" },
+  { code: "LGA", name: "LaGuardia", city: "New York", country: "USA", lat: 40.7769, lng: -73.874, size: "major", aliases: ["nyc", "new york city", "queens"], cityCode: "NYC" },
   { code: "BOS", name: "Logan International", city: "Boston", country: "USA", lat: 42.3656, lng: -71.0096, size: "major", aliases: [] },
   { code: "MIA", name: "Miami International", city: "Miami", country: "USA", lat: 25.7959, lng: -80.287, size: "major", aliases: ["miami beach"] },
   { code: "FLL", name: "Fort Lauderdale-Hollywood International", city: "Fort Lauderdale", country: "USA", lat: 26.0742, lng: -80.1506, size: "major", aliases: ["hollywood", "miami"] },
-  { code: "ORD", name: "O'Hare International", city: "Chicago", country: "USA", lat: 41.9742, lng: -87.9073, size: "major", aliases: [] },
-  { code: "MDW", name: "Midway International", city: "Chicago", country: "USA", lat: 41.7868, lng: -87.7522, size: "regional", aliases: [] },
-  { code: "IAD", name: "Washington Dulles International", city: "Washington", country: "USA", lat: 38.9531, lng: -77.4565, size: "major", aliases: ["dc", "washington dc"] },
-  { code: "BWI", name: "Baltimore/Washington International", city: "Baltimore", country: "USA", lat: 39.1774, lng: -76.6684, size: "major", aliases: ["washington", "dc"] },
+  { code: "ORD", name: "O'Hare International", city: "Chicago", country: "USA", lat: 41.9742, lng: -87.9073, size: "major", aliases: [], cityCode: "CHI" },
+  { code: "MDW", name: "Midway International", city: "Chicago", country: "USA", lat: 41.7868, lng: -87.7522, size: "regional", aliases: [], cityCode: "CHI" },
+  { code: "IAD", name: "Washington Dulles International", city: "Washington", country: "USA", lat: 38.9531, lng: -77.4565, size: "major", aliases: ["dc", "washington dc"], cityCode: "WAS" },
+  { code: "BWI", name: "Baltimore/Washington International", city: "Baltimore", country: "USA", lat: 39.1774, lng: -76.6684, size: "major", aliases: ["washington", "dc"], cityCode: "WAS" },
   { code: "LAX", name: "Los Angeles International", city: "Los Angeles", country: "USA", lat: 33.9416, lng: -118.4085, size: "major", aliases: ["la"] },
   { code: "SFO", name: "San Francisco International", city: "San Francisco", country: "USA", lat: 37.6213, lng: -122.379, size: "major", aliases: ["bay area"] },
   { code: "SEA", name: "Seattle-Tacoma International", city: "Seattle", country: "USA", lat: 47.4502, lng: -122.3088, size: "major", aliases: [] },
@@ -104,23 +133,23 @@ export const AIRPORTS: Airport[] = [
   { code: "GVA", name: "Geneva", city: "Geneva", country: "Switzerland", lat: 46.2381, lng: 6.109, size: "major", aliases: ["genève", "geneve"] },
   { code: "BSL", name: "EuroAirport Basel-Mulhouse", city: "Basel", country: "Switzerland", lat: 47.5896, lng: 7.5299, size: "regional", aliases: ["basle", "mulhouse"] },
   // --- United Kingdom ---
-  { code: "LHR", name: "London Heathrow", city: "London", country: "UK", lat: 51.47, lng: -0.4543, size: "major", aliases: ["london"] },
-  { code: "LGW", name: "London Gatwick", city: "London", country: "UK", lat: 51.1537, lng: -0.1821, size: "major", aliases: ["london"] },
-  { code: "STN", name: "London Stansted", city: "London", country: "UK", lat: 51.886, lng: 0.2389, size: "regional", aliases: ["london"] },
-  { code: "LTN", name: "London Luton", city: "London", country: "UK", lat: 51.8747, lng: -0.3683, size: "regional", aliases: ["london"] },
-  { code: "LCY", name: "London City", city: "London", country: "UK", lat: 51.5053, lng: 0.0553, size: "regional", aliases: ["london"] },
+  { code: "LHR", name: "London Heathrow", city: "London", country: "UK", lat: 51.47, lng: -0.4543, size: "major", aliases: ["london"], cityCode: "LON" },
+  { code: "LGW", name: "London Gatwick", city: "London", country: "UK", lat: 51.1537, lng: -0.1821, size: "major", aliases: ["london"], cityCode: "LON" },
+  { code: "STN", name: "London Stansted", city: "London", country: "UK", lat: 51.886, lng: 0.2389, size: "regional", aliases: ["london"], cityCode: "LON" },
+  { code: "LTN", name: "London Luton", city: "London", country: "UK", lat: 51.8747, lng: -0.3683, size: "regional", aliases: ["london"], cityCode: "LON" },
+  { code: "LCY", name: "London City", city: "London", country: "UK", lat: 51.5053, lng: 0.0553, size: "regional", aliases: ["london"], cityCode: "LON" },
   { code: "MAN", name: "Manchester", city: "Manchester", country: "UK", lat: 53.3537, lng: -2.275, size: "major", aliases: [] },
   { code: "BHX", name: "Birmingham", city: "Birmingham", country: "UK", lat: 52.4539, lng: -1.748, size: "regional", aliases: [] },
   // --- France ---
-  { code: "CDG", name: "Paris Charles de Gaulle", city: "Paris", country: "France", lat: 49.0097, lng: 2.5479, size: "major", aliases: ["paris"] },
-  { code: "ORY", name: "Paris Orly", city: "Paris", country: "France", lat: 48.7233, lng: 2.3794, size: "major", aliases: ["paris"] },
+  { code: "CDG", name: "Paris Charles de Gaulle", city: "Paris", country: "France", lat: 49.0097, lng: 2.5479, size: "major", aliases: ["paris"], cityCode: "PAR" },
+  { code: "ORY", name: "Paris Orly", city: "Paris", country: "France", lat: 48.7233, lng: 2.3794, size: "major", aliases: ["paris"], cityCode: "PAR" },
   { code: "NCE", name: "Nice Côte d'Azur", city: "Nice", country: "France", lat: 43.6584, lng: 7.2159, size: "regional", aliases: [] },
   { code: "LYS", name: "Lyon-Saint Exupéry", city: "Lyon", country: "France", lat: 45.7256, lng: 5.0811, size: "regional", aliases: [] },
   { code: "MRS", name: "Marseille Provence", city: "Marseille", country: "France", lat: 43.4393, lng: 5.2214, size: "regional", aliases: [] },
   // --- Italy ---
   { code: "FCO", name: "Rome Fiumicino", city: "Rome", country: "Italy", lat: 41.8003, lng: 12.2389, size: "major", aliases: ["roma"] },
-  { code: "MXP", name: "Milan Malpensa", city: "Milan", country: "Italy", lat: 45.6301, lng: 8.7231, size: "major", aliases: ["milano"] },
-  { code: "LIN", name: "Milan Linate", city: "Milan", country: "Italy", lat: 45.4451, lng: 9.2767, size: "regional", aliases: ["milano"] },
+  { code: "MXP", name: "Milan Malpensa", city: "Milan", country: "Italy", lat: 45.6301, lng: 8.7231, size: "major", aliases: ["milano"], cityCode: "MIL" },
+  { code: "LIN", name: "Milan Linate", city: "Milan", country: "Italy", lat: 45.4451, lng: 9.2767, size: "regional", aliases: ["milano"], cityCode: "MIL" },
   { code: "VCE", name: "Venice Marco Polo", city: "Venice", country: "Italy", lat: 45.5053, lng: 12.3519, size: "regional", aliases: ["venezia"] },
   { code: "BLQ", name: "Bologna Guglielmo Marconi", city: "Bologna", country: "Italy", lat: 44.5354, lng: 11.2887, size: "regional", aliases: [] },
   { code: "NAP", name: "Naples International", city: "Naples", country: "Italy", lat: 40.886, lng: 14.2908, size: "regional", aliases: ["napoli"] },
