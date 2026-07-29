@@ -447,6 +447,18 @@ function CalendarView({ days }: { days: ReturnType<typeof buildDays> }) {
   );
 }
 
+/** "14:05" → 845. Anything else → null; nothing is guessed from a blank. */
+function clockMins(t?: string): number | null {
+  const m = t && /^(\d{1,2}):(\d{2})$/.exec(t);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+
+// A flight with no time keeps the place it has always had: an arrival opens the
+// day, a departure closes it. These sit outside the 0–1439 clock so they cannot
+// collide with a real time.
+const OPENS_THE_DAY = -1;
+const CLOSES_THE_DAY = 100000;
+
 function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   burials: Record<string, string[]>;
@@ -509,6 +521,179 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
     setLoadingAi(false);
   }
 
+  // The day is drawn in clock order.
+  //
+  // It used to be drawn in a fixed sequence — every arrival, then the stops,
+  // then every departure — whatever the times said. So a flight leaving at
+  // 07:00 was printed at the bottom of the day, under stops that happen hours
+  // after the traveler is already in the air, and a landing at 22:00 was
+  // printed at the top. This builds one ordered list instead, which is what
+  // the printed itinerary has always done.
+  //
+  // Two rules keep it honest. Nothing is given a time it does not have: an
+  // untimed flight falls back to the end of the day it was already at. And the
+  // stops never reorder among themselves — their order is the driving order,
+  // which the ↑↓ buttons own — so a stop that runs past midnight cannot wrap
+  // its clock back to 00:30 and jump to the top of the day.
+  const timeline: Array<{ at: number; node: React.ReactNode }> = [];
+  const place = (at: number, node: React.ReactNode) => timeline.push({ at, node });
+
+  for (const f of day.flightsArriving) {
+    // A flight that takes off and lands on the same day is one flight, not
+    // two. It belongs to both of the day's lists, and while departures were
+    // drawn at the bottom and arrivals at the top nobody noticed the same
+    // flight was on the page twice. In clock order the two land next to each
+    // other, so it is drawn once — on its departure, which carries the
+    // landing time — and skipped here.
+    if (day.flightsDeparting.some((d) => d.id === f.id)) continue;
+    place(clockMins(f.arriveTime) ?? OPENS_THE_DAY, (
+      <div key={`a-${f.id}`}>
+        <FlightLine flight={f} direction="arrive" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
+        {editingFlight === f.id && (
+          <FlightForm
+            startDate={day.date}
+            initial={f}
+            onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
+            onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
+            onCancel={() => setEditingFlight(null)}
+          />
+        )}
+      </div>
+    ));
+  }
+
+  // The drive that opens the day happens at the moment the day starts, and the
+  // one that closes it at the moment the day ends — so the drive to the
+  // airport lands next to the flight it is for.
+  let cursor = clockMins(day.startTime) ?? 8 * 60;
+  const openingLeg = day.travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging");
+  if (openingLeg) place(cursor, <TransferLine key="opening-leg" leg={openingLeg} />);
+
+  day.activities.forEach((a, i) => {
+    cursor = Math.max(cursor, clockMins(a.arrivalTime ?? a.startTime) ?? cursor);
+    place(cursor, (
+      <div key={a.id} className="rounded-xl border border-[var(--gold-light)] bg-white p-3.5 sm:p-4">
+        {a.distanceFromPrev !== null && (
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-stone-500">
+            <span aria-hidden="true">↓</span>
+            <span>{formatKm(a.distanceFromPrev)}</span>
+            <span>·</span>
+            <span>{a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} from previous stop</span>
+            <TimeSource source={a.travelSource} />{" "}
+            <a
+              href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
+              target="_blank"
+              rel="noreferrer"
+              className="normal-case tracking-normal text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+            >
+              exact time →
+            </a>
+          </p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <p className="min-w-0 font-[family-name:var(--font-display)] text-lg leading-snug text-[var(--navy)] sm:text-xl">
+            <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
+            {a.arrivalTime ? (
+              <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
+                {a.arrivalTime}
+                {a.departureTime ? <span className="font-normal text-stone-400">–{a.departureTime}</span> : null}
+              </span>
+            ) : a.startTime ? (
+              <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span>
+            ) : null}
+            <span lang={a.yiddishName ? "yi" : undefined} dir={a.yiddishName ? "rtl" : undefined}>{a.yiddishName || a.name}</span>
+            {a.yiddishName ? <span className="ml-2 font-sans text-xs font-medium text-stone-500" lang="en" dir="ltr">{a.name}</span> : null}
+          </p>
+          <span className="flex flex-wrap items-center gap-1 sm:justify-end">
+            {day.activities.length > 1 && (
+              <>
+                <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
+                <button type="button" onClick={() => onMove(a.id, 1)} disabled={i === day.activities.length - 1} aria-label={`Move ${a.name} later`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↓</button>
+              </>
+            )}
+            <button type="button" onClick={() => setEditingId(editingId === a.id ? null : a.id)} className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
+              {editingId === a.id ? "Close" : "Edit"}
+            </button>
+          </span>
+        </div>
+        {editingId === a.id && (
+          <EditStopForm
+            activity={a}
+            allDates={allDates}
+            onSave={(updated) => { onUpdate(updated); setEditingId(null); }}
+            onRemove={() => { onRemove(a.id); setEditingId(null); }}
+            onCancel={() => setEditingId(null)}
+          />
+        )}
+        {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
+        {/* No location means no driving time and an overstated free day.
+            Say it on the stop, with the way to fix it right there. */}
+        {!a.coordinates && editingId !== a.id && (
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-amber-800">
+            <span>No address yet, so the driving to it is not counted.</span>
+            <button
+              type="button"
+              onClick={() => setEditingId(a.id)}
+              className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+            >
+              Add the address
+            </button>
+          </p>
+        )}
+        {/* Who you are going to daven by. The reason for the stop belongs
+            on the stop, not one click away on the cemetery page. */}
+        {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
+          <details className="mt-3 rounded-lg bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">
+            <summary className="cursor-pointer font-semibold text-[var(--gold)]">Who is buried here ({burials[a.keverSlug].length})</summary>
+            <p className="mt-1 break-words leading-6">{burials[a.keverSlug].join(" · ")}</p>
+          </details>
+        )}
+        {(a.phone || a.href || a.address || a.coordinates) && (
+          <p className="mt-3 flex flex-wrap gap-2 text-sm">
+            {/* Every stop gets its own navigate link, including the first
+                one of the day. Leaving the destination alone lets Google
+                Maps route from wherever the traveler actually is, which is
+                the only sensible origin for the first stop — there is no
+                previous stop to start from. */}
+            {(a.address || a.coordinates) && (
+              <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
+            )}
+            {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
+            {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
+          </p>
+        )}
+        {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
+      </div>
+    ));
+  });
+
+  const closingLeg = day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport");
+  if (closingLeg) place(Math.max(cursor, clockMins(day.endTime) ?? cursor), <TransferLine key="closing-leg" leg={closingLeg} />);
+
+  for (const f of day.flightsDeparting) {
+    place(clockMins(f.departTime) ?? CLOSES_THE_DAY, (
+      <div key={`d-${f.id}`}>
+        <FlightLine flight={f} direction="depart" landsSameDay={day.flightsArriving.some((a) => a.id === f.id)} onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
+        {editingFlight === f.id && (
+          <FlightForm
+            startDate={day.date}
+            initial={f}
+            onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
+            onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
+            onCancel={() => setEditingFlight(null)}
+          />
+        )}
+      </div>
+    ));
+  }
+
+  // Same time means the order they were added in — the drive to a stop before
+  // the stop, the landing before the day that starts with it.
+  const ordered = timeline
+    .map((entry, i) => ({ entry, i }))
+    .sort((a, b) => a.entry.at - b.entry.at || a.i - b.i)
+    .map((x) => x.entry.node);
+
   return (
     <details className="group overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_8px_24px_rgba(23,45,82,.045)]" open={expanded} onToggle={(e) => setExpanded(e.currentTarget.open)}>
       <summary className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:content-none sm:flex-row sm:items-center sm:justify-between sm:px-5">
@@ -560,132 +745,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onAddLod
           );
         })}
 
-      <div className="mt-4 space-y-4">
-        {day.flightsArriving.map((f) => (
-          <div key={`a-${f.id}`}>
-            <FlightLine flight={f} direction="arrive" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
-            {editingFlight === f.id && (
-              <FlightForm
-                startDate={day.date}
-                initial={f}
-                onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
-                onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
-                onCancel={() => setEditingFlight(null)}
-              />
-            )}
-          </div>
-        ))}
-        <TransferLine leg={day.travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging")} />
-        {day.activities.map((a, i) => (
-          <div key={a.id} className="rounded-xl border border-[var(--gold-light)] bg-white p-3.5 sm:p-4">
-            {a.distanceFromPrev !== null && (
-              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-stone-500">
-                <span aria-hidden="true">↓</span>
-                <span>{formatKm(a.distanceFromPrev)}</span>
-                <span>·</span>
-                <span>{a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} from previous stop</span>
-                <TimeSource source={a.travelSource} />{" "}
-                <a
-                  href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="normal-case tracking-normal text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
-                >
-                  exact time →
-                </a>
-              </p>
-            )}
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-              <p className="min-w-0 font-[family-name:var(--font-display)] text-lg leading-snug text-[var(--navy)] sm:text-xl">
-                <span className="mr-2 text-sm font-bold text-[var(--gold)]">{i + 1}.</span>
-                {a.arrivalTime ? (
-                  <span className={`mr-2 text-sm font-semibold ${a.arrivesLate ? "text-red-700" : "text-[var(--gold)]"}`} title={a.arrivesLate ? `Scheduled for ${a.startTime}, but the driving does not allow it` : "Worked out from your start time and the driving"}>
-                    {a.arrivalTime}
-                    {a.departureTime ? <span className="font-normal text-stone-400">–{a.departureTime}</span> : null}
-                  </span>
-                ) : a.startTime ? (
-                  <span className="mr-2 text-sm font-semibold text-[var(--gold)]">{a.startTime}</span>
-                ) : null}
-                <span lang={a.yiddishName ? "yi" : undefined} dir={a.yiddishName ? "rtl" : undefined}>{a.yiddishName || a.name}</span>
-                {a.yiddishName ? <span className="ml-2 font-sans text-xs font-medium text-stone-500" lang="en" dir="ltr">{a.name}</span> : null}
-              </p>
-              <span className="flex flex-wrap items-center gap-1 sm:justify-end">
-                {day.activities.length > 1 && (
-                  <>
-                    <button type="button" onClick={() => onMove(a.id, -1)} disabled={i === 0} aria-label={`Move ${a.name} earlier`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↑</button>
-                    <button type="button" onClick={() => onMove(a.id, 1)} disabled={i === day.activities.length - 1} aria-label={`Move ${a.name} later`} className="border border-[var(--gold-light)] px-2 py-0.5 text-xs text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-30">↓</button>
-                  </>
-                )}
-                <button type="button" onClick={() => setEditingId(editingId === a.id ? null : a.id)} className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">
-                  {editingId === a.id ? "Close" : "Edit"}
-                </button>
-              </span>
-            </div>
-            {editingId === a.id && (
-              <EditStopForm
-                activity={a}
-                allDates={allDates}
-                onSave={(updated) => { onUpdate(updated); setEditingId(null); }}
-                onRemove={() => { onRemove(a.id); setEditingId(null); }}
-                onCancel={() => setEditingId(null)}
-              />
-            )}
-            {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
-            {/* No location means no driving time and an overstated free day.
-                Say it on the stop, with the way to fix it right there. */}
-            {!a.coordinates && editingId !== a.id && (
-              <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-amber-800">
-                <span>No address yet, so the driving to it is not counted.</span>
-                <button
-                  type="button"
-                  onClick={() => setEditingId(a.id)}
-                  className="border border-[var(--gold)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
-                >
-                  Add the address
-                </button>
-              </p>
-            )}
-            {/* Who you are going to daven by. The reason for the stop belongs
-                on the stop, not one click away on the cemetery page. */}
-            {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
-              <details className="mt-3 rounded-lg bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">
-                <summary className="cursor-pointer font-semibold text-[var(--gold)]">Who is buried here ({burials[a.keverSlug].length})</summary>
-                <p className="mt-1 break-words leading-6">{burials[a.keverSlug].join(" · ")}</p>
-              </details>
-            )}
-            {(a.phone || a.href || a.address || a.coordinates) && (
-              <p className="mt-3 flex flex-wrap gap-2 text-sm">
-                {/* Every stop gets its own navigate link, including the first
-                    one of the day. Leaving the destination alone lets Google
-                    Maps route from wherever the traveler actually is, which is
-                    the only sensible origin for the first stop — there is no
-                    previous stop to start from. */}
-                {(a.address || a.coordinates) && (
-                  <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
-                )}
-                {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
-                {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
-              </p>
-            )}
-            {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
-          </div>
-        ))}
-        <TransferLine leg={day.travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport")} />
-        {day.flightsDeparting.map((f) => (
-          <div key={`d-${f.id}`}>
-            <FlightLine flight={f} direction="depart" onEdit={() => setEditingFlight(editingFlight === f.id ? null : f.id)} />
-            {editingFlight === f.id && (
-              <FlightForm
-                startDate={day.date}
-                initial={f}
-                onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
-                onRemove={() => { onRemoveFlight(f.id); setEditingFlight(null); }}
-                onCancel={() => setEditingFlight(null)}
-              />
-            )}
-          </div>
-        ))}
-      </div>
+      <div className="mt-4 space-y-4">{ordered}</div>
 
       <p className="mt-5 rounded-lg bg-[var(--cream)] px-3 py-2.5 text-sm">
         <span className={caption}>Tonight</span>{" "}
@@ -1617,7 +1677,13 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
  * two separate flights used to make the planner believe the traveler had
  * arrived, spent a day in the connecting city, and needed a hotel there.
  */
-function FlightLine({ flight, direction, onEdit }: { flight: ItinFlight; direction: "arrive" | "depart"; onEdit?: () => void }) {
+function FlightLine({ flight, direction, landsSameDay, onEdit }: {
+  flight: ItinFlight;
+  direction: "arrive" | "depart";
+  /** Takes off and lands the same day, so this one line is the whole journey. */
+  landsSameDay?: boolean;
+  onEdit?: () => void;
+}) {
   const stops = flight.stops ?? [];
   const airline = [flight.airline, flight.flightNo].filter(Boolean).join(" ");
   return (
@@ -1625,7 +1691,7 @@ function FlightLine({ flight, direction, onEdit }: { flight: ItinFlight; directi
       <p>
         ✈️{" "}
         {direction === "depart"
-          ? <>Depart {flight.from}{flight.departTime ? ` at ${flight.departTime}` : ""}</>
+          ? <>Depart {flight.from}{flight.departTime ? ` at ${flight.departTime}` : ""}{landsSameDay && flight.arriveTime ? `, land ${flight.to} at ${flight.arriveTime}` : ""}</>
           : <>Arrive {flight.to}{flight.arriveTime ? ` at ${flight.arriveTime}` : ""}</>}
         {" — "}
         <span className="font-semibold">{flightRouteLabel(flight)}</span>
