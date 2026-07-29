@@ -97,7 +97,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
 
   return (
     <div className={`relative ${compact ? "w-full" : "mt-12 max-w-3xl"}`}>
-      <form className={`flex flex-col gap-2 border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`} onSubmit={submitSearch}>
+      <form className={`flex flex-col gap-2 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`} onSubmit={submitSearch}>
         <input
           value={query}
           onChange={(event) => {
@@ -111,13 +111,13 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
           placeholder="Search a city, tzaddik, or country..."
           autoComplete="off"
         />
-        <button className={`bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "px-4 py-2 text-xs" : "px-7 py-3"}`} type="submit">
+        <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "px-4 py-2 text-xs" : "px-7 py-3"}`} type="submit">
           {compact ? "Search" : "Explore"}
         </button>
       </form>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
+        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
           {matches.length > 0 ? (
             matches.map((match) => (
               <button
