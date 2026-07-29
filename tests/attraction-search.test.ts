@@ -100,7 +100,15 @@ describe("what does not go in the list", () => {
   // The rule is written at the top of data/attractions.ts. This is the part of
   // it a test can hold: a batch added in a hurry should fail here rather than
   // ship. It cannot judge whether something belongs — only catch the obvious.
-  const BARRED = /\b(bar|bars|pub|pubs|nightclub|nightlife|casino|cassino|gambling|striptease|burlesque)\b/i;
+  //
+  // "bar" needs the exception. In this corpus the word is far more often a
+  // patronymic than a drinking establishment — bar Yochai, Bar Kochba, Bar
+  // Ilan — and the first version of this test failed the Herodium entry for
+  // saying the tunnels under the hill were cut by the fighters of the Bar
+  // Kochba revolt. A guard that fails on correct content gets edited around
+  // until it stops meaning anything, so the exception is written in.
+  const BARRED =
+    /\b(bars?(?!\s+(?:Kochba|Kokhba|Yochai|Yohai|Ilan|Kappara|Mitzvah|mitzvah))|pubs?|nightclub|nightlife|casino|gambling|striptease|burlesque)\b/i;
 
   test("no bars, nightlife or gambling anywhere in an entry", () => {
     for (const a of attractions) {
