@@ -4,14 +4,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type * as L from "leaflet";
 import { fetchKosherPlaces, type KosherPlace } from "@/lib/kosher-osm";
 import { placeDirectionsUrl } from "@/data/route-utils";
+import { googleMaps, loadGoogleMaps, type GInfoWindow, type GMap, type GMarker } from "@/lib/google-maps-loader";
 
 // What is around a place, on a map.
 //
-// Tiles are OpenStreetMap, which needs no key and no billing — the Google key
-// this site holds is restricted to the Routes API and deliberately never
-// reaches the browser. Kevarim come from our own database; kosher places come
-// live from OSM through Overpass, the same source the kosher finder uses. We
-// plot what those sources actually contain and nothing else.
+// The map is Google's — the same map people already navigate by, so a kever
+// pinned here sits where they expect it to. That needs a browser key
+// (NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY, restricted to the Maps JavaScript API
+// and to this site's hostnames; see lib/google-maps-loader.ts). Without one,
+// or if Google's script cannot be reached, it draws the OpenStreetMap map
+// instead rather than showing an empty box — a fallback map beats no map.
+//
+// What is plotted does not change either way. Kevarim come from our own
+// database; kosher places come live from OSM through Overpass, the same source
+// the kosher finder uses. We plot what those sources actually contain and
+// nothing else.
 
 export type MapMarker = {
   id: string;
@@ -37,6 +44,22 @@ function escapeHtml(v: string) {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+
+/** The card shown when a pin is tapped. Identical on either map. */
+function popupHtml(m: MapMarker, centerName: string) {
+  return [
+    `<strong style="font-size:14px;color:#172d52">${escapeHtml(m.name)}</strong>`,
+    m.subtitle ? `<div style="color:#78716c;font-size:12px">${escapeHtml(m.subtitle)}</div>` : "",
+    m.address ? `<div style="margin-top:4px;font-size:12px">${escapeHtml(m.address)}</div>` : "",
+    typeof m.km === "number" ? `<div style="margin-top:4px;font-size:12px;color:#78716c">${m.km.toFixed(1)} km from ${escapeHtml(centerName)}</div>` : "",
+    `<div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
+       <a href="${escapeHtml(placeDirectionsUrl(m.address, `${m.lat}, ${m.lng}`))}" target="_blank" rel="noreferrer" style="font-weight:700;color:#172d52">Navigate &rarr;</a>
+       ${m.href ? `<a href="${escapeHtml(m.href)}" style="font-weight:700;color:#172d52">Open page &rarr;</a>` : ""}
+       ${m.phone ? `<a href="tel:${escapeHtml(m.phone.replace(/[^\d+]/g, ""))}" style="font-weight:700;color:#172d52">${escapeHtml(m.phone)}</a>` : ""}
+     </div>`,
+  ].filter(Boolean).join("");
+}
+
 export default function AreaMap({
   center,
   centerName,
@@ -55,6 +78,11 @@ export default function AreaMap({
   const boxRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<Record<string, L.LayerGroup>>({});
+  // Google's map, when there is a browser key for it.
+  const gmapRef = useRef<GMap | null>(null);
+  const gmarkersRef = useRef<GMarker[]>([]);
+  const ginfoRef = useRef<GInfoWindow | null>(null);
+  const [engine, setEngine] = useState<"deciding" | "google" | "osm">("deciding");
   const [kosher, setKosher] = useState<KosherPlace[]>([]);
   const [kosherState, setKosherState] = useState<"idle" | "loading" | "done" | "failed">("idle");
   const [shown, setShown] = useState<Record<MapMarker["kind"], boolean>>({ center: true, kever: true, kosher: true, airport: true });
@@ -77,13 +105,39 @@ export default function AreaMap({
 
   const all = useMemo(() => [...markers, ...kosherMarkers], [markers, kosherMarkers]);
 
-  // Leaflet touches window on import, so it can only be loaded in the browser.
+  // Which map to draw.
+  //
+  // Google's if there is a browser key and its script loads; OpenStreetMap
+  // otherwise. Decided once, on mount, and never swapped underneath a visitor
+  // mid-look.
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const useGoogle = await loadGoogleMaps();
+      if (cancelled || !boxRef.current) return;
+
+      if (useGoogle) {
+        const maps = googleMaps();
+        if (maps) {
+          gmapRef.current = new maps.Map(boxRef.current, {
+            center: { lat: center.lat, lng: center.lng },
+            zoom: 11,
+            // Off so the page still scrolls past the map on a phone; holding
+            // ctrl (or two fingers) zooms, which is Google's own convention.
+            gestureHandling: "cooperative",
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: true,
+          });
+          ginfoRef.current = new maps.InfoWindow();
+          setEngine("google");
+          return;
+        }
+      }
+
+      // Leaflet touches window on import, so it can only be loaded in the browser.
       const leaflet = (await import("leaflet")).default;
       if (cancelled || !boxRef.current || mapRef.current) return;
-
       const map = leaflet.map(boxRef.current, { scrollWheelZoom: false, attributionControl: true }).setView([center.lat, center.lng], 11);
       leaflet
         .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -95,13 +149,16 @@ export default function AreaMap({
       map.on("click", () => map.scrollWheelZoom.enable());
       mapRef.current = map;
       for (const kind of Object.keys(STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
-      setKosherState((s) => (s === "idle" ? "idle" : s));
+      setEngine("osm");
     })();
     return () => {
       cancelled = true;
       mapRef.current?.remove();
       mapRef.current = null;
       layersRef.current = {};
+      for (const marker of gmarkersRef.current) marker.setMap(null);
+      gmarkersRef.current = [];
+      gmapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -109,13 +166,51 @@ export default function AreaMap({
   // Re-centre when the searched place changes.
   useEffect(() => {
     mapRef.current?.setView([center.lat, center.lng], 11);
-  }, [center.lat, center.lng]);
+    gmapRef.current?.setCenter({ lat: center.lat, lng: center.lng });
+    gmapRef.current?.setZoom(11);
+  }, [center.lat, center.lng, engine]);
 
-  // Draw the markers.
+  // Draw the markers on whichever map was chosen.
   useEffect(() => {
+    if (engine === "deciding") return;
+    let cancelled = false;
+
+    if (engine === "google") {
+      const maps = googleMaps();
+      const map = gmapRef.current;
+      if (!maps || !map) return;
+      for (const marker of gmarkersRef.current) marker.setMap(null);
+      gmarkersRef.current = [];
+
+      for (const m of all) {
+        if (!shown[m.kind]) continue;
+        const style = STYLE[m.kind];
+        // A plain circle symbol rather than a pin: the same dot the legend
+        // above uses, so the colours mean the same thing in both places.
+        const marker = new maps.Marker({
+          position: { lat: m.lat, lng: m.lng },
+          map,
+          title: m.name,
+          icon: {
+            path: maps.SymbolPath.CIRCLE,
+            scale: style.ring,
+            fillColor: style.color,
+            fillOpacity: 1,
+            strokeColor: "#fff",
+            strokeWeight: 2,
+          },
+        });
+        marker.addListener("click", () => {
+          ginfoRef.current?.setContent(popupHtml(m, centerName));
+          ginfoRef.current?.open({ map, anchor: marker });
+        });
+        gmarkersRef.current.push(marker);
+      }
+      return;
+    }
+
     const map = mapRef.current;
     if (!map) return;
-    let cancelled = false;
     (async () => {
       const leaflet = (await import("leaflet")).default;
       if (cancelled || !mapRef.current) return;
@@ -131,25 +226,14 @@ export default function AreaMap({
           fillColor: style.color,
           fillOpacity: 1,
         });
-        const lines = [
-          `<strong style="font-size:14px;color:#172d52">${escapeHtml(m.name)}</strong>`,
-          m.subtitle ? `<div style="color:#78716c;font-size:12px">${escapeHtml(m.subtitle)}</div>` : "",
-          m.address ? `<div style="margin-top:4px;font-size:12px">${escapeHtml(m.address)}</div>` : "",
-          typeof m.km === "number" ? `<div style="margin-top:4px;font-size:12px;color:#78716c">${m.km.toFixed(1)} km from ${escapeHtml(centerName)}</div>` : "",
-          `<div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
-             <a href="${escapeHtml(placeDirectionsUrl(m.address, `${m.lat}, ${m.lng}`))}" target="_blank" rel="noreferrer" style="font-weight:700;color:#172d52">Navigate →</a>
-             ${m.href ? `<a href="${escapeHtml(m.href)}" style="font-weight:700;color:#172d52">Open page →</a>` : ""}
-             ${m.phone ? `<a href="tel:${escapeHtml(m.phone.replace(/[^\d+]/g, ""))}" style="font-weight:700;color:#172d52">${escapeHtml(m.phone)}</a>` : ""}
-           </div>`,
-        ];
-        dot.bindPopup(lines.filter(Boolean).join(""));
+        dot.bindPopup(popupHtml(m, centerName));
         dot.addTo(layersRef.current[m.kind]);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [all, shown, centerName]);
+  }, [all, shown, centerName, engine]);
 
   // Kosher places come from Overpass and can be slow, so they load after the map.
   useEffect(() => {
@@ -209,9 +293,11 @@ export default function AreaMap({
       />
 
       <p className="mt-2 text-xs leading-5 text-stone-500">
-        Scroll-zoom turns on once you click the map, so the page still scrolls past it on a phone. Kevarim are ours;
-        kosher places come live from OpenStreetMap and its coverage varies by region — an empty map means OSM has
-        nothing listed there, not that there is nothing there.
+        {engine === "google"
+          ? "Hold ctrl (or use two fingers) to zoom, so the page still scrolls past the map on a phone. "
+          : "Scroll-zoom turns on once you click the map, so the page still scrolls past it on a phone. "}
+        Kevarim are ours; kosher places come live from OpenStreetMap and its coverage varies by region — an empty map
+        means OSM has nothing listed there, not that there is nothing there.
       </p>
     </div>
   );

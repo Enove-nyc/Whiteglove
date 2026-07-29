@@ -15,6 +15,27 @@ without it, it just does less.
 | `OSRM_ROUTER_URL` | Optional. Where to reach OSRM, the fallback router used when there is no Google key. Defaults to the public demo server, which is fair-use only and has no uptime promise — point this at a self-hosted instance if the planner is busy. |
 | `GOOGLE_ROUTES_URL` | Testing seam only. Leave unset in production. |
 
+## The map
+
+| Variable | What it does |
+| --- | --- |
+| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | Draws the map with Google Maps instead of OpenStreetMap tiles. Without it, or if Google's script cannot be reached, the map still appears — it falls back to OpenStreetMap, which needs no key. |
+
+**This must be a different key from `GOOGLE_MAPS_API_KEY`.** The Maps
+JavaScript API runs in the browser, so its key goes out in the page and cannot
+be hidden; that is normal, and Google's own answer is restriction rather than
+secrecy. `GOOGLE_MAPS_API_KEY` is a server-only key with Routes API access and
+must never be used here — anyone opening the page source would have it.
+
+To set it up: in the Google Cloud console enable the **Maps JavaScript API**,
+create a **second** key, and restrict it to that one API and to your own
+hostnames (`whitegloveitineraries.com`, `*.whitegloveitineraries.com`, and your
+Vercel preview domain). Then set the variable and redeploy —
+`NEXT_PUBLIC_` variables are read at build time, so a redeploy is required.
+
+Note that the Maps JavaScript API bills separately from the Routes API, and
+every map load counts.
+
 Without a Google key the planner falls back to OSRM, which routes on speed
 limits and assumes empty roads, so its times run short. Without either, it uses
 its own straight-line estimate. **All three are labelled differently in the UI**

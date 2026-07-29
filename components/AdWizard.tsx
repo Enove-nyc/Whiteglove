@@ -20,7 +20,6 @@ const PAGE_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Batei hachaim", value: "/cemeteries" },
   { label: "Directory", value: "/directory" },
   { label: "Services", value: "/services" },
-  { label: "Trip planning", value: "/planning" },
   { label: "Honeymoon", value: "/honeymoon" },
   { label: "Book flights, hotels & cars", value: "/book" },
   { label: "Phone & SIM rentals", value: "/phone-rentals" },

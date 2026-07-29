@@ -3,7 +3,11 @@ import LoginForm from "@/components/LoginForm";
 import { smsConfigured } from "@/lib/sms";
 import Navbar from "@/components/Navbar";
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams;
+  // Only a path on this site. A full URL here would turn the sign-in page into
+  // an open redirect somebody could point anywhere.
+  const back = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -21,7 +25,7 @@ export default function LoginPage() {
         <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Sign in or create an account</p>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Your personal travel book.</h2>
-          <LoginForm phoneSignupAvailable={smsConfigured()} />
+          <LoginForm phoneSignupAvailable={smsConfigured()} next={back} />
         </div>
       </section>
       <Footer />

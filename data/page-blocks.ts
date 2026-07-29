@@ -20,7 +20,12 @@ export type PageBlock =
       hidden?: boolean;
       heading?: string;
       intro?: string;
-      items: Array<{ title: string; body: string }>;
+      /**
+       * `href` turns a card into a link. A hub page whose cards do not go
+       * anywhere is a list of dead ends, which is what the Services page was
+       * before the service pages were gathered under it.
+       */
+      items: Array<{ title: string; body: string; href?: string }>;
     }
   | { id: string; kind: "list"; hidden?: boolean; heading?: string; items: string[] }
   | { id: string; kind: "image"; hidden?: boolean; url: string; alt: string; caption?: string }
@@ -97,7 +102,14 @@ export function parseBlocks(value: unknown): PageBlock[] | null {
       const items = Array.isArray(b.items)
         ? b.items
             .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === "object")
-            .map((i) => ({ title: typeof i.title === "string" ? i.title : "", body: typeof i.body === "string" ? i.body : "" }))
+            .map((i) => ({
+              title: typeof i.title === "string" ? i.title : "",
+              body: typeof i.body === "string" ? i.body : "",
+              // Only same-site paths. A card is content the owner types, and
+              // an arbitrary URL from a stored row should not become a link
+              // out of the site.
+              href: typeof i.href === "string" && i.href.startsWith("/") ? i.href : undefined,
+            }))
         : [];
       out.push({ id, kind, hidden, heading: str("heading"), intro: str("intro"), items });
     } else if (kind === "list") {

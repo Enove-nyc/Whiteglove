@@ -6,7 +6,7 @@ const exploreLinks = [
   { label: "Cemeteries", href: "/cemeteries" },
   { label: "Directory", href: "/directory" },
   { label: "Book flights, hotels & cars", href: "/book" },
-  { label: "Trip planning", href: "/planning" },
+  { label: "Services", href: "/services" },
   { label: "Kosher getaways", href: "/getaways" },
 ];
 

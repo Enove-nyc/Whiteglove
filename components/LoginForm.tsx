@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { forgetSignedIn } from "@/lib/use-signed-in";
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -48,7 +49,14 @@ function whereTheCodeWent(data: Delivery | null, what: string): string {
  * offering it otherwise would take a number and then leave the person waiting
  * for a code that was never going to arrive.
  */
-export default function LoginForm({ phoneSignupAvailable = false }: { phoneSignupAvailable?: boolean }) {
+export default function LoginForm({
+  phoneSignupAvailable = false,
+  next,
+}: {
+  phoneSignupAvailable?: boolean;
+  /** Where to go once they are in — set when they were sent here mid-task. */
+  next?: string;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -65,13 +73,13 @@ export default function LoginForm({ phoneSignupAvailable = false }: { phoneSignu
     fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
-        if (active && (data?.signedIn || data?.account?.email)) router.replace("/account");
+        if (active && (data?.signedIn || data?.account?.email)) router.replace(next ?? "/account");
       })
       .catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, next]);
 
   async function continueToAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -135,7 +143,8 @@ export default function LoginForm({ phoneSignupAvailable = false }: { phoneSignu
       setSaving(false);
       return;
     }
-    router.push("/account");
+    forgetSignedIn();
+    router.push(next ?? "/account");
     router.refresh();
   }
 

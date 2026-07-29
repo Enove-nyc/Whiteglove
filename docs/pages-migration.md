@@ -115,3 +115,27 @@ already editable through the Directory, which is where they belong.
 Step 4 is where the risk is, and it is the step that can stop at any point
 without leaving anything half-done: a page not yet converted simply keeps
 rendering from code.
+
+## Planning was folded into Services
+
+Two pages were saying overlapping things. `/services` listed the services as
+cards that went nowhere; `/planning` described the main one at length. A
+visitor landing on either had no way to tell which was the real page.
+
+They are one page now. `/services` carries the whole of Planning's content
+under "Planning a trip", the rest of the services under "The rest of what we
+do", and every card is a link — that is what the `href` on a cards item was
+added for.
+
+`/planning` returns a permanent redirect to `/services`, set in
+`next.config.ts`. Links in the wild and in people's bookmarks keep working, and
+a search engine carries the ranking across rather than treating `/services` as
+a page it has never seen.
+
+The `planning` slug is gone from `editablePages`, so the admin no longer offers
+a page that does not exist. **If the page had been edited in the database, that
+row is still there** — nothing was deleted. It simply no longer renders. To get
+those words back, open the row in the `Page` table where `slug = 'planning'`
+and paste its blocks into the Services page; to bring the page back entirely,
+restore the `planning` entry in `data/pages.ts`, re-create
+`app/planning/page.tsx`, and drop the redirect.

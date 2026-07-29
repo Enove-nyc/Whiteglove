@@ -9,7 +9,7 @@ const KNOWN_SECTIONS: Array<{ path: string; label: string }> = [
   { path: "/destinations", label: "Destination pages" },
   { path: "/cemeteries", label: "Cemeteries" },
   { path: "/services", label: "Services" },
-  { path: "/planning", label: "Planning" },
+  { path: "/services", label: "Services" },
   { path: "/honeymoon", label: "Honeymoon" },
   { path: "/booking", label: "Flights & hotels" },
   { path: "/my-route", label: "My Route" },
@@ -96,7 +96,7 @@ export default function LockedSectionsControl({
               value={custom}
               onChange={(e) => setCustom(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
-              placeholder="Custom path e.g. /planning"
+              placeholder="Custom path e.g. /getaways"
               className="flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
             />
             <button type="button" onClick={addCustom} className="rounded-md border border-[var(--gold)] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Add path</button>

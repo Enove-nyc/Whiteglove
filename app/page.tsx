@@ -32,7 +32,7 @@ const travelServices = [
   { title: "Phone & SIM rentals", href: "/phone-rentals", text: "SIMs, eSIMs, and hotspots so you stay reachable abroad without the setup hassle." },
   { title: "Travel insurance", href: "/travel-insurance", text: "Understand your coverage options — medical, cancellation, and baggage — clearly." },
   { title: "Flights, hotels & cars", href: "/book", text: "Search and book flights, hotels, and rental cars that fit your route, dates, and kosher needs." },
-  { title: "Trip planning", href: "/planning", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
+  { title: "Trip planning", href: "/services", text: "Tell us what matters and we shape the route, flights, hotels, and kosher details around it." },
   { title: "Honeymoon", href: "/honeymoon", text: "A calm, private, well-planned kosher honeymoon, arranged end to end." },
   { title: "Kosher getaways", href: "/getaways", text: "Resorts, beaches, and cities like Rome and Paris — planned kosher, start to finish." },
 ];
@@ -98,7 +98,7 @@ export default async function Home() {
               <span className="mt-7 text-sm font-semibold text-[var(--gold-light)] transition group-hover:text-white">Explore Jewish heritage guides →</span>
             </Link>
 
-            <Link href="/planning" className="group flex min-h-72 flex-col justify-between rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-7 shadow-[0_8px_26px_rgba(23,45,82,.07)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_14px_35px_rgba(23,45,82,.11)] sm:p-9">
+            <Link href="/services" className="group flex min-h-72 flex-col justify-between rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-7 shadow-[0_8px_26px_rgba(23,45,82,.07)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_14px_35px_rgba(23,45,82,.11)] sm:p-9">
               <div>
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Destination planning</p>
