@@ -64,7 +64,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination guides</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingGuides.map((guide) => (
-                <Link key={guide.slug} href={`/${guide.slug}`} className="min-w-0 border border-[var(--gold-light)] bg-[var(--navy)] p-5 text-white transition hover:bg-[var(--gold)] sm:p-7">
+                <Link key={guide.slug} href={`/${guide.slug}`} className="min-w-0 rounded-3xl border border-[var(--gold-light)] bg-[var(--navy)] p-5 text-white shadow-[0_10px_30px_rgba(23,45,82,.08)] transition hover:-translate-y-0.5 hover:bg-[var(--gold)] sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-light)] sm:tracking-[0.18em]">{guide.country}</p>
                   <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight">{guide.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-slate-300">{guide.city}</p>
@@ -82,7 +82,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Kevarim &amp; batei hachaim</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingStops.map((cemetery) => (
-                <Link key={cemetery.slug} href={`/cemeteries/${cemetery.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                <Link key={cemetery.slug} href={`/cemeteries/${cemetery.slug}`} className="flex min-w-0 flex-col rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
                   <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
@@ -99,7 +99,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination research queue</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingBulk.map((destination) => (
-                <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] sm:p-7">
+                <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 min-w-0 flex-col rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">{destination.country}</p>
                   <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{destination.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{destination.city}</p>
@@ -116,7 +116,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Things to do</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingAttractions.map((a) => (
-                <Link key={a.slug} href={a.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                <Link key={a.slug} href={a.href} className="flex min-w-0 flex-col rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{a.city} · {a.country} · {a.kind}</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{a.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{a.summary}</p>
@@ -132,7 +132,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Where to stay</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingAreas.map((area) => (
-                <Link key={`area-${area.slug}`} href={`/kosher-stays#${area.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                <Link key={`area-${area.slug}`} href={`/kosher-stays#${area.slug}`} className="flex min-w-0 flex-col rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{area.city} · {area.country} · Jewish quarter</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{area.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{area.note}</p>
@@ -140,7 +140,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
                 </Link>
               ))}
               {matchingStays.map((s) => (
-                <Link key={s.slug} href={s.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                <Link key={s.slug} href={s.href} className="flex min-w-0 flex-col rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_8px_26px_rgba(23,45,82,.05)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-md sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{s.city} · {s.country} · {s.kind}</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{s.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{s.summary}</p>
@@ -155,7 +155,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
         )}
 
         {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && matchingAttractions.length === 0 && matchingStays.length === 0 && matchingAreas.length === 0 && (
-          <div className="mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-stone-600">
+          <div className="mt-12 rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-stone-600 shadow-[0_8px_26px_rgba(23,45,82,.05)]">
             <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">No match yet.</p>
             <p className="mt-3 leading-7">Try the city name, country, traditional name, or the tzaddik’s name. We are adding more destinations continuously.</p>
           </div>

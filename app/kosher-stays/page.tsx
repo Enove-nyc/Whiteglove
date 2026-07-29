@@ -38,7 +38,7 @@ export default async function KosherStaysPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         {/* Answered before the hotels, because it is the earlier question. */}
-        <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
+        <div className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 shadow-[0_12px_34px_rgba(23,45,82,.06)] sm:p-8">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Which part of town</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
             Before a hotel is chosen, the question is really which neighbourhood. These are where the shuls, the kosher

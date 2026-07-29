@@ -97,7 +97,7 @@ export default async function TravelGuidePage() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {DOCUMENT_CHECKLIST.map((item) => (
-              <article key={item.title} className="wg-card border border-[var(--gold-light)] bg-white p-5">
+              <article key={item.title} className="wg-card rounded-3xl border border-[var(--gold-light)] bg-white p-5">
                 <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{item.title}</p>
                 <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
               </article>
@@ -110,7 +110,7 @@ export default async function TravelGuidePage() {
               the same information stacks into cards instead. */}
           <div className="mt-4 grid gap-3 sm:hidden">
             {COUNTRY_DOCS.map((c) => (
-              <div key={c.country} className="border border-[var(--gold-light)] bg-white p-4">
+              <div key={c.country} className="rounded-2xl border border-[var(--gold-light)] bg-white p-4 shadow-[0_6px_20px_rgba(23,45,82,.04)]">
                 <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{c.country}</p>
                 {c.note && <p className="mt-1 text-xs leading-5 text-amber-800">{c.note}</p>}
                 <div className="mt-3 flex flex-col gap-1">
@@ -121,7 +121,7 @@ export default async function TravelGuidePage() {
             ))}
           </div>
 
-          <div className="mt-4 hidden overflow-x-auto border border-[var(--gold-light)] bg-white sm:block">
+          <div className="mt-4 hidden overflow-x-auto rounded-2xl border border-[var(--gold-light)] bg-white shadow-[0_6px_20px_rgba(23,45,82,.04)] sm:block">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="border-b border-[var(--gold-light)] text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
                 <tr><th className="px-4 py-3">Country</th><th className="px-4 py-3">Official entry information</th><th className="px-4 py-3">U.S. country page</th></tr>
@@ -152,7 +152,7 @@ export default async function TravelGuidePage() {
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {PAYMENT_GUIDE.map((item) => (
-            <article key={item.title} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+            <article key={item.title} className="wg-card rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
               <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{item.title}</p>
               <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
             </article>
