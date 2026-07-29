@@ -296,6 +296,7 @@ export const bulkCemeteries: Cemetery[] = [
       { name: "Rabbi Yosef Karo", yiddishName: "רבי יוסף קארו", knownAs: "Maran / the Beis Yosef", seforim: "בית יוסף · שולחן ערוך · כסף משנה", yahrzeit: "י״ג ניסן · 1575", note: "Chief rabbi of Tzfat from 1546." },
       { name: "Rabbi Shlomo Alkabetz", yiddishName: "רבי שלמה הלוי אלקבץ", knownAs: "Author of Lecha Dodi", seforim: "לכה דודי · מנות הלוי", note: "Passed 1580; brother-in-law and teacher of the Ramak." },
       { name: "Rabbi Moshe Cordovero", yiddishName: "רבי משה קורדובירו", knownAs: "The Ramak", seforim: "פרדס רימונים · תומר דבורה · אור יקר", yahrzeit: "כ״ג תמוז · 1570", note: "Leading Tzfat kabbalist; his passing preceded the Arizal's arrival." },
+          { name: "Rabbi Moshe Alshich", yiddishName: "רבי משה אלשיך", knownAs: "The Alshich HaKadosh", seforim: "תורת משה", note: "Dayan in Tzfat alongside the Beis Yosef and one of the town's great darshanim; his peirush on Chumash is learnt as the Alshich." },
     ],
     places: [
       { category: "MIKVAH", name: "Ari Mikvah (Mikvah of the Arizal) — men only", notes: "Spring-fed, icy-cold mikvah at the cemetery entrance below the Ari Sephardic Synagogue, where the Arizal is said to have immersed; reported open 24 hours.", source: "http://www.myascent.org/about-2/about-tzfat/holy-sites/ari-mikvah/" },
@@ -319,11 +320,20 @@ export const bulkCemeteries: Cemetery[] = [
       "The tomb complex is in the village of Meron on Mount Meron, a short drive west of Tzfat. Inside, one tombstone marks Rashbi and a second, central, tombstone marks his son R' Elazar.",
       "By far the busiest time is Lag BaOmer (18 Iyar, Rashbi's yahrzeit), when hundreds of thousands converge for bonfires and prayer — expect extreme crowds, road closures and shuttle/security arrangements.",
       "Nearest international gateway is Ben Gurion Airport; Haifa Airport is the closest regional airport.",
+          "One thing to hold in mind about every name here except the Rashbi and his son. Har Meron carries kevarim of tannaim that Klal Yisroel has davened by for many hundreds of years — Hillel, Shammai, Rabbi Yochanan HaSandlar — and the identifications come from medieval tradition, not from anything documented. That is not a reason to stay away; it is a reason not to tell somebody else the spot is certain.",
+      "They are also not all in one place. Hillel's cave is up the mountain from the Rashbi's complex, not inside it, so allow for the walk.",
     ],
     accessNote: "Open public pilgrimage site, no entry fee, visited year-round; separate men's and women's access at the tomb. Modest dress. (A deadly crowd crush occurred here on Lag BaOmer 2021 — follow official crowd guidance.)",
     burials: [
       { name: "Rabbi Shimon bar Yochai", yiddishName: "רבי שמעון בר יוחאי", knownAs: "Rashbi", seforim: "תנא; מסורתית מיוחס אליו הזוהר", yahrzeit: "י״ח אייר (ל״ג בעומר)", note: "2nd-century Tanna; hid with his son in a cave in Peki'in for 13 years." },
       { name: "Rabbi Elazar ben Rabbi Shimon", yiddishName: "רבי אלעזר בן רבי שמעון", knownAs: "Son of the Rashbi", note: "Buried beside his father; the central tombstone in the chamber marks his grave." },
+          // The rest of Har Meron. Read the arrival note before davening by a
+      // name here: these identifications are old, they are venerated, and they
+      // are traditions rather than documented graves.
+      { name: "Hillel HaZaken", yiddishName: "הלל הזקן", knownAs: "Hillel the Elder", note: "The cave held by tradition to be Hillel's, with his talmidim. It is on the mountain above the Rashbi, not in the same complex." },
+      { name: "Shammai", yiddishName: "שמאי", note: "Held by tradition to be near Hillel and the Rashbi on Har Meron." },
+      { name: "Rabbi Yochanan HaSandlar", yiddishName: "רבי יוחנן הסנדלר", knownAs: "The Tanna", note: "Talmid of Rabbi Akiva. His kever is close to the Rashbi's." },
+      { name: "Rabbi Yosi ben Kisma", yiddishName: "רבי יוסי בן קסמא", note: "Among the kevarim on Har Meron." },
     ],
     places: [
       { category: "KOSHER_FOOD", name: "Lag BaOmer hospitality (Tzidkat Rashbi / Hachnasas Orchim)", notes: "Over Lag BaOmer, large equipped pavilions serve free hot food and drinks to pilgrims around the clock.", source: "https://www.rashbi.org/lagbaomer-hachnasatorchim" },
@@ -352,6 +362,7 @@ export const bulkCemeteries: Cemetery[] = [
       { name: "Rabbi Meir Baal HaNes", yiddishName: "רבי מאיר בעל הנס", knownAs: "Baal HaNes — foremost student of Rabbi Akiva", yahrzeit: "י״ד אייר (פסח שני)", note: "Tomb complex above Hamat Tiberias on the Sea of Galilee shore, ~2.5 km south of the center; two synagogues over the grave. Large hilula on Pesach Sheni." },
       { name: "Rabban Yochanan ben Zakai", yiddishName: "רבן יוחנן בן זכאי", knownAs: "Re-established the Sanhedrin at Yavneh", note: "Buried within the courtyard/compound of the Rambam tomb." },
       { name: "Rabbi Akiva ben Yosef", yiddishName: "רבי עקיבא", knownAs: "Tanna; teacher of 24,000 students", note: "Tomb-mark in upper Tiberias at the end of HaGvura Street, on a hillside overlooking the city." },
+          { name: "Rabbi Menachem Mendel of Vitebsk", yiddishName: "רבי מנחם מענדל מװיטעבסק", knownAs: "Who brought the chassidim to Eretz Yisroel", note: "Talmid of the Maggid of Mezritch. He led a group of several hundred chassidim from Eastern Europe to Eretz Yisroel in 1777 and settled in Teverya, where he is buried." },
     ],
     places: [
       { category: "ACCOMMODATION", name: "Nof Kinneret Hotel", notes: "Kosher hotel on the mountainside in upper Tiberias with a strictly kosher restaurant and Sea of Galilee views.", source: "https://english.nofkinneret.co.il/" },

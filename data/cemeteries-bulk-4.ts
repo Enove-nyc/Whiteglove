@@ -96,6 +96,7 @@ export const bulkCemeteries4: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Avraham Yeshaya Karelitz, the Chazon Ish, whose halachic authority shaped Torah life in Eretz Yisrael.",
       "In the Zichron Meir cemetery in Bnei Brak; confirm the exact location and access locally.",
+          "Bnei Brak has more than one charedi bais hachaim, they are close together on and around Rechov Chazon Ish, and the gedolim are NOT all in the same one. Zichron Meir and Ponevezh sit side by side; the Steipler is in Shomrei Shabbos, which is a different ground again. Somebody who comes for the Chazon Ish and expects to walk a few metres to the Steipler will not find him there. Ask which cemetery before you set out, for each kever you are coming for.",
     ],
     burials: [
       { name: "Rabbi Avraham Yeshaya Karelitz", yiddishName: "רבי אברהם ישעיהו קרליץ", knownAs: "The Chazon Ish", seforim: "חזון איש (על הש״ס וההלכה)", yahrzeit: "ט״ו מרחשון · 5714 / 1953", note: "Leading halachic authority of his generation in Eretz Yisrael." },
@@ -120,6 +121,7 @@ export const bulkCemeteries4: Cemetery[] = [
       { name: "Rabbi Shlomo Zalman Auerbach", yiddishName: "רבי שלמה זלמן אויערבאך", knownAs: "Posek of Jerusalem", seforim: "מנחת שלמה", yahrzeit: "כ׳ אדר א׳ · 5755 / 1995", note: "One of the foremost poskim of his generation." },
       { name: "Rabbi Yosef Shalom Elyashiv", yiddishName: "רבי יוסף שלום אלישיב", knownAs: "Posek hador", yahrzeit: "כ״ח תמוז · 5772 / 2012", note: "Leading halachic authority of the generation." },
       { name: "Rabbi Aharon Rokeach", yiddishName: "רבי אהרן ראקח", knownAs: "The Belzer Rebbe", yahrzeit: "כ״א אב · 5717 / 1957", note: "Fourth Belzer Rebbe, who survived the war and rebuilt Belz in Eretz Yisrael." },
+          { name: "Rabbi Yitzchok Zev Soloveitchik", yiddishName: "רבי יצחק זאב סאלאווייטשיק", knownAs: "The Brisker Rov", seforim: "חידושי הגרי״ז", note: "Niftar 1959. Son of Reb Chaim Brisker, and the derech of learning that carries the Brisk name in the yeshivos is largely his." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Har_HaMenuchot",
   },
@@ -139,6 +141,10 @@ export const bulkCemeteries4: Cemetery[] = [
     accessNote: "Ancient, very large hillside cemetery facing the Old City; visited year-round. Confirm the exact section, access, and current security guidance locally.",
     burials: [
       { name: "Rabbi Chaim ibn Attar", yiddishName: "רבי חיים בן עטר", knownAs: "The Ohr HaChaim HaKadosh", seforim: "אור החיים (על התורה) · פרי תואר", yahrzeit: "ט״ו תמוז · 1743", note: "Author of the Ohr HaChaim commentary on the Torah; buried on the Mount of Olives." },
+          { name: "Rabbi Avraham Yitzchak HaKohen Kook", yiddishName: "רבי אברהם יצחק הכהן קוק", knownAs: "Rav Kook — first Ashkenazi chief rabbi of Eretz Yisroel", seforim: "אורות · עין איה", note: "Niftar 1935." },
+      { name: "Rabbi Tzvi Yehuda Kook", yiddishName: "רבי צבי יהודה קוק", note: "Niftar 1982. Son of Rav Kook, and buried on the same mountain." },
+      { name: "Rabbi Shmuel Salant", yiddishName: "רבי שמואל סלאנט", knownAs: "Ashkenazi rov of Yerushalayim for close to seventy years", note: "Niftar 29 Av 1909." },
+      { name: "Rabbi Yosef Chaim Sonnenfeld", yiddishName: "רבי יוסף חיים זאננענפעלד", knownAs: "Rov of the Eidah HaChareidis", note: "Niftar 1932. Talmid of the Ksav Sofer and the first rov of the separatist kehilla in Yerushalayim." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Mount_of_Olives_Jewish_Cemetery",
   },
