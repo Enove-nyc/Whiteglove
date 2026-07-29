@@ -534,6 +534,43 @@ export async function createTrip(email: string, name?: string) {
   return { ok: true as const, trips: saved, activeId: trip.id };
 }
 
+/**
+ * Put a trip somebody shared into this account, as a trip of its own.
+ *
+ * Never over the top of what is already there. Somebody who has spent an hour
+ * planning Poland and is then sent a friend's Uman itinerary should end up
+ * with two trips, not one — losing the first to gain the second is the worst
+ * possible reading of "add this to my account".
+ *
+ * It is opened straight away, because adding it is how somebody says they want
+ * to look at it. The one already open is still there, untouched, in the
+ * switcher.
+ */
+export async function importTrip(email: string, itinerary: Itinerary, name?: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+
+  const now = new Date().toISOString();
+  const clean = (name?.trim() || itinerary.title?.trim() || "Shared trip").slice(0, 80);
+  const trip: SavedTrip = {
+    id: tripId(),
+    name: clean,
+    // The copy is theirs. No share link and no collaborators come across — a
+    // link handed to them is not a link they may hand on.
+    itinerary: { ...itinerary, title: clean, updatedAt: now },
+    route: [],
+    shareId: undefined,
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, trip], trip.id);
+  if (!saved) return { ok: false as const, error: "Could not add the trip." };
+  return { ok: true as const, trips: saved, activeId: trip.id };
+}
+
 export async function renameTrip(email: string, id: string, name: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const clean = name.trim();

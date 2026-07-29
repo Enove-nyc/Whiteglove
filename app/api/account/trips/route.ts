@@ -7,10 +7,12 @@ import {
   duplicateTrip,
   getCurrentAccountData,
   getTrips,
+  importTrip,
   renameTrip,
   switchTrip,
 } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
+import type { Itinerary } from "@/data/itinerary";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +37,19 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: string; id?: string; name?: string }
+    | { action?: string; id?: string; name?: string; itinerary?: Itinerary }
     | null;
 
   switch (body?.action) {
     case "create": {
       const result = await createTrip(email, body.name);
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "import": {
+      // Adding a shared trip. It becomes a trip of its own; nothing already in
+      // the account is touched.
+      if (!body.itinerary) return NextResponse.json({ ok: false, error: "Nothing to add." }, { status: 400 });
+      const result = await importTrip(email, body.itinerary, body.name);
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "rename": {
