@@ -229,9 +229,12 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Rabbi Yisrael Friedman of Ruzhin settled in Sadigura after leaving the Russian Empire, and is buried there; his court shaped many chassidic dynasties.",
       "Confirm the cemetery and exact grave location locally.",
+          "The matzeivos of the Ruzhiner and his sons were destroyed in the First World War; what stands now is a rebuilt ohel, renovated again in the 2010s. The ground is theirs — the stone over it is not the one they were buried under.",
     ],
     burials: [
       { name: "Rabbi Yisrael Friedman of Ruzhin", yiddishName: "רבי ישראל פרידמן מרוז׳ין", knownAs: "The Ruzhiner · the Sadigura Rebbe", yahrzeit: "ג׳ חשון · 5611 / 1850", note: "The Ruzhiner Rebbe, forebear of the Sadigura, Chortkov, Boyan, Husiatyn and related dynasties." },
+          { name: "Rabbi Avrohom Yaakov Friedman", yiddishName: "רבי אברהם יעקב פרידמאן", knownAs: "The first Sadigura Rebbe", note: "1820–1883. Son of the Ruzhiner, and Rebbe in Sadhora after him in the house his father built. Buried in the same ground." },
+      { name: "Rabbi Dov Ber Friedman of Leova", yiddishName: "רבי דוב בער פרידמאן מליאווא", note: "Son of the Ruzhiner, buried in the same cemetery as his father and brother." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Israel_Friedman_of_Ruzhyn",
   },
