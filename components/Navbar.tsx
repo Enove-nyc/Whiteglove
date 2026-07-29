@@ -110,7 +110,7 @@ export default function Navbar() {
           </div>
 
           {showSearch && (
-            <div className="mx-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-12 xl:mr-5 xl:max-w-sm">
+            <div className="ml-8 mr-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-12 xl:mr-5 xl:max-w-sm">
               <DestinationSearch compact />
             </div>
           )}
