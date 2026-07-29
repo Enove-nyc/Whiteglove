@@ -19,6 +19,7 @@ const menuItems = [
   { yiddish: "סערוויסעס", english: "Services", href: "/services" },
   { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
   { yiddish: "וואו צו גיין", english: "Things to do", href: "/attractions" },
+  { yiddish: "וואו צו שלאפן", english: "Where to stay", href: "/kosher-stays" },
   { yiddish: "פליגערס און האטעלן", english: "Book flights, hotels & cars", href: "/book" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
@@ -38,7 +39,7 @@ const menuGroups = [
   },
   {
     title: "Plan & book",
-    links: menuItems.filter((item) => ["/services", "/book", "/getaways", "/honeymoon"].includes(item.href)),
+    links: menuItems.filter((item) => ["/services", "/book", "/kosher-stays", "/getaways", "/honeymoon"].includes(item.href)),
   },
   {
     title: "White Glove",

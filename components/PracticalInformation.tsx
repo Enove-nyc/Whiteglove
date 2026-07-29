@@ -1,4 +1,5 @@
 import Link from "next/link";
+import KosherNearby from "@/components/KosherNearby";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 import type { PracticalPlace } from "@prisma/client";
@@ -64,6 +65,15 @@ function PlaceCard({ place }: { place: PracticalPlace }) {
         {place.bookingLink && <a href={place.bookingLink} target="_blank" rel="noreferrer" className={pill}>Book</a>}
         {place.address && <a href={mapHref(place.address, place.coordinates)} target="_blank" rel="noreferrer" className={pill}>Map</a>}
       </div>
+      {/* "Is there kosher food near this hotel" is the question somebody is
+          actually asking, and it is not the same question as "is there kosher
+          food in this city". Asked live against the hotel's own position, so
+          the answer cannot go stale — and only where a coordinate exists. */}
+      {place.category === "ACCOMMODATION" && place.coordinates && (
+        <div className="mt-4">
+          <KosherNearby coordinates={place.coordinates} radiusKm={3} heading={`Kosher within walking distance of ${place.name}`} />
+        </div>
+      )}
     </div>
   );
 }
