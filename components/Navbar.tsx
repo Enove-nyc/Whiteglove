@@ -27,8 +27,7 @@ const primaryLinks = [
   { label: "Getaways", href: "/getaways" },
   { label: "Directory", href: "/directory" },
   { label: "Services", href: "/services" },
-  { label: "Flights", href: "/book?type=flights" },
-  { label: "Cars", href: "/book?type=cars" },
+  { label: "Book", href: "/book" },
 ];
 
 const menuGroups = [
@@ -109,7 +108,7 @@ export default function Navbar() {
           </div>
 
           {showSearch && (
-            <div className="mx-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-7 xl:mr-5 xl:max-w-sm">
+            <div className="mx-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-12 xl:mr-5 xl:max-w-sm">
               <DestinationSearch compact />
             </div>
           )}
