@@ -244,6 +244,7 @@ export const cityGuides: CityGuide[] = [
       "Use the exact map pin for the Jewish cemetery parking area; rural roads and map labels can vary.",
       "After arriving, follow current local signs and directions for the cemetery entrance and the ohel.",
       "On 3 Iyar and other busy dates, plan extra time for parking, walking, and local access arrangements.",
+          "The ohel is locked behind an iron door and holds three kevarim, not one: Reb Shayele in the middle, his rebbetzin, and a third that the people who look after the place say they no longer have a name for. Reb Shayele's is at the highest point of the ground, with his chassidim buried around him.",
     ],
     sourceUrl: "https://nertzaddik.com/tzadik-info/?id=2865",
   },

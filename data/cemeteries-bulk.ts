@@ -58,6 +58,7 @@ export const bulkCemeteries: Cemetery[] = [
       "The ohel of the Chidushei HaRim and the Sfas Emes stands at the end of the path beyond the gate (installed 1984). ~1.6 km west of the town center off Kalwaryjska St.",
       "~25 km south of Warsaw; by train (Warszawa Zachodnia → Góra Kalwaria, ~50 min, hourly) or bus 742 from Metro Kabaty.",
       "A Hasidic pilgrimage site, busiest on the two rebbes' yahrzeits (23 Adar and 5 Shevat). Little signage remains — consider a heritage guide.",
+          "Two of the Gerrer rebbes are in the ohel here — the Chidushei HaRim and the Sfas Emes. The Imrei Emes is NOT: he left Poland before the churban and is buried in Yerushalayim. People come to Ger looking for him.",
     ],
     accessNote: "Fenced cemetery with a gate; the brick ohel of the local tzaddikim is the focus. Signage is minimal and the gate may be locked — arrange access in advance through the Warsaw Jewish Community or a heritage guide.",
     accessContacts: [
@@ -117,6 +118,7 @@ export const bulkCemeteries: Cemetery[] = [
       "Small town in Lublin province, ~45 km north of Lublin and ~110 km southeast of Warsaw; reach by car.",
       "The cemetery sits ~1 km NE of the market square among the fields; the Morgensztern (Kotzk) dynasty ohel is the main pilgrimage focus.",
       "Kock was the seat of the Kotzk Hasidic dynasty founded by the Kotzker Rebbe.",
+          "The ohel is the Morgenstern family's rather than one kever — the Kotzker was the first buried in it and the rebbes after him were laid there too.",
     ],
     accessNote: "The cemetery has a metal fence with a lockable gate; a brick ohel stands over the Kotzker Rebbe's grave. The gate is kept locked — arrange with the local caretaker who holds the key.",
     accessContacts: [
@@ -124,6 +126,7 @@ export const bulkCemeteries: Cemetery[] = [
     ],
     burials: [
       { name: "Rabbi Menachem Mendel Morgensztern of Kotzk", yiddishName: "רבי מנחם מענדל מארגנשטרן מקאָצק", knownAs: "The Kotzker Rebbe", yahrzeit: "כ״ב שבט · 1859", note: "Founder of the Kotzk dynasty; buried in Kock under an ohel. Later Morgensztern tzaddikim are buried in the same cemetery." },
+          { name: "Rabbi Dovid Morgenstern", yiddishName: "רבי דוד מארגענשטערן", knownAs: "The second Kotzker Rebbe", note: "Son of the Kotzker and Rebbe after him. The ohel was built over the Kotzker's kever in 1859, and the Morgenstern rebbes after him were buried in it." },
     ],
     places: [
       { category: "ACCOMMODATION", name: "Hotel Ilan (former Yeshivat Chachmei Lublin)", address: "ul. Lubartowska 85, Lublin", notes: "4-star hotel in the restored Chachmei Lublin yeshiva building (~45 km from Kock); on-site synagogue and mikvah. Natural base for visiting the Kotzker's ohel.", source: "https://www.hotelilan.pl/en/" },
@@ -204,6 +207,7 @@ export const bulkCemeteries: Cemetery[] = [
       "The Maggid spent his final years in Anipoli and is buried here alongside two disciples — this is the burial site, distinct from the town of Mezhyrichi with which he is titularly associated.",
       "Hannopil is a small village typically reached on organized kivrei tzaddikim trips; nearest towns are Slavuta (~30 km) and Shepetivka; nearest active community is Khmelnytskyi city.",
       "Ukraine wartime travel advisories apply — confirm conditions and access before traveling.",
+          "What stands here is a common marker, not three matzeivos. The cemetery was destroyed in the churban and one memorial was put up afterwards for the Maggid, Reb Zusha and the others together. So you are davening at the ground they are in rather than at an individual kever, and nobody can point to which part of it is whose.",
     ],
     accessNote: "The original cemetery and ohel were destroyed in WWII; a joint monument was later erected for the three tzaddikim and the ohel was renovated in 2017 by Oholei Tzadikim / Geder Avos. Arrange access via a kivrei-tzaddikim operator or the regional community.",
     accessContacts: [
