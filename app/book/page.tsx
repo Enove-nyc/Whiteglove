@@ -50,6 +50,11 @@ export default async function BookPage({
     // Travelpayouts: one free account covering flights, hotels and insurance.
     travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
   };
+  // Flights go through Duffel — searched and booked here — until there is a
+  // Kayak affiliate key to send them out with. A Kayak link without the key
+  // works but earns nothing, so there is no reason to prefer it.
+  const flightsVia = process.env.DUFFEL_ACCESS_TOKEN?.trim() && !affiliate.kayakParams ? "duffel" : "kayak";
+
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
@@ -64,7 +69,7 @@ export default async function BookPage({
               Choose how you&apos;re paying, then book flights, hotels or a rental car — and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="mt-9"><BookPartners affiliate={affiliate} prefill={prefill} /></div>
+          <div className="mt-9"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} /></div>
         </div>
       </section>
 

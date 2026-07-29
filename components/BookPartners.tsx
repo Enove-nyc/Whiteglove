@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import BookingSearch from "@/components/BookingSearch";
 import DateField from "@/components/DateField";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd } from "@/lib/date-range";
@@ -72,7 +73,15 @@ function withKayakAffiliate(url: string, params?: string) {
   return `${url}${url.includes("?") ? "&" : "?"}${params.replace(/^[?&]/, "")}`;
 }
 
-export default function BookPartners({ affiliate, prefill }: { affiliate?: Affiliate; prefill?: Prefill }) {
+/**
+ * `flightsVia` decides who searches the flights.
+ *
+ * "duffel" searches and books here, in the site, through the Duffel account.
+ * "kayak" hands the search to Kayak with the affiliate tag on it. Kayak links
+ * work without a tag but earn nothing, so until the Kayak key exists the
+ * flights are better served — and better tracked — by Duffel.
+ */
+export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" }: { affiliate?: Affiliate; prefill?: Prefill; flightsVia?: "duffel" | "kayak" }) {
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>("flights");
   const [added, setAdded] = useState(false);
@@ -141,7 +150,19 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
         </div>
       )}
 
-      {pay === "cash" && kind === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />}
+      {pay === "cash" && kind === "flights" && (
+        flightsVia === "duffel" ? (
+          <div>
+            <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
+              Search and book right here — fares and seats come from our own airline connection, and what you book goes
+              straight onto your itinerary.
+            </p>
+            <BookingSearch only="flights" />
+          </div>
+        ) : (
+          <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
+        )
+      )}
       {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
       {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
 
@@ -161,7 +182,9 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
 
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 text-xs leading-6 text-stone-500 sm:px-7">
         {pay === "cash"
-          ? "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."
+          ? flightsVia === "duffel" && kind === "flights"
+            ? "Flights are searched and booked here, through our own airline connection. Hotels and cars open with a trusted partner where you compare and pay securely."
+            : "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."
           : "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."}
       </p>
     </div>
