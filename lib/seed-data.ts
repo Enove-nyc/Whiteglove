@@ -5,9 +5,11 @@
 
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
+import { attractions } from "@/data/attractions";
 import { cemeteries } from "@/data/cemeteries";
 import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 import { directoryProviders } from "@/data/directory";
+import { kosherAreas, kosherStays } from "@/data/kosher-stays";
 import { practicalContent } from "@/data/practical-content";
 
 function slugify(value: string) {
@@ -24,6 +26,9 @@ export type SeedRows = {
   contacts: Prisma.ContactCreateManyInput[];
   places: Prisma.PracticalPlaceCreateManyInput[];
   directory: Prisma.DirectoryProviderCreateManyInput[];
+  attractions: Prisma.AttractionCreateManyInput[];
+  stays: Prisma.KosherStayCreateManyInput[];
+  areas: Prisma.KosherAreaCreateManyInput[];
 };
 
 export function buildSeedRows(): SeedRows {
@@ -210,7 +215,69 @@ export function buildSeedRows(): SeedRows {
     source: p.source ?? null,
   }));
 
-  return { destinations, cemeteries: cemeteryRows, tzaddikim, contacts, places, directory };
+  // The rest of the trip (data/attractions.ts, data/kosher-stays.ts). These go
+  // in as their own rows rather than as PracticalPlaces because most of them
+  // belong to no kever destination at all — there is no Interlaken destination
+  // to hang the Jungfrau off, and inventing one to satisfy a foreign key would
+  // have put a Swiss mountain in the kevarim directory.
+  const attractionRows: Prisma.AttractionCreateManyInput[] = attractions.map((a) => ({
+    id: randomUUID(),
+    slug: a.slug,
+    name: a.name,
+    city: a.city,
+    country: a.country,
+    kind: a.kind,
+    summary: a.summary,
+    address: a.address ?? null,
+    coordinates: a.coordinates ?? null,
+    website: a.website ?? null,
+    notes: a.notes ?? [],
+    shabbos: a.shabbos ?? null,
+    sourceUrl: a.sourceUrl,
+    status: "PUBLISHED",
+  }));
+
+  const stayRows: Prisma.KosherStayCreateManyInput[] = kosherStays.map((s) => ({
+    id: randomUUID(),
+    slug: s.slug,
+    name: s.name,
+    city: s.city,
+    country: s.country,
+    kind: s.kind,
+    summary: s.summary,
+    anchorName: s.anchor.name,
+    anchorCoords: s.anchor.coordinates,
+    season: s.season ?? null,
+    kosherClaim: s.kosherClaim,
+    notes: s.notes ?? [],
+    website: s.website ?? null,
+    sourceUrl: s.sourceUrl,
+    status: "PUBLISHED",
+  }));
+
+  const areaRows: Prisma.KosherAreaCreateManyInput[] = kosherAreas.map((a) => ({
+    id: randomUUID(),
+    slug: a.slug,
+    city: a.city,
+    country: a.country,
+    name: a.name,
+    coordinates: a.coordinates,
+    note: a.note,
+    sourceUrl: a.sourceUrl,
+    status: "PUBLISHED",
+  }));
+
+  return {
+    destinations,
+    cemeteries: cemeteryRows,
+    tzaddikim,
+    contacts,
+    places,
+    directory,
+    attractions: attractionRows,
+    stays: stayRows,
+    areas: areaRows,
+  };
 }
 
 export const DEFAULT_SETTINGS = {
@@ -233,5 +300,8 @@ export function countSeedRows(rows: SeedRows) {
     contacts: rows.contacts.length,
     places: rows.places.length,
     directory: rows.directory.length,
+    attractions: rows.attractions.length,
+    stays: rows.stays.length,
+    areas: rows.areas.length,
   };
 }

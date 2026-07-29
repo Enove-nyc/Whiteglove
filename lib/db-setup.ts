@@ -137,6 +137,9 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.cemetery.deleteMany({ where: { slug: { in: cemeterySlugs } } });
   await prisma.destination.deleteMany({ where: { slug: { in: destinationSlugs } } });
   await prisma.directoryProvider.deleteMany({ where: { slug: { in: providerSlugs } } });
+  await prisma.attraction.deleteMany({ where: { slug: { in: rows.attractions.map((a) => a.slug) } } });
+  await prisma.kosherStay.deleteMany({ where: { slug: { in: rows.stays.map((s) => s.slug) } } });
+  await prisma.kosherArea.deleteMany({ where: { slug: { in: rows.areas.map((a) => a.slug) } } });
 
   await prisma.destination.createMany({ data: rows.destinations });
   await prisma.cemetery.createMany({ data: rows.cemeteries });
@@ -144,6 +147,9 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.contact.createMany({ data: rows.contacts });
   await prisma.practicalPlace.createMany({ data: rows.places });
   await prisma.directoryProvider.createMany({ data: rows.directory });
+  await prisma.attraction.createMany({ data: rows.attractions });
+  await prisma.kosherStay.createMany({ data: rows.stays });
+  await prisma.kosherArea.createMany({ data: rows.areas });
 
   await prisma.siteSetting.upsert({
     where: { id: DEFAULT_SETTINGS.id },

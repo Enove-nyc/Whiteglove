@@ -4,7 +4,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { type ActionResult, addCemeteryAction, addInfoPageAction } from "@/app/admin/add/actions";
+import { type ActionResult, addAttractionAction, addCemeteryAction, addInfoPageAction, addKosherStayAction } from "@/app/admin/add/actions";
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -21,6 +21,8 @@ function Status({ state }: { state: ActionResult | null }) {
 export default function AddEntryForms() {
   const [cemState, cemAction, cemPending] = useActionState<ActionResult | null, FormData>(addCemeteryAction, null);
   const [pageState, pageAction, pagePending] = useActionState<ActionResult | null, FormData>(addInfoPageAction, null);
+  const [attrState, attrAction, attrPending] = useActionState<ActionResult | null, FormData>(addAttractionAction, null);
+  const [stayState, stayAction, stayPending] = useActionState<ActionResult | null, FormData>(addKosherStayAction, null);
 
   return (
     <div className="space-y-8">
@@ -59,6 +61,94 @@ export default function AddEntryForms() {
         </p>
         <Link href="/admin/kevarim" className={`mt-5 inline-block ${submitClass}`}>Open the kevarim screen</Link>
       </div>
+
+      {/* Something to do. Goes into the same table the built-in things-to-do
+          list is seeded into, so it is in the directory, the /stops search and
+          the planner's picker straight away — no redeploy. */}
+      <form action={attrAction} className={cardClass}>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New thing to do</p>
+        <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to go</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          A museum, a mountain, a castle, somewhere for the children. It does not have to be kosher or Jewish. It appears
+          on the things-to-do page, in the search, and in the planner as soon as you save it.
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label className="block"><span className={captionClass}>Name *</span><input name="name" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Kind</span>
+            <select name="kind" className={inputClass} defaultValue="Landmark">
+              <option>Jewish heritage</option>
+              <option>Museum</option>
+              <option>Landmark</option>
+              <option>Nature</option>
+              <option>Family</option>
+              <option>Viewpoint</option>
+            </select>
+          </label>
+          <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>One line — what it is, and why it is worth the half day *</span><input name="summary" className={inputClass} required /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Address</span><AddressAutocomplete name="address" className={inputClass} placeholder="Start typing the address…" /></label>
+          <label className="block"><span className={captionClass}>Coordinates</span><input name="coordinates" className={inputClass} placeholder="41.8902, 12.4922" /></label>
+          <label className="block"><span className={captionClass}>Official website</span><input name="website" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Shabbos and yom tov — carrying, tickets, whether it can be done at all</span><input name="shabbos" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Practical notes — one per line</span><textarea name="notes" rows={3} className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Source *</span><input name="sourceUrl" className={inputClass} placeholder="https://…" required /></label>
+        </div>
+        <p className="mt-4 max-w-2xl text-xs leading-5 text-stone-500">
+          Hours and ticket prices are deliberately not stored — they change every season, and a stale hour printed here
+          would be worse than none. Link the official site instead.
+        </p>
+        <div className="mt-5 flex items-center gap-4">
+          <button type="submit" disabled={attrPending} className={submitClass}>{attrPending ? "Adding…" : "Add it"}</button>
+          <Status state={attrState} />
+        </div>
+      </form>
+
+      {/* Somewhere to stay. */}
+      <form action={stayAction} className={cardClass}>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New place to stay</p>
+        <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to stay</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          Distances are measured from the shul or quarter it is near, not from the hotel — so that is what you fill in.
+          It appears on the where-to-stay page, in the search, and in the planner&rsquo;s hotel picker.
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label className="block"><span className={captionClass}>Name *</span><input name="name" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Kind</span>
+            <select name="kind" className={inputClass} defaultValue="Ordinary hotel, well placed">
+              <option>Kosher hotel</option>
+              <option>Kosher B&amp;B</option>
+              <option>Seasonal kosher programme</option>
+              <option>Kosher-friendly, in the Jewish quarter</option>
+              <option>Ordinary hotel, well placed</option>
+            </select>
+          </label>
+          <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>One line — what it is *</span><input name="summary" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Measured from — the shul or quarter *</span><input name="anchorName" className={inputClass} placeholder="Great Synagogue of Rome" required /></label>
+          <label className="block"><span className={captionClass}>That place&rsquo;s coordinates *</span><input name="anchorCoords" className={inputClass} placeholder="41.8921, 12.4780" required /></label>
+          <label className="block"><span className={captionClass}>Kashrus</span>
+            <select name="kosherClaim" className={inputClass} defaultValue="none">
+              <option value="none">No kosher claim — listed for where it stands</option>
+              <option value="reported">Reported kosher — not checked by us</option>
+              <option value="confirmed">Confirmed — you checked it yourself</option>
+            </select>
+          </label>
+          <label className="block"><span className={captionClass}>Season, if it is a programme rather than a place</span><input name="season" className={inputClass} placeholder="Pesach only; July–August" /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Website</span><input name="website" className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Notes — one per line</span><textarea name="notes" rows={3} className={inputClass} /></label>
+          <label className="block sm:col-span-2"><span className={captionClass}>Source *</span><input name="sourceUrl" className={inputClass} placeholder="https://…" required /></label>
+        </div>
+        <p className="mt-4 max-w-2xl text-xs leading-5 text-stone-500">
+          Choose <strong>Confirmed</strong> only for kashrus you checked with the hotel or its mashgiach yourself. A
+          plain hotel with no kosher claim gets no kashrus caveat printed under it — it never claimed anything.
+        </p>
+        <div className="mt-5 flex items-center gap-4">
+          <button type="submit" disabled={stayPending} className={submitClass}>{stayPending ? "Adding…" : "Add it"}</button>
+          <Status state={stayState} />
+        </div>
+      </form>
 
       {/* New page */}
       <form action={pageAction} className={cardClass}>

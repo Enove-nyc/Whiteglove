@@ -6,6 +6,7 @@ import SectionHeading from "@/components/SectionHeading";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { destinationHaystack, destinations, guidedDestinations, unguidedDestinations } from "@/data/destinations";
+import { searchAreas, searchAttractions, searchStays } from "@/lib/attraction-search";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
 
@@ -26,6 +27,13 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
     ? allCemeteries.filter((c) => fuzzyMatch(query, `${c.city} ${c.yiddishCity} ${c.name} ${c.yiddishName} ${c.country} ${extraSpellings([c.slug, c.city])}`))
     : allCemeteries;
   const matchingBulk = query ? unguidedDestinations().filter(matchDestination) : unguidedDestinations();
+  // The rest of the trip. Somebody searching "Colosseum" or "Wiedikon" was
+  // being told there was no match at all, when the site had both. Shown only
+  // for an actual query — this directory is a kevarim directory first, and an
+  // unfiltered page should not open with fifty museums.
+  const [matchingAttractions, matchingStays, matchingAreas] = query
+    ? await Promise.all([searchAttractions(query, 24), searchStays(query, 24), searchAreas(query, 12)])
+    : [[], [], []];
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -103,7 +111,50 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
           </div>
         )}
 
-        {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && (
+        {matchingAttractions.length > 0 && (
+          <div className="mt-14">
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Things to do</p>
+            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {matchingAttractions.map((a) => (
+                <Link key={a.slug} href={a.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{a.city} · {a.country} · {a.kind}</p>
+                  <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{a.name}</h2>
+                  <p className="mt-4 text-sm leading-6 text-stone-600">{a.summary}</p>
+                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open in things to do →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(matchingStays.length > 0 || matchingAreas.length > 0) && (
+          <div className="mt-14">
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Where to stay</p>
+            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {matchingAreas.map((area) => (
+                <Link key={`area-${area.slug}`} href={`/kosher-stays#${area.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{area.city} · {area.country} · Jewish quarter</p>
+                  <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{area.name}</h2>
+                  <p className="mt-4 text-sm leading-6 text-stone-600">{area.note}</p>
+                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open where to stay →</span>
+                </Link>
+              ))}
+              {matchingStays.map((s) => (
+                <Link key={s.slug} href={s.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{s.city} · {s.country} · {s.kind}</p>
+                  <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{s.name}</h2>
+                  <p className="mt-4 text-sm leading-6 text-stone-600">{s.summary}</p>
+                  {/* A season is the thing that costs somebody a Shabbos, so it
+                      is on the search card and not only on the full listing. */}
+                  {s.season && <p className="mt-3 text-sm font-semibold text-amber-800">Seasonal — {s.season}</p>}
+                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open where to stay →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && matchingAttractions.length === 0 && matchingStays.length === 0 && matchingAreas.length === 0 && (
           <div className="mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-stone-600">
             <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">No match yet.</p>
             <p className="mt-3 leading-7">Try the city name, country, traditional name, or the tzaddik’s name. We are adding more destinations continuously.</p>

@@ -8,6 +8,7 @@ import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import TripSwitcher from "@/components/TripSwitcher";
+import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
@@ -1482,11 +1483,32 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
     }));
   }
 
+  // The other half of a day. Deliberately does NOT set keverSlug — that field
+  // is what makes the itinerary read the burials live off our cemetery data,
+  // and a museum has none.
+  function pickAttraction(x: AttractionResult) {
+    setA((prev) => ({
+      ...prev,
+      name: x.name,
+      yiddishName: undefined,
+      address: x.address ?? `${x.city}, ${x.country}`,
+      coordinates: x.coordinates || prev.coordinates,
+      href: x.website || x.href,
+      keverSlug: undefined,
+      country: x.country,
+      // The Shabbos line first — it is the fact that decides whether the day
+      // works at all — then whatever practical note came with the entry.
+      notes: prev.notes || [x.shabbos ? `Shabbos: ${x.shabbos}` : null, x.notes].filter(Boolean).join(" ") || undefined,
+    }));
+  }
+
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list — we&apos;ll fill in the rest</span>
         <KeverPicker onPick={pickKever} />
+        <span className={`${caption} mt-3 block`}>…or something to do — a museum, a mountain, somewhere for the children</span>
+        <AttractionPicker onPick={pickAttraction} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}. Edit anything below if you like.</p>}
       </div>
       <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
@@ -1554,6 +1576,68 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
                 {k.yiddishName ? <span className="ml-2 text-sm text-stone-500">{k.yiddishName}</span> : null}
                 <span className="block text-xs text-stone-500">{[k.city, k.country].filter(Boolean).join(", ")}{k.coordinates ? "" : " · location — confirm locally"}</span>
                 {k.burials?.length ? <span className="block text-xs text-[var(--gold)]">{burialSummary(k.burials)}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// Search-and-pick something to do from the site's own listings. Same shape as
+// KeverPicker; kept separate because the two answer different questions and a
+// single box searching both would bury one under the other.
+function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<AttractionResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 2) { setResults([]); return; }
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/attractions/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (active) setResults(data.results ?? []);
+      } catch {
+        if (active) setResults([]);
+      }
+    }, 200);
+    return () => { active = false; clearTimeout(timer); };
+  }, [q]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative mt-1">
+      <input
+        className={inputClass}
+        value={q}
+        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="Search a city or a sight — e.g. Rome, Jungfrau, museum, waterfall…"
+        autoComplete="off"
+      />
+      {open && results.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+          {results.map((x) => (
+            <li key={x.slug}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onPick(x); setQ(""); setResults([]); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
+              >
+                <span className="text-sm font-semibold text-[var(--navy)]">{x.name}</span>
+                <span className="block text-xs text-stone-500">{[x.city, x.country, x.kind].filter(Boolean).join(", ")}</span>
+                {x.shabbos ? <span className="block text-xs text-[var(--gold)]">Shabbos: {x.shabbos}</span> : null}
               </button>
             </li>
           ))}

@@ -191,6 +191,81 @@ model PracticalPlace {
   @@index([destinationId, category])
 }
 
+// ---- The rest of the trip ---------------------------------------------
+//
+// Attractions, kosher stays and the Jewish quarters they are measured from.
+// These start life in data/attractions.ts and data/kosher-stays.ts, are loaded
+// into these tables by the seed, and are read back through
+// lib/attractions-view.ts — which is what every search on the site goes
+// through. The point of the tables is that an entry the owner adds in the
+// admin lands in exactly the same place as one that ships in the data files,
+// so it is searchable everywhere the built-in ones are.
+//
+// Unlike a kever, a coordinate here is a public landmark and is safe to
+// navigate to. Hours and prices are deliberately not stored — they go stale.
+
+// Something to do: a museum, a mountain, a castle, a Jewish-heritage site.
+model Attraction {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  city        String
+  country     String
+  kind        String // "Museum" | "Nature" | "Landmark" | …
+  summary     String
+  address     String?
+  coordinates String? // "lat, lng" — a real, navigable location
+  website     String?
+  notes       String[]      @default([])
+  shabbos     String? // what it does on Shabbos and yom tov
+  sourceUrl   String
+  status      ContentStatus @default(PUBLISHED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([country, city])
+}
+
+// Somewhere to sleep, measured from the shul or quarter it is near.
+model KosherStay {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  name         String
+  city         String
+  country      String
+  kind         String // "Kosher hotel" | "Ordinary hotel, well placed" | …
+  summary      String
+  anchorName   String // the shul/quarter distances are measured from
+  anchorCoords String // the ANCHOR's coordinates, never a guessed hotel pin
+  season       String? // set only for a seasonal programme
+  kosherClaim  String        @default("none") // none | reported | confirmed
+  notes        String[]      @default([])
+  website      String?
+  sourceUrl    String
+  status       ContentStatus @default(PUBLISHED)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([country, city])
+}
+
+// A Jewish quarter — the answer to "which part of town do I stay in".
+model KosherArea {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  city        String
+  country     String
+  name        String
+  coordinates String
+  note        String
+  sourceUrl   String
+  status      ContentStatus @default(PUBLISHED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([country, city])
+}
+
 // ---- CMS operational tables (migrated from the Redis content bundle) --
 
 // Visitor-submitted correction (SuggestEditButton -> admin review).

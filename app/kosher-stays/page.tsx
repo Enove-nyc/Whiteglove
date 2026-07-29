@@ -4,7 +4,7 @@ import KosherStayDirectory from "@/components/KosherStayDirectory";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
-import { kosherAreas, kosherStays } from "@/data/kosher-stays";
+import { getAreaList, getStayList } from "@/lib/attractions-view";
 
 export const metadata: Metadata = {
   title: "Where to stay — White Glove Itineraries",
@@ -12,7 +12,10 @@ export const metadata: Metadata = {
     "Kosher and kosher-friendly places to stay in Italy, France and Switzerland, and which part of each city to be in for Shabbos.",
 };
 
-export default function KosherStaysPage() {
+export default async function KosherStaysPage() {
+  // Read through the view so owner-added stays and quarters appear here and in
+  // every search without a redeploy.
+  const [kosherAreas, kosherStays] = await Promise.all([getAreaList(), getStayList()]);
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -43,7 +46,7 @@ export default function KosherStaysPage() {
           </p>
           <ul className="mt-6 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
             {kosherAreas.map((area) => (
-              <li key={`${area.city}-${area.name}`} className="py-4">
+              <li key={area.slug} id={area.slug} className="scroll-mt-24 py-4">
                 <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                   {area.city}, {area.country}
                 </p>
