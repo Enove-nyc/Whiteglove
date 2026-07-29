@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { googleMapsAvailable, loadGoogleMaps } from "@/lib/google-maps-loader";
+import { googleMapsAvailable, googleMapsBrowserKeyMalformed, loadGoogleMaps } from "@/lib/google-maps-loader";
 
 // Is the map drawing with Google, or with the free fallback?
 //
@@ -14,14 +14,17 @@ import { googleMapsAvailable, loadGoogleMaps } from "@/lib/google-maps-loader";
 // So this does the real thing: it asks the browser to load Google's map script
 // exactly as the map pages do, and reports what happened.
 
-type State = "checking" | "no-key" | "working" | "refused";
+type State = "checking" | "no-key" | "bad-key" | "working" | "refused";
 
 export default function MapKeyStatus() {
   // Whether a key exists is a build-time constant, the same on the server and
   // in the browser, so it is the starting state rather than something an effect
   // has to discover. Only whether Google ACCEPTS it needs finding out.
   const hasKey = googleMapsAvailable();
-  const [state, setState] = useState<State>(hasKey ? "checking" : "no-key");
+  // "Set but not a key" is its own answer. Without it the screen tells the
+  // owner to add a variable that is sitting right there in Vercel.
+  const malformed = googleMapsBrowserKeyMalformed();
+  const [state, setState] = useState<State>(hasKey ? "checking" : malformed ? "bad-key" : "no-key");
 
   useEffect(() => {
     if (!hasKey) return;
@@ -35,7 +38,11 @@ export default function MapKeyStatus() {
   }, [hasKey]);
 
   const tone =
-    state === "working" ? "border-green-600 bg-green-50" : state === "refused" ? "border-red-400 bg-red-50" : "border-[var(--gold)] bg-[#fcfaf6]";
+    state === "working"
+      ? "border-green-600 bg-green-50"
+      : state === "refused" || state === "bad-key"
+        ? "border-red-400 bg-red-50"
+        : "border-[var(--gold)] bg-[#fcfaf6]";
 
   return (
     <section className={`border-l-4 ${tone} border-y border-r border-[var(--gold-light)] p-6`}>
@@ -52,6 +59,20 @@ export default function MapKeyStatus() {
           <p className="mt-3 text-sm leading-6 text-stone-600">
             To use Google&apos;s map, add <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code>{" "}
             in Vercel and redeploy. It must be a <em>different</em> key from the one that works out driving times.
+          </p>
+        </>
+      )}
+
+      {state === "bad-key" && (
+        <>
+          <p className="mt-3 text-sm leading-6 text-stone-700">
+            <strong>The key is set, but the value is not a key.</strong> It holds a character that cannot appear in
+            one — almost always something invisible picked up when the key was copied, which looks identical to a
+            correct key in every box you paste it into. Visitors are seeing the OpenStreetMap map.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            Delete <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code> in Vercel, copy
+            the key again straight from Google&apos;s console rather than from a document or a message, and redeploy.
           </p>
         </>
       )}

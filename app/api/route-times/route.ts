@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiKey } from "@/lib/api-key";
 
 // Driving times for the itinerary planner, worked out on the server.
 //
@@ -66,7 +67,11 @@ function departureTime(date?: string): string {
 }
 
 async function googleChain(chain: LatLng[], date?: string, signal?: AbortSignal): Promise<number[] | null> {
-  const key = process.env.GOOGLE_MAPS_API_KEY?.trim();
+  // Cleaned rather than trimmed: an invisible character pasted into the
+  // variable makes fetch throw while building the header, and that throw would
+  // propagate out of here instead of falling back to the open router.
+  // See lib/api-key.ts.
+  const key = apiKey("GOOGLE_MAPS_API_KEY");
   if (!key) return null;
   const point = (p: LatLng) => ({ location: { latLng: { latitude: p.lat, longitude: p.lng } } });
   const res = await fetch(GOOGLE_ROUTES, {
