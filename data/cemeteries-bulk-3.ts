@@ -119,6 +119,8 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Ostroh was a great center of Torah; Rabbi Shmuel Eidels, the Maharsha, served and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
+          "The ohel here was built in 2016 over what the people who built it describe as the APPROXIMATE location of the Maharsha's kever — the ground was wrecked and the stones scattered, and the exact spot was not recoverable. Daven there; do not repeat to others that the place is certain.",
+      "Ostroh was one of the great Torah towns of Volhyn, and several names associated with it are NOT buried here. The Maharshal was rosh yeshiva in Ostroh but died in Lublin in 1573 and lies there. The Shelah davened in the Ostroh shul but is buried in Teverya. Both are on this site, under those towns.",
     ],
     burials: [
       { name: "Rabbi Shmuel Eliezer Eidels", yiddishName: "רבי שמואל אליעזר איידלס", knownAs: "The Maharsha", seforim: "חידושי הלכות ואגדות (מהרש״א)", yahrzeit: "ה׳ כסלו · 5392 / 1631", note: "His commentary on the Talmud (Chidushei Halachos v'Aggados) is printed in standard editions of the Gemara." },
