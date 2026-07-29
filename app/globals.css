@@ -85,26 +85,21 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 
 .glove-mark {
   display: inline-block;
-  background-color: var(--glove-tone, var(--gold));
-  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
-  mask: url("/glove-bullet.svg") no-repeat center / contain;
+  background: url("/logo-hand-navy.png") no-repeat center / contain;
 }
 
 .glove-list { list-style: none; padding-left: 0; }
-.glove-list > li { position: relative; padding-left: 1.85rem; }
+.glove-list > li { position: relative; padding-left: 2rem; }
 .glove-list > li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.24em;
-  width: 1rem;
-  height: 1rem;
-  background-color: var(--glove-tone, var(--gold));
-  -webkit-mask: url("/glove-bullet.svg") no-repeat center / contain;
-  mask: url("/glove-bullet.svg") no-repeat center / contain;
+  top: 0.12em;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: url("/logo-hand-navy.png") no-repeat center / contain;
 }
 
-.glove-on-navy { --glove-tone: var(--gold-light); }
 .glove-rule { display: flex; align-items: center; gap: 0.9rem; }
 .glove-rule::before, .glove-rule::after { content: ""; flex: 1; height: 1px; background: var(--gold-light); }
 
