@@ -67,8 +67,17 @@ export const cityGuides: CityGuide[] = [
       "Set navigation to Pushkina Street 27A; the tziyun is on Pushkina Street.",
       "From central Uman, the route approaches from the direction of Sofiyivka Park and continues along Pushkina Street.",
       "During Rosh Hashanah and other busy periods, follow current local crowd-control and security directions rather than relying on a usual walking route.",
+          "The tziyun is not the whole of what is here. This ground holds the kedoshim of 1768 — more than twenty thousand of them — and Rebbe Nachman chose it for that reason. It is worth knowing where you are standing before Rosh Hashana crowds fill it.",
     ],
     safetyNote: "Ukraine remains subject to rapidly changing security conditions and transport disruption. Check official travel advice and local guidance immediately before making any plans.",
+    alsoBuried: [
+      {
+        name: "The kedoshim of Uman, 5528",
+        yiddishName: "קדושי אומאן תקכ״ח",
+        knownAs: "More than twenty thousand murdered in 1768",
+        note: "Killed on 5–7 Tammuz 1768 by Gonta's Haidamaks, who offered them their lives to convert and were refused. They are buried in this ground, and Rebbe Nachman asked to be buried among them — he had passed through Uman and said of it, this is a good place to be buried.",
+      },
+    ],
     sourceUrl: "https://www.breslov.com/center/article_rebyahrzeit.html",
   },
   {
@@ -406,6 +415,7 @@ export const cityGuides: CityGuide[] = [
       "Navigate to the old Jewish cemetery, not one of the other cemeteries in the town.",
       "The ohel of the Yismach Moshe is on the cemetery grounds; follow the current signs and access instructions after arriving.",
       "Confirm gate access before traveling, especially for a group or a yahrzeit visit.",
+          "The ohel holds three kevarim, not one: the Yismach Moshe, his rebbetzin, and Reb Alexander of Komárom. It is a building rather than a stone, so you daven inside it.",
     ],
     accessContacts: [
       {
@@ -417,6 +427,13 @@ export const cityGuides: CityGuide[] = [
         label: "שמואל מרדכי · Cemetery shomer",
         phone: "+36-70-387-9737",
         note: "Publicly listed as an additional shomer for the old Jewish cemetery. Please call ahead to confirm current access.",
+      },
+    ],
+    alsoBuried: [
+      {
+        name: "Rabbi Alexander of Komárom",
+        yiddishName: "רבי אלכסנדר מקאמארן",
+        note: "In the same ohel as the Yismach Moshe. The building holds three kevarim — the Yismach Moshe, his rebbetzin, and him.",
       },
     ],
     sourceUrl: "https://nertzaddik.com/tzadik-info/?id=2922",
