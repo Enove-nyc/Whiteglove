@@ -130,7 +130,8 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
       {/* ---- How are you paying? A segmented control, so the choice reads as
            one control with two settings rather than two competing panels. ---- */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4 sm:px-7">
-        <div className="inline-flex min-w-0 border border-[var(--gold-light)] bg-white p-1">
+        <div className="relative grid h-14 w-full max-w-[21rem] min-w-0 grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+          <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${pay === "miles" ? "translate-x-full" : "translate-x-0"}`} />
           <PayToggle active={pay === "cash"} onClick={() => setPay("cash")}>Cash</PayToggle>
           <PayToggle active={pay === "miles"} onClick={() => setPay("miles")}>Miles &amp; points</PayToggle>
         </div>
@@ -461,7 +462,7 @@ function PayToggle({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-w-0 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] transition sm:px-6 ${active ? "bg-[var(--navy)] text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}
+      className={`relative z-10 flex min-w-0 items-center justify-center rounded-full px-3 text-center text-xs font-bold uppercase tracking-[0.1em] transition-colors duration-300 sm:px-5 sm:tracking-[0.12em] ${active ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>
