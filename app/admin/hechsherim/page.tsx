@@ -1,10 +1,13 @@
 import HechsherEditor, { type ConfirmedRow } from "@/components/HechsherEditor";
-import { hechsherStoreAvailable, listHechsherim } from "@/lib/hechsher-store";
+import { allHechsherim } from "@/data/hechsherim";
+import { hechsherStoreAvailable, listAgencies, listHechsherim } from "@/lib/hechsher-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminHechsherimPage() {
-  const recorded = (await listHechsherim()) as ConfirmedRow[];
+  const [recorded, stored] = await Promise.all([listHechsherim(), listAgencies()]);
+  const agencies = allHechsherim(stored);
+  const ownAdded = new Set(stored.map((a) => a.id));
 
   return (
     <>
@@ -18,7 +21,12 @@ export default async function AdminHechsherimPage() {
       </header>
 
       <div className="mt-8">
-        <HechsherEditor confirmed={recorded} storeReady={hechsherStoreAvailable()} />
+        <HechsherEditor
+          confirmed={recorded as ConfirmedRow[]}
+          agencies={agencies}
+          ownAdded={[...ownAdded]}
+          storeReady={hechsherStoreAvailable()}
+        />
       </div>
     </>
   );

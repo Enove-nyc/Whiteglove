@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hechsherimFor } from "@/lib/hechsher-store";
+import { hechsherimFor, listAgencies } from "@/lib/hechsher-store";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 200);
-  const hechsherim = await hechsherimFor(ids);
-  return NextResponse.json({ hechsherim });
+  // The agencies go out with the statuses because the badge needs both: a
+  // place can be marked with a hechsher the owner added, and without the list
+  // the circle would have no name and no mark to draw.
+  const [hechsherim, agencies] = await Promise.all([hechsherimFor(ids), listAgencies()]);
+  return NextResponse.json({ hechsherim, agencies });
 }

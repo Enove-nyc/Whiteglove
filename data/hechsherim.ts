@@ -29,6 +29,15 @@ export type Hechsher = {
   region: string;
   /** Lower-case fragments that identify this agency in free text. */
   aliases: string[];
+  /**
+   * A picture of the mark, when one has been uploaded in the admin.
+   *
+   * Held as a data URI rather than a file path, because the site runs on a
+   * filesystem that is thrown away on every deploy — a written file would not
+   * survive the next one. Raster only; see lib/hechsher-store.ts for why an
+   * uploaded SVG is refused.
+   */
+  logo?: string;
 };
 
 export const HECHSHERIM: Hechsher[] = [
@@ -54,9 +63,44 @@ export const HECHSHERIM: Hechsher[] = [
   { id: "local-rov", name: "The local rov", mark: "רב", region: "Wherever the town's rov gives the hechsher", aliases: ["local rabbi", "local rov", "town rabbi"] },
 ];
 
-export function getHechsher(id?: string | null): Hechsher | undefined {
+/**
+ * Every agency: the ones that ship with the site, plus the ones the owner has
+ * added or changed in the admin.
+ *
+ * A stored entry sharing an id with a built-in one overlays it rather than
+ * replacing it, which is how a logo gets attached to an agency that already
+ * exists without restating its name and region.
+ */
+export function allHechsherim(stored?: Array<Partial<Hechsher> & { id: string }>): Hechsher[] {
+  if (!stored?.length) return HECHSHERIM;
+  const byId = new Map(stored.map((h) => [h.id, h]));
+  const merged: Hechsher[] = HECHSHERIM.map((builtIn) => {
+    const overlay = byId.get(builtIn.id);
+    byId.delete(builtIn.id);
+    return overlay ? { ...builtIn, ...stripEmpty(overlay) } : builtIn;
+  });
+  for (const added of byId.values()) {
+    if (!added.name?.trim()) continue; // an overlay for an agency that no longer ships
+    merged.push({
+      id: added.id,
+      name: added.name,
+      mark: added.mark?.trim() || added.name.trim().slice(0, 3).toUpperCase(),
+      region: added.region?.trim() || "Added by the owner",
+      aliases: added.aliases ?? [],
+      logo: added.logo,
+    });
+  }
+  return merged;
+}
+
+/** Drop blank fields so an overlay never wipes a built-in name with "". */
+function stripEmpty<T extends object>(value: T): Partial<T> {
+  return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined && v !== null && v !== "")) as Partial<T>;
+}
+
+export function getHechsher(id?: string | null, agencies: Hechsher[] = HECHSHERIM): Hechsher | undefined {
   if (!id) return undefined;
-  return HECHSHERIM.find((h) => h.id === id);
+  return agencies.find((h) => h.id === id);
 }
 
 /**
@@ -66,12 +110,12 @@ export function getHechsher(id?: string | null): Hechsher | undefined {
  * HaChareidis" in someone's map edit lands on the right circle. A miss is
  * fine — the text is still shown as written.
  */
-export function matchHechsher(text?: string | null): Hechsher | undefined {
+export function matchHechsher(text?: string | null, agencies: Hechsher[] = HECHSHERIM): Hechsher | undefined {
   const value = text?.trim().toLowerCase();
   if (!value) return undefined;
-  const exact = HECHSHERIM.find((h) => h.aliases.includes(value) || h.id === value);
+  const exact = agencies.find((h) => h.aliases.includes(value) || h.id === value);
   if (exact) return exact;
-  return HECHSHERIM.find((h) => h.aliases.some((a) => a.length > 3 && value.includes(a)));
+  return agencies.find((h) => h.aliases.some((a) => a.length > 3 && value.includes(a)));
 }
 
 /**
@@ -98,8 +142,8 @@ export type HechsherStatus = {
 export const UNVERIFIED: HechsherStatus = { state: "unverified" };
 
 /** The name to write beside the circle. */
-export function hechsherLabel(status: HechsherStatus): string {
-  const named = getHechsher(status.hechsherId)?.name ?? status.note?.trim();
+export function hechsherLabel(status: HechsherStatus, agencies: Hechsher[] = HECHSHERIM): string {
+  const named = getHechsher(status.hechsherId, agencies)?.name ?? status.note?.trim();
   if (status.state === "none") return "No hechsher";
   if (status.state === "unverified") return "Unverified";
   if (status.state === "reported") return named ? `${named} — unverified` : "Unverified";
@@ -107,8 +151,8 @@ export function hechsherLabel(status: HechsherStatus): string {
 }
 
 /** A short line for the badge's tooltip and for a screen reader. */
-export function describeHechsher(status: HechsherStatus): string {
-  const named = getHechsher(status.hechsherId)?.name ?? status.note?.trim();
+export function describeHechsher(status: HechsherStatus, agencies: Hechsher[] = HECHSHERIM): string {
+  const named = getHechsher(status.hechsherId, agencies)?.name ?? status.note?.trim();
   switch (status.state) {
     case "none":
       return "Confirmed as carrying no hechsher.";

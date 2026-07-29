@@ -59,7 +59,7 @@ export default function KosherNearby({
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState<Record<string, boolean>>({});
   const shown = useMemo(() => (places ?? []).slice(0, limit), [places, limit]);
-  const confirmed = useHechsherim(useMemo(() => shown.map((p) => p.id), [shown]));
+  const { statuses: confirmed, agencies } = useHechsherim(useMemo(() => shown.map((p) => p.id), [shown]));
 
   async function load() {
     if (!point) return;
@@ -99,7 +99,7 @@ export default function KosherNearby({
                 </div>
                 {(p.cuisine || p.address) && <p className="mt-0.5 text-sm text-stone-600">{[p.cuisine, p.address].filter(Boolean).join(" — ")}</p>}
                 <div className="mt-1.5">
-                  <HechsherBadge status={hechsherOf(confirmed, p)} size="sm" />
+                  <HechsherBadge status={hechsherOf(confirmed, p, agencies)} size="sm" agencies={agencies} />
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                   <a href={placeMapUrl(p.address, `${p.lat}, ${p.lng}`)} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Open in Maps →</a>
