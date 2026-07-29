@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import FlightRequestForm from "@/components/FlightRequestForm";
 import Footer from "@/components/Footer";
+import { GloveList } from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
+import { visibleBlocks } from "@/data/page-blocks";
 import { resolvePage } from "@/lib/pages";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,14 +14,30 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function FlightBookingAssistancePage() {
   const page = (await resolvePage("flight-booking-assistance"))!;
+  const blocks = visibleBlocks(page.blocks);
+  const heroBlocks = blocks.filter((block) => block.kind === "hero");
+  const checklist = blocks.find((block) => block.kind === "list");
+  const supportingBlocks = blocks.filter((block) => block.kind !== "hero" && block !== checklist);
+
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <PageBlocks blocks={page.blocks} />
+      <PageBlocks blocks={heroBlocks} />
+      {supportingBlocks.length > 0 && <PageBlocks blocks={supportingBlocks} />}
       {/* The page lists what to send us; this is how it gets sent. Kept out of
           the blocks so the page stays editable in the admin without the form
           being something that can be deleted by accident. */}
-      <section className="mx-auto max-w-4xl px-5 pb-16 sm:px-8">
+      <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(15rem,0.72fr)_minmax(0,1.65fr)] lg:items-start lg:gap-12">
+        {checklist?.kind === "list" && (
+          <aside className="rounded-3xl border border-[var(--gold-light)] bg-[var(--cream-deep)] p-6 shadow-[0_14px_38px_rgba(23,45,82,.06)] sm:p-8 lg:sticky lg:top-32">
+            {checklist.heading && (
+              <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
+                {checklist.heading}
+              </h2>
+            )}
+            <GloveList items={checklist.items.filter(Boolean)} className="mt-6 space-y-4 text-base leading-7 text-stone-600" />
+          </aside>
+        )}
         <FlightRequestForm />
       </section>
       <Footer />

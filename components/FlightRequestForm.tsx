@@ -12,8 +12,8 @@ import { useState } from "react";
 // can quietly stop arriving.
 
 const inputClass =
-  "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
-const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
+  "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(23,45,82,.04)] outline-none transition placeholder:text-stone-400 focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
+const caption = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
 const EMPTY = {
   name: "",
@@ -93,7 +93,7 @@ export default function FlightRequestForm() {
 
   if (sent) {
     return (
-      <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center">
+      <div className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-10">
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">We have your flight details.</p>
         <p className="mt-3 text-sm leading-7 text-stone-600">
           A person reads this — nothing is booked automatically, and nothing is charged until you have seen what is
@@ -102,7 +102,7 @@ export default function FlightRequestForm() {
         <button
           type="button"
           onClick={() => setSent(false)}
-          className="mt-6 border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+          className="mt-6 rounded-full border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
         >
           Send another
         </button>
@@ -111,14 +111,14 @@ export default function FlightRequestForm() {
   }
 
   return (
-    <form onSubmit={submit} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Send us the flight</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+    <form onSubmit={submit} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-8 lg:p-10">
+      <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Send us the flight</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
         Fill in what you know. Nothing is booked from this form and nothing is charged — a person reads it and comes
         back to you with what is available.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <label className="block"><span className={caption}>Flying from *</span><input required className={inputClass} value={form.from} onChange={(e) => set({ from: e.target.value })} placeholder="New York, JFK" /></label>
         <label className="block"><span className={caption}>Flying to *</span><input required className={inputClass} value={form.to} onChange={(e) => set({ to: e.target.value })} placeholder="Kraków, KRK" /></label>
         <label className="block"><span className={caption}>Date out *</span><input required type="date" className={inputClass} value={form.depart} onChange={(e) => set({ depart: e.target.value })} /></label>
@@ -151,7 +151,7 @@ export default function FlightRequestForm() {
       <button
         type="submit"
         disabled={busy}
-        className="mt-6 min-h-[48px] border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
+        className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(23,45,82,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60 sm:w-auto"
       >
         {busy ? "Sending…" : "Send the request"}
       </button>
