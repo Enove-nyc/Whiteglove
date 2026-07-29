@@ -51,6 +51,7 @@ export default function ItineraryBuilder() {
   const [savedNote, setSavedNote] = useState("");
   const [planning, setPlanning] = useState(false);
   const [planNote, setPlanNote] = useState("");
+  const [unscheduledOpen, setUnscheduledOpen] = useState(true);
 
   // Load: account first, then localStorage.
   useEffect(() => {
@@ -276,7 +277,7 @@ export default function ItineraryBuilder() {
           </div>
 
           {unscheduled.length > 0 && (
-            <details defaultOpen className="group rounded-xl border border-dashed border-[var(--gold)] bg-[#fcfaf6]">
+            <details open={unscheduledOpen} onToggle={(e) => setUnscheduledOpen(e.currentTarget.open)} className="group rounded-xl border border-dashed border-[var(--gold)] bg-[#fcfaf6]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none">
                 <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Not scheduled yet ({unscheduled.length})</span>
                 <span aria-hidden="true" className="text-lg text-[var(--gold)] transition-transform group-open:rotate-180">⌄</span>
