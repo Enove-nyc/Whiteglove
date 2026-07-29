@@ -15,14 +15,24 @@ import { useEffect, useState } from "react";
  * than flashing "sign in" at somebody who is already signed in.
  */
 
-let cached: Promise<boolean> | null = null;
-const listeners = new Set<(value: boolean) => void>();
+export type Viewer = {
+  signedIn: boolean;
+  /** What they are called, when they have told us. */
+  name?: string;
+  /** What they sign in with — an email address or a phone number. */
+  id?: string;
+};
 
-function ask(): Promise<boolean> {
+const SIGNED_OUT: Viewer = { signedIn: false };
+
+let cached: Promise<Viewer> | null = null;
+const listeners = new Set<(value: Viewer) => void>();
+
+function ask(): Promise<Viewer> {
   cached ??= fetch("/api/account/me", { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
-    .then((d) => Boolean(d?.signedIn))
-    .catch(() => false);
+    .then((d): Viewer => (d?.signedIn ? { signedIn: true, name: d.account?.name, id: d.sessionEmail } : SIGNED_OUT))
+    .catch(() => SIGNED_OUT);
   return cached;
 }
 
@@ -34,13 +44,14 @@ export function forgetSignedIn() {
   });
 }
 
-export function useSignedIn(): boolean | null {
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+/** Who is looking, or null while we are still asking. */
+export function useViewer(): Viewer | null {
+  const [viewer, setViewer] = useState<Viewer | null>(null);
 
   useEffect(() => {
     let live = true;
-    const update = (value: boolean) => {
-      if (live) setSignedIn(value);
+    const update = (value: Viewer) => {
+      if (live) setViewer(value);
     };
     listeners.add(update);
     void ask().then(update);
@@ -50,7 +61,12 @@ export function useSignedIn(): boolean | null {
     };
   }, []);
 
-  return signedIn;
+  return viewer;
+}
+
+export function useSignedIn(): boolean | null {
+  const viewer = useViewer();
+  return viewer === null ? null : viewer.signedIn;
 }
 
 /** Where to send somebody to sign in, and come back to where they were. */

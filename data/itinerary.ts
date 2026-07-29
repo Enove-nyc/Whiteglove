@@ -134,6 +134,17 @@ export type Itinerary = {
    * as a Maps time.
    */
   roadTimeSources?: Record<string, "google" | "osrm">;
+  /**
+   * Whether the person planning is going themselves.
+   *
+   * Asked once, because it decides something concrete: if they are going, they
+   * belong on the traveler list and in the head count for rooms and seats, and
+   * making them type their own name is asking a question we know the answer to.
+   * Somebody arranging for a friend should not be added at all.
+   *
+   * Absent on trips saved before it was asked, which reads as "not yet asked".
+   */
+  bookingFor?: "self" | "someone-else";
   /** When the traveler gets going each morning, HH:MM. Drives arrival times. */
   dayStartTime?: string;
   notes?: string;

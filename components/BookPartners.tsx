@@ -4,6 +4,7 @@ import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
+import { correctedEnd, earliestEnd } from "@/lib/date-range";
 
 // Unified "Book" experience. The traveler makes two choices, in order:
 //   1. how they're paying — cash or miles/points;
@@ -61,7 +62,7 @@ function withKayakAffiliate(url: string, params?: string) {
   return `${url}${url.includes("?") ? "&" : "?"}${params.replace(/^[?&]/, "")}`;
 }
 
-export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
+export default function BookPartners({ affiliate, prefill }: { affiliate?: Affiliate; prefill?: Prefill }) {
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>("flights");
   const [added, setAdded] = useState(false);
@@ -129,7 +130,7 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
         </div>
       )}
 
-      {pay === "cash" && kind === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} />}
+      {pay === "cash" && kind === "flights" && <FlightsForm affiliate={affiliate} onAdd={addToTrip} prefill={prefill} />}
       {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} />}
       {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} />}
 
@@ -150,13 +151,22 @@ export default function BookPartners({ affiliate }: { affiliate?: Affiliate }) {
 
 type AddFn = (patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) => void;
 
+/**
+ * What the trip already knows, carried in the address.
+ *
+ * Somebody who has just written their dates into the planner should not have
+ * to type them again to look at flights. Read once, at first render, so the
+ * form stays theirs to change afterwards.
+ */
+export type Prefill = { from?: string; to?: string; depart?: string; ret?: string };
+
 // ---- Cash --------------------------------------------------------------
 
-function FlightsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn }) {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [depart, setDepart] = useState("");
-  const [ret, setRet] = useState("");
+function FlightsForm({ affiliate, onAdd, prefill }: { affiliate?: Affiliate; onAdd: AddFn; prefill?: Prefill }) {
+  const [from, setFrom] = useState(prefill?.from ?? "");
+  const [to, setTo] = useState(prefill?.to ?? "");
+  const [depart, setDepart] = useState(prefill?.depart ?? "");
+  const [ret, setRet] = useState(prefill?.ret ?? "");
   const [oneWay, setOneWay] = useState(false);
   const [error, setError] = useState("");
 
@@ -194,8 +204,8 @@ function FlightsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-4">
         <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
         <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Departure"><input type="date" value={depart} onChange={(e) => setDepart(e.target.value)} className={bareInput} /></Field>
-        <Field label="Return" className={oneWay ? "opacity-45" : ""}><input type="date" value={ret} disabled={oneWay} min={depart || undefined} onChange={(e) => setRet(e.target.value)} className={bareInput} /></Field>
+        <Field label="Departure"><input type="date" value={depart} onChange={(e) => { const v = e.target.value; setDepart(v); setRet((r) => correctedEnd(v, r)); }} className={bareInput} /></Field>
+        <Field label="Return" className={oneWay ? "opacity-45" : ""}><input type="date" value={ret} disabled={oneWay} min={earliestEnd(depart)} onChange={(e) => setRet(correctedEnd(depart, e.target.value))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search flights on Kayak" />
@@ -235,8 +245,8 @@ function HotelsForm({ affiliate, onAdd }: { affiliate?: Affiliate; onAdd: AddFn 
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={bareInput} /></Field>
-        <Field label="Check out"><input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={bareInput} /></Field>
+        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        <Field label="Check out"><input type="date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(e) => setCheckout(correctedEnd(checkin, e.target.value, "exclusive"))} className={bareInput} /></Field>
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
@@ -274,8 +284,8 @@ function CarsForm({ onAdd }: { onAdd: AddFn }) {
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} /></Field>
-        <Field label="Drop-off date"><input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={bareInput} /></Field>
+        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => { const v = e.target.value; setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><input type="date" value={dropoff} min={earliestEnd(pickup)} onChange={(e) => setDropoff(correctedEnd(pickup, e.target.value))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow onSearch={search} onAdd={addToTrip} searchLabel="Search cars on Kayak" />
@@ -521,8 +531,8 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={HOTEL_PROGRAMS} value={program} onChange={setProgram} label="Your points" />
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); if (checkout && v && checkout <= v) setCheckout(nextDate(v)); }} className={bareInput} /></Field>
-        <Field label="Check out"><input type="date" value={checkout} min={checkin ? nextDate(checkin) : undefined} onChange={(e) => setCheckout(e.target.value)} className={bareInput} /></Field>
+        <Field label="Check in"><input type="date" value={checkin} onChange={(e) => { const v = e.target.value; setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        <Field label="Check out"><input type="date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(e) => setCheckout(correctedEnd(checkin, e.target.value, "exclusive"))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
@@ -580,8 +590,8 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={CAR_PROGRAMS} value={program} onChange={setProgram} label="Your program" />
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} /></Field>
-        <Field label="Drop-off date"><input type="date" value={dropoff} min={pickup || undefined} onChange={(e) => setDropoff(e.target.value)} className={bareInput} /></Field>
+        <Field label="Pick-up date"><input type="date" value={pickup} onChange={(e) => { const v = e.target.value; setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><input type="date" value={dropoff} min={earliestEnd(pickup)} onChange={(e) => setDropoff(correctedEnd(pickup, e.target.value))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 

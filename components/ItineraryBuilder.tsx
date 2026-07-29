@@ -12,6 +12,8 @@ import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
+import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
+import { useViewer } from "@/lib/use-signed-in";
 import { fetchRoadTimes } from "@/lib/road-times";
 import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
 import {
@@ -214,8 +216,13 @@ export default function ItineraryBuilder() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
           <label className="block"><span className={caption}>Trip name</span><input className={inputClass} value={itin.title} onChange={(e) => set({ title: e.target.value })} /></label>
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => set({ startDate: e.target.value })} /></label>
-            <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} value={itin.endDate} onChange={(e) => set({ endDate: e.target.value })} /></label>
+            <label className="block"><span className={caption}>Start date</span><input type="date" className={inputClass} value={itin.startDate} onChange={(e) => {
+              // Moving the start past the end takes the end with it, rather
+              // than leaving a trip that finishes before it begins.
+              const startDate = e.target.value;
+              set({ startDate, endDate: correctedEnd(startDate, itin.endDate) });
+            }} /></label>
+            <label className="block"><span className={caption}>End date</span><input type="date" className={inputClass} min={earliestEnd(itin.startDate)} value={itin.endDate} onChange={(e) => set({ endDate: correctedEnd(itin.startDate, e.target.value) })} /></label>
             <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
@@ -238,7 +245,14 @@ export default function ItineraryBuilder() {
       <TravelersPanel
         travelers={travelersOf(itin)}
         onChange={(travelers) => set({ travelers, travelerName: travelers[0]?.name ?? "" })}
+        bookingFor={itin.bookingFor}
+        onBookingFor={(bookingFor, traveler) => {
+          const travelers = traveler ? [...travelersOf(itin), traveler] : travelersOf(itin);
+          set({ bookingFor, travelers, travelerName: travelers[0]?.name ?? "" });
+        }}
       />
+
+      <BookFlightsPanel itin={itin} />
 
       <TripSwitcher onSwitched={() => setReloadKey((k) => k + 1)} />
 
@@ -791,9 +805,11 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
     setL((prev) => ({ ...prev, name: g.name, address: g.address ?? prev.address, phone: g.phone ?? prev.phone, notes: prev.notes || g.notes }));
   }
 
-  // You cannot check out on or before the day you check in.
-  const checkOutTooEarly = Boolean(!overnight && l.checkIn && l.checkOut && l.checkOut <= l.checkIn);
-  const minCheckOut = l.checkIn ? nextDate(l.checkIn) : undefined;
+  // A stay is a number of nights, so check-out is the next day at the
+  // earliest — "exclusive" in lib/date-range.
+  const checkIn = l.checkIn ?? startDate;
+  const checkOutTooEarly = rangeIsBackwards(checkIn, l.checkOut ?? "", "exclusive");
+  const minCheckOut = earliestEnd(checkIn, "exclusive");
 
   return (
     <FormShell
@@ -801,8 +817,8 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
       error={checkOutTooEarly ? "Check-out has to be at least the day after check-in." : ""}
       onSubmit={() => {
         if (checkOutTooEarly) return;
-        if ((overnight || l.name) && l.checkIn) {
-          onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn: l.checkIn, checkOut: overnight ? nextDate(l.checkIn) : l.checkOut || nextDate(l.checkIn), notes: l.notes, bookedOnSite: false });
+        if ((overnight || l.name) && checkIn) {
+          onAdd({ id: uid(), type: (l.type as LodgingType) || "hotel", name: l.name || (overnight ? "bus/flight" : ""), address: l.address, coordinates: l.coordinates, phone: l.phone, checkIn, checkOut: overnight ? nextDate(checkIn) : l.checkOut || nextDate(checkIn), notes: l.notes, bookedOnSite: false });
         }
       }}
     >
@@ -818,8 +834,12 @@ function LodgingForm({ startDate, onAdd }: { startDate: string; onAdd: (l: ItinL
       {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
-      <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" className={inputClass} defaultValue={startDate} onChange={(e) => setL({ ...l, checkIn: e.target.value })} /></Field>
-      {!overnight && <Field label="Check-out *"><input type="date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: e.target.value })} /></Field>}
+      <Field label={overnight ? "Night of *" : "Check-in *"}><input type="date" required className={inputClass} value={checkIn} onChange={(e) => {
+        // Pushing check-in past check-out carries check-out with it.
+        const nextIn = e.target.value;
+        setL({ ...l, checkIn: nextIn, checkOut: correctedEnd(nextIn, l.checkOut ?? "", "exclusive") });
+      }} /></Field>
+      {!overnight && <Field label="Check-out *"><input type="date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(e) => setL({ ...l, checkOut: correctedEnd(checkIn, e.target.value, "exclusive") })} /></Field>}
     </FormShell>
   );
 }
@@ -1037,9 +1057,20 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
   { value: "infant", label: "Infant" },
 ];
 
-function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; onChange: (t: ItinTraveler[]) => void }) {
+function TravelersPanel({
+  travelers,
+  onChange,
+  bookingFor,
+  onBookingFor,
+}: {
+  travelers: ItinTraveler[];
+  onChange: (t: ItinTraveler[]) => void;
+  bookingFor?: "self" | "someone-else";
+  onBookingFor: (answer: "self" | "someone-else", traveler?: ItinTraveler) => void;
+}) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
+  const viewer = useViewer();
 
   function add() {
     const trimmed = name.trim();
@@ -1072,6 +1103,40 @@ function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; on
         Everyone travelling with you. They appear on the printed itinerary and give you the head count for rooms and seats.
         This is separate from sharing the trip below — a child doesn&apos;t need an account to be on the list.
       </p>
+
+      {/* Asked once, and only of somebody signed in — there is no name to add
+          otherwise. Answering "I am going" puts them on the list straight
+          away rather than making them type a name we already know. */}
+      {viewer?.signedIn && !bookingFor && (
+        <div className="mt-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-4 py-3">
+          <p className="font-semibold text-[var(--navy)]">Are you travelling on this trip, or arranging it for somebody else?</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                onBookingFor("self", { id: uid(), name: viewer.name?.trim() || viewer.id || "Me", kind: "adult" })
+              }
+              className="min-h-[40px] border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            >
+              I am travelling
+            </button>
+            <button
+              type="button"
+              onClick={() => onBookingFor("someone-else")}
+              className="min-h-[40px] border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+            >
+              I am arranging it for somebody else
+            </button>
+          </div>
+        </div>
+      )}
+
+      {bookingFor === "someone-else" && (
+        <p className="mt-4 text-sm leading-6 text-stone-600">
+          You are arranging this for somebody else, so you are not on the list. Add the people who are actually going
+          below.
+        </p>
+      )}
 
       {travelers.length > 0 && (
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -1135,6 +1200,61 @@ function TravelersPanel({ travelers, onChange }: { travelers: ItinTraveler[]; on
 }
 
 
+
+/**
+ * Book the flights, once you know who is going.
+ *
+ * The head count and the dates are the two things you need before you can look
+ * at seats, and by this point in the page both are known — so the link carries
+ * them rather than asking for them a second time on the other side.
+ */
+function BookFlightsPanel({ itin }: { itin: Itinerary }) {
+  const people = travelersOf(itin);
+  const flights = itin.flights.length;
+
+  const params = new URLSearchParams();
+  if (itin.startDate) params.set("depart", itin.startDate);
+  if (itin.endDate) params.set("return", itin.endDate);
+  // Where they are starting from and heading to, when a flight already says so.
+  const first = itin.flights[0];
+  if (first?.from) params.set("from", first.from);
+  if (first?.to) params.set("to", first.to);
+  const href = params.toString() ? `/book?${params.toString()}` : "/book";
+
+  return (
+    <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Book the flights</h2>
+        {people.length > 0 && (
+          <p className="text-xs font-semibold text-stone-500">
+            {people.length} {people.length === 1 ? "seat" : "seats"}
+            {itin.startDate ? ` · ${itin.startDate}` : ""}
+            {itin.endDate ? ` → ${itin.endDate}` : ""}
+          </p>
+        )}
+      </div>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+        {flights > 0
+          ? `${flights} ${flights === 1 ? "flight is" : "flights are"} on this trip already. Add another, or compare fares and award seats for the dates above.`
+          : "Compare fares and award seats for your dates, then add what you book straight back into this trip."}
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Link
+          href={href}
+          className="min-h-[44px] border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+        >
+          Book flights &amp; hotels
+        </Link>
+        <Link
+          href="/flight-booking-assistance"
+          className="min-h-[44px] border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+        >
+          Have us book it
+        </Link>
+      </div>
+    </section>
+  );
+}
 /**
  * One journey on a day card — connections included.
  *

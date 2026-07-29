@@ -27,7 +27,7 @@ const primaryLinks = [
   { label: "Getaways", href: "/getaways" },
   { label: "Directory", href: "/directory" },
   { label: "Services", href: "/services" },
-  { label: "Itinerary planner", href: "/itinerary" },
+  { label: "Book flights & hotels", href: "/book" },
 ];
 
 const menuGroups = [

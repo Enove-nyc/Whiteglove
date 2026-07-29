@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { AD_KINDS, SPOTS_BY_KIND, type AdKind, readAd, writeAd } from "@/lib/ad-types";
+import { correctedEnd, earliestEnd } from "@/lib/date-range";
 import type { Promotion, PromotionDevice, PromotionPlacement } from "@/lib/admin-content";
 
 // Making an advertisement, one question at a time.
@@ -340,11 +341,16 @@ export default function AdWizard({
               </label>
               <label className="block">
                 <span className={captionClass}>Starts</span>
-                <input type="date" value={ad.startDate} onChange={(e) => set({ startDate: e.target.value })} className={inputClass} />
+                <input type="date" value={ad.startDate} onChange={(e) => {
+                  // Moving the start past the end carries the end with it, so
+                  // an advertisement cannot be set to finish before it runs.
+                  const startDate = e.target.value;
+                  set({ startDate, endDate: correctedEnd(startDate, ad.endDate) });
+                }} className={inputClass} />
               </label>
               <label className="block">
                 <span className={captionClass}>Ends</span>
-                <input type="date" value={ad.endDate} onChange={(e) => set({ endDate: e.target.value })} className={inputClass} />
+                <input type="date" min={earliestEnd(ad.startDate)} value={ad.endDate} onChange={(e) => set({ endDate: correctedEnd(ad.startDate, e.target.value) })} className={inputClass} />
               </label>
             </div>
 

@@ -27,7 +27,21 @@ const COMPARISON: Array<[string, string, string]> = [
   ],
 ];
 
-export default function BookPage() {
+export default async function BookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string; depart?: string; return?: string }>;
+}) {
+  // The planner links here with the trip's dates already worked out, so nobody
+  // has to type them a second time.
+  const q = await searchParams;
+  const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
+  const prefill = {
+    from: clean(q.from),
+    to: clean(q.to),
+    depart: clean(q.depart),
+    ret: clean(q.return),
+  };
   // Affiliate slots — set these env vars once you join the partner programs and
   // the Book links start carrying your tracking IDs (no code change needed).
   const affiliate = {
@@ -50,7 +64,7 @@ export default function BookPage() {
               Choose how you&apos;re paying, then book flights, hotels or a rental car — and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="mt-9"><BookPartners affiliate={affiliate} /></div>
+          <div className="mt-9"><BookPartners affiliate={affiliate} prefill={prefill} /></div>
         </div>
       </section>
 
