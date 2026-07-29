@@ -12,27 +12,28 @@ redeploy.
 
 ---
 
-## 1. Replace the Google Maps key you already have
+## 1. The Google Maps key you already have — keeping it
 
-You have a key. It still has to be replaced, because it was displayed in a
-browser and put in a URL by two admin diagnostics that have since been fixed. A
-key that has been shown anywhere has to be treated as known to somebody else,
-whether or not it really is.
+Decided: the working key stays. Nothing here changes it or requires a redeploy.
+
+What is worth five minutes is putting a fence around it, which does not break
+it. The site only ever asks that key for driving times, so restricting it to
+that one API means a copy of it could not be spent on anything else.
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → **APIs &
-   Services → Credentials**.
-2. **Create credentials → API key.** Copy the new key.
-3. Click **Edit** on it:
-   - *API restrictions* → **Restrict key** → tick **Routes API** only.
-   - *Application restrictions* → **None**. This key is used by the server, not
-     a browser, so an IP or referrer restriction would block it.
-4. Vercel → Environment Variables → edit `GOOGLE_MAPS_API_KEY` → paste the new
-   value → save → **redeploy**.
-5. Check it: admin → **Settings → Connections**, the routing test should come
-   back with a Google time.
-6. Back in Google Cloud, **delete the old key**. Not disable — delete.
+   Services → Credentials** → click the key → **Edit**.
+2. *API restrictions* → **Restrict key** → tick **Routes API** only.
+3. *Application restrictions* → leave **None**. This key is used by the server,
+   not a browser, so a referrer or IP restriction would block it.
+4. Save. Then check admin → **Settings → Connections**: the routing test should
+   still come back with a Google time.
 
-If you also have a `GEMINI_API_KEY`, do the same with it, for the same reason.
+Also worth setting, in Google Cloud → **Billing → Budgets & alerts**, a budget
+with an email alert. It will not stop a spend, but it tells you the same day.
+
+If you ever do decide to rotate it: create a second key restricted the same
+way, put it in Vercel as `GOOGLE_MAPS_API_KEY`, redeploy, confirm the routing
+test is green, and only then delete the old one.
 
 ## 2. A second Google key, for the map
 
@@ -57,30 +58,89 @@ Until this is set the map still works; it draws with OpenStreetMap instead.
 Note that Maps JavaScript bills separately from Routes, and every map load
 counts.
 
-## 3. Flight lookup by flight number
+## 3. Flight lookup by flight number — done
 
-Free, no card. Turns on the "look up by flight number" box in the planner,
-which fills in the airline, airports and times.
+Connected, and looking up flights. Nothing further is needed to use it.
 
-1. [developers.amadeus.com](https://developers.amadeus.com/) → **Register** →
-   confirm the email.
-2. **My Self-Service Workspace → Create New App.** It gives you an **API Key**
-   and an **API Secret**.
-3. Vercel → add:
-   - `AMADEUS_CLIENT_ID` = the API Key
-   - `AMADEUS_CLIENT_SECRET` = the API Secret
-4. **Redeploy**, then try a real flight number in the planner.
+One thing left, for when you are ready. The Amadeus **test** environment is the
+default, and it carries a thin schedule — plenty to prove the lookup works, not
+enough to trust for a real trip. To move to the live data: in the Amadeus
+dashboard move the app to Production, then in Vercel add
+`AMADEUS_HOSTNAME=api.amadeus.com` and redeploy.
 
-Their **test** environment is the default and carries a thin schedule — plenty
-to prove it works, not enough for real trips. When you are ready, move the app
-to Production in their dashboard and add `AMADEUS_HOSTNAME=api.amadeus.com`.
+(For reference, if the keys ever need replacing:
+[developers.amadeus.com](https://developers.amadeus.com/) → **My Self-Service
+Workspace → Create New App** gives an API Key and an API Secret, which go into
+Vercel as `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`.)
 
 ## 4. Signing up with a phone number
 
-Two things to know before you start. Texting a US mobile requires **A2P 10DLC
-registration** — Twilio runs it as an application and it takes days, not
-minutes; until it clears, messages to US numbers are rejected. And every text
-costs a fraction of a cent, so unlike email it is not free.
+**Optional, and the only thing on this list that costs money.** Sign-up by
+email already works and is free. This step only adds the choice of signing up
+with a phone number instead.
+
+### Is there a way to do it for nothing?
+
+Not one you can rely on. The free trick used to be the carriers' own
+email-to-text gateways — send mail to `5551234567@txt.att.net` and it arrived
+as a text. AT&T shut theirs down on 17 June 2025, and Verizon and T-Mobile have
+cut back their own and dropped any delivery guarantee. It was killed because it
+was a route for phishing, and it is not coming back.
+
+Every provider gives free trial credit (Twilio's is about $15), but in trial
+mode a text can only be sent to a number you have already verified in their
+console. That is enough to prove the code works. It cannot serve strangers
+signing up, which is the whole point.
+
+So: free to test, not free to run.
+
+### What it costs to run
+
+Two separate costs, and the per-message one is not the one that matters.
+
+**Per message.** Roughly a cent, all in. The sticker price is $0.004 per
+message at Telnyx, $0.0077 at Plivo, $0.0083 at Twilio, but US carriers add
+their own surcharge on top, so once everything is counted a delivered
+verification text runs about **$0.013–$0.018**. A thousand sign-ups is about
+fifteen dollars.
+
+**Registration, which is unavoidable in the US.** Texting American mobiles from
+a business requires **A2P 10DLC** registration. Budget roughly:
+
+| | |
+|---|---|
+| Brand registration, one-off | $4 as a sole proprietor, $44 as a registered business |
+| Campaign vetting, one-off | about $15 |
+| Campaign, monthly | about $10 |
+| The phone number, monthly | $1–2 |
+
+So about **$20–60 to start and $10–12 a month** thereafter, before a single
+message. That monthly fee is the real cost of offering phone sign-up, and it is
+charged whether anybody uses it or not.
+
+Cheapest overall today is Telnyx or Plivo; Twilio costs a little more and is
+the most documented. The site works with any of them — it is the same three
+variables.
+
+### Can you sign up instantly?
+
+You can open an account, add a card and buy a number in about five minutes at
+any of them. **Sending is the part that waits.** US delivery does not start
+until the 10DLC registration is approved, which is days, occasionally weeks.
+Registering as a **sole proprietor** is the fast lane — cheaper and usually
+approved within a day or two — and its low throughput limit is irrelevant for
+verification codes.
+
+Numbers outside the US have no such rule. A text to an Israeli or British
+mobile works the moment the account has credit.
+
+### The recommendation
+
+Leave it off. Email verification is already there, costs nothing, and nobody
+has asked for phone sign-up yet. If people do ask, sole-proprietor 10DLC on
+Telnyx is about $20 to start and ~$11 a month.
+
+### If you decide to turn it on
 
 1. [twilio.com](https://www.twilio.com/) → sign up → verify your own number.
 2. **Phone Numbers → Buy a number**, with SMS capability.
@@ -99,20 +159,23 @@ be sent and what is missing.
 
 ## 5. Make the contact and edits email actually arrive
 
-This is the most likely reason mail is not reaching you. Until the domain is
-verified, the mail service will only deliver to the address that owns the
-Resend account — everything to `contact@` and `edits@` is rejected outright.
+The domain is registered and verified in Resend. One variable is left, and
+without it the site still sends from Resend's shared sandbox address, which is
+only allowed to deliver to the address that owns the Resend account —
+everything to `contact@` and `edits@` is rejected outright.
 
-1. [resend.com](https://resend.com/) → **Domains → Add Domain** →
-   `whitegloveitineraries.com`.
-2. It gives you DNS records (SPF, DKIM, and usually a return-path). Add them
-   wherever the domain's DNS lives, then press **Verify**. It can take an hour.
-3. Vercel → add `RESEND_FROM_EMAIL` =
-   `White Glove Itineraries <no-reply@whitegloveitineraries.com>`
-4. **Redeploy.**
-5. Admin → **Settings → Connections** → **Test the contact inbox** and **Test
+1. Vercel → **Settings → Environment Variables → Add**.
+   - Key: `RESEND_FROM_EMAIL`
+   - Value: `White Glove Itineraries <no-reply@whitegloveitineraries.com>`
+   - Environments: **Production** (tick Preview too if you want it there).
+2. **Deployments → ⋯ → Redeploy.**
+3. Admin → **Settings → Connections** → **Test the contact inbox** and **Test
    the edits inbox**. Both should come back green, and the messages should
    arrive.
+
+The address in the angle brackets has to be on the domain you verified. It does
+not have to be a real mailbox — nothing is delivered to it — but `no-reply@`
+makes that plain to whoever receives the mail.
 
 `OWNER_NOTIFICATION_EMAIL` and `CONTACT_NOTIFICATION_EMAIL` only need setting
 if you want those two queues somewhere other than `edits@` and `contact@`.
@@ -135,26 +198,66 @@ The free tier is generous and this site's use of it is small.
 
 ## 7. Name yourself as the owner
 
-1. Vercel → add `OWNER_EMAIL` = the address you sign in to your own account
-   with.
-2. **Redeploy.**
+Click by click:
 
-That address always keeps admin access and can always see the site while it is
-closed, whatever else is set. It is what stops a mistake on the Team screen
-locking you out of your own site.
+1. Go to [vercel.com](https://vercel.com/) and open your project.
+2. Top tab bar → **Settings**.
+3. Left-hand menu → **Environment Variables**.
+4. In the **Key** box type exactly: `OWNER_EMAIL`
+5. In the **Value** box type the email address you sign in to the site with —
+   the visitor account, not your Vercel login. Just the address,
+   `you@example.com`, with no name, no angle brackets, no quotes.
+6. Under **Environments**, tick **Production**. Tick **Preview** as well if you
+   want it to apply on preview links.
+7. **Save.**
+8. Top tab bar → **Deployments** → on the newest one, the **⋯** menu →
+   **Redeploy**. Nothing takes effect until this is done: Vercel reads the
+   variables when it builds.
 
-## 8. One database setup run, for the page editor
+That address then always keeps admin access and can always see the site while
+it is closed, whatever else is set. It is what stops a mistake on the Team
+screen locking you out of your own site.
 
-The Pages editor stores its blocks and its search titles in three columns that
-have to exist before it can save.
+## 8. One database setup run
 
-1. Make sure `DATABASE_URL` is set (Vercel → **Storage → Postgres**, or Neon).
-2. Admin → **Settings → Connections**, and use the database setup button there.
-   It creates what is missing and leaves existing rows alone.
-3. Open admin → **Pages**, edit a page, and press **Save draft**. If it saves,
-   the columns are there.
+This one confuses people because it sounds like it might wipe something. It
+does not. Here is what it actually is.
 
-Nothing is deleted by this. It only adds the missing columns.
+The site keeps its content in a Postgres database. A database has to be told
+what shape the content is — which tables exist, which columns are on them —
+before anything can be saved into it. When the site gains a new feature, that
+shape gains something new: the Pages editor added three columns to the `Page`
+table (the blocks it saves, and the two search-listing fields). Those columns
+do not appear on their own. Until they exist, pressing **Save draft** in the
+Pages editor fails.
+
+The button below is the site telling the database its current shape. It adds
+what is missing and steps over everything that is already there.
+
+1. Make sure `DATABASE_URL` is set in Vercel (**Storage → Postgres**, or a Neon
+   database you created and pasted in).
+2. Sign in to admin and go to **Destinations**.
+   - If the database has never been set up, the whole page is the setup screen
+     with one button: **Set up database & import destinations**. Press it. It
+     takes about a minute.
+   - If you have used the editor before, the page is the editor. In the left
+     column, open **Re-import built-in content** and press **Re-import content
+     now**.
+3. Open admin → **Pages**, edit any page, press **Save draft**. If it saves,
+   the columns are there and you are finished.
+
+What it changes and what it does not:
+
+- **Adds** any missing tables and columns. Existing ones are left alone.
+- **Reloads** the built-in content that ships with the site — the destinations,
+  cemeteries, tzaddikim and researched listings that come from the code.
+- **Keeps** everything you added yourself: your own listings, your page edits,
+  promotions, accounts, saved trips.
+- **Overwrites** edits you made in the admin to an *imported* destination,
+  because that destination is reloaded from the built-in data. If you have
+  hand-edited an imported destination and want to keep the wording, copy it
+  somewhere before you press it.
+- **Deletes nothing else.** It is safe to run more than once.
 
 ---
 
