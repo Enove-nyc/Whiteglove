@@ -23,6 +23,8 @@ export const bulkCemeteries2: Cemetery[] = [
     accessNote: "Active Jewish cemetery on the city's edge; the Gaon's ohel is the focus. Arrange access with the Lithuanian Jewish Community (Vilnius).",
     burials: [
       { name: "Rabbi Eliyahu ben Shlomo Zalman", yiddishName: "רבי אליהו בן שלמה זלמן", knownAs: "The Vilna Gaon · the Gra", seforim: "אדרת אליהו · ביאור הגר״א · שנות אליהו", yahrzeit: "י״ט תשרי · 5558 / 1797", note: "The Gaon of Vilna; reinterred in the ohel at the Sudervės cemetery after the old cemetery was destroyed." },
+          { name: "Avraham ben Avraham", yiddishName: "אברהם בן אברהם", knownAs: "The Ger Tzedek of Vilna — Count Valentin Potocki", note: "Burned al kiddush Hashem in 1749. Moved together with the Gaon in 1950 when the old Šnipiškės cemetery was cleared, and memorialised in the same ohel." },
+      { name: "Rabbi Avraham Danzig", yiddishName: "רבי אברהם דאנציג", knownAs: "The Chayei Adam", seforim: "חיי אדם · חכמת אדם", note: "1748–1820. Dayan in Vilna. Chayei Adam is the sefer a great many baalei batim learnt their halacha from." },
     ],
     sourceUrl: "https://www.jewish-heritage-lithuania.org/cemetery/the-mausoleum-of-vilna-gaon-and-his-family/",
   },

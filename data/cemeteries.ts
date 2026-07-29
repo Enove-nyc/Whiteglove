@@ -58,6 +58,8 @@ const featuredCemeteries: Cemetery[] = [
       { name: "Rabbi Naftali Weisblum", yiddishName: "רבי נפתלי נכד רבי אלימלך", knownAs: "Tzaddik of Lizhensk", note: "Recorded among the family epitaphs at the ohel." },
       { name: "Rabbi Natan Yechezkel", yiddishName: "רבי נתן יחזקאל", note: "Son-in-law of Reb Elimelech; recorded among the family epitaphs at the ohel." },
       { name: "Rabbi Yisrael", yiddishName: "רבי ישראל", note: "Son-in-law of Reb Elimelech; recorded among the family epitaphs at the ohel." },
+          { name: "Rabbi Zelig Shapira", yiddishName: "רבי זעליג שפירא", note: "In a larger ohel in the same cemetery, with his wife Perla, a daughter of the Maggid of Kozhnitz." },
+      { name: "Rabbi Yaakov of Mogielnica", yiddishName: "רבי יעקב ממאגעלניצא", note: "Son of Reb Elimelech, in the smaller ohel." },
     ],
     sourceUrl: "https://sztetl.org.pl/en/node/188/114-cemeteries/19248-cmentarz-zydowski-w-lezajsku-ul-gorna",
   },
