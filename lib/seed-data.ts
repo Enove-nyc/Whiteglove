@@ -162,6 +162,7 @@ export function buildSeedRows(): SeedRows {
         category: p.category,
         name: p.name,
         address: p.address ?? null,
+        coordinates: p.coordinates ?? null,
         phone: p.phone ?? null,
         whatsapp: p.whatsapp ?? null,
         email: p.email ?? null,

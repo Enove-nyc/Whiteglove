@@ -19,6 +19,16 @@ export type ContentPlace = {
   category: PlaceCat;
   name: string;
   address?: string;
+  /**
+   * "lat, lng" for the place itself.
+   *
+   * What it buys: an accommodation with a coordinate can be asked what kosher
+   * food is near IT, live, instead of the page saying "there is kosher food in
+   * this city" and leaving the traveler to work out whether that means a walk
+   * or a taxi. The database column has existed all along; the seed data had no
+   * way to fill it.
+   */
+  coordinates?: string;
   phone?: string;
   whatsapp?: string;
   email?: string;
