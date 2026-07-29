@@ -17,6 +17,8 @@ export type CemeteryListItem = {
   yiddishName: string;
   country: string;
   burialCount: number;
+  /** Who is buried there, for searching and for sorting by tzaddik. */
+  burials: string[];
   ownerAdded: boolean;
 };
 
@@ -31,6 +33,7 @@ function staticListItem(c: Cemetery): CemeteryListItem {
     yiddishName: c.yiddishName,
     country: c.country,
     burialCount: c.burials.length,
+    burials: c.burials.map((b) => [b.knownAs, b.name, b.yiddishName].filter(Boolean).join(" ")),
     ownerAdded: false,
   };
 }
@@ -72,7 +75,7 @@ export async function getCemeteryList(): Promise<CemeteryListItem[]> {
 
     const added = rows.map((r) => ({
       slug: r.slug, city: r.city, yiddishCity: r.yiddishCity, name: r.name,
-      yiddishName: r.yiddishName, country: r.country, burialCount: r._count.burials, ownerAdded: true,
+      yiddishName: r.yiddishName, country: r.country, burialCount: r._count.burials, burials: [], ownerAdded: true,
     }));
     return [...withExtras, ...added];
   } catch {
