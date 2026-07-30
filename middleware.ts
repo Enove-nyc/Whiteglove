@@ -44,6 +44,62 @@ function isAdminHost(request: NextRequest): boolean {
   return requestHost(request) === configured;
 }
 
+/**
+ * The screens that exist under /admin. Anything else on the admin hostname is
+ * a link back out to the public site.
+ *
+ * WHY THIS LIST EXISTS. Every path on the admin hostname used to be rewritten
+ * to `/admin` + itself, which is right for `/shomrim` and wrong for everything
+ * else: the admin screens link out to the public site — "The directory" on the
+ * kevarim screen goes to /cemeteries — and on the admin hostname that became
+ * /admin/cemeteries, which does not exist. So from inside the admin, every
+ * link to the site 404'd.
+ *
+ * Keep it in step with the folders in app/admin. A screen missing from here
+ * does not break: it lands on the public site instead of the admin one, which
+ * is a visible, harmless wrong answer rather than a silent one.
+ */
+const ADMIN_SCREENS = new Set([
+  "accounts",
+  "add",
+  "advertisements",
+  "content",
+  "destinations",
+  "directory",
+  "directory-listings",
+  "finances",
+  "hechsherim",
+  "inventory",
+  "kevarim",
+  "login",
+  "pages",
+  "settings",
+  "shomrim",
+  "team",
+]);
+
+function isAdminScreen(pathname: string): boolean {
+  return ADMIN_SCREENS.has(pathname.split("/")[1] ?? "");
+}
+
+/**
+ * Where the public site lives, for sending a link back to it.
+ *
+ * NEXT_PUBLIC_SITE_URL is already used for share links, so it is the address
+ * the site already considers its own. With it unset there is nothing to send
+ * anybody to, and the path is served where it is instead — the visitor gets
+ * the page rather than a 404.
+ */
+function publicOrigin(): string | null {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  if (!raw) return null;
+  try {
+    return new URL(raw.includes("://") ? raw : `https://${raw}`).origin;
+  } catch {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/api/")) return NextResponse.next();
@@ -51,14 +107,36 @@ export async function middleware(request: NextRequest) {
 
   const onAdminHost = isAdminHost(request);
 
-  // On the admin hostname, a bare path means the admin screen of that name.
-  // /version stays where it is so the deployed build can always be checked.
+  // On the admin hostname, a bare path means the admin screen OF THAT NAME —
+  // and only if a screen of that name exists. /version stays where it is so
+  // the deployed build can always be checked, and anything else is a link back
+  // out to the public site, handled below.
   const adminPath =
     onAdminHost && !pathname.startsWith("/admin") && pathname !== "/version"
       ? pathname === "/"
         ? "/admin"
-        : `/admin${pathname}`
+        : isAdminScreen(pathname)
+          ? `/admin${pathname}`
+          : pathname
       : pathname;
+
+  // A public path reached on the admin hostname: send it to the public site.
+  // This is what the admin screens' own links do — the kevarim screen links to
+  // /cemeteries — and before this they were rewritten into /admin/cemeteries
+  // and 404'd, so the site was unreachable from inside the admin.
+  if (onAdminHost && adminPath === pathname && pathname !== "/version" && !pathname.startsWith("/admin")) {
+    const origin = publicOrigin();
+    if (origin) {
+      const url = new URL(request.url);
+      const target = new URL(pathname + url.search, origin);
+      return NextResponse.redirect(target);
+    }
+    // Nowhere to send them. Serve the page here rather than 404 — noindexed,
+    // because the admin hostname must never look like a second copy of the site.
+    const response = NextResponse.next();
+    response.headers.set("x-robots-tag", "noindex, nofollow");
+    return response;
+  }
 
   // Send the whole admin area to its own hostname once one is set, so there is
   // a single place to sign in. Off by default: turning it on before DNS
