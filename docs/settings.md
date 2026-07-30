@@ -138,5 +138,6 @@ tracking and earn nothing.
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | The travel assistant. Without either it says it is unavailable rather than guessing. |
 | `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET` | **Turns on "look up by flight number" in the planner.** Free to sign up for at developers.amadeus.com — email registration, no card. Without these the box is still there and answers "Flight lookup is off", and everything is typed by hand. `AMADEUS_HOSTNAME` switches between the test and production hosts; the test host carries a limited schedule. |
 | `AERODATABOX_API_KEY` | An alternative provider, via RapidAPI. Used only when Amadeus is not set. It reports one leg at a time, so a connecting flight comes back as two separate numbers. |
-| `DUFFEL_ACCESS_TOKEN` | Flight data provider. Optional. |
-| `NEXT_PUBLIC_SITE_URL` | Absolute base URL, used in shared itinerary links and emails. |
+| `DUFFEL_ACCESS_TOKEN` | Flight data provider. Optional. With it set (and no Kayak affiliate key), flights are searched and booked on `/book` itself instead of being handed to Kayak. |
+| `DUFFEL_STAYS` | Set to `1` once Duffel has approved Stays on the account. Hotels then search in-site too. The token alone is not enough — Stays is approved separately, and until it is the search 403s, so hotels go to Booking.com by default. |
+| `NEXT_PUBLIC_SITE_URL` | Absolute base URL, used in shared itinerary links and emails, and as the canonical URL and social-card base for every page. On Vercel it falls back to the deployment's own domain. |

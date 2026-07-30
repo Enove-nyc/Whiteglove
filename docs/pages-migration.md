@@ -92,14 +92,14 @@ being deleted.
 
 `services`, `planning`, `honeymoon`, `getaways`, `phone-rentals`,
 `travel-insurance`, `flight-booking-assistance` (the current seven), plus
-`privacy`, `terms`, `contact`, `kosher`, `submit`, `book`, `booking`, `map`,
+`privacy`, `terms`, `contact`, `kosher`, `submit`, `book`, `map`,
 `travel-guide`, `lizensk`.
 
 **Out of scope** — pages that are tools, where the words are labels on controls
 rather than content, and a block editor would be the wrong shape:
 
 `/itinerary`, `/itinerary/print`, `/account`, `/login`, `/my-route`,
-`/booking/review`, `/access`, `/version`, `/stops`, `/directory`, `/cemeteries`
+`/book/review`, `/access`, `/version`, `/stops`, `/directory`, `/cemeteries`
 and the dynamic routes `/[city]`, `/cemeteries/[cemetery]`,
 `/destinations/[place]`, `/i/[shareId]`, `/info/[slug]`. Those last ones are
 already editable through the Directory, which is where they belong.
