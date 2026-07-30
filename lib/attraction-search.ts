@@ -7,6 +7,7 @@
 // fuzzyMatch the kever search uses, so "Yungfrau" and "Wiedicon" still land.
 
 import { getAreaList, getAttractionList, getStayList, type AttractionItem, type KosherAreaItem, type KosherStayItem } from "@/lib/attractions-view";
+import { kosherEateries, type KosherEatery } from "@/data/kosher-eateries";
 import { extraSpellings, fuzzyMatch, normalize } from "@/lib/place-search";
 
 /** What the planner needs to drop an attraction onto a day. */
@@ -140,4 +141,27 @@ export async function searchAreas(query: string, limit = 12): Promise<KosherArea
   const list = await getAreaList();
   if (!q) return list.slice(0, limit);
   return list.filter((a) => fuzzyMatch(q, areaHaystack(a))).slice(0, limit);
+}
+
+/**
+ * Somewhere to eat.
+ *
+ * Reads the data file directly rather than through a view: eateries are not yet
+ * owner-editable, so there is no database half to merge. When they become
+ * editable this moves behind lib/attractions-view.ts like the rest, and the
+ * signature is already async so that change costs nothing at the call sites.
+ */
+export async function searchEateries(query: string, limit = 12): Promise<KosherEatery[]> {
+  const q = query.trim();
+  if (!q) return kosherEateries.slice(0, limit);
+  const nq = normalize(q);
+  return kosherEateries
+    .map((e) => {
+      const hay = [e.name, e.city, e.country, e.kind, e.diet, e.summary, extraSpellings([e.slug, e.city])].join(" ");
+      return fuzzyMatch(q, hay) ? { e, score: rank(nq, e.city, e.name) } : null;
+    })
+    .filter((x): x is { e: KosherEatery; score: number } => x !== null)
+    .sort((a, b) => a.score - b.score || a.e.city.localeCompare(b.e.city))
+    .slice(0, limit)
+    .map((x) => x.e);
 }

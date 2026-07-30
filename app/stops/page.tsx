@@ -6,7 +6,7 @@ import SectionHeading from "@/components/SectionHeading";
 import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { destinationHaystack, destinations, guidedDestinations, unguidedDestinations } from "@/data/destinations";
-import { searchAreas, searchAttractions, searchStays } from "@/lib/attraction-search";
+import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
 
@@ -31,9 +31,9 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
   // being told there was no match at all, when the site had both. Shown only
   // for an actual query — this directory is a kevarim directory first, and an
   // unfiltered page should not open with fifty museums.
-  const [matchingAttractions, matchingStays, matchingAreas] = query
-    ? await Promise.all([searchAttractions(query, 24), searchStays(query, 24), searchAreas(query, 12)])
-    : [[], [], []];
+  const [matchingAttractions, matchingStays, matchingAreas, matchingEateries] = query
+    ? await Promise.all([searchAttractions(query, 24), searchStays(query, 24), searchAreas(query, 12), searchEateries(query, 12)])
+    : [[], [], [], []];
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -154,7 +154,23 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
           </div>
         )}
 
-        {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && matchingAttractions.length === 0 && matchingStays.length === 0 && matchingAreas.length === 0 && (
+        {matchingEateries.length > 0 && (
+          <div className="mt-14">
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Somewhere to eat</p>
+            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {matchingEateries.map((e) => (
+                <Link key={e.slug} href={`/kosher#${e.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{e.city} · {e.country} · {e.kind}</p>
+                  <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{e.name}</h2>
+                  <p className="mt-4 text-sm leading-6 text-stone-600">{e.summary}</p>
+                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open where to eat →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && matchingAttractions.length === 0 && matchingStays.length === 0 && matchingAreas.length === 0 && matchingEateries.length === 0 && (
           <div className="mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-stone-600">
             <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">No match yet.</p>
             <p className="mt-3 leading-7">Try the city name, country, traditional name, or the tzaddik’s name. We are adding more destinations continuously.</p>
