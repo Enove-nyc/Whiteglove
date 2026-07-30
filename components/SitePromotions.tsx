@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import { usePathname } from "next/navigation";
 import type { Promotion } from "@/lib/admin-content";
 
@@ -43,6 +44,11 @@ export default function SitePromotions() {
   const [closedTop, setClosedTop] = useState(false);
   const [closedBottom, setClosedBottom] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  // The sponsored popup covers the page, so it has to behave like a dialog:
+  // the keyboard stays inside it, Escape dismisses it, and focus goes back to
+  // where it was. Before this, Tab walked straight out onto the page behind.
+  const closePopup = useCallback(() => setShowPopup(false), []);
+  const popupRef = useFocusTrap<HTMLDivElement>(showPopup, closePopup);
 
   // Don't run promotions inside the admin area or the access gate.
   const suppressed = pathname.startsWith("/admin") || pathname.startsWith("/access");
@@ -111,20 +117,20 @@ export default function SitePromotions() {
                 {topBanner.buttonText}
               </a>
             )}
-            <button type="button" onClick={() => setClosedTop(true)} aria-label="Dismiss" className="shrink-0 px-1 text-slate-300 hover:text-white">✕</button>
+            <button type="button" onClick={() => setClosedTop(true)} aria-label="Dismiss" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center text-slate-300 hover:text-white">✕</button>
           </div>
         </div>
       )}
 
       {/* Entry popup */}
       {popup && showPopup && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-stone-950/60 px-5 py-8" role="dialog" aria-modal="true">
-          <div className="w-full max-w-md border border-[var(--gold-light)] bg-[var(--cream)] p-6 shadow-2xl sm:p-8">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-stone-950/60 px-5 py-8" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
+          <div ref={popupRef} tabIndex={-1} className="w-full max-w-md border border-[var(--gold-light)] bg-[var(--cream)] p-6 shadow-2xl outline-none sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">Sponsored</p>
-              <button type="button" onClick={() => setShowPopup(false)} aria-label="Close" className="text-stone-500 hover:text-[var(--navy)]">✕</button>
+              <button type="button" onClick={() => setShowPopup(false)} aria-label="Close" className="-mr-2 -mt-2 flex min-h-11 min-w-11 items-center justify-center text-stone-500 hover:text-[var(--navy)]">✕</button>
             </div>
-            <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{popup.title}</h2>
+            <h2 id="promo-popup-title" className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{popup.title}</h2>
             {popup.description && <p className="mt-3 text-sm leading-6 text-stone-600">{popup.description}</p>}
             {popup.imageUrl ? <img src={popup.imageUrl} alt="" className="mt-4 max-h-56 w-full object-cover" /> : null}
             <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -136,7 +142,7 @@ export default function SitePromotions() {
               {popup.pdfUrl ? (
                 <a href={popup.pdfUrl} target="_blank" rel="noreferrer" onClick={() => track("promotion_click", popup.id, "popup")} className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">View PDF</a>
               ) : null}
-              <button type="button" onClick={() => setShowPopup(false)} className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">No thanks</button>
+              <button type="button" onClick={() => setShowPopup(false)} className="inline-flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.12em] text-stone-500 underline decoration-stone-400 underline-offset-4">No thanks</button>
             </div>
           </div>
         </div>

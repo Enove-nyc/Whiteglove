@@ -51,13 +51,14 @@ export default function TravelAssistantBox() {
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          aria-label="Ask the travel assistant a question"
           placeholder="e.g. What should I do near Uman with a free afternoon?"
           className="w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
         />
         <button
           type="submit"
           disabled={busy}
-          className="shrink-0 border border-[var(--navy)] bg-[var(--navy)] px-6 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60"
+          className="min-h-11 shrink-0 border border-[var(--navy)] bg-[var(--navy)] px-6 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60"
         >
           {busy ? "Thinking…" : "Ask"}
         </button>
@@ -65,7 +66,7 @@ export default function TravelAssistantBox() {
 
       <div className="mt-3 flex flex-wrap gap-2">
         {EXAMPLES.map((ex) => (
-          <button key={ex} type="button" onClick={() => { setQuestion(ex); ask(ex); }} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] text-stone-600 transition hover:bg-[var(--cream-deep)]">
+          <button key={ex} type="button" onClick={() => { setQuestion(ex); ask(ex); }} className="min-h-11 border border-[var(--gold-light)] px-3 py-1.5 text-[11px] text-stone-600 transition hover:bg-[var(--cream-deep)]">
             {ex}
           </button>
         ))}

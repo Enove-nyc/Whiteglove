@@ -31,7 +31,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Destination directory · {destination.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{destination.yiddishCity}</h1>
+          <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{destination.yiddishCity}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{destination.city}</p>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>
           <SavePlaceButtons place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, href: `/destinations/${destination.slug}` }} />
@@ -60,7 +60,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
             <div className="mt-4 space-y-3">
               {record?.cemeteries.map((cemetery) => (
                 <div key={cemetery.id} className="border-b border-[var(--gold-light)] pb-3 last:border-b-0 last:pb-0">
-                  <p dir="rtl" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{cemetery.yiddishName}</p>
+                  <p dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{cemetery.yiddishName}</p>
                   <p className="mt-1 text-sm text-stone-500">{cemetery.name}</p>
                   <p className="mt-2 text-xs uppercase tracking-[0.12em] text-stone-500">
                     {cemetery.status === "verified" ? "Verified" : cemetery.status === "needs-verification" ? "Needs verification" : "Unavailable"}
@@ -75,7 +75,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {record.cemeteries.map((cemetery) => (
               <article key={cemetery.id} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-                <h2 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cemetery.yiddishName}</h2>
+                <h2 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cemetery.yiddishName}</h2>
                 <p className="mt-1 text-sm text-stone-500">{cemetery.name}</p>
                 {cemetery.address && <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.address}</p>}
                 {cemetery.arrivalNotes[0] && <p className="mt-4 border-l-2 border-[var(--gold)] pl-3 text-sm leading-6 text-stone-600">{cemetery.arrivalNotes[0]}</p>}

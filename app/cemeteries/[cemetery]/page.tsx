@@ -52,7 +52,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Beis hachaim · {cemetery.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h1>
+          <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{cemetery.name}</p>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{cemetery.city} · {cemetery.yiddishCity}</p>
           <a href={mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to this beis hachaim →</a>
@@ -107,10 +107,10 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => (
                 <article key={burial.name} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-                  <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{burial.yiddishName}</h3>
+                  <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{burial.yiddishName}</h3>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
                   {burial.knownAs && <p className="mt-3 text-sm font-semibold text-stone-700">{burial.knownAs}</p>}
-                  {burial.seforim && <p dir="rtl" className="mt-3 text-lg text-[var(--navy)]">{burial.seforim}</p>}
+                  {burial.seforim && <p dir="rtl" lang="yi" className="mt-3 text-lg text-[var(--navy)]">{burial.seforim}</p>}
                   {burial.yahrzeit && (
                     <p className="mt-3 text-sm text-stone-600">
                       Yahrzeit: <MixedText text={burial.yahrzeit} />
@@ -147,7 +147,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
               {placeGroups.map((group) => (
                 <div key={group.category}>
                   <h3 className="flex items-baseline gap-3 border-b border-[var(--gold-light)] pb-2">
-                    <span dir="rtl" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{group.label.yiddish}</span>
+                    <span dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{group.label.yiddish}</span>
                     <span className="text-sm font-semibold uppercase tracking-[0.12em] text-stone-500">{group.label.english}</span>
                   </h3>
                   <div className="mt-5 grid gap-5 md:grid-cols-2">

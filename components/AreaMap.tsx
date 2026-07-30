@@ -271,10 +271,15 @@ export default function AreaMap({
               type="button"
               onClick={() => setShown((s) => ({ ...s, [kind]: !s[kind] }))}
               aria-pressed={shown[kind]}
-              className={`inline-flex min-h-[36px] items-center gap-2 border px-3 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
-                shown[kind] ? "border-[var(--navy)] text-[var(--navy)]" : "border-[var(--gold-light)] text-stone-400"
+              className={`inline-flex min-h-11 items-center gap-2 border px-3 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+                shown[kind] ? "border-[var(--navy)] text-[var(--navy)]" : "border-[var(--gold-light)] text-stone-400 line-through decoration-1"
               }`}
             >
+              {/* On and off are told apart three ways — the tick, the
+                  strikethrough and aria-pressed — not by the colour of a dot,
+                  which is exactly the marker somebody colour-blind cannot
+                  read. */}
+              <span aria-hidden="true" className="w-2.5 text-center">{shown[kind] ? "\u2713" : "\u00d7"}</span>
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: shown[kind] ? STYLE[kind].color : "#d6d3d1" }} />
               {STYLE[kind].label}
               <span className="font-normal text-stone-400">{counts[kind] ?? 0}</span>

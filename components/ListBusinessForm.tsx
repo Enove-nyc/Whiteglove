@@ -90,7 +90,7 @@ export default function ListBusinessForm() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]"
+          className="min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]"
         >
           {open ? "Close" : "Submit your listing"}
         </button>

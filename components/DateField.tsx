@@ -153,7 +153,7 @@ export default function DateField({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={ariaLabel ? `${ariaLabel}: ${readableDate(value) || "choose a date"}` : `Choose a date${value ? `, currently ${readableDate(value)}` : ""}`}
-        className={`${className} wg-date-face absolute inset-0 flex items-center justify-between text-left disabled:opacity-60`}
+        className={`${className} wg-date-face absolute inset-0 flex min-h-11 items-center justify-between text-left disabled:opacity-60`}
       >
         <span className={value ? "text-[var(--navy)]" : "text-stone-400"}>{readableDate(value) || "Choose a date"}</span>
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="ml-2 h-4 w-4 shrink-0 text-[var(--gold)]">
@@ -169,13 +169,13 @@ export default function DateField({
           className="absolute left-0 top-full z-40 mt-1 w-[19rem] max-w-[92vw] border border-[var(--gold)] bg-[#fcfaf6] p-3 shadow-[0_16px_36px_rgba(23,45,82,.18)]"
         >
           <div className="flex items-center justify-between gap-2">
-            <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="min-h-[32px] px-2 text-[var(--navy)] transition hover:text-[var(--gold)]">
+            <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="min-h-11 min-w-11 px-2 text-[var(--navy)] transition hover:text-[var(--gold)]">
               ‹
             </button>
             <p className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">
               {MONTHS[cursor.m]} {cursor.y}
             </p>
-            <button type="button" onClick={() => step(1)} aria-label="Next month" className="min-h-[32px] px-2 text-[var(--navy)] transition hover:text-[var(--gold)]">
+            <button type="button" onClick={() => step(1)} aria-label="Next month" className="min-h-11 min-w-11 px-2 text-[var(--navy)] transition hover:text-[var(--gold)]">
               ›
             </button>
           </div>

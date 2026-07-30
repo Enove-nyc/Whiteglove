@@ -24,13 +24,24 @@ const menuItems = [
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
 
-const primaryLinks = [
+/**
+ * The bar at desktop width. Destinations and Cemeteries are deliberately
+ * separate entries: one is towns you travel to, the other is where people are
+ * buried, and collapsing them loses the distinction the site is built on.
+ *
+ * `wide` is a longer label for the widths that have room for it — "Book" says
+ * very little about a page that searches flights, hotels and cars.
+ */
+const primaryLinks: Array<{ label: string; wide?: string; href: string }> = [
   { label: "Destinations", href: "/stops" },
+  { label: "Cemeteries", href: "/cemeteries" },
   { label: "Getaways", href: "/getaways" },
   { label: "Directory", href: "/directory" },
   { label: "Services", href: "/services" },
-  { label: "Book", href: "/book" },
+  { label: "Book", wide: "Flights, hotels & cars", href: "/book" },
 ];
+
+const PRIMARY_HREFS = new Set(primaryLinks.map((link) => link.href));
 
 const menuGroups = [
   {
@@ -54,6 +65,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -83,6 +95,36 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", closeOutsideMenu);
   }, [menuOpen]);
 
+  // At desktop the bar is the navigation and this button holds the rest of the
+  // site; at compact widths the button IS the navigation. They need different
+  // names, and a name cannot be swapped by a media query — rendering both and
+  // hiding one would leave a screen reader announcing "MenuMore". So the
+  // width is measured. It starts false, which is the compact answer and the
+  // one the server renders, so the first paint is right on a phone.
+  const [wideNav, setWideNav] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1280px)");
+    const sync = () => setWideNav(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  // Escape closes the menu and puts the focus back on the button that opened
+  // it. Without the second half, dismissing the menu from the keyboard drops
+  // the focus at the top of the document and the next Tab starts the page
+  // over — which is how a keyboard user gets stranded.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
   return (
     <>
       <nav ref={navRef} className="sticky top-0 z-40 border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md">
@@ -99,11 +141,24 @@ export default function Navbar() {
                   key={link.label}
                   href={link.href}
                   aria-current={current ? "page" : undefined}
-                  className={`rounded-full px-3 py-2 text-sm font-semibold transition ${
-                    current ? "bg-[var(--cream-deep)] text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
+                  // The current section is marked three ways, not one: a filled
+                  // pill, a gold underline, and aria-current. Colour alone
+                  // leaves anyone who cannot separate cream from cream-deep
+                  // with no idea where they are.
+                  className={`relative min-h-11 rounded-full px-3 py-2 text-sm font-semibold transition inline-flex items-center ${
+                    current
+                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
+                      : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                   }`}
                 >
-                  {link.label}
+                  {link.wide ? (
+                    <>
+                      <span className="2xl:hidden">{link.label}</span>
+                      <span className="hidden 2xl:inline">{link.wide}</span>
+                    </>
+                  ) : (
+                    link.label
+                  )}
                 </Link>
               );
             })}
@@ -119,29 +174,41 @@ export default function Navbar() {
             <div className="hidden items-center gap-2 sm:flex">
               {signedIn ? (
                 <>
-                  <Link className="rounded-md border border-[var(--gold)] px-3 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/account">
+                  <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-3 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/account">
                     My account
                   </Link>
-                  <button type="button" onClick={signOut} className="rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
+                  <button type="button" onClick={signOut} className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
                     Sign out
                   </button>
                 </>
               ) : (
-                <Link className="rounded-md border border-[var(--gold)] px-4 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/login">
+                <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/login">
                   Sign in
                 </Link>
               )}
             </div>
 
+            {/* At compact widths this IS the navigation, so it says "Menu".
+                At desktop the bar above is the navigation and this only holds
+                what the bar has no room for, so it says "More" — two controls
+                both claiming to be the navigation is what made the header feel
+                doubled. The panel itself drops the links the bar already shows
+                (see xl:hidden on the list items below), so nothing is offered
+                twice at the same width. */}
             <button
+              ref={menuButtonRef}
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-controls="site-menu"
-              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="flex min-h-10 items-center gap-2 rounded-md border border-[var(--gold-light)] px-3 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
+              aria-label={
+                menuOpen
+                  ? wideNav ? "Close the rest of the site" : "Close navigation menu"
+                  : wideNav ? "More of the site" : "Open navigation menu"
+              }
+              className="flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] px-3 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
             >
-              <span>{menuOpen ? "Close" : "Menu"}</span>
+              <span>{menuOpen ? "Close" : wideNav ? "More" : "Menu"}</span>
               <span aria-hidden="true" className="flex w-4 flex-col gap-1">
                 <span className="h-px w-full bg-[var(--navy)]" />
                 <span className="h-px w-full bg-[var(--navy)]" />
@@ -167,12 +234,15 @@ export default function Navbar() {
                     {group.links.map((item) => {
                       const current = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
                       return (
-                        <li key={item.href}>
+                        // Hidden at desktop when the bar above already shows
+                        // it, so this panel is "the rest of the site" there
+                        // rather than a second copy of the navigation.
+                        <li key={item.href} className={PRIMARY_HREFS.has(item.href) ? "xl:hidden" : undefined}>
                           <Link
                             onClick={() => setMenuOpen(false)}
                             href={item.href}
                             aria-current={current ? "page" : undefined}
-                            className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold transition ${
+                            className={`flex min-h-11 items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold transition ${
                               current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                             }`}
                           >

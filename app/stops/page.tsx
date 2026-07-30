@@ -66,9 +66,9 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
               {matchingGuides.map((guide) => (
                 <Link key={guide.slug} href={`/${guide.slug}`} className="min-w-0 border border-[var(--gold-light)] bg-[var(--navy)] p-5 text-white transition hover:bg-[var(--gold)] sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-light)] sm:tracking-[0.18em]">{guide.country}</p>
-                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight">{guide.yiddishCity}</h2>
+                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight">{guide.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-slate-300">{guide.city}</p>
-                  <p dir="rtl" className="mt-5 text-2xl leading-tight text-slate-100">{guide.guide?.yiddishTzaddik}</p>
+                  <p dir="rtl" lang="yi" className="mt-5 text-2xl leading-tight text-slate-100">{guide.guide?.yiddishTzaddik}</p>
                   <p className="mt-2 text-sm text-slate-300">{guide.guide?.tzaddik}</p>
                   <span className="mt-6 inline-block text-xs font-bold uppercase tracking-[0.14em]">Open guide →</span>
                 </Link>
@@ -84,7 +84,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
               {matchingStops.map((cemetery) => (
                 <Link key={cemetery.slug} href={`/cemeteries/${cemetery.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
-                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
+                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.burialCount} known {cemetery.burialCount === 1 ? "kever" : "kevarim"} listed</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open beis hachaim →</span>
@@ -101,7 +101,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
               {matchingBulk.map((destination) => (
                 <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] sm:p-7">
                   <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">{destination.country}</p>
-                  <h2 dir="rtl" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{destination.yiddishCity}</h2>
+                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{destination.yiddishCity}</h2>
                   <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{destination.city}</p>
                   <p className="mt-4 text-sm leading-6 text-stone-600">Practical details are being checked.</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open destination →</span>

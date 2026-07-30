@@ -60,7 +60,7 @@ Status labels:
 | Accommodations completeness | Not started | Most destination practical sections currently show the clean unavailable message. Needs verified accommodation records. |
 | Real user accounts | Not started | Login/account/My Route are local preview features, not cross-device accounts. |
 | Public admin links | Not started | Admin links exist in navigation/footer from earlier development. Roadmap says remove from public navigation and expose only to authorized admins later. |
-| Mobile responsiveness | Not started | Needs systematic testing for homepage, directory, destination pages, booking forms, admin, login, and route planner. |
+| Mobile responsiveness | Measured | `npm run audit:ui` loads nine key pages at 320, 375, 390, 430, 768, 1024, 1280 and 1440 in a real browser and reports horizontal overflow, duplicated site search, doubled navigation, touch targets under 44px, tab order and unlabeled inputs. No page overflows sideways at any of those widths. Chromium only — Safari's date and form controls still need a real device. |
 | Legal/trust pages | Empty | No privacy, terms, advertising disclosure, affiliate disclosure, or travel-booking disclaimer pages found. |
 
 ## Inventory Summary

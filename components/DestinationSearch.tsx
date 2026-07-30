@@ -140,7 +140,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
           onKeyDown={onKeyDown}
-          className={`min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-stone-400 ${compact ? "py-2 text-sm" : "py-3"}`}
+          className={`min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-stone-400 ${compact ? "min-h-11 py-2 text-sm" : "min-h-11 py-3"}`}
           aria-label="Search the site"
           aria-expanded={open}
           aria-autocomplete="list"
@@ -149,7 +149,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
           placeholder="Search a city, tzaddik, kever, or anything to do…"
           autoComplete="off"
         />
-        <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "px-4 py-2 text-xs" : "px-7 py-3"}`} type="submit">
+        <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`} type="submit">
           {compact ? "Search" : "Explore"}
         </button>
       </form>

@@ -44,6 +44,7 @@ export default function DirectoryBrowser({ providers }: { providers: PublicProvi
       <div className="flex flex-col gap-4">
         <input
           type="search"
+          aria-label="Search the provider directory"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search by name, region, or specialty (e.g. Uman, Poland, honeymoon)…"
@@ -57,7 +58,7 @@ export default function DirectoryBrowser({ providers }: { providers: PublicProvi
                 key={tab.key}
                 type="button"
                 onClick={() => setCategory(tab.key)}
-                className={`border px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${
+                className={`min-h-11 border px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${
                   active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                 }`}
               >
@@ -95,10 +96,10 @@ export default function DirectoryBrowser({ providers }: { providers: PublicProvi
             )}
 
             <div className="mt-auto flex flex-wrap gap-2 pt-5">
-              {p.phone && <a href={telHref(p.phone)} className="border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Call</a>}
-              {p.whatsapp && <a href={waHref(p.whatsapp)} target="_blank" rel="noreferrer" className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">WhatsApp</a>}
-              {p.email && <a href={`mailto:${p.email}`} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Email</a>}
-              {p.website && <a href={p.website} target="_blank" rel="noreferrer" className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Website ↗</a>}
+              {p.phone && <a href={telHref(p.phone)} className="inline-flex min-h-11 items-center border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Call</a>}
+              {p.whatsapp && <a href={waHref(p.whatsapp)} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">WhatsApp</a>}
+              {p.email && <a href={`mailto:${p.email}`} className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Email</a>}
+              {p.website && <a href={p.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Website ↗</a>}
             </div>
           </article>
         ))}

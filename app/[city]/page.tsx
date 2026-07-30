@@ -43,7 +43,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">City guide · {guide.country}</p>
-          <h1 dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{guide.yiddishCity}</h1>
+          <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{guide.yiddishCity}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-stone-500 sm:text-4xl">{guide.city}</p>
           <p className="mt-6 max-w-2xl text-xl leading-8 text-stone-600">A White Glove guide to the journey, the tzaddik, and the practical details that matter most.</p>
         </div>
@@ -59,7 +59,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
         <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr]">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">At the kever</p>
-            <h2 dir="rtl" className="mt-4 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">{guide.yiddishTzaddik}</h2>
+            <h2 dir="rtl" lang="yi" className="mt-4 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">{guide.yiddishTzaddik}</h2>
             <p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-stone-500 sm:text-3xl">{guide.tzaddik}</p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -80,9 +80,9 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
           <div className="border-l border-[var(--gold)] pl-5 sm:pl-7">
             <p className="text-lg leading-8 text-stone-600">{guide.overview}</p>
             <div className="mt-8 grid gap-5 sm:grid-cols-3">
-              <div><p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Seforim</p><p dir="rtl" className="mt-2 font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{guide.seforim}</p></div>
-              <div><p dir="rtl" className="text-xs font-bold tracking-[0.12em] text-[var(--gold)]">יארצייט</p><p dir="rtl" className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{guide.yahrzeit}</p></div>
-              <div><p dir="rtl" className="text-xs font-bold tracking-[0.12em] text-[var(--gold)]">שנת פטירה</p><p dir="rtl" className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{guide.niftar}</p></div>
+              <div><p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Seforim</p><p dir="rtl" lang="yi" className="mt-2 font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{guide.seforim}</p></div>
+              <div><p dir="rtl" lang="yi" className="text-xs font-bold tracking-[0.12em] text-[var(--gold)]">יארצייט</p><p dir="rtl" lang="yi" className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{guide.yahrzeit}</p></div>
+              <div><p dir="rtl" lang="yi" className="text-xs font-bold tracking-[0.12em] text-[var(--gold)]">שנת פטירה</p><p dir="rtl" lang="yi" className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{guide.niftar}</p></div>
             </div>
 
             {accessContacts.length > 0 ? <div className="wg-card mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
