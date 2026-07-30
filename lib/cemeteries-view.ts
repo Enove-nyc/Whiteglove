@@ -83,6 +83,75 @@ export async function getCemeteryList(): Promise<CemeteryListItem[]> {
   }
 }
 
+type StoredBurial = {
+  name: string;
+  yiddishName: string;
+  knownAs: string | null;
+  seforim: string | null;
+  yahrzeit: string | null;
+  note: string | null;
+};
+
+const burialKey = (name: string) => name.trim().toLowerCase();
+
+/**
+ * Built-in tzaddikim, with stored ones layered over the top.
+ *
+ * WHY THIS EXISTS. A burial saved in the admin against a built-in beis hachaim
+ * was kept only if its name was NOT already listed in code. That made every
+ * built-in tzaddik permanently read-only: an owner could type the English
+ * seforim for Reb Elimelech into the admin, save it, get a success message,
+ * and nothing would change on the page — the built-in record always won and
+ * the stored one was dropped on the floor.
+ *
+ * A stored burial now replaces the built-in one of the same name, and keeps
+ * its position in the list rather than jumping to the end. Anything not
+ * matching a built-in name is appended, which is what this used to do and is
+ * still right for somebody genuinely new.
+ *
+ * Field by field rather than wholesale: an override that leaves the yahrzeit
+ * blank should not erase a yahrzeit the built-in record already has. Clearing
+ * a field that only the built-in supplies is not possible this way, which is
+ * the same trade the contacts merge below makes.
+ */
+export function mergeBurials(builtIn: Cemetery["burials"], stored: StoredBurial[]): Cemetery["burials"] {
+  if (!stored.length) return builtIn;
+
+  const overrides = new Map(stored.map((b) => [burialKey(b.name), b]));
+  const used = new Set<string>();
+
+  const merged = builtIn.map((b) => {
+    const key = burialKey(b.name);
+    const override = overrides.get(key);
+    if (!override) return b;
+    used.add(key);
+    return {
+      name: override.name || b.name,
+      yiddishName: override.yiddishName || b.yiddishName,
+      knownAs: override.knownAs ?? b.knownAs,
+      seforim: override.seforim ?? b.seforim,
+      yahrzeit: override.yahrzeit ?? b.yahrzeit,
+      note: override.note ?? b.note,
+    };
+  });
+
+  const added = stored
+    .filter((b) => !used.has(burialKey(b.name)))
+    .map((b) => ({
+      name: b.name,
+      yiddishName: b.yiddishName,
+      knownAs: b.knownAs ?? undefined,
+      seforim: b.seforim ?? undefined,
+      yahrzeit: b.yahrzeit ?? undefined,
+      note: b.note ?? undefined,
+    }));
+
+  // Nothing stored applied to this beis hachaim at all — hand back the very
+  // same array so the caller can tell by identity that nothing changed.
+  if (used.size === 0 && added.length === 0) return builtIn;
+  return [...merged, ...added];
+}
+
 type StoredContact = { label: string; phone: string | null; email: string | null; note: string | null };
 type ViewContact = NonNullable<Cemetery["accessContacts"]>[number];
 
@@ -146,14 +215,13 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
     if (staticRecord) {
       if (!row) return staticRecord;
 
-      // Append owner-added tzaddikim (names not already listed statically).
-      const known = new Set(staticRecord.burials.map((b) => b.name.toLowerCase()));
-      const extraBurials = row.burials
-        .filter((b) => !known.has(b.name.toLowerCase()))
-        .map((b) => ({
-          name: b.name, yiddishName: b.yiddishName, knownAs: b.knownAs ?? undefined,
-          seforim: b.seforim ?? undefined, yahrzeit: b.yahrzeit ?? undefined, note: b.note ?? undefined,
-        }));
+      // Tzaddikim: stored ones layered over the built-in list, the same way
+      // contacts are below and for the same reason. A stored burial whose name
+      // matched a built-in one used to be dropped here, so a built-in tzaddik
+      // could never be corrected — his seforim could be saved in the admin and
+      // would silently never appear. Matching is by name, so re-saving "Rabbi
+      // Elimelech Weisblum" replaces him rather than listing him twice.
+      const burials = mergeBurials(staticRecord.burials, row.burials);
 
       // Contacts saved against a built-in cemetery used to be dropped on the
       // floor here, which meant a shomer's phone number could be added but
@@ -164,12 +232,8 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
       // which is the only way to retire a number that no longer works.
       const accessContacts = mergeContacts(staticRecord.accessContacts ?? [], row.contacts);
 
-      if (!extraBurials.length && accessContacts === staticRecord.accessContacts) return staticRecord;
-      return {
-        ...staticRecord,
-        burials: extraBurials.length ? [...staticRecord.burials, ...extraBurials] : staticRecord.burials,
-        accessContacts,
-      };
+      if (burials === staticRecord.burials && accessContacts === staticRecord.accessContacts) return staticRecord;
+      return { ...staticRecord, burials, accessContacts };
     }
 
     if (!row) return null;
