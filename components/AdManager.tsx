@@ -28,6 +28,10 @@ function emptyAd(): Promotion {
     targetHref: "/",
     imageUrl: "",
     pdfUrl: "",
+  videoUrl: "",
+  advertiserName: "",
+  advertiserPhone: "",
+  advertiserEmail: "",
     placements: ["fixed-top-banner"],
     targetPaths: "",
     device: "all",
@@ -164,6 +168,14 @@ export default function AdManager({ initial, configured }: { initial: Promotion[
                 </div>
 
                 <p className="mt-2 text-sm text-stone-600">{describeAd(ad.placements)}</p>
+                {/* Whose it is, on the card, so the list answers the question
+                    without opening each advert. Only shown when recorded —
+                    every advert made before this existed has none. */}
+                {(ad.advertiserName || ad.advertiserPhone || ad.advertiserEmail) && (
+                  <p className="mt-1 text-xs leading-5 text-stone-500">
+                    {[ad.advertiserName, ad.advertiserPhone, ad.advertiserEmail].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 <p className="mt-1 text-sm text-stone-500">
                   {ad.targetPaths ? `Only on ${ad.targetPaths}` : "On every page it can appear"}
                   {ad.device !== "all" ? ` · ${ad.device === "mobile" ? "phones only" : "computers only"}` : ""}

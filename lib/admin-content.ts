@@ -85,6 +85,18 @@ export type Promotion = {
   targetHref: string;
   imageUrl: string;
   pdfUrl: string;
+  /** A video to play instead of the picture. Takes precedence when both are set. */
+  videoUrl: string;
+  /**
+   * Who the advertisement is for.
+   *
+   * An advert used to carry nothing about whose it was — a title, a picture
+   * and placements, and no way to look at a live one and know who to ring when
+   * it needed changing. Never shown to a visitor; this is the owner's record.
+   */
+  advertiserName: string;
+  advertiserPhone: string;
+  advertiserEmail: string;
   placements: PromotionPlacement[];
   targetPaths: string;
   device: PromotionDevice;
@@ -209,6 +221,10 @@ function defaultPromotions(): Promotion[] {
       targetHref: "/services",
       imageUrl: "",
       pdfUrl: "",
+      videoUrl: "",
+      advertiserName: "",
+      advertiserPhone: "",
+      advertiserEmail: "",
       placements: ["homepage-promo", "inline-content"],
       targetPaths: "/",
       device: "all",
@@ -328,6 +344,10 @@ function normalizePromotion(promotion: Promotion): Promotion {
     targetHref: promotion.targetHref.trim() || "/",
     imageUrl: promotion.imageUrl.trim(),
     pdfUrl: promotion.pdfUrl.trim(),
+    videoUrl: (promotion.videoUrl ?? "").trim(),
+    advertiserName: (promotion.advertiserName ?? "").trim(),
+    advertiserPhone: (promotion.advertiserPhone ?? "").trim(),
+    advertiserEmail: (promotion.advertiserEmail ?? "").trim(),
     placements: Array.isArray(promotion.placements) ? promotion.placements.filter((placement): placement is PromotionPlacement => placementLabels().has(placement)) : ["homepage-promo"],
     targetPaths: promotion.targetPaths.trim(),
     device: promotion.device === "mobile" || promotion.device === "desktop" ? promotion.device : "all",
