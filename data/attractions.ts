@@ -2158,4 +2158,93 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed and two hours from London — not a Shabbos visit.",
     sourceUrl: "https://en.wikipedia.org/wiki/Stonehenge",
   },
+
+  // ---- The Alps: Italy and Austria ------------------------------------
+  //
+  // The Swiss Alps were already well covered here — the Jungfraujoch, the
+  // Schilthorn, Zermatt, Lauterbrunnen, the Glacier Express. The Italian and
+  // Austrian Alps had nothing at all, which is a gap rather than a judgement:
+  // the Dolomites and the Tyrol are as good, are cheaper, and are where the
+  // kosher summer programmes have been moving.
+  //
+  // One practical thing runs through all of these and is repeated in each entry
+  // rather than assumed: there is no kosher food in any of them. The nearest
+  // real provision to the Dolomites is Milan, four hours away, and to the Tyrol
+  // is Vienna, which is further still. These are days you carry food into.
+  {
+    slug: "tre-cime-di-lavaredo",
+    name: "Tre Cime di Lavaredo",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Nature",
+    summary: "Three sheer rock towers standing alone above a high plateau — the picture everyone has seen of the Dolomites.",
+    address: "Tre Cime di Lavaredo, Auronzo di Cadore, Belluno, Italy",
+    coordinates: "46.617, 12.300",
+    notes: [
+      "The loop around the three peaks is about 10 km on a good path, mostly level after the first climb, and takes three to four hours at a family pace.",
+      "The toll road up to Rifugio Auronzo saves the long ascent and is what most people do. It closes in winter and fills by mid-morning in August — go early or take the bus.",
+      "The three towers are the north faces, and they only look like the photographs from the far side of the loop. Walking anticlockwise gets you there sooner.",
+      "Weather turns fast and the plateau is exposed. Take a layer even in July.",
+      "No kosher food anywhere near. Milan is about four hours away and is where the day's food comes from.",
+    ],
+    shabbos: "A toll road and a long drive from anything — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Tre_Cime_di_Lavaredo",
+  },
+  {
+    slug: "lago-di-braies",
+    name: "Lago di Braies (Pragser Wildsee)",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Nature",
+    summary: "A green lake under a rock wall in South Tyrol, with a flat path all the way round it.",
+    address: "Pragser Wildsee / Lago di Braies, Prags, South Tyrol, Italy",
+    coordinates: "46.6996, 12.0840",
+    notes: [
+      "The circuit is about 3.5 km, flat, and manageable with small children and a pushchair on most of it — one of the few genuinely easy days in the Dolomites.",
+      "It is also one of the most photographed places in Italy, which means crowds. Access is restricted in high season and you may need a booking or a shuttle; check before driving up.",
+      "This is South Tyrol, where the first language is German and the names are doubled — Pragser Wildsee and Lago di Braies are the same lake.",
+      "There is boat hire on the lake. Note that swimming here is in an open public lake with no separate arrangement of any kind.",
+      "Carry the day's food; there is nothing kosher in the valley.",
+    ],
+    shabbos: "A long drive from any kehilla, with restricted seasonal access — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Pragser_Wildsee",
+  },
+  {
+    slug: "krimml-waterfalls",
+    name: "The Krimml Waterfalls",
+    city: "Krimml",
+    country: "Austria",
+    kind: "Nature",
+    summary: "The highest waterfall in Austria — 380 metres in three stages, with a path climbing beside the whole of it.",
+    address: "Krimmler Wasserfälle, Krimml, Salzburg, Austria",
+    coordinates: "47.21833, 12.17333",
+    notes: [
+      "The path switchbacks up past a series of viewing points, and you get wet at several of them. That is the appeal for children and the warning for everyone else.",
+      "Walking to the top and back is two to three hours. The first stage alone is twenty minutes and is most of the spectacle if time is short.",
+      "It is inside the Hohe Tauern national park, at the western end of the Pinzgau valley, and pairs naturally with the Grossglockner road.",
+      "There is nothing kosher in the Pinzgau. Vienna is five hours east; carry everything.",
+    ],
+    shabbos: "Ticketed, and hours from any kehilla.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Krimml_Waterfalls",
+  },
+  {
+    slug: "grossglockner-alpine-road",
+    name: "The Grossglockner High Alpine Road",
+    city: "Hohe Tauern",
+    country: "Austria",
+    kind: "Viewpoint",
+    summary: "Forty-eight kilometres of hairpins over a 2,500 m pass, built as a scenic road and still the best drive in the Alps.",
+    address: "Grossglockner Hochalpenstrasse, between Fusch (Salzburg) and Heiligenblut (Carinthia), Austria",
+    coordinates: "47.12370, 12.83121",
+    website: "https://www.grossglockner.at/gg/en/index",
+    notes: [
+      "The coordinate is the Edelweissspitze, the highest point you can drive to on the road, at about 2,571 m — the view from the tower there is the one to stop for.",
+      "It is a toll road and it closes in winter, roughly from early November to early May. Check it is open before building a day around it.",
+      "Allow most of a day rather than the two hours the distance suggests. The stopping is the point, and there are more than thirty places to do it.",
+      "Marmots and ibex on the upper stretches, close to the road. Children who have had enough of driving revive at the Franz-Josefs-Höhe.",
+      "Not a road to take on in bad weather or with a nervous driver — it is high, exposed, and the hairpins are continuous.",
+    ],
+    shabbos: "A toll road, closed in winter, and hours from anywhere kosher.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Grossglockner_High_Alpine_Road",
+  },
 ];
