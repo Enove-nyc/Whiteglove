@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import KosherNearby from "@/components/KosherNearby";
-import ListToolbar, { listMatches } from "@/components/ListToolbar";
+import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import type { KosherStay } from "@/data/kosher-stays";
 
@@ -26,9 +27,18 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
     [stays],
   );
 
-  const shown = stays.filter(
-    (s) => (!country || s.country === country) && listMatches([s.name, s.city, s.country, s.kind, s.summary].join(" "), query),
-  );
+  // The anchor is searched too — somebody looking for a hotel by the shul
+  // types the shul's name, not the hotel's.
+  const shown = stays
+    .filter(
+      (s) =>
+        (!country || s.country === country) &&
+        listMatches(
+          [s.name, s.city, s.country, s.kind, s.summary, s.anchor.name, s.season ?? "", (s.notes ?? []).join(" "), extraSpellings([s.slug, s.city])].join(" "),
+          query,
+        ),
+    )
+    .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
 
   return (
     <>
