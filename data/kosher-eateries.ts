@@ -308,6 +308,52 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "gateshead-bensham",
     sourceUrl: "https://www.totallyjewishtravel.com/Kosher_Tours-TL1164-gateshead_united_kingdom_uk-Vacations.html",
   },
+  {
+    slug: "paris-19th-rue-manin",
+    name: "The 19th arrondissement — where Paris actually eats",
+    city: "Paris",
+    country: "France",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Around Rue Manin and the Buttes-Chaumont, the densest concentration of kosher shops, restaurants, shuls and schools in Paris — and it is not the Marais.",
+    address: "Around Rue Manin, 75019 Paris",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — most places here are under the Beth Din de Paris or a badatz, and each displays its own",
+    },
+    notes: [
+      "This is the correction most Paris trips need, and it is the same shape as the Amsterdam one. The Pletzl in the Marais is the historic Jewish street and worth walking; the 19th is where the community lives and where the food is. Orthodox families settled here through the 1970s, 80s and 90s and the provision followed them.",
+      "Coordinates deliberately not listed: this is a district several streets across rather than one address, and we found no pin worth standing behind for its centre. Navigate to Buttes-Chaumont and walk Rue Manin.",
+      "Supervision differs door to door — the Consistoire and various badatzim both certify in Paris and they are not the same. Look for the current teudah in the window.",
+      "It is well out from the sightseeing. That is the trade, and it is the same trade as Golders Green in London.",
+    ],
+    nearQuarter: "paris-pletzl",
+    sourceUrl: "https://www.totallyjewishtravel.com/Kosher_Tours-TL7753-19th_arrondissement_paris-Vacations.html",
+  },
+  {
+    slug: "nice-dubouchage-eating",
+    name: "Around the Dubouchage shul — eating in Nice",
+    city: "Nice",
+    country: "France",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "Kosher restaurants and shops in the streets around the Boulevard Dubouchage synagogue, in the middle of town rather than out in a suburb.",
+    address: "Around Boulevard Dubouchage, Nice",
+    coordinates: "43.7020, 7.2700",
+    hechsher: {
+      state: "unverified",
+      note: "Mostly under the local Consistoire rabbinate; confirm at each door",
+    },
+    notes: [
+      "Unusual and useful: the shul and the food are central in Nice, so a hotel near the sights is also a hotel near dinner. That is not true of Paris, London or Milan.",
+      "One of the larger Jewish communities in France outside Paris, so the provision is real rather than token — but confirm what is open for your dates, because the Riviera runs on a season.",
+      "Nice Airport is a short taxi from the centre, which makes this a practical stop on a wider trip rather than a detour.",
+    ],
+    nearQuarter: "nice-dubouchage",
+    sourceUrl: "https://en.wikipedia.org/wiki/Nice",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
