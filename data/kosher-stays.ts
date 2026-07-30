@@ -332,6 +332,15 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     note: "The single most useful thing this site can tell somebody about Amsterdam. The famous Jewish quarter — the Esnoga, the Jewish Museum, the Hollandsche Schouwburg — is a heritage district in the centre, and almost nobody Jewish lives there now. About half of the forty thousand Jews in the Netherlands live out here in Buitenveldert and neighbouring Amstelveen, and between them these two suburbs hold six shuls, three schools, the community's main offices and nearly all its kosher shops. Stay in the centre and every meal is a journey; stay here and the sightseeing is a fifteen-minute tram.",
     sourceUrl: "https://en.wikipedia.org/wiki/Buitenveldert",
   },
+  {
+    slug: "gateshead-bensham",
+    city: "Gateshead",
+    country: "United Kingdom",
+    name: "Bensham — the Jewish quarter of Gateshead",
+    coordinates: "54.95311, -1.61061",
+    note: "The largest centre of Torah learning in Europe, in a working-class district of a north-eastern industrial town — which is exactly as unlikely as it sounds. The Gateshead Yeshiva was founded in 1929 and draws talmidim from around the world, and the streets around it hold a full set of institutions and hundreds of families. Bensham was called Little Jerusalem long before anybody outside Britain had heard of it. The kosher shops are clustered on Coatsworth Road. This is not a tourist quarter and it is not set up as one — people live and learn here, and visitors are guests.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Gateshead_Talmudical_College",
+  },
 ];
 
 export const kosherStays: KosherStay[] = [
@@ -832,6 +841,24 @@ export const kosherStays: KosherStay[] = [
     ],
     kosherClaim: "none",
     sourceUrl: "https://en.wikipedia.org/wiki/Athens_Synagogue",
+  },
+  {
+    slug: "gateshead-stays",
+    name: "Staying in Gateshead",
+    city: "Gateshead",
+    country: "United Kingdom",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "Bensham, around the yeshiva — the largest Torah centre in Europe, with a full week of shuls, schools and shops, and almost no hotel stock at all.",
+    anchor: { name: "Gateshead Talmudical College, Bewick Road, Bensham", coordinates: "54.95311, -1.61061" },
+    notes: [
+      "Set expectations first: this is a residential community, not a destination, and there is very little to book. Most visitors are here for a simcha or a son in yeshiva and stay in an apartment or with family arranged through the community.",
+      "What you get in exchange is a place where nothing needs planning — minyanim at every hour, kosher shops on Coatsworth Road, and a whole neighbourhood keeping the same week.",
+      "Newcastle is across the river and has the airport and the station, so getting here is easy even though staying here takes arranging.",
+      "Not a tourist quarter and not set up as one. Dress and conduct as the neighbourhood does.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Gateshead_Talmudical_College",
   },
 ];
 
