@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import ListToolbar, { listMatches } from "@/components/ListToolbar";
+import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { describeHechsher, hechsherLabel } from "@/data/hechsherim";
 import type { KosherEatery } from "@/data/kosher-eateries";
@@ -41,12 +42,20 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
     [eateries],
   );
 
-  const shown = eateries.filter(
-    (e) =>
-      (!country || e.country === country) &&
-      (!kind || e.kind === kind) &&
-      listMatches([e.name, e.city, e.country, e.kind, e.diet, e.summary].join(" "), query),
-  );
+  // Notes and alternate spellings count here as much as anywhere: somebody
+  // types "Villeurbanne" or "Wien" or "badatz", and all three live in the
+  // notes rather than the name.
+  const shown = eateries
+    .filter(
+      (e) =>
+        (!country || e.country === country) &&
+        (!kind || e.kind === kind) &&
+        listMatches(
+          [e.name, e.city, e.country, e.kind, e.diet, e.summary, (e.notes ?? []).join(" "), e.nearQuarter ?? "", extraSpellings([e.slug, e.city])].join(" "),
+          query,
+        ),
+    )
+    .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
 
   return (
     <>

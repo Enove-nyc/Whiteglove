@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import ListToolbar, { listMatches } from "@/components/ListToolbar";
+import { extraSpellings } from "@/lib/place-search";
 import type { CemeteryListItem } from "@/lib/cemeteries-view";
 
 // The batei hachaim directory, with a way to find one in it.
@@ -35,7 +36,10 @@ export default function CemeteryDirectory({ cemeteries }: { cemeteries: Cemetery
     const filtered = cemeteries.filter(
       (c) =>
         (!country || c.country === country) &&
-        listMatches([c.city, c.yiddishCity, c.name, c.yiddishName, c.country, ...c.burials].join(" "), query),
+        // The same alternate spellings the /stops search has always used. A
+        // kever town is written a dozen ways and this page knew none of them:
+        // "Lezajsk" and "Leżajsk" found nothing while "Lizhensk" worked.
+        listMatches([c.city, c.yiddishCity, c.name, c.yiddishName, c.country, ...c.burials, extraSpellings([c.slug, c.city])].join(" "), query),
     );
     const by: Record<Order, (a: CemeteryListItem, b: CemeteryListItem) => number> = {
       city: (a, b) => a.city.localeCompare(b.city),

@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import KosherNearby from "@/components/KosherNearby";
-import ListToolbar, { listMatches } from "@/components/ListToolbar";
+import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { placeDirectionsUrl } from "@/data/route-utils";
+import { extraSpellings } from "@/lib/place-search";
 import type { Attraction } from "@/data/attractions";
 
 // What to do on the days that are not kevarim.
@@ -32,12 +33,20 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
     [attractions],
   );
 
-  const shown = attractions.filter(
-    (a) =>
-      (!country || a.country === country) &&
-      (!kind || a.kind === kind) &&
-      listMatches([a.name, a.city, a.country, a.kind, a.summary].join(" "), query),
-  );
+  // The notes and the alternate spellings are searched too: half of what makes
+  // an entry findable is in its notes ("no kosher food", "pushchair", "toll
+  // road"), and a person looking for Merano may well type Meran.
+  const shown = attractions
+    .filter(
+      (a) =>
+        (!country || a.country === country) &&
+        (!kind || a.kind === kind) &&
+        listMatches(
+          [a.name, a.city, a.country, a.kind, a.summary, (a.notes ?? []).join(" "), extraSpellings([a.slug, a.city])].join(" "),
+          query,
+        ),
+    )
+    .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
 
   return (
     <>

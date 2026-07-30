@@ -163,7 +163,15 @@ export function fuzzyMatch(query: string, haystack: string): boolean {
       // meaningful for a real word. Allowing any length matched everything:
       // "on" is a substring of "zzzznonsense", and "on" appears in almost
       // every description, so nonsense queries returned results.
-      if (ht.length >= 4 && qt.includes(ht)) return true;
+      //
+      // Four characters turned out not to be enough either. "sense" is five,
+      // it is a real word in a real description, and it sits inside
+      // "zzzznonsense" — so that same nonsense query still found the Lake
+      // District. The length floor alone cannot tell a short word apart from a
+      // fragment of a long one, so the word must also be a substantial part of
+      // what was typed: half of it or more. "jungfrau" inside a search for
+      // "jungfraujoch" still counts; "sense" inside "zzzznonsense" does not.
+      if (ht.length >= 4 && ht.length * 2 >= qt.length && qt.includes(ht)) return true;
       return editDistance(qt, ht) <= maxDistanceFor(qt);
     });
   });
