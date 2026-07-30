@@ -5,6 +5,7 @@ import { GloveList } from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { visibleBlocks } from "@/data/page-blocks";
+import { tripArrangementOpen } from "@/lib/features";
 import { resolvePage } from "@/lib/pages";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,7 +39,10 @@ export default async function FlightBookingAssistancePage() {
             <GloveList items={checklist.items.filter(Boolean)} className="mt-6 space-y-4 text-base leading-7 text-stone-600" />
           </aside>
         )}
-        <FlightRequestForm />
+        {/* The page keeps saying what we do — that is the service, and it is
+            true. The form is what waits: it does not take requests until the
+            concierge side is open. */}
+        <FlightRequestForm open={tripArrangementOpen()} />
       </section>
       <Footer />
     </main>

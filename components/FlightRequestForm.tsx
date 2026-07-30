@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ComingSoonNotice from "@/components/ComingSoonNotice";
 
 // The flight page listed six things to send us and gave nobody a way to send
 // them. Every one of those six is a field here, so the page asks the questions
@@ -10,6 +11,9 @@ import { useState } from "react";
 // request is an enquiry, it belongs in the same inbox as the other enquiries,
 // and inventing a second delivery path for it would mean a second thing that
 // can quietly stop arriving.
+//
+// `open` is whether the service behind it is taking requests. Closed, the form
+// is still here to be read but cannot be submitted — see lib/features.ts.
 
 const inputClass =
   "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(23,45,82,.04)] outline-none transition placeholder:text-stone-400 focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
@@ -31,7 +35,7 @@ const EMPTY = {
   notes: "",
 };
 
-export default function FlightRequestForm() {
+export default function FlightRequestForm({ open }: { open: boolean }) {
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +48,10 @@ export default function FlightRequestForm() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    // Belt and braces. The fields are inside a disabled fieldset, so a closed
+    // form cannot normally be submitted at all — this is here so that if it
+    // ever is, nothing leaves the browser.
+    if (!open) return;
     if (!form.name.trim() || !form.email.trim() || !form.from.trim() || !form.to.trim() || !form.depart.trim()) {
       setError("Please add your name, email, where you are flying from and to, and the date out.");
       return;
@@ -118,7 +126,12 @@ export default function FlightRequestForm() {
         back to you with what is available.
       </p>
 
-      <div className="mt-8 grid gap-x-5 gap-y-6 sm:grid-cols-2">
+      {!open && <ComingSoonNotice what="Personal flight booking" className="mt-6" />}
+
+      {/* One disabled fieldset rather than a `disabled` on each field: it takes
+          the whole form out of the tab order and out of validation in one
+          move, which is exactly what "this is not taking requests" means. */}
+      <fieldset disabled={!open} className={`mt-8 grid gap-x-5 gap-y-6 sm:grid-cols-2 ${open ? "" : "opacity-55"}`}>
         <label className="block"><span className={caption}>Flying from *</span><input required className={inputClass} value={form.from} onChange={(e) => set({ from: e.target.value })} placeholder="New York, JFK" /></label>
         <label className="block"><span className={caption}>Flying to *</span><input required className={inputClass} value={form.to} onChange={(e) => set({ to: e.target.value })} placeholder="Kraków, KRK" /></label>
         <label className="block"><span className={caption}>Date out *</span><input required type="date" className={inputClass} value={form.depart} onChange={(e) => set({ depart: e.target.value })} /></label>
@@ -144,16 +157,16 @@ export default function FlightRequestForm() {
           <span className={caption}>Anything else</span>
           <textarea rows={4} className={inputClass} value={form.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Shabbos, a connection you want to avoid, seats together, an airline you have points with…" />
         </label>
-      </div>
+      </fieldset>
 
       {error && <p className="mt-4 text-sm font-semibold text-red-700">{error}</p>}
 
       <button
         type="submit"
-        disabled={busy}
-        className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(23,45,82,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60 sm:w-auto"
+        disabled={busy || !open}
+        className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(23,45,82,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {busy ? "Sending…" : "Send the request"}
+        {!open ? "Coming soon" : busy ? "Sending…" : "Send the request"}
       </button>
     </form>
   );
