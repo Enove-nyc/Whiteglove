@@ -194,8 +194,11 @@ export async function middleware(request: NextRequest) {
   }
 
   if (adminPath.startsWith("/admin") && adminPath !== "/admin/login") {
+    // A null token means this deployment has no signing secret and cannot
+    // authorise anybody. Said explicitly rather than relying on a cookie never
+    // being equal to null, so a later refactor cannot turn it into fail-open.
     const token = await edgeAccessToken("admin");
-    if (request.cookies.get("white_glove_admin")?.value !== token) {
+    if (!token || request.cookies.get("white_glove_admin")?.value !== token) {
       return NextResponse.redirect(new URL(onAdminHost ? "/login" : "/admin/login", request.url));
     }
   }
