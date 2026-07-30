@@ -1,13 +1,20 @@
-import type { Metadata } from "next";
 import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Book with cash or with miles — White Glove Itineraries",
-  description: "Book flights, hotels and rental cars for your kosher-travel journey — paying with cash, or with your miles and points — then keep the rest of your trip organized with White Glove.",
-};
+// The one booking page. `/booking` was a second one — same job, different
+// heading, a different search component and its own idea of the flow — and it
+// now redirects here (see next.config.ts). Everything it could do lives on
+// this page: the Duffel flight search, the Duffel Stays hotel search, and the
+// three steps that tie a booking back to the rest of the trip.
+export const metadata = pageMetadata({
+  title: "Book Flights, Hotels & Cars with Cash or Miles | White Glove",
+  description:
+    "Search and book flights, hotels and rental cars for your kosher-travel journey — paying with cash, or with your miles and points — then keep the whole trip together in White Glove.",
+  path: "/book",
+});
 
 const COMPARISON: Array<[string, string, string]> = [
   [
@@ -25,6 +32,14 @@ const COMPARISON: Array<[string, string, string]> = [
     "Arrange a rental for getting between towns and kevarim at your own pace.",
     "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
   ],
+];
+
+// Carried over from the old /booking page, which was the only place that said
+// how a booking connects to the rest of the trip.
+const STEPS: Array<[string, string]> = [
+  ["Choose your travel", "Search the flight, hotel or car that suits your dates — with cash, or with your own miles and points."],
+  ["Build your route", "Save it to your trip, alongside the kevarim and destinations the journey is actually built around."],
+  ["Travel prepared", "Keep the address, access guidance and available local contacts with the booking, in one itinerary."],
 ];
 
 export default async function BookPage({
@@ -54,6 +69,13 @@ export default async function BookPage({
   // Kayak affiliate key to send them out with. A Kayak link without the key
   // works but earns nothing, so there is no reason to prefer it.
   const flightsVia = process.env.DUFFEL_ACCESS_TOKEN?.trim() && !affiliate.kayakParams ? "duffel" : "kayak";
+  // Hotels are the same idea with one extra condition. The Duffel token alone
+  // does not mean Stays is enabled on the account — that is approved
+  // separately, and the search 403s until it is. Defaulting to it would
+  // replace a hotel search that works with one that returns an error, so it
+  // takes an explicit DUFFEL_STAYS=1 to switch over. Until then, and whenever
+  // there is a Booking.com affiliate ID to earn on, hotels go to Booking.com.
+  const hotelsVia = process.env.DUFFEL_ACCESS_TOKEN?.trim() && process.env.DUFFEL_STAYS?.trim() === "1" && !affiliate.bookingAid ? "duffel" : "booking";
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -66,10 +88,10 @@ export default async function BookPage({
           <div className="max-w-3xl">
             <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">Book with cash, or with miles</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Choose how you&apos;re paying, then book flights, hotels or a rental car — and keep the rest of the trip together in White Glove.
+              Flights, hotels and rental cars in one place. Choose how you&apos;re paying, book it, and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} /></div>
+          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} hotelsVia={hotelsVia} /></div>
         </div>
       </section>
 
@@ -109,6 +131,26 @@ export default async function BookPage({
             </div>
           ))}
         </div>
+        </div>
+      </section>
+
+      {/* How a booking joins the rest of the trip. From the old /booking page,
+          which was the only page that said it. */}
+      <section className="border-t border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Booked here, planned here</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+            The travel side and the rest of the journey — kevarim, shomer details, practical guidance — stay in one itinerary.
+          </p>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {STEPS.map(([heading, body], index) => (
+              <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">0{index + 1}</p>
+                <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
+                <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
       <Footer />

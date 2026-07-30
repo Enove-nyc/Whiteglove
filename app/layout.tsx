@@ -4,8 +4,13 @@ import IdleLogout from "@/components/IdleLogout";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
+import { siteOrigin } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  // Set once, here, so every page below can give its canonical URL and its
+  // share image as a plain path and have them resolved to this deployment's
+  // real address. See lib/seo.ts.
+  metadataBase: siteOrigin(),
   title: "White Glove Itineraries | Luxury Kosher Travel",
   description: "Thoughtfully planned kosher travel and Jewish heritage journeys.",
   applicationName: "White Glove Itineraries",

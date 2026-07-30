@@ -74,14 +74,16 @@ function withKayakAffiliate(url: string, params?: string) {
 }
 
 /**
- * `flightsVia` decides who searches the flights.
+ * `flightsVia` and `hotelsVia` decide who runs the search.
  *
- * "duffel" searches and books here, in the site, through the Duffel account.
- * "kayak" hands the search to Kayak with the affiliate tag on it. Kayak links
- * work without a tag but earn nothing, so until the Kayak key exists the
- * flights are better served — and better tracked — by Duffel.
+ * "duffel" searches and books here, in the site, through the Duffel account —
+ * this is what the old /booking page did, and it is the same component doing
+ * it. The partner options hand the search to Kayak or Booking.com with the
+ * affiliate tag on it; those links work without a tag but earn nothing, so
+ * until the key exists the search is better served — and better tracked —
+ * in-site. /book/page.tsx picks, and explains why.
  */
-export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" }: { affiliate?: Affiliate; prefill?: Prefill; flightsVia?: "duffel" | "kayak" }) {
+export default function BookPartners({ affiliate, prefill, flightsVia = "kayak", hotelsVia = "booking" }: { affiliate?: Affiliate; prefill?: Prefill; flightsVia?: "duffel" | "kayak"; hotelsVia?: "duffel" | "booking" }) {
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>("flights");
   const [added, setAdded] = useState(false);
@@ -125,6 +127,11 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
     setAdded(true);
   }
 
+  // Whether the tab you are looking at searches here or hands off to a
+  // partner. Both the note beside the toggle and the one under the panel say
+  // what actually happens next, so neither can promise the wrong thing.
+  const inSite = pay === "cash" && ((kind === "flights" && flightsVia === "duffel") || (kind === "hotels" && hotelsVia === "duffel"));
+
   return (
     <div className="overflow-hidden rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
       {/* ---- How are you paying? A segmented control, so the choice reads as
@@ -136,7 +143,7 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
           <PayToggle active={pay === "miles"} onClick={() => setPay("miles")}>Miles &amp; points</PayToggle>
         </div>
         <p className="min-w-0 text-xs leading-5 text-stone-500">
-          {pay === "cash" ? "Compare and pay by card with a trusted partner." : "Find the award, check the value, book it in your own program."}
+          {pay === "miles" ? "Find the award, check the value, book it in your own program." : inSite ? "Search and pay by card, right here." : "Compare and pay by card with a trusted partner."}
         </p>
       </div>
 
@@ -169,7 +176,18 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
           <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
         )
       )}
-      {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "hotels" && (
+        hotelsVia === "duffel" ? (
+          <div>
+            <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
+              Live availability for the White Glove destinations, searched here through our own accommodation connection.
+            </p>
+            <BookingSearch only="hotels" />
+          </div>
+        ) : (
+          <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />
+        )
+      )}
       {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
@@ -186,12 +204,14 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak" 
         />
       )}
 
+      {/* Says what happens when you press the button on the tab you are
+          actually looking at, rather than describing the page in general. */}
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
-        {pay === "cash"
-          ? flightsVia === "duffel" && kind === "flights"
-            ? "Flights are searched and booked here, through our own airline connection. Hotels and cars open with a trusted partner where you compare and pay securely."
-            : "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."
-          : "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."}
+        {pay === "miles"
+          ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
+          : inSite
+            ? "This search runs here, through our own travel connection, and what you book goes straight onto your itinerary."
+            : "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
       </p>
     </div>
   );

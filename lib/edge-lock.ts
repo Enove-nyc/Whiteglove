@@ -126,6 +126,38 @@ export async function edgeSiteAccessValid(value: string | undefined, generation:
   return expires === 0 || Date.now() <= expires;
 }
 
+/**
+ * Sections that have moved, old address to new.
+ *
+ * A lock is a stored path, and a path that no longer serves a page stops
+ * locking anything — silently. `/booking` was the flights-and-hotels page; it
+ * is `/book` now, and it redirects there before this check ever runs. An owner
+ * who had locked `/booking` would have had it quietly opened by the rename,
+ * which is the one failure mode a lock must not have, so the old address keeps
+ * locking the page it became.
+ *
+ * The old entry stays visible in the admin as a custom path, so it can be
+ * tidied up deliberately rather than disappearing on somebody.
+ */
+const RENAMED_SECTIONS: Record<string, string> = {
+  "/booking": "/book",
+};
+
+/** Adds the current address of any section that has been renamed. */
+export function withRenamedSections(paths: string[]): string[] {
+  const result: string[] = [];
+  const add = (path: string) => {
+    if (path && !result.includes(path)) result.push(path);
+  };
+  for (const raw of paths) {
+    const path = raw.trim();
+    if (!path) continue;
+    add(path);
+    add(RENAMED_SECTIONS[path.endsWith("/") ? path.slice(0, -1) : path]);
+  }
+  return result;
+}
+
 export async function edgeLockedPaths(): Promise<string[]> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -135,7 +167,7 @@ export async function edgeLockedPaths(): Promise<string[]> {
     const payload = (await response.json()) as { result?: string };
     if (!payload.result) return [];
     const parsed = JSON.parse(payload.result);
-    return Array.isArray(parsed) ? parsed.filter((p): p is string => typeof p === "string") : [];
+    return Array.isArray(parsed) ? withRenamedSections(parsed.filter((p): p is string => typeof p === "string")) : [];
   } catch {
     return [];
   }

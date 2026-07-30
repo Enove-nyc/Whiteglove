@@ -117,7 +117,7 @@ export default function PracticalInformation({
           <h3 dir="rtl" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">פליגערס און האטעלן</h3>
           <p className="mt-1 text-sm text-stone-500">Flights & hotels</p>
           <p className="mt-4 text-sm leading-6 text-stone-600">Search travel options for your journey in one place.</p>
-          <Link href="/booking" className="mt-5 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Search travel →</Link>
+          <Link href="/book" className="mt-5 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Search travel →</Link>
         </article>
       </div>
     </div>
