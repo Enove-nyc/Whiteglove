@@ -2326,4 +2326,74 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed, and the shul is down in the town at Sillgasse 15 — a mountain morning for a weekday, not for Shabbos.",
     sourceUrl: "https://www.innsbruck.info/en/destinations/m/innsbruck-s-nordkettenbahnen-lifts-and-cable-cars.html",
   },
+
+  // ---- The Alps, part three -------------------------------------------
+  //
+  // There is Jewish history in these mountains and the file had none of it.
+  // Merano below is the correction: a working shul in South Tyrol, in a spa
+  // town that half of Jewish Vienna, Prague and Budapest used to come to. It
+  // sits an hour from the Dolomites passes, which means the one day of a
+  // mountain fortnight that is not a mountain has somewhere to be.
+  //
+  // The other two are ordinary sightseeing at the two ends of the range, and
+  // both are chosen for the same reason: they are in or beside a city that has
+  // kosher food, which almost nothing else in the Alps is.
+  {
+    slug: "merano-jewish-museum",
+    name: "The Merano Synagogue and Jewish Museum",
+    city: "Merano",
+    country: "Italy",
+    kind: "Jewish heritage",
+    summary: "The only shul in South Tyrol, an Art Nouveau building of 1901 that is still a working synagogue, with the community's museum inside it.",
+    address: "Schillerstraße, Merano/Meran, South Tyrol",
+    website: "https://www.meranerland.org/en/highlights/museums-and-exhibitions/jewish-museum-and-synagogue/",
+    notes: [
+      "Why there is a shul in a mountain spa town at all: when the Empress Elisabeth took Merano up as a cure resort, Jewish families from Vienna, Prague and Budapest followed, and from the 1830s onward there was a community here big enough to build this.",
+      "The museum holds the community's own things — sifrei Torah, kiddush cups, menorahs — rather than a general exhibition, and it carries the story through the Shoah and the rebuilding after it.",
+      "It is a working shul and not only a museum, so the times are a community's rather than an attraction's. Write or ring before coming, particularly if the point of the visit is to daven rather than to look.",
+      "Coordinates deliberately not listed: we found no pin for the building we would stand behind. It is on Schillerstraße in the old town, a short walk from the thermal baths, and the town is small enough to walk from anywhere in it.",
+      "Merano is about an hour from Bolzano and puts the western Dolomites within a morning, which makes this the rest day on a mountain trip rather than a detour from one.",
+    ],
+    shabbos: "An active shul, so what happens here on Shabbos is davening rather than visiting. The museum side is a weekday matter — arrange it with the community.",
+    sourceUrl: "https://www.visitjewishitaly.it/en/listing/synagogue-of-merano/",
+  },
+  {
+    slug: "grenoble-bastille-cable-car",
+    name: "The Grenoble-Bastille cable car",
+    city: "Grenoble",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "Spherical glass cabins from the middle of Grenoble over the Isère to a hill fort, in three and a half minutes — the first urban cable car in France, running since 1934.",
+    address: "3 Quai Stéphane Jay, 38000 Grenoble",
+    website: "https://bastille-grenoble.fr/en/",
+    notes: [
+      "The whole trip is 700 m of span and 260 m of climb, and it is over before children have finished being nervous about it. The cabins are the plexiglas spheres everyone calls les Bulles, and they are the reason to do it rather than walk up.",
+      "It opened in September 1934, after Rio and Cape Town and before anywhere else in France. That is worth a sentence to a child who has just been on it.",
+      "At the top is the Bastille, a nineteenth-century fort on the hill, with the Vercors and the Chartreuse on one side and the Belledonne on the other. There are paths down for anybody who would rather walk one way.",
+      "Grenoble is the reason this is listed rather than a hundred other lifts: it is a real city, an hour and a quarter from Lyon, and it has kosher food. Almost nowhere in the French Alps has both.",
+      "Coordinates deliberately not listed: the pin most maps carry is on the fort at the top rather than the station at the bottom. Navigate to 3 Quai Stéphane Jay on the river.",
+    ],
+    shabbos: "Ticketed and turnstiled. Grenoble has a kehilla, so Shabbos here is a town Shabbos — the cable car is for the rest of the week.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Grenoble-Bastille_cable_car",
+  },
+  {
+    slug: "eisriesenwelt-werfen",
+    name: "Eisriesenwelt, Werfen",
+    city: "Werfen",
+    country: "Austria",
+    kind: "Nature",
+    summary: "The largest ice cave in the world, inside a mountain south of Salzburg — forty-two kilometres of it, of which you walk the first, by lamplight, through ice formations the size of buildings.",
+    address: "Eisriesenwelt, Werfen, Salzburg province — about 40 km south of Salzburg",
+    website: "https://www.salzburg.info/en/sights/excursions/ice-caves-in-werfen",
+    notes: [
+      "Guided tours only, and only from about May to October — the cave is shut for the winter, which catches people who assume an ice cave is a winter outing. The tour runs about seventy-five minutes.",
+      "It is an ice cave, so it is at freezing inside whatever the valley is doing. Coats, and shoes with a grip, in August.",
+      "Getting there is a day rather than a stop: a road up, then the steepest gondola in Austria to the cave mouth, or a walk up from the valley visitor centre for anybody who would rather. There are a great many steps inside as well.",
+      "Not for everybody in the party. Between the steps, the cold and the dark it is a poor fit for very small children or anybody unsteady, and there is no way to turn back halfway through a guided group.",
+      "Coordinates deliberately not listed: the cave mouth is on a mountainside and the pin is not drivable. Navigate to Werfen and follow the signs to the visitor centre.",
+      "Salzburg is about forty minutes north and is where the food comes from — Chabad there does Shabbos and yom tov meals on advance registration, and is listed on this site. There is no kosher shop in the province.",
+    ],
+    shabbos: "Ticketed, timed and guided, up a mountain. Not a Shabbos outing.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Eisriesenwelt",
+  },
 ];

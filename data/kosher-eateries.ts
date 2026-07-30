@@ -434,6 +434,78 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "lyon-villeurbanne",
     sourceUrl: "https://www.123cacher.com/lyon.htm",
   },
+  {
+    slug: "grenoble-kosher",
+    name: "Eating in Grenoble",
+    city: "Grenoble",
+    country: "France",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "A brasserie under the local rabbinate, a grocery and butcher, and Chabad — small, but the only kosher provision inside the French Alps rather than on the edge of them.",
+    address: "Across central Grenoble — see the community's own kashrus page",
+    coordinates: "45.17167, 5.72250",
+    hechsher: {
+      state: "unverified",
+      note: "Several separate businesses — the Grenoble Rabbinate certifies here, and each place displays its own teudah",
+    },
+    notes: [
+      "Set expectations by size. This is a few establishments in a city of a hundred and fifty thousand, not a kosher district. It is enough to eat well for a week and not enough to improvise a Friday afternoon.",
+      "The reason it matters out of proportion to its size: Chamonix, Annecy, Megève and the whole of the Savoie have nothing at all. Grenoble is the only town actually inside the French Alps where kosher food exists.",
+      "The community publishes its own kashrus page, which is the live list and the thing to check rather than this one. Supervision here is the Grenoble Rabbinate; confirm at the door.",
+      "The coordinate is the town rather than a shop, and is here so the site can measure distances. It is not an address to navigate to — the places are spread across the city.",
+      "Lyon is about an hour and a quarter north and has many times as much. If a week's shopping is the question rather than a dinner, shop in Lyon on the way in.",
+    ],
+    nearQuarter: "grenoble-jewish-life",
+    sourceUrl: "https://www.grande-synagogue-de-grenoble.fr/casher",
+  },
+  {
+    slug: "salzburg-chabad-meals",
+    name: "Chabad of Salzburg — Shabbos and yom tov meals",
+    city: "Salzburg",
+    country: "Austria",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "Not a restaurant but a table: Shabbos and yom tov meals at the Chabad house on the Linzer Gasse, booked ahead, in a province with no kosher shop in it.",
+    address: "Linzer Gasse 76, 5020 Salzburg",
+    website: "https://chabadsalzburg.com/",
+    hechsher: {
+      state: "unverified",
+      note: "A Chabad house table rather than a certified commercial kitchen — ask the rov there what the arrangements are, as you would anywhere",
+    },
+    notes: [
+      "Advance registration, not walk-in. This is the difference between eating and not eating on a Shabbos in Salzburg, and it is the single most important line in this entry.",
+      "It exists because nothing else does. There is no kosher shop or restaurant in Salzburg, in the Salzkammergut, or anywhere in Austria outside Vienna — so for a family doing Hallstatt, the Eisriesenwelt or the Grossglockner, this is the Shabbos.",
+      "For weekdays out in the valleys, Kosher Tirol delivers prepared meals across the Salzburg province and is listed separately here.",
+      "Coordinates deliberately not listed: we found no pin we would stand behind. Linzer Gasse 76 is in the Neustadt, on the far side of the river from the old town, and is walkable from most of the centre.",
+    ],
+    sourceUrl: "https://chabadsalzburg.com/",
+  },
+  {
+    slug: "turin-kosher",
+    name: "Eating in Turin — through the community, not through a restaurant",
+    city: "Turin",
+    country: "Italy",
+    kind: "Takeaway",
+    diet: "Mixed premises",
+    summary:
+      "A kehilla of about nine hundred and fifty with its own rabbinical office and kashrus supervision, which will provide packed or served kosher meals on reservation.",
+    address: "Jewish Community of Turin, Piazzetta Primo Levi 12, 10125 Turin",
+    coordinates: "45.06028, 7.68222",
+    website: "https://torinoebraica.it/en/",
+    hechsher: {
+      state: "unverified",
+      note: "Arranged and supervised through the Turin community's own rabbinical office rather than by a commercial certifier — ask them directly what applies to what you are ordering",
+    },
+    notes: [
+      "This is a different shape of listing from a restaurant street, and the difference is the point: in Turin you write to the community and reserve, rather than turning up somewhere and eating. Plan it before you fly, not on the day.",
+      "Why it belongs in an Alps section: Turin is the gate to the western Italian Alps — the Aosta valley, the Gran Paradiso, the Susa valley and the passes into France — and none of them has a kosher anything. Milan, four hours from the Dolomites, is not the answer on this side of the country.",
+      "The coordinate is the Great Synagogue on Via Pio V, which is beside the community offices on Piazzetta Primo Levi. The shul itself is visited by arrangement rather than walked into.",
+      "The community also runs a mikvah. Turin is a small kehilla with a full week, which is more than any Italian alpine valley has.",
+    ],
+    sourceUrl: "https://torinoebraica.it/en/jewish-life/",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
