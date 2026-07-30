@@ -2168,9 +2168,10 @@ export const attractions: Attraction[] = [
   // kosher summer programmes have been moving.
   //
   // One practical thing runs through all of these and is repeated in each entry
-  // rather than assumed: there is no kosher food in any of them. The nearest
-  // real provision to the Dolomites is Milan, four hours away, and to the Tyrol
-  // is Vienna, which is further still. These are days you carry food into.
+  // rather than assumed: you carry the day's food into these valleys. What this
+  // section originally said — that there is no kosher food in any of them and
+  // the nearest is Milan — was too strong, and the entries below now say what
+  // is actually there. See the note on the second Alps section further down.
   {
     slug: "tre-cime-di-lavaredo",
     name: "Tre Cime di Lavaredo",
@@ -2185,7 +2186,7 @@ export const attractions: Attraction[] = [
       "The toll road up to Rifugio Auronzo saves the long ascent and is what most people do. It closes in winter and fills by mid-morning in August — go early or take the bus.",
       "The three towers are the north faces, and they only look like the photographs from the far side of the loop. Walking anticlockwise gets you there sooner.",
       "Weather turns fast and the plateau is exposed. Take a layer even in July.",
-      "No kosher food anywhere near. Milan is about four hours away and is where the day's food comes from.",
+      "Carry the day's food; there is nothing kosher on the plateau. The nearest kosher kitchen is My Kosher Hotel at Alba di Canazei in the Val di Fassa, which is across the Dolomites rather than nearby, but is a great deal closer than Milan.",
     ],
     shabbos: "A toll road and a long drive from anything — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Tre_Cime_di_Lavaredo",
@@ -2204,7 +2205,7 @@ export const attractions: Attraction[] = [
       "It is also one of the most photographed places in Italy, which means crowds. Access is restricted in high season and you may need a booking or a shuttle; check before driving up.",
       "This is South Tyrol, where the first language is German and the names are doubled — Pragser Wildsee and Lago di Braies are the same lake.",
       "There is boat hire on the lake. Note that swimming here is in an open public lake with no separate arrangement of any kind.",
-      "Carry the day's food; there is nothing kosher in the valley.",
+      "Carry the day's food; there is nothing kosher in the Prags valley itself. The nearest kosher kitchen in the Dolomites is at Alba di Canazei, listed on this site under places to stay.",
     ],
     shabbos: "A long drive from any kehilla, with restricted seasonal access — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Pragser_Wildsee",
@@ -2222,7 +2223,7 @@ export const attractions: Attraction[] = [
       "The path switchbacks up past a series of viewing points, and you get wet at several of them. That is the appeal for children and the warning for everyone else.",
       "Walking to the top and back is two to three hours. The first stage alone is twenty minutes and is most of the spectacle if time is short.",
       "It is inside the Hohe Tauern national park, at the western end of the Pinzgau valley, and pairs naturally with the Grossglockner road.",
-      "There is nothing kosher in the Pinzgau. Vienna is five hours east; carry everything.",
+      "There is no kosher shop in the Pinzgau, and there is no kosher shop anywhere in Austria outside Vienna. Kosher Tirol delivers prepared meals and Shabbos food across Tirol and the Salzburg province in season and is listed on this site; otherwise it is Vienna, five hours east. Either way, carry the day's food.",
     ],
     shabbos: "Ticketed, and hours from any kehilla.",
     sourceUrl: "https://en.wikipedia.org/wiki/Krimml_Waterfalls",
@@ -2246,5 +2247,415 @@ export const attractions: Attraction[] = [
     ],
     shabbos: "A toll road, closed in winter, and hours from anywhere kosher.",
     sourceUrl: "https://en.wikipedia.org/wiki/Grossglockner_High_Alpine_Road",
+  },
+
+  // ---- The Alps, part two ---------------------------------------------
+  //
+  // Part one said there is no kosher food in the Italian or Austrian Alps and
+  // that the nearest is Milan or Vienna. That was too strong, and the notes
+  // above have been corrected rather than left standing: there is a year-round
+  // kosher hotel at Alba di Canazei in the Dolomites, and Tirol and the
+  // Salzburg province have a delivery service through the summer. Both are now
+  // listed on this site. Neither makes these valleys places you can improvise a
+  // meal in, so the entries still say to carry the day's food — but "there is
+  // nothing" was not true, and a traveler planning around it would have made
+  // the trip harder than it needed to be.
+  //
+  // NONE OF THE THREE BELOW CARRIES A COORDINATE, which is unusual for this
+  // file and is worth saying once here. In each case the published pin is a
+  // thing you cannot drive to — a glacier, a meadow with no road, a lift with
+  // four stations — and the useful instruction is a street address at the
+  // bottom of the mountain instead. Each entry gives that address and says why.
+  {
+    slug: "alpe-di-siusi",
+    name: "Alpe di Siusi (Seiser Alm)",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Nature",
+    summary: "The largest high alpine meadow in Europe — a rolling green plateau at around 1,800 m with the Sciliar and the Sassolungo standing over it, and paths flat enough to push a pram along.",
+    address: "Seiser Alm cable car valley station, Siusi allo Sciliar (Seis am Schlern), South Tyrol",
+    notes: [
+      "The easiest walking in the Dolomites by some distance. Tre Cime is a mountain day; this is a meadow with cafés and a bus, and it is the entry in this section that works with grandparents and toddlers on the same outing.",
+      "The road up is closed to private traffic through the middle of the day — you may drive up before about 9am and after about 5pm, and you may drive down at any time. Everybody else takes the cable car. Check the current hours before setting out, because arriving at 10am with a car is the way this day goes wrong.",
+      "The cable car from Siusi allo Sciliar covers 4.4 km and 800 m of ascent in about fifteen minutes. There is a second lift up from Ortisei in the Val Gardena, which is the one to use if you are staying on that side.",
+      "Compatsch at the western end is the main settlement on the plateau and where the buses and paths start. Parking there has been going over to advance booking in high season; check before relying on a space.",
+      "Coordinates deliberately not listed: the published pin for the Seiser Alm sits out in the middle of the plateau, where there is no road. Navigate to the cable car valley station at Siusi allo Sciliar, or to the lift at Ortisei.",
+      "Carry the day's food. The nearest kosher kitchen is at Alba di Canazei in the Val di Fassa, listed on this site.",
+    ],
+    shabbos: "A ticketed lift, or a road with a timed closure, and hours from any kehilla — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Seiser_Alm",
+  },
+  {
+    slug: "mer-de-glace-montenvers",
+    name: "The Mer de Glace and the Montenvers railway",
+    city: "Chamonix",
+    country: "France",
+    kind: "Nature",
+    summary: "A red rack railway out of Chamonix to a balcony above the longest glacier in France, with an ice cave cut into the glacier itself at the bottom of the steps.",
+    address: "Gare du Montenvers, Chamonix-Mont-Blanc, Haute-Savoie",
+    website: "https://montenversmerdeglace.montblancnaturalresort.com/en",
+    notes: [
+      "The train climbs 5.1 km in about twenty minutes to Montenvers at 1,913 m. That part is easy, and for many people the view from the terrace is the whole visit.",
+      "Getting onto the ice is not easy. A gondola drops you toward the glacier and then there are about 430 steps down to the cave and the same 430 back up. Decide before you buy whether everybody in the party is doing that.",
+      "The grotto is re-cut every summer, because the glacier moves roughly 70 m a year and last year's tunnel has gone down the valley with it.",
+      "The reason the steps keep getting longer is the reason to come: markers on the rock face show where the ice stood in living memory, and the walk down to it is a measurement of how far it has dropped.",
+      "Allow two to three hours all in. It pairs with the Aiguille du Midi, also listed here, into a full Chamonix day — though doing both in one day is a lot of altitude and a lot of queueing.",
+      "Coordinates deliberately not listed: the published pin for the Mer de Glace is on the glacier, which is not somewhere you navigate to. The train leaves from the Gare du Montenvers in Chamonix.",
+      "No kosher food in Chamonix. Lyon is the nearest real provision, about two and a half hours away, and Geneva is closer still — both are listed on this site.",
+    ],
+    shabbos: "Ticketed, and Chamonix has no kehilla — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mer_de_Glace",
+  },
+  {
+    slug: "innsbruck-nordkette",
+    name: "The Nordkette cable cars, Innsbruck",
+    city: "Innsbruck",
+    country: "Austria",
+    kind: "Viewpoint",
+    summary: "From a station in the old town to 2,334 m in about half an hour, without a car — the one place in the Alps where the mountain starts at the end of the high street.",
+    address: "Congress station, Rennweg 3, 6020 Innsbruck",
+    website: "https://nordkette.com/en/top-of-innsbruck/",
+    notes: [
+      "This is the practical argument for basing a Tyrol trip in Innsbruck rather than in a resort. The funicular starts five minutes' walk from the Golden Roof, so the mountain is a morning rather than a day, and you come back down to a city with shops and a shul.",
+      "Three stages: the Hungerburgbahn funicular out of the town in about eight minutes, then a cable car to the Seegrube at 1,905 m, then a second to the Hafelekar at 2,334 m. You can stop at any of them and come back down.",
+      "The Seegrube is where most people get off — there is a terrace, the view down over the whole city, and easy walking. The last stage to the Hafelekar is a short ride to a bare ridge and is for the view rather than for anything to do up there.",
+      "The Alpenzoo has its own stop on the funicular, which makes a half day for younger children that does not involve the high stages at all.",
+      "The stations were designed by Zaha Hadid and opened in 2007. Worth a minute even if architecture is not why you came.",
+      "No kosher food in Innsbruck or anywhere else in Tyrol. Kosher Tirol delivers in season, and Munich is about two hours by road; both are listed on this site.",
+    ],
+    shabbos: "Ticketed, and the shul is down in the town at Sillgasse 15 — a mountain morning for a weekday, not for Shabbos.",
+    sourceUrl: "https://www.innsbruck.info/en/destinations/m/innsbruck-s-nordkettenbahnen-lifts-and-cable-cars.html",
+  },
+
+  // ---- The Alps, part three -------------------------------------------
+  //
+  // There is Jewish history in these mountains and the file had none of it.
+  // Merano below is the correction: a working shul in South Tyrol, in a spa
+  // town that half of Jewish Vienna, Prague and Budapest used to come to. It
+  // sits an hour from the Dolomites passes, which means the one day of a
+  // mountain fortnight that is not a mountain has somewhere to be.
+  //
+  // The other two are ordinary sightseeing at the two ends of the range, and
+  // both are chosen for the same reason: they are in or beside a city that has
+  // kosher food, which almost nothing else in the Alps is.
+  {
+    slug: "merano-jewish-museum",
+    name: "The Merano Synagogue and Jewish Museum",
+    city: "Merano",
+    country: "Italy",
+    kind: "Jewish heritage",
+    summary: "The only shul in South Tyrol, an Art Nouveau building of 1901 that is still a working synagogue, with the community's museum inside it.",
+    address: "Schillerstraße, Merano/Meran, South Tyrol",
+    website: "https://www.meranerland.org/en/highlights/museums-and-exhibitions/jewish-museum-and-synagogue/",
+    notes: [
+      "Why there is a shul in a mountain spa town at all: when the Empress Elisabeth took Merano up as a cure resort, Jewish families from Vienna, Prague and Budapest followed, and from the 1830s onward there was a community here big enough to build this.",
+      "The museum holds the community's own things — sifrei Torah, kiddush cups, menorahs — rather than a general exhibition, and it carries the story through the Shoah and the rebuilding after it.",
+      "It is a working shul and not only a museum, so the times are a community's rather than an attraction's. Write or ring before coming, particularly if the point of the visit is to daven rather than to look.",
+      "Coordinates deliberately not listed: we found no pin for the building we would stand behind. It is on Schillerstraße in the old town, a short walk from the thermal baths, and the town is small enough to walk from anywhere in it.",
+      "Merano is about an hour from Bolzano and puts the western Dolomites within a morning, which makes this the rest day on a mountain trip rather than a detour from one.",
+    ],
+    shabbos: "An active shul, so what happens here on Shabbos is davening rather than visiting. The museum side is a weekday matter — arrange it with the community.",
+    sourceUrl: "https://www.visitjewishitaly.it/en/listing/synagogue-of-merano/",
+  },
+  {
+    slug: "grenoble-bastille-cable-car",
+    name: "The Grenoble-Bastille cable car",
+    city: "Grenoble",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "Spherical glass cabins from the middle of Grenoble over the Isère to a hill fort, in three and a half minutes — the first urban cable car in France, running since 1934.",
+    address: "3 Quai Stéphane Jay, 38000 Grenoble",
+    website: "https://bastille-grenoble.fr/en/",
+    notes: [
+      "The whole trip is 700 m of span and 260 m of climb, and it is over before children have finished being nervous about it. The cabins are the plexiglas spheres everyone calls les Bulles, and they are the reason to do it rather than walk up.",
+      "It opened in September 1934, after Rio and Cape Town and before anywhere else in France. That is worth a sentence to a child who has just been on it.",
+      "At the top is the Bastille, a nineteenth-century fort on the hill, with the Vercors and the Chartreuse on one side and the Belledonne on the other. There are paths down for anybody who would rather walk one way.",
+      "Grenoble is the reason this is listed rather than a hundred other lifts: it is a real city, an hour and a quarter from Lyon, and it has kosher food. Almost nowhere in the French Alps has both.",
+      "Coordinates deliberately not listed: the pin most maps carry is on the fort at the top rather than the station at the bottom. Navigate to 3 Quai Stéphane Jay on the river.",
+    ],
+    shabbos: "Ticketed and turnstiled. Grenoble has a kehilla, so Shabbos here is a town Shabbos — the cable car is for the rest of the week.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Grenoble-Bastille_cable_car",
+  },
+  {
+    slug: "eisriesenwelt-werfen",
+    name: "Eisriesenwelt, Werfen",
+    city: "Werfen",
+    country: "Austria",
+    kind: "Nature",
+    summary: "The largest ice cave in the world, inside a mountain south of Salzburg — forty-two kilometres of it, of which you walk the first, by lamplight, through ice formations the size of buildings.",
+    address: "Eisriesenwelt, Werfen, Salzburg province — about 40 km south of Salzburg",
+    website: "https://www.salzburg.info/en/sights/excursions/ice-caves-in-werfen",
+    notes: [
+      "Guided tours only, and only from about May to October — the cave is shut for the winter, which catches people who assume an ice cave is a winter outing. The tour runs about seventy-five minutes.",
+      "It is an ice cave, so it is at freezing inside whatever the valley is doing. Coats, and shoes with a grip, in August.",
+      "Getting there is a day rather than a stop: a road up, then the steepest gondola in Austria to the cave mouth, or a walk up from the valley visitor centre for anybody who would rather. There are a great many steps inside as well.",
+      "Not for everybody in the party. Between the steps, the cold and the dark it is a poor fit for very small children or anybody unsteady, and there is no way to turn back halfway through a guided group.",
+      "Coordinates deliberately not listed: the cave mouth is on a mountainside and the pin is not drivable. Navigate to Werfen and follow the signs to the visitor centre.",
+      "Salzburg is about forty minutes north and is where the food comes from — Chabad there does Shabbos and yom tov meals on advance registration, and is listed on this site. There is no kosher shop in the province.",
+    ],
+    shabbos: "Ticketed, timed and guided, up a mountain. Not a Shabbos outing.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Eisriesenwelt",
+  },
+
+  // ---- The Alps, part four --------------------------------------------
+  //
+  // The last three, and they close the ranges out. One high mountain on each
+  // side — the Marmolada in the Dolomites and the Kitzsteinhorn in the Pinzgau
+  // — and one small, low, hour-long thing near Annecy, which this file needed
+  // more than it needed a fourth summit. A fortnight in the Alps has days when
+  // the cloud is down to the valley floor and nobody wants a cable car, and
+  // until now there was nothing here for them.
+  {
+    slug: "marmolada-punta-rocca",
+    name: "The Marmolada",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "The Queen of the Dolomites — a cable car from 1,450 m to a terrace at 3,265 m in about twelve minutes, opposite the highest peak in the range.",
+    address: "Marmolada cable car, Malga Ciapela, Rocca Pietore, Belluno",
+    website: "https://www.funiviemarmolada.com/en/cable-car/",
+    notes: [
+      "Three stages from Malga Ciapela at 1,450 m, through Coston d'Antermoja and Serauta, to Punta Rocca at 3,265 m. Punta Penia across from it is 3,343 m and is the highest thing in the Dolomites.",
+      "The Great War museum at the Serauta station, at about 2,950 m, is the highest museum in Europe. The front ran along this mountain and through tunnels dug in the glacier itself; the museum is the reason to break the journey rather than ride straight through.",
+      "This is a lift rather than a walk, which makes it the high-mountain day that works for a party that cannot do a high-mountain walk.",
+      "It is a serious altitude and it is reached quickly. Anybody who feels the height should stop at Serauta rather than push to the top station.",
+      "Coordinates deliberately not listed: the summit pin is on a glacier and the station is in the valley. Navigate to the cable car at Malga Ciapela.",
+      "Alba di Canazei, where the kosher hotel is, is over the pass to the west — this is the nearest high mountain to it by some way.",
+    ],
+    shabbos: "A ticketed cable car up a glacier. Not a Shabbos outing.",
+    sourceUrl: "https://www.dolomiti.org/en/marmolada/da-non-perdere/funivia-marmolada/",
+  },
+  {
+    slug: "gorges-du-fier",
+    name: "The Gorges du Fier",
+    city: "Lovagny",
+    country: "France",
+    kind: "Nature",
+    summary: "A walkway bolted to the rock 25 m above a river, through a slot the water has cut so narrow you can touch both walls — twenty minutes from Annecy and about an hour to do.",
+    address: "Gorges du Fier, Lovagny, Haute-Savoie — about 11 km west of Annecy",
+    website: "https://www.gorgesdufier.com/en/gorges-du-fier.html",
+    notes: [
+      "The reason this is on a list otherwise made of mountains: it is short, it is cheap, it is at valley level, and it works in weather that closes everything else. On a fortnight in the Alps there is always a day for it.",
+      "The gangway runs 252 m along the gorge, hung 25 m above the Fier. It has been a visitor route since the nineteenth century, which is roughly how it feels.",
+      "It is a single-file walkway with no way to pass. Early or late is a different experience from the middle of the day, and with a pushchair it is not one at all.",
+      "Open for the warm half of the year only — roughly mid-March to mid-October — and shut for the winter. Check before driving out.",
+      "Coordinates deliberately not listed: the gorge itself is a line rather than a point and the pins disagree. Navigate to Lovagny.",
+      "Annecy is twenty minutes away and has a shul but no kosher food; the nearest shops are Geneva or Grenoble, both listed on this site.",
+    ],
+    shabbos: "Ticketed, and out of town. A weekday hour.",
+    sourceUrl: "https://en.lac-annecy.com/equipment/les-gorges-du-fier-lovagny/",
+  },
+  {
+    slug: "zell-am-see-kitzsteinhorn",
+    name: "Zell am See and the Kitzsteinhorn",
+    city: "Zell am See",
+    country: "Austria",
+    kind: "Nature",
+    summary: "A lake town with a glacier above it — snow at 3,000 m in August, reached by gondola from the valley, on the edge of the Hohe Tauern national park.",
+    address: "Zell am See–Kaprun, Salzburg province",
+    website: "https://www.kitzsteinhorn.at/en",
+    notes: [
+      "The Gipfelwelt 3000 on the Kitzsteinhorn glacier sits at about 3,029 m and is the highest place in the Salzburg province you can get to on a ticket. There is snow up there through the summer, which is the whole appeal for children who have never stood in any.",
+      "The 3K K-onnection gondola links Kaprun and the Maiskogel to the glacier and has run since 2019, so the ascent is one continuous ride rather than the old sequence of drives and lifts.",
+      "As a base this is the best-placed town in the Austrian Alps: the Krimml falls and the Grossglockner road, both listed here, are day trips from it, and so is the Eisriesenwelt.",
+      "On the lake: there is boating and there are lidos, and the bathing is ordinary open public bathing with no separate arrangement of any kind. Plan the water part of the day accordingly, or plan around it.",
+      "Coordinates deliberately not listed: this is a town, a lake and a glacier rather than one place, and the useful pin depends on which of the three you are going to. Navigate to Zell am See or to Kaprun.",
+      "No kosher food in the Pinzgau. Kosher Tirol delivers into this valley in season and Salzburg has Chabad; both are listed here.",
+    ],
+    shabbos: "The lifts are ticketed and there is no kehilla in the valley. A weekday mountain, with Shabbos arranged from Salzburg.",
+    sourceUrl: "https://www.austria.info/en-gb/regions/zell-am-see-kaprun/",
+  },
+
+  // ---- The Alps, part five: the western end, and a road ----------------
+  //
+  // Everything Italian in this file so far has been the Dolomites — the eastern
+  // end of the country's mountains. The WESTERN Italian Alps had nothing at
+  // all: the Aosta valley, the Italian side of Mont Blanc, the Gran Paradiso.
+  // That end of the range is a different trip and a different food problem.
+  // The Dolomites now have a kosher hotel in the middle of them; the Aosta
+  // valley has nothing nearer than Turin, which is why the Turin entry in
+  // data/kosher-eateries.ts exists and why both entries below point at it.
+  //
+  // The other two close out France and Austria. The Route des Grandes Alpes is
+  // the French answer to the Grossglockner and is a week rather than a day.
+  // Hohensalzburg is here because the site now tells people to base a whole
+  // Austrian trip in Salzburg and then gave them nothing to do in it.
+  {
+    slug: "skyway-monte-bianco",
+    name: "Skyway Monte Bianco",
+    city: "Courmayeur",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "Rotating glass cable cars from the Aosta valley to a terrace at 3,466 m on the Italian shoulder of Mont Blanc — the same mountain the Aiguille du Midi climbs, from the other side.",
+    address: "Skyway Monte Bianco valley station, Courmayeur, Aosta Valley — signed from the A5 motorway and the SS26",
+    website: "https://www.montebianco.com/en",
+    notes: [
+      "Three stations: the valley at about 1,300 m, Pavillon at 2,173 m, and Punta Helbronner at 3,466 m. The cabins rotate as they climb, so you get the whole circle of the view without moving.",
+      "The top terrace looks across the four-thousanders of the western Alps — Mont Blanc itself, Monte Rosa, the Matterhorn, the Gran Paradiso and the Grand Combin. On a clear morning it is the best single view in this file.",
+      "It opened in 2015, so it is new, fast and comfortable in a way the older lifts are not. Pavillon halfway up has a garden and level walking, and is where to stop with anybody who does not want the full altitude.",
+      "This and the Aiguille du Midi, listed here under Chamonix, are the same massif from opposite countries. Doing both is a repeat rather than a pair; pick the side your base is on.",
+      "3,466 m is reached in minutes from a valley floor. That is a lot of altitude very fast, and the sensible plan is to break the ascent at Pavillon rather than ride it in one go.",
+      "Coordinates deliberately not listed: the summit pin is on a glacier ridge and the station is down in the valley. Navigate to Courmayeur and follow the signs.",
+      "No kosher food in the Aosta valley. Turin is the nearest provision and is listed on this site; Milan is the other option and is further.",
+    ],
+    shabbos: "A ticketed cable car, and the valley has no kehilla. A weekday morning.",
+    sourceUrl: "https://www.lovevda.it/en/experiences/cableways-4000-metres/mont-blanc-cableway",
+  },
+  {
+    slug: "gran-paradiso",
+    name: "Gran Paradiso National Park",
+    city: "Cogne",
+    country: "Italy",
+    kind: "Nature",
+    summary: "Italy's oldest national park, made in 1922 out of a royal hunting reserve to save the ibex from extinction — and the ibex are still there, on 550 km of gently graded old hunting roads.",
+    address: "Cogne and the Valnontey, Aosta Valley — the usual way in from the Aosta side",
+    website: "https://www.italia.it/en/italy/il-parco-nazionale-del-gran-paradiso",
+    notes: [
+      "The history is the reason to bring children: the alpine ibex was nearly hunted out of existence, the king gave up his hunting reserve in 1920 to stop it, and the herds you see on the slopes are what came of that. It is a story with an animal at the end of it.",
+      "About 550 km of paths across some 700 km² of the Graian Alps, spanning the Aosta Valley and Piedmont. Most of them follow the old royal hunting roads, which is why so much of the walking climbs gently instead of going straight up.",
+      "Cogne and the Valnontey behind it are the standard base and the easiest walking. The Paradisia alpine garden sits between the two and is a short, flat outing in its own right.",
+      "There is a regular bus from Aosta to Cogne, taking around three quarters of an hour. This is one of the few entries in this file that genuinely works without a car.",
+      "Coordinates deliberately not listed: it is a national park rather than a place. Navigate to Cogne, or to Valnontey a little beyond it.",
+      "Nothing kosher in the valley or anywhere near it. Turin is the nearest provision and is listed on this site — carry the day's food in.",
+    ],
+    shabbos: "No ticket and no turnstile at the paths themselves, but it is a long way from any kehilla and the walking is the point. A weekday.",
+    sourceUrl: "https://www.italia.it/en/italy/il-parco-nazionale-del-gran-paradiso",
+  },
+  {
+    slug: "route-des-grandes-alpes",
+    name: "The Route des Grandes Alpes",
+    city: "Thonon-les-Bains to Menton",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "Six hundred and eighty-four kilometres from Lake Geneva to the Mediterranean over seventeen passes, including the highest paved road in the Alps — the French answer to the Grossglockner, and a week rather than a day.",
+    address: "Thonon-les-Bains, Haute-Savoie, to Menton, Alpes-Maritimes",
+    notes: [
+      "Seventeen major passes, of which the Iseran at 2,764 m is the highest point and among the highest paved passes anywhere in the Alps. The Galibier at about 2,650 m and the Izoard at about 2,360 m are the other two everybody knows.",
+      "The window is narrow and it is the fact that decides the trip. The whole route is reliably open only from about mid-June to mid-September; the high passes clear no earlier than mid-June and can shut again in a bad September.",
+      "Do not treat it as a drive. It is four to seven days at a sane pace, and the pace is the point — a car that does 684 km of hairpins in two days has seen a windscreen.",
+      "It can be done in sections. The northern half from Thonon down to the Galibier is the alpine part; the southern half runs into the Mercantour and drops to the sea.",
+      "What makes it work on this site: it starts near Geneva and ends an hour from Nice, and both have kosher food and are listed here. That is the only long alpine drive in this file with a kehilla at either end.",
+      "Coordinates deliberately not listed: it is a road 684 km long. Navigate to Thonon-les-Bains for the northern end or Menton for the southern.",
+      "In between there is nothing kosher for the entire length. This is a trip carried out of Geneva or Lyon at one end and topped up at Nice at the other.",
+    ],
+    shabbos: "A driving route with no kehilla along it. Plan the Shabbatos at the ends, or off the route entirely — Geneva, Lyon and Nice are all listed on this site.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Route_des_Grandes_Alpes",
+  },
+  {
+    slug: "salzburg-hohensalzburg",
+    name: "Hohensalzburg Fortress and the Salzburg old town",
+    city: "Salzburg",
+    country: "Austria",
+    kind: "Landmark",
+    summary: "One of the largest medieval castles in Europe, on a rock above the old town, reached by a funicular that has been running since 1892.",
+    address: "Hohensalzburg Fortress, above the Salzburg old town",
+    website: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
+    notes: [
+      "The fortress is about 250 m by 150 m and is said to be the largest fully preserved castle in central Europe. It was begun in 1077 and reached the shape you see around 1500; nobody ever took it, which is why there is so much of it left.",
+      "The Festungsbahn up to it is the oldest funicular still running in Austria, working since 1892. It covers about 200 m in under a minute and goes every ten. There is a footpath for anybody who would rather walk it.",
+      "This is the thing to do on the days a Salzburg-based trip is not out in the mountains, and this site now sends people to Salzburg for exactly that reason — the Eisriesenwelt, the Grossglockner, the Krimml falls and Hallstatt are all day trips from it.",
+      "Worth saying plainly: Salzburg was a prince-archbishop's city, so a good deal of the old town is cathedral, abbey and church, and the walking tours are built around them. The fortress and the views are not, and neither are the Mirabell gardens. Where the line falls is yours and your rov's rather than this site's.",
+      "The old town has been a UNESCO World Heritage site since 1997, which in practice means it is small, dense and walkable end to end.",
+      "Coordinates deliberately not listed: the fortress pin is on top of a rock and the funicular station is in the old town below it. Navigate to the Altstadt.",
+      "Chabad of Salzburg does Shabbos and yom tov meals on advance registration and is listed on this site. There is no kosher shop in the city.",
+    ],
+    shabbos: "Ticketed, with a funicular. The old town is walkable from the Neustadt where the community is, so the streets themselves are a Shabbos walk even though the fortress is not.",
+    sourceUrl: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
+  },
+
+  // ---- The Alps, part six: the last four -------------------------------
+  //
+  // What was left after five batches, and each is here for a reason the others
+  // could not cover.
+  //
+  // Almost everything alpine in this file is seasonal — a pass that shuts in
+  // November, a cave open May to October, a gorge closed for the winter. The
+  // HINTERTUX GLACIER is the exception and that is why it leads: it is open
+  // every day of the year, indoors and out. A family whose dates are fixed by
+  // a simcha rather than by the weather needs at least one of those.
+  //
+  // The other three are a road, a train and a day out of Innsbruck for
+  // children, which between them are the shapes this section was still short
+  // of. With these the Italian, French and Austrian Alps are covered.
+  {
+    slug: "hintertux-glacier",
+    name: "The Hintertux Glacier and Nature's Ice Palace",
+    city: "Hintertux",
+    country: "Austria",
+    kind: "Nature",
+    summary: "The only place in Austria with snow every day of the year, and thirty metres under it a glacial crevasse of ice stalactites and a frozen lake that you walk into.",
+    address: "Hintertux, Tuxertal, at the head of the Zillertal, Tyrol",
+    website: "https://www.tux.at/en/nature-ice-palace/",
+    notes: [
+      "The one entry in this section with no season. The glacier runs to about 3,250 m and is skiable 365 days a year, and the Ice Palace inside it is open all year and unaffected by the weather outside. Everything else alpine on this site has months when it is shut.",
+      "Nature's Ice Palace is a real crevasse rather than a cut tunnel — a mountain guide from the Zillertal found it in 2007 — and it holds ice stalactites, frozen waterfalls and a glacial lake, some thirty metres below the pistes.",
+      "It is visited on a guided tour and sits three or four minutes' walk from the top station of the third glacier gondola, so getting to it is a lift ride rather than a climb.",
+      "It is at freezing inside, constantly, by definition. Coats in August, and grip on the feet.",
+      "In summer the glacier still has skiing on it, which is worth knowing if the party splits: some ski, the rest do the ice and the terrace.",
+      "Coordinates deliberately not listed: the cave is inside a glacier and the pin is meaningless from a car. Navigate to Hintertux at the head of the Tuxertal.",
+      "This is Tirol, so Kosher Tirol delivers here in season — it is listed on this site. Innsbruck is about an hour away and has a shul but no kosher shop.",
+    ],
+    shabbos: "Ticketed lifts and a guided tour, an hour from the nearest shul. A weekday.",
+    sourceUrl: "https://www.tux.at/en/nature-ice-palace/",
+  },
+  {
+    slug: "great-dolomites-road",
+    name: "The Great Dolomites Road",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "About a hundred and ten kilometres from Bolzano to Cortina over three passes, built between 1901 and 1909 for exactly this purpose — and the road that ties the rest of the Dolomites on this site together.",
+    address: "Bolzano to Cortina d'Ampezzo, over the Costalunga, Pordoi and Falzarego passes",
+    notes: [
+      "It was built to be driven for its own sake, finished in 1909, and it still reads that way: the corners are placed where the view is rather than where the engineering was easiest.",
+      "The Pordoi at 2,239 m is the high point. Costalunga and Falzarego are the other two, and the massifs come past in order — the Catinaccio, the Sassolungo, the Sella, the Marmolada, the Tofane.",
+      "The practical reason it is here rather than as a line in another entry: Alba di Canazei, where the kosher hotel is, sits directly on this road below the Pordoi. A family based there is on the Great Dolomites Road already, and the Marmolada is beside it.",
+      "A day if you drive it, two if you stop properly, and the stopping is the point. Cortina at the far end is a town rather than a village and makes the natural turn-round.",
+      "Open in summer and closed in stretches through the winter, as any road over three passes is. Check the passes rather than the road.",
+      "Coordinates deliberately not listed: it is a hundred and ten kilometres of road. Navigate to Bolzano for the western end or Cortina d'Ampezzo for the eastern.",
+    ],
+    shabbos: "A driving day with no kehilla along it.",
+    sourceUrl: "https://www.guidedolomiti.com/en/great-dolomites-road/",
+  },
+  {
+    slug: "tramway-du-mont-blanc",
+    name: "The Tramway du Mont-Blanc",
+    city: "Saint-Gervais-les-Bains",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "The highest rack railway in France, climbing 1,792 m out of the valley to the Nid d'Aigle at 2,372 m — the gentlest of the three ways this site lists onto Mont Blanc.",
+    address: "Gare du Fayet, Saint-Gervais-les-Bains, Haute-Savoie",
+    website: "https://www.tramwaydumontblanc.fr/en/",
+    notes: [
+      "Twelve and a half kilometres and about an hour and a quarter each way, all of it on a train. No cable car, no exposure, no steps down to a glacier — which makes it the Mont Blanc day for a party that could not do the Aiguille du Midi or the Mer de Glace.",
+      "It has been running since 1909 and was built for climbers heading up Mont Blanc, which is still who shares the carriage with you. The three trains have names and the regulars know which one they are on.",
+      "The season is the thing to check. In winter it runs only as far as Bellevue, because of avalanche risk on the upper section, and the top station opens later in the summer once conditions allow. Do not assume the Nid d'Aigle is reachable on your dates.",
+      "This is Saint-Gervais rather than Chamonix — the next valley west, quieter and cheaper, and about the same distance from Geneva.",
+      "Coordinates deliberately not listed: the terminus is a mountain halt at 2,372 m. Navigate to the station at Le Fayet in the valley.",
+      "No kosher food in the valley. Geneva is the nearest and is listed on this site; Lyon is the bigger shop.",
+    ],
+    shabbos: "Ticketed, and the valley has no kehilla. A weekday.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mont_Blanc_tramway",
+  },
+  {
+    slug: "swarovski-kristallwelten",
+    name: "Swarovski Kristallwelten, Wattens",
+    city: "Wattens",
+    country: "Austria",
+    kind: "Family",
+    summary: "A giant's head in a hillside with water pouring over it, eighteen chambers cut into the ground behind it, and a garden with a four-storey play tower — the wet-weather day out from Innsbruck.",
+    address: "Swarovski Kristallwelten, Wattens, Tyrol — about 20 km east of Innsbruck",
+    website: "https://www.kristallwelten.swarovski.com/en",
+    notes: [
+      "Made in 1995 for the crystal firm's hundredth year and designed by André Heller, so it is a company's own visitor attraction rather than a museum. Knowing that in advance sets the expectation correctly.",
+      "The eighteen Chambers of Wonder underground are commissioned from artists, designers and architects and are replaced over time, so what is in them differs from one visit to another. The garden and the play tower do not change and are the part small children come for.",
+      "The play tower runs over four levels with climbing, slides and a labyrinth, and there is a carousel. This is one of very few entries in this file that is genuinely built for children rather than tolerated by them.",
+      "Outdoors and indoors in roughly equal measure, which makes it the answer to a wet day in the Inn valley — the mountains around Innsbruck all stop being worth doing in cloud.",
+      "The bus from Innsbruck goes to Wattens and stops by the entrance, so it works without a car.",
+      "Coordinates deliberately not listed: we found no pin for the entrance we would stand behind. Navigate to Wattens, which is signed from the Inn valley motorway.",
+      "No kosher food in Wattens or Innsbruck. Kosher Tirol delivers across Tirol in season and is listed on this site.",
+    ],
+    shabbos: "Ticketed, and twenty kilometres from the Innsbruck shul. A weekday, and a good one for a wet one.",
+    sourceUrl: "https://www.innsbruck.info/en/sightseeing/i/swarovski-crystal-worlds.html",
   },
 ];

@@ -354,6 +354,244 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "nice-dubouchage",
     sourceUrl: "https://en.wikipedia.org/wiki/Nice",
   },
+
+  // ---- The Alps, and the cities that feed them ------------------------
+  //
+  // An alpine valley almost never has kosher food in it. So the honest answer
+  // to "where do we eat in the Tyrol" is not a restaurant in the Tyrol — it is
+  // the city two hours down the mountain where you shop before you go up, or a
+  // service that drives the food to you. Both kinds are listed here, and each
+  // says which mountains it actually serves, because that is the fact a
+  // traveler needs and no restaurant directory records it.
+  {
+    slug: "vienna-leopoldstadt-eating",
+    name: "The 2nd district — eating in Vienna, and provisioning for the Austrian Alps",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Butchers, bakeries, a kosher supermarket and restaurants in the streets of Leopoldstadt — and the only kosher shopping in Austria, which makes this the starting point for anywhere in the Austrian Alps.",
+    address: "Around Hollandstraße and the Karmelitermarkt, 1020 Vienna",
+    coordinates: "48.2160, 16.3830",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — Vienna has more than one kashrus authority and shops are certified by one or another; each displays its own",
+    },
+    notes: [
+      "The fact that governs an Austrian trip: this is the only place in the country with kosher shops. Salzburg has none, Innsbruck has none, the Tyrol and the Pinzgau have none. Whatever the Alps end of the trip needs is bought here or delivered.",
+      "There is more than one supervising body in Vienna — the IKG rabbinate and the Komitee Kosher Wien among them — and they are not the same. Which you accept is a question for you and your rov; the teudah is in the window.",
+      "Convenient in a way most kosher quarters are not: Leopoldstadt is one bridge from the Innere Stadt, so the food and the sightseeing are the same short walk.",
+      "Vienna to the Tyrol is most of a day's drive. If the mountains are the trip, look at whether Munich is the better shop — it is much closer to Innsbruck than Vienna is.",
+    ],
+    nearQuarter: "vienna-leopoldstadt",
+    sourceUrl: "https://www.ikg-wien.at/en/rabbinate",
+  },
+  {
+    slug: "kosher-tirol",
+    name: "Kosher Tirol — meals delivered into the Austrian Alps",
+    city: "Innsbruck",
+    country: "Austria",
+    kind: "Takeaway",
+    diet: "Mixed premises",
+    summary:
+      "Not a shop but a go-between: prepared kosher meals, Shabbos packages and basics arranged across Tirol and the Salzburg province, in valleys that have no kosher provision of their own.",
+    address: "Serves Tirol and the Salzburg province — no premises to visit",
+    website: "https://koshertirol.com/",
+    hechsher: {
+      state: "unverified",
+      note: "Kosher Tirol says of itself that it is a facilitator rather than a producer, and that kashrus is a matter between the customer and the supplier — so the supervision to establish is the supplier's, not this service's",
+    },
+    notes: [
+      "This is the one thing that makes an Austrian alpine trip workable without driving to Vienna, and it is the reason the Krimml and Nordkette entries on this site no longer say there is nothing.",
+      "Read the disclaimer as written. The service connects travelers to suppliers and states plainly that it is not responsible for the kashrus. That means the question 'who supervises this' has to be asked of whoever cooks the food, every time, for that season.",
+      "It runs to a season and to pre-orders. Shabbos packages in particular are ordered ahead rather than picked up, and a family that leaves it until Friday will not eat.",
+      "Coordinates deliberately not listed: there is no premises. This is a delivery and collection arrangement across two provinces, not an address you drive to.",
+      "Beyond it, some ordinary Tyrolean supermarkets carry kosher basics, and the service publishes which. Basics is the right word — this is not a week's shopping.",
+    ],
+    sourceUrl: "https://koshertirol.com/",
+  },
+  {
+    slug: "lyon-villeurbanne-eating",
+    name: "Villeurbanne and the 8th — eating in Lyon, and provisioning for the French Alps",
+    city: "Lyon",
+    country: "France",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Restaurants, butchers and groceries through Villeurbanne and eastern Lyon, serving one of the largest kehillos in France — and the last real kosher shopping before the Alps.",
+    address: "Around Villeurbanne and the 8th arrondissement, Lyon",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — a good many places here are under the Beth Din de Lyon, and each displays its own teudah",
+    },
+    notes: [
+      "The same correction as Paris, in a smaller city. The Grande Synagogue on the quai Tilsitt is the one people find; the food is out east in Villeurbanne and the 8th, a few kilometres from it. Base yourself by the shul and you will travel to every meal.",
+      "Coordinates deliberately not listed: this is a spread of streets across two districts rather than one address, and we found no pin worth standing behind for its centre. Navigate to Villeurbanne and work outward.",
+      "What it is for, if the trip is the mountains: Grenoble, Annecy and Chamonix have no kosher provision at all. Lyon is the last place to shop properly, and it is between one and two and a half hours from all three.",
+      "Supervision differs door to door. The Beth Din de Lyon certifies widely here, but not everything, and a place trading as kosher is not the same as a place with a current teudah in the window.",
+    ],
+    nearQuarter: "lyon-villeurbanne",
+    sourceUrl: "https://www.123cacher.com/lyon.htm",
+  },
+  {
+    slug: "grenoble-kosher",
+    name: "Eating in Grenoble",
+    city: "Grenoble",
+    country: "France",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "A brasserie under the local rabbinate, a grocery and butcher, and Chabad — small, but the only kosher provision inside the French Alps rather than on the edge of them.",
+    address: "Across central Grenoble — see the community's own kashrus page",
+    coordinates: "45.17167, 5.72250",
+    hechsher: {
+      state: "unverified",
+      note: "Several separate businesses — the Grenoble Rabbinate certifies here, and each place displays its own teudah",
+    },
+    notes: [
+      "Set expectations by size. This is a few establishments in a city of a hundred and fifty thousand, not a kosher district. It is enough to eat well for a week and not enough to improvise a Friday afternoon.",
+      "The reason it matters out of proportion to its size: Chamonix, Annecy, Megève and the whole of the Savoie have nothing at all. Grenoble is the only town actually inside the French Alps where kosher food exists.",
+      "The community publishes its own kashrus page, which is the live list and the thing to check rather than this one. Supervision here is the Grenoble Rabbinate; confirm at the door.",
+      "The coordinate is the town rather than a shop, and is here so the site can measure distances. It is not an address to navigate to — the places are spread across the city.",
+      "Lyon is about an hour and a quarter north and has many times as much. If a week's shopping is the question rather than a dinner, shop in Lyon on the way in.",
+    ],
+    nearQuarter: "grenoble-jewish-life",
+    sourceUrl: "https://www.grande-synagogue-de-grenoble.fr/casher",
+  },
+  {
+    slug: "salzburg-chabad-meals",
+    name: "Chabad of Salzburg — Shabbos and yom tov meals",
+    city: "Salzburg",
+    country: "Austria",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "Not a restaurant but a table: Shabbos and yom tov meals at the Chabad house on the Linzer Gasse, booked ahead, in a province with no kosher shop in it.",
+    address: "Linzer Gasse 76, 5020 Salzburg",
+    website: "https://chabadsalzburg.com/",
+    hechsher: {
+      state: "unverified",
+      note: "A Chabad house table rather than a certified commercial kitchen — ask the rov there what the arrangements are, as you would anywhere",
+    },
+    notes: [
+      "Advance registration, not walk-in. This is the difference between eating and not eating on a Shabbos in Salzburg, and it is the single most important line in this entry.",
+      "It exists because nothing else does. There is no kosher shop or restaurant in Salzburg, in the Salzkammergut, or anywhere in Austria outside Vienna — so for a family doing Hallstatt, the Eisriesenwelt or the Grossglockner, this is the Shabbos.",
+      "For weekdays out in the valleys, Kosher Tirol delivers prepared meals across the Salzburg province and is listed separately here.",
+      "Coordinates deliberately not listed: we found no pin we would stand behind. Linzer Gasse 76 is in the Neustadt, on the far side of the river from the old town, and is walkable from most of the centre.",
+    ],
+    sourceUrl: "https://chabadsalzburg.com/",
+  },
+  {
+    slug: "turin-kosher",
+    name: "Eating in Turin — through the community, not through a restaurant",
+    city: "Turin",
+    country: "Italy",
+    kind: "Takeaway",
+    diet: "Mixed premises",
+    summary:
+      "A kehilla of about nine hundred and fifty with its own rabbinical office and kashrus supervision, which will provide packed or served kosher meals on reservation.",
+    address: "Jewish Community of Turin, Piazzetta Primo Levi 12, 10125 Turin",
+    coordinates: "45.06028, 7.68222",
+    website: "https://torinoebraica.it/en/",
+    hechsher: {
+      state: "unverified",
+      note: "Arranged and supervised through the Turin community's own rabbinical office rather than by a commercial certifier — ask them directly what applies to what you are ordering",
+    },
+    notes: [
+      "This is a different shape of listing from a restaurant street, and the difference is the point: in Turin you write to the community and reserve, rather than turning up somewhere and eating. Plan it before you fly, not on the day.",
+      "Why it belongs in an Alps section: Turin is the gate to the western Italian Alps — the Aosta valley, the Gran Paradiso, the Susa valley and the passes into France — and none of them has a kosher anything. Milan, four hours from the Dolomites, is not the answer on this side of the country.",
+      "The coordinate is the Great Synagogue on Via Pio V, which is beside the community offices on Piazzetta Primo Levi. The shul itself is visited by arrangement rather than walked into.",
+      "The community also runs a mikvah. Turin is a small kehilla with a full week, which is more than any Italian alpine valley has.",
+    ],
+    sourceUrl: "https://torinoebraica.it/en/jewish-life/",
+  },
+
+  // ---- Where an alpine trip actually shops ----------------------------
+  //
+  // Two of these three are not in the Alps and are here because of them. The
+  // ranges this site now covers have, between them, one kosher kitchen —
+  // Canazei, below — and beyond that the food comes from a city on the edge:
+  // Munich for the Tyrol and the Dolomites, Geneva for the Savoie and the
+  // Mont Blanc valleys, Milan, Lyon and Vienna already listed above. Filing
+  // them under the mountains they serve is the only arrangement that answers
+  // the question a person is really asking.
+  {
+    slug: "munich-jakobsplatz-eating",
+    name: "St.-Jakobs-Platz — eating in Munich, and shopping for the Tyrol",
+    city: "Munich",
+    country: "Germany",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "A glatt restaurant inside the Jewish centre by the Marienplatz, a delicatessen across town, and named bakeries the community vouches for — and the closest full kosher provision to Innsbruck and the Dolomites.",
+    address: "Jewish Centre, St.-Jakobs-Platz, 80331 Munich",
+    website: "https://www.ikg-m.de/kultus-und-religion/koscheres-essen/",
+    hechsher: {
+      state: "unverified",
+      note: "Several separate businesses under the Munich community's rabbinate; the community publishes its own kashrus page and that is the list to read rather than this one",
+    },
+    notes: [
+      "Why it is in an Alps section: Innsbruck is about two hours south by road and the Dolomites a good deal further, and neither has a kosher shop. For a Tyrolean or a South Tyrolean trip driven from the north, this is where the week's food is bought.",
+      "The restaurant sits inside the Jewish centre on St.-Jakobs-Platz, a few minutes from the Marienplatz — unusually central for kosher food in a European city, and the reason a Munich stop works on the way through.",
+      "There is a separate kosher delicatessen out on the Prinzregentenstraße, and the community names the bakeries whose bread it stands behind. Take the list from the community's page, not from here.",
+      "Security at the Jewish centre is real. Bring passports and expect to be checked, as at the Great Synagogue in Rome.",
+      "Coordinates deliberately not listed: this is a centre and a scatter of shops rather than one address. Navigate to St.-Jakobs-Platz.",
+    ],
+    nearQuarter: "munich-jakobsplatz",
+    sourceUrl: "https://www.ikg-m.de/kultus-und-religion/koscheres-essen/",
+  },
+  {
+    slug: "geneva-kosher",
+    name: "Eating in Geneva — and provisioning for the Mont Blanc valleys",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "A glatt restaurant within the community's own building, and kosher shopping around Champel — the nearest real provision to Chamonix, Annecy and the Savoie.",
+    address: "Around the Communauté Israélite de Genève and Champel, Geneva",
+    website: "https://swissjews.ch/en/jewishlife/religion/kosher/restaurants_hotels/",
+    hechsher: {
+      state: "unverified",
+      note: "More than one supervision operates in Geneva — the CIG's own rabbinate and Machzikei Hadas among them — and they are not the same; each place displays its own",
+    },
+    notes: [
+      "The geography that makes this matter: Chamonix is about an hour away and Annecy about thirty-five kilometres, and neither has a kosher shop. Geneva is the last stop before both.",
+      "The restaurant is inside the Communauté Israélite de Genève's building rather than on a street, which means access and times follow a community's rules rather than a restaurant's. Book.",
+      "Kosher shopping is around Champel, including counters inside ordinary supermarkets — a Swiss arrangement that surprises people expecting a kosher shop with its own front door.",
+      "Geneva is expensive even by Swiss standards. A family driving in from France often shops in Lyon and keeps Geneva for the Shabbos that has to be somewhere.",
+      "Coordinates deliberately not listed: the community building and the Champel shops are not the same place and we would rather send nobody to the wrong one of them. The Swiss federation's own list, linked here, is the live answer.",
+    ],
+    nearQuarter: "geneva-tranchees",
+    sourceUrl: "https://swissjews.ch/en/jewishlife/religion/kosher/restaurants_hotels/",
+  },
+  {
+    slug: "canazei-kosher-table",
+    name: "Alba di Canazei — the only kosher kitchen in the Italian Alps",
+    city: "Canazei",
+    country: "Italy",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "The kitchen at My Kosher Hotel in the Val di Fassa: reported as mehadrin under the Badatz of Lugano with a permanent mashgiach, and as far as we can establish the only one of its kind in the Italian mountains.",
+    address: "Alba di Canazei, Val di Fassa, Trentino",
+    coordinates: "46.47500, 11.77333",
+    website: "https://www.mykosherhotel.it/en/",
+    hechsher: {
+      state: "reported",
+      note: "Reported as kosher mehadrin under the Badatz of Lugano — Rav Benzion Rabinowitz, the Biale Rebbe — with a mashgiach on the premises",
+      source: "The hotel's own published listings",
+    },
+    notes: [
+      "Listed as an eatery as well as a stay because it answers a question a hotel listing does not: driving through the Dolomites, is there anywhere at all to eat. This is the answer, and it is the only one.",
+      "It is a hotel kitchen. Whether it serves people who are not staying, and on what notice, is a question for the hotel — ask before building a day's drive around lunch there.",
+      "Reported, not confirmed. Nobody here has checked the supervision with the Badatz, and the wording above is what the hotel publishes about itself. Check it yourself before you eat.",
+      "The coordinate is Canazei, the published one for the comune. The hotel is at Alba, a little further up the valley.",
+      "For scale: the next kosher provision in any direction is Milan to the south-west, Turin beyond it, and Munich or Vienna over the mountains to the north. Merano has the only shul in South Tyrol but no kosher shop, and Innsbruck has neither. This valley is genuinely on its own.",
+    ],
+    sourceUrl: "https://www.mykosherhotel.it/en/",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
