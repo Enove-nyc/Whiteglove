@@ -2168,9 +2168,10 @@ export const attractions: Attraction[] = [
   // kosher summer programmes have been moving.
   //
   // One practical thing runs through all of these and is repeated in each entry
-  // rather than assumed: there is no kosher food in any of them. The nearest
-  // real provision to the Dolomites is Milan, four hours away, and to the Tyrol
-  // is Vienna, which is further still. These are days you carry food into.
+  // rather than assumed: you carry the day's food into these valleys. What this
+  // section originally said — that there is no kosher food in any of them and
+  // the nearest is Milan — was too strong, and the entries below now say what
+  // is actually there. See the note on the second Alps section further down.
   {
     slug: "tre-cime-di-lavaredo",
     name: "Tre Cime di Lavaredo",
@@ -2185,7 +2186,7 @@ export const attractions: Attraction[] = [
       "The toll road up to Rifugio Auronzo saves the long ascent and is what most people do. It closes in winter and fills by mid-morning in August — go early or take the bus.",
       "The three towers are the north faces, and they only look like the photographs from the far side of the loop. Walking anticlockwise gets you there sooner.",
       "Weather turns fast and the plateau is exposed. Take a layer even in July.",
-      "No kosher food anywhere near. Milan is about four hours away and is where the day's food comes from.",
+      "Carry the day's food; there is nothing kosher on the plateau. The nearest kosher kitchen is My Kosher Hotel at Alba di Canazei in the Val di Fassa, which is across the Dolomites rather than nearby, but is a great deal closer than Milan.",
     ],
     shabbos: "A toll road and a long drive from anything — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Tre_Cime_di_Lavaredo",
@@ -2204,7 +2205,7 @@ export const attractions: Attraction[] = [
       "It is also one of the most photographed places in Italy, which means crowds. Access is restricted in high season and you may need a booking or a shuttle; check before driving up.",
       "This is South Tyrol, where the first language is German and the names are doubled — Pragser Wildsee and Lago di Braies are the same lake.",
       "There is boat hire on the lake. Note that swimming here is in an open public lake with no separate arrangement of any kind.",
-      "Carry the day's food; there is nothing kosher in the valley.",
+      "Carry the day's food; there is nothing kosher in the Prags valley itself. The nearest kosher kitchen in the Dolomites is at Alba di Canazei, listed on this site under places to stay.",
     ],
     shabbos: "A long drive from any kehilla, with restricted seasonal access — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Pragser_Wildsee",
@@ -2222,7 +2223,7 @@ export const attractions: Attraction[] = [
       "The path switchbacks up past a series of viewing points, and you get wet at several of them. That is the appeal for children and the warning for everyone else.",
       "Walking to the top and back is two to three hours. The first stage alone is twenty minutes and is most of the spectacle if time is short.",
       "It is inside the Hohe Tauern national park, at the western end of the Pinzgau valley, and pairs naturally with the Grossglockner road.",
-      "There is nothing kosher in the Pinzgau. Vienna is five hours east; carry everything.",
+      "There is no kosher shop in the Pinzgau, and there is no kosher shop anywhere in Austria outside Vienna. Kosher Tirol delivers prepared meals and Shabbos food across Tirol and the Salzburg province in season and is listed on this site; otherwise it is Vienna, five hours east. Either way, carry the day's food.",
     ],
     shabbos: "Ticketed, and hours from any kehilla.",
     sourceUrl: "https://en.wikipedia.org/wiki/Krimml_Waterfalls",
@@ -2246,5 +2247,83 @@ export const attractions: Attraction[] = [
     ],
     shabbos: "A toll road, closed in winter, and hours from anywhere kosher.",
     sourceUrl: "https://en.wikipedia.org/wiki/Grossglockner_High_Alpine_Road",
+  },
+
+  // ---- The Alps, part two ---------------------------------------------
+  //
+  // Part one said there is no kosher food in the Italian or Austrian Alps and
+  // that the nearest is Milan or Vienna. That was too strong, and the notes
+  // above have been corrected rather than left standing: there is a year-round
+  // kosher hotel at Alba di Canazei in the Dolomites, and Tirol and the
+  // Salzburg province have a delivery service through the summer. Both are now
+  // listed on this site. Neither makes these valleys places you can improvise a
+  // meal in, so the entries still say to carry the day's food — but "there is
+  // nothing" was not true, and a traveler planning around it would have made
+  // the trip harder than it needed to be.
+  //
+  // NONE OF THE THREE BELOW CARRIES A COORDINATE, which is unusual for this
+  // file and is worth saying once here. In each case the published pin is a
+  // thing you cannot drive to — a glacier, a meadow with no road, a lift with
+  // four stations — and the useful instruction is a street address at the
+  // bottom of the mountain instead. Each entry gives that address and says why.
+  {
+    slug: "alpe-di-siusi",
+    name: "Alpe di Siusi (Seiser Alm)",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Nature",
+    summary: "The largest high alpine meadow in Europe — a rolling green plateau at around 1,800 m with the Sciliar and the Sassolungo standing over it, and paths flat enough to push a pram along.",
+    address: "Seiser Alm cable car valley station, Siusi allo Sciliar (Seis am Schlern), South Tyrol",
+    notes: [
+      "The easiest walking in the Dolomites by some distance. Tre Cime is a mountain day; this is a meadow with cafés and a bus, and it is the entry in this section that works with grandparents and toddlers on the same outing.",
+      "The road up is closed to private traffic through the middle of the day — you may drive up before about 9am and after about 5pm, and you may drive down at any time. Everybody else takes the cable car. Check the current hours before setting out, because arriving at 10am with a car is the way this day goes wrong.",
+      "The cable car from Siusi allo Sciliar covers 4.4 km and 800 m of ascent in about fifteen minutes. There is a second lift up from Ortisei in the Val Gardena, which is the one to use if you are staying on that side.",
+      "Compatsch at the western end is the main settlement on the plateau and where the buses and paths start. Parking there has been going over to advance booking in high season; check before relying on a space.",
+      "Coordinates deliberately not listed: the published pin for the Seiser Alm sits out in the middle of the plateau, where there is no road. Navigate to the cable car valley station at Siusi allo Sciliar, or to the lift at Ortisei.",
+      "Carry the day's food. The nearest kosher kitchen is at Alba di Canazei in the Val di Fassa, listed on this site.",
+    ],
+    shabbos: "A ticketed lift, or a road with a timed closure, and hours from any kehilla — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Seiser_Alm",
+  },
+  {
+    slug: "mer-de-glace-montenvers",
+    name: "The Mer de Glace and the Montenvers railway",
+    city: "Chamonix",
+    country: "France",
+    kind: "Nature",
+    summary: "A red rack railway out of Chamonix to a balcony above the longest glacier in France, with an ice cave cut into the glacier itself at the bottom of the steps.",
+    address: "Gare du Montenvers, Chamonix-Mont-Blanc, Haute-Savoie",
+    website: "https://montenversmerdeglace.montblancnaturalresort.com/en",
+    notes: [
+      "The train climbs 5.1 km in about twenty minutes to Montenvers at 1,913 m. That part is easy, and for many people the view from the terrace is the whole visit.",
+      "Getting onto the ice is not easy. A gondola drops you toward the glacier and then there are about 430 steps down to the cave and the same 430 back up. Decide before you buy whether everybody in the party is doing that.",
+      "The grotto is re-cut every summer, because the glacier moves roughly 70 m a year and last year's tunnel has gone down the valley with it.",
+      "The reason the steps keep getting longer is the reason to come: markers on the rock face show where the ice stood in living memory, and the walk down to it is a measurement of how far it has dropped.",
+      "Allow two to three hours all in. It pairs with the Aiguille du Midi, also listed here, into a full Chamonix day — though doing both in one day is a lot of altitude and a lot of queueing.",
+      "Coordinates deliberately not listed: the published pin for the Mer de Glace is on the glacier, which is not somewhere you navigate to. The train leaves from the Gare du Montenvers in Chamonix.",
+      "No kosher food in Chamonix. Lyon is the nearest real provision, about two and a half hours away, and Geneva is closer still — both are listed on this site.",
+    ],
+    shabbos: "Ticketed, and Chamonix has no kehilla — not a Shabbos day out.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mer_de_Glace",
+  },
+  {
+    slug: "innsbruck-nordkette",
+    name: "The Nordkette cable cars, Innsbruck",
+    city: "Innsbruck",
+    country: "Austria",
+    kind: "Viewpoint",
+    summary: "From a station in the old town to 2,334 m in about half an hour, without a car — the one place in the Alps where the mountain starts at the end of the high street.",
+    address: "Congress station, Rennweg 3, 6020 Innsbruck",
+    website: "https://nordkette.com/en/top-of-innsbruck/",
+    notes: [
+      "This is the practical argument for basing a Tyrol trip in Innsbruck rather than in a resort. The funicular starts five minutes' walk from the Golden Roof, so the mountain is a morning rather than a day, and you come back down to a city with shops and a shul.",
+      "Three stages: the Hungerburgbahn funicular out of the town in about eight minutes, then a cable car to the Seegrube at 1,905 m, then a second to the Hafelekar at 2,334 m. You can stop at any of them and come back down.",
+      "The Seegrube is where most people get off — there is a terrace, the view down over the whole city, and easy walking. The last stage to the Hafelekar is a short ride to a bare ridge and is for the view rather than for anything to do up there.",
+      "The Alpenzoo has its own stop on the funicular, which makes a half day for younger children that does not involve the high stages at all.",
+      "The stations were designed by Zaha Hadid and opened in 2007. Worth a minute even if architecture is not why you came.",
+      "No kosher food in Innsbruck or anywhere else in Tyrol. Kosher Tirol delivers in season, and Munich is about two hours by road; both are listed on this site.",
+    ],
+    shabbos: "Ticketed, and the shul is down in the town at Sillgasse 15 — a mountain morning for a weekday, not for Shabbos.",
+    sourceUrl: "https://www.innsbruck.info/en/destinations/m/innsbruck-s-nordkettenbahnen-lifts-and-cable-cars.html",
   },
 ];

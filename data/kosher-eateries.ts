@@ -354,6 +354,86 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "nice-dubouchage",
     sourceUrl: "https://en.wikipedia.org/wiki/Nice",
   },
+
+  // ---- The Alps, and the cities that feed them ------------------------
+  //
+  // An alpine valley almost never has kosher food in it. So the honest answer
+  // to "where do we eat in the Tyrol" is not a restaurant in the Tyrol — it is
+  // the city two hours down the mountain where you shop before you go up, or a
+  // service that drives the food to you. Both kinds are listed here, and each
+  // says which mountains it actually serves, because that is the fact a
+  // traveler needs and no restaurant directory records it.
+  {
+    slug: "vienna-leopoldstadt-eating",
+    name: "The 2nd district — eating in Vienna, and provisioning for the Austrian Alps",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Butchers, bakeries, a kosher supermarket and restaurants in the streets of Leopoldstadt — and the only kosher shopping in Austria, which makes this the starting point for anywhere in the Austrian Alps.",
+    address: "Around Hollandstraße and the Karmelitermarkt, 1020 Vienna",
+    coordinates: "48.2160, 16.3830",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — Vienna has more than one kashrus authority and shops are certified by one or another; each displays its own",
+    },
+    notes: [
+      "The fact that governs an Austrian trip: this is the only place in the country with kosher shops. Salzburg has none, Innsbruck has none, the Tyrol and the Pinzgau have none. Whatever the Alps end of the trip needs is bought here or delivered.",
+      "There is more than one supervising body in Vienna — the IKG rabbinate and the Komitee Kosher Wien among them — and they are not the same. Which you accept is a question for you and your rov; the teudah is in the window.",
+      "Convenient in a way most kosher quarters are not: Leopoldstadt is one bridge from the Innere Stadt, so the food and the sightseeing are the same short walk.",
+      "Vienna to the Tyrol is most of a day's drive. If the mountains are the trip, look at whether Munich is the better shop — it is much closer to Innsbruck than Vienna is.",
+    ],
+    nearQuarter: "vienna-leopoldstadt",
+    sourceUrl: "https://www.ikg-wien.at/en/rabbinate",
+  },
+  {
+    slug: "kosher-tirol",
+    name: "Kosher Tirol — meals delivered into the Austrian Alps",
+    city: "Innsbruck",
+    country: "Austria",
+    kind: "Takeaway",
+    diet: "Mixed premises",
+    summary:
+      "Not a shop but a go-between: prepared kosher meals, Shabbos packages and basics arranged across Tirol and the Salzburg province, in valleys that have no kosher provision of their own.",
+    address: "Serves Tirol and the Salzburg province — no premises to visit",
+    website: "https://koshertirol.com/",
+    hechsher: {
+      state: "unverified",
+      note: "Kosher Tirol says of itself that it is a facilitator rather than a producer, and that kashrus is a matter between the customer and the supplier — so the supervision to establish is the supplier's, not this service's",
+    },
+    notes: [
+      "This is the one thing that makes an Austrian alpine trip workable without driving to Vienna, and it is the reason the Krimml and Nordkette entries on this site no longer say there is nothing.",
+      "Read the disclaimer as written. The service connects travelers to suppliers and states plainly that it is not responsible for the kashrus. That means the question 'who supervises this' has to be asked of whoever cooks the food, every time, for that season.",
+      "It runs to a season and to pre-orders. Shabbos packages in particular are ordered ahead rather than picked up, and a family that leaves it until Friday will not eat.",
+      "Coordinates deliberately not listed: there is no premises. This is a delivery and collection arrangement across two provinces, not an address you drive to.",
+      "Beyond it, some ordinary Tyrolean supermarkets carry kosher basics, and the service publishes which. Basics is the right word — this is not a week's shopping.",
+    ],
+    sourceUrl: "https://koshertirol.com/",
+  },
+  {
+    slug: "lyon-villeurbanne-eating",
+    name: "Villeurbanne and the 8th — eating in Lyon, and provisioning for the French Alps",
+    city: "Lyon",
+    country: "France",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Restaurants, butchers and groceries through Villeurbanne and eastern Lyon, serving one of the largest kehillos in France — and the last real kosher shopping before the Alps.",
+    address: "Around Villeurbanne and the 8th arrondissement, Lyon",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — a good many places here are under the Beth Din de Lyon, and each displays its own teudah",
+    },
+    notes: [
+      "The same correction as Paris, in a smaller city. The Grande Synagogue on the quai Tilsitt is the one people find; the food is out east in Villeurbanne and the 8th, a few kilometres from it. Base yourself by the shul and you will travel to every meal.",
+      "Coordinates deliberately not listed: this is a spread of streets across two districts rather than one address, and we found no pin worth standing behind for its centre. Navigate to Villeurbanne and work outward.",
+      "What it is for, if the trip is the mountains: Grenoble, Annecy and Chamonix have no kosher provision at all. Lyon is the last place to shop properly, and it is between one and two and a half hours from all three.",
+      "Supervision differs door to door. The Beth Din de Lyon certifies widely here, but not everything, and a place trading as kosher is not the same as a place with a current teudah in the window.",
+    ],
+    nearQuarter: "lyon-villeurbanne",
+    sourceUrl: "https://www.123cacher.com/lyon.htm",
+  },
 ];
 
 /** Everything in one country, for the country filters. */

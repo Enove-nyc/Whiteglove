@@ -217,6 +217,15 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     note: "Nice has a real kosher community, which is what makes the Côte d'Azur workable for a family when most of the French coast is not.",
     sourceUrl: "https://en.wikipedia.org/wiki/Nice",
   },
+  {
+    slug: "lyon-villeurbanne",
+    city: "Lyon",
+    country: "France",
+    name: "Lyon and Villeurbanne — the Grande Synagogue, and the food out at Villeurbanne",
+    coordinates: "45.7571, 4.8277",
+    note: "The coordinate is the Grande Synagogue on the quai Tilsitt, in the middle of Lyon. The kosher shops and restaurants are not there — they are out in Villeurbanne and the 8th, a few kilometres east, which is the same split as Paris between the Marais and the 19th. This is the base that makes the French Alps possible: Annecy, Grenoble and Chamonix are all a day trip, and unlike the resorts there is food here every week of the year.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Lyon",
+  },
   // ---- The countries the kevarim are in -------------------------------
   //
   // Added after the attractions batch, because a family with eleven batei
@@ -859,6 +868,82 @@ export const kosherStays: KosherStay[] = [
     ],
     kosherClaim: "none",
     sourceUrl: "https://en.wikipedia.org/wiki/Gateshead_Talmudical_College",
+  },
+
+  // ---- The Italian, French and Austrian Alps --------------------------
+  //
+  // The Swiss alpine entries above are both seasonal programmes, and the note
+  // at the top of this file says that is what alpine kosher hotels usually are.
+  // The Italian one below is the exception that makes the rule worth stating:
+  // a hotel that is reported to keep a kosher kitchen all year, with a shul and
+  // a mikveh in the building. It is still "reported" rather than "confirmed",
+  // and the dates still want checking, but it is a different kind of listing
+  // from a caterer taking over a hotel for six weeks.
+  //
+  // The other two are the opposite case and are the more common one. There is
+  // no kosher provision in the Tyrol and none in the French alpine valleys, so
+  // what these entries buy is a city an hour or two down the mountain that has
+  // food, a shul and a station. That is the whole trade, and it is the same
+  // trade the Zurich and Geneva entries above describe for Switzerland.
+  {
+    slug: "canazei-my-kosher-hotel",
+    name: "My Kosher Hotel, Alba di Canazei",
+    city: "Canazei",
+    country: "Italy",
+    kind: "Kosher hotel",
+    summary:
+      "A kosher hotel in the Val di Fassa, in the Dolomites, with a shul and a mikveh on the premises — and reported to run all year rather than for a season, which in the Alps is the unusual part.",
+    anchor: { name: "Canazei, at the head of the Val di Fassa", coordinates: "46.47500, 11.77333" },
+    notes: [
+      "This is the entry that changes what an Italian Alps trip can be. Everything else in the Dolomites is a valley you carry food into; this is a valley you can arrive in empty-handed. The attractions on this site for the Dolomites have been rewritten around it.",
+      "Reported to be under the Badatz of Lugano — Rav Benzion Rabinowitz, the Biale Rebbe — with a permanent mashgiach. Nobody here has confirmed that with the Badatz, so confirm it yourself before booking; this site does not certify kashrus.",
+      "The hotel is at Alba di Canazei, a little up the valley from Canazei itself. The coordinate above is Canazei, because that is the published one; ask the hotel for the door.",
+      "Confirm the dates. Reported year-round is not the same as confirmed year-round, and a hotel that ran a kitchen last winter is not a promise about this summer.",
+      "On the swimming: the pool is reported to run both mixed and separate hours. If separate hours are what you need, get the schedule for your own dates before you book rather than after you arrive.",
+      "For where to go from here, the Sella passes, the Great Dolomites Road and the Marmolada are all on the doorstep, and Tre Cime and Lago di Braies are a drive across the range.",
+    ],
+    website: "https://www.mykosherhotel.it/en/",
+    kosherClaim: "reported",
+    sourceUrl: "https://www.mykosherhotel.it/en/",
+  },
+  {
+    slug: "innsbruck-stays",
+    name: "Staying in Innsbruck for the Tyrol",
+    city: "Innsbruck",
+    country: "Austria",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "The one alpine city with a proper town centre, a shul, and a cable car to 2,334 m starting five minutes from the old town — and no kosher shop of any kind, which is the thing to plan the trip around.",
+    anchor: { name: "Innsbruck synagogue, Sillgasse 15", coordinates: "47.26803, 11.39963" },
+    notes: [
+      "Say the hard part first: there is no kosher shop or restaurant in Innsbruck, and none anywhere in Austria outside Vienna. What Innsbruck has is a kehilla of about a hundred people, a shul rebuilt in 1993 on the site the old one was destroyed on in 1938, and everything else a town has.",
+      "Two ways to eat here, both listed on this site. Kosher Tirol coordinates prepared meals and Shabbos food across Tirol and the Salzburg province in season. Otherwise Munich is about two hours by road and has a full kosher quarter.",
+      "The position is the argument. The Nordkette cable cars leave from the middle of town, the Zillertal and the Stubai are short drives, and the Brenner puts the Dolomites within reach — so one base does the Austrian and the Italian Alps both.",
+      "For Shabbos, arrange with the community well in advance rather than assuming. A hundred-member kehilla is not set up for unannounced visitors, and the shul's times are not something to guess at.",
+      "Listed as an ordinary hotel city. Innsbruck makes no kosher claim and none is implied — the hotels here are hotels.",
+    ],
+    website: "https://ikg-innsbruck.at/en/",
+    kosherClaim: "none",
+    sourceUrl: "https://ikg-innsbruck.at/en/contact/",
+  },
+  {
+    slug: "lyon-villeurbanne-stays",
+    name: "Staying in Lyon for the French Alps",
+    city: "Lyon",
+    country: "France",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "One of the largest kehillos in France, with kosher shops and restaurants out in Villeurbanne — and Annecy, Grenoble and Chamonix all close enough to drive out and back in a day.",
+    anchor: { name: "Grande Synagogue de Lyon, 13 quai Tilsitt", coordinates: "45.7571, 4.8277" },
+    notes: [
+      "This solves the French Alps the way Zurich solves the Swiss ones. The alpine resorts have no kosher food at all; Lyon has it every week of the year, and the mountains are a drive rather than a move.",
+      "The distances are the point: Grenoble is about an hour and a quarter, Annecy about an hour and twenty, Chamonix about two and a half. Those are day trips from a fixed base, not a touring itinerary.",
+      "The split to know before booking. The Grande Synagogue is central, on the quai Tilsitt by the Saône, but the everyday kosher provision is out east in Villeurbanne and the 8th. Staying by the sights means travelling to every meal — the same trade as the Marais against the 19th in Paris.",
+      "Geneva, already listed on this site, is the other base for the same mountains and is closer to Chamonix. Lyon has more kosher food; Geneva has less distance. That is the whole choice.",
+      "Listed as a quarter rather than a hotel. Nothing here claims a kosher kitchen — what you are buying is the position.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Lyon",
   },
 ];
 
