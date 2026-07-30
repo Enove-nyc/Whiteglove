@@ -2114,4 +2114,23 @@ export const attractions: Attraction[] = [
     shabbos: "Israel Nature and Parks Authority site — ticketed, and closes early on Erev Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Herodium",
   },
+  {
+    slug: "turin-mole-antonelliana",
+    name: "The Mole Antonelliana",
+    city: "Turin",
+    country: "Italy",
+    kind: "Jewish heritage",
+    summary:
+      "The building on the Italian two-cent coin was begun as a synagogue for the Jews of Turin — and was never used as one.",
+    address: "Via Montebello 20, Turin",
+    website: "https://www.museocinema.it/en",
+    notes: [
+      "Commissioned by the Turin kehilla after emancipation in 1848, when Jews could finally build in the open. Antonelli kept enlarging it past anything the community had agreed to pay for, and they eventually handed the unfinished building to the city and built a more modest shul elsewhere.",
+      "So it is a Jewish building that never held a minyan, and that is the story worth telling a child on the way up. It now holds the National Museum of Cinema.",
+      "A glass lift runs up the middle of the dome to a viewing platform over the city and the Alps.",
+      "Coordinates deliberately not listed: we could not find a source we would stand behind for the pin. Navigate to Via Montebello 20 — it is the tallest thing in Turin and impossible to miss.",
+    ],
+    shabbos: "Ticketed museum and lift, so not on Shabbos or yom tov. The building itself is visible from the street at any hour.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mole_Antonelliana",
+  },
 ];

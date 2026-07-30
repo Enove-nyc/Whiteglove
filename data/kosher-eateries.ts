@@ -169,6 +169,75 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "bnei-brak-rabbi-akiva",
     sourceUrl: "https://www.wikidata.org/wiki/Q6907785",
   },
+  {
+    slug: "milan-via-sally-mayer-eating",
+    name: "Via Sally Mayer — eating in Milan",
+    city: "Milan",
+    country: "Italy",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Italy's largest kosher provision, in the streets around Via Sally Mayer — restaurants, bakeries and a supermarket, about 3 km out from the Duomo.",
+    address: "Around Via Sally Mayer, Milan",
+    coordinates: "45.4580, 9.1560",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — most places here are under the Milan Rabbinate, and each displays its own teudah",
+    },
+    notes: [
+      "This is the practical reason to stay near Via Sally Mayer rather than by the Duomo: staying by the sights puts a 3 km journey between you and every meal.",
+      "Milan's provision is the deepest in Italy — you can shop for a week here, which you cannot do in Florence or Venice.",
+      "Listed as a quarter for the same reason as Rue des Rosiers. Individual shops change hands; the streets do not.",
+    ],
+    nearQuarter: "milan-via-sally-mayer",
+    sourceUrl: "https://en.wikipedia.org/wiki/Milan_Synagogue",
+  },
+  {
+    slug: "venice-ghetto-eating",
+    name: "The Venice Ghetto — eating in Cannaregio",
+    city: "Venice",
+    country: "Italy",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "A handful of kosher places in and around the Campo di Ghetto Nuovo — the whole of Venice's kosher provision, in one small square.",
+    address: "Campo di Ghetto Nuovo, Cannaregio, Venice",
+    coordinates: "45.4450, 12.3260",
+    hechsher: {
+      state: "unverified",
+      note: "Under the Venice Rabbinate where certified; check the teudah at each door, and note that some places in the square are not kosher at all",
+    },
+    notes: [
+      "Small, and that is the point to plan around: this is not a city where you can improvise a meal. Book ahead, especially for Shabbos, and expect limited days.",
+      "The word ghetto is Venetian and this is where it comes from — the 1516 foundry island the Jews of Venice were confined to. The square is the original.",
+      "The old bais hachaim on the Lido, listed on this site, is a vaporetto away and makes the other half of a Venice day.",
+    ],
+    nearQuarter: "venice-cannaregio",
+    sourceUrl: "https://en.wikipedia.org/wiki/Venetian_Ghetto",
+  },
+  {
+    slug: "florence-great-synagogue-eating",
+    name: "Around the Great Synagogue — eating in Florence",
+    city: "Florence",
+    country: "Italy",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "Florence's kosher provision sits by the Great Synagogue east of the centre — a small number of places, and worth confirming before you arrive.",
+    address: "Around Via Farini and the Great Synagogue, Florence",
+    coordinates: "43.7719, 11.2680",
+    hechsher: {
+      state: "unverified",
+      note: "Under the Florence Rabbinate where certified; confirm at the door and with the community",
+    },
+    notes: [
+      "Thin provision, and seasonal. Establish what is actually open for your dates rather than assuming — this is a city to arrive in with a plan and, for Shabbos, with arrangements made.",
+      "It is about twenty minutes' walk east of the Duomo, so a hotel by the sights is not a hotel by the food.",
+      "The Great Synagogue itself is on this site's things-to-do list; the shul and the food are the same short walk.",
+    ],
+    nearQuarter: "florence-great-synagogue",
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
