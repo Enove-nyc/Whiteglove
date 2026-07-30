@@ -15,8 +15,12 @@ export type EditorCemetery = {
   city: string;
   country: string;
   name: string;
-  /** Names already in the built-in record — these live in code and can't be edited here. */
-  builtIn: Array<{ name: string; knownAs?: string; yahrzeit?: string }>;
+  /**
+   * People in the built-in record. They live in code, but saving one by name
+   * now stores an override that the public page layers on top — see
+   * mergeBurials in lib/cemeteries-view.ts — so they ARE editable here.
+   */
+  builtIn: Array<{ name: string; yiddishName?: string; knownAs?: string; seforim?: string; yahrzeit?: string; note?: string }>;
   /** People added through this screen. */
   stored: Array<{
     id: string;
@@ -46,33 +50,50 @@ function useFormAction(action: (prev: ActionResult | null, data: FormData) => Pr
   return useActionState<ActionResult | null, FormData>(action, null);
 }
 
-/** The six fields that describe a person, shared by both directions. */
-function PersonFields({ idPrefix }: { idPrefix: string }) {
+/** What the form holds, whether it was typed or filled in from a record. */
+export type PersonDraft = {
+  name: string;
+  yiddishName?: string;
+  knownAs?: string | null;
+  seforim?: string | null;
+  yahrzeit?: string | null;
+  note?: string | null;
+};
+
+/**
+ * The six fields that describe a person, shared by both directions.
+ *
+ * `values` fills the boxes from an existing record. The form is remounted with
+ * a fresh key when the record changes, because defaultValue is only read on
+ * mount — without that, pressing Edit on a second person would leave the first
+ * one's details on screen.
+ */
+function PersonFields({ idPrefix, values }: { idPrefix: string; values?: PersonDraft }) {
   return (
     <>
       <label className="block">
         <span className={captionClass}>Name *</span>
-        <input name="name" className={inputClass} placeholder="Rabbi Elimelech Weisblum" required />
+        <input name="name" defaultValue={values?.name ?? ""} className={inputClass} placeholder="Rabbi Elimelech Weisblum" required />
       </label>
       <label className="block">
         <span className={captionClass}>Name in Hebrew</span>
-        <input name="yiddishName" dir="rtl" className={inputClass} placeholder="רבי אלימלך מליזענסק" />
+        <input name="yiddishName" defaultValue={values?.yiddishName ?? ""} dir="rtl" className={inputClass} placeholder="רבי אלימלך מליזענסק" />
       </label>
       <label className="block">
         <span className={captionClass}>Known as</span>
-        <input name="knownAs" className={inputClass} placeholder="The Noam Elimelech" />
+        <input name="knownAs" defaultValue={values?.knownAs ?? ""} className={inputClass} placeholder="The Noam Elimelech" />
       </label>
       <label className="block">
         <span className={captionClass}>Yahrzeit</span>
-        <input name="yahrzeit" className={inputClass} placeholder="כ״א אדר · 5547 / 1787" />
+        <input name="yahrzeit" defaultValue={values?.yahrzeit ?? ""} className={inputClass} placeholder="כ״א אדר · 5547 / 1787" />
       </label>
       <label className="block sm:col-span-2">
         <span className={captionClass}>Seforim</span>
-        <input name="seforim" dir="rtl" className={inputClass} placeholder="נועם אלימלך" />
+        <input name="seforim" defaultValue={values?.seforim ?? ""} dir="rtl" className={inputClass} placeholder="נועם אלימלך" />
       </label>
       <label className="block sm:col-span-2">
         <span className={captionClass}>A line about him</span>
-        <textarea name="note" rows={2} className={inputClass} placeholder="Whose son, whose talmid, and anything that keeps him from being confused with someone of the same name." id={`${idPrefix}-note`} />
+        <textarea name="note" defaultValue={values?.note ?? ""} rows={2} className={inputClass} placeholder="Whose son, whose talmid, and anything that keeps him from being confused with someone of the same name." id={`${idPrefix}-note`} />
       </label>
     </>
   );
@@ -82,6 +103,10 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
   const [slug, setSlug] = useState(cemeteries[0]?.slug ?? "");
 
   const [addState, addAction, addPending] = useFormAction(addPersonToCemeteryAction);
+  // Who the form is filled in for, if anybody. Correcting somebody IS adding
+  // him — saveCemeteryBurial upserts by name — so Edit fills this one form
+  // rather than opening a second one that could drift away from it.
+  const [draft, setDraft] = useState<PersonDraft | null>(null);
   const [newState, newAction, newPending] = useFormAction(addCemeteryForPersonAction);
   const [removeState, removeAction] = useFormAction(removePersonAction);
 
@@ -142,7 +167,19 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
                         {b.knownAs && <span className="text-stone-500"> · {b.knownAs}</span>}
                         {b.yahrzeit && <span className="text-stone-400"> · <MixedText text={b.yahrzeit} /></span>}
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-400">built in</span>
+                      <span className="flex items-center gap-2">
+                        <button
+                        type="button"
+                        onClick={() => {
+                          setDraft(b);
+                          document.getElementById("kever-person-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }}
+                        className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-[var(--navy)] hover:text-[var(--navy)]"
+                      >
+                        Edit
+                      </button>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-400">built in</span>
+                      </span>
                     </li>
                   ))}
                   {selected.stored.map((b) => (
@@ -152,6 +189,17 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
                         {b.knownAs && <span className="text-stone-500"> · {b.knownAs}</span>}
                         {b.yahrzeit && <span className="text-stone-400"> · <MixedText text={b.yahrzeit} /></span>}
                       </span>
+                      <span className="flex items-center gap-2">
+                        <button
+                        type="button"
+                        onClick={() => {
+                          setDraft(b);
+                          document.getElementById("kever-person-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }}
+                        className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-[var(--navy)] hover:text-[var(--navy)]"
+                      >
+                        Edit
+                      </button>
                       <form action={removeAction}>
                         <input type="hidden" name="id" value={b.id} />
                         <input type="hidden" name="slug" value={selected.slug} />
@@ -162,6 +210,7 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
                           Remove
                         </button>
                       </form>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -169,20 +218,27 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
               <Status state={removeState} />
             </div>
 
-            <form action={addAction} className="mt-6">
+            <form action={addAction} className="mt-6" id="kever-person-form" key={draft?.name ?? "new"}>
               <input type="hidden" name="slug" value={selected.slug} />
               <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
-                Add someone to {selected.city}
+                {draft ? `Correcting ${draft.name}` : `Add someone to ${selected.city}`}
               </h3>
               <p className="mt-1 text-sm text-stone-600">
-                Typing a name that is already here corrects that entry instead of listing him twice.
+                {draft
+                  ? "Change what needs changing and save. A box left blank keeps whatever the record already has rather than clearing it."
+                  : "Typing a name that is already here corrects that entry instead of listing him twice."}
+                {draft ? (
+                  <button type="button" onClick={() => setDraft(null)} className="ml-2 underline decoration-[var(--gold)] underline-offset-2">
+                    start a new one instead
+                  </button>
+                ) : null}
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <PersonFields idPrefix="add" />
+                <PersonFields idPrefix="add" values={draft ?? undefined} />
               </div>
               <div className="mt-5">
                 <button type="submit" disabled={addPending} className={submitClass}>
-                  {addPending ? "Saving…" : "Add to this beis hachaim"}
+                  {addPending ? "Saving…" : draft ? "Save the correction" : "Add to this beis hachaim"}
                 </button>
               </div>
               <Status state={addState} />

@@ -25,7 +25,12 @@ export default async function AdminKevarimPage() {
           city: c.city,
           country: c.country,
           name: c.name,
-          builtIn: c.burials.map((b) => ({ name: b.name, knownAs: b.knownAs, yahrzeit: b.yahrzeit })),
+          // Every field, not three of them: the editor pre-fills its form from
+          // this, and a partial record would quietly blank whatever it omitted.
+          builtIn: c.burials.map((b) => ({
+            name: b.name, yiddishName: b.yiddishName, knownAs: b.knownAs,
+            seforim: b.seforim, yahrzeit: b.yahrzeit, note: b.note,
+          })),
         })),
         ...added.map((c) => ({ slug: c.slug, city: c.city, country: c.country, name: c.name, builtIn: [] })),
       ].sort((a, b) => a.city.localeCompare(b.city));
