@@ -129,6 +129,15 @@ a text — the trip is waiting when they next sign in.
 All optional: without them the Book page still works, the links just carry no
 tracking and earn nothing.
 
+## Services that are not open yet
+
+| Variable | What it does |
+| --- | --- |
+| `TRIP_ARRANGEMENT` | Set to `1` when the concierge side is ready to take requests. Until then the flight-booking request form (and any trip-planning enquiry form) is visible but disabled, says **Coming soon**, and points people at the contact email. Off by default, on purpose: a deployment that forgets to set it shows "coming soon" to somebody who could have emailed, where the other way round means requests arriving that nobody answers. The pages' own words are unchanged — the service is real, it just is not open. |
+
+The general contact form on `/contact` and the directory submission forms are
+not affected and keep working.
+
 ## Storage and services
 
 | Variable | What it does |
