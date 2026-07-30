@@ -2562,4 +2562,100 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed, with a funicular. The old town is walkable from the Neustadt where the community is, so the streets themselves are a Shabbos walk even though the fortress is not.",
     sourceUrl: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
   },
+
+  // ---- The Alps, part six: the last four -------------------------------
+  //
+  // What was left after five batches, and each is here for a reason the others
+  // could not cover.
+  //
+  // Almost everything alpine in this file is seasonal — a pass that shuts in
+  // November, a cave open May to October, a gorge closed for the winter. The
+  // HINTERTUX GLACIER is the exception and that is why it leads: it is open
+  // every day of the year, indoors and out. A family whose dates are fixed by
+  // a simcha rather than by the weather needs at least one of those.
+  //
+  // The other three are a road, a train and a day out of Innsbruck for
+  // children, which between them are the shapes this section was still short
+  // of. With these the Italian, French and Austrian Alps are covered.
+  {
+    slug: "hintertux-glacier",
+    name: "The Hintertux Glacier and Nature's Ice Palace",
+    city: "Hintertux",
+    country: "Austria",
+    kind: "Nature",
+    summary: "The only place in Austria with snow every day of the year, and thirty metres under it a glacial crevasse of ice stalactites and a frozen lake that you walk into.",
+    address: "Hintertux, Tuxertal, at the head of the Zillertal, Tyrol",
+    website: "https://www.tux.at/en/nature-ice-palace/",
+    notes: [
+      "The one entry in this section with no season. The glacier runs to about 3,250 m and is skiable 365 days a year, and the Ice Palace inside it is open all year and unaffected by the weather outside. Everything else alpine on this site has months when it is shut.",
+      "Nature's Ice Palace is a real crevasse rather than a cut tunnel — a mountain guide from the Zillertal found it in 2007 — and it holds ice stalactites, frozen waterfalls and a glacial lake, some thirty metres below the pistes.",
+      "It is visited on a guided tour and sits three or four minutes' walk from the top station of the third glacier gondola, so getting to it is a lift ride rather than a climb.",
+      "It is at freezing inside, constantly, by definition. Coats in August, and grip on the feet.",
+      "In summer the glacier still has skiing on it, which is worth knowing if the party splits: some ski, the rest do the ice and the terrace.",
+      "Coordinates deliberately not listed: the cave is inside a glacier and the pin is meaningless from a car. Navigate to Hintertux at the head of the Tuxertal.",
+      "This is Tirol, so Kosher Tirol delivers here in season — it is listed on this site. Innsbruck is about an hour away and has a shul but no kosher shop.",
+    ],
+    shabbos: "Ticketed lifts and a guided tour, an hour from the nearest shul. A weekday.",
+    sourceUrl: "https://www.tux.at/en/nature-ice-palace/",
+  },
+  {
+    slug: "great-dolomites-road",
+    name: "The Great Dolomites Road",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "About a hundred and ten kilometres from Bolzano to Cortina over three passes, built between 1901 and 1909 for exactly this purpose — and the road that ties the rest of the Dolomites on this site together.",
+    address: "Bolzano to Cortina d'Ampezzo, over the Costalunga, Pordoi and Falzarego passes",
+    notes: [
+      "It was built to be driven for its own sake, finished in 1909, and it still reads that way: the corners are placed where the view is rather than where the engineering was easiest.",
+      "The Pordoi at 2,239 m is the high point. Costalunga and Falzarego are the other two, and the massifs come past in order — the Catinaccio, the Sassolungo, the Sella, the Marmolada, the Tofane.",
+      "The practical reason it is here rather than as a line in another entry: Alba di Canazei, where the kosher hotel is, sits directly on this road below the Pordoi. A family based there is on the Great Dolomites Road already, and the Marmolada is beside it.",
+      "A day if you drive it, two if you stop properly, and the stopping is the point. Cortina at the far end is a town rather than a village and makes the natural turn-round.",
+      "Open in summer and closed in stretches through the winter, as any road over three passes is. Check the passes rather than the road.",
+      "Coordinates deliberately not listed: it is a hundred and ten kilometres of road. Navigate to Bolzano for the western end or Cortina d'Ampezzo for the eastern.",
+    ],
+    shabbos: "A driving day with no kehilla along it.",
+    sourceUrl: "https://www.guidedolomiti.com/en/great-dolomites-road/",
+  },
+  {
+    slug: "tramway-du-mont-blanc",
+    name: "The Tramway du Mont-Blanc",
+    city: "Saint-Gervais-les-Bains",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "The highest rack railway in France, climbing 1,792 m out of the valley to the Nid d'Aigle at 2,372 m — the gentlest of the three ways this site lists onto Mont Blanc.",
+    address: "Gare du Fayet, Saint-Gervais-les-Bains, Haute-Savoie",
+    website: "https://www.tramwaydumontblanc.fr/en/",
+    notes: [
+      "Twelve and a half kilometres and about an hour and a quarter each way, all of it on a train. No cable car, no exposure, no steps down to a glacier — which makes it the Mont Blanc day for a party that could not do the Aiguille du Midi or the Mer de Glace.",
+      "It has been running since 1909 and was built for climbers heading up Mont Blanc, which is still who shares the carriage with you. The three trains have names and the regulars know which one they are on.",
+      "The season is the thing to check. In winter it runs only as far as Bellevue, because of avalanche risk on the upper section, and the top station opens later in the summer once conditions allow. Do not assume the Nid d'Aigle is reachable on your dates.",
+      "This is Saint-Gervais rather than Chamonix — the next valley west, quieter and cheaper, and about the same distance from Geneva.",
+      "Coordinates deliberately not listed: the terminus is a mountain halt at 2,372 m. Navigate to the station at Le Fayet in the valley.",
+      "No kosher food in the valley. Geneva is the nearest and is listed on this site; Lyon is the bigger shop.",
+    ],
+    shabbos: "Ticketed, and the valley has no kehilla. A weekday.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mont_Blanc_tramway",
+  },
+  {
+    slug: "swarovski-kristallwelten",
+    name: "Swarovski Kristallwelten, Wattens",
+    city: "Wattens",
+    country: "Austria",
+    kind: "Family",
+    summary: "A giant's head in a hillside with water pouring over it, eighteen chambers cut into the ground behind it, and a garden with a four-storey play tower — the wet-weather day out from Innsbruck.",
+    address: "Swarovski Kristallwelten, Wattens, Tyrol — about 20 km east of Innsbruck",
+    website: "https://www.kristallwelten.swarovski.com/en",
+    notes: [
+      "Made in 1995 for the crystal firm's hundredth year and designed by André Heller, so it is a company's own visitor attraction rather than a museum. Knowing that in advance sets the expectation correctly.",
+      "The eighteen Chambers of Wonder underground are commissioned from artists, designers and architects and are replaced over time, so what is in them differs from one visit to another. The garden and the play tower do not change and are the part small children come for.",
+      "The play tower runs over four levels with climbing, slides and a labyrinth, and there is a carousel. This is one of very few entries in this file that is genuinely built for children rather than tolerated by them.",
+      "Outdoors and indoors in roughly equal measure, which makes it the answer to a wet day in the Inn valley — the mountains around Innsbruck all stop being worth doing in cloud.",
+      "The bus from Innsbruck goes to Wattens and stops by the entrance, so it works without a car.",
+      "Coordinates deliberately not listed: we found no pin for the entrance we would stand behind. Navigate to Wattens, which is signed from the Inn valley motorway.",
+      "No kosher food in Wattens or Innsbruck. Kosher Tirol delivers across Tirol in season and is listed on this site.",
+    ],
+    shabbos: "Ticketed, and twenty kilometres from the Innsbruck shul. A weekday, and a good one for a wet one.",
+    sourceUrl: "https://www.innsbruck.info/en/sightseeing/i/swarovski-crystal-worlds.html",
+  },
 ];
