@@ -77,7 +77,7 @@ function PersonFields({ idPrefix, values }: { idPrefix: string; values?: PersonD
       </label>
       <label className="block">
         <span className={captionClass}>Name in Hebrew</span>
-        <input name="yiddishName" defaultValue={values?.yiddishName ?? ""} dir="rtl" className={inputClass} placeholder="רבי אלימלך מליזענסק" />
+        <input name="yiddishName" defaultValue={values?.yiddishName ?? ""} dir="rtl" lang="yi" className={inputClass} placeholder="רבי אלימלך מליזענסק" />
       </label>
       <label className="block">
         <span className={captionClass}>Known as</span>
@@ -89,7 +89,7 @@ function PersonFields({ idPrefix, values }: { idPrefix: string; values?: PersonD
       </label>
       <label className="block sm:col-span-2">
         <span className={captionClass}>Seforim</span>
-        <input name="seforim" defaultValue={values?.seforim ?? ""} dir="rtl" className={inputClass} placeholder="נועם אלימלך" />
+        <input name="seforim" defaultValue={values?.seforim ?? ""} dir="rtl" lang="yi" className={inputClass} placeholder="נועם אלימלך" />
       </label>
       <label className="block sm:col-span-2">
         <span className={captionClass}>A line about him</span>
@@ -270,7 +270,7 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
             </label>
             <label className="block">
               <span className={captionClass}>Town in Hebrew</span>
-              <input name="yiddishCity" dir="rtl" className={inputClass} placeholder="ליזענסק" />
+              <input name="yiddishCity" dir="rtl" lang="yi" className={inputClass} placeholder="ליזענסק" />
             </label>
             <label className="block">
               <span className={captionClass}>Country</span>
@@ -286,7 +286,7 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
             </label>
             <label className="block sm:col-span-2">
               <span className={captionClass}>Name in Hebrew</span>
-              <input name="cemeteryYiddishName" dir="rtl" className={inputClass} />
+              <input name="cemeteryYiddishName" dir="rtl" lang="yi" className={inputClass} />
             </label>
             <label className="block sm:col-span-2">
               <span className={captionClass}>Address</span>

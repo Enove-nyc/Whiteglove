@@ -33,9 +33,9 @@ export default function AddEntryForms() {
         <p className="mt-2 text-sm leading-6 text-stone-600">Only a name and city are required — fill in the rest later. It appears in the directory right away, marked for verification.</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block"><span className={captionClass}>Cemetery name *</span><input name="name" className={inputClass} required /></label>
-          <label className="block"><span className={captionClass}>Yiddish/Hebrew name</span><input name="yiddishName" dir="rtl" className={inputClass} /></label>
+          <label className="block"><span className={captionClass}>Yiddish/Hebrew name</span><input name="yiddishName" dir="rtl" lang="yi" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
-          <label className="block"><span className={captionClass}>City (Yiddish)</span><input name="yiddishCity" dir="rtl" className={inputClass} /></label>
+          <label className="block"><span className={captionClass}>City (Yiddish)</span><input name="yiddishCity" dir="rtl" lang="yi" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>Coordinates</span><input name="coordinates" className={inputClass} placeholder="50.0512, 19.9448" /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>Address</span><AddressAutocomplete name="address" className={inputClass} placeholder="Start typing the address…" /></label>

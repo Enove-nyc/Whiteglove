@@ -152,8 +152,8 @@ export default function LoginForm({
     <form className="mt-8 space-y-5" onSubmit={continueToAccount}>
       {(mode === "signup" || mode === "login") && (
         <div className="grid grid-cols-2 border border-[var(--gold-light)] p-1">
-          <button type="button" onClick={() => { setMode("signup"); setMessage(""); }} className={`px-3 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "signup" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Sign up</button>
-          <button type="button" onClick={() => { setMode("login"); setMessage(""); }} className={`px-3 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "login" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Log in</button>
+          <button type="button" onClick={() => { setMode("signup"); setMessage(""); }} className={`min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "signup" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Sign up</button>
+          <button type="button" onClick={() => { setMode("login"); setMessage(""); }} className={`min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "login" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Log in</button>
         </div>
       )}
 
@@ -202,7 +202,7 @@ export default function LoginForm({
               placeholder={mode === "login" ? "Your password" : "Choose a password"}
               className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]"
             />
-            <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--navy)] hover:text-[var(--gold)]">
+            <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold)]">
               <EyeIcon open={showPassword} />
             </button>
           </div>
@@ -229,7 +229,7 @@ export default function LoginForm({
           <label className="block text-sm font-semibold text-[var(--navy)]">New password
             <div className="relative mt-2">
               <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type={showPassword ? "text" : "password"} required autoComplete="new-password" name="new-password" placeholder="Choose a new password" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]" />
-              <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--navy)] hover:text-[var(--gold)]">
+              <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold)]">
                 <EyeIcon open={showPassword} />
               </button>
             </div>

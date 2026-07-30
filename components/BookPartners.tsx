@@ -5,6 +5,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import BookingSearch from "@/components/BookingSearch";
 import DateField from "@/components/DateField";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd } from "@/lib/date-range";
 
@@ -400,10 +401,13 @@ function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBook
 function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking; onDone: () => void; onDismiss: () => void }) {
   const [confirmation, setConfirmation] = useState("");
   const what = booking.kind === "flight" ? "flight" : booking.kind === "hotel" ? "hotel" : "car";
+  // The keyboard stays in here while it is open, and goes back to whatever
+  // opened it when it closes. Escape is "not yet", the same as the button.
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onDismiss);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(13,31,59,.45)] p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="booked-title">
-      <div className="w-full max-w-lg rounded-3xl border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] sm:p-8">
+      <div ref={dialogRef} tabIndex={-1} className="w-full max-w-lg rounded-3xl border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] outline-none sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Searching in the other tab</p>
         <h2 id="booked-title" className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
           When you have booked, come back and tell us.
@@ -422,7 +426,6 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
             value={confirmation}
             onChange={(e) => setConfirmation(e.target.value)}
             placeholder="e.g. XR4K9T"
-            autoFocus
             className="mt-1.5 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]"
           />
         </label>
@@ -469,7 +472,7 @@ function TripTypeButton({ active, onClick, children }: { active: boolean; onClic
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-[38px] rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
+      className={`min-h-11 rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>
@@ -482,7 +485,7 @@ function PayToggle({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`relative z-10 flex min-w-0 items-center justify-center rounded-full px-3 text-center text-xs font-bold uppercase tracking-[0.1em] transition-colors duration-300 sm:px-5 sm:tracking-[0.12em] ${active ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}
+      className={`relative z-10 flex min-h-11 min-w-0 items-center justify-center rounded-full px-3 text-center text-xs font-bold uppercase tracking-[0.1em] transition-colors duration-300 sm:px-5 sm:tracking-[0.12em] ${active ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>

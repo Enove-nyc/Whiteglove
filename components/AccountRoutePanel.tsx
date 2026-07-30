@@ -194,7 +194,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
                 <ul className="mt-2 divide-y divide-[var(--gold-light)]">
                   {activeRoute.slice(0, 4).map((place) => (
                     <li key={place.id} className="py-4">
-                      <p className="font-[family-name:var(--font-display)] text-[var(--navy)]">{place.yiddishName && <span dir="rtl" className="block text-2xl leading-tight">{place.yiddishName}</span>}<span className="mt-1 block text-base text-stone-500">{place.name}</span></p>
+                      <p className="font-[family-name:var(--font-display)] text-[var(--navy)]">{place.yiddishName && <span dir="rtl" lang="yi" className="block text-2xl leading-tight">{place.yiddishName}</span>}<span className="mt-1 block text-base text-stone-500">{place.name}</span></p>
                       <p className="mt-1 text-sm text-stone-600">{place.address}</p>
                     </li>
                   ))}

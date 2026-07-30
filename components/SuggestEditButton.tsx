@@ -42,7 +42,7 @@ export default function SuggestEditButton({ targetType, targetId, title, current
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="text-xs text-stone-400 underline decoration-[var(--gold-light)] decoration-1 underline-offset-2 transition hover:text-[var(--navy)]"
+        className="inline-flex min-h-11 items-center text-xs text-stone-400 underline decoration-[var(--gold-light)] decoration-1 underline-offset-2 transition hover:text-[var(--navy)]"
       >
         {open ? "Close" : "See something to fix? Suggest an edit"}
       </button>

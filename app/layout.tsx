@@ -39,11 +39,18 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col">
+        {/* First thing in the tab order, on every page. */}
+        <a href="#main-content" className="wg-skip-link">Skip to content</a>
         <SiteTracker />
         <RequiredFields />
         <ServiceWorkerRegister />
         <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
-        {children}
+        {/* tabIndex -1 so the skip link can actually put the focus here.
+            Without it the browser scrolls to the anchor and leaves the focus
+            behind, and the next Tab starts at the header again. */}
+        <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
+          {children}
+        </div>
       </body>
     </html>
   );

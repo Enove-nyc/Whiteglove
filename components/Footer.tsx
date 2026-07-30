@@ -39,7 +39,7 @@ export default function Footer() {
             <ul className="mt-4 grid gap-x-5 gap-y-1 sm:grid-cols-2 lg:grid-cols-1">
               {exploreLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="group flex items-center justify-between rounded-md py-2 text-sm text-slate-300 transition hover:text-white">
+                  <Link href={link.href} className="group flex min-h-11 items-center justify-between rounded-md py-2 text-sm text-slate-300 transition hover:text-white">
                     <span>{link.label}</span>
                     <span aria-hidden="true" className="text-[var(--gold-light)] opacity-0 transition group-hover:opacity-100">→</span>
                   </Link>
@@ -68,7 +68,7 @@ export default function Footer() {
             <ul className="flex flex-wrap gap-x-5 gap-y-3">
               {utilityLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-xs font-semibold text-slate-400 transition hover:text-[var(--gold-light)]">{link.label}</Link>
+                  <Link href={link.href} className="inline-flex min-h-11 items-center text-xs font-semibold text-slate-400 transition hover:text-[var(--gold-light)]">{link.label}</Link>
                 </li>
               ))}
             </ul>

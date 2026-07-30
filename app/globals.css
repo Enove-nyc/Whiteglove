@@ -59,7 +59,41 @@ a {
 }
 
 ::selection { background: var(--gold-light); color: var(--navy-deep); }
-:where(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+/* A focus ring that survives both backgrounds the site uses. Gold reads
+   against cream and against the navy footer; the dark halo separates it from
+   cream, where a gold-on-cream outline was close to invisible. 3px because a
+   2px hairline at the edge of a pale control is not something you can find at
+   a glance while tabbing. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(23, 45, 82, 0.55);
+}
+
+/* Skip to content. Off-screen until it is focused, which is the first Tab on
+   every page — otherwise a keyboard or screen-reader user walks the whole
+   header, on every page, before reaching what they came for. */
+.wg-skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-radius: 0.5rem;
+  background: var(--navy);
+  padding: 0 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  transition: top 0.15s ease-out;
+}
+.wg-skip-link:focus {
+  top: 1rem;
+}
 :where(button, a) { -webkit-tap-highlight-color: rgba(170, 139, 82, 0.16); }
 :where(select, input, textarea) { background-color: #fcfaf6; color: var(--navy); }
 
@@ -198,7 +232,9 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 .itinerary-planner button,
 .itinerary-planner a[class*="border"] {
   border-radius: 0.375rem;
-  min-height: 2.5rem;
+  /* 44px: the planner is the screen people use most on a phone, standing
+     outside somewhere with one hand. */
+  min-height: 2.75rem;
 }
 
 .itinerary-planner input,
@@ -239,4 +275,17 @@ input::placeholder, textarea::placeholder { color: #78716c; }
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Leaflet ships 30px zoom buttons. On a phone that is a miss as often as a
+   hit, and they are the only way to zoom without pinching. The attribution
+   links below the map are left alone: they are required credit set in running
+   text, which the target-size guidance exempts and which would look absurd at
+   44px. */
+.leaflet-touch .leaflet-bar a,
+.leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  font-size: 1.25rem;
 }
