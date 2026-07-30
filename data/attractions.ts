@@ -2133,4 +2133,29 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed museum and lift, so not on Shabbos or yom tov. The building itself is visible from the street at any hour.",
     sourceUrl: "https://en.wikipedia.org/wiki/Mole_Antonelliana",
   },
+
+  // ---- United Kingdom (continued) -------------------------------------
+  //
+  // Ordinary British sightseeing. Nothing here is Jewish and nothing here needs
+  // to be — the rule for this file is not "is it Jewish" but "would this be
+  // promoted in the community this site is for", and a castle passes that
+  // without anybody having to justify it.
+  {
+    slug: "stonehenge",
+    name: "Stonehenge",
+    city: "Salisbury Plain",
+    country: "United Kingdom",
+    kind: "Landmark",
+    summary: "A ring of standing stones on Salisbury Plain, raised some five thousand years ago, and nobody is certain how or why.",
+    address: "Near Amesbury, Wiltshire — English Heritage site off the A303",
+    website: "https://www.english-heritage.org.uk/visit/places/stonehenge/",
+    notes: [
+      "Coordinates deliberately not listed: we did not find a source we would stand behind for the pin, and the visitor centre is a mile and a half from the stones with a shuttle between them. Navigate to the English Heritage visitor centre by name rather than to the stones.",
+      "You walk around the circle at a distance rather than among the stones; the close-up access is a separate, limited booking.",
+      "About two hours from London and exposed to the weather on all sides. Dress for a field.",
+      "It combines with Bath or Salisbury into a full day; on its own it is ninety minutes at the site.",
+    ],
+    shabbos: "Ticketed and two hours from London — not a Shabbos visit.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Stonehenge",
+  },
 ];

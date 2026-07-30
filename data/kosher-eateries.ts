@@ -238,6 +238,76 @@ export const kosherEateries: KosherEatery[] = [
     nearQuarter: "florence-great-synagogue",
     sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
   },
+  {
+    slug: "golders-green-road-eating",
+    name: "Golders Green Road — eating in north-west London",
+    city: "London",
+    country: "United Kingdom",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The densest run of kosher shops and restaurants in Europe outside Israel, along one road — bakeries, butchers, restaurants and takeaways for most of a mile.",
+    address: "Golders Green Road, London NW11",
+    coordinates: "51.5720, -0.1940",
+    hechsher: {
+      state: "unverified",
+      note: "A street rather than one business — most places here are under the London Beth Din (KLBD) or Kedassia, and the two are not the same; each displays its own",
+    },
+    notes: [
+      "If food is what decides where you stay in London, this is the street, and it is the argument for Golders Green over Stamford Hill for a visitor.",
+      "KLBD and Kedassia both certify here and which you accept is a question for you and your rov. The teudah is in the window.",
+      "Twenty-five minutes on the Northern line from the centre, so you can stay here and still see London.",
+      "Everything shuts early on Erev Shabbos and the road empties.",
+    ],
+    nearQuarter: "london-golders-green",
+    sourceUrl: "https://en.wikipedia.org/wiki/Golders_Green",
+  },
+  {
+    slug: "prestwich-manchester-eating",
+    name: "Prestwich and Broughton Park — eating in Manchester",
+    city: "Manchester",
+    country: "United Kingdom",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The everyday kosher provision of the largest kehilla in Britain outside London, spread across the north Manchester suburbs.",
+    address: "Around Bury New Road, Prestwich and Broughton Park, Manchester",
+    coordinates: "53.5250, -2.2820",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — mostly under the Manchester Beth Din (MBD); check the teudah at each door",
+    },
+    notes: [
+      "Spread out rather than concentrated on one street, which is the practical difference from Golders Green — a car helps here in a way it does not in London.",
+      "Broughton Park is the most walkable of the suburbs for Shabbos; Prestwich and Whitefield are more spread.",
+      "Prices are ordinary rather than tourist, because this is where a large community does its weekly shopping.",
+    ],
+    nearQuarter: "manchester-prestwich",
+    sourceUrl: "https://en.wikipedia.org/wiki/Prestwich",
+  },
+  {
+    slug: "gateshead-coatsworth-road-eating",
+    name: "Coatsworth Road — eating in Gateshead",
+    city: "Gateshead",
+    country: "United Kingdom",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "A short row of kosher shops serving the largest Torah centre in Europe — small, and entirely sufficient for the community that uses it.",
+    address: "Coatsworth Road, Bensham, Gateshead",
+    coordinates: "54.95311, -1.61061",
+    hechsher: {
+      state: "unverified",
+      note: "Serving a strictly-observant community; supervision is displayed in each shop and should be checked there",
+    },
+    notes: [
+      "Three establishments close together on the one road is roughly the whole of it. This is a community shopping street, not a choice of restaurants.",
+      "Plan around it rather than assuming: a visitor expecting to eat out every night will be disappointed, and a visitor buying for a self-catered week will be fine.",
+      "Everything runs to the community's week, and Erev Shabbos closes early.",
+    ],
+    nearQuarter: "gateshead-bensham",
+    sourceUrl: "https://www.totallyjewishtravel.com/Kosher_Tours-TL1164-gateshead_united_kingdom_uk-Vacations.html",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
