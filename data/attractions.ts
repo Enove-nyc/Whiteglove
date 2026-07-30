@@ -2396,4 +2396,73 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed, timed and guided, up a mountain. Not a Shabbos outing.",
     sourceUrl: "https://en.wikipedia.org/wiki/Eisriesenwelt",
   },
+
+  // ---- The Alps, part four --------------------------------------------
+  //
+  // The last three, and they close the ranges out. One high mountain on each
+  // side — the Marmolada in the Dolomites and the Kitzsteinhorn in the Pinzgau
+  // — and one small, low, hour-long thing near Annecy, which this file needed
+  // more than it needed a fourth summit. A fortnight in the Alps has days when
+  // the cloud is down to the valley floor and nobody wants a cable car, and
+  // until now there was nothing here for them.
+  {
+    slug: "marmolada-punta-rocca",
+    name: "The Marmolada",
+    city: "Dolomites",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "The Queen of the Dolomites — a cable car from 1,450 m to a terrace at 3,265 m in about twelve minutes, opposite the highest peak in the range.",
+    address: "Marmolada cable car, Malga Ciapela, Rocca Pietore, Belluno",
+    website: "https://www.funiviemarmolada.com/en/cable-car/",
+    notes: [
+      "Three stages from Malga Ciapela at 1,450 m, through Coston d'Antermoja and Serauta, to Punta Rocca at 3,265 m. Punta Penia across from it is 3,343 m and is the highest thing in the Dolomites.",
+      "The Great War museum at the Serauta station, at about 2,950 m, is the highest museum in Europe. The front ran along this mountain and through tunnels dug in the glacier itself; the museum is the reason to break the journey rather than ride straight through.",
+      "This is a lift rather than a walk, which makes it the high-mountain day that works for a party that cannot do a high-mountain walk.",
+      "It is a serious altitude and it is reached quickly. Anybody who feels the height should stop at Serauta rather than push to the top station.",
+      "Coordinates deliberately not listed: the summit pin is on a glacier and the station is in the valley. Navigate to the cable car at Malga Ciapela.",
+      "Alba di Canazei, where the kosher hotel is, is over the pass to the west — this is the nearest high mountain to it by some way.",
+    ],
+    shabbos: "A ticketed cable car up a glacier. Not a Shabbos outing.",
+    sourceUrl: "https://www.dolomiti.org/en/marmolada/da-non-perdere/funivia-marmolada/",
+  },
+  {
+    slug: "gorges-du-fier",
+    name: "The Gorges du Fier",
+    city: "Lovagny",
+    country: "France",
+    kind: "Nature",
+    summary: "A walkway bolted to the rock 25 m above a river, through a slot the water has cut so narrow you can touch both walls — twenty minutes from Annecy and about an hour to do.",
+    address: "Gorges du Fier, Lovagny, Haute-Savoie — about 11 km west of Annecy",
+    website: "https://www.gorgesdufier.com/en/gorges-du-fier.html",
+    notes: [
+      "The reason this is on a list otherwise made of mountains: it is short, it is cheap, it is at valley level, and it works in weather that closes everything else. On a fortnight in the Alps there is always a day for it.",
+      "The gangway runs 252 m along the gorge, hung 25 m above the Fier. It has been a visitor route since the nineteenth century, which is roughly how it feels.",
+      "It is a single-file walkway with no way to pass. Early or late is a different experience from the middle of the day, and with a pushchair it is not one at all.",
+      "Open for the warm half of the year only — roughly mid-March to mid-October — and shut for the winter. Check before driving out.",
+      "Coordinates deliberately not listed: the gorge itself is a line rather than a point and the pins disagree. Navigate to Lovagny.",
+      "Annecy is twenty minutes away and has a shul but no kosher food; the nearest shops are Geneva or Grenoble, both listed on this site.",
+    ],
+    shabbos: "Ticketed, and out of town. A weekday hour.",
+    sourceUrl: "https://en.lac-annecy.com/equipment/les-gorges-du-fier-lovagny/",
+  },
+  {
+    slug: "zell-am-see-kitzsteinhorn",
+    name: "Zell am See and the Kitzsteinhorn",
+    city: "Zell am See",
+    country: "Austria",
+    kind: "Nature",
+    summary: "A lake town with a glacier above it — snow at 3,000 m in August, reached by gondola from the valley, on the edge of the Hohe Tauern national park.",
+    address: "Zell am See–Kaprun, Salzburg province",
+    website: "https://www.kitzsteinhorn.at/en",
+    notes: [
+      "The Gipfelwelt 3000 on the Kitzsteinhorn glacier sits at about 3,029 m and is the highest place in the Salzburg province you can get to on a ticket. There is snow up there through the summer, which is the whole appeal for children who have never stood in any.",
+      "The 3K K-onnection gondola links Kaprun and the Maiskogel to the glacier and has run since 2019, so the ascent is one continuous ride rather than the old sequence of drives and lifts.",
+      "As a base this is the best-placed town in the Austrian Alps: the Krimml falls and the Grossglockner road, both listed here, are day trips from it, and so is the Eisriesenwelt.",
+      "On the lake: there is boating and there are lidos, and the bathing is ordinary open public bathing with no separate arrangement of any kind. Plan the water part of the day accordingly, or plan around it.",
+      "Coordinates deliberately not listed: this is a town, a lake and a glacier rather than one place, and the useful pin depends on which of the three you are going to. Navigate to Zell am See or to Kaprun.",
+      "No kosher food in the Pinzgau. Kosher Tirol delivers into this valley in season and Salzburg has Chabad; both are listed here.",
+    ],
+    shabbos: "The lifts are ticketed and there is no kehilla in the valley. A weekday mountain, with Shabbos arranged from Salzburg.",
+    sourceUrl: "https://www.austria.info/en-gb/regions/zell-am-see-kaprun/",
+  },
 ];

@@ -1012,6 +1012,63 @@ export const kosherStays: KosherStay[] = [
     kosherClaim: "none",
     sourceUrl: "https://ikg-salzburg.at/en/contact/",
   },
+  {
+    slug: "annecy-stays",
+    name: "Staying in Annecy",
+    city: "Annecy",
+    country: "France",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "A lake town at the foot of the Alps with a shul and a mikvah and not one kosher shop — which is a stranger combination than it sounds, and worth understanding before booking a week here.",
+    anchor: { name: "Annecy old town, on the lake", coordinates: "45.91611, 6.13306" },
+    notes: [
+      "The shul is on the rue de Narvik and the community runs to about fifty families. There is a mikvah in the compound. There is no kosher shop and no kosher restaurant in the town at all.",
+      "How people here actually eat: they buy elsewhere. Geneva is about thirty-five kilometres north and Grenoble and Lyon are down the motorway, all three listed on this site. The rov here is a shochet who supplies communities across the border and in Grenoble, which tells you how the meat moves in this corner of the Alps.",
+      "The position is very good and that is why it is listed: the lake and the old town are the attraction, Chamonix and Geneva are each about an hour, and the Gorges du Fier is twenty minutes away.",
+      "For Shabbos, write to the community first. Fifty families is a kehilla that will know you are coming; it is not one that will absorb an unannounced family of six.",
+      "Listed as an ordinary hotel town. Nothing here claims a kosher kitchen and none is implied.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://jguideeurope.org/en/region/france/rhone-alpes/annecy/",
+  },
+  {
+    slug: "zell-am-see-stays",
+    name: "Staying at Zell am See for the Austrian Alps",
+    city: "Zell am See",
+    country: "Austria",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "The best-placed town in the Austrian Alps for a week of driving out and back — the Krimml falls, the Grossglockner road, the Eisriesenwelt and a glacier are all day trips from it — and the food all has to come to you.",
+    anchor: { name: "Zell am See, on Lake Zell", coordinates: "47.31667, 12.80000" },
+    notes: [
+      "Every Austrian mountain entry on this site except the Nordkette is reachable from here in a day, which no other town in the country manages. That is the reason to be here rather than anywhere prettier.",
+      "There is no kosher provision in the Pinzgau and none anywhere in Austria outside Vienna. Two ways round it, both listed here: Kosher Tirol delivers prepared meals and Shabbos food into this valley in season, and Chabad of Salzburg does Shabbos meals on advance registration.",
+      "Order the food before you book the hotel, not after. A valley with no shop is a valley where the meals are the fixed part of the plan and the hotel is the flexible one.",
+      "There is a lake, with lidos and open public bathing and no separate arrangement of any kind. Worth knowing before choosing a hotel on the shore for the swimming.",
+      "Listed as an ordinary hotel town. No kosher claim is made by anything here and none is implied.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Zell_am_See",
+  },
+  {
+    slug: "val-gardena-stays",
+    name: "Staying in the Val Gardena",
+    city: "Ortisei",
+    country: "Italy",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Ortisei and the Val Gardena, with lifts to the Alpe di Siusi and the Seceda ridge going up from the village itself — the Dolomites base that needs the least driving.",
+    anchor: { name: "Ortisei (St. Ulrich, Urtijëi), Val Gardena", coordinates: "46.56667, 11.66667" },
+    notes: [
+      "The argument for it over Merano or Canazei is the lifts. They leave from the middle of Ortisei, so a family without a car still has two mountains, and a family with one leaves it parked.",
+      "This is Ladin country: three languages on every sign, and the town answers to Ortisei, St. Ulrich and Urtijëi equally. Book under whichever name the site you are using prefers.",
+      "No kosher food, in the village or the valley. My Kosher Hotel at Alba di Canazei is over the Sella pass and is the nearest kitchen; Milan is the nearest shop. Both are listed on this site.",
+      "The Sella passes put Canazei, the Marmolada and the Great Dolomites Road within a morning, so this base and the kosher one are a plausible split week rather than alternatives.",
+      "Listed as an ordinary hotel village. Nothing here claims a kosher kitchen and none is implied.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Urtij%C3%ABi",
+  },
 ];
 
 export function staysIn(country: string) {
