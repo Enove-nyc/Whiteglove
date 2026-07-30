@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ADMIN_SECTIONS, activeSection, allAdminDestinations } from "@/lib/admin-nav";
+import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdminPath } from "@/lib/admin-nav";
 
 /**
  * The frame every admin screen sits in.
@@ -53,9 +53,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, []);
 
   // The login screen is its own thing — no nav, nothing to navigate to.
-  if (pathname === "/admin/login") return <>{children}</>;
+  // On the admin hostname the bare path is the screen, so the path the browser
+  // reports and the paths written in lib/admin-nav.ts are not the same string.
+  // Everything that compares the two uses the canonical form; everything that
+  // WRITES a link uses adminHref, so the links read the way the hostname does.
+  const here = toAdminPath(pathname);
+  const to = (href: string) => adminHref(href, pathname);
 
-  const section = activeSection(pathname);
+  if (here === "/admin/login") return <>{children}</>;
+
+  const section = activeSection(here);
 
   const navLinks = (
     <nav aria-label="Admin sections" className="space-y-1">
@@ -64,7 +71,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         return (
           <div key={s.href}>
             <Link
-              href={s.href}
+              href={to(s.href)}
               onClick={() => setNavOpen(false)}
               aria-current={current ? "page" : undefined}
               className={`flex items-start gap-3 rounded-md px-3 py-2.5 transition ${
@@ -85,11 +92,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 {s.children.map((c) => (
                   <li key={c.href}>
                     <Link
-                      href={c.href}
+                      href={to(c.href)}
                       onClick={() => setNavOpen(false)}
-                      aria-current={pathname === c.href ? "page" : undefined}
+                      aria-current={here === c.href ? "page" : undefined}
                       className={`block rounded px-2 py-1.5 text-sm transition ${
-                        pathname === c.href
+                        here === c.href
                           ? "font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
                           : "text-stone-600 hover:text-[var(--navy)]"
                       }`}
@@ -127,7 +134,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             {navOpen ? "Close" : "Menu"}
           </button>
 
-          <Link href="/admin" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--navy)]">
+          <Link href={to("/admin")} className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--navy)]">
             White Glove
           </Link>
           <span aria-hidden="true" className="hidden text-[var(--gold-light)] sm:inline">
@@ -154,7 +161,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   e.preventDefault();
                   setActive((i) => Math.max(0, Math.min(matches.length - 1, e.key === "ArrowDown" ? i + 1 : i - 1)));
                 } else if (e.key === "Enter" && matches[active]) {
-                  window.location.href = matches[active].href;
+                  window.location.href = to(matches[active].href);
                 } else if (e.key === "Escape") {
                   setFindOpen(false);
                 }
@@ -171,7 +178,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                     {matches.map((d, i) => (
                       <li key={d.href + d.label}>
                         <Link
-                          href={d.href}
+                          href={to(d.href)}
                           onMouseEnter={() => setActive(i)}
                           onClick={() => setFindOpen(false)}
                           className={`block px-3 py-2 ${i === active ? "bg-[var(--cream-deep)]" : ""}`}

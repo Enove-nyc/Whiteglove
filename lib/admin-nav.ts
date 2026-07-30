@@ -79,6 +79,38 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 ];
 
 /** Which of the five you are currently inside. */
+/**
+ * The path as this file writes it, whichever hostname you are on.
+ *
+ * On the admin hostname the bare path IS the screen — admin.…/settings is
+ * Settings — so `usePathname()` gives "/settings" while every href in this
+ * file reads "/admin/settings". Without this the two never match, and the
+ * navigation highlight sits on Home no matter where you are.
+ *
+ * The same transform the middleware does, in the other direction.
+ */
+export function toAdminPath(pathname: string): string {
+  if (pathname.startsWith("/admin")) return pathname;
+  return pathname === "/" ? "/admin" : `/admin${pathname}`;
+}
+
+/**
+ * A link, written for the hostname you are on.
+ *
+ * On the admin hostname the whole point is that `/admin` is not needed, so
+ * carrying it in every link undoes that — you sign in at admin.…/ and every
+ * click puts you back on admin.…/admin/settings.
+ *
+ * Which hostname you are on is read off the current path rather than from a
+ * variable: if the path you are already on does not start with /admin, you are
+ * being served bare paths, so the links should be bare too. That needs nothing
+ * configured in the browser and cannot disagree with the middleware.
+ */
+export function adminHref(href: string, pathname: string): string {
+  if (pathname.startsWith("/admin")) return href;
+  return href.replace(/^\/admin/, "") || "/";
+}
+
 export function activeSection(pathname: string): AdminSection {
   // Longest match first, so /admin/settings/passwords lands on Settings rather
   // than Home, and /admin alone still lands on Home.

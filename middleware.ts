@@ -38,8 +38,45 @@ function requestHost(request: NextRequest): string {
   return (request.headers.get("host") || request.nextUrl.hostname).toLowerCase().split(":")[0].trim();
 }
 
-function isAdminHost(request: NextRequest): boolean {
+/**
+ * The admin hostname, refused if it is a hostname the public site is served on.
+ *
+ * WHY THIS REFUSES. ADMIN_HOST names the host that BECOMES the admin area:
+ * every path on it is rewritten to /admin plus itself. Set to a subdomain that
+ * is what you want. Set to the public domain by mistake — dropping the
+ * "admin." while copying — and the entire public website turns into the admin
+ * login, on the live domain, until somebody notices and redeploys.
+ *
+ * That is too much damage for a typo, so a value that matches a hostname in
+ * SITE_OPEN_HOSTS or NEXT_PUBLIC_SITE_URL is ignored and the site behaves as
+ * though ADMIN_HOST were unset. Those are the hostnames the site already
+ * declares as its own public addresses, so a match is a mistake by definition:
+ * a host cannot be both the public site and the admin area.
+ */
+function configuredAdminHost(): string | null {
   const configured = process.env.ADMIN_HOST?.trim().toLowerCase().split(":")[0];
+  if (!configured) return null;
+
+  const strip = (h: string) => h.toLowerCase().split(":")[0].replace(/^www\./, "").trim();
+  const publicHosts = new Set<string>();
+  for (const raw of (process.env.SITE_OPEN_HOSTS ?? "").split(",")) {
+    if (raw.trim()) publicHosts.add(strip(raw));
+  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (siteUrl) {
+    try {
+      publicHosts.add(strip(new URL(siteUrl.includes("://") ? siteUrl : `https://${siteUrl}`).hostname));
+    } catch {
+      // An unparseable site URL tells us nothing; it must not disable the
+      // admin hostname by accident.
+    }
+  }
+
+  return publicHosts.has(strip(configured)) ? null : configured;
+}
+
+function isAdminHost(request: NextRequest): boolean {
+  const configured = configuredAdminHost();
   if (!configured) return false;
   return requestHost(request) === configured;
 }
@@ -141,9 +178,13 @@ export async function middleware(request: NextRequest) {
   // Send the whole admin area to its own hostname once one is set, so there is
   // a single place to sign in. Off by default: turning it on before DNS
   // resolves would leave no way into /admin at all.
-  if (!onAdminHost && process.env.ADMIN_HOST?.trim() && process.env.ADMIN_HOST_ONLY === "1" && pathname.startsWith("/admin")) {
+  // Reads the CHECKED hostname, not the raw variable. A refused ADMIN_HOST —
+  // one that is also a public address — must not still be redirected to, or
+  // /admin would bounce to the public site's root and never arrive.
+  const adminHostname = configuredAdminHost();
+  if (!onAdminHost && adminHostname && process.env.ADMIN_HOST_ONLY === "1" && pathname.startsWith("/admin")) {
     const url = new URL(request.url);
-    url.hostname = process.env.ADMIN_HOST.trim();
+    url.hostname = adminHostname;
     url.port = "";
     // Behind Vercel's proxy the incoming URL is plain http, and sending an
     // http redirect would only bounce again through the https upgrade.
