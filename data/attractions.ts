@@ -2465,4 +2465,101 @@ export const attractions: Attraction[] = [
     shabbos: "The lifts are ticketed and there is no kehilla in the valley. A weekday mountain, with Shabbos arranged from Salzburg.",
     sourceUrl: "https://www.austria.info/en-gb/regions/zell-am-see-kaprun/",
   },
+
+  // ---- The Alps, part five: the western end, and a road ----------------
+  //
+  // Everything Italian in this file so far has been the Dolomites — the eastern
+  // end of the country's mountains. The WESTERN Italian Alps had nothing at
+  // all: the Aosta valley, the Italian side of Mont Blanc, the Gran Paradiso.
+  // That end of the range is a different trip and a different food problem.
+  // The Dolomites now have a kosher hotel in the middle of them; the Aosta
+  // valley has nothing nearer than Turin, which is why the Turin entry in
+  // data/kosher-eateries.ts exists and why both entries below point at it.
+  //
+  // The other two close out France and Austria. The Route des Grandes Alpes is
+  // the French answer to the Grossglockner and is a week rather than a day.
+  // Hohensalzburg is here because the site now tells people to base a whole
+  // Austrian trip in Salzburg and then gave them nothing to do in it.
+  {
+    slug: "skyway-monte-bianco",
+    name: "Skyway Monte Bianco",
+    city: "Courmayeur",
+    country: "Italy",
+    kind: "Viewpoint",
+    summary: "Rotating glass cable cars from the Aosta valley to a terrace at 3,466 m on the Italian shoulder of Mont Blanc — the same mountain the Aiguille du Midi climbs, from the other side.",
+    address: "Skyway Monte Bianco valley station, Courmayeur, Aosta Valley — signed from the A5 motorway and the SS26",
+    website: "https://www.montebianco.com/en",
+    notes: [
+      "Three stations: the valley at about 1,300 m, Pavillon at 2,173 m, and Punta Helbronner at 3,466 m. The cabins rotate as they climb, so you get the whole circle of the view without moving.",
+      "The top terrace looks across the four-thousanders of the western Alps — Mont Blanc itself, Monte Rosa, the Matterhorn, the Gran Paradiso and the Grand Combin. On a clear morning it is the best single view in this file.",
+      "It opened in 2015, so it is new, fast and comfortable in a way the older lifts are not. Pavillon halfway up has a garden and level walking, and is where to stop with anybody who does not want the full altitude.",
+      "This and the Aiguille du Midi, listed here under Chamonix, are the same massif from opposite countries. Doing both is a repeat rather than a pair; pick the side your base is on.",
+      "3,466 m is reached in minutes from a valley floor. That is a lot of altitude very fast, and the sensible plan is to break the ascent at Pavillon rather than ride it in one go.",
+      "Coordinates deliberately not listed: the summit pin is on a glacier ridge and the station is down in the valley. Navigate to Courmayeur and follow the signs.",
+      "No kosher food in the Aosta valley. Turin is the nearest provision and is listed on this site; Milan is the other option and is further.",
+    ],
+    shabbos: "A ticketed cable car, and the valley has no kehilla. A weekday morning.",
+    sourceUrl: "https://www.lovevda.it/en/experiences/cableways-4000-metres/mont-blanc-cableway",
+  },
+  {
+    slug: "gran-paradiso",
+    name: "Gran Paradiso National Park",
+    city: "Cogne",
+    country: "Italy",
+    kind: "Nature",
+    summary: "Italy's oldest national park, made in 1922 out of a royal hunting reserve to save the ibex from extinction — and the ibex are still there, on 550 km of gently graded old hunting roads.",
+    address: "Cogne and the Valnontey, Aosta Valley — the usual way in from the Aosta side",
+    website: "https://www.italia.it/en/italy/il-parco-nazionale-del-gran-paradiso",
+    notes: [
+      "The history is the reason to bring children: the alpine ibex was nearly hunted out of existence, the king gave up his hunting reserve in 1920 to stop it, and the herds you see on the slopes are what came of that. It is a story with an animal at the end of it.",
+      "About 550 km of paths across some 700 km² of the Graian Alps, spanning the Aosta Valley and Piedmont. Most of them follow the old royal hunting roads, which is why so much of the walking climbs gently instead of going straight up.",
+      "Cogne and the Valnontey behind it are the standard base and the easiest walking. The Paradisia alpine garden sits between the two and is a short, flat outing in its own right.",
+      "There is a regular bus from Aosta to Cogne, taking around three quarters of an hour. This is one of the few entries in this file that genuinely works without a car.",
+      "Coordinates deliberately not listed: it is a national park rather than a place. Navigate to Cogne, or to Valnontey a little beyond it.",
+      "Nothing kosher in the valley or anywhere near it. Turin is the nearest provision and is listed on this site — carry the day's food in.",
+    ],
+    shabbos: "No ticket and no turnstile at the paths themselves, but it is a long way from any kehilla and the walking is the point. A weekday.",
+    sourceUrl: "https://www.italia.it/en/italy/il-parco-nazionale-del-gran-paradiso",
+  },
+  {
+    slug: "route-des-grandes-alpes",
+    name: "The Route des Grandes Alpes",
+    city: "Thonon-les-Bains to Menton",
+    country: "France",
+    kind: "Viewpoint",
+    summary: "Six hundred and eighty-four kilometres from Lake Geneva to the Mediterranean over seventeen passes, including the highest paved road in the Alps — the French answer to the Grossglockner, and a week rather than a day.",
+    address: "Thonon-les-Bains, Haute-Savoie, to Menton, Alpes-Maritimes",
+    notes: [
+      "Seventeen major passes, of which the Iseran at 2,764 m is the highest point and among the highest paved passes anywhere in the Alps. The Galibier at about 2,650 m and the Izoard at about 2,360 m are the other two everybody knows.",
+      "The window is narrow and it is the fact that decides the trip. The whole route is reliably open only from about mid-June to mid-September; the high passes clear no earlier than mid-June and can shut again in a bad September.",
+      "Do not treat it as a drive. It is four to seven days at a sane pace, and the pace is the point — a car that does 684 km of hairpins in two days has seen a windscreen.",
+      "It can be done in sections. The northern half from Thonon down to the Galibier is the alpine part; the southern half runs into the Mercantour and drops to the sea.",
+      "What makes it work on this site: it starts near Geneva and ends an hour from Nice, and both have kosher food and are listed here. That is the only long alpine drive in this file with a kehilla at either end.",
+      "Coordinates deliberately not listed: it is a road 684 km long. Navigate to Thonon-les-Bains for the northern end or Menton for the southern.",
+      "In between there is nothing kosher for the entire length. This is a trip carried out of Geneva or Lyon at one end and topped up at Nice at the other.",
+    ],
+    shabbos: "A driving route with no kehilla along it. Plan the Shabbatos at the ends, or off the route entirely — Geneva, Lyon and Nice are all listed on this site.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Route_des_Grandes_Alpes",
+  },
+  {
+    slug: "salzburg-hohensalzburg",
+    name: "Hohensalzburg Fortress and the Salzburg old town",
+    city: "Salzburg",
+    country: "Austria",
+    kind: "Landmark",
+    summary: "One of the largest medieval castles in Europe, on a rock above the old town, reached by a funicular that has been running since 1892.",
+    address: "Hohensalzburg Fortress, above the Salzburg old town",
+    website: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
+    notes: [
+      "The fortress is about 250 m by 150 m and is said to be the largest fully preserved castle in central Europe. It was begun in 1077 and reached the shape you see around 1500; nobody ever took it, which is why there is so much of it left.",
+      "The Festungsbahn up to it is the oldest funicular still running in Austria, working since 1892. It covers about 200 m in under a minute and goes every ten. There is a footpath for anybody who would rather walk it.",
+      "This is the thing to do on the days a Salzburg-based trip is not out in the mountains, and this site now sends people to Salzburg for exactly that reason — the Eisriesenwelt, the Grossglockner, the Krimml falls and Hallstatt are all day trips from it.",
+      "Worth saying plainly: Salzburg was a prince-archbishop's city, so a good deal of the old town is cathedral, abbey and church, and the walking tours are built around them. The fortress and the views are not, and neither are the Mirabell gardens. Where the line falls is yours and your rov's rather than this site's.",
+      "The old town has been a UNESCO World Heritage site since 1997, which in practice means it is small, dense and walkable end to end.",
+      "Coordinates deliberately not listed: the fortress pin is on top of a rock and the funicular station is in the old town below it. Navigate to the Altstadt.",
+      "Chabad of Salzburg does Shabbos and yom tov meals on advance registration and is listed on this site. There is no kosher shop in the city.",
+    ],
+    shabbos: "Ticketed, with a funicular. The old town is walkable from the Neustadt where the community is, so the streets themselves are a Shabbos walk even though the fortress is not.",
+    sourceUrl: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
+  },
 ];
