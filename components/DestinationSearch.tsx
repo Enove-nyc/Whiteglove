@@ -1,98 +1,126 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
-import { destinationHref, guidedDestinations, unguidedDestinations } from "@/data/destinations";
-import { cemeteries } from "@/data/cemeteries";
-import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
+import { destinationHref, guidedDestinations } from "@/data/destinations";
+import type { SiteHit } from "@/lib/site-search";
 
-type SearchMatch = {
-  id: string;
-  title: string;
-  yiddish: string;
-  subtitle: string;
-  yiddishSubtitle?: string;
-  aliases?: string[];
-  href: string;
-  kind: "Guide" | "Location";
-};
+// The search bar in the navbar, on every page.
+//
+// IT USED TO KNOW ABOUT TWO THINGS. It searched destinations and batei
+// hachaim, because those were all the site had when it was written. Everything
+// added since — attractions, places to stay, quarters, places to eat — went
+// onto its own page and into /stops, and nobody came back to the bar. So
+// "Colosseum" and "Merano" and "Kosher Tirol" all answered "No match yet" in a
+// box on every page, while /stops found all three one Enter away.
+//
+// It now asks /api/search, which searches everything. That also fixes what it
+// was doing to get its answers: this is a client component, and it was
+// importing the entire cemetery database into the browser so it could filter
+// it in the dropdown. Every visitor downloaded every kever on the site in order
+// to type into a box.
+//
+// The guided destinations stay in the bundle, because they are what the empty
+// box offers before anybody types and a network round trip to show a default
+// list would be worse than carrying a short one.
 
-const featuredMatches: SearchMatch[] = [
-  {
-    id: "lizensk",
-    title: "Lizhensk",
-    yiddish: "ליזענסק",
-    subtitle: "Reb Elimelech of Lizhensk - Poland",
-    yiddishSubtitle: "רבי אלימלך מליזענסק",
-    aliases: ["Lizensk", "Lezajsk", "Leżajsk", "ליז'ענסק"],
-    href: "/lizensk",
-    kind: "Guide",
-  },
-  ...guidedDestinations().map((guide) => ({
-    id: guide.slug,
+type Suggestion = Pick<SiteHit, "id" | "kind" | "title" | "yiddish" | "subtitle" | "href">;
+
+const defaultSuggestions: Suggestion[] = guidedDestinations()
+  .slice(0, 5)
+  .map((guide) => ({
+    id: `destination-${guide.slug}`,
+    kind: "Guide" as const,
     title: guide.city,
     yiddish: guide.yiddishCity,
-    subtitle: `${guide.guide?.tzaddik ?? guide.city} - ${guide.country}`,
-    yiddishSubtitle: guide.guide?.yiddishTzaddik,
-    aliases: guide.aliases,
+    subtitle: guide.guide?.tzaddik ? `${guide.guide.tzaddik} · ${guide.country}` : guide.country,
     href: destinationHref(guide),
-    kind: "Guide" as const,
-  })),
-  ...unguidedDestinations().map((destination) => ({
-    id: `directory-${destination.slug}`,
-    title: destination.city,
-    yiddish: destination.yiddishCity,
-    subtitle: `${destination.country} - Directory entry`,
-    yiddishSubtitle: undefined,
-    aliases: destination.aliases,
-    href: destinationHref(destination),
-    kind: "Location" as const,
-  })),
-];
+  }));
+
+function recordSearch(value: string) {
+  if (!value.trim()) return;
+  void fetch("/api/analytics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "search", value: value.trim() }),
+    keepalive: true,
+  });
+}
 
 export default function DestinationSearch({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  // The results are stored WITH the query they answer, so which list belongs
+  // on screen is derived rather than cleared. Clearing it in an effect meant a
+  // render pass whose only job was to blank the list, and a slow reply to "ro"
+  // could still land after the reply to "rome".
+  const [hits, setHits] = useState<{ query: string; results: Suggestion[] } | null>(null);
+  // Which row the arrow keys are on. -1 means "none", and Enter then does what
+  // it always did: go to the first result, or to the full directory.
+  const [active, setActive] = useState(-1);
 
-  const matches = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return featuredMatches.slice(0, 5);
+  const trimmed = query.trim();
+  const matches = useMemo(
+    () => (trimmed ? (hits?.query === trimmed ? hits.results : []) : defaultSuggestions),
+    [trimmed, hits],
+  );
+  const searching = Boolean(trimmed) && hits?.query !== trimmed;
 
-    const guideMatches = featuredMatches.filter((match) =>
-      fuzzyMatch(normalized, `${match.title} ${match.yiddish} ${match.subtitle} ${match.aliases?.join(" ") ?? ""} ${extraSpellings([match.id, match.title])}`),
-    );
-    // Kevarim come straight from the cemetery database, so a search lands on
-    // the beis hachaim page itself rather than back on a filtered list.
-    const stopMatches = cemeteries
-      .filter((c) => fuzzyMatch(normalized, `${c.city} ${c.yiddishCity} ${c.name} ${c.yiddishName} ${c.country} ${extraSpellings([c.slug, c.city])}`))
-      .map((c) => ({
-        id: `cemetery-${c.slug}`,
-        title: c.city,
-        yiddish: c.yiddishCity,
-        subtitle: c.country,
-        yiddishSubtitle: undefined,
-        href: `/cemeteries/${c.slug}`,
-        kind: "Beis hachaim" as const,
-      }));
+  // One request per pause in typing, and a request that is no longer wanted is
+  // aborted rather than allowed to answer.
+  useEffect(() => {
+    if (!trimmed) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+        .then((response) => (response.ok ? response.json() : { results: [] }))
+        .then((payload: { results?: Suggestion[] }) => setHits({ query: trimmed, results: payload.results ?? [] }))
+        .catch(() => {
+          // An aborted request is the normal case here, not a failure.
+          if (!controller.signal.aborted) setHits({ query: trimmed, results: [] });
+        });
+    }, 160);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [trimmed]);
 
-    return [...guideMatches, ...stopMatches.filter((stop) => !guideMatches.some((guide) => guide.title === stop.title))].slice(0, 6);
-  }, [query]);
+  const blurTimer = useRef<number | undefined>(undefined);
+
+  function go(hit: Suggestion) {
+    recordSearch(query);
+    router.push(hit.href);
+    setOpen(false);
+  }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (query.trim()) {
-      void fetch("/api/analytics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "search", value: query.trim() }),
-        keepalive: true,
-      });
-    }
-    if (matches[0] && query.trim()) router.push(matches[0].href);
+    recordSearch(query);
+    const chosen = active >= 0 ? matches[active] : query.trim() ? matches[0] : undefined;
+    if (chosen) router.push(chosen.href);
     else router.push(`/stops${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);
     setOpen(false);
+  }
+
+  // Arrow keys through the list, Escape to close. The dropdown had no keyboard
+  // path at all before this: a person navigating by keyboard could type into
+  // the box and never reach a result.
+  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape") {
+      setOpen(false);
+      return;
+    }
+    if (!open || matches.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActive((i) => (i + 1) % matches.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActive((i) => (i <= 0 ? matches.length - 1 : i - 1));
+    }
   }
 
   return (
@@ -102,13 +130,23 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
+            // Reset the keyboard cursor here rather than in an effect: typing
+            // is the event that invalidates it, so this is where it belongs.
+            setActive(-1);
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+          onBlur={() => {
+            blurTimer.current = window.setTimeout(() => setOpen(false), 150);
+          }}
+          onKeyDown={onKeyDown}
           className={`min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-stone-400 ${compact ? "py-2 text-sm" : "py-3"}`}
-          aria-label="Destination search"
-          placeholder="Search a city, tzaddik, or country..."
+          aria-label="Search the site"
+          aria-expanded={open}
+          aria-autocomplete="list"
+          role="combobox"
+          aria-controls="site-search-results"
+          placeholder="Search a city, tzaddik, kever, or anything to do…"
           autoComplete="off"
         />
         <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "px-4 py-2 text-xs" : "px-7 py-3"}`} type="submit">
@@ -117,42 +155,37 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
       </form>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
+        <div id="site-search-results" role="listbox" className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
           {matches.length > 0 ? (
-            matches.map((match) => (
+            matches.map((match, index) => (
               <button
                 key={match.id}
                 type="button"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (query.trim()) {
-                    void fetch("/api/analytics", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ type: "search", value: query.trim() }),
-                      keepalive: true,
-                    });
-                  }
-                  router.push(match.href);
-                  setOpen(false);
+                role="option"
+                aria-selected={index === active}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  window.clearTimeout(blurTimer.current);
                 }}
-                className="flex w-full items-center justify-between gap-5 border-b border-[var(--gold-light)] px-5 py-4 text-left last:border-b-0 transition hover:bg-[var(--cream-deep)]"
+                onMouseEnter={() => setActive(index)}
+                onClick={() => go(match)}
+                className={`flex w-full items-center justify-between gap-5 border-b border-[var(--gold-light)] px-5 py-4 text-left last:border-b-0 transition hover:bg-[var(--cream-deep)] ${index === active ? "bg-[var(--cream-deep)]" : ""}`}
               >
-                <div>
-                  <BilingualLabel
-                    primary={match.yiddish}
-                    secondary={match.title}
-                    primaryClassName="text-3xl"
-                    secondaryClassName="text-base"
-                    compact
-                  />
-                  <p className="mt-2 text-sm leading-6 text-stone-600">{match.yiddishSubtitle ?? match.subtitle}</p>
+                <div className="min-w-0">
+                  {match.yiddish ? (
+                    <BilingualLabel primary={match.yiddish} secondary={match.title} primaryClassName="text-3xl" secondaryClassName="text-base" compact />
+                  ) : (
+                    <p className="text-base font-semibold text-[var(--navy)]">{match.title}</p>
+                  )}
+                  <p className="mt-2 text-sm leading-6 text-stone-600">{match.subtitle}</p>
                 </div>
                 <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{match.kind}</span>
               </button>
             ))
           ) : (
-            <p className="px-5 py-4 text-sm text-stone-600">No match yet. Press Enter to search the full directory.</p>
+            <p className="px-5 py-4 text-sm text-stone-600">
+              {searching ? "Searching…" : "No match yet. Press Enter to search the full directory."}
+            </p>
           )}
         </div>
       )}
