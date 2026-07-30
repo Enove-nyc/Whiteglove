@@ -238,6 +238,27 @@ export default function AdWizard({
         {step === 1 && (
           <>
             <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">What does it say?</h2>
+            {/* Whose advert this is. Never shown to a visitor — it is the
+                owner's record, so that a live advertisement can be traced back
+                to somebody to ring when it needs changing or taking down.
+                Until this existed there was no way at all to tell. */}
+            <div className="mt-4 grid gap-4 rounded-md border border-[var(--gold-light)] bg-[var(--cream)] p-4 sm:grid-cols-2">
+              <p className="text-xs leading-5 text-stone-600 sm:col-span-2">
+                Who is this advertisement for? Kept for your records and never shown on the site.
+              </p>
+              <label className="block sm:col-span-2">
+                <span className={captionClass}>Company or person</span>
+                <input value={ad.advertiserName} onChange={(e) => set({ advertiserName: e.target.value })} className={inputClass} placeholder="Kosher Pesach Tours Ltd" />
+              </label>
+              <label className="block">
+                <span className={captionClass}>Telephone</span>
+                <input type="tel" value={ad.advertiserPhone} onChange={(e) => set({ advertiserPhone: e.target.value })} className={inputClass} placeholder="+44 …" />
+              </label>
+              <label className="block">
+                <span className={captionClass}>Email</span>
+                <input type="email" value={ad.advertiserEmail} onChange={(e) => set({ advertiserEmail: e.target.value })} className={inputClass} placeholder="name@company.com" />
+              </label>
+            </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="block sm:col-span-2">
                 <span className={captionClass}>Headline *</span>
@@ -274,6 +295,21 @@ export default function AdWizard({
                   <span className="text-sm text-stone-500">or paste an address</span>
                 </div>
                 <input value={ad.imageUrl} onChange={(e) => set({ imageUrl: e.target.value })} className={inputClass} placeholder="https://…" />
+              </div>
+
+              <div className="block sm:col-span-2">
+                <span className={captionClass}>A video to play instead of the picture</span>
+                <input
+                  value={ad.videoUrl}
+                  onChange={(e) => set({ videoUrl: e.target.value })}
+                  className={inputClass}
+                  placeholder="https://… an .mp4 address"
+                />
+                <p className="mt-1 text-xs leading-5 text-stone-500">
+                  Played with the visitor&apos;s own controls and never on its own — an advertisement that starts
+                  making noise by itself is the fastest way to lose somebody. The picture above becomes its still
+                  frame, so set both.
+                </p>
               </div>
 
               <div className="block sm:col-span-2">

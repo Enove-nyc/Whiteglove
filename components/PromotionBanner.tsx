@@ -67,7 +67,23 @@ export default function PromotionBanner({
             ✕
           </button>
         </div>
-        {promotion.imageUrl ? <img src={promotion.imageUrl} alt="" className="mt-4 h-40 w-full object-cover" /> : null}
+        {/* A tall notice used to be forced into a 160px letterbox and CROPPED
+            to fill it — object-cover — so the small print in it came out a few
+            pixels high and could not be read at any size. It fits now instead
+            of filling, and the title carries into alt, because alt="" told a
+            screen reader there was nothing here at all. */}
+        {promotion.videoUrl ? (
+          <video
+            src={promotion.videoUrl}
+            className="mt-4 max-h-[60vh] w-full bg-black object-contain"
+            controls
+            playsInline
+            preload="metadata"
+            poster={promotion.imageUrl || undefined}
+          />
+        ) : promotion.imageUrl ? (
+          <img src={promotion.imageUrl} alt={promotion.title} className="mt-4 max-h-[60vh] w-full object-contain" />
+        ) : null}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <a href={promotion.targetHref} onClick={trackClick} className="border border-[var(--gold)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">
             {promotion.buttonText}

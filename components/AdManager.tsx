@@ -28,6 +28,10 @@ function emptyAd(): Promotion {
     targetHref: "/",
     imageUrl: "",
     pdfUrl: "",
+  videoUrl: "",
+  advertiserName: "",
+  advertiserPhone: "",
+  advertiserEmail: "",
     placements: ["fixed-top-banner"],
     targetPaths: "",
     device: "all",
@@ -41,6 +45,26 @@ function emptyAd(): Promotion {
     createdAt: now,
     updatedAt: now,
   };
+}
+
+/** What a failed save actually means, in the words the owner needs. */
+function explainFailure(status: number, serverSaid?: string): string {
+  if (status === 401) {
+    return "You are not signed in as an administrator any more. Sign in again and retry — this happens after the session secret or the admin password changes, which ends every session that was open.";
+  }
+  if (status === 403) {
+    return "The site refused the request because it did not appear to come from this page. Reload and try again.";
+  }
+  if (status === 503) {
+    // Advertisements live in the Redis content store, NOT the Postgres
+    // database, so pointing at DATABASE_URL here would send somebody to fix
+    // the wrong thing. The route knows which store it meant; say its words.
+    return `${serverSaid || "The store that holds advertisements is not connected, so nothing can be changed."} Advertisements are kept in the content store — check UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel, then Settings, then Connections. Reading works without it, which is why everything else looks fine.`;
+  }
+  if (status >= 500) {
+    return `The database refused it. It may be asleep or missing its tables. Check Settings, then Connections.${serverSaid ? ` The site said: ${serverSaid}` : ""}`;
+  }
+  return serverSaid || `The site answered ${status} and would not say why.`;
 }
 
 export default function AdManager({ initial, configured }: { initial: Promotion[]; configured: boolean }) {
@@ -59,13 +83,24 @@ export default function AdManager({ initial, configured }: { initial: Promotion[
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: remove ? "promotion-delete" : "promotion", data: remove ? { id: ad.id } : ad }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) {
+        // WHY THIS IS NOT ONE SENTENCE ANY MORE. Every failure here used to
+        // read "Could not save. Check the connection and try again." — a
+        // rejected sign-in, an unconnected database and a broken query all
+        // looked identical, and the status code was captured and then thrown
+        // away. The answer existed on the response and was never shown, so the
+        // only way to find out was the browser's network panel.
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        setMessage({ ok: false, text: explainFailure(res.status, body?.error) });
+        return;
+      }
       const data = (await res.json()) as { promotions?: Promotion[] };
       if (data.promotions) setAds(data.promotions);
       setMessage({ ok: true, text: remove ? "Deleted." : ad.enabled ? "Published — it is live now." : "Saved as a draft." });
       setEditing(null);
     } catch {
-      setMessage({ ok: false, text: "Could not save. Check the connection and try again." });
+      // Nothing came back at all — the request never completed.
+      setMessage({ ok: false, text: "The request did not reach the site. Check your connection and try again." });
     } finally {
       setSaving(false);
     }
@@ -133,6 +168,14 @@ export default function AdManager({ initial, configured }: { initial: Promotion[
                 </div>
 
                 <p className="mt-2 text-sm text-stone-600">{describeAd(ad.placements)}</p>
+                {/* Whose it is, on the card, so the list answers the question
+                    without opening each advert. Only shown when recorded —
+                    every advert made before this existed has none. */}
+                {(ad.advertiserName || ad.advertiserPhone || ad.advertiserEmail) && (
+                  <p className="mt-1 text-xs leading-5 text-stone-500">
+                    {[ad.advertiserName, ad.advertiserPhone, ad.advertiserEmail].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 <p className="mt-1 text-sm text-stone-500">
                   {ad.targetPaths ? `Only on ${ad.targetPaths}` : "On every page it can appear"}
                   {ad.device !== "all" ? ` · ${ad.device === "mobile" ? "phones only" : "computers only"}` : ""}
