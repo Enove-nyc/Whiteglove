@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { googleMapsAvailable, googleMapsBrowserKeyMalformed, loadGoogleMaps } from "@/lib/google-maps-loader";
+import { googleMapsAvailable, googleMapsBrowserKey, googleMapsBrowserKeyMalformed, loadGoogleMaps } from "@/lib/google-maps-loader";
 
 // Is the map drawing with Google, or with the free fallback?
 //
@@ -25,17 +25,69 @@ export default function MapKeyStatus() {
   // owner to add a variable that is sitting right there in Vercel.
   const malformed = googleMapsBrowserKeyMalformed();
   const [state, setState] = useState<State>(hasKey ? "checking" : malformed ? "bad-key" : "no-key");
+  // What Google itself said. "Refused" used to list three possible causes and
+  // leave the owner to work out which — and the answer was sitting in the
+  // browser console the whole time, where nobody thinks to look. Google names
+  // the reason exactly: RefererNotAllowedMapError, ApiNotActivatedMapError,
+  // BillingNotEnabledMapError, InvalidKeyMapError.
+  const [reason, setReason] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hasKey) return;
     let live = true;
+
+    // Google logs the specific error rather than throwing it, so the only way
+    // to read it is to listen to the console while the script loads. Restored
+    // afterwards so nothing else on the page loses its logging.
+    const realError = console.error;
+    console.error = (...args: unknown[]) => {
+      const text = args.map((a) => String(a)).join(" ");
+      const named = /\b([A-Za-z]+MapError)\b/.exec(text);
+      if (named && live) setReason(named[1]);
+      realError(...(args as []));
+    };
+
     loadGoogleMaps()
       .then((ok) => live && setState(ok ? "working" : "refused"))
       .catch(() => live && setState("refused"));
+
     return () => {
       live = false;
+      console.error = realError;
     };
   }, [hasKey]);
+
+  // Which of the three it is, in the words the owner needs, once Google has
+  // said. Anything unrecognised falls through to the three-cause list below.
+  const EXPLAINED: Record<string, { what: string; fix: string }> = {
+    RefererNotAllowedMapError: {
+      what: "Google refused the address this page is being served from.",
+      fix: "Open the key in Google's console and add this exact hostname under Website restrictions — including the admin hostname, and https://*.vercel.app/* so preview deploys work too.",
+    },
+    ApiNotActivatedMapError: {
+      what: "Maps JavaScript API is not switched on for the project this key belongs to.",
+      fix: "Enable Maps JavaScript API on the key's OWN project. The key that works out driving times is a different key and may well be on a different project, so enabling it there changes nothing here.",
+    },
+    BillingNotEnabledMapError: {
+      what: "The project this key belongs to has no billing account.",
+      fix: "Attach a billing account to that project. Google serves no map at all without one, even inside the free allowance.",
+    },
+    InvalidKeyMapError: {
+      what: "Google does not recognise this key at all.",
+      fix: "Copy the browser key again from the console. Check it is the browser key and not the server one.",
+    },
+    RefererDeniedMapError: {
+      what: "Google refused the address this page is being served from.",
+      fix: "Add this hostname under the key's Website restrictions.",
+    },
+  };
+  const explained = reason ? EXPLAINED[reason] : undefined;
+
+  // Enough of the key to tell WHICH key this is without printing it. Three
+  // fixes applied to the wrong one of two keys look exactly like three fixes
+  // that did not work, and there is no way to tell them apart from here.
+  const key = googleMapsBrowserKey();
+  const fingerprint = key && key.length > 12 ? `${key.slice(0, 6)}…${key.slice(-4)}` : null;
 
   const tone =
     state === "working"
@@ -77,6 +129,13 @@ export default function MapKeyStatus() {
         </>
       )}
 
+      {fingerprint && state !== "no-key" && (
+        <p className="mt-3 text-xs leading-5 text-stone-500">
+          The key in the page is <code className="rounded bg-white px-1">{fingerprint}</code>. Check that against the
+          key you edited in Google&apos;s console — this is the browser key, not the one that works out driving times.
+        </p>
+      )}
+
       {state === "working" && (
         <p className="mt-3 text-sm leading-6 text-stone-700">
           <strong>Drawing with Google.</strong> The key is set, Google accepted it from this address, and the map
@@ -84,7 +143,22 @@ export default function MapKeyStatus() {
         </p>
       )}
 
-      {state === "refused" && (
+      {state === "refused" && explained && (
+        <>
+          <p className="mt-3 text-sm leading-6 text-stone-700">
+            <strong>Google refused the key, and said why.</strong> {explained.what} Visitors are seeing the
+            OpenStreetMap map meanwhile.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-stone-600">{explained.fix}</p>
+          <p className="mt-3 text-xs leading-5 text-stone-500">
+            Google&apos;s own words for it: <code className="rounded bg-white px-1">{reason}</code>. Restriction
+            changes can take a few minutes to reach Google&apos;s edge — reload this page to check again. No redeploy
+            is needed; the key is already in the build and only Google&apos;s answer changes.
+          </p>
+        </>
+      )}
+
+      {state === "refused" && !explained && (
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
             <strong>A key is set, but Google would not load the map here.</strong> Visitors are seeing the

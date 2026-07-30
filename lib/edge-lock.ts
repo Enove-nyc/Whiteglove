@@ -14,8 +14,34 @@ function toBase64Url(bytes: ArrayBuffer) {
   return output.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export async function edgeAccessToken(scope: "admin" | "site") {
-  const secret = process.env.WHITE_GLOVE_SESSION_SECRET || process.env.ADMIN_PASSWORD || "white-glove-development-secret";
+/**
+ * The signing secret, or null when this deployment has none.
+ *
+ * WHY THIS CAN BE NULL. This used to fall back to the development secret
+ * unconditionally — including in production — while lib/secure-access.ts,
+ * which does the same job for server actions, returns null there instead.
+ *
+ * With neither WHITE_GLOVE_SESSION_SECRET nor ADMIN_PASSWORD set, the two
+ * disagreed in the worst possible direction: the middleware let every admin
+ * page render, and every server action on those pages refused with "Please
+ * sign in as an administrator". A fully drawn dashboard where nothing works
+ * and nothing says why.
+ *
+ * Routing fails open, authorisation fails closed, and the visible half was the
+ * open one. Both halves refuse now. The development fallback stays for
+ * development only, matching secure-access.ts exactly.
+ */
+function edgeSecret(): string | null {
+  const configured = process.env.WHITE_GLOVE_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV !== "production") return "white-glove-development-secret";
+  return null;
+}
+
+/** The token for a scope, or null when nothing can be signed at all. */
+export async function edgeAccessToken(scope: "admin" | "site"): Promise<string | null> {
+  const secret = edgeSecret();
+  if (!secret) return null;
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`white-glove:${scope}`));
   return toBase64Url(signature);
