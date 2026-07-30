@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "test": "tsx --test tests/**/*.test.ts",
-    "check": "npm run lint && tsc --noEmit && npm run test"
+    "check": "npm run lint && tsc --noEmit && npm run test",
+    "export-content": "tsx scripts/export-content.ts"
   },
   "dependencies": {
     "@duffel/components": "^3.17.0",

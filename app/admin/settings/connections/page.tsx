@@ -1,5 +1,6 @@
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
+import ContentExportPanel from "@/components/ContentExportPanel";
 import DuffelKeyTest from "@/components/DuffelKeyTest";
 import MapKeyStatus from "@/components/MapKeyStatus";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
@@ -28,6 +29,7 @@ export default function ConnectionSettings() {
         <RoutingKeyTest />
         <MapKeyStatus />
         <DuffelKeyTest />
+        <ContentExportPanel />
         <AiConnectionTest />
       </div>
     </>

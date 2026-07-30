@@ -323,6 +323,15 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     note: "The base for the Galilee kevarim, and the reason is geography: the Rambam and the Shelah are in the city centre, Rabbi Meir Baal HaNes is two and a half kilometres south, and Meron, Tzfat and Amuka are all inside an hour. Teverya has real hotels, which Tzfat and Bnei Brak largely do not, and kosher food is the default rather than something to hunt for. Note that the Kinneret beaches are mixed bathing; the town is worth staying in for the kevarim and the position, and that is what it is listed for.",
     sourceUrl: "https://en.wikipedia.org/wiki/Tomb_of_Maimonides",
   },
+  {
+    slug: "amsterdam-buitenveldert",
+    city: "Amsterdam",
+    country: "Netherlands",
+    name: "Buitenveldert and Amstelveen — the modern Jewish quarter",
+    coordinates: "52.32861, 4.87528",
+    note: "The single most useful thing this site can tell somebody about Amsterdam. The famous Jewish quarter — the Esnoga, the Jewish Museum, the Hollandsche Schouwburg — is a heritage district in the centre, and almost nobody Jewish lives there now. About half of the forty thousand Jews in the Netherlands live out here in Buitenveldert and neighbouring Amstelveen, and between them these two suburbs hold six shuls, three schools, the community's main offices and nearly all its kosher shops. Stay in the centre and every meal is a journey; stay here and the sightseeing is a fifteen-minute tram.",
+    sourceUrl: "https://en.wikipedia.org/wiki/Buitenveldert",
+  },
 ];
 
 export const kosherStays: KosherStay[] = [
@@ -655,6 +664,174 @@ export const kosherStays: KosherStay[] = [
     ],
     kosherClaim: "none",
     sourceUrl: "https://en.wikipedia.org/wiki/Tomb_of_Maimonides",
+  },
+
+  // ---- Every quarter now has a stay beside it -------------------------
+  //
+  // Eight of the twenty-six quarters had no matching stay, so somebody who
+  // worked out WHICH part of town to be in was then left with nothing about
+  // being there. These close that, and Amsterdam gets its first of either.
+  //
+  // Same rule as the rest of the file: a quarter, not a hotel. And the same
+  // honesty about what kind of place each one is — three of these are listed
+  // as ordinary hotel districts rather than Jewish quarters, because that is
+  // what they are, and a family planning a Shabbos needs to know which.
+  {
+    slug: "amsterdam-buitenveldert-stays",
+    name: "Staying in Buitenveldert or Amstelveen, not the old quarter",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "Where Jewish Amsterdam actually lives — six shuls, three schools and nearly all the kosher shops, about fifteen minutes south of the centre by tram.",
+    anchor: { name: "Buitenveldert, Amsterdam-Zuid", coordinates: "52.32861, 4.87528" },
+    notes: [
+      "This is the correction most Amsterdam trips need. The Jewish Cultural Quarter in the centre — the Esnoga, the Jewish Museum — is where the history is; Buitenveldert and Amstelveen are where the community is. Roughly half the Jews in the Netherlands live in these two suburbs.",
+      "Staying here means the kosher shops and a choice of shuls are local and the sightseeing is a short tram ride. Staying in the centre reverses that, and the reverse is worse.",
+      "It is ordinary residential Amsterdam — hotels are fewer out here than in the centre, and apartment lets are common.",
+      "Beth Haim at Ouderkerk, listed on this site, is fifteen minutes further south from here rather than a trek out from the middle of town.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Buitenveldert",
+  },
+  {
+    slug: "london-golders-green-stays",
+    name: "Staying in Golders Green, Hendon or Stamford Hill",
+    city: "London",
+    country: "United Kingdom",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "Three separate Jewish neighbourhoods in one city, none of them central, each with a full week of shuls, shops and schools — and the choice between them is a real one.",
+    anchor: { name: "Golders Green, north-west London", coordinates: "51.5720, -0.1940" },
+    notes: [
+      "They are not interchangeable. Golders Green and Hendon are north-west and about twenty-five minutes on the Northern line from the centre; Stamford Hill is north-east and has no tube at all, which surprises people who booked there for the shuls.",
+      "Golders Green Road is the densest concentration of kosher food in Europe outside Israel. If food is the deciding factor, that is the street.",
+      "None of the three is near the sightseeing. Expect to travel in each day — that is the trade for a walkable Shabbos.",
+      "Ask locally about the eruv rather than relying on anything printed here; London has more than one and their boundaries matter.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Golders_Green",
+  },
+  {
+    slug: "manchester-prestwich-stays",
+    name: "Staying in Prestwich, Broughton Park or Whitefield",
+    city: "Manchester",
+    country: "United Kingdom",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "The largest kehilla in Britain outside London, spread across a few adjoining north Manchester suburbs, with kosher provision that is genuinely everyday.",
+    anchor: { name: "Prestwich, north Manchester", coordinates: "53.5250, -2.2820" },
+    notes: [
+      "Broughton Park is the most concentrated of the three and the most walkable for Shabbos; Prestwich and Whitefield are more spread out and better if you have a car.",
+      "About twenty minutes north of central Manchester, so the city itself is easy to get into and out of.",
+      "Hotel stock in these suburbs is thin — most visitors take an apartment or stay with family. Plan accordingly rather than assuming a hotel.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Prestwich",
+  },
+  {
+    slug: "vienna-leopoldstadt-stays",
+    name: "Staying in Leopoldstadt, Vienna",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "The 2nd district, across the canal from the old town — Vienna's Jewish quarter before the war and again now, with the kosher shops and shuls back in the same streets.",
+    anchor: { name: "Leopoldstadt, Vienna's 2nd district", coordinates: "48.2160, 16.3830" },
+    notes: [
+      "Unusually convenient: Leopoldstadt is a bridge away from the Innere Stadt, so a hotel by the kosher food is also a hotel near everything a visitor came to see.",
+      "The Boyaner Rebbe — the Pachad Yitzchak — is buried in Vienna and is listed on this site; the Zentralfriedhof is out to the south-east.",
+      "Vienna is the natural gateway for the Hungarian and Slovak kevarim: Preshburg is an hour by train, and Kerestir about four hours by road.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Leopoldstadt",
+  },
+  {
+    slug: "jerusalem-stays",
+    name: "Staying in Yerushalayim — which neighbourhood",
+    city: "Jerusalem",
+    country: "Israel",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "Not one quarter but four answers — the Old City, Rechavia, Geula and Har Nof — and they suit completely different trips.",
+    anchor: { name: "Central Jerusalem", coordinates: "31.7780, 35.2300" },
+    notes: [
+      "The Old City puts you minutes from the Kosel and is the reason many people come; it is also cramped, expensive, and hard with pushchairs and luggage.",
+      "Rechavia and the centre are the hotel district — the widest choice of rooms, walkable to the Old City in twenty to thirty minutes, and everything kosher.",
+      "Geula and Meah Shearim are where the heimishe shopping is and where apartment lets are cheapest; it is a residential neighbourhood and visitors are expected to dress and behave as residents do.",
+      "Har Nof is quieter, family-oriented and further out to the west — good with children, and a bus or a car from anything else.",
+      "Kosher is the default in all of them. The question here is position and price, not kashrus.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Jerusalem",
+  },
+  {
+    slug: "nice-dubouchage-stays",
+    name: "Staying near the Boulevard Dubouchage shul, Nice",
+    city: "Nice",
+    country: "France",
+    kind: "Kosher-friendly, in the Jewish quarter",
+    summary:
+      "Central Nice around the Dubouchage synagogue, which is the heart of one of the largest Jewish communities in France outside Paris.",
+    anchor: { name: "Synagogue de Nice, Boulevard Dubouchage", coordinates: "43.7020, 7.2700" },
+    notes: [
+      "The kosher restaurants and shops are in the streets around the shul, and the shul itself is central rather than suburban — unusual, and it makes Nice easy.",
+      "The Riviera is a beach destination and the seafront is what it is. This entry is for the position relative to the shul and the food; what you do with the beach is your own affair.",
+      "Nice Airport is a short taxi from the centre and has good connections across Europe, which makes this a practical stop rather than a detour.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Nice",
+  },
+  {
+    slug: "lucerne-central-stays",
+    name: "Staying in central Lucerne",
+    city: "Lucerne",
+    country: "Switzerland",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Central Lucerne hotels near the Bruchstrasse synagogue, as a base for the mountains rather than for a kehilla.",
+    anchor: { name: "Lucerne synagogue, Bruchstrasse", coordinates: "47.0480, 8.3050" },
+    notes: [
+      "Listed as an ordinary hotel district, because that is what it is. Lucerne's kehilla is small and its kosher provision is limited — this is not Zurich, which is an hour away and has the real infrastructure.",
+      "The reason to be here is position: Pilatus, the Rigi and the lake are all from Lucerne, and the alpine attractions on this site cluster around it.",
+      "Establish what kosher food is available for your dates before relying on any, and consider shopping in Zurich on the way through.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.chabadluzern.com/",
+  },
+  {
+    slug: "madrid-chamberi-stays",
+    name: "Staying in Chamberí, Madrid",
+    city: "Madrid",
+    country: "Spain",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Central Madrid around the Beth Yaacov synagogue — a real but small kehilla, in a district that is easy to stay in.",
+    anchor: { name: "Beth Yaacov synagogue, Chamberí", coordinates: "40.4380, -3.7000" },
+    notes: [
+      "Listed as an ordinary hotel district. Madrid has a community and a shul and some kosher provision; it does not have a neighbourhood you can do a whole Shabbos in the way Antwerp does.",
+      "Chamberí is central and well connected, so a hotel here is a hotel near the Prado and the rest of it as well as near the shul.",
+      "Check what is open for your dates. Spanish kosher provision is thin and seasonal, and August empties the city.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Madrid_Synagogue",
+  },
+  {
+    slug: "athens-thiseio-stays",
+    name: "Staying near the Beth Shalom synagogue, Athens",
+    city: "Athens",
+    country: "Greece",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Central Athens around Thiseio and the Beth Shalom synagogue, within walking distance of the Acropolis.",
+    anchor: { name: "Beth Shalom synagogue, Thiseio", coordinates: "37.9760, 23.7180" },
+    notes: [
+      "Listed as an ordinary hotel district. The Athens kehilla is small — a few hundred families — and kosher food needs arranging rather than finding.",
+      "The position is the point: Thiseio is at the foot of the Acropolis, so the shul and the sightseeing are the same walk.",
+      "Confirm arrangements with the community well before travelling, particularly for Shabbos meals. This is not a city to improvise in.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://en.wikipedia.org/wiki/Athens_Synagogue",
   },
 ];
 
