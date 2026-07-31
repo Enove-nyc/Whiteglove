@@ -66,9 +66,17 @@ export default function DateField({
   className = "",
   ariaLabel,
   id,
+  name,
 }: {
   value: string;
   onChange: (value: string) => void;
+  /**
+   * For a form posted the ordinary way rather than read from React state —
+   * the admin's server actions, which take a FormData. Without it those forms
+   * had to use a bare `input type="date"`, which is exactly the control this
+   * component exists to replace.
+   */
+  name?: string;
   /** Earliest allowed date, YYYY-MM-DD. Days before it cannot be chosen. */
   min?: string;
   max?: string;
@@ -131,6 +139,7 @@ export default function DateField({
           anything drawn here when you are choosing with a thumb. */}
       <input
         id={id}
+        name={name}
         type="date"
         value={value}
         min={min}

@@ -66,6 +66,8 @@ export default function LoginForm({
   const [agreed, setAgreed] = useState(false);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  // A way to reach them, not a way to sign in. Never required.
+  const [contactPhone, setContactPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">("signup");
   const [message, setMessage] = useState("");
@@ -134,7 +136,7 @@ export default function LoginForm({
       if (problem) { setMessage(problem); return; }
     }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
-    const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name } : { email, password };
+    const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone } : { email, password };
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -198,6 +200,26 @@ export default function LoginForm({
           </span>
         )}
       </label>
+
+      {mode === "signup" && (
+        <label className="block text-sm font-semibold text-[var(--navy)]">
+          Phone number <span className="font-normal text-stone-500">— optional</span>
+          <input
+            value={contactPhone}
+            onChange={(event) => setContactPhone(event.target.value)}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            name="new-account-phone"
+            placeholder="+1 555 123 4567"
+            className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]"
+          />
+          <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
+            Only so we can reach you about a trip. Leave it blank if you would rather not — nothing needs it, and you
+            still sign in with what you typed above.
+          </span>
+        </label>
+      )}
 
       {(mode === "signup" || mode === "login") && (
         <label className="block text-sm font-semibold text-[var(--navy)]">Password

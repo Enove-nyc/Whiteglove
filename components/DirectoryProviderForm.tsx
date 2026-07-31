@@ -1,4 +1,5 @@
 "use client";
+import FormDateField from "@/components/FormDateField";
 import { FEATURED_REASONS } from "@/lib/features";
 
 import { useActionState } from "react";
@@ -95,7 +96,7 @@ export default function DirectoryProviderForm({ provider }: { provider: Director
         </label>
         <label className="block">
           <span className={captionClass}>Date you last checked this listing</span>
-          <input type="date" name="verifiedAt" defaultValue={p?.verifiedAt ? p.verifiedAt.toISOString().slice(0, 10) : ""} className={inputClass} />
+          <FormDateField name="verifiedAt" defaultValue={p?.verifiedAt ? p.verifiedAt.toISOString().slice(0, 10) : ""} className={inputClass} ariaLabel="Date you last checked this listing" />
         </label>
 
         {/* Permission to publish their number. Off unless somebody asked. */}

@@ -248,7 +248,13 @@ export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
  * over later: a number too short to dial, or an address with no domain, means
  * a code sent nowhere and somebody waiting for it.
  */
-export async function createAccount(identifier: string, password: string, name?: string) {
+/**
+ * @param contactPhone A number to reach them on. Never required, and never
+ *   what they sign in with — that is `identifier`. Somebody who signs up with
+ *   an email and gives a number has given us a way to ring them about a trip,
+ *   not a second account.
+ */
+export async function createAccount(identifier: string, password: string, name?: string, contactPhone?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const identity = normalizeIdentity(identifier ?? "");
   if (!identity) {
@@ -275,7 +281,9 @@ export async function createAccount(identifier: string, password: string, name?:
     name: cleanName || undefined,
     // Signing in with a number makes it the contact number too — there is no
     // sense asking for it twice.
-    phone: identity.kind === "phone" ? normalized : undefined,
+    // Their sign-in number if that is what they used; otherwise whatever they
+    // chose to give us, which may be nothing.
+    phone: identity.kind === "phone" ? normalized : contactPhone?.trim() || undefined,
     salt,
     passwordHash: hashPassword(password, salt),
     createdAt: new Date().toISOString(),

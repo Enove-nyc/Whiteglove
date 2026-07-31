@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AssistantAnswer from "@/components/AssistantAnswer";
 
 const EXAMPLES = [
   "What's near the Baal Shem Tov's kever?",
@@ -76,7 +77,10 @@ export default function TravelAssistantBox() {
         <div className="mt-5 border-l-4 border-[var(--gold)] bg-white">
           {/* Long answers scroll inside the box instead of being cut off. */}
           <div className={`overflow-y-auto overscroll-contain p-4 text-sm leading-6 text-stone-700 ${expanded ? "" : "max-h-80"}`}>
-            <p className="whitespace-pre-line">{answer}</p>
+            {/* Set in the site's own type — headings, lists and emphasis
+                as themselves, rather than the asterisks and hyphens a model
+                writes them with. */}
+            <AssistantAnswer answer={answer} />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] px-4 py-2">
             <p className="text-[11px] text-stone-400">AI-generated — please confirm details (hours, access, kashrus) before you rely on them.</p>

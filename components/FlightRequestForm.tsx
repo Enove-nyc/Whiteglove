@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import { useState } from "react";
 import ComingSoonNotice from "@/components/ComingSoonNotice";
 
@@ -134,8 +135,8 @@ export default function FlightRequestForm({ open }: { open: boolean }) {
       <fieldset disabled={!open} className={`mt-8 grid gap-x-5 gap-y-6 sm:grid-cols-2 ${open ? "" : "opacity-55"}`}>
         <label className="block"><span className={caption}>Flying from *</span><input required className={inputClass} value={form.from} onChange={(e) => set({ from: e.target.value })} placeholder="New York, JFK" /></label>
         <label className="block"><span className={caption}>Flying to *</span><input required className={inputClass} value={form.to} onChange={(e) => set({ to: e.target.value })} placeholder="Kraków, KRK" /></label>
-        <label className="block"><span className={caption}>Date out *</span><input required type="date" className={inputClass} value={form.depart} onChange={(e) => set({ depart: e.target.value })} /></label>
-        <label className="block"><span className={caption}>Date back — leave empty for one way</span><input type="date" min={form.depart || undefined} className={inputClass} value={form.ret} onChange={(e) => set({ ret: e.target.value })} /></label>
+        <label className="block"><span className={caption}>Date out *</span><DateField required value={form.depart} onChange={(v) => set({ depart: v })} className={inputClass} ariaLabel="Date out" /></label>
+        <label className="block"><span className={caption}>Date back — leave empty for one way</span><DateField min={form.depart || undefined} value={form.ret} onChange={(v) => set({ ret: v })} className={inputClass} ariaLabel="Date back" /></label>
         <label className="block"><span className={caption}>Adults</span><input type="number" min={1} max={20} className={inputClass} value={form.adults} onChange={(e) => set({ adults: e.target.value })} /></label>
         <label className="block"><span className={caption}>Children</span><input type="number" min={0} max={20} className={inputClass} value={form.children} onChange={(e) => set({ children: e.target.value })} /></label>
         <label className="block">

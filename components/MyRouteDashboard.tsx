@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { directionsUrl, movePlace, optimizeRoute, type SavedPlace } from "@/data/route-utils";
@@ -119,7 +120,7 @@ export default function MyRouteDashboard() {
                   <div className="min-w-0 flex-1">
                     <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{place.name}{place.yiddishName && <span className="ml-2 text-lg text-stone-500">{place.yiddishName}</span>}</p>
                     <p className="mt-1 text-sm leading-6 text-stone-600">{place.address}</p>
-                    <label className="mt-3 flex max-w-xs items-center gap-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Fixed date<input type="date" value={place.plannedDate ?? ""} onChange={(event) => setPlannedDate(place.id, event.target.value)} className="border border-[var(--gold-light)] bg-white px-2 py-1 text-sm font-normal tracking-normal text-[var(--navy)]" /></label>
+                    <label className="mt-3 flex max-w-xs items-center gap-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Fixed date<DateField value={place.plannedDate ?? ""} onChange={(v) => setPlannedDate(place.id, v)} className="border border-[var(--gold-light)] bg-white px-2 py-1 text-sm font-normal tracking-normal text-[var(--navy)]" ariaLabel="Fixed date" /></label>
                     {place.anchor && (
                       <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--navy)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
                         <span aria-hidden="true">⚓</span>
