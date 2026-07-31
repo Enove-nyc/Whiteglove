@@ -29,6 +29,11 @@ export type ReviewInput = {
    * overwritten — this sits beside them.
    */
   acceptedInfo?: string;
+  /**
+   * Accepting a directory listing should also WRITE it. Carried on the review
+   * rather than inferred, so the screen says what it is about to do.
+   */
+  apply?: boolean;
 };
 
 /**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addSuggestion } from "@/lib/admin-content";
+import { cleanDraft, consentFromSubmission, draftProblems, type DirectoryDraft, type SubmitterConsent } from "@/lib/directory-fields";
 import { sendSubmissionNotification } from "@/lib/email";
 
 const KIND_LABEL: Record<string, string> = {
@@ -21,10 +22,30 @@ export async function POST(request: NextRequest) {
     currentInfo?: string;
     suggestedInfo?: string;
     source?: string;
+    /** A directory listing, field by field, from the same form the owner uses. */
+    draft?: DirectoryDraft;
+    consent?: SubmitterConsent;
   } | null;
   if (!body?.targetType || !body.targetId || !body.title || !body.name || !body.email || !body.issue || !body.suggestedInfo) {
     return NextResponse.json({ error: "Complete the suggestion form." }, { status: 400 });
   }
+
+  // A structured directory listing is checked here as well as in the browser,
+  // because the browser's copy can be skipped. Only known fields survive.
+  const draft = body.draft ? cleanDraft(body.draft) : undefined;
+  if (draft) {
+    const problems = draftProblems(draft);
+    if (problems.length) return NextResponse.json({ error: problems[0] }, { status: 400 });
+  }
+
+  // Consent counts only when the submitter says the business is theirs AND
+  // says the number may be published. Anything else is no consent, which is
+  // what lib/provider-contact.ts then acts on.
+  const consent = consentFromSubmission(
+    body.consent ?? {},
+    { name: body.name, email: body.email },
+    new Date().toISOString().slice(0, 10),
+  );
 
   // Email the owner and save to the dashboard in parallel. As long as one of
   // them succeeds the submission is not lost, so a visitor's message still
@@ -52,6 +73,8 @@ export async function POST(request: NextRequest) {
       currentInfo: body.currentInfo ?? "",
       suggestedInfo: body.suggestedInfo,
       source: body.source ?? "",
+      draft,
+      ...consent,
     }),
   ]);
 
