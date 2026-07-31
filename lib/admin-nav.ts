@@ -45,7 +45,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places, kevarim, contacts and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city hechsher kashrus kosher supervision teudah border crossing frontier passport queue",
+    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city hechsher kashrus kosher supervision teudah border crossing frontier passport queue deleted removed restore undo bin trash",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/kevarim", label: "Kevarim", blurb: "Who is buried where." },
@@ -54,6 +54,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/borders", label: "Border crossings", blurb: "What was open, and how long." },
       { href: "/admin/hechsherim", label: "Hechsherim", blurb: "Who certifies each kosher place." },
       { href: "/admin/directory/businesses", label: "Businesses", blurb: "Operators, planners, guides." },
+      { href: "/admin/recycle", label: "Recently deleted", blurb: "Put something back." },
     ],
   },
   {
