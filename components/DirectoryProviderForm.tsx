@@ -1,4 +1,5 @@
 "use client";
+import { FEATURED_REASONS } from "@/lib/features";
 
 import { useActionState } from "react";
 import type { DirectoryProvider } from "@prisma/client";
@@ -115,10 +116,23 @@ export default function DirectoryProviderForm({ provider }: { provider: Director
           </label>
         </div>
 
-        <label className="flex items-center gap-2 sm:col-span-2">
-          <input type="checkbox" name="featured" defaultChecked={p?.featured ?? false} className="h-4 w-4" />
-          <span className="text-sm text-[var(--navy)]">Featured (shown first)</span>
-        </label>
+        <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+          <label className="flex min-h-11 items-center gap-2">
+            <input type="checkbox" name="featured" defaultChecked={p?.featured ?? false} className="h-4 w-4" />
+            <span className="text-sm font-semibold text-[var(--navy)]">Featured — shown first in its category</span>
+          </label>
+          <label className="mt-3 block">
+            <span className={captionClass}>Why (your record — visitors are not told which)</span>
+            <select name="featuredReason" defaultValue={p?.featuredReason ?? ""} className={inputClass}>
+              <option value="">Choose one…</option>
+              {FEATURED_REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
+          </label>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            The badge looks the same either way. The directory tells visitors that some featured listings are
+            sponsored, without naming them.
+          </p>
+        </div>
         <div className="sm:col-span-2 flex items-center gap-4">
           <button type="submit" disabled={pending} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
             {pending ? "Saving…" : p ? "Save changes" : "Add provider"}

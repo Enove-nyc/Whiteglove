@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DirectoryListingFields from "@/components/DirectoryListingFields";
+import { FEATURED_REASONS, featuredReasonLabel } from "@/lib/features";
 import type { StoredProvider } from "@/lib/directory-store";
 
 const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -19,7 +20,7 @@ const EMPTY = {
   id: "", name: "", category: "TOUR_OPERATOR" as StoredProvider["category"], services: "", tagline: "",
   phone: "", whatsapp: "", email: "", website: "", basedIn: "", regions: "", languages: "", specialties: "",
   description: "", notes: "", featured: false, published: true,
-  contactConsent: false, contactConsentNote: "", verifiedAt: "", responseTime: "",
+  contactConsent: false, contactConsentNote: "", verifiedAt: "", responseTime: "", featuredReason: "",
 };
 
 export default function AdminDirectoryManager() {
@@ -38,7 +39,7 @@ export default function AdminDirectoryManager() {
   useEffect(() => { load(); }, []);
 
   function edit(p: StoredProvider) {
-    setForm({ ...EMPTY, ...p, services: p.services ?? "", tagline: p.tagline ?? "", phone: p.phone ?? "", whatsapp: p.whatsapp ?? "", email: p.email ?? "", website: p.website ?? "", basedIn: p.basedIn ?? "", regions: p.regions ?? "", languages: p.languages ?? "", specialties: p.specialties ?? "", description: p.description ?? "", notes: p.notes ?? "", featured: Boolean(p.featured), published: p.published !== false, contactConsent: Boolean(p.contactConsent), contactConsentNote: p.contactConsentNote ?? "", verifiedAt: p.verifiedAt ?? "", responseTime: p.responseTime ?? "" });
+    setForm({ ...EMPTY, ...p, services: p.services ?? "", tagline: p.tagline ?? "", phone: p.phone ?? "", whatsapp: p.whatsapp ?? "", email: p.email ?? "", website: p.website ?? "", basedIn: p.basedIn ?? "", regions: p.regions ?? "", languages: p.languages ?? "", specialties: p.specialties ?? "", description: p.description ?? "", notes: p.notes ?? "", featured: Boolean(p.featured), published: p.published !== false, contactConsent: Boolean(p.contactConsent), contactConsentNote: p.contactConsentNote ?? "", verifiedAt: p.verifiedAt ?? "", responseTime: p.responseTime ?? "", featuredReason: p.featuredReason ?? "" });
     setMsg(null); setError(null);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -109,7 +110,31 @@ export default function AdminDirectoryManager() {
             )}
           </div>
 
-          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /><span className="text-sm text-[var(--navy)]">Featured (shown first)</span></label>
+          <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+            <label className="flex min-h-11 items-center gap-2">
+              <input type="checkbox" className="h-4 w-4" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
+              <span className="text-sm font-semibold text-[var(--navy)]">Featured — shown first in its category</span>
+            </label>
+            {form.featured && (
+              <>
+                <label className="mt-3 block">
+                  <span className={caption}>Why (your record — visitors are not told which)</span>
+                  <select className={inputClass} value={form.featuredReason} onChange={(e) => setForm({ ...form, featuredReason: e.target.value })}>
+                    <option value="">Choose one…</option>
+                    {FEATURED_REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                </label>
+                {!form.featuredReason && (
+                  <p className="mt-2 text-xs font-semibold text-amber-800">
+                    Worth recording. The badge is the same either way, so this is the only place it is written down.
+                  </p>
+                )}
+                <p className="mt-2 text-xs leading-5 text-stone-500">
+                  The directory tells visitors that some featured listings are sponsored, without naming them.
+                </p>
+              </>
+            )}
+          </div>
           <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} /><span className="text-sm text-[var(--navy)]">Published (visible on /directory)</span></label>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-4">
@@ -130,7 +155,7 @@ export default function AdminDirectoryManager() {
               <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">No providers yet — add your first above.</td></tr>
             ) : providers.map((p) => (
               <tr key={p.id} className="text-stone-700">
-                <td className="px-4 py-3"><span className="font-semibold text-[var(--navy)]">{p.name}</span>{p.featured ? <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">★ Featured</span> : null}{p.basedIn ? <span className="block text-xs text-stone-500">{p.basedIn}</span> : null}</td>
+                <td className="px-4 py-3"><span className="font-semibold text-[var(--navy)]">{p.name}</span>{p.featured ? <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]" title={featuredReasonLabel(p.featuredReason)}>★ Featured — {featuredReasonLabel(p.featuredReason)}</span> : null}{p.basedIn ? <span className="block text-xs text-stone-500">{p.basedIn}</span> : null}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-xs">{CAT_LABEL[p.category] ?? p.category}</td>
                 <td className="px-4 py-3 text-xs text-stone-600">
                   {[p.phone, p.email].filter(Boolean).join(" · ") || "—"}

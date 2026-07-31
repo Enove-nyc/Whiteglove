@@ -20,6 +20,8 @@ export type StoredProvider = {
   specialties?: string; // comma-separated
   notes?: string;
   featured?: boolean;
+  /** "service" | "sponsored" — the owner's record, never shown to a visitor. */
+  featuredReason?: string;
   published?: boolean;
   /**
    * Permission to put their phone number on a public page.
@@ -115,6 +117,7 @@ export async function saveStoredProvider(input: Partial<StoredProvider> & { name
     specialties: clean(input.specialties, 300) || undefined,
     notes: clean(input.notes, 600) || undefined,
     featured: Boolean(input.featured),
+    featuredReason: clean(input.featuredReason, 20) || undefined,
     published: input.published !== false,
     contactConsent: Boolean(input.contactConsent),
     contactConsentNote: clean(input.contactConsentNote, 300) || undefined,

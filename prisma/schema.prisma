@@ -430,6 +430,13 @@ model DirectoryProvider {
   languages   String[]         @default([])
   specialties String[]         @default([])
   featured    Boolean          @default(false)
+  /**
+   * Why it is featured — "service" or "sponsored". Owner's record only: the
+   * badge is the same either way and a visitor is not told which. The
+   * directory's disclosure says some featured listings are sponsored, without
+   * naming them. Empty means nobody has said, which is worth being able to see.
+   */
+  featuredReason String        @default("")
   status      ContentStatus    @default(PUBLISHED)
   source      String?
 

@@ -95,14 +95,16 @@ export default function LoginForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await response.json().catch(() => null) as Delivery | null;
+      const data = await response.json().catch(() => null) as { message?: string; error?: string } | null;
       setSaving(false);
       if (!response.ok) {
         setMessage(data?.error || "Please try again.");
         return;
       }
+      // The same words whether or not the account exists. Saying where the
+      // code went would say that an account is there to send it to.
       setMode("reset");
-      setMessage(whereTheCodeWent(data, "reset code"));
+      setMessage(data?.message ?? "If that account exists, a reset code is on its way.");
       return;
     }
 

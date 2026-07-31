@@ -28,28 +28,53 @@ export function tripArrangementOpen(): boolean {
 export const CONTACT_EMAIL = "contact@whitegloveitineraries.com";
 
 /**
+ * The name of this site, for the pages that have to say it in a sentence.
+ *
+ * The terms and the privacy policy both named `enovenyc.com`, which is a
+ * different business and has nothing to do with this one — it only ever
+ * redirected here. A policy that names the wrong company is not a small typo:
+ * it is the document a visitor reads to find out who is holding their data.
+ *
+ * One constant rather than the string typed into each page, so the next one
+ * cannot be written differently. `siteOrigin()` is not used here because these
+ * pages are prerendered and would then say whatever the build environment
+ * happened to be, including a Vercel preview URL.
+ */
+export const SITE_DOMAIN = "whitegloveitineraries.com";
+export const SITE_NAME = "White Glove Itineraries";
+
+/**
  * What "Featured" means in the provider directory.
  *
- * A promotional badge a visitor cannot interpret is the thing the review
- * warned about: they cannot tell whether a starred listing was chosen because
- * it is good or because somebody paid, and only the owner knows which.
+ * THE OWNER'S DECISION, recorded here so it is not re-litigated: a listing is
+ * featured for one of two reasons — their service has been found consistently
+ * good, or the placement is sponsored — and the badge looks the same either
+ * way. Visitors are not told which reason applies to a particular listing.
  *
- * So there is always a disclosure, and the default one makes no claim in
- * either direction — it says what a visitor can see for themselves (featured
- * listings come first) and what to do about it (check for yourself). It is
- * true whichever way the question is eventually answered, which is what makes
- * it safe to ship before it has been.
+ * WHAT THE DISCLOSURE MUST STILL DO. A badge that may mean "they paid" and is
+ * indistinguishable from an editorial pick is the specific thing advertising
+ * rules exist to catch — the FTC in the US, the ASA and CMA in the UK, and EU
+ * consumer law all require paid placement to be identifiable as advertising.
+ * So the note below says plainly that some featured listings are sponsored.
+ * It does not say which, which is what was asked for; it does not pretend
+ * none of them are, which is the part that would be a problem.
  *
- * `DIRECTORY_FEATURED_NOTE` replaces it with the real answer once there is
- * one, e.g.
- *
- *   DIRECTORY_FEATURED_NOTE="Featured providers pay for placement."
- *   DIRECTORY_FEATURED_NOTE="Featured providers are ones we have worked with directly. Nobody pays for placement."
- *
- * Read at build time, so it takes a redeploy.
+ * If a listing is ever genuinely paid for, a marker on that one is safer than
+ * this, and DIRECTORY_FEATURED_NOTE can still override the wording.
  */
+export const FEATURED_REASONS = [
+  { value: "service", label: "Service we have found consistently good" },
+  { value: "sponsored", label: "Sponsored placement" },
+] as const;
+
+export type FeaturedReason = (typeof FEATURED_REASONS)[number]["value"];
+
+export function featuredReasonLabel(reason?: string | null): string {
+  return FEATURED_REASONS.find((r) => r.value === reason)?.label ?? "Not recorded";
+}
+
 export const DEFAULT_FEATURED_NOTE =
-  "Featured listings appear first in their category. Check each provider's details with them directly before booking.";
+  "Featured listings appear first in their category. Some are sponsored; others are here because we have found their service consistently good. Check each provider's details with them directly before booking.";
 
 export function featuredDisclosure(): string {
   return process.env.DIRECTORY_FEATURED_NOTE?.trim() || DEFAULT_FEATURED_NOTE;

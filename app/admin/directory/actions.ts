@@ -71,6 +71,7 @@ export async function saveProviderAction(
     languages: list(formData, "languages"),
     specialties: list(formData, "specialties"),
     featured: str(formData, "featured") === "on",
+    featuredReason: str(formData, "featuredReason"),
     status: (str(formData, "status") as ContentStatus) || "PUBLISHED",
     // Permission to publish their number. Read from the box somebody ticked,
     // never inferred from the number being present.
