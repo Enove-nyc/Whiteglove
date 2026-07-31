@@ -52,6 +52,17 @@ enum VerificationStatus {
 // One table serves every kind of on-the-ground listing. Covers the
 // Milestone-1 expansion list (Hotel, KosherEstablishment, Minyan,
 // Mikvah, Airport, Driver) without a table per type.
+//
+// The last six were added later. Four of them are the practical things
+// lib/verification.ts has been counting as missing from every destination
+// because there was nowhere to put them: tefillos, Shabbos arrangements,
+// hospital, emergency services. GROCERY and PARKING come with them because an
+// enum is a vocabulary — adding one value later costs another migration with
+// the same care as this one, so the words that are plainly needed go in
+// together.
+//
+// KOSHER_FOOD is somewhere you eat. GROCERY is somewhere you buy food to cook,
+// which is the question a family in a rented flat is actually asking.
 enum PlaceCategory {
   ACCOMMODATION
   KOSHER_FOOD
@@ -60,6 +71,12 @@ enum PlaceCategory {
   TRANSPORT
   AIRPORT
   DRIVER
+  TEFILLOS // shul, beis medrash, davening times
+  SHABBOS // eruv, hospitality, seudos, what closes and when
+  HOSPITAL
+  EMERGENCY // Hatzolah, chaverim, police, embassy
+  GROCERY // kosher shops and bakeries
+  PARKING
 }
 
 // ---- Core content ---------------------------------------------------
@@ -76,7 +93,17 @@ model Destination {
   summary      String? // short blurb (bulk destinations)
   safetyNote   String?
   sourceUrl    String?
+  // Where the rest of it came from. `sourceUrl` holds the one original
+  // source; a page assembled from a shomer's phone call, a seforim reference
+  // and a council website has several, and a page nobody can trace is a page
+  // nobody can re-check.
+  sources      String[]        @default([])
   status       ContentStatus   @default(PUBLISHED)
+  // How far this has been CHECKED, which is not the same question as whether
+  // it is published. `status` is editorial — is it live. This is what decides
+  // whether somebody drives four hours on the strength of the page, and it is
+  // what lib/verification.ts turns into "Verified on 3 March 2026".
+  verification VerificationStatus @default(NEEDS_VERIFICATION)
   notes        String[]        @default([])
   lastVerified DateTime?
   createdAt    DateTime        @default(now())
@@ -86,6 +113,7 @@ model Destination {
   cemeteries Cemetery[]
   contacts   Contact[]
   places     PracticalPlace[]
+  photos     Photo[]
 
   @@index([kind])
   @@index([country])
@@ -132,6 +160,10 @@ model Cemetery {
   accessNote   String?
   status       VerificationStatus @default(NEEDS_VERIFICATION)
   sourceUrl    String?
+  // When somebody last checked. "Verified" with no date is a claim with no
+  // age, and an access note from four years ago is not the same fact as one
+  // from last month.
+  lastVerified DateTime?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -139,6 +171,7 @@ model Cemetery {
   destinationId String?
   burials       Tzaddik[]
   contacts      Contact[]
+  photos        Photo[]
 
   @@index([destinationId])
 }
@@ -181,6 +214,12 @@ model PracticalPlace {
   kosherInfo   String?
   notes        String?
   status       ContentStatus @default(DRAFT)
+  // Per-listing, because a page's sections are checked separately and at
+  // different times. destinationTrust() is deliberately pessimistic — one
+  // checked section out of five reads as "partially verified" — and it can
+  // only be that honest if each listing carries its own answer.
+  verification VerificationStatus @default(NEEDS_VERIFICATION)
+  sourceUrl    String?
   lastVerified DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -264,6 +303,43 @@ model KosherArea {
   updatedAt   DateTime      @updatedAt
 
   @@index([country, city])
+}
+
+// A picture of a place, with where it came from.
+//
+// "Photos" is one of the five things lib/verification.ts counts as missing
+// from every destination because the schema had nowhere to put one.
+//
+// CREDIT AND SOURCE ARE NOT DECORATION. A photograph belongs to whoever took
+// it, and the site cannot publish one on the strength of having found it. A
+// row with no credit is a row nobody can defend, which is why the admin will
+// treat a missing credit as reason not to publish rather than a blank field.
+//
+// Draft by default. A picture appearing on a public page the moment it is
+// uploaded is the wrong way round for photographs of kevarim in particular.
+//
+// This is the table, not the media library — that is scan 2 §7, and it can be
+// built on this without another migration.
+model Photo {
+  id        String        @id @default(cuid())
+  url       String
+  caption   String?
+  /** Who took it, or who it belongs to. */
+  credit    String?
+  /** Where it was obtained, so the permission can be traced back. */
+  sourceUrl String?
+  status    ContentStatus @default(DRAFT)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String?
+  cemetery      Cemetery?    @relation(fields: [cemeteryId], references: [id], onDelete: Cascade)
+  cemeteryId    String?
+
+  @@index([destinationId])
+  @@index([cemeteryId])
 }
 
 // ---- CMS operational tables (migrated from the Redis content bundle) --
@@ -356,6 +432,32 @@ model DirectoryProvider {
   featured    Boolean          @default(false)
   status      ContentStatus    @default(PUBLISHED)
   source      String?
+
+  // Whether this listing has actually been checked, and when. A directory of
+  // people offering to take your family abroad is exactly the place where an
+  // unchecked entry does harm, so absent means unverified rather than fine.
+  verification VerificationStatus @default(NEEDS_VERIFICATION)
+  verifiedAt   DateTime?
+
+  // CONSENT TO PUBLISH A PERSONAL NUMBER.
+  //
+  // Many of these are one person with a mobile, not a business with a
+  // switchboard, and putting somebody's own number on a public page is not
+  // something to infer from them having given it to us once. Default false,
+  // deliberately: the flag has to be set by somebody who asked. Absent
+  // consent the number is held but not shown.
+  //
+  // `contactConsentNote` records how it was given — "asked by phone, 4 March"
+  // — so the answer to "who said we could" is not somebody's memory.
+  contactConsent     Boolean   @default(false)
+  contactConsentAt   DateTime?
+  contactConsentNote String?
+
+  // Roughly how quickly they answer, in the owner's words ("same day",
+  // "within a week"). Free text rather than hours: a number implies a
+  // measurement nobody is taking, and a promise the site cannot keep.
+  responseTime String?
+
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
