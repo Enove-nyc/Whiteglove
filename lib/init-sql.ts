@@ -1,7 +1,18 @@
-// Auto-generated from prisma/schema.prisma via `prisma migrate diff`.
-// The /api/admin/db-setup route executes this to create tables at runtime,
-// because migrations cannot be run against the database from every environment.
-// Regenerate: npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script
+// Auto-generated from prisma/schema.prisma. Do NOT hand-edit.
+//
+// The /api/admin/db-setup route executes this to create the tables, because a
+// migration cannot be run against the database from every environment.
+//
+// It had drifted badly: generated back when the directory tables were added
+// and never again, so it was missing the six PlaceCategory values, the whole
+// Photo table, the verification and consent columns, and everything after. A
+// database set up with the admin button would have come up missing them, and
+// the first symptom would have been pictures failing to save.
+//
+// tests/generated-sql.test.ts now fails when it falls behind the schema again.
+//
+// Regenerate:
+//   npm run build:sql
 export const INIT_SQL = String.raw`
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
@@ -16,7 +27,7 @@ CREATE TYPE "ContentStatus" AS ENUM ('PUBLISHED', 'DRAFT', 'NEEDS_REVIEW');
 CREATE TYPE "VerificationStatus" AS ENUM ('VERIFIED', 'UNAVAILABLE', 'NEEDS_VERIFICATION');
 
 -- CreateEnum
-CREATE TYPE "PlaceCategory" AS ENUM ('ACCOMMODATION', 'KOSHER_FOOD', 'MINYAN', 'MIKVAH', 'TRANSPORT', 'AIRPORT', 'DRIVER');
+CREATE TYPE "PlaceCategory" AS ENUM ('ACCOMMODATION', 'KOSHER_FOOD', 'MINYAN', 'MIKVAH', 'TRANSPORT', 'AIRPORT', 'DRIVER', 'TEFILLOS', 'SHABBOS', 'HOSPITAL', 'EMERGENCY', 'GROCERY', 'PARKING');
 
 -- CreateEnum
 CREATE TYPE "ProviderCategory" AS ENUM ('TOUR_OPERATOR', 'VACATION_PLANNER', 'TRAVEL_AGENCY', 'GUIDE_DRIVER');
@@ -34,7 +45,9 @@ CREATE TABLE "Destination" (
     "summary" TEXT,
     "safetyNote" TEXT,
     "sourceUrl" TEXT,
+    "sources" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "verification" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION',
     "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "lastVerified" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -80,6 +93,7 @@ CREATE TABLE "Cemetery" (
     "accessNote" TEXT,
     "status" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION',
     "sourceUrl" TEXT,
+    "lastVerified" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "destinationId" TEXT,
@@ -120,12 +134,98 @@ CREATE TABLE "PracticalPlace" (
     "kosherInfo" TEXT,
     "notes" TEXT,
     "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "verification" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION',
+    "sourceUrl" TEXT,
     "lastVerified" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "destinationId" TEXT NOT NULL,
 
     CONSTRAINT "PracticalPlace_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Attraction" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "address" TEXT,
+    "coordinates" TEXT,
+    "website" TEXT,
+    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "shabbos" TEXT,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "KosherStay" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "summary" TEXT NOT NULL,
+    "anchorName" TEXT NOT NULL,
+    "anchorCoords" TEXT NOT NULL,
+    "season" TEXT,
+    "kosherClaim" TEXT NOT NULL DEFAULT 'none',
+    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "website" TEXT,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "KosherStay_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "KosherArea" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "coordinates" TEXT NOT NULL,
+    "note" TEXT NOT NULL,
+    "sourceUrl" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "KosherArea_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Photo" (
+    "id" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "caption" TEXT,
+    "credit" TEXT,
+    "sourceUrl" TEXT,
+    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "destinationId" TEXT,
+    "cemeteryId" TEXT,
+    "placeId" TEXT,
+    "submittedAt" TIMESTAMP(3),
+    "submittedBy" TEXT,
+    "submittedEmail" TEXT,
+    "submitterNote" TEXT,
+
+    CONSTRAINT "Photo_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -206,8 +306,15 @@ CREATE TABLE "DirectoryProvider" (
     "languages" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "specialties" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "featured" BOOLEAN NOT NULL DEFAULT false,
+    "featuredReason" TEXT NOT NULL DEFAULT '',
     "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
     "source" TEXT,
+    "verification" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION',
+    "verifiedAt" TIMESTAMP(3),
+    "contactConsent" BOOLEAN NOT NULL DEFAULT false,
+    "contactConsentAt" TIMESTAMP(3),
+    "contactConsentNote" TEXT,
+    "responseTime" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -229,14 +336,6 @@ CREATE TABLE "Page" (
 
     CONSTRAINT "Page_pkey" PRIMARY KEY ("id")
 );
-
--- Columns added after the first release. CREATE TABLE above covers a fresh
--- database; these cover one provisioned before the column existed. Both are
--- idempotent, and every one is nullable or defaulted, so no existing row
--- changes meaning. See docs/pages-migration.md.
-ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "blocks" JSONB;
-ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "seoTitle" TEXT NOT NULL DEFAULT '';
-ALTER TABLE "Page" ADD COLUMN IF NOT EXISTS "seoDescription" TEXT NOT NULL DEFAULT '';
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Destination_slug_key" ON "Destination"("slug");
@@ -267,6 +366,36 @@ CREATE INDEX "Contact_cemeteryId_idx" ON "Contact"("cemeteryId");
 
 -- CreateIndex
 CREATE INDEX "PracticalPlace_destinationId_category_idx" ON "PracticalPlace"("destinationId", "category");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Attraction_slug_key" ON "Attraction"("slug");
+
+-- CreateIndex
+CREATE INDEX "Attraction_country_city_idx" ON "Attraction"("country", "city");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "KosherStay_slug_key" ON "KosherStay"("slug");
+
+-- CreateIndex
+CREATE INDEX "KosherStay_country_city_idx" ON "KosherStay"("country", "city");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "KosherArea_slug_key" ON "KosherArea"("slug");
+
+-- CreateIndex
+CREATE INDEX "KosherArea_country_city_idx" ON "KosherArea"("country", "city");
+
+-- CreateIndex
+CREATE INDEX "Photo_destinationId_idx" ON "Photo"("destinationId");
+
+-- CreateIndex
+CREATE INDEX "Photo_cemeteryId_idx" ON "Photo"("cemeteryId");
+
+-- CreateIndex
+CREATE INDEX "Photo_placeId_idx" ON "Photo"("placeId");
+
+-- CreateIndex
+CREATE INDEX "Photo_submittedAt_idx" ON "Photo"("submittedAt");
 
 -- CreateIndex
 CREATE INDEX "EditSuggestion_status_idx" ON "EditSuggestion"("status");
@@ -301,79 +430,12 @@ ALTER TABLE "Contact" ADD CONSTRAINT "Contact_cemeteryId_fkey" FOREIGN KEY ("cem
 -- AddForeignKey
 ALTER TABLE "PracticalPlace" ADD CONSTRAINT "PracticalPlace_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- The rest of the trip: things to do, places to sleep, and the Jewish quarters
--- they are measured from. Added after the first release, so these are written
--- IF NOT EXISTS rather than assumed absent. No foreign keys — an attraction in
--- Interlaken belongs to no kever destination, and forcing it under one would
--- have meant inventing a destination row to hold it.
+-- AddForeignKey
+ALTER TABLE "Photo" ADD CONSTRAINT "Photo_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- CreateTable
-CREATE TABLE IF NOT EXISTS "Attraction" (
-    "id" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "city" TEXT NOT NULL,
-    "country" TEXT NOT NULL,
-    "kind" TEXT NOT NULL,
-    "summary" TEXT NOT NULL,
-    "address" TEXT,
-    "coordinates" TEXT,
-    "website" TEXT,
-    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "shabbos" TEXT,
-    "sourceUrl" TEXT NOT NULL,
-    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+-- AddForeignKey
+ALTER TABLE "Photo" ADD CONSTRAINT "Photo_cemeteryId_fkey" FOREIGN KEY ("cemeteryId") REFERENCES "Cemetery"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-    CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE IF NOT EXISTS "KosherStay" (
-    "id" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "city" TEXT NOT NULL,
-    "country" TEXT NOT NULL,
-    "kind" TEXT NOT NULL,
-    "summary" TEXT NOT NULL,
-    "anchorName" TEXT NOT NULL,
-    "anchorCoords" TEXT NOT NULL,
-    "season" TEXT,
-    "kosherClaim" TEXT NOT NULL DEFAULT 'none',
-    "notes" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "website" TEXT,
-    "sourceUrl" TEXT NOT NULL,
-    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "KosherStay_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE IF NOT EXISTS "KosherArea" (
-    "id" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "city" TEXT NOT NULL,
-    "country" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "coordinates" TEXT NOT NULL,
-    "note" TEXT NOT NULL,
-    "sourceUrl" TEXT NOT NULL,
-    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "KosherArea_pkey" PRIMARY KEY ("id")
-);
-
--- CreateIndex
-CREATE UNIQUE INDEX IF NOT EXISTS "Attraction_slug_key" ON "Attraction"("slug");
-CREATE INDEX IF NOT EXISTS "Attraction_country_city_idx" ON "Attraction"("country", "city");
-CREATE UNIQUE INDEX IF NOT EXISTS "KosherStay_slug_key" ON "KosherStay"("slug");
-CREATE INDEX IF NOT EXISTS "KosherStay_country_city_idx" ON "KosherStay"("country", "city");
-CREATE UNIQUE INDEX IF NOT EXISTS "KosherArea_slug_key" ON "KosherArea"("slug");
-CREATE INDEX IF NOT EXISTS "KosherArea_country_city_idx" ON "KosherArea"("country", "city");
+-- AddForeignKey
+ALTER TABLE "Photo" ADD CONSTRAINT "Photo_placeId_fkey" FOREIGN KEY ("placeId") REFERENCES "PracticalPlace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 `;
