@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
 import { searchEverything } from "../lib/site-search";
+import { normalize } from "../lib/place-search";
 
 // WHAT THIS IS FOR. The search bar in the navbar sits on every page and knew
 // about destinations and batei hachaim only. Everything the site has grown
@@ -78,5 +79,46 @@ describe("what comes back", () => {
 
   test("nonsense returns nothing", async () => {
     assert.deepEqual(await searchEverything("zzzznonsense"), []);
+  });
+});
+
+/**
+ * Letters that NFD cannot take apart.
+ *
+ * NFD turns á into a + a combining mark, which is how accents get folded. It
+ * does nothing to a letter whose stroke is part of its identity: ł, đ, ø, æ, ß
+ * are single characters with no base underneath. They were not folded but
+ * DELETED, because normalize keeps only a–z afterwards.
+ *
+ * Łańcut therefore normalised to "ancut" — it sorted under A in the directory's
+ * A–Z strip, and a search for "Lancut" found it only through an alias somebody
+ * had thought to type in. Łódź and Żmigród had no such alias. Poland and
+ * Lithuania are most of this site's subject, so this was a good share of the
+ * towns, not an edge case.
+ */
+describe("folding a letter that has no accent to remove", () => {
+  test("reads Ł as L", () => {
+    assert.equal(normalize("Łańcut"), "lancut");
+    assert.equal(normalize("Łódź"), "lodz");
+  });
+
+  test("still folds the ordinary accents", () => {
+    assert.equal(normalize("Kraków"), "krakow");
+    assert.equal(normalize("Leżajsk"), "lezajsk");
+    assert.equal(normalize("Sátoraljaújhely"), "satoraljaujhely");
+    assert.equal(normalize("Šiauliai"), "siauliai");
+  });
+
+  test("keeps Yiddish exactly as it is", () => {
+    // Folding must never eat the Hebrew letters: an emptied query matches
+    // everything, which is how a search for a town returned the whole site.
+    assert.equal(normalize("ליזענסק"), "ליזענסק");
+    assert.equal(normalize("קראקא"), "קראקא");
+  });
+
+  test("never turns a word into nothing", () => {
+    for (const word of ["Łódź", "Ø", "æ", "ß", "Đ"]) {
+      assert.ok(normalize(word).length > 0, `${word} normalised away to nothing`);
+    }
   });
 });

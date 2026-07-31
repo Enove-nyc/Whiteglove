@@ -7,6 +7,7 @@
 
 import { cemeteries as staticCemeteries, getCemetery as getStaticCemetery, type Cemetery } from "@/data/cemeteries";
 import type { GalleryPhoto } from "@/components/PhotoGallery";
+import { optionalRead } from "@/lib/db-optional";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
@@ -216,20 +217,35 @@ export async function getCemeteryView(slug: string): Promise<CemeteryView | null
 
   try {
     const { prisma } = await import("@/lib/prisma");
+
+    // The people and the phone numbers, on their own. Pictures used to be
+    // joined on here, and on a database where the Photo table did not exist
+    // yet this whole read threw — so the catch below returned the built-in
+    // record and every kever the owner had added disappeared from the page.
+    // He had saved them; the admin had said so; they were in the database. The
+    // page just would not read them, and nothing anywhere said why.
     const row = await prisma.cemetery.findUnique({
       where: { slug },
       include: {
         burials: { orderBy: { name: "asc" } },
         contacts: { orderBy: { label: "asc" } },
-        // Published only. A draft is a picture nobody has credited yet, and
-        // drafting it was the whole point of keeping it off the page.
-        photos: {
-          where: { status: "PUBLISHED" },
-          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-          select: { id: true, url: true, caption: true, credit: true, sourceUrl: true },
-        },
       },
     });
+
+    // Pictures, separately, and allowed to fail. Published only: a draft is
+    // one nobody has credited yet, and drafting it was the whole point.
+    const photos = row
+      ? await optionalRead(
+          `pictures for the beis hachaim ${slug}`,
+          async () =>
+            prisma.photo.findMany({
+              where: { cemeteryId: row.id, status: "PUBLISHED" },
+              orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+              select: { id: true, url: true, caption: true, credit: true, sourceUrl: true },
+            }),
+          [] as GalleryPhoto[],
+        )
+      : [];
 
     if (staticRecord) {
       if (!row) return { ...staticRecord, photos: [] };
@@ -252,15 +268,15 @@ export async function getCemeteryView(slug: string): Promise<CemeteryView | null
       const accessContacts = mergeContacts(staticRecord.accessContacts ?? [], row.contacts);
 
       if (burials === staticRecord.burials && accessContacts === staticRecord.accessContacts) {
-        return { ...staticRecord, photos: row.photos };
+        return { ...staticRecord, photos };
       }
-      return { ...staticRecord, burials, accessContacts, photos: row.photos };
+      return { ...staticRecord, burials, accessContacts, photos };
     }
 
     if (!row) return null;
     // Owner-added cemetery — build the static shape from the DB row.
     return {
-      photos: row.photos,
+      photos,
       slug: row.slug,
       city: row.city,
       yiddishCity: row.yiddishCity,

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { normalize } from "@/lib/place-search";
 
 type Dest = {
   slug: string;
@@ -21,10 +22,14 @@ export default function DestinationPicker({
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // Folded, not just lowercased. "Krakow" has to find Kraków and "Lezajsk"
+    // has to find Leżajsk — nobody types the accent, and a picker that only
+    // answers to the accented spelling is a picker you cannot find the town in.
+    // Hebrew survives the folding, so the Yiddish name still matches.
+    const q = normalize(query);
     if (!q) return destinations;
     return destinations.filter((d) =>
-      `${d.city} ${d.yiddishCity} ${d.country} ${d.slug}`.toLowerCase().includes(q),
+      normalize(`${d.city} ${d.yiddishCity} ${d.country} ${d.slug}`).includes(q),
     );
   }, [query, destinations]);
 

@@ -1,4 +1,5 @@
 import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
+import { optionalRead } from "@/lib/db-optional";
 
 /**
  * What the database actually holds for a destination, for the work queue.
@@ -52,6 +53,10 @@ export async function readDestinationFacts(): Promise<Map<string, DestinationFac
   if (!process.env.DATABASE_URL) return null;
   try {
     const { prisma } = await import("@/lib/prisma");
+    // The photo count is asked for separately, because it is the one thing
+    // here that a database without the migration cannot answer — and losing
+    // the whole queue over a picture count would tell the owner his work was
+    // undone rather than that one number is unknown.
     const rows = await prisma.destination.findMany({
       select: {
         slug: true,
@@ -60,9 +65,20 @@ export async function readDestinationFacts(): Promise<Map<string, DestinationFac
           where: { status: "PUBLISHED" },
           select: { category: true, verification: true, lastVerified: true },
         },
-        _count: { select: { photos: true, contacts: true, cemeteries: true } },
+        _count: { select: { contacts: true, cemeteries: true } },
       },
     });
+
+    const photosBySlug = await optionalRead(
+      "the picture counts for the work queue",
+      async () => {
+        const counted = await prisma.destination.findMany({
+          select: { slug: true, _count: { select: { photos: true } } },
+        });
+        return new Map(counted.map((row) => [row.slug, row._count.photos]));
+      },
+      new Map<string, number>(),
+    );
 
     const facts = new Map<string, DestinationFacts>();
     for (const row of rows) {
@@ -76,7 +92,7 @@ export async function readDestinationFacts(): Promise<Map<string, DestinationFac
       }
       facts.set(row.slug, {
         sections: [...sections],
-        photos: row._count.photos,
+        photos: photosBySlug.get(row.slug) ?? 0,
         contacts: row._count.contacts,
         cemeteries: row._count.cemeteries,
         anyVerified,

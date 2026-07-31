@@ -16,7 +16,19 @@ export const metadata: Metadata = {
   applicationName: "White Glove Itineraries",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
-    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+    // NO `icon` entry here, deliberately. app/favicon.ico and app/icon.png are
+    // the logo on nothing — measured: every corner of both is rgba(0,0,0,0) —
+    // and the App Router serves them for the browser tab by itself. Naming
+    // /icon-192.png here overrode them with the one file that has a solid navy
+    // square baked in, which is why the tab showed a blue box.
+    //
+    // The navy background is right where it is used. An installed app icon
+    // (app/manifest.ts) is drawn on the home screen with no page behind it, and
+    // a transparent one there looks broken rather than elegant.
+    //
+    // The Apple touch icon MUST stay opaque: iOS does not honour transparency
+    // in it, it composites the image onto black. A transparent logo would
+    // become a navy logo on a black square, which is worse than what we have.
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
