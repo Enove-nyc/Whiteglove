@@ -28,21 +28,29 @@ export function tripArrangementOpen(): boolean {
 export const CONTACT_EMAIL = "contact@whitegloveitineraries.com";
 
 /**
- * What "Featured" means in the provider directory, in the owner's own words.
+ * What "Featured" means in the provider directory.
  *
- * A promotional badge with no explanation is the thing the review warned
- * about: a visitor cannot tell whether a starred listing was chosen because
- * it is good or because somebody paid, and guessing either way is unfair to
- * one side of that. Only the owner knows the answer.
+ * A promotional badge a visitor cannot interpret is the thing the review
+ * warned about: they cannot tell whether a starred listing was chosen because
+ * it is good or because somebody paid, and only the owner knows which.
  *
- * So the badge is gated on the answer existing. With `DIRECTORY_FEATURED_NOTE`
- * unset, featured listings appear as ordinary listings — no star, no
- * advantage — because an unexplained promotion is worse than none. Set it to
- * the truth, whatever the truth is:
+ * So there is always a disclosure, and the default one makes no claim in
+ * either direction — it says what a visitor can see for themselves (featured
+ * listings come first) and what to do about it (check for yourself). It is
+ * true whichever way the question is eventually answered, which is what makes
+ * it safe to ship before it has been.
+ *
+ * `DIRECTORY_FEATURED_NOTE` replaces it with the real answer once there is
+ * one, e.g.
  *
  *   DIRECTORY_FEATURED_NOTE="Featured providers pay for placement."
- *   DIRECTORY_FEATURED_NOTE="Featured providers are ones we have worked with directly. No one pays for placement."
+ *   DIRECTORY_FEATURED_NOTE="Featured providers are ones we have worked with directly. Nobody pays for placement."
+ *
+ * Read at build time, so it takes a redeploy.
  */
-export function featuredDisclosure(): string | null {
-  return process.env.DIRECTORY_FEATURED_NOTE?.trim() || null;
+export const DEFAULT_FEATURED_NOTE =
+  "Featured listings appear first in their category. Check each provider's details with them directly before booking.";
+
+export function featuredDisclosure(): string {
+  return process.env.DIRECTORY_FEATURED_NOTE?.trim() || DEFAULT_FEATURED_NOTE;
 }

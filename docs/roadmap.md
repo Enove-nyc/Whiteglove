@@ -105,10 +105,12 @@ inside a feature PR.
   `enovenyc.com` are both aliased to production, and the terms and privacy
   pages name `enovenyc.com` while everything else names the other. A search
   engine is seeing two copies of every page.
-- **What "Featured" means in the provider directory.** The badge only appears
-  once `DIRECTORY_FEATURED_NOTE` says what it means — paid placement, or an
-  editorial choice. Until then featured listings show as ordinary ones,
-  because an unexplained promotional badge is worse than none.
+- **What "Featured" means in the provider directory.** The badge always
+  carries a disclosure; the default one makes no claim about payment either
+  way, which is safe but says less than it could. Set
+  `DIRECTORY_FEATURED_NOTE` to the real answer — paid placement, or an
+  editorial choice — once it is decided. If nobody pays, saying so is a trust
+  asset worth having.
 - **Account enumeration on password reset.** It answers differently for a
   known and an unknown address. Closing that costs a typo'd address any
   feedback that it was a typo.

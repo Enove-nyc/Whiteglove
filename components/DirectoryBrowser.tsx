@@ -13,16 +13,15 @@ function Tag({ children }: { children: React.ReactNode }) {
 
 export default function DirectoryBrowser({
   providers,
-  featuredNote = null,
+  featuredNote,
 }: {
   providers: PublicProvider[];
   /**
-   * What "Featured" means here, in the owner's words. Without it, the star is
-   * not shown at all — an unexplained promotional badge leaves a visitor
-   * unable to tell whether a listing was chosen because it is good or because
-   * somebody paid. See lib/features.ts.
+   * What "Featured" means here. Always present — the default makes no claim
+   * about payment either way, so the badge never appears unexplained. See
+   * lib/features.ts.
    */
-  featuredNote?: string | null;
+  featuredNote: string;
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<ProviderCat | "ALL">("ALL");
@@ -150,7 +149,7 @@ export default function DirectoryBrowser({
 
       {/* Said once, plainly, above the listings — not buried in a tooltip on
           one badge. */}
-      {featuredNote && (
+      {providers.some((p) => p.featured) && (
         <p className="mt-3 rounded-md border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-xs leading-5 text-stone-600">
           <strong className="text-[var(--navy)]">About ★ Featured:</strong> {featuredNote}
         </p>
@@ -161,7 +160,7 @@ export default function DirectoryBrowser({
           <article key={p.slug} className="wg-card flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{PROVIDER_CATEGORY_LABELS[p.category].english}</p>
-              {p.featured && featuredNote && (
+              {p.featured && (
                 <span title={featuredNote} className="shrink-0 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">★ Featured</span>
               )}
             </div>
