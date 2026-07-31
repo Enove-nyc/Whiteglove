@@ -126,3 +126,34 @@ export function directionsUrl(places: SavedPlace[]) {
   if (places.length > 2) params.set("waypoints", places.slice(1, -1).map(location).join("|"));
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
+
+/**
+ * Putting one place at the start or the end of a route.
+ *
+ * "Start here" and "End here" are how somebody actually plans a trip: they
+ * know they land at Kraków and they know they finish at Uman, and everything
+ * else arranges itself between the two. Both add the place if the route does
+ * not have it yet, so a visitor does not have to save it first and then move
+ * it — one press does what it says.
+ *
+ * Matching is by id. Two records for the same town — the guide and the beis
+ * hachaim — are different stops and both belong on a route.
+ */
+export function withPlaceFirst(places: SavedPlace[], place: SavedPlace): SavedPlace[] {
+  return [place, ...places.filter((item) => item.id !== place.id)];
+}
+
+export function withPlaceLast(places: SavedPlace[], place: SavedPlace): SavedPlace[] {
+  return [...places.filter((item) => item.id !== place.id), place];
+}
+
+/** Where a place sits in a route, for labelling the buttons honestly. */
+export function placeRole(places: SavedPlace[], id: string): "start" | "end" | "middle" | "absent" {
+  const index = places.findIndex((item) => item.id === id);
+  if (index === -1) return "absent";
+  // A one-stop route is its own start; calling it the end as well would light
+  // up both buttons and tell somebody nothing.
+  if (index === 0) return "start";
+  if (index === places.length - 1) return "end";
+  return "middle";
+}

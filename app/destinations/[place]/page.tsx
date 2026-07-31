@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SavePlaceButtons from "@/components/SavePlaceButtons";
+import DestinationActions from "@/components/DestinationActions";
+import { airportsFor } from "@/lib/destination-actions";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/destinations-bulk";
@@ -34,7 +35,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{destination.yiddishCity}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{destination.city}</p>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>
-          <SavePlaceButtons place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, href: `/destinations/${destination.slug}` }} />
+          <DestinationActions place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, coordinates: record?.cemeteries[0]?.coordinates, href: `/destinations/${destination.slug}` }} airports={airportsFor(destination.country, `${destination.city}, ${destination.country}`, record?.cemeteries[0]?.coordinates)} />
           <SuggestEditButton targetType="location" targetId={destination.slug} title={destination.city} currentInfo={`${destination.yiddishCity}\n${destination.summary}`} />
         </div>
       </section>
