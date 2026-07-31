@@ -17,7 +17,7 @@ export default async function AdminAdvertisementsPage() {
       </header>
 
       <div className="mt-8">
-        <AdManager initial={bundle.promotions} configured={configured} />
+        <AdManager initial={bundle.promotions} configured={configured} today={new Date().toISOString().slice(0, 10)} />
       </div>
     </>
   );

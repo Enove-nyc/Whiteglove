@@ -5,6 +5,7 @@ import { readDestinationFacts } from "@/lib/completeness-source";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { contentTotals } from "@/lib/admin-overview";
+import { adsNeedingAttention } from "@/lib/ad-performance";
 import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
 import { getDashboardStats } from "@/lib/site-analytics";
@@ -99,6 +100,12 @@ export default async function AdminHome() {
       href: "/admin/settings/connections",
       label: "Review connections",
     });
+  }
+  // An advertisement that finished in March still reads as enabled in every
+  // list. The owner would only find it by comparing eleven dates to today.
+  const adTrouble = adsNeedingAttention(content.bundle.promotions, new Date().toISOString().slice(0, 10));
+  if (adTrouble) {
+    alerts.push({ text: adTrouble.says, href: "/admin/advertisements", label: "Open advertisements" });
   }
   // Somebody sent a picture and is waiting to hear. It is on no page until
   // this is dealt with, which is exactly why it needs saying here.
