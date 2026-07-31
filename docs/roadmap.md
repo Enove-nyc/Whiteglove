@@ -51,7 +51,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 3. Admin dashboard homepage | **Part** | content totals and quick-add actions added, on top of the alerts, work panels and completeness queue already there. Still open: broken links, missing images, expired ads, API health, popular destinations/routes. |
 | Map (owner request, not in either scan) | **Done** | opens on everything the site holds — 287 places — instead of Kraków at 50 km. Things to do and places to stay added alongside kevarim, kosher food and airports. Counts per category for whatever area you are looking at. Markers are the logo's eight-point compass rose, shrinking at continent zoom so three hundred of them stay separable. **Open:** clustering, so a hundred places in one region become one pin with a number. |
 | 4. Complete destination manager | **Part** | thirteen sections instead of seven — Tefillos, Shabbos, hospital, emergency, kosher shops and parking now exist end to end, from one shared list that the editor, the completeness tracker and the public page all read. Each listing carries how far it has been checked, when, and where it came from. The completeness tracker now counts what is in the database, so entering a hospital or a Shabbos note actually moves the number — a seeded town went 33% → 58%, with nothing left unanswerable. Photos can be uploaded (§7). |
-| 7. Rich media library | **Part** | pictures at all three levels a traveler asks about — the **town**, the **beis hachaim**, and **one listing** (this hotel, this shul, this mikvah). Uploaded, captioned, credited and published from the admin; on the page with the credit under them. A picture with no credit is saved as a draft and says so, enforced on the server as well as the screen. A built-in beis hachaim needs no database row first — the first picture creates it, the way a shomer's number does. Removing a listing removes its pictures and nothing else. **Still open:** reordering, a shared library rather than per-owner uploads, and whether visitors should be able to submit a picture — today only the admin can. |
+| 7. Rich media library | **Part** | pictures at all three levels a traveler asks about — the **town**, the **beis hachaim**, and **one listing** (this hotel, this shul, this mikvah). Uploaded, captioned, credited and published from the admin; on the page with the credit under them. A picture with no credit is saved as a draft and says so, enforced on the server as well as the screen. A built-in beis hachaim needs no database row first — the first picture creates it, the way a shomer's number does. Removing a listing removes its pictures and nothing else. **Visitors can send one in, and the owner confirms** — that is the whole workflow, per his decision: the public endpoint can only ever write a draft, and the one screen that can publish is his. A submission has to name whose photograph it is AND separately confirm the sender may share it, because those are two different questions. Five pictures an hour per address, counted on storing rather than on trying, so a mistyped email does not lock somebody out. **Still open:** reordering, and a shared library rather than per-owner uploads. |
 | 8. Suggest-an-edit workflow | **Done** | Review side: a queue ordered oldest-waiting-first, filters by answer, a required reason for turning down or asking for more, append-only history, a link to the page it is about, and a reply draft the owner sends. **Directory submissions arrive on the same form the owner has**, field by field; the review shows only what would change and Accept writes the listing. Corrections to other kinds of content still arrive as prose. |
 
 ### Not started
@@ -245,6 +245,14 @@ so that this stays reviewable.
   endpoint now answers identically whether or not the account exists. A
   mistyped address is no longer told it was mistyped, which is the agreed
   cost: telling a typo apart from an unknown address IS the leak.
+- ~~**Whether visitors may send in a picture.**~~ — **decided: yes, with the
+  owner confirming every one.** Nothing a stranger sends reaches a page by
+  itself: the public endpoint can only write a draft, and the only screen that
+  can publish is the owner's. The form asks two separate questions — whose
+  photograph it is, and whether the sender may share it — because somebody can
+  honestly name a photographer and still have no right to hand the picture
+  over, and that is most of how a photograph ends up published without
+  permission.
 - ~~**Storing passport copies**~~ — **decided: no.** The site does not store
   passport copies or identity documents. Per-trip notes exist instead, for the
   things a traveler wants to remember, and the field says plainly that notes

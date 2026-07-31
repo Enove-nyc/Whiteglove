@@ -50,6 +50,7 @@ step; `npm run db:migrate` builds everything from scratch.
 | `20260731120100_verification_consent_and_photos` | Verification and consent columns, and the `Photo` table. |
 | `20260731130000_featured_reason` | Why a directory listing is featured — the owner's record, never read by a public page. |
 | `20260731140000_photos_on_listings` | `Photo.placeId`, so a picture can be of one listing rather than only of a town or a beis hachaim. Additive and nullable: every picture already stored keeps exactly the owner it had. The foreign key is `ON DELETE CASCADE`, so removing a listing removes its pictures — a photo of a hotel that is no longer listed belongs to nothing. |
+| `20260731150000_visitor_photo_submissions` | `submittedAt`, `submittedBy`, `submittedEmail` and `submitterNote` on `Photo`, so a picture sent in by a visitor can be told apart from the owner's own unfinished one. Additive and nullable, and indexed on `submittedAt` so "everything still waiting" is one indexed read rather than a scan of every picture on the site. |
 
 ## Why the enum is on its own
 
