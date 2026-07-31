@@ -53,16 +53,19 @@ export async function restoreDeleted(entry: Deleted): Promise<RestoreResult> {
         return { ok: false, message: "That is not something this can put back." };
     }
   } catch (error) {
+    // Prisma carries its code as a PROPERTY, not in the message. Matched on
+    // both, so a change to either still finds it.
+    const code = (error as { code?: string } | null)?.code ?? "";
     const said = String(error);
     // The commonest real failure, said in the words of the problem rather
     // than the words of the database.
-    if (/Foreign key|violates foreign key|P2003/i.test(said)) {
+    if (code === "P2003" || /foreign key/i.test(said)) {
       return {
         ok: false,
         message: `The place ${entry.title} belonged to has been deleted too, so there is nowhere to put it back. It is still here.`,
       };
     }
-    if (/Unique constraint|P2002/i.test(said)) {
+    if (code === "P2002" || /unique constraint/i.test(said)) {
       return { ok: false, message: `${entry.title} is already there.` };
     }
     console.error("[recycle] could not restore", entry.id, error);

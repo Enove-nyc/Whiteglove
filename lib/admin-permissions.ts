@@ -56,6 +56,7 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/content", "content"],
   ["/admin/inventory", "content"],
   ["/admin/reports", "content"],
+  ["/admin/history", "content"],
   ["/admin/borders", "directory"],
   ["/admin/recycle", "directory"],
   ["/admin/directory", "directory"],
