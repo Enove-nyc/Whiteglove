@@ -15,9 +15,12 @@ import {
 } from "@/app/admin/destinations/actions";
 import { sectionLabel, sectionOptions } from "@/lib/destination-sections";
 
+/** A listing carries its own pictures — of that hotel, that shul, that mikvah. */
+type EditorPlace = PracticalPlace & { photos: Photo[] };
+
 type EditorDestination = Destination & {
   contacts: Contact[];
-  places: PracticalPlace[];
+  places: EditorPlace[];
   photos: Photo[];
 };
 
@@ -365,9 +368,15 @@ export default function DestinationEditor({ destination }: { destination: Editor
         </div>
       </section>
 
-      {/* Practical places */}
+      {/* Pictures of the town itself. Pictures of one hotel or one shul go on
+          that listing further down, where somebody comparing two of them will
+          actually be looking. */}
       <section>
-        <PhotoManager destinationId={destination.id} slug={destination.slug} photos={destination.photos} />
+        <PhotoManager
+          target={{ kind: "destination", ref: destination.id }}
+          slug={destination.slug}
+          photos={destination.photos}
+        />
       </section>
 
       <section>
@@ -388,6 +397,18 @@ export default function DestinationEditor({ destination }: { destination: Editor
               <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }}>
                 <PlaceFields place={place} />
               </ActionForm>
+              {/* Pictures of this one listing. Below the fields rather than
+                  among them, because it is its own form — a picture saves on
+                  its own and must not be lost when the listing is saved. */}
+              <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+                <PhotoManager
+                  target={{ kind: "place", ref: place.id }}
+                  slug={slug}
+                  photos={place.photos}
+                  heading={`Pictures of ${place.name || "this listing"}`}
+                  compact
+                />
+              </div>
             </Card>
           ))}
           <Card title="Add a listing" accent>

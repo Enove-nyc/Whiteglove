@@ -48,6 +48,8 @@ step; `npm run db:migrate` builds everything from scratch.
 | `20260731110000_catch_up_directory_attractions_stays` | Adds `DirectoryProvider`, `Attraction`, `KosherStay`, `KosherArea` and three `Page` columns, which had been added to the schema without a migration. Every statement is `IF NOT EXISTS`, so on the live database it does nothing. |
 | `20260731120000_place_category_values` | Six new `PlaceCategory` values. |
 | `20260731120100_verification_consent_and_photos` | Verification and consent columns, and the `Photo` table. |
+| `20260731130000_featured_reason` | Why a directory listing is featured — the owner's record, never read by a public page. |
+| `20260731140000_photos_on_listings` | `Photo.placeId`, so a picture can be of one listing rather than only of a town or a beis hachaim. Additive and nullable: every picture already stored keeps exactly the owner it had. The foreign key is `ON DELETE CASCADE`, so removing a listing removes its pictures — a photo of a hotel that is no longer listed belongs to nothing. |
 
 ## Why the enum is on its own
 
@@ -74,7 +76,7 @@ there is no step where a failure could lose content.
 
 Against a real PostgreSQL 16, not by reading it:
 
-- **From empty** — all four migrations applied, and
+- **From empty** — every migration applied in order, and
   `prisma migrate diff --from-config-datasource --to-schema` reported no
   difference, meaning the migrations rebuild exactly the schema in
   `schema.prisma`.
@@ -86,3 +88,11 @@ Against a real PostgreSQL 16, not by reading it:
 - **Through the Prisma client** — read the migrated rows, wrote a `Photo`
   (which came back `DRAFT`, as intended), and wrote listings using the new
   `TEFILLOS`, `HOSPITAL` and `SHABBOS` categories.
+- **`20260731140000_photos_on_listings` specifically** — applied over a
+  database already holding a published town photo: the photo came through
+  untouched, with an empty `placeId`. Applied a **second** time on the same
+  database with no error (`ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT
+  EXISTS`, and the foreign key inside a `DO $$ … EXCEPTION WHEN
+  duplicate_object` block), because a deploy may meet a database `db push`
+  has already given the column to. Then deleted the listing and confirmed the
+  cascade took its picture and left the town's and the beis hachaim's alone.

@@ -7,7 +7,7 @@ import { airportsFor } from "@/lib/destination-actions";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
-import DestinationPhotos from "@/components/DestinationPhotos";
+import PhotoGallery from "@/components/PhotoGallery";
 import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { placeDirectionsUrl } from "@/data/route-utils";
@@ -154,7 +154,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeading eyebrow="Practical guide" title="Everything around the visit." description="Accommodations, food, minyanim, mikvaos, and transport are kept together here. A detail appears only when it has been checked for this exact destination." />
-          <DestinationPhotos photos={dbContent?.photos ?? []} />
+          <PhotoGallery photos={dbContent?.photos ?? []} />
           {destinationRecord && <PracticalInformation record={destinationRecord} places={dbContent?.places ?? []} />}
           <a href={guide.sourceUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Read source information</a>
         </div>

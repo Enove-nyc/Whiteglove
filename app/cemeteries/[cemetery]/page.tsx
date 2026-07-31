@@ -5,6 +5,7 @@ import KeverCoordinates from "@/components/KeverCoordinates";
 import KosherNearby from "@/components/KosherNearby";
 import MixedText from "@/components/MixedText";
 import Navbar from "@/components/Navbar";
+import PhotoGallery from "@/components/PhotoGallery";
 import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
@@ -109,6 +110,11 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           <DestinationActions place={{ id: `cemetery-${cemetery.slug}`, name: cemetery.name, yiddishName: cemetery.yiddishName, address: cemetery.address, coordinates: cemetery.coordinates, href: `/cemeteries/${cemetery.slug}` }} airports={airportsFor(cemetery.country, cemetery.address, cemetery.coordinates)} />
         </div>
       </section>
+
+      {/* Directly under the hero, because recognising the place is the first
+          thing a traveler needs — the gate, the path, the ohel. Renders
+          nothing at all when no picture has been published. */}
+      <PhotoGallery photos={cemetery.photos} heading="What it looks like" />
 
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">

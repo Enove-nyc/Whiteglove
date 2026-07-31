@@ -6,8 +6,20 @@
 // the cemetery pages always work.
 
 import { cemeteries as staticCemeteries, getCemetery as getStaticCemetery, type Cemetery } from "@/data/cemeteries";
+import type { GalleryPhoto } from "@/components/PhotoGallery";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
+
+/**
+ * A beis hachaim as its page shows it: the built-in record, plus anything
+ * stored against it.
+ *
+ * Pictures are separate from `Cemetery` rather than added to it, because
+ * `Cemetery` is the shape of the built-in file and pictures only ever come
+ * from the database. Kept as the gallery's own shape so nothing here has to
+ * know Prisma's row.
+ */
+export type CemeteryView = Cemetery & { photos: GalleryPhoto[] };
 
 export type CemeteryListItem = {
   slug: string;
@@ -197,10 +209,10 @@ function mergeContacts(builtIn: ViewContact[], stored: StoredContact[]): ViewCon
 /** One cemetery for its detail page. For a built-in cemetery, returns the rich
  *  static record with any owner-added tzaddikim appended; for an owner-added
  *  cemetery, builds the record from the database. */
-export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
+export async function getCemeteryView(slug: string): Promise<CemeteryView | null> {
   const staticRecord = getStaticCemetery(slug);
 
-  if (!DB_ENABLED) return staticRecord ?? null;
+  if (!DB_ENABLED) return staticRecord ? { ...staticRecord, photos: [] } : null;
 
   try {
     const { prisma } = await import("@/lib/prisma");
@@ -209,11 +221,18 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
       include: {
         burials: { orderBy: { name: "asc" } },
         contacts: { orderBy: { label: "asc" } },
+        // Published only. A draft is a picture nobody has credited yet, and
+        // drafting it was the whole point of keeping it off the page.
+        photos: {
+          where: { status: "PUBLISHED" },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          select: { id: true, url: true, caption: true, credit: true, sourceUrl: true },
+        },
       },
     });
 
     if (staticRecord) {
-      if (!row) return staticRecord;
+      if (!row) return { ...staticRecord, photos: [] };
 
       // Tzaddikim: stored ones layered over the built-in list, the same way
       // contacts are below and for the same reason. A stored burial whose name
@@ -232,13 +251,16 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
       // which is the only way to retire a number that no longer works.
       const accessContacts = mergeContacts(staticRecord.accessContacts ?? [], row.contacts);
 
-      if (burials === staticRecord.burials && accessContacts === staticRecord.accessContacts) return staticRecord;
-      return { ...staticRecord, burials, accessContacts };
+      if (burials === staticRecord.burials && accessContacts === staticRecord.accessContacts) {
+        return { ...staticRecord, photos: row.photos };
+      }
+      return { ...staticRecord, burials, accessContacts, photos: row.photos };
     }
 
     if (!row) return null;
     // Owner-added cemetery — build the static shape from the DB row.
     return {
+      photos: row.photos,
       slug: row.slug,
       city: row.city,
       yiddishCity: row.yiddishCity,
@@ -259,6 +281,6 @@ export async function getCemeteryView(slug: string): Promise<Cemetery | null> {
       sourceUrl: row.sourceUrl ?? "",
     };
   } catch {
-    return staticRecord ?? null;
+    return staticRecord ? { ...staticRecord, photos: [] } : null;
   }
 }
