@@ -64,6 +64,37 @@ export async function getPublishedDestinationContent(
   }
 }
 
+/**
+ * Which categories each destination has something published in.
+ *
+ * One query for the whole directory. The alternative — asking per destination
+ * — is 297 round trips to render one page, which is not a directory filter,
+ * it is an outage. Returns an empty map with no database, which the caller
+ * reads as "nothing published yet" and falls back to the built-in content.
+ */
+export async function publishedCategoriesBySlug(): Promise<Map<string, Set<string>>> {
+  const map = new Map<string, Set<string>>();
+  if (!DB_ENABLED) return map;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.practicalPlace.findMany({
+      where: { status: "PUBLISHED" },
+      select: { category: true, destination: { select: { slug: true } } },
+    });
+    for (const row of rows) {
+      const slug = row.destination?.slug;
+      if (!slug) continue;
+      const set = map.get(slug) ?? new Set<string>();
+      set.add(row.category);
+      map.set(slug, set);
+    }
+    return map;
+  } catch (error) {
+    console.error("[content] could not read published categories for the directory", error);
+    return map;
+  }
+}
+
 /** Group a place list by category, in display order. */
 export function groupPlacesByCategory(places: PracticalPlace[]) {
   const groups = new Map<string, PracticalPlace[]>();

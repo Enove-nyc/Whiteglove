@@ -3,12 +3,13 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SectionHeading from "@/components/SectionHeading";
-import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
-import { destinationHaystack, destinations, guidedDestinations, unguidedDestinations } from "@/data/destinations";
+import { destinations } from "@/data/destinations";
 import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
 import { getCemeteryList } from "@/lib/cemeteries-view";
-import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
+import DestinationDirectory from "@/components/DestinationDirectory";
+import { buildDirectoryIndex } from "@/lib/directory-browse";
+import { publishedCategoriesBySlug } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -23,20 +24,16 @@ export const metadata = pageMetadata({
 export default async function SacredStopsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const query = q.trim().toLowerCase();
-  // One destination database, shown in two groups: the ones with a researched
-  // guide behind them, and the ones still being checked.
-  const matchDestination = (d: (typeof destinations)[number]) =>
-    fuzzyMatch(query, `${destinationHaystack(d)} ${extraSpellings([d.slug, d.city])}`);
-  const matchingGuides = query ? guidedDestinations().filter(matchDestination) : [];
   // Kevarim come from the one cemetery database. They used to come from a
   // second, older list that duplicated the same fifteen places under their
   // modern names — and still carried a Lizhensk coordinate that had already
   // been corrected in the real database.
   const allCemeteries = await getCemeteryList();
-  const matchingStops = query
-    ? allCemeteries.filter((c) => fuzzyMatch(query, `${c.city} ${c.yiddishCity} ${c.name} ${c.yiddishName} ${c.country} ${extraSpellings([c.slug, c.city])}`))
-    : allCemeteries;
-  const matchingBulk = query ? unguidedDestinations().filter(matchDestination) : unguidedDestinations();
+  // One compact index for the browser to filter, instead of three walls of
+  // server-rendered cards. The second query is what makes the "has kosher
+  // food" style filters tell the truth about owner-added listings.
+  const [liveCategories] = await Promise.all([publishedCategoriesBySlug()]);
+  const directory = buildDirectoryIndex(allCemeteries, liveCategories);
   // The rest of the trip. Somebody searching "Colosseum" or "Wiedikon" was
   // being told there was no match at all, when the site had both. Shown only
   // for an actual query — this directory is a kevarim directory first, and an
@@ -83,57 +80,12 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
           description={query ? "Guides and locations matching your search." : "Browse by city, traditional name, country, or tzaddik. Detailed practical information is added only when it has been checked."}
         />
 
-        {matchingGuides.length > 0 && (
-          <div className="mt-12">
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination guides</p>
-            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {matchingGuides.map((guide) => (
-                <Link key={guide.slug} href={`/${guide.slug}`} className="min-w-0 border border-[var(--gold-light)] bg-[var(--navy)] p-5 text-white transition hover:bg-[var(--gold)] sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-light)] sm:tracking-[0.18em]">{guide.country}</p>
-                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight">{guide.yiddishCity}</h2>
-                  <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-slate-300">{guide.city}</p>
-                  <p dir="rtl" lang="yi" className="mt-5 text-2xl leading-tight text-slate-100">{guide.guide?.yiddishTzaddik}</p>
-                  <p className="mt-2 text-sm text-slate-300">{guide.guide?.tzaddik}</p>
-                  <span className="mt-6 inline-block text-xs font-bold uppercase tracking-[0.14em]">Open guide →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {matchingStops.length > 0 && (
-          <div className={matchingGuides.length > 0 ? "mt-14" : "mt-12"}>
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Kevarim &amp; batei hachaim</p>
-            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {matchingStops.map((cemetery) => (
-                <Link key={cemetery.slug} href={`/cemeteries/${cemetery.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
-                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
-                  <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
-                  <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.burialCount} known {cemetery.burialCount === 1 ? "kever" : "kevarim"} listed</p>
-                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open beis hachaim →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {matchingBulk.length > 0 && (
-          <div className={matchingGuides.length > 0 || matchingStops.length > 0 ? "mt-14" : "mt-12"}>
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Destination research queue</p>
-            <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {matchingBulk.map((destination) => (
-                <Link key={destination.slug} href={`/destinations/${destination.slug}`} className="flex min-h-64 min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">{destination.country}</p>
-                  <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{destination.yiddishCity}</h2>
-                  <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{destination.city}</p>
-                  <p className="mt-4 text-sm leading-6 text-stone-600">Practical details are being checked.</p>
-                  <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open destination →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Guides, batei hachaim and the research queue were three separate
+            walls of cards, all rendered at once. They are one filtered list
+            now — the kind is a filter rather than a heading you scroll past. */}
+        <div className="mt-12">
+          <DestinationDirectory entries={directory} initialQuery={q.trim()} />
+        </div>
 
         {matchingAttractions.length > 0 && (
           <div className="mt-14">
@@ -191,13 +143,6 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
                 </Link>
               ))}
             </div>
-          </div>
-        )}
-
-        {query && matchingGuides.length === 0 && matchingStops.length === 0 && matchingBulk.length === 0 && matchingAttractions.length === 0 && matchingStays.length === 0 && matchingAreas.length === 0 && matchingEateries.length === 0 && (
-          <div className="mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-stone-600">
-            <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">No match yet.</p>
-            <p className="mt-3 leading-7">Try the city name, country, traditional name, or the tzaddik’s name. We are adding more destinations continuously.</p>
           </div>
         )}
 
