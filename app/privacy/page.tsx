@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { SITE_DOMAIN } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
@@ -34,7 +35,7 @@ export default function PrivacyPolicyPage() {
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
           White Glove Itineraries (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides travel guides and planning
-          tools for kosher travel and Jewish heritage journeys at enovenyc.com. This policy explains what information we collect,
+          tools for kosher travel and Jewish heritage journeys at {SITE_DOMAIN}. This policy explains what information we collect,
           how we use it, and the choices you have.
         </p>
 

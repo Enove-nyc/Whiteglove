@@ -176,6 +176,8 @@ export type ProviderFields = {
   languages: string[];
   specialties: string[];
   featured: boolean;
+  /** "service" | "sponsored". Owner's record; never read by a public page. */
+  featuredReason: string;
   status: ContentStatus;
   /** Permission to put their phone number on a public page. Never inferred. */
   contactConsent: boolean;

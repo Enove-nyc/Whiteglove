@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { SITE_DOMAIN, SITE_NAME } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
@@ -33,7 +34,7 @@ export default function TermsOfUsePage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          These Terms of Use govern your access to and use of White Glove Itineraries at enovenyc.com (the &ldquo;Service&rdquo;).
+          These Terms of Use govern your access to and use of {SITE_NAME} at {SITE_DOMAIN} (the &ldquo;Service&rdquo;).
           By using the Service, you agree to these terms. If you do not agree, please do not use the Service.
         </p>
 

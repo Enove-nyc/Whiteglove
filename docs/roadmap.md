@@ -153,23 +153,27 @@ so that this stays reviewable.
 
 ## Things that need a decision, not code
 
-- **`NEXT_PUBLIC_SITE_URL` is unset.** Guides and cemetery pages resolve their
-  canonical URL and share image at build time, so every build without it ships
-  a relative canonical and an `og:image` pointing at localhost. One setting,
-  then a redeploy without the build cache.
-- **Two domains serve the same site.** `whitegloveitineraries.com` and
-  `enovenyc.com` are both aliased to production, and the terms and privacy
-  pages name `enovenyc.com` while everything else names the other. A search
-  engine is seeing two copies of every page.
-- **What "Featured" means in the provider directory.** The badge always
-  carries a disclosure; the default one makes no claim about payment either
-  way, which is safe but says less than it could. Set
-  `DIRECTORY_FEATURED_NOTE` to the real answer — paid placement, or an
-  editorial choice — once it is decided. If nobody pays, saying so is a trust
-  asset worth having.
-- **Account enumeration on password reset.** It answers differently for a
-  known and an unknown address. Closing that costs a typo'd address any
-  feedback that it was a typo.
+- ~~**`NEXT_PUBLIC_SITE_URL` is unset.**~~ — **set by the owner.** Because it
+  is resolved at BUILD time for prerendered pages, the next deploy has to be
+  without the build cache for canonicals and share images to pick it up.
+- ~~**Two domains serve the same site.**~~ — **decided.** Everything is
+  `whitegloveitineraries.com`; `enovenyc.com` is a different business and only
+  redirects here. The terms and privacy pages named the wrong one and now name
+  the right one, from a single constant. Still worth confirming the redirect
+  is a 301 at the DNS/host level so a search engine folds the two together.
+- ~~**What "Featured" means in the provider directory.**~~ — **decided.** Two
+  reasons, recorded per listing in the admin: service found consistently good,
+  or sponsored placement. The badge is the same for both and a visitor is not
+  told which applies to a given listing. The disclosure does say that some
+  featured listings are sponsored — a badge that may mean "they paid" and is
+  indistinguishable from an editorial pick is the specific thing the FTC, the
+  ASA and EU consumer law are written to catch, so the possibility is stated
+  even though the individual listing is not named. If one is ever genuinely
+  paid for, a marker on that one is safer still.
+- ~~**Account enumeration on password reset.**~~ — **decided: closed.** The
+  endpoint now answers identically whether or not the account exists. A
+  mistyped address is no longer told it was mistyped, which is the agreed
+  cost: telling a typo apart from an unknown address IS the leak.
 - ~~**Storing passport copies**~~ — **decided: no.** The site does not store
   passport copies or identity documents. Per-trip notes exist instead, for the
   things a traveler wants to remember, and the field says plainly that notes
