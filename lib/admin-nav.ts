@@ -31,10 +31,11 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Pages",
     blurb: "The words and pictures on the website.",
     icon: "▤",
-    keywords: "text copy wording edit heading intro publish draft page inventory content photo picture image upload submission report analytics searches visits demand looking",
+    keywords: "text copy wording edit heading intro publish draft page inventory content photo picture image upload submission report analytics searches visits demand looking history changed edit undo revision who",
     children: [
       { href: "/admin/pages", label: "All pages", blurb: "Every page you can edit." },
       { href: "/admin/reports", label: "What people want", blurb: "Which empty pages they open." },
+      { href: "/admin/history", label: "What changed", blurb: "Every edit, and how to undo it." },
       { href: "/admin/content", label: "Visitor suggestions", blurb: "Corrections people sent in." },
       { href: "/admin/photos", label: "Pictures sent in", blurb: "Waiting for you to say yes." },
       { href: "/admin/inventory", label: "Checklist", blurb: "What is still unfinished." },

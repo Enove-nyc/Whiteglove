@@ -8,6 +8,7 @@
 import { randomUUID } from "node:crypto";
 import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
 import { remember } from "@/lib/recycle-store";
+import { recordChange } from "@/lib/changes-store";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -74,19 +75,27 @@ export type DestinationFields = {
 
 export async function updateDestinationFields(slug: string, fields: DestinationFields) {
   const prisma = await db();
-  return prisma.destination.update({
+  // Read what it says before writing over it. A shorter overview pasted over a
+  // longer one is the quiet way to lose a morning's work.
+  const before = await prisma.destination.findUnique({
     where: { slug },
-    data: {
-      city: fields.city,
-      yiddishCity: fields.yiddishCity,
-      country: fields.country,
-      overview: fields.overview,
-      summary: fields.summary,
-      safetyNote: fields.safetyNote,
-      status: fields.status,
-      lastVerified: new Date(),
-    },
+    select: { city: true, yiddishCity: true, country: true, overview: true, summary: true, safetyNote: true, status: true },
   });
+  const data = {
+    city: fields.city,
+    yiddishCity: fields.yiddishCity,
+    country: fields.country,
+    overview: fields.overview,
+    summary: fields.summary,
+    safetyNote: fields.safetyNote,
+    status: fields.status,
+  };
+  const row = await prisma.destination.update({
+    where: { slug },
+    data: { ...data, lastVerified: new Date() },
+  });
+  await recordChange({ kind: "town", rowId: slug, title: fields.city || slug, before, after: data });
+  return row;
 }
 
 // ---- Contacts (shomer / access) -------------------------------------
@@ -107,7 +116,13 @@ export async function createContact(destinationId: string, fields: ContactFields
 
 export async function updateContact(id: string, fields: ContactFields) {
   const prisma = await db();
-  return prisma.contact.update({ where: { id }, data: fields });
+  const before = await prisma.contact.findUnique({
+    where: { id },
+    select: { label: true, phone: true, email: true, note: true },
+  });
+  const row = await prisma.contact.update({ where: { id }, data: fields });
+  await recordChange({ kind: "contact", rowId: id, title: fields.label, before, after: fields as unknown as Record<string, unknown> });
+  return row;
 }
 
 export async function deleteContact(id: string) {
@@ -295,10 +310,19 @@ export async function createPlace(destinationId: string, fields: PlaceFields) {
 
 export async function updatePlace(id: string, fields: PlaceFields) {
   const prisma = await db();
-  return prisma.practicalPlace.update({
+  const before = await prisma.practicalPlace.findUnique({ where: { id } });
+  const row = await prisma.practicalPlace.update({
     where: { id },
     data: { ...fields, lastVerified: new Date() },
   });
+  await recordChange({
+    kind: "listing",
+    rowId: id,
+    title: fields.name,
+    before: before as unknown as Record<string, unknown> | null,
+    after: fields as unknown as Record<string, unknown>,
+  });
+  return row;
 }
 
 export async function deletePlace(id: string) {
@@ -331,11 +355,14 @@ export type PageFields = {
 
 export async function upsertPage(slug: string, fields: PageFields) {
   const prisma = await db();
-  return prisma.page.upsert({
+  const before = await prisma.page.findUnique({ where: { slug }, select: { title: true, body: true, status: true } });
+  const row = await prisma.page.upsert({
     where: { slug },
     update: fields,
     create: { slug, ...fields },
   });
+  await recordChange({ kind: "page", rowId: slug, title: fields.title || slug, before, after: fields as unknown as Record<string, unknown> });
+  return row;
 }
 
 // ---- Directory providers (tour operators, planners, agencies, guides) --
@@ -391,7 +418,16 @@ export async function createProvider(fields: ProviderFields) {
 
 export async function updateProvider(slug: string, fields: ProviderFields) {
   const prisma = await db();
-  return prisma.directoryProvider.update({ where: { slug }, data: fields });
+  const before = await prisma.directoryProvider.findUnique({ where: { slug } });
+  const row = await prisma.directoryProvider.update({ where: { slug }, data: fields });
+  await recordChange({
+    kind: "business",
+    rowId: slug,
+    title: fields.name,
+    before: before as unknown as Record<string, unknown> | null,
+    after: fields as unknown as Record<string, unknown>,
+  });
+  return row;
 }
 
 export async function deleteProvider(slug: string) {
@@ -521,7 +557,7 @@ export async function saveCemeteryContact(
   const cemetery = await cemeteryRowForSlug(slug, fallback);
   const existing = await prisma.contact.findFirst({
     where: { cemeteryId: cemetery.id, label: { equals: fields.label.trim(), mode: "insensitive" } },
-    select: { id: true },
+    select: { id: true, label: true, phone: true, email: true, note: true, status: true },
   });
   const data = {
     label: fields.label.trim(),
@@ -530,7 +566,17 @@ export async function saveCemeteryContact(
     note: fields.note?.trim() || null,
     status: "NEEDS_VERIFICATION" as const,
   };
-  if (existing) return prisma.contact.update({ where: { id: existing.id }, data });
+  if (existing) {
+    const row = await prisma.contact.update({ where: { id: existing.id }, data });
+    await recordChange({
+      kind: "cemetery-contact",
+      rowId: existing.id,
+      title: `${data.label} — ${fallback.name}`,
+      before: existing as unknown as Record<string, unknown>,
+      after: data as unknown as Record<string, unknown>,
+    });
+    return row;
+  }
   return prisma.contact.create({ data: { ...data, cemeteryId: cemetery.id } });
 }
 
@@ -591,7 +637,7 @@ export async function listOrphanedBurials() {
   return prisma.tzaddik.findMany({
     where: { cemeteryId: null, destinationId: null },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, yiddishName: true, knownAs: true, seforim: true, yahrzeit: true, note: true },
+    select: { id: true, name: true, yiddishName: true, knownAs: true, seforim: true, yahrzeit: true, note: true, status: true },
   });
 }
 
@@ -636,7 +682,7 @@ export async function saveCemeteryBurial(
   const cemetery = await cemeteryRowForSlug(slug, fallback);
   const existing = await prisma.tzaddik.findFirst({
     where: { cemeteryId: cemetery.id, name: { equals: fields.name.trim(), mode: "insensitive" } },
-    select: { id: true },
+    select: { id: true, name: true, yiddishName: true, knownAs: true, seforim: true, yahrzeit: true, note: true },
   });
   const data = {
     name: fields.name.trim(),
@@ -647,7 +693,17 @@ export async function saveCemeteryBurial(
     note: fields.note?.trim() || null,
     status: "NEEDS_VERIFICATION" as const,
   };
-  if (existing) return prisma.tzaddik.update({ where: { id: existing.id }, data });
+  if (existing) {
+    const row = await prisma.tzaddik.update({ where: { id: existing.id }, data });
+    await recordChange({
+      kind: "burial",
+      rowId: existing.id,
+      title: `${data.knownAs || data.name} — ${fallback.name}`,
+      before: existing as unknown as Record<string, unknown>,
+      after: data as unknown as Record<string, unknown>,
+    });
+    return row;
+  }
   return prisma.tzaddik.create({ data: { ...data, isPrimary: false, cemeteryId: cemetery.id } });
 }
 
