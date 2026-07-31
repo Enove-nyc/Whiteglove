@@ -291,6 +291,8 @@ export type ItineraryDay = {
   freeHours: number | null;
   /** Estimated hours of ground travel this day (transfers + between stops). */
   travelHours: number;
+  /** Of that, minutes spent at a border rather than driving. */
+  borderMinutes: number;
   /** Every ground leg of the day, in order — airport/hotel transfers included. */
   travelLegs: TravelLeg[];
   /** Where the day begins — last night's hotel, or the airport you landed at. */
@@ -369,6 +371,16 @@ export type TravelLeg = {
   measured?: boolean;
   /** Which engine produced it — see Itinerary.roadTimeSources. */
   source?: "google" | "osrm";
+  /**
+   * Time at a border on this leg, counted INSIDE `minutes` above.
+   *
+   * Kept separately as well as inside, because the two are different advice:
+   * five hours of driving means leave early, and two hours of queue means
+   * leave early AND that going at six in the morning may save one of them.
+   */
+  borderMinutes?: number;
+  /** How the border reads — which crossing, and whether anybody checked it. */
+  borderSays?: string;
 };
 
 function timeToMins(t?: string): number | null {
@@ -720,7 +732,39 @@ export function unscheduledActivities(itin: Itinerary): ItinActivity[] {
   return itin.activities.filter((a) => !a.date);
 }
 
-export function buildDays(itin: Itinerary): ItineraryDay[] {
+/**
+ * One end of a ground leg, as far as a border is concerned.
+ *
+ * An address is enough — everything on this site ends its address with the
+ * country. Deliberately structural rather than importing from lib/: this file
+ * holds no knowledge of which countries border which, and should not start.
+ */
+export type BorderEnd = { name?: string; address?: string; coordinates?: string; country?: string };
+
+/** Supplied by the caller, which is the side that knows about crossings. */
+export type BorderCostFn = (from: BorderEnd, to: BorderEnd) => { minutes: number; says: string };
+
+const NO_BORDER_COST = { minutes: 0, says: "" };
+
+function borderOnLeg(
+  borderCostFor: BorderCostFn | undefined,
+  from?: BorderEnd,
+  to?: BorderEnd,
+): { minutes: number; says: string } {
+  if (!borderCostFor || !from || !to) return NO_BORDER_COST;
+  const cost = borderCostFor(from, to);
+  return cost.minutes > 0 ? cost : NO_BORDER_COST;
+}
+
+/**
+ * `borderCostFor` folds the time at a border into the driving.
+ *
+ * Optional, because the crossings are read on the server and every caller that
+ * only wants the days laid out should not have to fetch them. Without it the
+ * planner behaves exactly as it did — the border is warned about further down
+ * and not counted, which is what it did before this existed.
+ */
+export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): ItineraryDay[] {
   const dates = eachDate(itin.startDate, itin.endDate);
   // Worked out once for the whole trip, not per day: whether two flights are
   // one journey depends on both of them, and on where the traveler sleeps.
@@ -774,12 +818,30 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     const arrivalAirportLabel = flightsArriving.find((f) => airportCoordsFor(f.to) === arrivalAirport)?.to;
     const departureAirportLabel = flightsDeparting.find((f) => airportCoordsFor(f.from) === departureAirport)?.from;
 
-    const leg = (kind: TravelLeg["kind"], label: string, from?: string, to?: string): TravelLeg | null => {
+    const leg = (
+      kind: TravelLeg["kind"],
+      label: string,
+      from?: string,
+      to?: string,
+      fromPlace?: BorderEnd,
+      toPlace?: BorderEnd,
+    ): TravelLeg | null => {
       const km = kmBetween(from, to);
       const measured = roadMinutes(from, to);
       const minutes = measured ?? estimateTravelMinutes(km);
       if (km === null || minutes === null || minutes <= 0) return null;
-      return { kind, label, minutes, km, fromCoordinates: from, toCoordinates: to, measured: measured !== undefined, source: roadSource(from, to) };
+      const border = borderOnLeg(borderCostFor, fromPlace, toPlace);
+      return {
+        kind,
+        label,
+        minutes: minutes + border.minutes,
+        km,
+        fromCoordinates: from,
+        toCoordinates: to,
+        measured: measured !== undefined,
+        source: roadSource(from, to),
+        ...(border.minutes ? { borderMinutes: border.minutes, borderSays: border.says } : {}),
+      };
     };
 
     const travelLegs: TravelLeg[] = [];
@@ -788,12 +850,18 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         const l = leg("arrive-airport", `Airport ${arrivalAirportLabel} → ${firstStop.name}`, arrivalAirport, firstStop.coordinates);
         if (l) travelLegs.push(l);
       } else if (prevNightLodging?.coordinates) {
-        const l = leg("from-lodging", `${prevNightLodging.name || "Hotel"} → ${firstStop.name}`, prevNightLodging.coordinates, firstStop.coordinates);
+        const l = leg("from-lodging", `${prevNightLodging.name || "Hotel"} → ${firstStop.name}`, prevNightLodging.coordinates, firstStop.coordinates, prevNightLodging, firstStop);
         if (l) travelLegs.push(l);
       }
     }
     withDistance.forEach((a, i) => {
       if (i === 0 || a.travelMinutesFromPrev === null || a.travelMinutesFromPrev <= 0) return;
+      const border = borderOnLeg(borderCostFor, withDistance[i - 1], a);
+      // Counted inside the leg AND inside the stop's own travel time, so the
+      // clock that works out arrival times moves by it too. A border that is
+      // in the day's total but not in the arrival times would put somebody at
+      // a kever two hours before they can be there.
+      a.travelMinutesFromPrev += border.minutes;
       travelLegs.push({
         kind: "stop",
         label: `${withDistance[i - 1].name} → ${a.name}`,
@@ -803,6 +871,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         toCoordinates: a.coordinates,
         measured: a.travelIsMeasured,
         source: a.travelSource,
+        ...(border.minutes ? { borderMinutes: border.minutes, borderSays: border.says } : {}),
       });
     });
     if (lastStop) {
@@ -810,7 +879,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
         const l = leg("depart-airport", `${lastStop.name} → airport ${departureAirportLabel}`, lastStop.coordinates, departureAirport);
         if (l) travelLegs.push(l);
       } else if (lodging?.coordinates && lodging.type !== "overnight-transit") {
-        const l = leg("to-lodging", `${lastStop.name} → ${lodging.name || "hotel"}`, lastStop.coordinates, lodging.coordinates);
+        const l = leg("to-lodging", `${lastStop.name} → ${lodging.name || "hotel"}`, lastStop.coordinates, lodging.coordinates, lastStop, lodging);
         if (l) travelLegs.push(l);
       }
     }
@@ -818,6 +887,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
     // All of it is real time that isn't free.
     const travelMins = travelLegs.reduce((sum, l) => sum + l.minutes, 0);
     const travelHours = Math.round((travelMins / 60) * 10) / 10;
+    const borderMinutes = travelLegs.reduce((sum, l) => sum + (l.borderMinutes ?? 0), 0);
 
     // --- What time you actually get there --------------------------------
     // Roll a clock forward from the moment the day starts: leave the hotel (or
@@ -974,6 +1044,7 @@ export function buildDays(itin: Itinerary): ItineraryDay[] {
       warnings,
       freeHours,
       travelHours,
+      borderMinutes,
       travelLegs,
       startsFrom,
       startTime: minsToTime(dayStart),

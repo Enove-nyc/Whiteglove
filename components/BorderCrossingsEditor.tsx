@@ -99,15 +99,34 @@ function CheckForm({
           <DateField value={checkedAt} onChange={setCheckedAt} name="checkedAt" ariaLabel="The day you checked" />
         </label>
       </div>
-      <label className="mt-4 block">
-        <span className={captionClass}>How long, in your own words</span>
-        <input
-          name="wait"
-          defaultValue={crossing.wait ?? ""}
-          className={inputClass}
-          placeholder="About two hours for a coach, less before six in the morning"
-        />
-      </label>
+      <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
+        <label className="block">
+          <span className={captionClass}>How long, in your own words</span>
+          <input
+            name="wait"
+            defaultValue={crossing.wait ?? ""}
+            className={inputClass}
+            placeholder="About two hours for a coach, less before six in the morning"
+          />
+        </label>
+        <label className="block">
+          {/* A separate number, because the planner has to add it up and no
+              amount of reading "less before six" turns into arithmetic it can
+              trust. Left empty, the planner allows its standing figure and
+              says that is what it is doing. */}
+          <span className={captionClass}>Minutes, for the planner</span>
+          <input
+            name="waitMinutes"
+            type="number"
+            min={0}
+            max={1440}
+            inputMode="numeric"
+            defaultValue={crossing.waitMinutes ?? ""}
+            className={inputClass}
+            placeholder="120"
+          />
+        </label>
+      </div>
       <label className="mt-4 block">
         <span className={captionClass}>Anything permanent worth saying</span>
         <input

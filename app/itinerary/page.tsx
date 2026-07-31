@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { getActivePromotions } from "@/lib/admin-content";
+import { allCrossings } from "@/lib/border-store";
 
 export const metadata = pageMetadata({
   title: "Itinerary planner — White Glove Itineraries",
@@ -19,6 +20,9 @@ export default async function ItineraryPage() {
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
+  // Which crossings are on each border and what was found at them. Read here
+  // because the planner runs in the browser and the crossings do not.
+  const crossings = await allCrossings();
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -41,7 +45,7 @@ export default async function ItineraryPage() {
 
         <div className="itinerary-planner mt-8">
           <SharedWithMe />
-          <ItineraryBuilder />
+          <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} />
         </div>
 
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />

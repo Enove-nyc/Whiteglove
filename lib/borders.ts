@@ -70,6 +70,17 @@ export function countryOf(place: Pick<SavedPlace, "address"> & { country?: strin
   return null;
 }
 
+/**
+ * Whether a leg crosses a border, and whether it is one that queues.
+ *
+ * The Schengen list is private to this file and stays that way; this is the
+ * one question anything outside needs answered about it.
+ */
+export function borderBetween(fromCountry: string | null, toCountry: string | null): { major: boolean } | null {
+  if (!fromCountry || !toCountry || fromCountry === toCountry) return null;
+  return { major: SCHENGEN.has(fromCountry) !== SCHENGEN.has(toCountry) };
+}
+
 export type BorderCrossing = {
   from: string;
   to: string;
