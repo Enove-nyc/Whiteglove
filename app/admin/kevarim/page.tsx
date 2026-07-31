@@ -1,7 +1,7 @@
 import Link from "next/link";
-import KeverEditor, { type EditorCemetery } from "@/components/KeverEditor";
+import KeverEditor, { type EditorCemetery, type OrphanedBurial } from "@/components/KeverEditor";
 import { cemeteries } from "@/data/cemeteries";
-import { cemeteryPhotosBySlug, isDbEnabled, listCemeteriesForAdmin, listCemeteryBurials } from "@/lib/content-admin";
+import { cemeteryPhotosBySlug, isDbEnabled, listCemeteriesForAdmin, listCemeteryBurials, listOrphanedBurials } from "@/lib/content-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,8 @@ export default async function AdminKevarimPage() {
   // have no database row until something is saved against them, which is why
   // they can't come from a Prisma query alone.
   let rows: EditorCemetery[] = [];
+  // People a re-import detached from their beis hachaim. Almost always empty.
+  let orphans: OrphanedBurial[] = [];
   let failed = false;
 
   if (dbReady) {
@@ -19,7 +21,12 @@ export default async function AdminKevarimPage() {
       const builtInSlugs = new Set(cemeteries.map((c) => c.slug));
       // One query for every stored picture rather than one per beis hachaim:
       // 175 round trips to answer "none" for nearly all of them is not a page.
-      const [rowsForAdmin, photos] = await Promise.all([listCemeteriesForAdmin(), cemeteryPhotosBySlug()]);
+      const [rowsForAdmin, photos, detached] = await Promise.all([
+        listCemeteriesForAdmin(),
+        cemeteryPhotosBySlug(),
+        listOrphanedBurials(),
+      ]);
+      orphans = detached;
       const added = rowsForAdmin.filter((c) => !builtInSlugs.has(c.slug));
 
       const all = [
@@ -80,7 +87,7 @@ export default async function AdminKevarimPage() {
             <Link href="/admin/destinations" className="underline">Destination editor</Link>, then reload this page.
           </p>
         ) : (
-          <KeverEditor cemeteries={rows} />
+          <KeverEditor cemeteries={rows} orphans={orphans} />
         )}
       </section>
     </>
