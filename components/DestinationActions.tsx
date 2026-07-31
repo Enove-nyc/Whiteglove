@@ -1,0 +1,314 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useState, useSyncExternalStore } from "react";
+import { placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
+import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
+import { signInHref, useSignedIn } from "@/lib/use-signed-in";
+
+/**
+ * Everything you can do with a destination, in one bar, on every destination
+ * page.
+ *
+ * The guides were good pages that dead-ended: you could read everything about
+ * Lizhensk and the only thing the page let you do was save it. Planning
+ * happened somewhere else, and you had to go and find it. So the actions the
+ * planner needs now live where the reading happens — add it, make it the start
+ * or the end of the route, put it on the trip, see what else is near it, find
+ * the airport, send it to somebody.
+ *
+ * The same bar on every page, in the same order, so it is learned once.
+ */
+
+const ROUTE_KEY = "whiteGloveMyRoute";
+const FAVORITES_KEY = "whiteGloveFavorites";
+const ITINERARY_KEY = "whiteGloveItinerary";
+
+export type NearbyAirport = { code: string; name: string; km: string; directionsUrl: string };
+
+const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
+
+const NONE: SavedPlace[] = [];
+
+/**
+ * Parsed once per distinct stored value.
+ *
+ * useSyncExternalStore compares snapshots by identity, so parsing afresh on
+ * every read would hand React a new array each time and it would re-render
+ * forever.
+ */
+const parsed = new Map<string, { raw: string; value: SavedPlace[] }>();
+
+function read(key: string): SavedPlace[] {
+  if (typeof window === "undefined") return NONE;
+  const raw = localStorage.getItem(key) || "[]";
+  const cached = parsed.get(key);
+  if (cached && cached.raw === raw) return cached.value;
+  let value: SavedPlace[] = NONE;
+  try {
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)) value = list as SavedPlace[];
+  } catch {
+    /* a corrupt entry is an empty route, not a crash */
+  }
+  parsed.set(key, { raw, value });
+  return value;
+}
+
+/**
+ * The saved route and favourites, read from storage rather than copied into
+ * state.
+ *
+ * Copying them into state in an effect meant this bar could disagree with the
+ * rest of the page — save something in the header and these buttons still said
+ * "Add". Subscribing means every copy of the bar, and the route count in the
+ * header, are looking at the same thing. `storage` covers the other tab.
+ */
+function subscribe(onChange: () => void) {
+  window.addEventListener("whiteglove-route", onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener("whiteglove-route", onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function useSavedPlaces(key: string): SavedPlace[] {
+  const snapshot = useCallback(() => read(key), [key]);
+  // The server has no storage; an empty route is what it renders, and the
+  // real one arrives on hydration.
+  return useSyncExternalStore(subscribe, snapshot, () => NONE);
+}
+
+function write(key: string, places: SavedPlace[]) {
+  localStorage.setItem(key, JSON.stringify(places));
+  // The route dashboard and the header count listen for this.
+  window.dispatchEvent(new Event("whiteglove-route"));
+}
+
+const base =
+  "inline-flex min-h-11 items-center justify-center rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.11em] transition";
+const idle = `${base} border-[var(--gold)] text-[var(--navy)] hover:bg-[var(--cream-deep)]`;
+const done = `${base} border-[var(--navy)] bg-[var(--navy)] text-white`;
+const quiet = `${base} border-[var(--gold-light)] text-stone-600 hover:border-[var(--gold)] hover:text-[var(--navy)]`;
+
+type Nearby = { name: string; yiddishName?: string; href: string; km: number };
+
+export default function DestinationActions({
+  place,
+  airports = [],
+}: {
+  place: SavedPlace;
+  /** Worked out on the server, where the airport list already lives. */
+  airports?: NearbyAirport[];
+}) {
+  const signedIn = useSignedIn();
+  const route = useSavedPlaces(ROUTE_KEY);
+  const favorites = useSavedPlaces(FAVORITES_KEY);
+  const favorite = favorites.some((item) => item.id === place.id);
+  const [onTrip, setOnTrip] = useState(false);
+  const [panel, setPanel] = useState<"nearby" | "airports" | null>(null);
+  const [nearby, setNearby] = useState<Nearby[] | null>(null);
+  const [shared, setShared] = useState("");
+
+  const role = placeRole(route, place.id);
+
+  const saveRoute = (next: SavedPlace[]) => {
+    write(ROUTE_KEY, next);
+    void fetch("/api/account/places", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: "route", action: "replace", items: next }),
+    }).catch(() => undefined);
+  };
+
+  const toggleRoute = () =>
+    saveRoute(role === "absent" ? [...route, place] : route.filter((item) => item.id !== place.id));
+
+  const toggleFavorite = () => {
+    const next = favorite ? favorites.filter((item) => item.id !== place.id) : [...favorites, place];
+    write(FAVORITES_KEY, next);
+    void fetch("/api/account/places", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: "favorites", action: "toggle", place }),
+    }).catch(() => undefined);
+  };
+
+  /**
+   * The itinerary is the day-by-day plan; the route is the list of stops.
+   * They are different things and a destination belongs on both — this puts
+   * it on the plan as a stop with its address, so the planner can work out
+   * driving time to it without anybody retyping where it is.
+   */
+  const addToItinerary = () => {
+    let itin: Itinerary = emptyItinerary();
+    try {
+      const saved = localStorage.getItem(ITINERARY_KEY);
+      if (saved) itin = { ...emptyItinerary(), ...JSON.parse(saved) };
+    } catch {
+      /* start fresh */
+    }
+    const activity: ItinActivity = {
+      id: uid(),
+      name: place.name,
+      yiddishName: place.yiddishName,
+      address: place.address,
+      coordinates: place.coordinates,
+      // Empty means unscheduled: the planner places it. Guessing a date here
+      // would put a stop on a day nobody chose.
+      date: "",
+      bookedOnSite: false,
+    };
+    const next: Itinerary = { ...itin, activities: [...(itin.activities ?? []), activity] };
+    try {
+      localStorage.setItem(ITINERARY_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    void fetch("/api/account/itinerary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itinerary: next }),
+    }).catch(() => undefined);
+    setOnTrip(true);
+  };
+
+  const openNearby = async () => {
+    setPanel(panel === "nearby" ? null : "nearby");
+    if (nearby || !place.coordinates) return;
+    try {
+      const response = await fetch(`/api/itinerary/nearby?coordinates=${encodeURIComponent(place.coordinates)}&exclude=${encodeURIComponent(place.name)}`);
+      const data = await response.json();
+      setNearby(Array.isArray(data.suggestions) ? data.suggestions : []);
+    } catch {
+      setNearby([]);
+    }
+  };
+
+  const share = async () => {
+    const url = typeof window !== "undefined" ? new URL(place.href ?? "/", window.location.origin).toString() : "";
+    const payload = { title: place.name, text: `${place.name} — White Glove Itineraries`, url };
+    // The phone's own share sheet where there is one; the clipboard where
+    // there is not. Both end with the person holding a link.
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share(payload);
+        return;
+      } catch {
+        // Dismissed, or refused. Fall through to the clipboard rather than
+        // leaving the button having done nothing.
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShared("Link copied.");
+    } catch {
+      setShared(url);
+    }
+  };
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-2">
+        {/* Still asking whether they are signed in. A placeholder holds the
+            row's height so the read-only actions beside it do not jump when
+            the answer lands, and flashing "sign in" at somebody who is
+            already signed in is worse than a moment of nothing. */}
+        {signedIn === null ? (
+          <span className="h-11" aria-hidden="true" />
+        ) : signedIn ? (
+          <>
+            <button type="button" onClick={toggleRoute} className={role === "absent" ? idle : done} aria-pressed={role !== "absent"}>
+              {role === "absent" ? "Add to My Route" : "✓ On My Route"}
+            </button>
+            <button type="button" onClick={() => saveRoute(withPlaceFirst(route, place))} className={role === "start" ? done : quiet} aria-pressed={role === "start"}>
+              {role === "start" ? "✓ Starts here" : "Start route here"}
+            </button>
+            <button type="button" onClick={() => saveRoute(withPlaceLast(route, place))} className={role === "end" ? done : quiet} aria-pressed={role === "end"}>
+              {role === "end" ? "✓ Ends here" : "End route here"}
+            </button>
+            <button type="button" onClick={toggleFavorite} className={favorite ? done : idle} aria-pressed={favorite}>
+              {favorite ? "✓ Saved" : "Save destination"}
+            </button>
+            <button type="button" onClick={addToItinerary} className={onTrip ? done : idle}>
+              {onTrip ? "✓ On your itinerary" : "Add to itinerary"}
+            </button>
+          </>
+        ) : (
+          <Link href={signInHref()} className={`${base} border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)]`}>
+            Sign in to plan with this
+          </Link>
+        )}
+
+        {/* These need no account — they are reading, not saving. */}
+        {place.coordinates && (
+          <button type="button" onClick={openNearby} className={quiet} aria-expanded={panel === "nearby"}>
+            Nearby destinations
+          </button>
+        )}
+        {airports.length > 0 && (
+          <button type="button" onClick={() => setPanel(panel === "airports" ? null : "airports")} className={quiet} aria-expanded={panel === "airports"}>
+            Nearest airport
+          </button>
+        )}
+        <button type="button" onClick={share} className={quiet}>
+          Share
+        </button>
+      </div>
+
+      {signedIn === false && (
+        <p className="mt-3 text-sm leading-6 text-stone-600">
+          A route is kept in your account, so it is there on your phone when you are standing at the gate — not only in
+          this browser.
+        </p>
+      )}
+      {shared && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{shared}</p>}
+
+      {panel === "nearby" && (
+        <div className="mt-4 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Also near {place.name}</p>
+          {nearby === null ? (
+            <p className="mt-2 text-sm text-stone-500">Looking…</p>
+          ) : nearby.length === 0 ? (
+            <p className="mt-2 text-sm text-stone-600">Nothing else of ours within a reasonable drive of here.</p>
+          ) : (
+            <ul className="mt-3 space-y-1">
+              {nearby.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="flex min-h-11 items-center justify-between gap-3 rounded-md px-2 text-sm text-[var(--navy)] hover:bg-[var(--cream-deep)]">
+                    <span>{item.name}</span>
+                    <span className="shrink-0 text-xs tabular-nums text-stone-500">{Math.round(item.km)} km</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {panel === "airports" && (
+        <div className="mt-4 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Flying in</p>
+          <ul className="mt-3 space-y-1">
+            {airports.map((airport) => (
+              <li key={airport.code} className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm text-[var(--navy)]">
+                  <strong>{airport.code}</strong> — {airport.name} {airport.km && <span className="text-stone-500">({airport.km})</span>}
+                </span>
+                <span className="flex gap-2">
+                  <a href={airport.directionsUrl} target="_blank" rel="noreferrer" className={quiet}>
+                    Driving time
+                  </a>
+                  <Link href={`/book?type=flights&to=${encodeURIComponent(airport.code)}`} className={quiet}>
+                    Find flights
+                  </Link>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}

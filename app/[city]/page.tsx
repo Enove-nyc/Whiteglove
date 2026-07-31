@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
-import SavePlaceButtons from "@/components/SavePlaceButtons";
+import DestinationActions from "@/components/DestinationActions";
+import { airportsFor } from "@/lib/destination-actions";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
@@ -66,7 +67,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
               {graveMapUrl && <a href={graveMapUrl} target="_blank" rel="noreferrer" className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to the kever →</a>}
               {cemetery && <a href={`/cemeteries/${cemetery.slug}`} className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">View this בית החיים →</a>}
             </div>
-            <SavePlaceButtons place={{ id: guide.slug, name: guide.city, yiddishName: guide.yiddishCity, address: guide.graveAddress ?? `${guide.city}, ${guide.country}`, coordinates: guide.graveCoordinates, href: `/${guide.slug}` }} />
+            <DestinationActions place={{ id: guide.slug, name: guide.city, yiddishName: guide.yiddishCity, address: guide.graveAddress ?? `${guide.city}, ${guide.country}`, coordinates: guide.graveCoordinates, href: `/${guide.slug}` }} airports={airportsFor(guide.country, guide.graveAddress, guide.graveCoordinates)} />
 
             {guide.findingNotes && <div className="mt-8 border-t border-[var(--gold-light)] pt-5">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Finding the kever</p>
