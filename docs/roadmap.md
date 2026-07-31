@@ -27,7 +27,7 @@ Status words mean exactly this:
 | 9 | Account verification, recovery, rate limiting | **Done** | #152 |
 | 10 | Route optimization, saving, sharing, printing | **Part** | #153 — map preview and drag-and-drop still open |
 | 11 | Directory filtering and large-list performance | **Done** | #154 |
-| 12 | Provider verification and listing management | **Part** | this PR — verified badge and consent flags need the migration |
+| 12 | Provider verification and listing management | **Done** | a number is published only on consent or a public source of their own; a checked date and response time show when set; both admin screens can record consent. **Needs the migration run.** |
 | 13 | Sponsored-content experience | **Open** | |
 | 14 | Performance, accessibility and cross-browser QA | **Part** | audit script exists; Safari still needs a real device |
 
@@ -105,6 +105,21 @@ writing the new fields — the destination manager (§4), the provider consent
 flags (scan 1 item 12), the photo library (§7) — is the next piece of work,
 and `lib/verification.ts` still counts Tefillos, Shabbos, Hospital, Emergency
 and Photos as untracked because the *record type it reads* has not changed yet.
+
+---
+
+## Known: pages that were frozen at build time
+
+`/directory`, `/attractions`, `/kosher-stays` and `/map` all read content the
+owner adds in the admin, and all four were prerendered once per deploy. A
+listing added on Tuesday was still absent on Friday — the admin saved it, the
+store held it, and the page kept serving the snapshot taken at build. All four
+now render per request.
+
+`revalidate = 60` was tried first and measured: the page still never re-read
+the store, because those reads are `cache: "no-store"` fetches that a prerender
+does not re-run. Worth remembering before adding another owner-edited page —
+the mode has to be `force-dynamic`, the same as `/stops` and the admin.
 
 ---
 

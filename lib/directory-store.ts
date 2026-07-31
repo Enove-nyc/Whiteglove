@@ -21,6 +21,21 @@ export type StoredProvider = {
   notes?: string;
   featured?: boolean;
   published?: boolean;
+  /**
+   * Permission to put their phone number on a public page.
+   *
+   * These are the listings the owner typed in from a number somebody gave
+   * them, which is exactly the case where having been given a number once is
+   * not the same as agreeing to it being published. Absent means no, and the
+   * number is kept but withheld.
+   */
+  contactConsent?: boolean;
+  /** How it was given — "asked by phone, 4 March" — so it is not a memory. */
+  contactConsentNote?: string;
+  /** When the listing itself was last checked. Shown only when set. */
+  verifiedAt?: string;
+  /** In their words: "same day", "within a week". */
+  responseTime?: string;
   createdAt: string;
 };
 
@@ -101,6 +116,10 @@ export async function saveStoredProvider(input: Partial<StoredProvider> & { name
     notes: clean(input.notes, 600) || undefined,
     featured: Boolean(input.featured),
     published: input.published !== false,
+    contactConsent: Boolean(input.contactConsent),
+    contactConsentNote: clean(input.contactConsentNote, 300) || undefined,
+    verifiedAt: clean(input.verifiedAt, 40) || undefined,
+    responseTime: clean(input.responseTime, 80) || undefined,
     createdAt: items.find((p) => p.id === input.id)?.createdAt || new Date().toISOString(),
   };
   const next = [base, ...items.filter((p) => p.id !== base.id)];

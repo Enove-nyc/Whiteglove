@@ -177,6 +177,12 @@ export type ProviderFields = {
   specialties: string[];
   featured: boolean;
   status: ContentStatus;
+  /** Permission to put their phone number on a public page. Never inferred. */
+  contactConsent: boolean;
+  contactConsentAt: Date | null;
+  contactConsentNote: string | null;
+  verifiedAt: Date | null;
+  responseTime: string | null;
 };
 
 function providerSlug(name: string) {

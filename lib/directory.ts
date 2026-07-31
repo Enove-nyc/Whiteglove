@@ -12,6 +12,7 @@ import {
   type ProviderCat,
 } from "@/data/directory";
 import { listStoredProviders } from "@/lib/directory-store";
+import { publishableContact } from "@/lib/provider-contact";
 
 export { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER };
 export type { ProviderCat };
@@ -34,17 +35,26 @@ export type PublicProvider = {
   specialties: string[];
   featured: boolean;
   source: string | null;
+  /** Set when a number is held on file but may not be published. */
+  contactWithheld: boolean;
+  /** When somebody last checked this listing. Null unless it was checked. */
+  verifiedAt: string | null;
+  /** How quickly they answer, in their own words. */
+  responseTime: string | null;
 };
 
 function fromStatic(): PublicProvider[] {
+  // Every built-in entry is gathered from a public page of the provider's own
+  // and carries the `source` to prove it, which is what makes its number
+  // publishable. withPublishableContact still decides — an entry that ever
+  // loses its source loses its number with it.
   return directoryProviders.map((p) => ({
     slug: p.slug,
     name: p.name,
     category: p.category,
     tagline: p.tagline ?? null,
     description: p.description ?? null,
-    phone: p.phone ?? null,
-    whatsapp: p.whatsapp ?? null,
+    ...publishableContact(p, { source: p.source }),
     email: p.email ?? null,
     website: p.website ?? null,
     basedIn: p.basedIn ?? null,
@@ -53,6 +63,8 @@ function fromStatic(): PublicProvider[] {
     specialties: p.specialties ?? [],
     featured: p.featured ?? false,
     source: p.source ?? null,
+    verifiedAt: null,
+    responseTime: null,
   }));
 }
 
@@ -77,8 +89,9 @@ async function fromStore(): Promise<PublicProvider[]> {
         category: p.category as ProviderCat,
         tagline: p.tagline ?? null,
         description: [p.description, p.services].filter(Boolean).join(" — ") || null,
-        phone: p.phone ?? null,
-        whatsapp: p.whatsapp ?? null,
+        // Owner-typed listings have no public source, so consent is the only
+        // ground — which is the whole point of the flag.
+        ...publishableContact(p, { contactConsent: p.contactConsent }),
         email: p.email ?? null,
         website: p.website ?? null,
         basedIn: p.basedIn ?? null,
@@ -87,6 +100,8 @@ async function fromStore(): Promise<PublicProvider[]> {
         specialties: splitList(p.specialties),
         featured: Boolean(p.featured),
         source: null,
+        verifiedAt: p.verifiedAt ?? null,
+        responseTime: p.responseTime ?? null,
       }));
   } catch {
     return [];
@@ -110,8 +125,7 @@ export async function getPublicProviders(): Promise<PublicProvider[]> {
       category: r.category as ProviderCat,
       tagline: r.tagline,
       description: r.description,
-      phone: r.phone,
-      whatsapp: r.whatsapp,
+      ...publishableContact(r, { contactConsent: r.contactConsent, source: r.source }),
       email: r.email,
       website: r.website,
       basedIn: r.basedIn,
@@ -120,6 +134,8 @@ export async function getPublicProviders(): Promise<PublicProvider[]> {
       specialties: r.specialties,
       featured: r.featured,
       source: r.source,
+      verifiedAt: r.verifiedAt ? r.verifiedAt.toISOString() : null,
+      responseTime: r.responseTime,
     }));
     return sortProviders([...store, ...dbProviders]);
   } catch (error) {
