@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
-import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, updateSuggestionStatus } from "@/lib/admin-content";
+import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, reviewSuggestion } from "@/lib/admin-content";
+import { reviewProblem, type ReviewDecision } from "@/lib/suggestions";
 
 function isAdmin(request: NextRequest) {
   return isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value);
@@ -30,9 +31,19 @@ export async function POST(request: NextRequest) {
     const saved = await upsertLocations(body.data as Parameters<typeof upsertLocations>[0]);
     if (!saved) return NextResponse.json({ error: "Connect the private database before importing locations." }, { status: 503 });
   } else if (body.kind === "suggestion") {
-    const payload = body.data as { id?: string; status?: "pending" | "approved" | "rejected" | "needs-info"; reviewerNotes?: string };
+    const payload = body.data as { id?: string; status?: ReviewDecision; reviewerNotes?: string; acceptedInfo?: string };
     if (!payload?.id || !payload.status) return NextResponse.json({ error: "Choose a suggestion status." }, { status: 400 });
-    const saved = await updateSuggestionStatus(payload.id, payload.status, payload.reviewerNotes ?? "");
+    // The same rule the screen applies, applied again here. The screen can be
+    // bypassed; the rule is what stops a rejection with no reason from being
+    // stored, and a reason nobody recorded cannot be recovered later.
+    const problem = reviewProblem({ status: payload.status, notes: payload.reviewerNotes ?? "" });
+    if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+    const saved = await reviewSuggestion(payload.id, {
+      status: payload.status,
+      notes: payload.reviewerNotes ?? "",
+      acceptedInfo: payload.acceptedInfo ?? "",
+    });
+    if (saved === "missing") return NextResponse.json({ error: "That suggestion is no longer there." }, { status: 404 });
     if (!saved) return NextResponse.json({ error: "Connect the private database before editing suggestions." }, { status: 503 });
   } else if (body.kind === "promotion") {
     const saved = await upsertPromotion(body.data as Parameters<typeof upsertPromotion>[0]);

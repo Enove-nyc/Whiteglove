@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import SuggestionReview from "@/components/SuggestionReview";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
+import type { ReviewInput } from "@/lib/suggestions";
 
 type Tab = "settings" | "locations" | "bulk" | "accommodations" | "suggestions" | "promotions" | "report";
 
@@ -71,14 +73,21 @@ function parseLocationsCsv(text: string): EditableLocation[] {
   }).filter((item) => item.title.trim() || item.yiddishTitle.trim() || item.route.trim());
 }
 
-export default function AdminContentManager({ initialBundle, configured, initialTab, initialMissing }: {
+export default function AdminContentManager({ initialBundle, configured, initialTab, initialMissing, suggestionLinks = {}, readAt: initialReadAt }: {
   initialBundle: AdminContentBundle;
   configured: boolean;
   /** From the page's own query string, so the server and the browser agree. */
   initialTab?: Tab;
   initialMissing?: "" | "address" | "coordinates" | "shomer";
+  /** Public page for each suggestion's target, worked out on the server. */
+  suggestionLinks?: Record<string, string>;
+  /** When the list was read, so both renders age it from the same moment. */
+  readAt: number;
 }) {
   const [bundle, setBundle] = useState(initialBundle);
+  // Moves with the bundle: every save returns a freshly read list, and ages
+  // measured from the first read would drift behind it.
+  const [readAt, setReadAt] = useState(initialReadAt);
   const [tab, setTab] = useState<Tab>(initialTab ?? "report");
   const [savingKey, setSavingKey] = useState("");
   const [message, setMessage] = useState(configured ? "" : "Connect the private database before editing site content.");
@@ -130,10 +139,12 @@ export default function AdminContentManager({ initialBundle, configured, initial
     pendingSuggestions: bundle.suggestions.filter((item) => item.status === "pending").length,
   }), [bundle]);
 
-  async function save(kind: "settings" | "location" | "locations-bulk" | "accommodation" | "suggestion", data: unknown) {
+  /** Returns the reason it failed, or null. */
+  async function save(kind: "settings" | "location" | "locations-bulk" | "accommodation" | "suggestion", data: unknown): Promise<string | null> {
     if (!configured) {
-      setMessage("Connect the private database before editing site content.");
-      return;
+      const reason = "Connect the private database before editing site content.";
+      setMessage(reason);
+      return reason;
     }
     setSavingKey(kind);
     setMessage("Saving...");
@@ -142,16 +153,25 @@ export default function AdminContentManager({ initialBundle, configured, initial
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kind, data }),
     });
-    const next = await response.json().catch(() => null) as { bundle?: AdminContentBundle; error?: string } | null;
+    const next = await response.json().catch(() => null) as { bundle?: AdminContentBundle; readAt?: number; error?: string } | null;
     setSavingKey("");
     if (!response.ok || !next?.bundle) {
-      setMessage(next?.error || "The content could not be saved.");
-      return;
+      const reason = next?.error || "The content could not be saved.";
+      setMessage(reason);
+      return reason;
     }
     setBundle(next.bundle);
+    setReadAt(next.readAt ?? readAt);
     setSiteSettings(next.bundle.settings);
     setMessage("Saved.");
+    return null;
   }
+
+  // The review screen shows the reason a decision would not save beside the
+  // suggestion it belongs to, rather than in the strip at the top of the page
+  // where it is nowhere near what you just pressed.
+  const review = (id: string, input: ReviewInput) =>
+    save("suggestion", { id, status: input.status, reviewerNotes: input.notes, acceptedInfo: input.acceptedInfo ?? "" });
 
   const lacks = (item: EditableLocation) =>
     missingOnly === "address"
@@ -354,30 +374,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
       )}
 
       {tab === "suggestions" && (
-        <div className="mt-6 space-y-4">
-          {bundle.suggestions.length === 0 ? <p className="text-sm text-stone-600">No suggestions yet.</p> : bundle.suggestions.map((item) => (
-            <article key={item.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{item.targetType}</p>
-                  <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{item.title}</h3>
-                </div>
-                <span className={`border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${statusClass(item.status)}`}>{item.status}</span>
-              </div>
-              <p className="mt-3 text-sm text-stone-600"><strong>{item.name}</strong> - {item.email}</p>
-              <p className="mt-3 text-sm leading-6 text-stone-700"><strong>Issue:</strong> {item.issue}</p>
-              <p className="mt-2 text-sm leading-6 text-stone-700"><strong>Suggested:</strong> {item.suggestedInfo}</p>
-              {item.currentInfo && <p className="mt-2 text-sm leading-6 text-stone-500"><strong>Current:</strong> {item.currentInfo}</p>}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(["approved", "rejected", "needs-info"] as const).map((status) => (
-                  <button key={status} type="button" onClick={() => save("suggestion", { id: item.id, status, reviewerNotes: "" })} className="border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-                    {status}
-                  </button>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
+        <SuggestionReview suggestions={bundle.suggestions} links={suggestionLinks} readAt={readAt} onReview={review} />
       )}
 
       {tab === "promotions" && (

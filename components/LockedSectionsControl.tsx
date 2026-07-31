@@ -97,6 +97,11 @@ export default function LockedSectionsControl({
               onChange={(e) => setCustom(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
               placeholder="Custom path e.g. /getaways"
+              // A placeholder is not a label — it disappears the moment you
+              // type, and a screen reader may never announce it at all. This
+              // box only renders once the lock store is reachable, which is
+              // why the width audit had not reached it before.
+              aria-label="Custom path to lock"
               className="flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
             />
             <button type="button" onClick={addCustom} className="rounded-md border border-[var(--gold)] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Add path</button>

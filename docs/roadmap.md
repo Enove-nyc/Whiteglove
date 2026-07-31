@@ -49,6 +49,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 1. Responsive admin foundation | **Done** | `npm run audit:admin` — 17 screens at 320/375/390/768/1024/1280. No sideways scrolling, no table breaking out of its box, no unlabelled input, every control 44px. |
 | 2. Simplified admin navigation | **Part** | sections and global "go to" search already existed. Added: breadcrumbs, a named back link, quick-add, recently visited. Still open: pinned sections, draft/published filters. |
 | 3. Admin dashboard homepage | **Part** | content totals and quick-add actions added, on top of the alerts, work panels and completeness queue already there. Still open: broken links, missing images, expired ads, API health, popular destinations/routes. |
+| 8. Suggest-an-edit workflow | **Done** | the submission side already existed; the review side now has a queue ordered oldest-waiting-first, filters by answer, a required reason for turning down or asking for more, editing the wording before accepting (the visitor's own words are kept), append-only history, a link to the page it is about and to the section that can fix it, and a reply draft the owner sends. |
 
 ### Not started
 
@@ -59,7 +60,6 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 5. Cemetery and tzaddik management | Records exist; the separate reusable tzaddik record does not. |
 | 6. Searchable forms and address autocomplete | `AddressAutocomplete` and `AirportAutocomplete` exist and could be generalised. |
 | 7. Rich media library | |
-| 8. Suggest-an-edit workflow | The submission side exists end to end. The admin review side — approve, reject, request more, edit before approving, history — does not. |
 | 10. Flight and airport management | Metropolitan airport groups are the substantive part. |
 | 11. Route planner management (admin) | |
 | 12. Border crossing management (admin) | The public warnings are hardcoded rules; this is the data behind them. |
@@ -93,6 +93,34 @@ Adding columns is routine. Adding enum values is not reversible in the same
 transaction and wants reviewing before it runs against live data. It has not
 been written yet, and when it is it should be reviewed on its own rather than
 inside a feature PR.
+
+---
+
+## Known: values written into the request address
+
+Several stores save by putting the whole value in the URL —
+`set/<key>/<the entire encoded contents>` — instead of in the request body. No
+HTTP server accepts an address of any size, so past a certain point the write
+simply fails and the screen reports "connect the private database" as though
+nothing were configured.
+
+`lib/admin-content.ts` was fixed here because it was already past that point:
+with the locations seeded, its save address measured **312,079 characters**, so
+nothing in the content manager — settings, locations, accommodations,
+suggestions — could ever have saved. It now sends the value in the body, the
+same as `lib/hechsher-store.ts`, `lib/media.ts` and `lib/directory-store.ts`
+already do.
+
+Still on the old pattern, and small only for now:
+
+- `lib/email-log.ts` — no cap at all, so it grows until it stops saving.
+- `lib/expenses.ts` (line 58) — capped at 10,000 items, which is far past the
+  point an address stops working.
+- `lib/account-store.ts`, `lib/admin-inventory.ts`, `lib/access-passwords.ts` —
+  capped or naturally small today.
+
+Each is a two-line change of the same shape. They are listed rather than done
+so that this stays reviewable.
 
 ---
 

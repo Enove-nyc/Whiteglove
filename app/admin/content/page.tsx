@@ -1,15 +1,53 @@
 import Link from "next/link";
 import AdminContentManager from "@/components/AdminContentManager";
-import { getAdminContent, getMissingContentReport } from "@/lib/admin-content";
+import { getCemetery } from "@/data/cemeteries";
+import { destinationHref, getDestination } from "@/data/destinations";
+import { getAdminContent, getMissingContentReport, type EditSuggestion } from "@/lib/admin-content";
 
 export const dynamic = "force-dynamic";
 
 type Missing = "" | "address" | "coordinates" | "shomer";
 
+/**
+ * The page each suggestion is about, where it can be worked out.
+ *
+ * A suggestion carries a target type and a slug, and until now nothing in the
+ * admin turned that back into a page — you read "the address is wrong for
+ * Lizhensk" and then went looking for Lizhensk. Only the suggestions actually
+ * on screen are resolved, so this stays a handful of lookups rather than a map
+ * of every record on the site.
+ */
+const SITE_PAGES: Record<string, string> = {
+  "cemeteries-index": "/cemeteries",
+  "kosher-stays-index": "/kosher-stays",
+  "attractions-index": "/attractions",
+  "stops-directory": "/stops",
+};
+
+function publicPageFor(suggestion: EditSuggestion): string | undefined {
+  if (suggestion.targetType === "site") return SITE_PAGES[suggestion.targetId];
+  if (suggestion.targetType === "directory") return "/directory";
+  if (suggestion.targetType !== "location") return undefined;
+  const cemetery = getCemetery(suggestion.targetId);
+  if (cemetery) return `/cemeteries/${cemetery.slug}`;
+  const destination = getDestination(suggestion.targetId);
+  return destination ? destinationHref(destination) : undefined;
+}
+
+function suggestionLinks(suggestions: EditSuggestion[]): Record<string, string> {
+  const links: Record<string, string> = {};
+  for (const suggestion of suggestions) {
+    if (links[suggestion.targetId]) continue;
+    const href = publicPageFor(suggestion);
+    if (href) links[suggestion.targetId] = href;
+  }
+  return links;
+}
+
 export default async function AdminContentPage({ searchParams }: {
   searchParams: Promise<{ tab?: string; missing?: string }>;
 }) {
-  const { configured, bundle } = await getAdminContent();
+  const { configured, bundle, readAt } = await getAdminContent();
   const report = getMissingContentReport(bundle);
   const query = await searchParams;
   // Which tab to open on, read on the server so the first paint is already
@@ -38,12 +76,21 @@ export default async function AdminContentPage({ searchParams }: {
           <Metric label="Missing addresses" value={report.locationsMissingAddress} href="?tab=locations&missing=address" />
           <Metric label="Missing coordinates" value={report.locationsMissingCoordinates} href="?tab=locations&missing=coordinates" />
           <Metric label="Missing shomer" value={report.locationsMissingShomer} href="?tab=locations&missing=shomer" />
-          <Metric label="Missing accommodations" value={report.accommodationsMissing} href="?tab=locations" />
-          <Metric label="Pending suggestions" value={report.pendingSuggestions} href="?tab=locations" />
+          <Metric label="Missing accommodations" value={report.accommodationsMissing} href="?tab=accommodations" />
+          {/* These two used to both open the locations list — pressing
+              "pending suggestions" showed you locations. */}
+          <Metric label="Waiting for review" value={report.pendingSuggestions} href="?tab=suggestions" />
         </div>
       </section>
 
-      <AdminContentManager initialBundle={bundle} configured={configured} initialTab={initialTab} initialMissing={initialMissing} />
+      <AdminContentManager
+        initialBundle={bundle}
+        configured={configured}
+        initialTab={initialTab}
+        initialMissing={initialMissing}
+        suggestionLinks={suggestionLinks(bundle.suggestions)}
+        readAt={readAt}
+      />
     </>
   );
 }
