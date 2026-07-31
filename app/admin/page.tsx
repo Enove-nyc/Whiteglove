@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
 import { readDestinationFacts } from "@/lib/completeness-source";
+import { currentAdmin } from "@/lib/admin-current";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
+import { canOpen, describeAreas } from "@/lib/admin-permissions";
 import { contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
-import { ADMIN_WHO_COOKIE, adminIdentity, describeAdmin } from "@/lib/admin-session";
+import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
 import { getDashboardStats } from "@/lib/site-analytics";
@@ -75,11 +76,11 @@ function Metric({ label, value, detail }: { label: string; value: string | numbe
 }
 
 export default async function AdminHome() {
-  const cookieStore = await cookies();
-  const signedInAs = adminIdentity(
-    cookieStore.get(ADMIN_WHO_COOKIE)?.value,
-    Boolean(cookieStore.get("white_glove_admin")?.value),
-  );
+  const { identity: signedInAs, areas } = await currentAdmin();
+  // The dashboard is open to every administrator, so it is the one screen that
+  // has to draw itself around what this person may open. A tile that refuses
+  // them is worse than no tile: it reads as something broken.
+  const may = (href: string) => canOpen(areas, href);
 
   const [stats, inventory, promotions, content, pages, picturesWaiting] = await Promise.all([
     getDashboardStats(),
@@ -130,6 +131,17 @@ export default async function AdminHome() {
   const totals = contentTotals(await readDestinationFacts());
   const attentionCount = alerts.length + unpublishedPages.length + pendingSuggestions.length + unfinished.length;
 
+  const visibleAlerts = alerts.filter((alert) => may(alert.href));
+  const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));
+  const quickActions = [
+    { number: "01", href: "/admin/pages", title: "Edit a page", detail: "Change the words or pictures on any website page." },
+    { number: "02", href: "/admin/directory", title: "Manage the directory", detail: "Add or update a town, beis hachaim, contact, or business." },
+    { number: "03", href: "/admin/advertisements", title: "Manage advertisements", detail: "Create or update banners, popups, and promotions." },
+  ].filter((action) => may(action.href));
+  const sections = ADMIN_SECTIONS.filter((section) => section.href !== "/admin")
+    .map((section) => ({ ...section, children: (section.children ?? []).filter((child) => may(child.href)) }))
+    .filter((section) => may(section.href) || section.children.length > 0);
+
   return (
     <div className="pb-12">
       <header className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--gold-light)] pb-7">
@@ -146,6 +158,9 @@ export default async function AdminHome() {
           {/* Who is actually signed in. Before this the answer was "somebody
               with the password", which is not an answer. */}
           <p className="mb-2 text-xs leading-5 text-stone-500">{describeAdmin(signedInAs)}</p>
+          {/* Only when it is not everything. Telling the owner he has
+              everything is noise on his own dashboard. */}
+          {areas && <p className="mb-2 text-xs leading-5 text-stone-500">{describeAreas(areas)}</p>}
           <AdminSignOut />
         </div>
       </header>
@@ -179,10 +194,11 @@ export default async function AdminHome() {
 
       {/* The jobs somebody opens the admin to do, rather than a place to go
           and then find the button. */}
+      {quickAdd.length > 0 && (
       <section aria-labelledby="quick-heading" className="mt-7">
         <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add something</h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          {ADMIN_QUICK_ADD.map((item) => (
+          {quickAdd.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -193,15 +209,16 @@ export default async function AdminHome() {
           ))}
         </div>
       </section>
+      )}
 
-      {alerts.length > 0 && (
+      {visibleAlerts.length > 0 && (
         <section aria-labelledby="attention-heading" className="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5">
           <div className="flex items-center justify-between gap-4">
             <h2 id="attention-heading" className="font-[family-name:var(--font-display)] text-2xl text-amber-950">Needs attention</h2>
-            <span className="rounded-full bg-amber-200 px-2.5 py-1 text-xs font-bold text-amber-950">{alerts.length}</span>
+            <span className="rounded-full bg-amber-200 px-2.5 py-1 text-xs font-bold text-amber-950">{visibleAlerts.length}</span>
           </div>
           <ul className="mt-4 divide-y divide-amber-200">
-            {alerts.map((alert) => (
+            {visibleAlerts.map((alert) => (
               <li key={alert.href} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-6 text-amber-950">{alert.text}</p>
                 <Link href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
@@ -234,6 +251,7 @@ export default async function AdminHome() {
         )}
       </section>
 
+      {quickActions.length > 0 && (
       <section aria-labelledby="quick-actions-heading" className="mt-9">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
@@ -243,18 +261,24 @@ export default async function AdminHome() {
           <p className="text-sm text-stone-500">The tasks you are most likely to need</p>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <QuickAction number="01" href="/admin/pages" title="Edit a page" detail="Change the words or pictures on any website page." />
-          <QuickAction number="02" href="/admin/directory" title="Manage the directory" detail="Add or update a town, beis hachaim, contact, or business." />
-          <QuickAction number="03" href="/admin/advertisements" title="Manage advertisements" detail="Create or update banners, popups, and promotions." />
+          {quickActions.map((action) => (
+            <QuickAction key={action.href} number={action.number} href={action.href} title={action.title} detail={action.detail} />
+          ))}
         </div>
       </section>
+      )}
 
+      {/* All three panels are content screens, so a helper given only the
+          directory would otherwise get the heading "Work waiting for you" with
+          nothing under it. */}
+      {(may("/admin/pages") || may("/admin/content") || may("/admin/inventory")) && (
       <section aria-labelledby="work-heading" className="mt-9">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Your queue</p>
           <h2 id="work-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work waiting for you</h2>
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          {may("/admin/pages") && (
           <WorkPanel title="Waiting to be published" count={unpublishedPages.length} href="/admin/pages" hrefLabel="Open pages">
             {unpublishedPages.length === 0 ? (
               <p>Every page is published. Nothing is sitting as a draft.</p>
@@ -269,7 +293,9 @@ export default async function AdminHome() {
               </ul>
             )}
           </WorkPanel>
+          )}
 
+          {may("/admin/content") && (
           <WorkPanel title="Visitor suggestions" count={pendingSuggestions.length} href="/admin/content" hrefLabel="Read suggestions">
             {pendingSuggestions.length === 0 ? (
               <p>No visitor corrections are waiting.</p>
@@ -284,7 +310,9 @@ export default async function AdminHome() {
               </ul>
             )}
           </WorkPanel>
+          )}
 
+          {may("/admin/inventory") && (
           <WorkPanel title="Unfinished checklist" count={unfinished.length} href="/admin/inventory" hrefLabel="Open checklist">
             {unfinished.length === 0 ? (
               <p>Nothing on the checklist is outstanding.</p>
@@ -292,8 +320,10 @@ export default async function AdminHome() {
               <p>{unfinished.length} {unfinished.length === 1 ? "item is" : "items are"} marked unfinished, including pages to write and details to confirm.</p>
             )}
           </WorkPanel>
+          )}
         </div>
       </section>
+      )}
 
       <section aria-labelledby="all-tools-heading" className="mt-10 border-t border-[var(--gold-light)] pt-9">
         <div>
@@ -302,16 +332,18 @@ export default async function AdminHome() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">Every existing admin area, organized by purpose. Nothing has been added or removed.</p>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {ADMIN_SECTIONS.filter((section) => section.href !== "/admin").map((section) => (
+          {sections.map((section) => (
             <section key={section.href} className={`${cardClass} p-5`}>
-              <Link href={section.href} className="group flex items-start gap-3">
+              {/* A section whose own front page is closed still opens — to the
+                  first screen inside it this person may use. */}
+              <Link href={may(section.href) ? section.href : section.children[0].href} className="group flex items-start gap-3">
                 <span aria-hidden="true" className="mt-0.5 text-lg text-[var(--gold)]">{section.icon}</span>
                 <span>
                   <span className="block font-[family-name:var(--font-display)] text-2xl text-[var(--navy)] group-hover:underline group-hover:decoration-[var(--gold)] group-hover:underline-offset-4">{section.label}</span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">{section.blurb}</span>
                 </span>
               </Link>
-              {section.children && section.children.length > 0 && (
+              {section.children.length > 0 && (
                 <ul className="mt-4 border-t border-[var(--gold-light)] pt-3">
                   {section.children.map((child) => (
                     <li key={child.href + child.label}>

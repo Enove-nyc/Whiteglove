@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { removeTeamMemberAction, saveTeamMemberAction, type ActionResult } from "@/app/admin/team/actions";
+import { ADMIN_AREAS, AREA_LABELS, describeAreas, grantedAreas } from "@/lib/admin-permissions";
 import type { TeamMember } from "@/lib/admin-roles";
 
 const inputClass =
@@ -23,6 +24,10 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
   const [saveState, saveAction, savePending] = useActionState<ActionResult | null, FormData>(saveTeamMemberAction, null);
   const [removeState, removeAction] = useActionState<ActionResult | null, FormData>(removeTeamMemberAction, null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  // Which parts to offer is only a question once they are being made an
+  // administrator at all, so the list appears with the tick rather than
+  // sitting there greyed out asking to be understood.
+  const [adminChecked, setAdminChecked] = useState(false);
 
   return (
     <div className="space-y-8">
@@ -53,6 +58,12 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
                           .filter(Boolean)
                           .join(" · ")}
                   </p>
+                  {/* What they may actually open, spelled out. "Can run the
+                      admin area" on its own hid whether that meant the whole
+                      thing or one corner of it. */}
+                  {!m.owner && m.admin && (
+                    <p className="mt-1 text-sm text-stone-500">{describeAreas(grantedAreas(m.areas))}</p>
+                  )}
                   {m.note && <p className="mt-1 text-sm text-stone-500">{m.note}</p>}
                 </div>
                 {!m.owner && (
@@ -123,16 +134,49 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
             </span>
           </label>
           <label className="mt-3 flex items-start gap-3 border border-[var(--gold-light)] bg-white p-4">
-            <input type="checkbox" name="admin" className="mt-1 h-4 w-4 accent-[var(--navy)]" />
+            <input
+              type="checkbox"
+              name="admin"
+              checked={adminChecked}
+              onChange={(e) => setAdminChecked(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-[var(--navy)]"
+            />
             <span>
               <span className="block font-semibold text-[var(--navy)]">Run the admin area</span>
               <span className="block text-sm text-stone-600">
-                They can edit pages, the directory and advertisements — everything you can, except taking away your own
-                access. Only give this to someone you would trust with the whole site.
+                They can sign in and change the site. Choose below which parts — somebody helping with kevarim does not
+                need your finances or your passwords.
               </span>
             </span>
           </label>
         </fieldset>
+
+        {adminChecked && (
+          <fieldset className="mt-5 border border-[var(--gold-light)] bg-white p-4">
+            <legend className={captionClass}>Which parts of the admin?</legend>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              Untick anything they should not reach. Leave all five ticked and they can do everything you can, except
+              taking away your own access.
+            </p>
+            <div className="mt-3 space-y-2">
+              {ADMIN_AREAS.map((area) => (
+                <label key={area} className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    name="areas"
+                    value={area}
+                    defaultChecked
+                    className="mt-1 h-4 w-4 accent-[var(--navy)]"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--navy)]">{AREA_LABELS[area].label}</span>
+                    <span className="block text-sm text-stone-600">{AREA_LABELS[area].blurb}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <label className="mt-5 block">
           <span className={captionClass}>Note to yourself</span>

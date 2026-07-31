@@ -10,9 +10,15 @@
 // can look at the site should not also hand them the ability to edit it, and a
 // second admin should not have to be told the shared password to sign in.
 //
+// An admin grant can now be narrowed to some of the five areas — see
+// lib/admin-permissions.ts for what they are and why nothing stored means
+// everything.
+//
 // The owner is set by OWNER_EMAIL and always holds both. Nobody can take the
 // owner's access away from inside the app, which means a mistake in this screen
 // can never lock the owner out of their own site.
+
+import { type AdminArea, grantedAreas } from "@/lib/admin-permissions";
 
 /** Emails are compared lowercased and trimmed, the same way accounts store them. */
 function normalizeEmail(email: string) {
@@ -24,6 +30,11 @@ export type TeamMember = {
   name?: string;
   /** Can open the admin portal. */
   admin: boolean;
+  /**
+   * Which parts of the admin, when it should not be all of them.
+   * Absent means all of them — see lib/admin-permissions.ts.
+   */
+  areas?: AdminArea[];
   /** Can view the site while it is closed to the public. */
   siteAccess: boolean;
   /** The owner, from OWNER_EMAIL. Cannot be edited or removed here. */
@@ -98,6 +109,7 @@ export async function saveTeamMember(input: {
   email: string;
   name?: string;
   admin: boolean;
+  areas?: readonly string[];
   siteAccess: boolean;
   note?: string;
 }): Promise<{ ok: boolean; message: string }> {
@@ -106,12 +118,18 @@ export async function saveTeamMember(input: {
   if (email === ownerEmail()) return { ok: false, message: "That is your own account — you already have full access." };
   if (!redisConfigured()) return { ok: false, message: "This needs the private store connected. Ask for UPSTASH_REDIS_REST_URL and _TOKEN to be set." };
 
+  // Areas only mean anything alongside an admin grant, and a narrowing that is
+  // really "all five" is stored as no narrowing at all, so the record says what
+  // it means.
+  const areas = input.admin ? (grantedAreas(input.areas) ?? undefined) : undefined;
+
   const stored = await readStored();
   const existing = stored.findIndex((m) => m.email === email);
   const member: StoredMember = {
     email,
     name: input.name?.trim() || undefined,
     admin: input.admin,
+    areas,
     siteAccess: input.siteAccess || input.admin, // an admin can always see the site
     note: input.note?.trim() || undefined,
     addedAt: existing >= 0 ? stored[existing].addedAt : new Date().toISOString(),
@@ -119,7 +137,13 @@ export async function saveTeamMember(input: {
   if (existing >= 0) stored[existing] = member;
   else stored.push(member);
   await writeStored(stored);
-  return { ok: true, message: `Saved. ${email} ${member.admin ? "can now open the admin area" : "can now see the site while it is closed"}.` };
+
+  const what = !member.admin
+    ? "can now see the site while it is closed"
+    : areas
+      ? `can now open ${areas.length} of the five parts of the admin`
+      : "can now open the admin area";
+  return { ok: true, message: `Saved. ${email} ${what}.` };
 }
 
 export async function removeTeamMember(email: string): Promise<{ ok: boolean; message: string }> {
@@ -137,6 +161,23 @@ export async function isAdminAccount(email?: string | null): Promise<boolean> {
   if (normalized && normalized === ownerEmail()) return true;
   const stored = await readStored();
   return stored.some((m) => m.email === normalized && m.admin);
+}
+
+/**
+ * Which parts of the admin this account may use, or `null` for all of them.
+ *
+ * The owner is never restricted. Neither is somebody the team screen does not
+ * list: the admin cookie is still what gets you in, and this is the narrowing
+ * on top of it — inventing a restriction for a session we cannot match to a
+ * record would lock people out on a Redis hiccup rather than protect anything.
+ */
+export async function adminAreasFor(email?: string | null): Promise<AdminArea[] | null> {
+  if (!email) return null;
+  const normalized = normalizeEmail(email);
+  if (!normalized || normalized === ownerEmail()) return null;
+  const stored = await readStored();
+  const member = stored.find((m) => m.email === normalized);
+  return member?.admin ? grantedAreas(member.areas) : null;
 }
 
 /** Is this signed-in account allowed to see the site while it is closed? */
