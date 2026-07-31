@@ -117,18 +117,25 @@ operators. To somebody who reads Yiddish that is not a translation; it is the
 English word made harder to read, and it says the site cannot tell the
 difference. They are gone.
 
+A second pass removed four more the owner marked as not natural — רײַזע פֿירער,
+וואו צו גיין, וואו צו שלאפן, פֿאַרבינדונג. Being made of real Yiddish words is
+not the same as being what anybody would say, and that is not a distinction
+this codebase can make for itself.
+
 What is left is what people say: כשרות עסן, מנינים, מקוה, אכסניא, בתי החיים,
-היים, נסיעות, כשר עסן, רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן, פֿאַרבינדונג.
-Place names and names of tzaddikim are untouched — those were never the
-problem.
+היים, נסיעות, כשר עסן, and — from the owner — תפילות, שבת, כשר. Place names
+and names of tzaddikim are untouched; those were never the problem.
+
+**Hospital, emergency, parking and the four provider categories have no
+natural Yiddish**, per the owner. They stay English, and that is the right
+answer for them rather than a gap waiting to be filled.
 
 A section with no Yiddish word shows English alone. `tests/yiddish-labels.test.ts`
 holds an allowlist, so adding a Yiddish label is a deliberate act rather than
 something that creeps back in.
 
-**Wanted from the owner, when convenient:** real headings for Tefillos,
-Shabbos, Hospital, Emergency, Kosher shops, Parking, and for the four provider
-categories. English until then, which is the honest state.
+Nothing further is wanted here — the owner has answered, and the answer for
+most of them is "there isn't one".
 
 ---
 

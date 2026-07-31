@@ -17,12 +17,21 @@ import { PROVIDER_CATEGORY_LABELS } from "@/data/directory";
  * until somebody puts it on the list below, having decided it is a real word.
  */
 
-/** Every Yiddish label the site is allowed to show, and what it says. */
+/**
+ * Every Yiddish label the site is allowed to show, and what it says.
+ *
+ * תפילות, שבת and כשר were given by the owner, who speaks the language.
+ * Hospital, emergency and parking he marked as having no natural Yiddish, so
+ * they stay English — that is the right answer for them, not a gap.
+ */
 const APPROVED: Record<string, string> = {
   "כשרות עסן": "kashrus esn — kosher food",
   "מנינים": "minyanim",
   "מקוה": "mikvah",
   "אכסניא": "achsanya — lodging",
+  "תפילות": "tefillos",
+  "שבת": "Shabbos",
+  "כשר": "kosher — the shops section",
 };
 
 describe("Yiddish on the destination sections", () => {
@@ -45,6 +54,25 @@ describe("Yiddish on the destination sections", () => {
   it("still names every section in English", () => {
     // Removing a heading must never leave a section with no heading at all.
     for (const section of DESTINATION_SECTIONS) assert.ok(section.label.trim(), `${section.key} has no English heading`);
+  });
+});
+
+describe("the sections the owner said have no natural Yiddish", () => {
+  it("leaves hospital, emergency and parking in English", () => {
+    // Not a gap waiting to be filled. Some things are said in English by the
+    // people who would be reading this, and inventing a word for them would
+    // be the same mistake as before in the other direction.
+    for (const key of ["HOSPITAL", "EMERGENCY", "PARKING"]) {
+      const section = DESTINATION_SECTIONS.find((s) => s.key === key);
+      assert.equal(section?.yiddish, undefined, `${key} should stay English`);
+    }
+  });
+
+  it("carries the three that do", () => {
+    const of = (key: string) => DESTINATION_SECTIONS.find((s) => s.key === key)?.yiddish;
+    assert.equal(of("TEFILLOS"), "תפילות");
+    assert.equal(of("SHABBOS"), "שבת");
+    assert.equal(of("GROCERY"), "כשר");
   });
 });
 
