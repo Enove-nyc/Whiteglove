@@ -49,6 +49,7 @@ export async function getDestinationForAdmin(slug: string) {
     include: {
       contacts: { orderBy: { label: "asc" } },
       places: { orderBy: [{ category: "asc" }, { name: "asc" }] },
+      photos: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
     },
   });
 }
@@ -126,6 +127,41 @@ export type PlaceFields = {
   sourceUrl: string | null;
   lastVerified: Date | null;
 };
+
+/**
+ * A picture, with where it came from.
+ *
+ * `credit` is not decoration. A photograph belongs to whoever took it, and the
+ * site cannot publish one on the strength of having found it — so a photo with
+ * no credit stays a draft and the admin says why.
+ */
+export type PhotoFields = {
+  url: string;
+  caption: string | null;
+  credit: string | null;
+  sourceUrl: string | null;
+  status: ContentStatus;
+};
+
+export async function listPhotosForDestination(destinationId: string) {
+  const prisma = await db();
+  return prisma.photo.findMany({ where: { destinationId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+}
+
+export async function createPhoto(destinationId: string, fields: PhotoFields) {
+  const prisma = await db();
+  return prisma.photo.create({ data: { ...fields, destinationId } });
+}
+
+export async function updatePhoto(id: string, fields: Omit<PhotoFields, "url">) {
+  const prisma = await db();
+  return prisma.photo.update({ where: { id }, data: fields });
+}
+
+export async function deletePhoto(id: string) {
+  const prisma = await db();
+  return prisma.photo.delete({ where: { id } });
+}
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {
   const prisma = await db();

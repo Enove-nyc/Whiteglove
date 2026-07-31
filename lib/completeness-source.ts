@@ -16,6 +16,15 @@ import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
  * destination in full.
  */
 
+/** Nothing entered. Not the same as "we could not ask". */
+export const NOTHING_ENTERED: DestinationFacts = {
+  sections: [],
+  photos: 0,
+  contacts: 0,
+  cemeteries: 0,
+  anyVerified: false,
+};
+
 export type DestinationFacts = {
   /** Section keys with at least one published listing. */
   sections: string[];
