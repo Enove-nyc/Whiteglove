@@ -67,7 +67,21 @@ export default async function AccountPage() {
             <p>You are viewing the local preview. Sign in to store your route and favorites across devices.</p>
           )}
         </div>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2">
+        {/* The week before you go, rather than the months of planning before
+            it. First, because it is the one with something to DO in it. */}
+        <Link href="/command-center" className="group mt-8 flex flex-col justify-between border border-[var(--gold)] bg-white p-6 transition hover:shadow-md">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Before you go</p>
+            <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your trip, checked</h2>
+            <p className="mt-3 text-sm leading-7 text-stone-600">
+              Every stop on your trip with what is still missing on it — which kevarim have nobody to let you in,
+              which have no checked coordinate, and the numbers worth having in your phone before you leave.
+            </p>
+          </div>
+          <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Check the trip →</span>
+        </Link>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <Link href="/itinerary" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Plan your trip</p>

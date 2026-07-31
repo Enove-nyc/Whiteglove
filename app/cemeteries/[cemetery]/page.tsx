@@ -17,6 +17,7 @@ import { cemeteries } from "@/data/cemeteries";
 import { kmBetween } from "@/data/itinerary";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getCemeteryView } from "@/lib/cemeteries-view";
+import { hrefFor } from "@/lib/tzaddikim";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -162,8 +163,13 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => (
                 <article key={burial.name} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-                  <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">{burial.yiddishName}</h3>
-                  <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
+                  {/* Each person has his own page now. He used to exist only as
+                      this card, so somebody searching for the man rather than
+                      the town had nowhere to land. */}
+                  <Link href={hrefFor(burial.name, cemetery.slug) ?? `/cemeteries/${cemetery.slug}`} className="group block">
+                    <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] underline decoration-[var(--gold-light)] decoration-2 underline-offset-4 group-hover:decoration-[var(--gold)]">{burial.yiddishName}</h3>
+                    <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{burial.name}</p>
+                  </Link>
                   {burial.knownAs && <p className="mt-3 text-sm font-semibold text-stone-700">{burial.knownAs}</p>}
                   {burial.seforim && <p dir="rtl" lang="yi" className="mt-3 text-lg text-[var(--navy)]">{burial.seforim}</p>}
                   {burial.yahrzeit && (
