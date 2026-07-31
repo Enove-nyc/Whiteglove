@@ -8,6 +8,7 @@
 
 import type { Contact, Photo, PracticalPlace } from "@prisma/client";
 import type { GalleryPhoto } from "@/components/PhotoGallery";
+import { optionalRead } from "@/lib/db-optional";
 
 /**
  * One listing, with pictures of that listing.
@@ -52,6 +53,13 @@ export async function getPublishedDestinationContent(
   if (!DB_ENABLED) return null;
   try {
     const { prisma } = await import("@/lib/prisma");
+
+    // The listings and the contacts, on their own. This is everything the
+    // owner typed, and it must not depend on anything newer than itself —
+    // pictures used to be joined on here, and when the Photo table did not
+    // exist yet this whole read threw and the page fell back to the built-in
+    // content. Every listing and every phone number he had entered vanished,
+    // silently, on a page that had said "Saved." every time.
     const destination = await prisma.destination.findUnique({
       where: { slug },
       include: {
@@ -59,24 +67,39 @@ export async function getPublishedDestinationContent(
         places: {
           where: { status: "PUBLISHED" },
           orderBy: [{ category: "asc" }, { name: "asc" }],
-          include: {
-            photos: {
-              where: { status: "PUBLISHED" },
-              orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-              select: { id: true, url: true, caption: true, credit: true, sourceUrl: true },
-            },
-          },
-        },
-        // Published only. A draft is a picture nobody has credited yet, and
-        // the whole point of drafting it was to keep it off the page.
-        photos: {
-          where: { status: "PUBLISHED" },
-          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
         },
       },
     });
     if (!destination) return null;
-    return { contacts: destination.contacts, places: destination.places, photos: destination.photos };
+
+    // Pictures, separately, and allowed to fail. Published only: a draft is
+    // one nobody has credited yet, and drafting it was the point.
+    const pictures = await optionalRead(
+      `pictures for ${slug}`,
+      async () =>
+        prisma.photo.findMany({
+          where: {
+            status: "PUBLISHED",
+            OR: [{ destinationId: destination.id }, { placeId: { in: destination.places.map((p) => p.id) } }],
+          },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        }),
+      [] as Photo[],
+    );
+
+    const byPlace = new Map<string, GalleryPhoto[]>();
+    for (const photo of pictures) {
+      if (!photo.placeId) continue;
+      const list = byPlace.get(photo.placeId) ?? [];
+      list.push(photo);
+      byPlace.set(photo.placeId, list);
+    }
+
+    return {
+      contacts: destination.contacts,
+      places: destination.places.map((place) => ({ ...place, photos: byPlace.get(place.id) ?? [] })),
+      photos: pictures.filter((photo) => photo.destinationId === destination.id),
+    };
   } catch (error) {
     console.error("[content] DB read failed for", slug, "- using static fallback", error);
     return null;

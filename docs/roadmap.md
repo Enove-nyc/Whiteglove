@@ -112,6 +112,30 @@ and Photos as untracked because the *record type it reads* has not changed yet.
 
 ---
 
+## Known: one missing table used to erase everything the owner typed
+
+The cemetery page read a beis hachaim and its pictures in a single query. On a
+database where the migration had not been run the `Photo` table did not exist,
+so that query threw, the catch above it fell back to the built-in record, and
+**every kever the owner had added disappeared from the page**. He had saved
+them. The admin had said "Saved." They were in the database. The page would
+not read them, and nothing anywhere said why.
+
+The town pages were worse: `getPublishedDestinationContent` returned null, so
+every listing and every phone number vanished at once and the page fell back to
+the built-in content — which looks exactly like a site nobody has entered
+anything into. The database import failed for the same reason, on
+`destination.createMany`.
+
+The mistake was not the missing migration. It was joining something new and
+optional onto something old and essential, so a failure in the new part cost
+the old part everything. `lib/db-optional.ts` is the rule now: read the
+essential thing on its own, read the new thing separately, and carry on without
+it when it fails — saying so in the log, and naming the migration when that is
+what it looks like.
+
+---
+
 ## Yiddish: a real word, or English
 
 A dozen labels carried a "Yiddish" heading that was an English word spelled

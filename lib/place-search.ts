@@ -9,9 +9,39 @@
 // "ליזענסק" silently returned the entire directory rather than Lizhensk.
 const HEBREW = "\\u0590-\\u05ff\\ufb1d-\\ufb4f"; // Hebrew block + presentation forms
 
+/**
+ * Letters that NFD cannot take apart.
+ *
+ * NFD splits a letter into a base plus a combining mark, which is how á
+ * becomes a and ż becomes z. It does nothing to a letter whose stroke is part
+ * of its identity rather than an accent on it: ł, đ, ø, æ, ß are single
+ * characters with no base to fall back to.
+ *
+ * They were therefore not folded but DELETED, because the filter below keeps
+ * only a–z. Łańcut normalised to "ancut" — so it sorted under A in the
+ * directory's A–Z strip, and a search for "Lancut" found it only by luck,
+ * through an alias somebody had thought to type in. Łódź and Żmigród had no
+ * such luck.
+ *
+ * Poland, Lithuania and Latvia are most of this site's subject, so this is not
+ * an edge case; it is a good share of the towns.
+ */
+const UNDECOMPOSABLE: Array<[RegExp, string]> = [
+  [/[łŁ]/g, "l"],
+  [/[đĐðÐ]/g, "d"],
+  [/[øØ]/g, "o"],
+  [/[æÆ]/g, "ae"],
+  [/[œŒ]/g, "oe"],
+  [/[þÞ]/g, "th"],
+  [/ß/g, "ss"],
+  [/[ħĦ]/g, "h"],
+  [/[ıİ]/g, "i"],
+];
+
 export function normalize(value: string): string {
-  return value
-    .toLowerCase()
+  let out = value.toLowerCase();
+  for (const [pattern, replacement] of UNDECOMPOSABLE) out = out.replace(pattern, replacement);
+  return out
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(new RegExp(`[^a-z0-9${HEBREW}\\s]`, "g"), " ")

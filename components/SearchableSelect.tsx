@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { normalize } from "@/lib/place-search";
 
 export type SearchableOption = {
   value: string;
@@ -52,9 +53,10 @@ export default function SearchableSelect({
   const selected = options.find((o) => o.value === value);
 
   const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // Folded, so typing a town without its accent still finds it.
+    const q = normalize(query);
     if (!q) return options;
-    return options.filter((o) => `${o.label} ${o.hint ?? ""} ${o.keywords ?? ""}`.toLowerCase().includes(q));
+    return options.filter((o) => normalize(`${o.label} ${o.hint ?? ""} ${o.keywords ?? ""}`).includes(q));
   }, [options, query]);
 
   useEffect(() => {

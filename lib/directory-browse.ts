@@ -2,6 +2,10 @@ import { destinationHref, guidedDestinations, unguidedDestinations } from "@/dat
 import { getDestinationRecord } from "@/data/destination-database";
 import { destinationTrust } from "@/lib/verification";
 import type { CemeteryListItem } from "@/lib/cemeteries-view";
+// The same folding the search bar uses: accents off, Hebrew kept. This file
+// runs in the browser, and lib/place-search.ts imports nothing, so it costs
+// the bundle only the few string functions it actually is.
+import { normalize } from "@/lib/place-search";
 
 /**
  * The public directory, small enough to send to a browser.
@@ -84,7 +88,7 @@ export function buildDirectoryIndex(cemeteries: CemeteryListItem[], live: Map<st
       c: destination.country,
       k: "guide",
       h: destinationHref(destination),
-      q: `${destination.city} ${destination.yiddishCity} ${destination.country} ${guide.tzaddik} ${guide.yiddishTzaddik} ${(destination.aliases ?? []).join(" ")}`.toLowerCase(),
+      q: normalize(`${destination.city} ${destination.yiddishCity} ${destination.country} ${guide.tzaddik} ${guide.yiddishTzaddik} ${(destination.aliases ?? []).join(" ")}`),
       v: trustFor(destination.slug),
       b: 0,
       f: flagsFor(destination.slug, live),
@@ -99,7 +103,7 @@ export function buildDirectoryIndex(cemeteries: CemeteryListItem[], live: Map<st
       c: cemetery.country,
       k: "cemetery",
       h: `/cemeteries/${cemetery.slug}`,
-      q: `${cemetery.name} ${cemetery.yiddishName} ${cemetery.city} ${cemetery.yiddishCity} ${cemetery.country}`.toLowerCase(),
+      q: normalize(`${cemetery.name} ${cemetery.yiddishName} ${cemetery.city} ${cemetery.yiddishCity} ${cemetery.country}`),
       v: trustFor(cemetery.slug),
       b: cemetery.burialCount,
       f: flagsFor(cemetery.slug, live),
@@ -114,7 +118,7 @@ export function buildDirectoryIndex(cemeteries: CemeteryListItem[], live: Map<st
       c: destination.country,
       k: "destination",
       h: destinationHref(destination),
-      q: `${destination.city} ${destination.yiddishCity} ${destination.country} ${(destination.aliases ?? []).join(" ")}`.toLowerCase(),
+      q: normalize(`${destination.city} ${destination.yiddishCity} ${destination.country} ${(destination.aliases ?? []).join(" ")}`),
       v: trustFor(destination.slug),
       b: 0,
       f: flagsFor(destination.slug, live),
@@ -147,7 +151,9 @@ export const NO_FILTERS: DirectoryFilters = {
  * country and then typing threw the country away.
  */
 export function filterDirectory(entries: DirectoryEntry[], filters: DirectoryFilters): DirectoryEntry[] {
-  const query = filters.query.trim().toLowerCase();
+  // Folded the same way the haystack was — see the note on `q`. Typing
+  // "Krakow" has to find Kraków, because that is how somebody types it.
+  const query = normalize(filters.query);
   const words = query ? query.split(/\s+/).filter(Boolean) : [];
 
   const matched = entries.filter((entry) => {
@@ -156,7 +162,7 @@ export function filterDirectory(entries: DirectoryEntry[], filters: DirectoryFil
     if (filters.verifiedOnly && entry.v === 0) return false;
     for (const need of filters.needs) if (!entry.f[need]) return false;
     // The letter is about the English name, which is what the A–Z strip shows.
-    if (filters.letter && !entry.n.toUpperCase().startsWith(filters.letter)) return false;
+    if (filters.letter && firstLetter(entry.n) !== filters.letter) return false;
     // Every word has to appear somewhere, so "uman ukraine" narrows rather
     // than widening the way an OR would.
     return words.every((word) => entry.q.includes(word));
@@ -175,10 +181,22 @@ export function filterDirectory(entries: DirectoryEntry[], filters: DirectoryFil
 export function lettersIn(entries: DirectoryEntry[]): string[] {
   const letters = new Set<string>();
   for (const entry of entries) {
-    const first = entry.n.trim().charAt(0).toUpperCase();
-    if (/[A-Z]/.test(first)) letters.add(first);
+    const first = firstLetter(entry.n);
+    if (first) letters.add(first);
   }
   return [...letters].sort();
+}
+
+/**
+ * The letter a name files under, with its accent folded away.
+ *
+ * Łańcut begins with Ł, which is not A–Z, so it appeared under no letter at
+ * all and the A–Z strip could not reach it. It files under L, where somebody
+ * looking for it would look.
+ */
+function firstLetter(name: string): string {
+  const first = normalize(name).trim().charAt(0).toUpperCase();
+  return /[A-Z]/.test(first) ? first : "";
 }
 
 /** Countries present, with a count, commonest first. */
