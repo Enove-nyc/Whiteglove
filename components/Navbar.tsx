@@ -32,6 +32,8 @@ const menuItems: Array<{ yiddish?: string; english: string; href: string }> = [
   { yiddish: "נסיעות", english: "Destinations", href: "/stops" },
   { english: "Getaways", href: "/getaways" },
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
+  // By the person rather than by the town — which is how people search.
+  { english: "Kevarim", href: "/tzaddikim" },
   { english: "Map", href: "/map" },
   { yiddish: "כשר עסן", english: "Kosher food", href: "/kosher" },
   { english: "Travel guide", href: "/travel-guide" },
@@ -66,7 +68,7 @@ const PRIMARY_HREFS = new Set(primaryLinks.map((link) => link.href));
 const menuGroups = [
   {
     title: "Explore",
-    links: menuItems.filter((item) => ["/stops", "/cemeteries", "/attractions", "/map", "/kosher", "/travel-guide", "/directory"].includes(item.href)),
+    links: menuItems.filter((item) => ["/stops", "/cemeteries", "/tzaddikim", "/attractions", "/map", "/kosher", "/travel-guide", "/directory"].includes(item.href)),
   },
   {
     title: "Plan & book",
