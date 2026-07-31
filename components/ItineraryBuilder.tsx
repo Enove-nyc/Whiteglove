@@ -244,6 +244,32 @@ export default function ItineraryBuilder() {
             <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
           </div>
         </div>
+        {/* Somewhere to put the things a trip has that no field asks about:
+            who has the key, which pharmacy was open late, the driver's brother's
+            number, what to do differently next time.
+
+            Itinerary.notes has existed in the type since the planner was built
+            and was never shown anywhere — not here, not in the print, not in
+            the shared view. It was a field nobody could reach.
+
+            Deliberately not a place for passport numbers or anything else that
+            should not be sitting in a saved trip, and the label says so rather
+            than leaving somebody to guess. */}
+        <label className="mt-5 block border-t border-[var(--gold-light)] pt-4">
+          <span className={caption}>Your notes</span>
+          <textarea
+            rows={3}
+            className={`${inputClass} min-h-24`}
+            value={itin.notes ?? ""}
+            onChange={(e) => set({ notes: e.target.value })}
+            placeholder="Anything you want to remember — who has the key, where you parked, what to bring next time…"
+          />
+          <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
+            Saved with the trip and printed with it. Anyone you share the trip with can read them, so keep passport
+            numbers and anything else private out of here.
+          </span>
+        </label>
+
         <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[var(--gold-light)] pt-4">
           <span className={`${caption} mr-1`}>Add to trip</span>
           <button type="button" onClick={() => { setEditingFlightId(null); setTab(tab === "flight" ? null : "flight"); }} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Flight</button>
