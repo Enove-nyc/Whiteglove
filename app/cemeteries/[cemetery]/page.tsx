@@ -197,8 +197,12 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
               {placeGroups.map((group) => (
                 <div key={group.category}>
                   <h3 className="flex items-baseline gap-3 border-b border-[var(--gold-light)] pb-2">
-                    <span dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{group.label.yiddish}</span>
-                    <span className="text-sm font-semibold uppercase tracking-[0.12em] text-stone-500">{group.label.english}</span>
+                    {/* Only where there is a real Yiddish word. An empty span
+                        here used to leave a gap where a heading should be. */}
+                    {group.label.yiddish && (
+                      <span dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{group.label.yiddish}</span>
+                    )}
+                    <span className={group.label.yiddish ? "text-sm font-semibold uppercase tracking-[0.12em] text-stone-500" : "font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]"}>{group.label.english}</span>
                   </h3>
                   <div className="mt-5 grid gap-5 md:grid-cols-2">
                     {group.items.map((place) => (

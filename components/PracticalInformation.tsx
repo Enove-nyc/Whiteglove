@@ -159,8 +159,9 @@ export default function PracticalInformation({
           );
         })}
         <article className="border border-[var(--gold)] bg-[#fcfaf6] p-6">
-          <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">פליגערס און האטעלן</h3>
-          <p className="mt-1 text-sm text-stone-500">Flights & hotels</p>
+          {/* No Yiddish heading here: the one that was read "fligers un
+              hoteln", English in Hebrew letters rather than a translation. */}
+          <h3 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">Flights &amp; hotels</h3>
           <p className="mt-4 text-sm leading-6 text-stone-600">Search travel options for your journey in one place.</p>
           <Link href="/book" className="mt-5 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Search travel →</Link>
         </article>

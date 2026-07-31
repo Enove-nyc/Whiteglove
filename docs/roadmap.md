@@ -108,6 +108,30 @@ and Photos as untracked because the *record type it reads* has not changed yet.
 
 ---
 
+## Yiddish: a real word, or English
+
+A dozen labels carried a "Yiddish" heading that was an English word spelled
+in Hebrew letters — טראַנספארט for transport, דרייווערס for drivers,
+דירעקטאָרי for directory, סערוויסעס for services, טור־אָפּעראַטאָרן for tour
+operators. To somebody who reads Yiddish that is not a translation; it is the
+English word made harder to read, and it says the site cannot tell the
+difference. They are gone.
+
+What is left is what people say: כשרות עסן, מנינים, מקוה, אכסניא, בתי החיים,
+היים, נסיעות, כשר עסן, רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן, פֿאַרבינדונג.
+Place names and names of tzaddikim are untouched — those were never the
+problem.
+
+A section with no Yiddish word shows English alone. `tests/yiddish-labels.test.ts`
+holds an allowlist, so adding a Yiddish label is a deliberate act rather than
+something that creeps back in.
+
+**Wanted from the owner, when convenient:** real headings for Tefillos,
+Shabbos, Hospital, Emergency, Kosher shops, Parking, and for the four provider
+categories. English until then, which is the honest state.
+
+---
+
 ## Known: what cannot be made to look like the site
 
 Two browser controls draw part of themselves and will not be styled:
