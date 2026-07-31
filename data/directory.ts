@@ -31,6 +31,40 @@ export type DirectoryProviderSeed = {
   source?: string;
 };
 
+/**
+ * One provider as a public page sees it.
+ *
+ * Lives here rather than in lib/directory.ts because the components that
+ * render it run in the browser. Importing it from the read layer dragged that
+ * whole module — and through it Prisma and the Redis client — into the client
+ * bundle. Nothing leaked, because Next replaces a non-NEXT_PUBLIC env var with
+ * undefined, but shipping the server's data access to a browser is one careless
+ * default away from being a real problem.
+ */
+export type PublicProvider = {
+  slug: string;
+  name: string;
+  category: ProviderCat;
+  tagline: string | null;
+  description: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  website: string | null;
+  basedIn: string | null;
+  regions: string[];
+  languages: string[];
+  specialties: string[];
+  featured: boolean;
+  source: string | null;
+  /** Set when a number is held on file but may not be published. */
+  contactWithheld: boolean;
+  /** When somebody last checked this listing. Null unless it was checked. */
+  verifiedAt: string | null;
+  /** How quickly they answer, in their own words. */
+  responseTime: string | null;
+};
+
 export const PROVIDER_CATEGORY_LABELS: Record<ProviderCat, { english: string; yiddish: string }> = {
   TOUR_OPERATOR: { english: "Tour operators", yiddish: "טור־אָפּעראַטאָרן" },
   VACATION_PLANNER: { english: "Vacation planners", yiddish: "וואַקאַציע־פּלאַנירער" },

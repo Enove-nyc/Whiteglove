@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import type { ContentStatus, PlaceCategory } from "@prisma/client";
+import type { ContentStatus, PlaceCategory, VerificationStatus } from "@prisma/client";
 import { isValidAccessToken } from "@/lib/secure-access";
 import {
   createContact,
@@ -71,6 +71,14 @@ export async function saveDestinationAction(
   }
 }
 
+/** A date box left blank is no date, not the epoch. */
+function dateOrNull(value: string): Date | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const date = new Date(`${trimmed}T12:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export async function savePlaceAction(
   _prev: ActionResult | null,
   formData: FormData,
@@ -92,6 +100,12 @@ export async function savePlaceAction(
     hours: nullable(formData, "hours"),
     notes: nullable(formData, "notes"),
     status: (str(formData, "status") as ContentStatus) || "PUBLISHED",
+    // How far this one listing has been checked, and where it came from.
+    // Per listing rather than per page, because the sections of a destination
+    // are checked separately and at different times.
+    verification: (str(formData, "verification") as VerificationStatus) || "NEEDS_VERIFICATION",
+    sourceUrl: nullable(formData, "sourceUrl"),
+    lastVerified: dateOrNull(str(formData, "lastVerified")),
   };
   try {
     if (placeId) {
