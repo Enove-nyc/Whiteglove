@@ -43,7 +43,7 @@ export default function PromotionBanner({
   };
 
   const wrapperClass = promotion.placements.includes("full-page-takeover")
-    ? "fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 px-5 py-8"
+    ? "fixed inset-0 z-[var(--wg-z-modal)] flex items-center justify-center bg-stone-950/60 px-5 py-8"
     : compact
       ? "mx-auto max-w-6xl px-5 sm:px-8"
       : "";

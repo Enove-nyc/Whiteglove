@@ -127,7 +127,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav ref={navRef} className="sticky top-0 z-40 border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md">
+      <nav ref={navRef} className="sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md">
         <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-4 px-5 sm:px-8">
           <Link href="/" className="mr-5 flex shrink-0 items-center xl:mr-8" aria-label="White Glove Itineraries home">
             <Image src="/logo.png" alt="White Glove Itineraries" width={500} height={300} className="h-[4.5rem] w-auto object-contain" priority />
