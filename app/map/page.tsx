@@ -1,33 +1,45 @@
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
-import MapExplorer, { type MapAirport, type MapKever } from "@/components/MapExplorer";
+import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type MapStay } from "@/components/MapExplorer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
+import { getAttractionList, getStayList } from "@/lib/attractions-view";
+import { pointFrom } from "@/lib/map-markers";
 
 export const metadata = pageMetadata({
-  title: "Map — what's around any town | White Glove Itineraries",
-  description: "Search a town and see the kevarim, kosher food and airports around it on one map.",
+  title: "Map — everywhere we know, on one map | White Glove Itineraries",
+  description: "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
   path: "/map",
 });
 
-// Kraków: central to most of the routes this site plans, and a place almost
-// everyone recognises, so the map opens somewhere meaningful rather than blank.
-const DEFAULT_CENTER = { lat: 50.0619, lng: 19.9369 };
+export default async function MapPage() {
+  // Read through the view so anything the owner adds appears here without a
+  // redeploy, the same as on the directories.
+  const [attractionList, stayList] = await Promise.all([getAttractionList(), getStayList()]);
 
-export default function MapPage() {
-  const kevarim: MapKever[] = cemeteries
-    .filter((c) => c.coordinates && !/pending|to be added/i.test(c.coordinates))
-    .map((c) => ({
-      slug: c.slug,
-      name: c.name,
-      city: c.city,
-      country: c.country,
-      coordinates: c.coordinates as string,
-      burials: c.burials.length,
-    }));
+  const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
+  const kevarim: MapKever[] = plottableCemeteries.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    city: c.city,
+    country: c.country,
+    coordinates: c.coordinates as string,
+    burials: c.burials.length,
+  }));
+
+  const attractions: MapAttraction[] = attractionList
+    .filter((a) => pointFrom(a.coordinates))
+    .map((a) => ({ slug: a.slug, name: a.name, city: a.city, country: a.country, kind: a.kind, coordinates: a.coordinates }));
+
+  // A stay is plotted at its anchor — the shul or quarter it is measured from.
+  // That is the coordinate the data actually holds, and the one that answers
+  // "can I walk to shul from here".
+  const stays: MapStay[] = stayList
+    .filter((s) => pointFrom(s.anchor?.coordinates))
+    .map((s) => ({ slug: s.slug, name: s.name, city: s.city, country: s.country, kind: s.kind, coordinates: s.anchor.coordinates, season: s.season }));
 
   const airports: MapAirport[] = AIRPORTS.map((a) => ({
     code: a.code,
@@ -50,18 +62,24 @@ export default function MapPage() {
             See the area
           </p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            What&apos;s around any town
+            Everywhere we know, on one map
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Search a place and see it on the map with the kevarim, kosher food and airports around it — so you can tell
-            at a glance what else is worth the drive while you are there.
+            Batei hachaim, places worth the half day, kosher hotels and the airports you would fly into — all of it at
+            once. Search a town to narrow it down and see what is around that place, kosher food included.
           </p>
         </div>
       </section>
 
       <section className="px-5 py-10 sm:px-8">
         <div className="mx-auto max-w-5xl">
-          <MapExplorer kevarim={kevarim} airports={airports} initialCenter={DEFAULT_CENTER} initialName="Kraków" />
+          <MapExplorer
+            kevarim={kevarim}
+            airports={airports}
+            attractions={attractions}
+            stays={stays}
+            unplottedKevarim={cemeteries.length - plottableCemeteries.length}
+          />
         </div>
       </section>
 

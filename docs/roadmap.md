@@ -49,6 +49,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 1. Responsive admin foundation | **Done** | `npm run audit:admin` — 17 screens at 320/375/390/768/1024/1280. No sideways scrolling, no table breaking out of its box, no unlabelled input, every control 44px. |
 | 2. Simplified admin navigation | **Part** | sections and global "go to" search already existed. Added: breadcrumbs, a named back link, quick-add, recently visited. Still open: pinned sections, draft/published filters. |
 | 3. Admin dashboard homepage | **Part** | content totals and quick-add actions added, on top of the alerts, work panels and completeness queue already there. Still open: broken links, missing images, expired ads, API health, popular destinations/routes. |
+| Map (owner request, not in either scan) | **Done** | opens on everything the site holds — 287 places — instead of Kraków at 50 km. Things to do and places to stay added alongside kevarim, kosher food and airports. Counts per category for whatever area you are looking at. Markers are the compass from the logo. |
 | 8. Suggest-an-edit workflow | **Done** | the submission side already existed; the review side now has a queue ordered oldest-waiting-first, filters by answer, a required reason for turning down or asking for more, editing the wording before accepting (the visitor's own words are kept), append-only history, a link to the page it is about and to the section that can fix it, and a reply draft the owner sends. |
 
 ### Not started
