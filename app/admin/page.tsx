@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
+import { readDestinationFacts } from "@/lib/completeness-source";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { contentTotals } from "@/lib/admin-overview";
@@ -98,7 +99,9 @@ export default async function AdminHome() {
     });
   }
 
-  const totals = contentTotals();
+  // Counted from the database where there is one, so the averages move when
+  // the owner fills something in rather than only when the code changes.
+  const totals = contentTotals(await readDestinationFacts());
   const attentionCount = alerts.length + unpublishedPages.length + pendingSuggestions.length + unfinished.length;
 
   return (

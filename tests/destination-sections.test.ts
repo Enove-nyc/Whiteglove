@@ -105,3 +105,47 @@ describe("what the completeness tracker counts", () => {
     assert.ok(average < 20, `average completeness is ${average.toFixed(1)}% — if this ever passes, check it is real`);
   });
 });
+
+describe("counting from the database instead of the built-in content", () => {
+  const record = destinationDatabase[0];
+
+  it("can answer a section the built-in record has never held", () => {
+    // A hospital entered in the editor used to move nothing: the record type
+    // had nowhere to read it from, so the queue still called the town empty.
+    const before = completeness(record);
+    assert.ok(before.notTracked.includes("Hospital"), "unanswerable without the database");
+
+    const after = completeness(record, {
+      sections: ["HOSPITAL", "SHABBOS", "TEFILLOS"],
+      photos: 2,
+      contacts: 0,
+      cemeteries: 0,
+      anyVerified: true,
+    });
+    assert.ok(!after.notTracked.includes("Hospital"), "answerable with it");
+    assert.ok(!after.missing.includes("Hospital"), "and answered");
+    assert.ok(after.score > before.score, `entering three sections and a photo should raise ${before.score}%`);
+  });
+
+  it("still counts an empty database as empty, not as unmeasured", () => {
+    const scored = completeness(record, { sections: [], photos: 0, contacts: 0, cemeteries: 0, anyVerified: false });
+    assert.equal(scored.notTracked.length, 0, "everything is answerable now");
+    assert.ok(scored.missing.includes("Hospital"), "and the answer is no");
+  });
+
+  it("does not lose what the built-in record already knew", () => {
+    // A section the built-in content has must stay filled even when the
+    // database has nothing for it — otherwise connecting a database would
+    // make the site look emptier than before.
+    const withDb = completeness(record, { sections: [], photos: 0, contacts: 0, cemeteries: 0, anyVerified: false });
+    const without = completeness(record);
+    for (const label of without.missing) {
+      if (label === "Photos") continue;
+      assert.ok(
+        withDb.missing.includes(label) || withDb.notTracked.includes(label),
+        `${label} should not silently become filled`,
+      );
+    }
+    assert.ok(withDb.filled >= without.filled, "connecting a database cannot lose an answer");
+  });
+});

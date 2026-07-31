@@ -1,6 +1,7 @@
 import { cemeteries } from "@/data/cemeteries";
 import { destinations, guidedDestinations } from "@/data/destinations";
 import { destinationDatabase } from "@/data/destination-database";
+import type { DestinationFacts } from "@/lib/completeness-source";
 import { completeness } from "@/lib/verification";
 
 /**
@@ -30,8 +31,13 @@ export type ContentTotals = {
   averageCompleteness: number;
 };
 
-export function contentTotals(): ContentTotals {
-  const scored = destinationDatabase.map((record) => completeness(record));
+/**
+ * @param facts What the database holds, from readDestinationFacts(). Given it,
+ *   the averages count what the owner has actually entered rather than only
+ *   the built-in content. Without it the numbers are the same as they were.
+ */
+export function contentTotals(facts?: Map<string, DestinationFacts> | null): ContentTotals {
+  const scored = destinationDatabase.map((record) => completeness(record, facts?.get(record.id)));
   const total = scored.length || 1;
 
   return {
