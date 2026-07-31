@@ -26,11 +26,20 @@ export async function saveTeamMemberAction(_prev: ActionResult | null, formData:
     return { ok: false, message: "Choose what this person may do — see the site, run the admin area, or both." };
   }
 
+  const areas = formData.getAll("areas").filter((value): value is string => typeof value === "string");
+  // Every box unticked is not a grant of nothing — it is a grant with no
+  // meaning, and storing it would silently hand them everything. Say so
+  // instead.
+  if (admin && areas.length === 0) {
+    return { ok: false, message: "Choose at least one part of the admin for them, or untick “run the admin area”." };
+  }
+
   const result = await saveTeamMember({
     email: str(formData, "email"),
     name: str(formData, "name") || undefined,
     note: str(formData, "note") || undefined,
     admin,
+    areas,
     siteAccess,
   });
   if (result.ok) revalidatePath("/admin/team");

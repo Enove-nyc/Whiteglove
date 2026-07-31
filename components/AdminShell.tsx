@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AdminTrail from "@/components/AdminTrail";
 import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdminPath } from "@/lib/admin-nav";
+import { type AdminArea, canOpen } from "@/lib/admin-permissions";
 
 /**
  * The frame every admin screen sits in.
@@ -15,8 +16,13 @@ import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdmin
  *
  * On a phone the nav collapses to a button; the content is what matters on a
  * small screen, and the nav is one tap away.
+ *
+ * `areas` narrows all of that to what this person may open — `null` for the
+ * owner and anyone unrestricted, which is everybody until somebody is
+ * deliberately narrowed. Hiding is not the protection; the gate in each area's
+ * folder is. This only stops a helper being shown doors that refuse them.
  */
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({ areas = null, children }: { areas?: AdminArea[] | null; children: React.ReactNode }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -25,7 +31,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const findRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const destinations = useMemo(() => allAdminDestinations(), []);
+  const destinations = useMemo(() => allAdminDestinations().filter((d) => canOpen(areas, d.href)), [areas]);
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return destinations;
@@ -65,14 +71,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const section = activeSection(here);
 
+  // A section survives if its own front page is open to this person or any
+  // screen inside it is. Settings is the case that matters: somebody given
+  // only the money area may open Finances, which lives under Settings, while
+  // the settings front page itself is closed to them — so the section is
+  // listed and points at the screen they can actually use rather than at a
+  // refusal.
+  const sections = ADMIN_SECTIONS.map((s) => {
+    const children = (s.children ?? []).filter((c) => canOpen(areas, c.href));
+    const own = canOpen(areas, s.href);
+    if (!own && !children.length) return null;
+    return { ...s, target: own ? s.href : children[0].href, children };
+  }).filter((s) => s !== null);
+
   const navLinks = (
     <nav aria-label="Admin sections" className="space-y-1">
-      {ADMIN_SECTIONS.map((s) => {
+      {sections.map((s) => {
         const current = s.href === section.href;
         return (
           <div key={s.href}>
             <Link
-              href={to(s.href)}
+              href={to(s.target)}
               onClick={() => setNavOpen(false)}
               aria-current={current ? "page" : undefined}
               className={`flex items-start gap-3 rounded-md px-3 py-2.5 transition ${
@@ -88,7 +107,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               </span>
             </Link>
 
-            {current && s.children && s.children.length > 1 && (
+            {current && s.children.length > 1 && (
               <ul className="mb-2 ml-6 mt-1 space-y-0.5 border-l border-[var(--gold-light)] pl-3">
                 {s.children.map((c) => (
                   <li key={c.href}>
@@ -212,7 +231,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Where you are, where you have been, and the thing you probably
           came to add. Under the header so it is on every screen without
           each screen having to remember to draw it. */}
-      <AdminTrail />
+      <AdminTrail areas={areas} />
 
       <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6">
         <aside

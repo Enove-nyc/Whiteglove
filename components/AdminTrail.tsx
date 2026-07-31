@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { ADMIN_QUICK_ADD, adminBreadcrumbs, adminHref, adminLabelFor, toAdminPath } from "@/lib/admin-nav";
+import { type AdminArea, canOpen } from "@/lib/admin-permissions";
 
 /**
  * Where you are, where you have been, and the thing you probably came to add.
@@ -67,13 +68,16 @@ function subscribe(onChange: () => void) {
   };
 }
 
-export default function AdminTrail() {
+export default function AdminTrail({ areas = null }: { areas?: AdminArea[] | null }) {
   const pathname = usePathname();
   const here = toAdminPath(pathname);
   const crumbs = adminBreadcrumbs(pathname);
   const stored = useSyncExternalStore(subscribe, readRecent, () => NONE);
-  // Never offer the page you are looking at as somewhere to go back to.
-  const recent = stored.filter((visit) => visit.href !== here).slice(0, MAX_RECENT);
+  // Never offer the page you are looking at as somewhere to go back to, nor a
+  // screen this person may no longer open — the list is the browser's memory
+  // and outlives a narrowed grant.
+  const recent = stored.filter((visit) => visit.href !== here && canOpen(areas, visit.href)).slice(0, MAX_RECENT);
+  const quickAdd = ADMIN_QUICK_ADD.filter((item) => canOpen(areas, item.href));
   const [addOpen, setAddOpen] = useState(false);
 
   const to = useCallback((href: string) => adminHref(href, pathname), [pathname]);
@@ -101,7 +105,12 @@ export default function AdminTrail() {
     return () => document.removeEventListener("keydown", onKey);
   }, [addOpen]);
 
-  const back = crumbs.length > 1 ? crumbs[crumbs.length - 2] : null;
+  // A crumb this person cannot open stays in the trail — it is still where
+  // they are — but it stops being a link, and "back" skips past it to the
+  // nearest one that opens. Otherwise a helper on Finances is offered
+  // "← Settings", which refuses them.
+  const trail = crumbs.map((crumb) => (crumb.href && canOpen(areas, crumb.href) ? crumb : { label: crumb.label }));
+  const back = [...trail].slice(0, -1).reverse().find((crumb) => crumb.href) ?? null;
 
   return (
     <div className="border-b border-[var(--gold-light)] bg-[#fdfbf7]">
@@ -119,7 +128,7 @@ export default function AdminTrail() {
 
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-stone-500">
-            {crumbs.map((crumb, index) => (
+            {trail.map((crumb, index) => (
               <li key={`${crumb.label}-${index}`} className="flex items-center gap-2">
                 {index > 0 && <span aria-hidden="true" className="text-[var(--gold-light)]">/</span>}
                 {crumb.href ? (
@@ -127,7 +136,14 @@ export default function AdminTrail() {
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span aria-current="page" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)]">
+                  // Only the last crumb is the page you are on. An earlier one
+                  // without a link is a screen this person may not open, and
+                  // claiming it is the current page would be a lie to a screen
+                  // reader.
+                  <span
+                    aria-current={index === trail.length - 1 ? "page" : undefined}
+                    className={`inline-flex min-h-11 items-center ${index === trail.length - 1 ? "font-semibold text-[var(--navy)]" : ""}`}
+                  >
                     {crumb.label}
                   </span>
                 )}
@@ -136,7 +152,7 @@ export default function AdminTrail() {
           </ol>
         </nav>
 
-        <div className="relative shrink-0">
+        <div className={`relative shrink-0 ${quickAdd.length ? "" : "hidden"}`}>
           <button
             type="button"
             onClick={() => setAddOpen((open) => !open)}
@@ -147,7 +163,7 @@ export default function AdminTrail() {
           </button>
           {addOpen && (
             <div className="absolute right-0 top-full z-40 mt-1 w-64 rounded-md border border-[var(--gold)] bg-[#fcfaf6] py-1 shadow-[0_18px_40px_rgba(23,45,82,.18)]">
-              {ADMIN_QUICK_ADD.map((item) => (
+              {quickAdd.map((item) => (
                 <Link
                   key={item.href}
                   href={to(item.href)}

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import AccessForm from "@/components/AccessForm";
 import AdminShell from "@/components/AdminShell";
 import IdleLogout from "@/components/IdleLogout";
-import { isValidAccessToken } from "@/lib/secure-access";
+import { currentAdmin } from "@/lib/admin-current";
 
 // The admin area is its own installable app: a separate "White Glove Admin"
 // home-screen icon (scoped to /admin) that opens straight to the dashboard,
@@ -30,8 +29,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   //
   // It renders the sign-in rather than redirecting: this layout also wraps
   // /admin/login, and redirecting there from here would loop forever.
-  const signedIn = isValidAccessToken("admin", (await cookies()).get("white_glove_admin")?.value);
-  if (!signedIn) {
+  const { identity, areas } = await currentAdmin();
+  if (!identity) {
     return (
       <main className="flex min-h-screen flex-col bg-[var(--cream)]">
         <div className="grid flex-1 place-items-center px-5 py-16">
@@ -48,7 +47,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <AdminShell>{children}</AdminShell>
+      {/* The navigation is drawn from what this person may open, so a
+          restricted helper is never shown a door that refuses them. The
+          refusing itself is done by the gate inside each area's folder — this
+          only decides what to draw. */}
+      <AdminShell areas={areas}>{children}</AdminShell>
       <IdleLogout minutes={20} endpoint="/api/admin/logout" redirectTo="/admin/login" />
     </>
   );
