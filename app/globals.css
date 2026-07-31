@@ -12,6 +12,34 @@
   --surface: #fffdf9;
   --font-sans: Arial, Helvetica, sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
+
+  /* ---- What is in front of what ----------------------------------------
+   *
+   * One place that says it, because the alternative is what happened here:
+   * the map's markers painted over the sponsored banner and over the sticky
+   * header. Leaflet numbers its own panes from 200 to 1000 — markers at 600,
+   * popups at 700, its controls at 1000 — and those numbers land in the
+   * page's stacking context unless something stops them. Nothing did. So the
+   * balls on the map sat on top of the advertisement.
+   *
+   * Use these, not a bare number. Anything that needs a new layer belongs on
+   * this list rather than being guessed one higher than whatever it lost to.
+   */
+  --wg-z-map: 0;      /* the map, boxed in — see .leaflet-container below */
+  --wg-z-header: 40;  /* the sticky site header */
+  --wg-z-ad: 50;      /* sponsored banners — in front of the page and the header */
+  --wg-z-modal: 60;   /* dialogs, including the sponsored popup */
+}
+
+/* Boxing Leaflet in. `isolation` plus a z-index makes the map its own
+ * stacking context, so every pane and control it numbers is scoped inside the
+ * map and can never compete with the page around it. The map itself then sits
+ * at one predictable level with the rest of the content, under the header and
+ * under the advertisement. */
+.leaflet-container {
+  position: relative;
+  z-index: var(--wg-z-map);
+  isolation: isolate;
 }
 
 @theme inline {

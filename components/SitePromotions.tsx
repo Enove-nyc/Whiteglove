@@ -101,7 +101,7 @@ export default function SitePromotions() {
     <>
       {/* Thin fixed banner, directly under the header */}
       {topBanner && !closedTop && (
-        <div className="w-full border-b border-[var(--gold-light)] bg-[var(--navy)] text-[#f7f3eb]">
+        <div className="relative z-[var(--wg-z-ad)] w-full border-b border-[var(--gold-light)] bg-[var(--navy)] text-[#f7f3eb]">
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 sm:px-8">
             <span className="hidden shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold-light)] sm:inline">Sponsored</span>
             <p className="min-w-0 flex-1 truncate text-sm">
@@ -124,7 +124,7 @@ export default function SitePromotions() {
 
       {/* Entry popup */}
       {popup && showPopup && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-stone-950/60 px-5 py-8" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
+        <div className="fixed inset-0 z-[var(--wg-z-modal)] flex items-center justify-center bg-stone-950/60 px-5 py-8" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
           <div ref={popupRef} tabIndex={-1} className="w-full max-w-md border border-[var(--gold-light)] bg-[var(--cream)] p-6 shadow-2xl outline-none sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">Sponsored</p>
@@ -150,7 +150,7 @@ export default function SitePromotions() {
 
       {/* Sticky bottom banner */}
       {bottomBanner && !closedBottom && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_-6px_20px_rgba(23,45,82,0.08)]">
+        <div className="fixed inset-x-0 bottom-0 z-[var(--wg-z-ad)] border-t border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_-6px_20px_rgba(23,45,82,0.08)]">
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-8">
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Sponsored</p>
