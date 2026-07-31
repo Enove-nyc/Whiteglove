@@ -3,7 +3,9 @@
 import { FormEvent, useState } from "react";
 
 type SuggestEditButtonProps = {
-  targetType: "location" | "accommodation" | "site";
+  // Matches what /api/content/suggestions already accepts. "directory" was
+  // supported end to end and had no button anywhere pointing at it.
+  targetType: "location" | "accommodation" | "site" | "directory";
   targetId: string;
   title: string;
   currentInfo?: string;

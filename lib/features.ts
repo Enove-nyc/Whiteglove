@@ -26,3 +26,23 @@ export function tripArrangementOpen(): boolean {
 
 /** Where to send somebody while a service is closed. */
 export const CONTACT_EMAIL = "contact@whitegloveitineraries.com";
+
+/**
+ * What "Featured" means in the provider directory, in the owner's own words.
+ *
+ * A promotional badge with no explanation is the thing the review warned
+ * about: a visitor cannot tell whether a starred listing was chosen because
+ * it is good or because somebody paid, and guessing either way is unfair to
+ * one side of that. Only the owner knows the answer.
+ *
+ * So the badge is gated on the answer existing. With `DIRECTORY_FEATURED_NOTE`
+ * unset, featured listings appear as ordinary listings — no star, no
+ * advantage — because an unexplained promotion is worse than none. Set it to
+ * the truth, whatever the truth is:
+ *
+ *   DIRECTORY_FEATURED_NOTE="Featured providers pay for placement."
+ *   DIRECTORY_FEATURED_NOTE="Featured providers are ones we have worked with directly. No one pays for placement."
+ */
+export function featuredDisclosure(): string | null {
+  return process.env.DIRECTORY_FEATURED_NOTE?.trim() || null;
+}

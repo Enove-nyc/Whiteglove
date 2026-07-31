@@ -1,5 +1,6 @@
 import { pageMetadata } from "@/lib/seo";
 import DirectoryBrowser from "@/components/DirectoryBrowser";
+import { featuredDisclosure } from "@/lib/features";
 import Footer from "@/components/Footer";
 import ListBusinessForm from "@/components/ListBusinessForm";
 import Navbar from "@/components/Navbar";
@@ -31,7 +32,7 @@ export default async function DirectoryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-        <DirectoryBrowser providers={providers} />
+        <DirectoryBrowser providers={providers} featuredNote={featuredDisclosure()} />
 
         <div className="mt-12">
           <ListBusinessForm />
