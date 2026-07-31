@@ -19,9 +19,23 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+  // TWO DIFFERENT ACTIONS, and they were one button.
+  //
+  // Bringing the database up to date — new tables, new columns, new kinds of
+  // listing — touches no content at all and needs doing after most changes.
+  // Re-importing REPLACES every built-in record from data/*.ts, and used to
+  // take the owner's own additions to those records with it.
+  //
+  // Doing both on one press meant that fixing the schema silently deleted work.
+  // `reimport` has to be asked for.
+  const body = (await request.json().catch(() => null)) as { reimport?: boolean } | null;
+
   try {
     const { prisma } = await import("@/lib/prisma");
     const tables = await ensureTables(prisma);
+    if (!body?.reimport) {
+      return NextResponse.json({ ok: true, tablesCreated: tables.created, upgradedOnly: true });
+    }
     const counts = await seedDatabase(prisma);
     return NextResponse.json({ ok: true, tablesCreated: tables.created, counts });
   } catch (error) {

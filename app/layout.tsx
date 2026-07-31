@@ -16,11 +16,21 @@ export const metadata: Metadata = {
   applicationName: "White Glove Itineraries",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
-    // NO `icon` entry here, deliberately. app/favicon.ico and app/icon.png are
-    // the logo on nothing — measured: every corner of both is rgba(0,0,0,0) —
-    // and the App Router serves them for the browser tab by itself. Naming
-    // /icon-192.png here overrode them with the one file that has a solid navy
-    // square baked in, which is why the tab showed a blue box.
+    // The SVG named explicitly, because the App Router links favicon.ico and
+    // stops — it will not offer both on its own. A browser that understands SVG
+    // takes this one and stays sharp at any size; anything older falls back to
+    // the .ico, which Next links for us and which scripts/build-favicon.mjs
+    // draws from the very same compass rose.
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    // Two earlier goes at this, both wrong in different ways. First /icon-192.png
+    // was named here, which is the one file with a solid navy square baked in —
+    // the blue box. Removing it fell back to the full logo, transparent but
+    // drawn in hairlines that cannot resolve at sixteen pixels, so it dissolved
+    // into a gold smudge that read as a gold background. Both complaints were
+    // accurate descriptions of what was on screen.
+    //
+    // A favicon gets one shape, drawn thick. It is the compass rose from the
+    // logo now — the same mark as the map pins.
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and

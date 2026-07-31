@@ -120,11 +120,9 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
           <aside className="wg-card h-fit border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7 lg:sticky lg:top-28">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">How to get there</p>
-            <div className="mt-4">
-              <KeverCoordinates coordinates={cemetery.coordinates} address={cemetery.address} />
-            </div>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{cemetery.address}</p>
+            {/* The address is the headline inside this panel now, so the grey
+                repeat of it that used to sit underneath is gone. */}
+            <KeverCoordinates coordinates={cemetery.coordinates} address={cemetery.address} />
 
             <ol className="mt-6 space-y-4 border-t border-[var(--gold-light)] pt-5">
               {cemetery.arrivalNotes.map((note, index) => (
