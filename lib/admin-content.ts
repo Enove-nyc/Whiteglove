@@ -1,5 +1,6 @@
 import { cemeteries } from "@/data/cemeteries";
 import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
+import { applyReview, type ReviewInput } from "@/lib/suggestions";
 
 type RedisResult<T> = { result?: T };
 
@@ -45,6 +46,24 @@ export type EditableAccommodation = {
   lastVerified: string;
 };
 
+export type SuggestionStatus = "pending" | "approved" | "rejected" | "needs-info";
+
+/**
+ * One decision, kept forever.
+ *
+ * Changing your mind about a correction is normal — a phone number that looked
+ * wrong turns out to be right, or the other way round. The first answer is
+ * part of the record rather than a mistake to be overwritten, which is what
+ * §8's "history" asks for.
+ */
+export type SuggestionReview = {
+  at: string;
+  status: SuggestionStatus;
+  notes: string;
+  /** The wording accepted, when the reviewer edited before approving. */
+  accepted?: string;
+};
+
 export type EditSuggestion = {
   id: string;
   targetType: "location" | "accommodation" | "site" | "directory" | "new";
@@ -56,10 +75,17 @@ export type EditSuggestion = {
   currentInfo: string;
   suggestedInfo: string;
   source: string;
-  status: "pending" | "approved" | "rejected" | "needs-info";
+  status: SuggestionStatus;
   createdAt: string;
+  /** The latest decision. `history` has all of them. */
   reviewedAt?: string;
   reviewerNotes?: string;
+  /**
+   * The correction as it was accepted, when the reviewer changed the wording
+   * before approving it. `suggestedInfo` keeps the visitor's own words.
+   */
+  acceptedInfo?: string;
+  history?: SuggestionReview[];
 };
 
 export type PromotionPlacement =
@@ -130,11 +156,25 @@ function redisConfig() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function redis<T>(command: string) {
+/**
+ * A value goes in the request body, never in the address.
+ *
+ * This used to put the whole bundle in the URL — `set/<key>/<the entire
+ * encoded content store>`. With every location seeded that address is over
+ * 300,000 characters, which no HTTP server accepts: measured against a stock
+ * Node server it is refused outright, and the save reports "connect the
+ * private database" as though nothing were configured. Reads stay on GET,
+ * where the address is only the key.
+ *
+ * The same shape lib/hechsher-store.ts and lib/media.ts already use.
+ */
+async function redis<T>(command: string, body?: string) {
   const config = redisConfig();
   if (!config) return undefined;
   const response = await fetch(`${config.url}/${command}`, {
+    method: body === undefined ? "GET" : "POST",
     headers: { Authorization: `Bearer ${config.token}` },
+    body,
     cache: "no-store",
   });
   if (!response.ok) return undefined;
@@ -273,8 +313,8 @@ async function readBundle() {
 }
 
 async function writeBundle(bundle: AdminContentBundle) {
-  const payload = encodeURIComponent(JSON.stringify({ ...bundle, updatedAt: new Date().toISOString() }));
-  const response = await redis(`set/${encodeURIComponent(contentKey)}/${payload}`);
+  const payload = JSON.stringify({ ...bundle, updatedAt: new Date().toISOString() });
+  const response = await redis(`set/${encodeURIComponent(contentKey)}`, payload);
   return Boolean(response);
 }
 
@@ -284,7 +324,11 @@ export function contentStorageIsConfigured() {
 
 export async function getAdminContent() {
   const bundle = await readBundle();
-  return { configured: contentStorageIsConfigured(), bundle };
+  // When this list was read. "Waiting three weeks" is measured from here, so
+  // the moment belongs with the data it describes rather than being taken
+  // again while a screen renders, where it would be a different number every
+  // time the screen happened to re-render.
+  return { configured: contentStorageIsConfigured(), bundle, readAt: Date.now() };
 }
 
 export async function saveSiteSettings(settings: Partial<SiteSettings>) {
@@ -465,10 +509,19 @@ export async function addSuggestion(suggestion: Omit<EditSuggestion, "id" | "sta
   return writeBundle({ ...bundle, suggestions: [next, ...bundle.suggestions] });
 }
 
-export async function updateSuggestionStatus(id: string, status: EditSuggestion["status"], reviewerNotes = "") {
+/**
+ * Record a decision on a suggestion.
+ *
+ * Returns `false` when there is nothing to write to, and `"missing"` when the
+ * suggestion is not there — a decision on a suggestion that has gone used to
+ * report success, having changed nothing at all.
+ */
+export async function reviewSuggestion(id: string, input: ReviewInput): Promise<boolean | "missing"> {
   if (!contentStorageIsConfigured()) return false;
   const bundle = await readBundle();
-  const suggestions = bundle.suggestions.map((item) => item.id === id ? { ...item, status, reviewerNotes, reviewedAt: new Date().toISOString() } : item);
+  if (!bundle.suggestions.some((item) => item.id === id)) return "missing";
+  const at = new Date().toISOString();
+  const suggestions = bundle.suggestions.map((item) => (item.id === id ? applyReview(item, input, at) : item));
   return writeBundle({ ...bundle, suggestions });
 }
 
