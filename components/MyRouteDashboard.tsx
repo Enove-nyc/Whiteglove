@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { directionsUrl, optimizeRoute, type SavedPlace } from "@/data/route-utils";
+import { directionsUrl, movePlace, optimizeRoute, type SavedPlace } from "@/data/route-utils";
+import { borderCrossings } from "@/lib/borders";
+import { shabbosWarning } from "@/lib/shabbos";
 
 type AccountSnapshot = {
   email: string;
@@ -52,13 +54,18 @@ export default function MyRouteDashboard() {
   const activeRoute = account?.route ?? route;
   const activeFavorites = account?.favorites ?? favorites;
   const optimized = optimizeRoute(activeRoute);
+  // Worked out on the order that will actually be driven, not the order they
+  // happened to be saved in.
+  const crossings = borderCrossings(optimized);
+  const shabbos = optimized
+    .map((place) => (place.plannedDate ? shabbosWarning(place.plannedDate, undefined, place.coordinates, place.name) : null))
+    .filter((warning): warning is NonNullable<typeof warning> => warning !== null);
   const openDirections = () => {
     const url = directionsUrl(optimized);
     if (url) window.open(url, "_blank", "noreferrer");
   };
 
-  const remove = (id: string) => {
-    const next = activeRoute.filter((place) => place.id !== id);
+  const save = (next: SavedPlace[]) => {
     localStorage.setItem(routeKey, JSON.stringify(next));
     window.dispatchEvent(new Event("whiteglove-route"));
     void fetch("/api/account/places", {
@@ -68,16 +75,20 @@ export default function MyRouteDashboard() {
     });
   };
 
-  const setPlannedDate = (id: string, plannedDate: string) => {
-    const next = activeRoute.map((place) => (place.id === id ? { ...place, plannedDate } : place));
-    localStorage.setItem(routeKey, JSON.stringify(next));
-    window.dispatchEvent(new Event("whiteglove-route"));
-    void fetch("/api/account/places", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: "route", action: "replace", items: next }),
-    });
-  };
+  const remove = (id: string) => save(activeRoute.filter((place) => place.id !== id));
+
+  const setPlannedDate = (id: string, plannedDate: string) =>
+    save(activeRoute.map((place) => (place.id === id ? { ...place, plannedDate } : place)));
+
+  /**
+   * Moving a stop by hand.
+   *
+   * Buttons rather than dragging. Dragging is nice with a mouse and unusable
+   * with a keyboard or a screen reader, and this is a list somebody reorders
+   * standing in an airport on a phone. The order it moves within is the
+   * optimised one on screen, which is the order they are actually looking at.
+   */
+  const move = (id: string, direction: -1 | 1) => save(movePlace(optimized, id, direction));
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
@@ -109,9 +120,45 @@ export default function MyRouteDashboard() {
                     <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{place.name}{place.yiddishName && <span className="ml-2 text-lg text-stone-500">{place.yiddishName}</span>}</p>
                     <p className="mt-1 text-sm leading-6 text-stone-600">{place.address}</p>
                     <label className="mt-3 flex max-w-xs items-center gap-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Fixed date<input type="date" value={place.plannedDate ?? ""} onChange={(event) => setPlannedDate(place.id, event.target.value)} className="border border-[var(--gold-light)] bg-white px-2 py-1 text-sm font-normal tracking-normal text-[var(--navy)]" /></label>
+                    {place.anchor && (
+                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--navy)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
+                        <span aria-hidden="true">⚓</span>
+                        {place.anchor === "start" ? "Route starts here" : "Route ends here"}
+                      </p>
+                    )}
                     {place.plannedDate && <p className="mt-2 text-xs font-semibold text-[var(--navy)]">This stop is held in place for {place.plannedDate}.</p>}
+                    {(() => {
+                      const warning = place.plannedDate ? shabbosWarning(place.plannedDate, undefined, place.coordinates, "This stop") : null;
+                      return warning ? (
+                        <p className="mt-2 rounded-md border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-xs leading-5 text-[var(--navy)]">
+                          <strong>Shabbos:</strong> {warning.message}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
-                  <button onClick={() => remove(place.id)} className="text-xs font-bold uppercase tracking-[0.1em] text-stone-500 hover:text-[var(--navy)]">Remove</button>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => move(place.id, -1)}
+                        disabled={index === 0 || Boolean(place.anchor) || Boolean(optimized[index - 1]?.anchor)}
+                        aria-label={`Move ${place.name} earlier`}
+                        className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => move(place.id, 1)}
+                        disabled={index === optimized.length - 1 || Boolean(place.anchor) || Boolean(optimized[index + 1]?.anchor)}
+                        aria-label={`Move ${place.name} later`}
+                        className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                    <button onClick={() => remove(place.id)} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-stone-500 hover:text-[var(--navy)]">Remove</button>
+                  </div>
                 </li>
               ))}
             </ol>
@@ -122,6 +169,29 @@ export default function MyRouteDashboard() {
             <p className="mt-4 leading-7 text-stone-600">A place with a fixed date stays in its place. The other kevarim are ordered by nearby distance within the flexible parts of your route. Places without coordinates remain at the end until we verify them.</p>
             <button type="button" disabled={activeRoute.length < 2} onClick={openDirections} className="mt-7 w-full bg-[var(--navy)] px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-50">Open optimized route in maps</button>
             <Link href="/itinerary" className="mt-3 block w-full border border-[var(--gold)] px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Build a full day-by-day itinerary →</Link>
+
+            {/* The two things a driving time does not tell you: the queue at
+                the border, and the deadline that cannot move. */}
+            {(crossings.length > 0 || shabbos.length > 0) && (
+              <div className="mt-7 border-t border-[var(--gold)] pt-6">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Before you fix these dates</p>
+                <ul className="mt-3 space-y-3">
+                  {crossings.map((crossing) => (
+                    <li key={`${crossing.fromPlace}-${crossing.toPlace}`} className="text-sm leading-6 text-stone-700">
+                      <span aria-hidden="true">{crossing.major ? "⚠" : "•"}</span>{" "}
+                      <strong className="text-[var(--navy)]">{crossing.from} → {crossing.to}.</strong>{" "}
+                      {crossing.message.replace(/^Border crossing between [^.]+\. /, "")}
+                    </li>
+                  ))}
+                  {shabbos.map((warning) => (
+                    <li key={warning.message} className="text-sm leading-6 text-stone-700">
+                      <span aria-hidden="true">⚠</span> <strong className="text-[var(--navy)]">Shabbos.</strong> {warning.message}
+                      {warning.candleLighting && " Check the town's own time before you rely on it."}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </aside>
         </div>
       )}
