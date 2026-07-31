@@ -1,7 +1,18 @@
 import { cemeteries, type Burial } from "@/data/cemeteries";
 import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 
-export type VerificationStatus = "verified" | "unavailable" | "needs-verification";
+/**
+ * How far a piece of information has got.
+ *
+ * "verified" and "unavailable" are the two ends. The three in between exist
+ * because a visitor deciding whether to drive four hours needs to know which
+ * of them applies: partly checked, sent in by somebody local, or currently
+ * being re-checked are three different things, and lumping them together as
+ * "being checked" was telling people less than we know.
+ *
+ * lib/verification.ts turns these into the words a visitor actually sees.
+ */
+export type VerificationStatus = "verified" | "partial" | "community" | "needs-verification" | "unavailable";
 
 export type Contact = {
   label: string;

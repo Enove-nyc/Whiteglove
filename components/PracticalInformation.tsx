@@ -2,6 +2,7 @@ import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
+import { trustLabel, type TrustLabel } from "@/lib/verification";
 import type { PracticalPlace } from "@prisma/client";
 
 type SectionKey = "accommodations" | "kosherFood" | "minyanim" | "mikvaos" | "transport";
@@ -27,10 +28,32 @@ function Detail({ section }: { section: PracticalSection }) {
   return <p className="mt-4 text-sm leading-6 text-stone-600">{section.note}</p>;
 }
 
+const TONE: Record<TrustLabel["tone"], string> = {
+  verified: "border-emerald-700 text-emerald-800",
+  partial: "border-[var(--gold)] text-[var(--navy)]",
+  community: "border-sky-700 text-sky-800",
+  pending: "border-amber-700 text-amber-800",
+  empty: "border-stone-300 text-stone-500",
+};
+
+/**
+ * What a visitor is told about this section: what has been checked, and when.
+ *
+ * Never a percentage. A number next to a kever reads as a rating of the
+ * kever, and "62% complete" answers no question anybody is asking. The
+ * percentage lives in the admin, where it is a work queue.
+ *
+ * The glyph carries the state as well as the colour, so it survives being
+ * printed, or being read by somebody who cannot separate the two ambers.
+ */
 function Status({ section }: { section: PracticalSection }) {
-  if (section.status === "verified") return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">Checked information</p>;
-  if (section.status === "needs-verification") return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-amber-800">Being checked</p>;
-  return <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Not available yet</p>;
+  const label = trustLabel(section);
+  return (
+    <p className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${TONE[label.tone]}`}>
+      <span aria-hidden="true">{label.glyph}</span>
+      {label.text}
+    </p>
+  );
 }
 
 const telHref = (phone: string) => `tel:${phone.replace(/[^+\d]/g, "")}`;
