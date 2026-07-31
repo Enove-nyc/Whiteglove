@@ -12,7 +12,15 @@ const ADMIN_API = path.join(process.cwd(), "app/api/admin");
 
 // Signing out only clears a cookie. Requiring a valid session to do it would
 // mean an expired session could never be cleared.
-const NO_AUTH_NEEDED = new Set(["app/api/admin/logout/route.ts"]);
+//
+// And the route that MINTS an admin session cannot require one — that is what
+// it is for. It is not unguarded: it proves authorisation the other way, from
+// the account session plus the team screen's own grant, which is checked
+// below rather than taken on trust.
+const NO_AUTH_NEEDED = new Set([
+  "app/api/admin/logout/route.ts",
+  "app/api/admin/session/route.ts",
+]);
 
 // Any of the guard helpers used across the admin routes.
 const GUARD = /isAdmin\(|isValidAccessToken\(|requireAdmin\(|\badmin\(request\)/;
@@ -32,6 +40,34 @@ function routeFiles(dir: string): string[] {
 function exportedMethods(source: string): string[] {
   return [...source.matchAll(/export\s+async\s+function\s+(GET|POST|PUT|PATCH|DELETE)\b/g)].map((m) => m[1]);
 }
+
+describe("the route that mints an admin session", () => {
+  // Exempt from the cookie rule above, so what it does instead is spelled out
+  // here. Get this wrong and anybody signed into any account is an
+  // administrator.
+  const source = readFileSync(path.join(ADMIN_API, "session/route.ts"), "utf8");
+
+  it("requires a signed-in account", () => {
+    assert.match(source, /readSessionEmail\(/);
+    assert.match(source, /Sign in to your account first/);
+  });
+
+  it("asks the team screen whether that account is an administrator", () => {
+    assert.match(source, /isAdminAccount\(/);
+    assert.match(source, /not an administrator/);
+  });
+
+  it("checks the origin, like every other mutating route", () => {
+    assert.match(source, /sameOrigin\(/);
+  });
+
+  it("does all of that before it mints anything", () => {
+    const mint = source.indexOf("accessToken(");
+    assert.ok(mint > 0);
+    assert.ok(source.indexOf("isAdminAccount(") < mint, "it mints the session before checking who is asking");
+    assert.ok(source.indexOf("sameOrigin(") < mint, "it mints the session before checking the origin");
+  });
+});
 
 describe("admin authorisation", () => {
   const files = routeFiles(ADMIN_API);

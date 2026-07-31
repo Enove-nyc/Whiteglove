@@ -16,7 +16,14 @@
 export type SignInEntry = {
   at: string;
   /** How they got in. */
-  how: "full code" | "five-minute code" | "admin code" | "account" | "invited";
+  /**
+   * How they got in.
+   *
+   * "admin code" is the shared password and is anonymous by nature — it is the
+   * same secret for everybody who has ever held it. "admin account" is a named
+   * administrator opening the admin as themselves, and carries `email`.
+   */
+  how: "full code" | "five-minute code" | "admin code" | "admin account" | "account" | "invited";
   /** The account's email, when there was one. Codes are anonymous by nature. */
   email?: string;
   country?: string;

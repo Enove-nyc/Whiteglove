@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_WHO_COOKIE } from "@/lib/admin-session";
 import { sameOrigin } from "@/lib/secure-access";
 
 // Clears the admin access cookie so /admin requires the code again.
@@ -11,12 +12,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("white_glove_admin", "", {
+  const cleared = {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 0,
-  });
+  };
+  response.cookies.set("white_glove_admin", "", cleared);
+  // And the name. Leaving it behind would let the next person to use the
+  // shared password inherit the last named administrator in the log.
+  response.cookies.set(ADMIN_WHO_COOKIE, "", cleared);
   return response;
 }
