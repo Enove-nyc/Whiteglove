@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -6,10 +6,11 @@ import Navbar from "@/components/Navbar";
 import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-guide";
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Travel guide — documents, advisories & paying | White Glove Itineraries",
   description: "Entry documents, live U.S. State Department safety advisories, and how to pay for your trip with points or cash.",
-};
+  path: "/travel-guide",
+});
 
 // Advisories are read on the server and cached for an hour.
 export const revalidate = 3600;

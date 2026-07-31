@@ -9,6 +9,9 @@ import { bulkDestinations, getBulkDestination } from "@/data/destinations-bulk";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
 
 export function generateStaticParams() {
   return bulkDestinations.map(({ slug }) => ({ place: slug }));
@@ -16,6 +19,19 @@ export function generateStaticParams() {
 
 // Re-render at most hourly; admin edits also trigger on-demand revalidation.
 export const revalidate = 3600;
+
+export async function generateMetadata({ params }: { params: Promise<{ place: string }> }) {
+  const { place: slug } = await params;
+  const destination = getBulkDestination(slug);
+  if (!destination) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination could not be found.", path: `/destinations/${slug}`, noIndex: true });
+  return pageMetadata({
+    title: `${destination.city}, ${destination.country} — Jewish Heritage Guide | White Glove`,
+    description: destination.summary
+      ? `${destination.summary} Practical details for ${destination.city} are published here once they have been checked.`
+      : `${destination.city}, ${destination.country}: kevarim, addresses and travel details, published as each one is checked.`,
+    path: `/destinations/${destination.slug}`,
+  });
+}
 
 export default async function BulkDestinationPage({ params }: { params: Promise<{ place: string }> }) {
   const { place: slug } = await params;
@@ -27,6 +43,23 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          touristAttraction({
+            name: destination.city,
+            description: destination.summary ?? `Jewish heritage destination in ${destination.country}.`,
+            path: `/destinations/${destination.slug}`,
+            coordinates: record?.cemeteries[0]?.coordinates,
+            country: destination.country,
+            alternateNames: [destination.yiddishCity, ...(destination.aliases ?? [])],
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Destinations", path: "/stops" },
+            { name: destination.city, path: `/destinations/${destination.slug}` },
+          ]),
+        ]}
+      />
       <Navbar />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">

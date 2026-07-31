@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import KosherStayDirectory from "@/components/KosherStayDirectory";
 import Navbar from "@/components/Navbar";
@@ -6,11 +6,11 @@ import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Where to stay — White Glove Itineraries",
-  description:
-    "Kosher and kosher-friendly places to stay in Italy, France and Switzerland, and which part of each city to be in for Shabbos.",
-};
+  description: "Kosher and kosher-friendly places to stay in Italy, France and Switzerland, and which part of each city to be in for Shabbos.",
+  path: "/kosher-stays",
+});
 
 export default async function KosherStaysPage() {
   // Read through the view so owner-added stays and quarters appear here and in

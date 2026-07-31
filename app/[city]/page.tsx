@@ -12,6 +12,9 @@ import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
 
 export function generateStaticParams() {
   return cityGuides.map(({ slug }) => ({ city: slug }));
@@ -19,6 +22,25 @@ export function generateStaticParams() {
 
 // Re-render at most hourly; admin edits also trigger on-demand revalidation.
 export const revalidate = 3600;
+
+/**
+ * Every guide says who is buried there, in the title.
+ *
+ * These pages all shared one line — "White Glove Itineraries | Luxury Kosher
+ * Travel" — so a search result for Uman and one for Lizhensk were
+ * indistinguishable, and neither said what the page was. Somebody searching
+ * for a tzaddik is searching for the tzaddik's name.
+ */
+export async function generateMetadata({ params }: { params: Promise<{ city: string }> }) {
+  const { city } = await params;
+  const guide = getCityGuide(city);
+  if (!guide) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination guide could not be found.", path: `/${city}`, noIndex: true });
+  return pageMetadata({
+    title: `${guide.city} Travel Guide & Kever of ${guide.tzaddik} | White Glove`,
+    description: `${guide.city}, ${guide.country}: how to reach the kever of ${guide.tzaddik}, who else is buried there, access and shomer details, kosher food, minyanim and mikvaos — checked before it is published.`,
+    path: `/${guide.slug}`,
+  });
+}
 
 export default async function CityGuidePage({ params }: { params: Promise<{ city: string }> }) {
   const { city } = await params;
@@ -38,6 +60,24 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          touristAttraction({
+            name: `${guide.city} — kever of ${guide.tzaddik}`,
+            description: guide.overview,
+            path: `/${guide.slug}`,
+            address: guide.graveAddress,
+            coordinates: guide.graveCoordinates,
+            country: guide.country,
+            alternateNames: [guide.yiddishCity, ...(guide.aliases ?? [])],
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Destinations", path: "/stops" },
+            { name: guide.city, path: `/${guide.slug}` },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
 

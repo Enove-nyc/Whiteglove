@@ -9,6 +9,16 @@ import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@
 import { isAdminAccount } from "@/lib/admin-roles";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
+import { pageMetadata } from "@/lib/seo";
+
+// Private to one person. Nothing here belongs in a search result.
+export const metadata = pageMetadata({
+  title: "Your account | White Glove Itineraries",
+  description: "Your saved route, itineraries and account settings.",
+  path: "/account",
+  noIndex: true,
+});
+
 export default async function AccountPage() {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(accountCookieName())?.value;

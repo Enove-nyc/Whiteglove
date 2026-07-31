@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import DirectoryBrowser from "@/components/DirectoryBrowser";
 import Footer from "@/components/Footer";
 import ListBusinessForm from "@/components/ListBusinessForm";
 import Navbar from "@/components/Navbar";
 import { getPublicProviders } from "@/lib/directory";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Directory — White Glove Itineraries",
   description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
-};
+  path: "/directory",
+});
 
 export default async function DirectoryPage() {
   const providers = await getPublicProviders();

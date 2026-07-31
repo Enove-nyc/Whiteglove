@@ -3,9 +3,25 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBody from "@/components/PageBody";
 import { getInfoPage } from "@/lib/pages";
+import { pageMetadata } from "@/lib/seo";
 
 // Owner-created info pages live only in the DB, so render on demand.
 export const dynamic = "force-dynamic";
+
+// An owner-written page carries its own title. Falling back to the site's
+// generic one is what made every page look the same in a search result.
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = await getInfoPage(slug);
+  if (!page) return pageMetadata({ title: "Page not found | White Glove Itineraries", description: "This page could not be found.", path: `/info/${slug}`, noIndex: true });
+  return pageMetadata({
+    title: `${page.title} | White Glove Itineraries`,
+    // The first couple of sentences of what the owner actually wrote, rather
+    // than a description invented for them.
+    description: page.body.replace(/\s+/g, " ").trim().slice(0, 155) || `${page.title} — White Glove Itineraries.`,
+    path: `/info/${page.slug}`,
+  });
+}
 
 export default async function InfoPageRoute({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

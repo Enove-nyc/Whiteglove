@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -6,11 +6,11 @@ import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAttractionList } from "@/lib/attractions-view";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Things to do — White Glove Itineraries",
-  description:
-    "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
-};
+  description: "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
+  path: "/attractions",
+});
 
 export default async function AttractionsPage() {
   // Read through the view, not the data file, so anything the owner adds in the

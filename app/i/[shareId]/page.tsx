@@ -9,6 +9,17 @@ import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { getActivePromotions } from "@/lib/admin-content";
 import { burialsForSlugs } from "@/lib/kever-search";
 
+import { pageMetadata } from "@/lib/seo";
+
+// A share link is given to somebody, not found. Indexing it would put a
+// stranger's trip — with their dates and their stops — into search results.
+export const metadata = pageMetadata({
+  title: "A shared itinerary | White Glove Itineraries",
+  description: "An itinerary shared with you.",
+  path: "/i",
+  noIndex: true,
+});
+
 export const dynamic = "force-dynamic";
 
 export default async function SharedItineraryPage({ params }: { params: Promise<{ shareId: string }> }) {

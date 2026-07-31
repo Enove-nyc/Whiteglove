@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import MapExplorer, { type MapAirport, type MapKever } from "@/components/MapExplorer";
@@ -7,10 +7,11 @@ import SubBrandBanner from "@/components/SubBrand";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Map — what's around any town | White Glove Itineraries",
   description: "Search a town and see the kevarim, kosher food and airports around it on one map.",
-};
+  path: "/map",
+});
 
 // Kraków: central to most of the routes this site plans, and a place almost
 // everyone recognises, so the map opens somewhere meaningful rather than blank.

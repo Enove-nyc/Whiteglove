@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { headers } from "next/headers";
 import Footer from "@/components/Footer";
 import ItineraryFooter from "@/components/ItineraryFooter";
@@ -8,10 +8,12 @@ import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { getActivePromotions } from "@/lib/admin-content";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Itinerary planner — White Glove Itineraries",
   description: "Build your trip day by day — flights, hotels, and stops — with automatic checks and a printable itinerary.",
-};
+  path: "/itinerary",
+  noIndex: true,
+});
 
 export default async function ItineraryPage() {
   const userAgent = (await headers()).get("user-agent") || "";
