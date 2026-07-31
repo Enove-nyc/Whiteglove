@@ -1,5 +1,6 @@
 import type { DestinationRecord, PracticalSection, VerificationStatus } from "@/data/destination-database";
 import { DESTINATION_SECTIONS, LEGACY_RECORD_SECTIONS } from "@/lib/destination-sections";
+import type { DestinationFacts } from "@/lib/completeness-source";
 
 /**
  * How much a visitor should trust what a page says, and how much work a
@@ -127,21 +128,39 @@ const CEMETERY_FIELDS: Array<{ label: string; tracked: boolean; has?: (record: D
   { label: "Last verified date", tracked: true, has: (r) => Boolean(r.lastChecked) || SECTION_KEYS.some((k) => Boolean(r[k].lastChecked)) },
 ];
 
-/** One entry per practical section, from the shared list. */
-const SECTION_FIELDS = DESTINATION_SECTIONS.map((section) => {
-  const legacy = LEGACY_RECORD_SECTIONS[section.key];
-  return legacy
-    ? { label: section.label, tracked: true, has: (r: DestinationRecord) => r[legacy].status !== "unavailable" }
-    : { label: section.label, tracked: false };
-});
+/**
+ * One entry per practical section, from the shared list.
+ *
+ * A section is answerable either because the built-in record has it, or
+ * because the database was read and can be asked. Without the database the
+ * eight newer sections are `tracked: false` — genuinely unmeasured rather than
+ * genuinely empty, which is a distinction worth keeping.
+ */
+function sectionFields(facts?: DestinationFacts) {
+  return DESTINATION_SECTIONS.map((section) => {
+    const legacy = LEGACY_RECORD_SECTIONS[section.key];
+    if (legacy) {
+      return {
+        label: section.label,
+        tracked: true,
+        has: (r: DestinationRecord) => r[legacy].status !== "unavailable" || Boolean(facts?.sections.includes(section.key)),
+      };
+    }
+    if (!facts) return { label: section.label, tracked: false };
+    return { label: section.label, tracked: true, has: () => facts.sections.includes(section.key) };
+  });
+}
 
-const FIELDS: Array<{ label: string; tracked: boolean; has?: (record: DestinationRecord) => boolean }> = [
-  ...CEMETERY_FIELDS,
-  ...SECTION_FIELDS,
-  // Not a section. Photos hang off the destination and the cemetery, and the
-  // static record has none.
-  { label: "Photos", tracked: false },
-];
+function fieldsFor(facts?: DestinationFacts): Array<{ label: string; tracked: boolean; has?: (record: DestinationRecord) => boolean }> {
+  return [
+    ...CEMETERY_FIELDS,
+    ...sectionFields(facts),
+    // Not a section. Photos hang off the destination and the cemetery.
+    facts
+      ? { label: "Photos", tracked: true, has: () => facts.photos > 0 }
+      : { label: "Photos", tracked: false },
+  ];
+}
 
 export type Completeness = {
   /** 0–100, admin only. Never rendered on a public page. */
@@ -154,11 +173,22 @@ export type Completeness = {
   notTracked: string[];
 };
 
-/** How complete one destination record is, against the content standard. */
-export function completeness(record: DestinationRecord): Completeness {
+/**
+ * How complete one destination record is, against the content standard.
+ *
+ * `facts` is what the database holds for this destination. Given it, every
+ * section can be answered and the number reflects what the owner has actually
+ * entered. Without it — no database, or a database that would not answer —
+ * this behaves exactly as it did before, counting from the built-in content.
+ * That fallback is deliberate: a work queue that empties itself because a
+ * database blinked is worse than one that is out of date, because it says the
+ * work is done.
+ */
+export function completeness(record: DestinationRecord, facts?: DestinationFacts): Completeness {
   const missing: string[] = [];
   const notTracked: string[] = [];
   let filled = 0;
+  const FIELDS = fieldsFor(facts);
 
   for (const field of FIELDS) {
     if (!field.tracked) {
