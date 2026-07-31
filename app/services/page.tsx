@@ -1,12 +1,18 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { resolvePage } from "@/lib/pages";
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata() {
   const page = await resolvePage("services");
-  return { title: page?.seoTitle, description: page?.seoDescription };
+  // The owner writes the title and description in the admin; the
+  // canonical URL and the share card come from the page it is.
+  return pageMetadata({
+    title: page?.seoTitle ?? "White Glove Itineraries",
+    description: page?.seoDescription ?? "Thoughtfully planned kosher travel and Jewish heritage journeys.",
+    path: "/services",
+  });
 }
 
 export default async function ServicesPage() {

@@ -10,6 +10,16 @@ import { getActivePromotions } from "@/lib/admin-content";
 import { getTopVisitedPaths } from "@/lib/site-analytics";
 import { headers } from "next/headers";
 import Link from "next/link";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { website } from "@/lib/structured-data";
+
+export const metadata = pageMetadata({
+  title: "Kosher Travel & Kivrei Tzadikim Guides | White Glove Itineraries",
+  description:
+    "Plan a kosher trip around the kevarim: guides for Uman, Lizhensk, Medzhybizh and hundreds more, with addresses, access notes, kosher food, minyanim — and flights, hotels and a route planner in one place.",
+  path: "/",
+});
 
 const destinations = [
   { name: "Lizhensk", yiddishName: "ליזענסק", country: "Poland", description: "A complete guide for a meaningful visit to the Noam Elimelech.", href: "/lizensk" },
@@ -70,6 +80,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
+      <StructuredData data={website()} />
       <Navbar />
 
       <section className="relative border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-24">

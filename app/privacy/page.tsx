@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Privacy Policy — White Glove Itineraries",
   description: "How White Glove Itineraries collects, uses, and protects your information.",
-};
+  path: "/privacy",
+});
 
 const UPDATED = "July 26, 2026";
 

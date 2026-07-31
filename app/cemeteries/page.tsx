@@ -4,11 +4,35 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemeteryList } from "@/lib/cemeteries-view";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, collectionPage } from "@/lib/structured-data";
+
+export const metadata = pageMetadata({
+  title: "Kivrei Tzadikim and Jewish Cemeteries Directory | White Glove",
+  description:
+    "Every beis hachaim we hold a record for: who is buried where, the exact address and coordinates, arrival notes, and shomer contacts where they have been checked.",
+  path: "/cemeteries",
+});
 
 export default async function CemeteriesPage() {
   const cemeteries = await getCemeteryList();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          collectionPage({
+            name: "Kivrei tzadikim and Jewish cemeteries",
+            description: "Batei hachaim across Europe and beyond, with kevarim, addresses and access notes.",
+            path: "/cemeteries",
+            count: cemeteries.length,
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Cemeteries", path: "/cemeteries" },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
 

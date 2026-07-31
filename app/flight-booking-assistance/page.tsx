@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import FlightRequestForm from "@/components/FlightRequestForm";
 import Footer from "@/components/Footer";
 import { GloveList } from "@/components/GloveMark";
@@ -8,9 +8,15 @@ import { visibleBlocks } from "@/data/page-blocks";
 import { tripArrangementOpen } from "@/lib/features";
 import { resolvePage } from "@/lib/pages";
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata() {
   const page = await resolvePage("flight-booking-assistance");
-  return { title: page?.seoTitle, description: page?.seoDescription };
+  // The owner writes the title and description in the admin; the
+  // canonical URL and the share card come from the page it is.
+  return pageMetadata({
+    title: page?.seoTitle ?? "White Glove Itineraries",
+    description: page?.seoDescription ?? "Thoughtfully planned kosher travel and Jewish heritage journeys.",
+    path: "/flight-booking-assistance",
+  });
 }
 
 export default async function FlightBookingAssistancePage() {

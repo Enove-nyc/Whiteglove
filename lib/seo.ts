@@ -51,6 +51,28 @@ export function siteOrigin(): URL | undefined {
   );
 }
 
+/**
+ * Say so, once, at build time, if there is no address to be canonical about.
+ *
+ * This is worth shouting about because the failure is silent and permanent.
+ * Statically generated pages — every city guide, every beis hachaim — resolve
+ * their canonical URL and their share image AT BUILD TIME. Build without an
+ * address and they ship with a relative canonical and an og:image pointing at
+ * localhost, so every share of a guide renders with no picture, and two
+ * domains serving the same content never consolidate. Nothing at runtime can
+ * repair it; it takes another build.
+ *
+ * The warning lands in the deployment's build log, which is where somebody
+ * looking for why the share cards are broken would actually look.
+ */
+if (process.env.NODE_ENV === "production" && !siteOrigin()) {
+  console.warn(
+    "[seo] No site address is set, so canonical URLs and social-card images cannot be made absolute.\n" +
+      "      Set NEXT_PUBLIC_SITE_URL (e.g. https://whitegloveitineraries.com) and deploy again.\n" +
+      "      Pages built now will ship with a relative canonical and a localhost share image.",
+  );
+}
+
 export type PageMetadata = {
   /** Shown in the tab, the search result and the share card. */
   title: string;

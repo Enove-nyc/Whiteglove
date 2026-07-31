@@ -1,6 +1,16 @@
 import AccessForm from "@/components/AccessForm";
 import Footer from "@/components/Footer";
 
+import { pageMetadata } from "@/lib/seo";
+
+// Private to one person. Nothing here belongs in a search result.
+export const metadata = pageMetadata({
+  title: "Enter the access code | White Glove Itineraries",
+  description: "This part of the site is private while it is being prepared.",
+  path: "/access",
+  noIndex: true,
+});
+
 export default async function AccessPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
   return (

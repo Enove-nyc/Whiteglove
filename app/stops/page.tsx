@@ -9,6 +9,16 @@ import { destinationHaystack, destinations, guidedDestinations, unguidedDestinat
 import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import { extraSpellings, fuzzyMatch } from "@/lib/place-search";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, collectionPage } from "@/lib/structured-data";
+
+export const metadata = pageMetadata({
+  title: "Jewish Heritage Destinations Directory — Towns & Kevarim | White Glove",
+  description:
+    "Browse every town, kever and beis hachaim on the site by city, traditional name, country or tzaddik. Practical details are published only once they have been checked.",
+  path: "/stops",
+});
 
 export default async function SacredStopsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
@@ -37,6 +47,20 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          collectionPage({
+            name: "Destinations and kevarim",
+            description: "Towns, kevarim and batei hachaim, searchable in English or Yiddish.",
+            path: "/stops",
+            count: destinations.length,
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Destinations", path: "/stops" },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">

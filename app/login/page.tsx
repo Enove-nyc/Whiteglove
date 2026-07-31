@@ -2,6 +2,16 @@ import Footer from "@/components/Footer";
 import LoginForm from "@/components/LoginForm";
 import { smsConfigured } from "@/lib/sms";
 import Navbar from "@/components/Navbar";
+import { pageMetadata } from "@/lib/seo";
+
+// Noindexed: a sign-in form is of no use in a search result, and having one
+// rank for the brand name puts a login page where the homepage should be.
+export const metadata = pageMetadata({
+  title: "Sign in to White Glove Itineraries",
+  description: "Sign in to keep your route, saved destinations and itineraries on every device.",
+  path: "/login",
+  noIndex: true,
+});
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;

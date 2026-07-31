@@ -6,6 +6,16 @@ import SavePlaceButtons from "@/components/SavePlaceButtons";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import SectionHeading from "@/components/SectionHeading";
 import { placeDirectionsUrl } from "@/data/route-utils";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
+
+export const metadata = pageMetadata({
+  title: "Lizhensk Travel Guide & Kever of Reb Elimelech | White Glove",
+  description:
+    "Leżajsk, Poland: how to reach the kever of Rabbi Elimelech of Lizhensk, the ohel and its access, kosher food and Shabbos, minyanim, mikvaos, drivers and where to stay.",
+  path: "/lizensk",
+});
 
 const guideSections = [
   ["Daven", "Tefillos at the kever", "Preparation for your visit, including commonly said tefillos and practical guidance for the ohel."],
@@ -64,6 +74,24 @@ const verifiedDetails = [
 export default function LizenskPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          touristAttraction({
+            name: "Lizhensk — kever of Rabbi Elimelech",
+            description: "The ohel of Rabbi Elimelech Weisblum of Lizhensk, author of the Noam Elimelech, in Leżajsk, Poland.",
+            path: "/lizensk",
+            address: "Górna 16, 37-300 Leżajsk, Poland",
+            coordinates: "50.251139, 22.422611",
+            country: "Poland",
+            alternateNames: ["ליזענסק", "Lizensk", "Leżajsk", "Lezajsk"],
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Destinations", path: "/stops" },
+            { name: "Lizhensk", path: "/lizensk" },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">

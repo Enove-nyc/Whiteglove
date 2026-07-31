@@ -16,9 +16,27 @@ import { kmBetween } from "@/data/itinerary";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getCemeteryView } from "@/lib/cemeteries-view";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
+import StructuredData from "@/components/StructuredData";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, cemeteryPlace } from "@/lib/structured-data";
 
 export function generateStaticParams() {
   return cemeteries.map(({ slug }) => ({ cemetery: slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ cemetery: string }> }) {
+  const { cemetery: slug } = await params;
+  const cemetery = await getCemeteryView(slug);
+  if (!cemetery) return pageMetadata({ title: "Beis hachaim not found | White Glove Itineraries", description: "This cemetery record could not be found.", path: `/cemeteries/${slug}`, noIndex: true });
+  // The names of the people buried there are what somebody is searching for,
+  // so the description leads with them rather than with our own wording.
+  const names = cemetery.burials.slice(0, 3).map((burial) => burial.name).filter(Boolean);
+  const who = names.length ? `Kevarim of ${names.join(", ")}${cemetery.burials.length > names.length ? " and others" : ""}. ` : "";
+  return pageMetadata({
+    title: `${cemetery.name} — Kevarim, Address & Access | White Glove`,
+    description: `${who}${cemetery.address ? `${cemetery.address}. ` : ""}Navigation, arrival notes and shomer contacts for the beis hachaim in ${cemetery.city ?? cemetery.country ?? "this town"}.`,
+    path: `/cemeteries/${cemetery.slug}`,
+  });
 }
 
 export default async function CemeteryPage({ params }: { params: Promise<{ cemetery: string }> }) {
@@ -47,6 +65,24 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      <StructuredData
+        data={[
+          cemeteryPlace({
+            name: cemetery.name,
+            description: `Beis hachaim in ${cemetery.city ?? cemetery.country ?? ""}`.trim(),
+            path: `/cemeteries/${cemetery.slug}`,
+            address: cemetery.address,
+            coordinates: cemetery.coordinates,
+            country: cemetery.country,
+            alternateNames: [cemetery.yiddishName],
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Cemeteries", path: "/cemeteries" },
+            { name: cemetery.name, path: `/cemeteries/${cemetery.slug}` },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
 
