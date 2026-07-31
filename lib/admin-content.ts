@@ -1,5 +1,6 @@
 import { cemeteries } from "@/data/cemeteries";
 import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
+import type { DirectoryDraft } from "@/lib/directory-fields";
 import { applyReview, type ReviewInput } from "@/lib/suggestions";
 
 type RedisResult<T> = { result?: T };
@@ -86,6 +87,16 @@ export type EditSuggestion = {
    */
   acceptedInfo?: string;
   history?: SuggestionReview[];
+  /**
+   * A directory listing filled in on the same form the owner uses, field by
+   * field, rather than described in a paragraph. Present only for directory
+   * submissions; when it is there, accepting can write the listing instead of
+   * the owner retyping it.
+   */
+  draft?: DirectoryDraft;
+  /** Consent the submitter gave for their own number, if they gave any. */
+  contactConsent?: boolean;
+  contactConsentNote?: string;
 };
 
 export type PromotionPlacement =

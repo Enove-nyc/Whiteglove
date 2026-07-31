@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, reviewSuggestion } from "@/lib/admin-content";
+import { applyDirectorySuggestion } from "@/lib/directory-suggestions";
 import { reviewProblem, type ReviewDecision } from "@/lib/suggestions";
 
 function isAdmin(request: NextRequest) {
@@ -31,13 +32,22 @@ export async function POST(request: NextRequest) {
     const saved = await upsertLocations(body.data as Parameters<typeof upsertLocations>[0]);
     if (!saved) return NextResponse.json({ error: "Connect the private database before importing locations." }, { status: 503 });
   } else if (body.kind === "suggestion") {
-    const payload = body.data as { id?: string; status?: ReviewDecision; reviewerNotes?: string; acceptedInfo?: string };
+    const payload = body.data as { id?: string; status?: ReviewDecision; reviewerNotes?: string; acceptedInfo?: string; apply?: boolean };
     if (!payload?.id || !payload.status) return NextResponse.json({ error: "Choose a suggestion status." }, { status: 400 });
     // The same rule the screen applies, applied again here. The screen can be
     // bypassed; the rule is what stops a rejection with no reason from being
     // stored, and a reason nobody recorded cannot be recovered later.
     const problem = reviewProblem({ status: payload.status, notes: payload.reviewerNotes ?? "" });
     if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+    // Accepting a directory listing WRITES it, then records the decision.
+    // Doing it in that order means a failed write leaves the suggestion
+    // waiting rather than marked approved with nothing having happened.
+    if (payload.status === "approved" && payload.apply) {
+      const applied = await applyDirectorySuggestion(payload.id);
+      if (applied === "missing") return NextResponse.json({ error: "That suggestion is no longer there." }, { status: 404 });
+      if (applied === "not-a-listing") return NextResponse.json({ error: "That suggestion has no listing to apply." }, { status: 400 });
+      if (!applied) return NextResponse.json({ error: "The listing could not be saved, so nothing was accepted. Try again." }, { status: 503 });
+    }
     const saved = await reviewSuggestion(payload.id, {
       status: payload.status,
       notes: payload.reviewerNotes ?? "",

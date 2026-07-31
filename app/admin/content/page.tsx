@@ -3,6 +3,8 @@ import AdminContentManager from "@/components/AdminContentManager";
 import { getCemetery } from "@/data/cemeteries";
 import { destinationHref, getDestination } from "@/data/destinations";
 import { getAdminContent, getMissingContentReport, type EditSuggestion } from "@/lib/admin-content";
+import { draftFromProvider, type DirectoryDraft } from "@/lib/directory-fields";
+import { listStoredProviders } from "@/lib/directory-store";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +50,19 @@ export default async function AdminContentPage({ searchParams }: {
   searchParams: Promise<{ tab?: string; missing?: string }>;
 }) {
   const { configured, bundle, readAt } = await getAdminContent();
+
+  // What each listing under review says right now, so the review can show
+  // which fields would change rather than only what was sent.
+  const providers = await listStoredProviders();
+  const currentListings: Record<string, DirectoryDraft> = {};
+  const listingConsent: Record<string, boolean> = {};
+  for (const suggestion of bundle.suggestions) {
+    if (suggestion.targetType !== "directory" || currentListings[suggestion.targetId]) continue;
+    const existing = providers.find((p) => p.id === suggestion.targetId);
+    if (!existing) continue;
+    currentListings[suggestion.targetId] = draftFromProvider(existing);
+    listingConsent[suggestion.targetId] = Boolean(existing.contactConsent);
+  }
   const report = getMissingContentReport(bundle);
   const query = await searchParams;
   // Which tab to open on, read on the server so the first paint is already
@@ -89,6 +104,8 @@ export default async function AdminContentPage({ searchParams }: {
         initialTab={initialTab}
         initialMissing={initialMissing}
         suggestionLinks={suggestionLinks(bundle.suggestions)}
+        currentListings={currentListings}
+        listingConsent={listingConsent}
         readAt={readAt}
       />
     </>

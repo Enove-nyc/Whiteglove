@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import DirectoryListingFields from "@/components/DirectoryListingFields";
 import type { StoredProvider } from "@/lib/directory-store";
 
 const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -71,21 +72,24 @@ export default function AdminDirectoryManager() {
       <form onSubmit={save} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{form.id ? "Edit provider" : "Add a provider"}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2"><span className={caption}>Business / person name *</span><input required className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Reb Yossi's Uman Tours" /></label>
-          <label className="block"><span className={caption}>Category</span><select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as StoredProvider["category"] })}>{CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
-          <label className="block"><span className={caption}>Based in (city, country)</span><input className={inputClass} value={form.basedIn} onChange={(e) => setForm({ ...form, basedIn: e.target.value })} placeholder="Uman, Ukraine" /></label>
+          {/* The same component the public form uses. One definition of what
+              a listing is made of, so a submission arrives as the boxes you
+              would have typed and accepting it is one press rather than a
+              transcription job. */}
+          <div className="sm:col-span-2">
+            <DirectoryListingFields
+              draft={{
+                name: form.name, category: form.category, tagline: form.tagline, description: form.description,
+                phone: form.phone, whatsapp: form.whatsapp, email: form.email, website: form.website,
+                basedIn: form.basedIn, regions: form.regions, languages: form.languages,
+                specialties: form.specialties, responseTime: form.responseTime,
+              }}
+              onChange={(key, value) => setForm((f) => ({ ...f, [key]: value }))}
+              idPrefix="admin-dir"
+            />
+          </div>
           <label className="block sm:col-span-2"><span className={caption}>Services offered</span><input className={inputClass} value={form.services} onChange={(e) => setForm({ ...form, services: e.target.value })} placeholder="Airport pickup, kever transport, hotel booking, guided tours…" /></label>
-          <label className="block"><span className={caption}>Phone</span><input className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+380 …" /></label>
-          <label className="block"><span className={caption}>WhatsApp</span><input className={inputClass} value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="+380 …" /></label>
-          <label className="block"><span className={caption}>Email</span><input className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" /></label>
-          <label className="block"><span className={caption}>Website</span><input className={inputClass} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://…" /></label>
-          <label className="block"><span className={caption}>Regions served (comma-separated)</span><input className={inputClass} value={form.regions} onChange={(e) => setForm({ ...form, regions: e.target.value })} placeholder="Ukraine, Poland, Worldwide" /></label>
-          <label className="block"><span className={caption}>Languages (comma-separated)</span><input className={inputClass} value={form.languages} onChange={(e) => setForm({ ...form, languages: e.target.value })} placeholder="English, Hebrew, Yiddish" /></label>
-          <label className="block sm:col-span-2"><span className={caption}>Specialties (comma-separated)</span><input className={inputClass} value={form.specialties} onChange={(e) => setForm({ ...form, specialties: e.target.value })} placeholder="Uman, kevarim tours, honeymoons" /></label>
-          <label className="block sm:col-span-2"><span className={caption}>Tagline</span><input className={inputClass} value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} placeholder="One short line about them" /></label>
-          <label className="block sm:col-span-2"><span className={caption}>Description</span><textarea rows={3} className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
           <label className="block sm:col-span-2"><span className={caption}>Private notes (not shown to visitors)</span><input className={inputClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
-          <label className="block"><span className={caption}>How quickly they answer (their words)</span><input className={inputClass} value={form.responseTime} onChange={(e) => setForm({ ...form, responseTime: e.target.value })} placeholder="same day / within a week" /></label>
           <label className="block"><span className={caption}>Date you last checked this listing</span><input type="date" className={inputClass} value={form.verifiedAt} onChange={(e) => setForm({ ...form, verifiedAt: e.target.value })} /></label>
 
           {/* Permission to publish their number. Off unless somebody asked. */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import SuggestEditButton from "@/components/SuggestEditButton";
+import DirectoryCorrectionButton from "@/components/DirectoryCorrectionButton";
 import { responseNote, verifiedLabel } from "@/lib/provider-contact";
 import { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER, type ProviderCat, type PublicProvider } from "@/lib/directory";
 
@@ -219,16 +219,12 @@ export default function DirectoryBrowser({
               </p>
             )}
 
-            {/* A phone number that has stopped working is worse than no number
-                — somebody stands at a kever ringing it. This is how that gets
-                back to us; the suggestion goes to the admin queue for review,
-                the same as a destination correction. */}
-            <SuggestEditButton
-              targetType="directory"
-              targetId={p.slug}
-              title={p.name}
-              currentInfo={[p.phone, p.whatsapp, p.email, p.website].filter(Boolean).join(" · ")}
-            />
+            {/* A phone number that has stopped working is worse than no
+                number — somebody stands at a kever ringing it. The form is
+                the same one the owner has in the admin and opens on what is
+                published, so a correction arrives as fields and accepting it
+                is one press. */}
+            <DirectoryCorrectionButton provider={p} />
           </article>
         ))}
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { EditSuggestion, SuggestionStatus } from "@/lib/admin-content";
+import { changedFields, type DirectoryDraft } from "@/lib/directory-fields";
 import { countByStatus, replyDraft, reviewProblem, sortForReview, suggestionSection, waitingFor, type ReviewDecision, type ReviewInput } from "@/lib/suggestions";
 
 /**
@@ -40,13 +41,17 @@ const field =
   "mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]";
 const fieldLabel = "block text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
-export default function SuggestionReview({ suggestions, links, readAt, onReview }: {
+export default function SuggestionReview({ suggestions, links, readAt, currentListings = {}, listingConsent = {}, onReview }: {
   suggestions: EditSuggestion[];
   /** Public page for a target, where the page could work out which one it is. */
   links: Record<string, string>;
   /** When the list was read. Ages are measured from here, not from a
    *  clock read while rendering, so the server and the browser agree. */
   readAt: number;
+  /** What each directory listing says now, so a review shows what changes. */
+  currentListings?: Record<string, DirectoryDraft>;
+  /** Which of those listings already publish their number, by the owner's record. */
+  listingConsent?: Record<string, boolean>;
   onReview: (id: string, input: ReviewInput) => Promise<ReviewResult>;
 }) {
   const [filter, setFilter] = useState<SuggestionStatus | "all">("pending");
@@ -88,7 +93,7 @@ export default function SuggestionReview({ suggestions, links, readAt, onReview 
       ) : (
         <div className="mt-6 space-y-5">
           {shown.map((item) => (
-            <SuggestionCard key={item.id} item={item} publicHref={links[item.targetId]} readAt={readAt} onReview={onReview} />
+            <SuggestionCard key={item.id} item={item} publicHref={links[item.targetId]} readAt={readAt} current={currentListings[item.targetId]} currentConsent={listingConsent[item.targetId] ?? false} onReview={onReview} />
           ))}
         </div>
       )}
@@ -96,10 +101,16 @@ export default function SuggestionReview({ suggestions, links, readAt, onReview 
   );
 }
 
-function SuggestionCard({ item, publicHref, readAt, onReview }: {
+function SuggestionCard({ item, publicHref, readAt, current, currentConsent = false, onReview }: {
   item: EditSuggestion;
   publicHref?: string;
   readAt: number;
+  current?: DirectoryDraft;
+  currentConsent?: boolean;
+  /** What each directory listing says now, so a review shows what changes. */
+  currentListings?: Record<string, DirectoryDraft>;
+  /** Which of those listings already publish their number, by the owner's record. */
+  listingConsent?: Record<string, boolean>;
   onReview: (id: string, input: ReviewInput) => Promise<ReviewResult>;
 }) {
   // Pending items open ready to answer; already-decided ones stay shut until
@@ -115,7 +126,12 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
   const reply = replyDraft(item);
   const waited = waitingFor(item.createdAt, readAt);
 
-  async function decide(status: ReviewDecision) {
+  // A listing filled in on the same form the owner uses. When it is here,
+  // accepting writes the listing instead of the owner retyping the paragraph.
+  const listing = item.draft;
+  const changes = listing ? changedFields(current ?? {}, listing) : [];
+
+  async function decide(status: ReviewDecision, apply = false) {
     const complaint = reviewProblem({ status, notes });
     if (complaint) {
       setProblem(complaint);
@@ -123,7 +139,7 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
     }
     setProblem("");
     setBusy(status);
-    const error = await onReview(item.id, { status, notes, acceptedInfo: accepted });
+    const error = await onReview(item.id, { status, notes, acceptedInfo: accepted, apply });
     setBusy("");
     if (error) {
       setProblem(error);
@@ -154,7 +170,56 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
         <strong className="text-[var(--navy)]">{item.name}</strong> · {item.email}
       </p>
       <p className="mt-3 text-sm leading-6 text-stone-700"><strong>What&apos;s wrong:</strong> {item.issue}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-700"><strong>Their correction:</strong> {item.suggestedInfo}</p>
+      {listing ? (
+        /* Filled in on the same form as the admin, so it is shown as fields
+           rather than as the paragraph it used to arrive as. Only what
+           changes: a table of thirteen rows with one difference in it buries
+           the difference. */
+        <div className="mt-3 border border-[var(--gold-light)] bg-white">
+          <p className="border-b border-[var(--gold-light)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+            {current && Object.keys(current).length ? `${changes.length} ${changes.length === 1 ? "change" : "changes"} to this listing` : "A new listing"}
+          </p>
+          {changes.length === 0 ? (
+            <p className="px-4 py-3 text-sm leading-6 text-stone-500">Nothing here differs from what is already published.</p>
+          ) : (
+            <dl className="divide-y divide-[var(--gold-light)]">
+              {changes.map((change) => (
+                <div key={change.key} className="px-4 py-2.5">
+                  <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">{change.label}</dt>
+                  <dd className="mt-0.5 text-sm leading-6 text-[var(--navy)]">
+                    {change.from && <span className="mr-2 text-stone-400 line-through decoration-1">{change.from}</span>}
+                    {change.to}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {item.contactConsent && (
+            <p className="border-t border-[var(--gold-light)] px-4 py-2 text-xs leading-5 text-emerald-800">
+              They said the business is theirs and the number may be published. {item.contactConsentNote}
+            </p>
+          )}
+          {/* What will actually happen to the number, which depends on the
+              listing as well as the submission. Warning that a number will be
+              withheld when the listing already publishes it would be telling
+              the reviewer the opposite of the truth. */}
+          {!item.contactConsent && (listing.phone || listing.whatsapp) && (
+            currentConsent ? (
+              <p className="border-t border-[var(--gold-light)] px-4 py-2 text-xs leading-5 text-amber-800">
+                This changes a number you already publish, and it did not come from the business. Worth ringing the new
+                one before accepting.
+              </p>
+            ) : (
+              <p className="border-t border-[var(--gold-light)] px-4 py-2 text-xs leading-5 text-amber-800">
+                No permission given for the number — it will be kept on file and not published. Ask them, then tick the
+                box on the listing.
+              </p>
+            )
+          )}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm leading-6 text-stone-700"><strong>Their correction:</strong> {item.suggestedInfo}</p>
+      )}
       {item.currentInfo && <p className="mt-2 text-sm leading-6 text-stone-500"><strong>On the page then:</strong> {item.currentInfo}</p>}
       {item.source && <p className="mt-2 text-sm leading-6 text-stone-500"><strong>Their source:</strong> {item.source}</p>}
       {item.acceptedInfo && (
@@ -211,15 +276,19 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
         </button>
       ) : (
         <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
-          <label className={fieldLabel}>
-            Accept it as
-            <textarea value={accepted} onChange={(event) => setAccepted(event.target.value)} rows={2} className={field} />
-          </label>
-          <p className="mt-1 text-[11px] leading-5 text-stone-400">
-            Edit this to fix a typo or trim it before accepting. What they wrote is kept either way.
-          </p>
+          {!listing && (
+            <>
+              <label className={fieldLabel}>
+                Accept it as
+                <textarea value={accepted} onChange={(event) => setAccepted(event.target.value)} rows={2} className={field} />
+              </label>
+              <p className="mt-1 text-[11px] leading-5 text-stone-400">
+                Edit this to fix a typo or trim it before accepting. What they wrote is kept either way.
+              </p>
+            </>
+          )}
 
-          <label className={`${fieldLabel} mt-4`}>
+          <label className={`${fieldLabel} ${listing ? "" : "mt-4"}`}>
             Why — needed to turn down or ask for more
             <textarea
               value={notes}
@@ -230,6 +299,14 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
             />
           </label>
 
+          {listing && (
+            <p className="mt-3 text-xs leading-5 text-stone-500">
+              {current && Object.keys(current).length
+                ? "Accepting writes these changes straight onto the listing."
+                : "Accepting adds the listing, hidden. Listing somebody is a second decision, so it is one more tick in Businesses before it goes live."}
+            </p>
+          )}
+
           {problem && <p className="mt-2 text-sm leading-6 text-red-700">{problem}</p>}
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -237,15 +314,19 @@ function SuggestionCard({ item, publicHref, readAt, onReview }: {
               <button
                 key={status}
                 type="button"
-                disabled={busy !== ""}
-                onClick={() => decide(status)}
+                disabled={busy !== "" || (status === "approved" && Boolean(listing) && changes.length === 0)}
+                onClick={() => decide(status, status === "approved" && Boolean(listing))}
                 className={`min-h-11 border px-4 text-xs font-bold uppercase tracking-[0.12em] disabled:opacity-60 ${
                   status === "approved"
                     ? "border-[var(--navy)] bg-[var(--navy)] text-white"
                     : "border-[var(--gold-light)] text-[var(--navy)]"
                 }`}
               >
-                {busy === status ? "Saving…" : DECISION_LABEL[status]}
+                {busy === status
+                  ? "Saving…"
+                  : status === "approved" && listing
+                    ? current && Object.keys(current).length ? "Accept and update the listing" : "Accept and add the listing"
+                    : DECISION_LABEL[status]}
               </button>
             ))}
             {item.status !== "pending" && (

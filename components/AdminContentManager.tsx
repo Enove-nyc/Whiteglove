@@ -73,7 +73,7 @@ function parseLocationsCsv(text: string): EditableLocation[] {
   }).filter((item) => item.title.trim() || item.yiddishTitle.trim() || item.route.trim());
 }
 
-export default function AdminContentManager({ initialBundle, configured, initialTab, initialMissing, suggestionLinks = {}, readAt: initialReadAt }: {
+export default function AdminContentManager({ initialBundle, configured, initialTab, initialMissing, suggestionLinks = {}, currentListings = {}, listingConsent = {}, readAt: initialReadAt }: {
   initialBundle: AdminContentBundle;
   configured: boolean;
   /** From the page's own query string, so the server and the browser agree. */
@@ -81,6 +81,10 @@ export default function AdminContentManager({ initialBundle, configured, initial
   initialMissing?: "" | "address" | "coordinates" | "shomer";
   /** Public page for each suggestion's target, worked out on the server. */
   suggestionLinks?: Record<string, string>;
+  /** What each directory listing says now, so a review shows what changes. */
+  currentListings?: Record<string, import("@/lib/directory-fields").DirectoryDraft>;
+  /** Which listings already publish their number. */
+  listingConsent?: Record<string, boolean>;
   /** When the list was read, so both renders age it from the same moment. */
   readAt: number;
 }) {
@@ -171,7 +175,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
   // suggestion it belongs to, rather than in the strip at the top of the page
   // where it is nowhere near what you just pressed.
   const review = (id: string, input: ReviewInput) =>
-    save("suggestion", { id, status: input.status, reviewerNotes: input.notes, acceptedInfo: input.acceptedInfo ?? "" });
+    save("suggestion", { id, status: input.status, reviewerNotes: input.notes, acceptedInfo: input.acceptedInfo ?? "", apply: input.apply ?? false });
 
   const lacks = (item: EditableLocation) =>
     missingOnly === "address"
@@ -374,7 +378,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
       )}
 
       {tab === "suggestions" && (
-        <SuggestionReview suggestions={bundle.suggestions} links={suggestionLinks} readAt={readAt} onReview={review} />
+        <SuggestionReview suggestions={bundle.suggestions} links={suggestionLinks} readAt={readAt} currentListings={currentListings} listingConsent={listingConsent} onReview={review} />
       )}
 
       {tab === "promotions" && (
