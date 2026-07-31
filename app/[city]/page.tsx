@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
 import { airportsFor } from "@/lib/destination-actions";
+import SendPictureButton from "@/components/SendPictureButton";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
@@ -12,6 +13,7 @@ import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
+import { townPictureTargets } from "@/lib/photo-submissions";
 import { getPublishedDestinationContent } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -128,6 +130,9 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
               </ol>
             </div>}
             <SuggestEditButton targetType="location" targetId={guide.slug} title={guide.city} currentInfo={`${guide.yiddishCity}\n${guide.tzaddik}\n${guide.graveAddress ?? ""}`} />
+            {/* A picture of the town, or of one of its listings. Nothing sent
+                here appears until the owner has looked at it. */}
+            <SendPictureButton targets={townPictureTargets({ slug: guide.slug, city: guide.city }, dbContent?.places ?? [])} />
           </div>
 
           <div className="border-l border-[var(--gold)] pl-5 sm:pl-7">

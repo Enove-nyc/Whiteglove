@@ -5,6 +5,7 @@ import { readDestinationFacts } from "@/lib/completeness-source";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { contentTotals } from "@/lib/admin-overview";
+import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
 import { getDashboardStats } from "@/lib/site-analytics";
 
@@ -71,12 +72,13 @@ function Metric({ label, value, detail }: { label: string; value: string | numbe
 }
 
 export default async function AdminHome() {
-  const [stats, inventory, promotions, content, pages] = await Promise.all([
+  const [stats, inventory, promotions, content, pages, picturesWaiting] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
     getPromotionsDashboard(),
     getAdminContent(),
     listPagesForAdmin(),
+    countPendingSubmissions(),
   ]);
 
   const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
@@ -96,6 +98,15 @@ export default async function AdminHome() {
       text: "The private store is not connected, so visitor numbers and some edits are not being saved.",
       href: "/admin/settings/connections",
       label: "Review connections",
+    });
+  }
+  // Somebody sent a picture and is waiting to hear. It is on no page until
+  // this is dealt with, which is exactly why it needs saying here.
+  if (picturesWaiting > 0) {
+    alerts.push({
+      text: `${picturesWaiting} picture${picturesWaiting === 1 ? "" : "s"} sent in by visitors, waiting for you. Nothing is on the site until you say so.`,
+      href: "/admin/photos",
+      label: "Look at them",
     });
   }
 

@@ -217,6 +217,47 @@ export async function createPhoto(owner: PhotoOwner, fields: PhotoFields) {
   return prisma.photo.create({ data: { ...fields, ...ownerWhere(owner) } });
 }
 
+/**
+ * Every picture a visitor has sent that is still a draft.
+ *
+ * Where the owner's confirmation actually happens. Without this the pictures
+ * would be scattered across 122 towns and 175 batei hachaim, each on its own
+ * screen, and "he confirms before anything appears" would mean visiting three
+ * hundred pages to find out whether anything is waiting.
+ *
+ * PUBLISHED ones are deliberately absent: those have been confirmed, and this
+ * is a list that is supposed to reach zero.
+ */
+export async function listPendingSubmissions() {
+  const prisma = await db();
+  const photos = await prisma.photo.findMany({
+    where: { submittedAt: { not: null }, status: "DRAFT" },
+    orderBy: { submittedAt: "asc" },
+    include: {
+      destination: { select: { slug: true, city: true } },
+      cemetery: { select: { slug: true, name: true, city: true } },
+      place: { select: { name: true, destination: { select: { slug: true, city: true } } } },
+    },
+  });
+  // The clock is read here rather than while the page renders — "waiting three
+  // days" is a fact about when the list was fetched, and a component that
+  // reads the time as it draws is a component whose output changes for no
+  // reason. Same as getAdminContent's readAt.
+  return { photos, readAt: Date.now() };
+}
+
+/** How many are waiting, for the dashboard. One counted read, not a page of rows. */
+export async function countPendingSubmissions(): Promise<number> {
+  if (!isDbEnabled()) return 0;
+  try {
+    const prisma = await db();
+    return await prisma.photo.count({ where: { submittedAt: { not: null }, status: "DRAFT" } });
+  } catch {
+    // A dashboard badge is not worth breaking the dashboard for.
+    return 0;
+  }
+}
+
 export async function updatePhoto(id: string, fields: Omit<PhotoFields, "url">) {
   const prisma = await db();
   return prisma.photo.update({ where: { id }, data: fields });

@@ -347,9 +347,23 @@ model Photo {
   place         PracticalPlace? @relation(fields: [placeId], references: [id], onDelete: Cascade)
   placeId       String?
 
+  /**
+   * Sent in by a visitor, and when.
+   *
+   * Null on anything the owner uploaded. It is the marker that separates a
+   * stranger's picture from the owner's own draft — without it the two look
+   * identical in the admin, and the difference matters: publishing your own
+   * unfinished picture is a decision, publishing a stranger's is a liability.
+   */
+  submittedAt    DateTime?
+  submittedBy    String?
+  submittedEmail String?
+  submitterNote  String?
+
   @@index([destinationId])
   @@index([cemeteryId])
   @@index([placeId])
+  @@index([submittedAt])
 }
 
 // ---- CMS operational tables (migrated from the Redis content bundle) --

@@ -6,6 +6,7 @@ import KosherNearby from "@/components/KosherNearby";
 import MixedText from "@/components/MixedText";
 import Navbar from "@/components/Navbar";
 import PhotoGallery from "@/components/PhotoGallery";
+import SendPictureButton from "@/components/SendPictureButton";
 import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
@@ -250,12 +251,21 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <a href={cemetery.sourceUrl} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Read the cemetery source →</a>
           </section>
 
-          <SuggestEditButton
-            targetType="location"
-            targetId={cemetery.slug}
-            title={cemetery.name}
-            currentInfo={`${cemetery.yiddishName}\n${cemetery.address}\n${hasAccessContacts ? "Access contact listed" : "Access contact not verified"}`}
-          />
+          <div>
+            <SuggestEditButton
+              targetType="location"
+              targetId={cemetery.slug}
+              title={cemetery.name}
+              currentInfo={`${cemetery.yiddishName}\n${cemetery.address}\n${hasAccessContacts ? "Access contact listed" : "Access contact not verified"}`}
+            />
+            {/* People who have been often have the picture the next person
+                needs — the gate, the path, the ohel. Nothing sent here appears
+                until the owner has looked at it. */}
+            <SendPictureButton
+              targets={[{ kind: "cemetery", ref: cemetery.slug, label: cemetery.name }]}
+              heading="Been here? Send a picture of the beis hachaim"
+            />
+          </div>
         </div>
       </section>
 

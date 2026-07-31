@@ -3,12 +3,14 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import DestinationActions from "@/components/DestinationActions";
 import { airportsFor } from "@/lib/destination-actions";
+import SendPictureButton from "@/components/SendPictureButton";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import PhotoGallery from "@/components/PhotoGallery";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/destinations-bulk";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
+import { townPictureTargets } from "@/lib/photo-submissions";
 import { getPublishedDestinationContent } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -82,6 +84,9 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>
           <DestinationActions place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, coordinates: record?.cemeteries[0]?.coordinates, href: `/destinations/${destination.slug}` }} airports={airportsFor(destination.country, `${destination.city}, ${destination.country}`, record?.cemeteries[0]?.coordinates)} />
           <SuggestEditButton targetType="location" targetId={destination.slug} title={destination.city} currentInfo={`${destination.yiddishCity}\n${destination.summary}`} />
+          {/* A picture of the town, or of one of its listings. Nothing sent
+              here appears until the owner has looked at it. */}
+          <SendPictureButton targets={townPictureTargets({ slug: destination.slug, city: destination.city }, dbContent?.places ?? [])} />
         </div>
       </section>
 

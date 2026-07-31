@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { Photo } from "@prisma/client";
+import { isVisitorSubmission, submitterLine } from "@/lib/photo-submissions";
 import { type ActionResult, deletePhotoAction, savePhotoAction } from "@/app/admin/destinations/actions";
 
 /**
@@ -171,6 +172,16 @@ function PhotoRow({ target, slug, photo, url, onDone }: {
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+      {/* A stranger's picture and the owner's own unfinished one look
+          identical without this, and the difference matters: publishing your
+          own draft is a decision, publishing somebody else's is a liability. */}
+      {photo && isVisitorSubmission(photo) && (
+        <p className="mb-3 border-l-4 border-[var(--gold)] bg-white px-3 py-2 text-xs leading-5 text-stone-700">
+          <strong className="font-semibold text-[var(--navy)]">Sent in by {submitterLine(photo)}.</strong>{" "}
+          Not yours — check you are happy to publish it before you do.
+          {photo.submitterNote ? ` They wrote: “${photo.submitterNote}”` : ""}
+        </p>
+      )}
       <div className="flex flex-wrap gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- the picture is
             an uploaded blob served from /api/media; next/image cannot optimise
