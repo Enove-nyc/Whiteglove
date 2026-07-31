@@ -7,6 +7,7 @@
 
 import { randomUUID } from "node:crypto";
 import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
+import { remember } from "@/lib/recycle-store";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -111,7 +112,24 @@ export async function updateContact(id: string, fields: ContactFields) {
 
 export async function deleteContact(id: string) {
   const prisma = await db();
-  return prisma.contact.delete({ where: { id } });
+  // Read it before it goes. A phone number that took a call to get should not
+  // be unrecoverable because "Remove" sits next to "Edit".
+  const row = await prisma.contact.findUnique({
+    where: { id },
+    include: { destination: { select: { city: true } } },
+  });
+  const gone = await prisma.contact.delete({ where: { id } });
+  if (row) {
+    const { destination, ...record } = row;
+    await remember({
+      kind: "contact",
+      rowId: id,
+      title: row.label,
+      detail: [destination?.city, row.phone].filter(Boolean).join(" · ") || undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
+  return gone;
 }
 
 // ---- Practical places (lodging/food/minyan/mikvah/transport/etc.) ----
@@ -285,7 +303,22 @@ export async function updatePlace(id: string, fields: PlaceFields) {
 
 export async function deletePlace(id: string) {
   const prisma = await db();
-  return prisma.practicalPlace.delete({ where: { id } });
+  const row = await prisma.practicalPlace.findUnique({
+    where: { id },
+    include: { destination: { select: { city: true } } },
+  });
+  const gone = await prisma.practicalPlace.delete({ where: { id } });
+  if (row) {
+    const { destination, ...record } = row;
+    await remember({
+      kind: "listing",
+      rowId: id,
+      title: row.name,
+      detail: [destination?.city, row.category].filter(Boolean).join(" · ") || undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
+  return gone;
 }
 
 // ---- Editable general pages (heading + intro text) -------------------
@@ -363,7 +396,18 @@ export async function updateProvider(slug: string, fields: ProviderFields) {
 
 export async function deleteProvider(slug: string) {
   const prisma = await db();
-  return prisma.directoryProvider.delete({ where: { slug } });
+  const row = await prisma.directoryProvider.findUnique({ where: { slug } });
+  const gone = await prisma.directoryProvider.delete({ where: { slug } });
+  if (row) {
+    await remember({
+      kind: "business",
+      rowId: row.id,
+      title: row.name,
+      detail: [row.category, row.basedIn].filter(Boolean).join(" · ") || undefined,
+      payload: row as unknown as Record<string, unknown>,
+    });
+  }
+  return gone;
 }
 
 // ---- Owner-added new entries (cemeteries, tzaddikim, info pages) -------
@@ -493,7 +537,21 @@ export async function saveCemeteryContact(
 /** Remove a stored contact. The built-in one, if any, reappears. */
 export async function deleteCemeteryContact(id: string) {
   const prisma = await db();
+  const row = await prisma.contact.findUnique({
+    where: { id },
+    include: { cemetery: { select: { name: true, city: true } } },
+  });
   await prisma.contact.delete({ where: { id } });
+  if (row) {
+    const { cemetery, ...record } = row;
+    await remember({
+      kind: "cemetery-contact",
+      rowId: id,
+      title: row.label,
+      detail: [cemetery ? `${cemetery.name}, ${cemetery.city}` : null, row.phone].filter(Boolean).join(" · ") || undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
 }
 
 // ---- Tzaddikim on a beis hachaim --------------------------------------
@@ -596,7 +654,21 @@ export async function saveCemeteryBurial(
 /** Take a person off a beis hachaim. Built-in burials are in code and untouched. */
 export async function deleteCemeteryBurial(id: string) {
   const prisma = await db();
+  const row = await prisma.tzaddik.findUnique({
+    where: { id },
+    include: { cemetery: { select: { name: true, city: true } } },
+  });
   await prisma.tzaddik.delete({ where: { id } });
+  if (row) {
+    const { cemetery, ...record } = row;
+    await remember({
+      kind: "burial",
+      rowId: id,
+      title: row.knownAs || row.name,
+      detail: cemetery ? `${cemetery.name}, ${cemetery.city}` : undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
 }
 
 /**

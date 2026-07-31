@@ -2,6 +2,7 @@ import { cemeteries } from "@/data/cemeteries";
 import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 import type { DirectoryDraft } from "@/lib/directory-fields";
 import { applyReview, type ReviewInput } from "@/lib/suggestions";
+import { remember } from "@/lib/recycle-store";
 
 type RedisResult<T> = { result?: T };
 
@@ -478,7 +479,38 @@ export async function recordPromotionEvent(id: string, kind: "impression" | "cli
 export async function deletePromotion(id: string) {
   const bundle = await readBundle();
   if (!bundle) return null;
+  // Kept for a month, the same as every other deletion. An advertisement is an
+  // arrangement with somebody — its dates, its placements and its numbers should
+  // not vanish because a row was tidied away.
+  const gone = bundle.promotions.find((p) => p.id === id);
+  if (gone) {
+    await remember({
+      kind: "advertisement",
+      rowId: id,
+      title: gone.title,
+      detail: [gone.advertiserName, gone.startDate && gone.endDate ? `${gone.startDate} – ${gone.endDate}` : null]
+        .filter(Boolean)
+        .join(" · ") || undefined,
+      payload: gone as unknown as Record<string, unknown>,
+    });
+  }
   return writeBundle({ ...bundle, promotions: bundle.promotions.filter((p) => p.id !== id) });
+}
+
+/**
+ * Put a deleted advertisement back, exactly as it was.
+ *
+ * Refuses rather than duplicating: an advertisement restored while one with
+ * the same id is already there would show as two on the page.
+ */
+export async function restorePromotion(promotion: Promotion): Promise<{ ok: boolean; message: string }> {
+  const bundle = await readBundle();
+  if (!bundle) return { ok: false, message: "The content store is not available, so it cannot go back yet." };
+  if (bundle.promotions.some((p) => p.id === promotion.id)) {
+    return { ok: false, message: `${promotion.title} is already there.` };
+  }
+  await writeBundle({ ...bundle, promotions: [...bundle.promotions, promotion] });
+  return { ok: true, message: `${promotion.title} is back.` };
 }
 
 export async function getActivePromotions(placement: PromotionPlacement, pathname: string, device: PromotionDevice) {
