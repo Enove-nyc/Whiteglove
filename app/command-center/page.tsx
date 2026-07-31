@@ -6,6 +6,7 @@ import MixedText from "@/components/MixedText";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
 import { stopsForTrip } from "@/lib/command-center-data";
+import { tripAlerts } from "@/lib/trip-alerts";
 import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,17 @@ export default async function CommandCenterPage() {
   const today = new Date().toISOString().slice(0, 10);
   const leaving = daysUntil(trip?.itinerary.startDate, today);
 
+  // The clock time each stop was planned for, which is what decides whether a
+  // Friday afternoon runs past candle-lighting.
+  const timesById = Object.fromEntries((trip?.itinerary.activities ?? []).map((a) => [a.id, a.startTime]));
+  const alerts = tripAlerts({
+    stops,
+    readiness,
+    startDate: trip?.itinerary.startDate,
+    today,
+    timesById,
+  });
+
   if (!stops.length) {
     return (
       <Shell name={trip?.tripName}>
@@ -90,6 +102,30 @@ export default async function CommandCenterPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
+        {/* Above everything, because these are the ones that get worse the
+            longer nobody notices — and Shabbos above those. */}
+        {alerts.length > 0 && (
+          <div className="mb-10 space-y-3">
+            {alerts.map((alert, index) => (
+              <div
+                key={`${alert.kind}-${index}`}
+                className={`border-l-4 p-5 ${
+                  alert.urgency === 1
+                    ? "border-red-600 bg-red-50"
+                    : alert.urgency === 2
+                      ? "border-amber-500 bg-amber-50"
+                      : "border-[var(--gold)] bg-[#fcfaf6]"
+                }`}
+              >
+                <p className={`font-[family-name:var(--font-display)] text-2xl leading-snug ${alert.urgency === 1 ? "text-red-900" : "text-[var(--navy)]"}`}>
+                  {alert.headline}
+                </p>
+                {alert.detail && <p className="mt-1.5 text-sm leading-6 text-stone-700">{alert.detail}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* The phone calls, first, because that is the thing to actually do. */}
         {readiness.callAhead.length > 0 && (
           <div className="border border-[var(--gold)] bg-white p-6">
