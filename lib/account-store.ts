@@ -1,6 +1,7 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
+import { passwordProblem } from "@/lib/password-rules";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 
@@ -253,7 +254,11 @@ export async function createAccount(identifier: string, password: string, name?:
   if (!identity) {
     return { ok: false as const, error: "Enter an email address or a phone number we can reach you on." };
   }
-  if (!password) return { ok: false as const, error: "Choose a password." };
+  // The same rule the reset screen enforces. Signing up accepted a one-letter
+  // password while changing it demanded eight, so the weakest passwords on the
+  // site were the ones people started with and never changed.
+  const problem = passwordProblem(password);
+  if (problem) return { ok: false as const, error: problem };
   const normalized = identity.value;
   const existing = await getAccountRecord(normalized);
   if (existing) {
@@ -324,7 +329,8 @@ export async function resetPassword(email: string, code: string, newPassword: st
   if (!record.resetCodeHash || !record.resetCodeExpiresAt) return { ok: false as const, error: "No reset code is active. Request a new one." };
   if (new Date(record.resetCodeExpiresAt).getTime() < Date.now()) return { ok: false as const, error: "That reset code has expired. Request a new one." };
   if (hashVerificationCode(normalized, code) !== record.resetCodeHash) return { ok: false as const, error: "That reset code is not correct." };
-  if (!newPassword || newPassword.length < 8) return { ok: false as const, error: "Choose a password with at least 8 characters." };
+  const resetProblem = passwordProblem(newPassword);
+  if (resetProblem) return { ok: false as const, error: resetProblem };
   const salt = randomBytes(16).toString("hex");
   const next: AccountRecord = {
     ...record,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { accountCookieName, createSessionCookie, verifyAccountStatus } from "@/lib/account-store";
 import { hasSiteAccess } from "@/lib/admin-roles";
 import { identityKey } from "@/lib/identity";
@@ -7,6 +8,10 @@ import { recordSignIn, whereFrom } from "@/lib/signin-log";
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null) as { email?: string; password?: string } | null;
   if (!body?.email || !body?.password) return NextResponse.json({ error: "Enter your email address or phone number, and your password." }, { status: 400 });
+  for (const key of [`login:${body.email.toLowerCase()}`, `login-ip:${requesterKey(request.headers)}`]) {
+    const gate = await rateLimit(key, { limit: 10, windowSeconds: 15 * 60 });
+    if (!gate.ok) return NextResponse.json({ error: tooManyMessage(gate.retryAfter) }, { status: 429, headers: { "Retry-After": String(gate.retryAfter) } });
+  }
   const status = await verifyAccountStatus(body.email, body.password);
   if (!status.ok) {
     if (status.reason === "unverified") return NextResponse.json({ error: "That account is still waiting for its verification code.", verificationRequired: true }, { status: 401 });
