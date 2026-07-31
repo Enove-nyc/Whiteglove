@@ -25,6 +25,33 @@
 
 import { chromium } from "playwright";
 
+/**
+ * Launch whichever Chromium this machine actually has.
+ *
+ * Playwright's default is the headless-shell build it downloads itself. Some
+ * environments ship a full Chromium at a fixed path instead and skip that
+ * download, and there the default launch fails with "Executable doesn't
+ * exist" — which reads like a broken script rather than a missing download.
+ * Set PLAYWRIGHT_CHROMIUM_EXECUTABLE to point at a specific binary.
+ */
+async function launchChromium() {
+  const explicit = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
+  if (explicit) return chromium.launch({ executablePath: explicit });
+  try {
+    return await chromium.launch();
+  } catch (error) {
+    for (const candidate of ["/opt/pw-browsers/chromium", "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"]) {
+      try {
+        return await chromium.launch({ executablePath: candidate });
+      } catch {
+        /* try the next one */
+      }
+    }
+    throw error;
+  }
+}
+
+
 const BASE = process.argv[2] ?? "http://127.0.0.1:3130";
 const WIDTHS = [
   [320, 568], [375, 667], [390, 844], [430, 932],
@@ -42,7 +69,7 @@ const PAGES = [
   ["/map", "map"],
 ];
 
-const browser = await chromium.launch();
+const browser = await launchChromium();
 const findings = [];
 const note = (page, width, kind, detail) => findings.push({ page, width, kind, detail });
 

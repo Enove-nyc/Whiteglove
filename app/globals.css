@@ -317,3 +317,43 @@ input::placeholder, textarea::placeholder { color: #78716c; }
   line-height: 44px;
   font-size: 1.25rem;
 }
+
+/* The admin's own controls.
+ *
+ * Measured at 320, 375, 390, 768, 1024 and 1280 (`npm run audit:admin`): no
+ * screen scrolls sideways, no table breaks out of its box and no input is
+ * unlabelled — the structure was sound. What was wrong was size: fifty-one
+ * controls under 44px, spread across seventeen screens built at different
+ * times, at 42px and 38px and 36px and 34px.
+ *
+ * One scoped rule rather than fifty-one edits, for the same reason the
+ * planner has one: sizing them individually is how three of them end up at
+ * 42px again next month. Inline links inside running text are left alone —
+ * making a link in a sentence 44px tall breaks the sentence.
+ */
+.wg-admin button,
+.wg-admin summary,
+.wg-admin select,
+.wg-admin input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.wg-admin textarea,
+.wg-admin a[class*="border"],
+.wg-admin a[class*="bg-"] {
+  min-height: 2.75rem;
+}
+
+/* A bordered link is a button by any other name, so it needs to look like one
+   when it is only holding text. */
+.wg-admin a[class*="border"],
+.wg-admin a[class*="bg-"] {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Checkboxes and radios are the exception: 44px boxes look absurd. They get a
+   44px hit area from the label they sit in instead. */
+.wg-admin label:has(> input[type="checkbox"]),
+.wg-admin label:has(> input[type="radio"]) {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}

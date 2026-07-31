@@ -51,7 +51,7 @@ function WorkPanel({
         </span>
       </div>
       <div className="mt-3 flex-1 text-sm leading-6 text-stone-600">{children}</div>
-      <Link href={href} className="mt-5 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+      <Link href={href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
         {hrefLabel} <span aria-hidden="true">→</span>
       </Link>
     </section>
@@ -124,7 +124,7 @@ export default async function AdminHome() {
             {alerts.map((alert) => (
               <li key={alert.href} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-6 text-amber-950">{alert.text}</p>
-                <Link href={alert.href} className="shrink-0 text-sm font-semibold text-amber-950 underline underline-offset-4">
+                <Link href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
                   {alert.label} →
                 </Link>
               </li>

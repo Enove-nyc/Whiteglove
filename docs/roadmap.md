@@ -46,12 +46,13 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 13. Border crossings in the public planner | **Part** | crossings are detected and warned about, external-EU borders called out. **Not** yet folded into the calculated travel time, and there is no live wait-time data. |
 | 14. Public intelligent route planner | **Part** | fixed start/end, optimisation between them, manual reordering, driving times, save, share, print. Missing: cost/fuel/tolls, avoid-tolls/ferries, along-the-route food and minyanim, PDF export. |
 | 24. Security | **Part** | rate limiting on every account endpoint, one password rule, terms consent, the six-digit code never reaches the browser. Missing: admin 2FA, role-based permissions, audit history, backups. |
+| 1. Responsive admin foundation | **Done** | `npm run audit:admin` — 17 screens at 320/375/390/768/1024/1280. No sideways scrolling, no table breaking out of its box, no unlabelled input, every control 44px. |
 
 ### Not started
 
 | Section | Note |
 | --- | --- |
-| 1. Responsive admin foundation | The public site is measured at eight widths; **the admin has never been.** Same script can cover it. |
+
 | 2. Simplified admin navigation | |
 | 3. Admin dashboard homepage | |
 | 4. Complete destination manager | Depends on the migration below — most of the listed fields have nowhere to live. |

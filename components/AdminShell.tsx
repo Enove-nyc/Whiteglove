@@ -114,7 +114,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   );
 
   return (
-    <div className="min-h-screen bg-[var(--cream)]">
+    // wg-admin scopes the control-sizing rule in globals.css. The admin is
+    // dozens of screens built at different times; sizing them one by one is
+    // how three of them end up at 42px again next month.
+    <div className="wg-admin min-h-screen bg-[var(--cream)]">
       <a
         href="#admin-main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:border focus:border-[var(--navy)] focus:bg-white focus:px-3 focus:py-2 focus:text-sm"
@@ -129,12 +132,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             onClick={() => setNavOpen((v) => !v)}
             aria-expanded={navOpen}
             aria-controls="admin-nav"
-            className="min-h-[40px] rounded-md border border-[var(--gold-light)] px-3 text-sm text-[var(--navy)] lg:hidden"
+            className="min-h-11 rounded-md border border-[var(--gold-light)] px-3 text-sm text-[var(--navy)] lg:hidden"
           >
             {navOpen ? "Close" : "Menu"}
           </button>
 
-          <Link href={to("/admin")} className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--navy)]">
+          <Link href={to("/admin")} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.18em] text-[var(--navy)]">
             White Glove
           </Link>
           <span aria-hidden="true" className="hidden text-[var(--gold-light)] sm:inline">
