@@ -4,6 +4,7 @@ import DateField from "@/components/DateField";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { directionsUrl, movePlace, optimizeRoute, type SavedPlace } from "@/data/route-utils";
+import { type Crossing, describeCrossing } from "@/lib/border-crossings";
 import { borderCrossings } from "@/lib/borders";
 import { shabbosWarning } from "@/lib/shabbos";
 
@@ -23,7 +24,15 @@ const read = (key: string) => {
   }
 };
 
-export default function MyRouteDashboard() {
+export default function MyRouteDashboard({
+  crossings: known = [],
+  today = "",
+}: {
+  /** Which crossings are on each border, and what has been checked on them. */
+  crossings?: Crossing[];
+  /** Read on the server, so nothing asks what day it is mid-render. */
+  today?: string;
+}) {
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [route, setRoute] = useState<SavedPlace[]>([]);
   const [favorites, setFavorites] = useState<SavedPlace[]>([]);
@@ -57,7 +66,7 @@ export default function MyRouteDashboard() {
   const optimized = optimizeRoute(activeRoute);
   // Worked out on the order that will actually be driven, not the order they
   // happened to be saved in.
-  const crossings = borderCrossings(optimized);
+  const crossings = borderCrossings(optimized, today ? { crossings: known, today } : undefined);
   const shabbos = optimized
     .map((place) => (place.plannedDate ? shabbosWarning(place.plannedDate, undefined, place.coordinates, place.name) : null))
     .filter((warning): warning is NonNullable<typeof warning> => warning !== null);
@@ -182,6 +191,28 @@ export default function MyRouteDashboard() {
                       <span aria-hidden="true">{crossing.major ? "⚠" : "•"}</span>{" "}
                       <strong className="text-[var(--navy)]">{crossing.from} → {crossing.to}.</strong>{" "}
                       {crossing.message.replace(/^Border crossing between [^.]+\. /, "")}
+                      {/* Which crossings are actually on this border, and what
+                          was found at them the last time anybody looked. The
+                          sentence above never depends on this — a border takes
+                          hours whether or not somebody checked this week. */}
+                      {crossing.advice?.latest && (
+                        <span className="mt-1 block font-semibold text-[var(--navy)]">{crossing.advice.latest}</span>
+                      )}
+                      {crossing.advice && crossing.advice.crossings.length > 0 && (
+                        <details className="mt-1">
+                          <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">
+                            {crossing.advice.crossings.length} crossing{crossing.advice.crossings.length === 1 ? "" : "s"} on this border
+                          </summary>
+                          <ul className="mt-2 space-y-2 border-l border-[var(--gold-light)] pl-3">
+                            {crossing.advice.crossings.map((point) => (
+                              <li key={point.id}>
+                                <span className="font-semibold text-[var(--navy)]">{point.name}</span>{" "}
+                                <span className="text-stone-600">{describeCrossing(point, today)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
                     </li>
                   ))}
                   {shabbos.map((warning) => (

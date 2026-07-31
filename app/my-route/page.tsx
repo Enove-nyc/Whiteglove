@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import MyRouteDashboard from "@/components/MyRouteDashboard";
 import Navbar from "@/components/Navbar";
+import { allCrossings } from "@/lib/border-store";
 
 import { pageMetadata } from "@/lib/seo";
 
@@ -12,4 +13,19 @@ export const metadata = pageMetadata({
   noIndex: true,
 });
 
-export default function MyRoutePage() { return <main className="min-h-screen bg-[var(--cream)]"><Navbar /><MyRouteDashboard /><Footer /></main>; }
+// The route itself lives in the browser, but which crossings exist and what
+// was found at them does not — so it is read here and handed down. Today's
+// date comes from here too, because nothing should ask what day it is while
+// React is rendering.
+export const dynamic = "force-dynamic";
+
+export default async function MyRoutePage() {
+  const crossings = await allCrossings();
+  return (
+    <main className="min-h-screen bg-[var(--cream)]">
+      <Navbar />
+      <MyRouteDashboard crossings={crossings} today={new Date().toISOString().slice(0, 10)} />
+      <Footer />
+    </main>
+  );
+}
