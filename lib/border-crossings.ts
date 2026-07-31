@@ -48,6 +48,15 @@ export type StoredCrossing = {
   state?: CrossingState;
   /** In their own words — "about two hours for a coach, less at night". */
   wait?: string;
+  /**
+   * The same thing as a number, because the planner has to add it up.
+   *
+   * Separate from the words on purpose: "about two hours for a coach, less
+   * before six" is what a traveller needs to read, and no amount of parsing
+   * turns it into a figure the arithmetic can trust. Absent means the planner
+   * falls back to a stated allowance rather than guessing at the sentence.
+   */
+  waitMinutes?: number;
   /** YYYY-MM-DD. Without this the state above is not shown at all. */
   checkedAt?: string;
   /** Taken out of the list without deleting what was learned about it. */
@@ -57,6 +66,7 @@ export type StoredCrossing = {
 export type Crossing = BuiltInCrossing & {
   state?: CrossingState;
   wait?: string;
+  waitMinutes?: number;
   checkedAt?: string;
   hidden?: boolean;
   /** True when it is not one of the ones that ship with the site. */
@@ -104,6 +114,7 @@ export function mergeCrossings(built: BuiltInCrossing[], stored: StoredCrossing[
       ...(over?.note !== undefined ? { note: over.note } : {}),
       state: over?.state,
       wait: over?.wait,
+      waitMinutes: over?.waitMinutes,
       checkedAt: over?.checkedAt,
       hidden: over?.hidden,
     });
@@ -122,6 +133,7 @@ export function mergeCrossings(built: BuiltInCrossing[], stored: StoredCrossing[
       note: row.note,
       state: row.state,
       wait: row.wait,
+      waitMinutes: row.waitMinutes,
       checkedAt: row.checkedAt,
       hidden: row.hidden,
       added: true,

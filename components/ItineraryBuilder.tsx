@@ -9,6 +9,9 @@ import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
+import type { Crossing } from "@/lib/border-crossings";
+import { borderCostForLegs } from "@/lib/border-legs";
+import { borderIsWorthSaying, formatWait } from "@/lib/border-time";
 import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
@@ -55,7 +58,12 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder() {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "" }: {
+  /** What is known about the borders this trip crosses. Read on the server. */
+  crossings?: Crossing[];
+  /** The server's date, for judging how fresh a border check is. */
+  today?: string;
+}) {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
   // Which flight the top form is editing, if any. Null means adding a new one.
@@ -153,7 +161,16 @@ export default function ItineraryBuilder() {
     }
   }
 
-  const days = useMemo(() => (itin.startDate && itin.endDate ? buildDays(itin) : []), [itin]);
+  // Time at a border is folded into the driving rather than mentioned beside
+  // it: the planner used to say "five hours" for a day that takes seven.
+  const borderCost = useMemo(
+    () => (serverToday ? borderCostForLegs(crossings, serverToday) : undefined),
+    [crossings, serverToday],
+  );
+  const days = useMemo(
+    () => (itin.startDate && itin.endDate ? buildDays(itin, borderCost) : []),
+    [itin, borderCost],
+  );
   const summary = useMemo(() => summarize(days), [days]);
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
   // Who is buried at each beis hachaim on the trip, looked up by slug.
@@ -659,6 +676,9 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
 
   day.activities.forEach((a, i) => {
     cursor = Math.max(cursor, clockMins(a.arrivalTime ?? a.startTime) ?? cursor);
+    const borderOnThisLeg = day.travelLegs.find(
+      (leg) => leg.kind === "stop" && leg.toCoordinates === a.coordinates && leg.borderMinutes,
+    );
     place(cursor, (
       <div key={a.id} className="rounded-xl border border-[var(--gold-light)] bg-white p-3.5 sm:p-4">
         {a.distanceFromPrev !== null && (
@@ -667,7 +687,13 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
             <span>{formatKm(a.distanceFromPrev)}</span>
             <span>·</span>
             <span>{a.travelIsMeasured ? "" : "≈"}{formatDuration(a.travelMinutesFromPrev)} from previous stop</span>
-            <TimeSource source={a.travelSource} />{" "}
+            <TimeSource source={a.travelSource} />
+            {/* Which crossing, and whether the figure is something somebody
+                checked or an allowance nobody has. The traveller can act on
+                the difference; a lump sum hides it. */}
+            {borderOnThisLeg?.borderSays ? (
+              <span className="basis-full text-amber-800">including {borderOnThisLeg.borderSays}</span>
+            ) : null}{" "}
             <a
               href={directionsBetweenUrl({ address: day.activities[i - 1]?.address, coordinates: day.activities[i - 1]?.coordinates }, { address: a.address, coordinates: a.coordinates })}
               target="_blank"
@@ -801,6 +827,12 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
               {day.travelLegs.every((l) => l.measured) ? "" : "≈"}
               {day.travelHours} h driving
               {day.travelLegs.every((l) => l.source === "google") ? " (Google Maps)" : ""}
+              {/* Said apart from the driving, and inside the total. "Seven
+                  hours" says leave early; "five driving, two at the border"
+                  says leave early AND that six in the morning may save one. */}
+              {borderIsWorthSaying(day.borderMinutes) ? (
+                <span className="text-amber-800"> · {formatWait(day.borderMinutes)} of it at the border</span>
+              ) : null}
             </span>
           ) : null}
           {day.warnings.length > 0 && <span className="font-semibold text-amber-800">{day.warnings.length} {day.warnings.length === 1 ? "notice" : "notices"}</span>}

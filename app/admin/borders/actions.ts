@@ -18,6 +18,16 @@ function str(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+/** A whole number of minutes, or undefined for anything that is not one. */
+function minutes(formData: FormData, key: string): number | undefined {
+  const raw = str(formData, key);
+  if (!raw) return undefined;
+  const value = Number(raw);
+  // A day is the ceiling: a "wait" longer than that is a typo, and the planner
+  // must not quietly plan a trip around it.
+  return Number.isFinite(value) && value >= 0 && value <= 1440 ? Math.round(value) : undefined;
+}
+
 function isState(value: string): value is CrossingState {
   return value === "open" || value === "slow" || value === "closed";
 }
@@ -56,6 +66,7 @@ export async function saveCrossingAction(_prev: ActionResult | null, formData: F
     // A wait with no state is a leftover from a previous check, and quoting it
     // on its own would be the stale number this whole feature avoids.
     wait: state ? str(formData, "wait") || undefined : undefined,
+    waitMinutes: state ? minutes(formData, "waitMinutes") : undefined,
     checkedAt: state ? checkedAt : undefined,
     hidden: formData.get("hidden") === "on" ? true : undefined,
   });
