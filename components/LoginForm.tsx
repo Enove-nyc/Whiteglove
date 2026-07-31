@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { forgetSignedIn } from "@/lib/use-signed-in";
+import { MIN_PASSWORD_LENGTH, passwordProblem } from "@/lib/password-rules";
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -61,6 +63,7 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -123,6 +126,11 @@ export default function LoginForm({
       return;
     }
 
+    if (mode === "signup") {
+      if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); return; }
+      const problem = passwordProblem(password);
+      if (problem) { setMessage(problem); return; }
+    }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
     const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name } : { email, password };
     const response = await fetch(endpoint, {
@@ -206,6 +214,33 @@ export default function LoginForm({
               <EyeIcon open={showPassword} />
             </button>
           </div>
+          {/* Said before it is typed, not after it is rejected. */}
+          {mode === "signup" && (
+            <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
+              At least {MIN_PASSWORD_LENGTH} characters.
+            </span>
+          )}
+        </label>
+      )}
+
+      {/* Agreeing to the terms is a thing somebody does, not a thing done to
+          them by a line of small print under a button. Unticked by default,
+          and the form will not submit without it. */}
+      {mode === "signup" && (
+        <label className="flex items-start gap-3 text-sm leading-6 text-stone-600">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(event) => setAgreed(event.target.checked)}
+            required
+            className="mt-1 h-5 w-5 shrink-0 accent-[var(--navy)]"
+          />
+          <span>
+            I agree to the{" "}
+            <Link href="/terms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-2">terms of use</Link>{" "}
+            and the{" "}
+            <Link href="/privacy" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-2">privacy policy</Link>.
+          </span>
         </label>
       )}
 
