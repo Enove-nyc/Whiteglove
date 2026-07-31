@@ -8,6 +8,7 @@ import AssistantAnswer from "@/components/AssistantAnswer";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
+import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
@@ -159,6 +160,15 @@ export default function ItineraryBuilder() {
   const burials = useKeverBurials(itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
 
+  // The traveler's own date, so the day they are actually on opens first
+  // instead of day one. Empty until the browser has said what day it is where
+  // they are standing, which is the only place that question has an answer.
+  const { today } = useDeviceClock();
+  const todayInTrip = days.some((day) => day.date === today) ? today : null;
+  const goToToday = (date: string) => {
+    document.getElementById(`trip-day-${date}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   // Look up any missing locations, then arrange the trip: stops you gave a date
   // stay on that date, everything else is placed and ordered for the shortest
   // driving. Without locations we cannot measure anything, so geocode first.
@@ -231,6 +241,11 @@ export default function ItineraryBuilder() {
 
   return (
     <div className="space-y-5">
+      {/* How long until it, and once it starts, where in it you are. Above
+          everything else, because on the third morning in Kraków it is the
+          only part of this page anybody needs. */}
+      <TripProgressStrip startDate={itin.startDate} endDate={itin.endDate} days={days} onGoToToday={goToToday} />
+
       {/* Trip header */}
       <section className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_10px_30px_rgba(23,45,82,.06)] sm:p-6">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
@@ -427,6 +442,10 @@ export default function ItineraryBuilder() {
                 <DayCard
                   key={day.date}
                   day={day}
+                  isToday={day.date === todayInTrip}
+                  // Day one opens by default, except while the trip is running
+                  // — then the day they are on does, and day one is history.
+                  defaultOpen={todayInTrip ? day.date === todayInTrip : day.index === 0}
                   burials={burials}
                   onMove={moveStopBy}
                   onUpdate={updateActivity}
@@ -507,8 +526,11 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
+  /** Today, on the traveler's own device. Marked, and opened. */
+  isToday?: boolean;
+  defaultOpen?: boolean;
   burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
@@ -529,7 +551,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLo
   const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(day.index === 0);
+  const [expanded, setExpanded] = useState(defaultOpen ?? day.index === 0);
 
   const anchor = day.activities.find((a) => a.coordinates) || (day.lodging?.coordinates ? { coordinates: day.lodging.coordinates } : null);
   const canSuggest = Boolean(anchor?.coordinates);
@@ -748,10 +770,22 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLo
     .map((x) => x.entry.node);
 
   return (
-    <details className="group overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_8px_24px_rgba(23,45,82,.045)]" open={expanded} onToggle={(e) => setExpanded(e.currentTarget.open)}>
+    <details
+      id={`trip-day-${day.date}`}
+      className={`group overflow-hidden rounded-2xl border shadow-[0_8px_24px_rgba(23,45,82,.045)] ${
+        isToday ? "border-[var(--gold)] bg-[#fffdf4] ring-1 ring-[var(--gold-light)]" : "border-[var(--gold-light)] bg-[#fcfaf6]"
+      }`}
+      open={expanded}
+      onToggle={(e) => setExpanded(e.currentTarget.open)}
+    >
       <summary className="flex cursor-pointer list-none flex-col gap-2 px-4 py-4 marker:content-none sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <span className="flex min-w-0 items-baseline gap-3">
           <span className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Day {day.index + 1}</span>
+          {isToday && (
+            <span className="rounded-full bg-[var(--gold)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+              Today
+            </span>
+          )}
           <span className="truncate text-sm font-semibold text-stone-500">{day.label}</span>
         </span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">

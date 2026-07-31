@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useDeviceClock } from "@/components/TripProgressStrip";
+import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
 
 // The traveler's trips, and a way to move between them.
 //
@@ -19,6 +21,8 @@ type Trip = {
   stops: number;
   places: number;
   days: number;
+  startDate: string;
+  endDate: string;
   shared: boolean;
   updatedAt: string;
 };
@@ -32,6 +36,9 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   const [error, setError] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  // The traveler's own date, so a trip that starts tomorrow says so on the
+  // list rather than only once it is opened.
+  const { today } = useDeviceClock();
 
   useEffect(() => {
     let live = true;
@@ -132,6 +139,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     {[
                       `${trip.stops} ${trip.stops === 1 ? "stop" : "stops"}`,
                       trip.days ? `${trip.days} ${trip.days === 1 ? "day" : "days"}` : "no dates yet",
+                      countdownPhrase(tripProgress({ startDate: trip.startDate, endDate: trip.endDate, today })),
                       trip.places ? `${trip.places} saved` : "",
                       trip.shared ? "shared" : "",
                     ]
