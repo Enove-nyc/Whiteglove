@@ -6,6 +6,15 @@ export type SavedPlace = {
   coordinates?: string;
   href?: string;
   plannedDate?: string;
+  /**
+   * Pinned to one end of the route.
+   *
+   * "Start route here" and "End route here" only set the order, and ordering
+   * alone does not survive optimisation — the nearest-neighbour pass would
+   * happily move the airport you land at into the middle of the trip. An
+   * anchor says the position was chosen, not computed.
+   */
+  anchor?: "start" | "end";
 };
 
 const dmsPattern = /(\d+)°(\d+)'([\d.]+)"?([NSEW])/g;
@@ -91,13 +100,35 @@ function distance(first: SavedPlace, second: SavedPlace) {
   return 6371 * 2 * Math.atan2(Math.sqrt(calculation), Math.sqrt(1 - calculation));
 }
 
-export function optimizeRoute(places: SavedPlace[]) {
+export function optimizeRoute(places: SavedPlace[], from?: SavedPlace): SavedPlace[] {
+  // A stop pinned to an end was placed on purpose — you land at Kraków and you
+  // finish at Uman — so the middle is what gets optimised, between them.
+  //
+  // The start is also passed down as the point to set off FROM. Without that,
+  // the middle gets ordered starting from whichever stop happened to be first
+  // in the list, and a route that begins at the airport can still have its
+  // second stop be the furthest one on the trip.
+  const start = places.find((place) => place.anchor === "start");
+  const end = places.find((place) => place.anchor === "end" && place.id !== start?.id);
+  if (start || end) {
+    const middle = places.filter((place) => place.id !== start?.id && place.id !== end?.id);
+    return [...(start ? [start] : []), ...optimizeRoute(middle, start), ...(end ? [end] : [])];
+  }
   if (places.length < 3) return places;
-  const optimizeFlexible = (items: SavedPlace[]) => {
+  const optimizeFlexible = (items: SavedPlace[], seed?: SavedPlace) => {
     const routable = items.filter((place) => coordinatesToPoint(place.coordinates));
     const unlocated = items.filter((place) => !coordinatesToPoint(place.coordinates));
     if (routable.length < 2) return items;
-    const ordered = [routable.shift()!];
+    // Seeded from where the trip actually starts when there is one, otherwise
+    // from the first stop, which is the old behaviour.
+    const ordered: SavedPlace[] = [];
+    if (seed && coordinatesToPoint(seed.coordinates)) {
+      let closestIndex = 0;
+      for (let index = 1; index < routable.length; index += 1) if (distance(seed, routable[index]) < distance(seed, routable[closestIndex])) closestIndex = index;
+      ordered.push(routable.splice(closestIndex, 1)[0]);
+    } else {
+      ordered.push(routable.shift()!);
+    }
     while (routable.length) {
       const current = ordered[ordered.length - 1];
       let closestIndex = 0;
@@ -108,15 +139,15 @@ export function optimizeRoute(places: SavedPlace[]) {
   };
 
   const plannedIndexes = places.map((place, index) => place.plannedDate ? index : -1).filter((index) => index >= 0);
-  if (plannedIndexes.length === 0) return optimizeFlexible(places);
+  if (plannedIndexes.length === 0) return optimizeFlexible(places, from);
   const ordered: SavedPlace[] = [];
   let segmentStart = 0;
   for (const anchorIndex of plannedIndexes) {
-    ordered.push(...optimizeFlexible(places.slice(segmentStart, anchorIndex)));
+    ordered.push(...optimizeFlexible(places.slice(segmentStart, anchorIndex), segmentStart === 0 ? from : places[segmentStart - 1]));
     ordered.push(places[anchorIndex]);
     segmentStart = anchorIndex + 1;
   }
-  return [...ordered, ...optimizeFlexible(places.slice(segmentStart))];
+  return [...ordered, ...optimizeFlexible(places.slice(segmentStart), places[segmentStart - 1] ?? from)];
 }
 
 export function directionsUrl(places: SavedPlace[]) {
@@ -140,11 +171,30 @@ export function directionsUrl(places: SavedPlace[]) {
  * hachaim — are different stops and both belong on a route.
  */
 export function withPlaceFirst(places: SavedPlace[], place: SavedPlace): SavedPlace[] {
-  return [place, ...places.filter((item) => item.id !== place.id)];
+  // Only one stop can be the start. Anything else claiming to be goes back to
+  // being an ordinary stop rather than leaving two pinned firsts.
+  const rest = places.filter((item) => item.id !== place.id).map((item) => (item.anchor === "start" ? { ...item, anchor: undefined } : item));
+  return [{ ...place, anchor: "start" as const }, ...rest];
 }
 
 export function withPlaceLast(places: SavedPlace[], place: SavedPlace): SavedPlace[] {
-  return [...places.filter((item) => item.id !== place.id), place];
+  const rest = places.filter((item) => item.id !== place.id).map((item) => (item.anchor === "end" ? { ...item, anchor: undefined } : item));
+  return [...rest, { ...place, anchor: "end" as const }];
+}
+
+/** Moves one stop by hand, one position at a time. Anchored ends stay put. */
+export function movePlace(places: SavedPlace[], id: string, direction: -1 | 1): SavedPlace[] {
+  const from = places.findIndex((item) => item.id === id);
+  if (from === -1) return places;
+  const to = from + direction;
+  if (to < 0 || to >= places.length) return places;
+  // Neither the stop being moved nor the one it would displace may be an
+  // anchored end — otherwise a couple of clicks quietly unpins the airport
+  // somebody deliberately put first.
+  if (places[from].anchor || places[to].anchor) return places;
+  const next = [...places];
+  [next[from], next[to]] = [next[to], next[from]];
+  return next;
 }
 
 /** Where a place sits in a route, for labelling the buttons honestly. */
