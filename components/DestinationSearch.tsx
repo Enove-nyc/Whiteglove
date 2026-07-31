@@ -38,12 +38,20 @@ const defaultSuggestions: Suggestion[] = guidedDestinations()
     href: destinationHref(guide),
   }));
 
-function recordSearch(value: string) {
+/**
+ * `found` is how many results were on screen when they searched.
+ *
+ * Sent because zero is the number worth knowing: it means somebody asked for a
+ * town or a kever by name and this site had never heard of it. Counted at the
+ * moment it happens rather than worked out later, so what the owner reads is
+ * what the visitor was actually shown.
+ */
+function recordSearch(value: string, found: number) {
   if (!value.trim()) return;
   void fetch("/api/analytics", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "search", value: value.trim() }),
+    body: JSON.stringify({ type: "search", value: value.trim(), found }),
     keepalive: true,
   });
 }
@@ -91,14 +99,14 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
   const blurTimer = useRef<number | undefined>(undefined);
 
   function go(hit: Suggestion) {
-    recordSearch(query);
+    recordSearch(query, matches.length);
     router.push(hit.href);
     setOpen(false);
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    recordSearch(query);
+    recordSearch(query, matches.length);
     const chosen = active >= 0 ? matches[active] : query.trim() ? matches[0] : undefined;
     if (chosen) router.push(chosen.href);
     else router.push(`/stops${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);

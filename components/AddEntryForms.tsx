@@ -18,7 +18,15 @@ function Status({ state }: { state: ActionResult | null }) {
   return <span className={`text-sm font-semibold ${state.ok ? "text-emerald-700" : "text-red-700"}`}>{state.message}</span>;
 }
 
-export default function AddEntryForms() {
+/**
+ * `prefillName` comes from the report of searches that found nothing.
+ *
+ * Somebody searched for "shinov", the site had never heard of it, and the
+ * owner pressed "Add it". Making them retype the word they just read is the
+ * friction that stops a report being acted on — so it arrives in the name
+ * field, where it can be cleared like anything else.
+ */
+export default function AddEntryForms({ prefillName }: { prefillName?: string }) {
   const [cemState, cemAction, cemPending] = useActionState<ActionResult | null, FormData>(addCemeteryAction, null);
   const [pageState, pageAction, pagePending] = useActionState<ActionResult | null, FormData>(addInfoPageAction, null);
   const [attrState, attrAction, attrPending] = useActionState<ActionResult | null, FormData>(addAttractionAction, null);
@@ -32,7 +40,7 @@ export default function AddEntryForms() {
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add a cemetery</h2>
         <p className="mt-2 text-sm leading-6 text-stone-600">Only a name and city are required — fill in the rest later. It appears in the directory right away, marked for verification.</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className={captionClass}>Cemetery name *</span><input name="name" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Cemetery name *</span><input name="name" defaultValue={prefillName} className={inputClass} required /></label>
           <label className="block"><span className={captionClass}>Yiddish/Hebrew name</span><input name="yiddishName" dir="rtl" lang="yi" className={inputClass} /></label>
           <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
           <label className="block"><span className={captionClass}>City (Yiddish)</span><input name="yiddishCity" dir="rtl" lang="yi" className={inputClass} /></label>
@@ -73,7 +81,7 @@ export default function AddEntryForms() {
           on the things-to-do page, in the search, and in the planner as soon as you save it.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className={captionClass}>Name *</span><input name="name" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Name *</span><input name="name" defaultValue={prefillName} className={inputClass} required /></label>
           <label className="block"><span className={captionClass}>Kind</span>
             <select name="kind" className={inputClass} defaultValue="Landmark">
               <option>Jewish heritage</option>
@@ -113,7 +121,7 @@ export default function AddEntryForms() {
           It appears on the where-to-stay page, in the search, and in the planner&rsquo;s hotel picker.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className={captionClass}>Name *</span><input name="name" className={inputClass} required /></label>
+          <label className="block"><span className={captionClass}>Name *</span><input name="name" defaultValue={prefillName} className={inputClass} required /></label>
           <label className="block"><span className={captionClass}>Kind</span>
             <select name="kind" className={inputClass} defaultValue="Ordinary hotel, well placed">
               <option>Kosher hotel</option>

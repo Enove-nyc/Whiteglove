@@ -106,3 +106,56 @@ export async function readDestinationFacts(): Promise<Map<string, DestinationFac
     return null;
   }
 }
+
+/** What a beis hachaim record actually holds. Nothing here is assumed. */
+export type CemeteryFacts = {
+  /** People recorded as buried there. */
+  burials: number;
+  /** Of those, how many have a checked coordinate for the grave itself. */
+  burialsWithCoordinates: number;
+  /** Somebody on file who can let you in. */
+  contacts: number;
+  /** A coordinate or an address for the beis hachaim itself. */
+  hasLocation: boolean;
+  /** Anything written about getting in. */
+  hasAccessNote: boolean;
+};
+
+/**
+ * Facts for every beis hachaim, keyed by slug.
+ *
+ * The same shape and the same promise as the destinations above: null means
+ * "could not ask", which is not the same as "nothing there". One query, only
+ * the fields anything actually reads.
+ */
+export async function readCemeteryFacts(): Promise<Map<string, CemeteryFacts> | null> {
+  if (!process.env.DATABASE_URL) return null;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.cemetery.findMany({
+      select: {
+        slug: true,
+        coordinates: true,
+        address: true,
+        accessNote: true,
+        burials: { select: { graveCoordinates: true } },
+        _count: { select: { contacts: true } },
+      },
+    });
+    return new Map(
+      rows.map((row) => [
+        row.slug,
+        {
+          burials: row.burials.length,
+          burialsWithCoordinates: row.burials.filter((b) => b.graveCoordinates?.trim()).length,
+          contacts: row._count.contacts,
+          hasLocation: Boolean(row.coordinates?.trim() || row.address?.trim()),
+          hasAccessNote: Boolean(row.accessNote?.trim()),
+        },
+      ]),
+    );
+  } catch (error) {
+    console.error("[completeness] could not read the batei hachaim", error);
+    return null;
+  }
+}

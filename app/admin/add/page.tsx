@@ -5,7 +5,11 @@ import { listInfoPages } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAddPage() {
+export default async function AdminAddPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  // Arrives from the "asked for, and not here" report — somebody searched for
+  // this and the site had never heard of it. Carried into the name field so
+  // the owner does not have to retype the word they just read.
+  const wanted = (await searchParams).q?.trim().slice(0, 80) || "";
   const dbReady = isDbEnabled();
   let infoPages: Awaited<ReturnType<typeof listInfoPages>> = [];
   let needsSetup = false;
@@ -31,6 +35,13 @@ export default async function AdminAddPage() {
         </div>
       </header>
 
+      {wanted && (
+        <p className="mt-6 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
+          Somebody searched for <strong className="text-[var(--navy)]">{wanted}</strong> and this site showed them
+          nothing. It is filled in below — change it to whatever the entry should really be called.
+        </p>
+      )}
+
       <section className="mt-8">
         {!dbReady ? (
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
@@ -44,7 +55,7 @@ export default async function AdminAddPage() {
           </div>
         ) : (
           <>
-            <AddEntryForms />
+            <AddEntryForms prefillName={wanted || undefined} />
 
             {infoPages.length > 0 && (
               <div className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
