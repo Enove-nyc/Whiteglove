@@ -7,20 +7,36 @@ import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
 import SitePromotions from "@/components/SitePromotions";
 
-const menuItems = [
+/**
+ * The menu. A Yiddish label only where there is a real Yiddish word for it.
+ *
+ * Half of these used to carry one and half of those were not Yiddish:
+ * סערוויסעס, האָנימאָן, דירעקטאָרי, וואַקאַציעס — English words spelled in Hebrew
+ * letters. To somebody who reads Yiddish that is not a translation, it is the
+ * English word made harder to read.
+ *
+ * What stays is what people say: היים, נסיעות, בתי החיים, כשר עסן,
+ * רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן, פֿאַרבינדונג. The rest are English
+ * until somebody who speaks the language gives us real ones.
+ *
+ * Nothing renders these today — the bar and the menu both show the English.
+ * They are kept as the record of which words are right, so that when the
+ * menu does show them, it shows those and not the ones just removed.
+ */
+const menuItems: Array<{ yiddish?: string; english: string; href: string }> = [
   { yiddish: "היים", english: "Home", href: "/" },
   { yiddish: "נסיעות", english: "Destinations", href: "/stops" },
-  { yiddish: "וואַקאַציעס", english: "Getaways", href: "/getaways" },
+  { english: "Getaways", href: "/getaways" },
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
-  { yiddish: "מאַפּע", english: "Map", href: "/map" },
+  { english: "Map", href: "/map" },
   { yiddish: "כשר עסן", english: "Kosher food", href: "/kosher" },
   { yiddish: "רײַזע פֿירער", english: "Travel guide", href: "/travel-guide" },
-  { yiddish: "דירעקטאָרי", english: "Directory", href: "/directory" },
-  { yiddish: "סערוויסעס", english: "Services", href: "/services" },
-  { yiddish: "האָנימאָן", english: "Honeymoon", href: "/honeymoon" },
+  { english: "Directory", href: "/directory" },
+  { english: "Services", href: "/services" },
+  { english: "Honeymoon", href: "/honeymoon" },
   { yiddish: "וואו צו גיין", english: "Things to do", href: "/attractions" },
   { yiddish: "וואו צו שלאפן", english: "Where to stay", href: "/kosher-stays" },
-  { yiddish: "פליגערס און האטעלן", english: "Book flights, hotels & cars", href: "/book" },
+  { english: "Book flights, hotels & cars", href: "/book" },
   { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
 ];
 

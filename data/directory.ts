@@ -65,11 +65,19 @@ export type PublicProvider = {
   responseTime: string | null;
 };
 
-export const PROVIDER_CATEGORY_LABELS: Record<ProviderCat, { english: string; yiddish: string }> = {
-  TOUR_OPERATOR: { english: "Tour operators", yiddish: "טור־אָפּעראַטאָרן" },
-  VACATION_PLANNER: { english: "Vacation planners", yiddish: "וואַקאַציע־פּלאַנירער" },
-  TRAVEL_AGENCY: { english: "Travel agencies", yiddish: "רייזע־אַגענטורן" },
-  GUIDE_DRIVER: { english: "Guides & drivers", yiddish: "גיידס און דרייווערס" },
+/**
+ * All four of these used to carry a Yiddish heading, and none of the four was
+ * Yiddish: "tour operators", "vacation planners" and "guides un drivers"
+ * spelled in Hebrew letters, plus one half-real compound. English made harder
+ * to read is not a translation.
+ *
+ * They show English alone until there are real words for them.
+ */
+export const PROVIDER_CATEGORY_LABELS: Record<ProviderCat, { english: string; yiddish?: string }> = {
+  TOUR_OPERATOR: { english: "Tour operators" },
+  VACATION_PLANNER: { english: "Vacation planners" },
+  TRAVEL_AGENCY: { english: "Travel agencies" },
+  GUIDE_DRIVER: { english: "Guides & drivers" },
 };
 
 export const PROVIDER_CATEGORY_ORDER: ProviderCat[] = [

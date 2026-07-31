@@ -26,13 +26,19 @@ export type DestinationSection = {
   blurb: string;
   group: SectionGroup;
   /**
-   * The heading in Yiddish, where there is one.
+   * The heading in Yiddish, where there is a real Yiddish word for it.
    *
-   * Deliberately absent on the six sections added in July 2026 rather than
-   * guessed at. These headings are read by people who speak the language, and
-   * a translation invented by somebody who does not is worse than an English
-   * heading — it is wrong in a way only the reader can see. The public page
-   * shows English alone until the owner supplies them.
+   * ABSENT IS THE NORMAL CASE, and absent is honest. Several of these used to
+   * carry an English word spelled in Hebrew letters — טראַנספארט for
+   * "transport", דרייווערס for "drivers", פליגפעלד for an airport, which is a
+   * calque nobody says. To a Yiddish reader that is not a translation; it is
+   * the English word made harder to read, and it says the site does not know
+   * the difference.
+   *
+   * What is left is the words people actually use: כשרות עסן, מנינים, מקוה,
+   * אכסניא. The rest show English alone until somebody who speaks the language
+   * supplies a real one — an invented translation is wrong in a way only the
+   * reader can see.
    */
   yiddish?: string;
   /**
@@ -80,7 +86,6 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "TRANSPORT",
-    yiddish: "טראַנספארט",
     label: "Getting around",
     blurb: "Local transport, taxis, car hire — how somebody moves once they are there.",
     group: "essentials",
@@ -109,7 +114,6 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "AIRPORT",
-    yiddish: "פליגפעלד",
     label: "Airports",
     blurb: "Which one to fly into, and how far it really is.",
     group: "the rest of the day",
@@ -117,7 +121,6 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "DRIVER",
-    yiddish: "דרייווערס",
     label: "Drivers",
     blurb: "People who will take you to the kever and wait. Names and numbers, with permission to publish them.",
     group: "the rest of the day",
