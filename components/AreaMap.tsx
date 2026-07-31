@@ -78,6 +78,10 @@ export default function AreaMap({
   const gmarkersRef = useRef<GMarker[]>([]);
   const ginfoRef = useRef<GInfoWindow | null>(null);
   const [engine, setEngine] = useState<"deciding" | "google" | "osm">("deciding");
+  // How far in the map is, so pins can shrink when hundreds of them are on
+  // screen at once. Written from the map's own zoom event — an external system
+  // telling us it changed, which is what an effect subscribes to.
+  const [zoom, setZoom] = useState(11);
   // One piece of state, tagged with the request it answers, rather than a list
   // and a status that can disagree. Everything else about the lookup — whether
   // it is in flight, whether it failed, whether these results are still the
@@ -151,6 +155,7 @@ export default function AreaMap({
             fullscreenControl: true,
           });
           ginfoRef.current = new maps.InfoWindow();
+          gmapRef.current.addListener?.("zoom_changed", () => setZoom(gmapRef.current?.getZoom?.() ?? 11));
           setEngine("google");
           return;
         }
@@ -168,6 +173,7 @@ export default function AreaMap({
         .addTo(map);
       // Scroll-zoom is off so the page still scrolls on a phone; a click enables it.
       map.on("click", () => map.scrollWheelZoom.enable());
+      map.on("zoomend", () => setZoom(map.getZoom()));
       mapRef.current = map;
       for (const kind of Object.keys(MAP_STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
       setEngine("osm");
@@ -212,6 +218,9 @@ export default function AreaMap({
       }
       return;
     }
+    // Nothing sets the zoom here. Moving the map makes it fire its own zoom
+    // event, and that is what reports the new value — the map is the external
+    // system, and asking it to tell us beats guessing what it did.
     mapRef.current?.fitBounds([[frame.south, frame.west], [frame.north, frame.east]], { padding: [24, 24] });
     // Deliberately keyed on the search and the engine only: reframing every
     // time a category is switched off would jump the map under the cursor.
@@ -230,7 +239,7 @@ export default function AreaMap({
       gmarkersRef.current = [];
 
       for (const m of visible) {
-        const pin = compassFor(m.kind);
+        const pin = compassFor(m.kind, zoom);
         const marker = new maps.Marker({
           position: { lat: m.lat, lng: m.lng },
           map,
@@ -260,7 +269,7 @@ export default function AreaMap({
       for (const group of Object.values(layersRef.current)) group.clearLayers();
 
       for (const m of visible) {
-        const pin = compassFor(m.kind);
+        const pin = compassFor(m.kind, zoom);
         const icon = leaflet.icon({
           iconUrl: pin.url,
           iconSize: [pin.size, pin.size],
@@ -275,7 +284,7 @@ export default function AreaMap({
     return () => {
       cancelled = true;
     };
-  }, [visible, centerName, engine]);
+  }, [visible, centerName, engine, zoom]);
 
   // Kosher places come from Overpass and can be slow, so they load after the
   // map. The effect only starts the lookup and records what came back — the

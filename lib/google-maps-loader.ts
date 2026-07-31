@@ -36,6 +36,8 @@ export type GLatLngBounds = {
 export type GMap = {
   setCenter(position: LatLng): void;
   setZoom(zoom: number): void;
+  getZoom?(): number;
+  addListener?(event: string, handler: () => void): void;
   /** Frame a box. Used when the map opens on everything rather than a search. */
   fitBounds(bounds: GLatLngBounds, padding?: number): void;
 };

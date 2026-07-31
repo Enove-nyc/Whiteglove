@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { AIRPORT_MINIMUM_RADIUS_KM, areaLabel, boundsOf, countByKind, kmBetween, pointFrom, withinArea, type MapMarker } from "@/lib/map-markers";
-import { compassSvg, compassUrl, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { COMPASS_ROSE, compassSvg, compassUrl, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 
 const KRAKOW = { lat: 50.0619, lng: 19.9369 };
 
@@ -144,11 +144,26 @@ describe("the compass marker", () => {
     assert.ok(decodeURIComponent(url).includes(MAP_STYLE.kever.color));
   });
 
-  it("draws a four-point rose inside a ring", () => {
+  it("draws the logo's eight-point rose inside its two rings", () => {
     const svg = compassSvg("#aa8b52");
-    assert.ok(svg.includes("<circle"), "the ring");
+    assert.equal((svg.match(/<circle/g) ?? []).length, 2, "the gold ring and the navy hairline inside it");
     assert.ok(svg.includes("<path"), "the rose");
-    assert.equal((svg.match(/#aa8b52/g) ?? []).length, 2, "ring and rose share the kind's colour");
+    assert.equal((svg.match(/#aa8b52/g) ?? []).length, 2, "outer ring and rose share the kind's colour");
+    assert.ok(svg.includes("#172d52"), "the hairline stays navy, as in the logo");
+  });
+
+  it("has eight points, four long and four short", () => {
+    // The logo's rose, not a generic star: cardinals reach further than the
+    // ordinals between them.
+    const coords = [...COMPASS_ROSE.matchAll(/(-?\d+\.\d+) (-?\d+\.\d+)/g)].map(([, x, y]) => ({ x: Number(x), y: Number(y) }));
+    assert.equal(coords.length, 16, "eight tips and eight waist points");
+    const from = (p: { x: number; y: number }) => Math.hypot(p.x - 12, p.y - 12);
+    const tips = coords.filter((_, i) => i % 2 === 0).map(from);
+    const waists = coords.filter((_, i) => i % 2 === 1).map(from);
+    const cardinals = tips.filter((_, i) => i % 2 === 0);
+    const ordinals = tips.filter((_, i) => i % 2 === 1);
+    assert.ok(Math.min(...cardinals) > Math.max(...ordinals), "the cardinal points are the long ones");
+    assert.ok(Math.max(...waists) < Math.min(...ordinals), "the waist is inside every point");
   });
 
   it("gives every kind on the map its own colour and name", () => {
