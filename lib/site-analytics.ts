@@ -53,13 +53,47 @@ export async function trackPageView(pathname: string) {
   ]);
 }
 
-export async function trackSearch(query: string) {
+/**
+ * A search, and whether the site had anything to show for it.
+ *
+ * `found` is the number of results the person actually saw. A search that
+ * returned nothing is the single most useful thing this site can learn: it is
+ * somebody asking for a town, a kever or a hechsher by name and being told the
+ * site has never heard of it. Counted separately so it can be read back as a
+ * list of things to add, rather than inferred later by re-running the matching
+ * and hoping it agrees with what the visitor was shown.
+ *
+ * Left optional so an older caller still records the search itself.
+ */
+export async function trackSearch(query: string, found?: number) {
   const term = cleanLabel(query);
   if (term.length < 2) return;
   await Promise.all([
     redis(`zincrby/white-glove:searches/1/${encodeURIComponent(term)}`),
     redis(`incr/white-glove:searches:${todayKey()}`),
+    found === 0 ? redis(`zincrby/white-glove:searches-empty/1/${encodeURIComponent(term)}`) : undefined,
   ]);
+}
+
+/**
+ * What people searched for and found nothing.
+ *
+ * Empty when nothing is connected, and empty for a site nobody has searched —
+ * the two look the same here on purpose, because the screen that reads this
+ * says which it is from `analyticsIsConfigured()` rather than from the length
+ * of this list.
+ */
+export async function getEmptySearches(limit = 40): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:searches-empty/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+/** Forget one term — it was a typo, or it has since been added. */
+export async function clearEmptySearch(term: string): Promise<boolean> {
+  if (!analyticsIsConfigured()) return false;
+  const response = await redis(`zrem/white-glove:searches-empty/${encodeURIComponent(cleanLabel(term))}`);
+  return Boolean(response);
 }
 
 function pairs(values: unknown): Array<{ label: string; count: number }> {
