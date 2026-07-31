@@ -13,7 +13,8 @@
     "test": "tsx --test tests/**/*.test.ts",
     "check": "npm run lint && tsc --noEmit && npm run test",
     "export-content": "tsx scripts/export-content.ts",
-    "audit:ui": "node scripts/audit-ui.mjs"
+    "audit:ui": "node scripts/audit-ui.mjs",
+    "audit:admin": "node scripts/audit-admin.mjs"
   },
   "dependencies": {
     "@duffel/components": "^3.17.0",
