@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type * as L from "leaflet";
-import { fetchKosherPlaces, type KosherPlace } from "@/lib/kosher-osm";
+import { lookupKosherPlaces, type KosherPlace } from "@/lib/kosher-osm";
 import { placeDirectionsUrl } from "@/data/route-utils";
+import CompassMark from "@/components/CompassMark";
+import { compassFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
 import { googleMaps, loadGoogleMaps, type GInfoWindow, type GMap, type GMarker } from "@/lib/google-maps-loader";
 
 // What is around a place, on a map.
@@ -15,43 +18,34 @@ import { googleMaps, loadGoogleMaps, type GInfoWindow, type GMap, type GMarker }
 // or if Google's script cannot be reached, it draws the OpenStreetMap map
 // instead rather than showing an empty box — a fallback map beats no map.
 //
-// What is plotted does not change either way. Kevarim come from our own
-// database; kosher places come live from OSM through Overpass, the same source
-// the kosher finder uses. We plot what those sources actually contain and
-// nothing else.
+// What is plotted does not change either way. Kevarim, things to do and places
+// to stay come from our own content; kosher places come live from OSM through
+// Overpass, the same source the kosher finder uses. We plot what those sources
+// actually contain and nothing else.
+//
+// A NULL CENTRE means nobody has searched yet. The map then frames everything
+// it holds rather than opening on one town somebody has to already know to
+// look for.
 
-export type MapMarker = {
-  id: string;
-  name: string;
-  subtitle?: string;
-  lat: number;
-  lng: number;
-  href?: string;
-  address?: string;
-  phone?: string;
-  km?: number;
-  kind: "center" | "kever" | "kosher" | "airport";
-};
+export type { MapMarker } from "@/lib/map-markers";
 
-const STYLE: Record<MapMarker["kind"], { color: string; label: string; ring: number }> = {
-  center: { color: "#172d52", label: "This place", ring: 11 },
-  kever: { color: "#aa8b52", label: "Kevarim", ring: 8 },
-  kosher: { color: "#2f7d54", label: "Kosher food", ring: 7 },
-  airport: { color: "#7a6a92", label: "Airports", ring: 7 },
-};
+/** One shared empty list, so "no results" is the same object every render. */
+const EMPTY_PLACES: KosherPlace[] = [];
 
 function escapeHtml(v: string) {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-
 /** The card shown when a pin is tapped. Identical on either map. */
-function popupHtml(m: MapMarker, centerName: string) {
+function popupHtml(m: MapMarker, centerName: string | null) {
   return [
     `<strong style="font-size:14px;color:#172d52">${escapeHtml(m.name)}</strong>`,
+    // The kind is named in words. Six colours of the same compass is not
+    // something everybody can tell apart, so the popup says which it is.
+    `<div style="color:${MAP_STYLE[m.kind].color};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHtml(MAP_STYLE[m.kind].label)}</div>`,
     m.subtitle ? `<div style="color:#78716c;font-size:12px">${escapeHtml(m.subtitle)}</div>` : "",
     m.address ? `<div style="margin-top:4px;font-size:12px">${escapeHtml(m.address)}</div>` : "",
-    typeof m.km === "number" ? `<div style="margin-top:4px;font-size:12px;color:#78716c">${m.km.toFixed(1)} km from ${escapeHtml(centerName)}</div>` : "",
+    typeof m.km === "number" && centerName ? `<div style="margin-top:4px;font-size:12px;color:#78716c">${m.km.toFixed(1)} km from ${escapeHtml(centerName)}</div>` : "",
     `<div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
        <a href="${escapeHtml(placeDirectionsUrl(m.address, `${m.lat}, ${m.lng}`))}" target="_blank" rel="noreferrer" style="font-weight:700;color:#172d52">Navigate &rarr;</a>
        ${m.href ? `<a href="${escapeHtml(m.href)}" style="font-weight:700;color:#172d52">Open page &rarr;</a>` : ""}
@@ -68,8 +62,9 @@ export default function AreaMap({
   loadKosher = true,
   height = 460,
 }: {
-  center: { lat: number; lng: number };
-  centerName: string;
+  /** Null until somebody searches: the map then frames everything instead. */
+  center: { lat: number; lng: number } | null;
+  centerName: string | null;
   markers: MapMarker[];
   radiusKm?: number;
   loadKosher?: boolean;
@@ -83,9 +78,33 @@ export default function AreaMap({
   const gmarkersRef = useRef<GMarker[]>([]);
   const ginfoRef = useRef<GInfoWindow | null>(null);
   const [engine, setEngine] = useState<"deciding" | "google" | "osm">("deciding");
-  const [kosher, setKosher] = useState<KosherPlace[]>([]);
-  const [kosherState, setKosherState] = useState<"idle" | "loading" | "done" | "failed">("idle");
-  const [shown, setShown] = useState<Record<MapMarker["kind"], boolean>>({ center: true, kever: true, kosher: true, airport: true });
+  // One piece of state, tagged with the request it answers, rather than a list
+  // and a status that can disagree. Everything else about the lookup — whether
+  // it is in flight, whether it failed, whether these results are still the
+  // right ones — is read off it.
+  const [answer, setAnswer] = useState<{ key: string; places: KosherPlace[]; failed: boolean } | null>(null);
+  const [shown, setShown] = useState<Record<MapKind, boolean>>({
+    center: true, kever: true, attraction: true, stay: true, kosher: true, airport: true,
+  });
+
+  // Only around a searched place: Overpass is asked what is near a point, and
+  // "everywhere" is not a point.
+  const kosherLive = Boolean(center) && loadKosher;
+  const request = center ? `${center.lat},${center.lng},${radiusKm}` : "";
+  const answered = Boolean(answer && answer.key === request);
+  // Derived, so a new search reads "looking…" on the very first render rather
+  // than after an effect has run and set a flag.
+  const kosherState: "idle" | "loading" | "done" | "failed" = !kosherLive
+    ? "idle"
+    : !answered
+      ? "loading"
+      : answer!.failed
+        ? "failed"
+        : "done";
+  const kosher = useMemo(
+    () => (answered && answer && !answer.failed ? answer.places : EMPTY_PLACES),
+    [answered, answer],
+  );
 
   const kosherMarkers: MapMarker[] = useMemo(
     () =>
@@ -120,8 +139,10 @@ export default function AreaMap({
         const maps = googleMaps();
         if (maps) {
           gmapRef.current = new maps.Map(boxRef.current, {
-            center: { lat: center.lat, lng: center.lng },
-            zoom: 11,
+            // Somewhere over Europe until the framing effect below runs, which
+            // it does on the first paint. Never shown as a resting position.
+            center: { lat: 48, lng: 14 },
+            zoom: 4,
             // Off so the page still scrolls past the map on a phone; holding
             // ctrl (or two fingers) zooms, which is Google's own convention.
             gestureHandling: "cooperative",
@@ -138,7 +159,7 @@ export default function AreaMap({
       // Leaflet touches window on import, so it can only be loaded in the browser.
       const leaflet = (await import("leaflet")).default;
       if (cancelled || !boxRef.current || mapRef.current) return;
-      const map = leaflet.map(boxRef.current, { scrollWheelZoom: false, attributionControl: true }).setView([center.lat, center.lng], 11);
+      const map = leaflet.map(boxRef.current, { scrollWheelZoom: false, attributionControl: true }).setView([48, 14], 4);
       leaflet
         .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 18,
@@ -148,7 +169,7 @@ export default function AreaMap({
       // Scroll-zoom is off so the page still scrolls on a phone; a click enables it.
       map.on("click", () => map.scrollWheelZoom.enable());
       mapRef.current = map;
-      for (const kind of Object.keys(STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
+      for (const kind of Object.keys(MAP_STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
       setEngine("osm");
     })();
     return () => {
@@ -160,15 +181,41 @@ export default function AreaMap({
       gmarkersRef.current = [];
       gmapRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Once, on mount. The engine must not be swapped underneath somebody
+    // mid-look, so nothing here re-runs.
   }, []);
 
-  // Re-centre when the searched place changes.
+  // Where the map looks.
+  //
+  // On a search, at the place searched for. With no search, framed around
+  // everything that is plotted — which is what makes the map open on the whole
+  // content rather than on one town chosen in the source code.
+  const visible = useMemo(() => all.filter((m) => shown[m.kind]), [all, shown]);
+  const frame = useMemo(() => boundsOf(visible.length ? visible : all), [visible, all]);
+
   useEffect(() => {
-    mapRef.current?.setView([center.lat, center.lng], 11);
-    gmapRef.current?.setCenter({ lat: center.lat, lng: center.lng });
-    gmapRef.current?.setZoom(11);
-  }, [center.lat, center.lng, engine]);
+    if (engine === "deciding") return;
+    if (center) {
+      mapRef.current?.setView([center.lat, center.lng], 11);
+      gmapRef.current?.setCenter({ lat: center.lat, lng: center.lng });
+      gmapRef.current?.setZoom(11);
+      return;
+    }
+    if (!frame) return;
+    if (gmapRef.current) {
+      const maps = googleMaps();
+      if (maps) {
+        const bounds = new maps.LatLngBounds();
+        bounds.extend({ lat: frame.north, lng: frame.east });
+        bounds.extend({ lat: frame.south, lng: frame.west });
+        gmapRef.current.fitBounds(bounds, 24);
+      }
+      return;
+    }
+    mapRef.current?.fitBounds([[frame.south, frame.west], [frame.north, frame.east]], { padding: [24, 24] });
+    // Deliberately keyed on the search and the engine only: reframing every
+    // time a category is switched off would jump the map under the cursor.
+  }, [center, frame, engine]);
 
   // Draw the markers on whichever map was chosen.
   useEffect(() => {
@@ -182,22 +229,18 @@ export default function AreaMap({
       for (const marker of gmarkersRef.current) marker.setMap(null);
       gmarkersRef.current = [];
 
-      for (const m of all) {
-        if (!shown[m.kind]) continue;
-        const style = STYLE[m.kind];
-        // A plain circle symbol rather than a pin: the same dot the legend
-        // above uses, so the colours mean the same thing in both places.
+      for (const m of visible) {
+        const pin = compassFor(m.kind);
         const marker = new maps.Marker({
           position: { lat: m.lat, lng: m.lng },
           map,
           title: m.name,
+          // The compass from the logo, in this kind's colour — the same
+          // picture the legend below the map shows.
           icon: {
-            path: maps.SymbolPath.CIRCLE,
-            scale: style.ring,
-            fillColor: style.color,
-            fillOpacity: 1,
-            strokeColor: "#fff",
-            strokeWeight: 2,
+            url: pin.url,
+            scaledSize: new maps.Size(pin.size, pin.size),
+            anchor: new maps.Point(pin.size / 2, pin.size / 2),
           },
         });
         marker.addListener("click", () => {
@@ -216,16 +259,15 @@ export default function AreaMap({
       if (cancelled || !mapRef.current) return;
       for (const group of Object.values(layersRef.current)) group.clearLayers();
 
-      for (const m of all) {
-        if (!shown[m.kind]) continue;
-        const style = STYLE[m.kind];
-        const dot = leaflet.circleMarker([m.lat, m.lng], {
-          radius: style.ring,
-          color: "#fff",
-          weight: 2,
-          fillColor: style.color,
-          fillOpacity: 1,
+      for (const m of visible) {
+        const pin = compassFor(m.kind);
+        const icon = leaflet.icon({
+          iconUrl: pin.url,
+          iconSize: [pin.size, pin.size],
+          iconAnchor: [pin.size / 2, pin.size / 2],
+          popupAnchor: [0, -pin.size / 2],
         });
+        const dot = leaflet.marker([m.lat, m.lng], { icon, title: m.name });
         dot.bindPopup(popupHtml(m, centerName));
         dot.addTo(layersRef.current[m.kind]);
       }
@@ -233,60 +275,70 @@ export default function AreaMap({
     return () => {
       cancelled = true;
     };
-  }, [all, shown, centerName, engine]);
+  }, [visible, centerName, engine]);
 
-  // Kosher places come from Overpass and can be slow, so they load after the map.
+  // Kosher places come from Overpass and can be slow, so they load after the
+  // map. The effect only starts the lookup and records what came back — the
+  // state is written in the callback, where an external system answering is
+  // exactly what an effect is for.
   useEffect(() => {
-    if (!loadKosher) return;
+    if (!kosherLive || !center) return;
     let cancelled = false;
-    setKosherState("loading");
-    fetchKosherPlaces({ lat: center.lat, lng: center.lng }, radiusKm)
-      .then((places) => {
-        if (cancelled) return;
-        setKosher(places);
-        setKosherState("done");
+    lookupKosherPlaces({ lat: center.lat, lng: center.lng }, radiusKm)
+      .then((result) => {
+        if (!cancelled) setAnswer({ key: request, places: result.places, failed: !result.reached });
       })
       .catch(() => {
-        if (!cancelled) setKosherState("failed");
+        if (!cancelled) setAnswer({ key: request, places: [], failed: true });
       });
     return () => {
       cancelled = true;
     };
-  }, [center.lat, center.lng, radiusKm, loadKosher]);
+  }, [center, radiusKm, kosherLive, request]);
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const m of all) c[m.kind] = (c[m.kind] ?? 0) + 1;
-    return c;
-  }, [all]);
+  const counts = useMemo(() => countByKind(all), [all]);
+  const total = useMemo(() => all.filter((m) => m.kind !== "center").length, [all]);
+  const where = centerName ? `within ${radiusKm} km of ${centerName}` : "on the map";
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
-        {(Object.keys(STYLE) as Array<MapMarker["kind"]>)
-          .filter((kind) => kind !== "center")
-          .map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              onClick={() => setShown((s) => ({ ...s, [kind]: !s[kind] }))}
-              aria-pressed={shown[kind]}
-              className={`inline-flex min-h-11 items-center gap-2 border px-3 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
-                shown[kind] ? "border-[var(--navy)] text-[var(--navy)]" : "border-[var(--gold-light)] text-stone-400 line-through decoration-1"
-              }`}
-            >
-              {/* On and off are told apart three ways — the tick, the
-                  strikethrough and aria-pressed — not by the colour of a dot,
-                  which is exactly the marker somebody colour-blind cannot
-                  read. */}
-              <span aria-hidden="true" className="w-2.5 text-center">{shown[kind] ? "\u2713" : "\u00d7"}</span>
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: shown[kind] ? STYLE[kind].color : "#d6d3d1" }} />
-              {STYLE[kind].label}
-              <span className="font-normal text-stone-400">{counts[kind] ?? 0}</span>
-            </button>
-          ))}
-        {kosherState === "loading" && <span className="text-xs text-stone-500">Looking for kosher places…</span>}
-        {kosherState === "failed" && <span className="text-xs text-amber-800">Kosher lookup unavailable just now.</span>}
+      {/* The answer to "how much is there", in words, before the filters. The
+          counts on the buttons below are the same numbers, but a row of
+          filters reads as controls rather than as an answer. */}
+      <p className="text-sm leading-6 text-[var(--navy)]">
+        <strong className="font-[family-name:var(--font-display)] text-2xl">{total}</strong>{" "}
+        {total === 1 ? "place" : "places"} {where}
+        {centerName && counts.kosher > 0 && <span className="text-stone-500"> — including {counts.kosher} kosher {counts.kosher === 1 ? "place" : "places"} listed on OpenStreetMap</span>}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {TOGGLEABLE_KINDS.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => setShown((s) => ({ ...s, [kind]: !s[kind] }))}
+            aria-pressed={shown[kind]}
+            className={`inline-flex min-h-11 items-center gap-2 border px-3 text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+              shown[kind] ? "border-[var(--navy)] text-[var(--navy)]" : "border-[var(--gold-light)] text-stone-400 line-through decoration-1"
+            }`}
+          >
+            {/* On and off are told apart three ways — the tick, the
+                strikethrough and aria-pressed — not by the colour of the mark,
+                which is exactly what somebody colour-blind cannot read. */}
+            <span aria-hidden="true" className="w-2.5 text-center">{shown[kind] ? "✓" : "×"}</span>
+            {/* The same compass the pins use, drawn from the same constants,
+                so the legend cannot drift away from the map. */}
+            <CompassMark kind={kind} muted={!shown[kind]} />
+            {MAP_STYLE[kind].label}
+            <span className="font-normal text-stone-400">{counts[kind]}</span>
+          </button>
+        ))}
+        {kosherLive && kosherState === "loading" && <span className="text-xs text-stone-500">Looking for kosher places…</span>}
+        {kosherLive && kosherState === "failed" && (
+          <span className="text-xs text-amber-800">
+            OpenStreetMap could not be reached, so the kosher count is not an answer about this place.
+          </span>
+        )}
       </div>
 
       <div
@@ -294,15 +346,16 @@ export default function AreaMap({
         style={{ height }}
         className="mt-3 w-full border border-[var(--gold-light)] bg-[#eef2f5]"
         role="application"
-        aria-label={`Map of what is around ${centerName}`}
+        aria-label={centerName ? `Map of what is around ${centerName}` : "Map of everywhere on this site"}
       />
 
       <p className="mt-2 text-xs leading-5 text-stone-500">
         {engine === "google"
           ? "Hold ctrl (or use two fingers) to zoom, so the page still scrolls past the map on a phone. "
           : "Scroll-zoom turns on once you click the map, so the page still scrolls past it on a phone. "}
-        Kevarim are ours; kosher places come live from OpenStreetMap and its coverage varies by region — an empty map
-        means OSM has nothing listed there, not that there is nothing there.
+        {center
+          ? "Kevarim, things to do and places to stay are ours; kosher places come live from OpenStreetMap and its coverage varies by region — an empty map means OSM has nothing listed there, not that there is nothing there."
+          : "Kosher food is looked up around a place, so search a town above to see it. Everything else is ours and is shown here."}
       </p>
     </div>
   );

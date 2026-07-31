@@ -153,10 +153,37 @@ export function parseOverpass(elements: OverpassElement[], center?: { lat: numbe
 }
 
 /**
- * Fetch kosher places near a point from OpenStreetMap. Runs in the browser.
- * Tries mirrors in order; returns [] on total failure (never throws).
+ * How long to wait on one mirror before trying the next.
+ *
+ * The `[timeout:25]` in the query above is Overpass's own limit on how long it
+ * will spend answering — it does nothing at all if the connection simply hangs,
+ * which a public mirror under load does regularly. Without this the first
+ * unresponsive mirror blocks the other two for ever, and the map sits on
+ * "Looking for kosher places…" with no end and no failure.
  */
-export async function fetchKosherPlaces(center: { lat: number; lng: number }, radiusKm = 8): Promise<KosherPlace[]> {
+const MIRROR_TIMEOUT_MS = 8_000;
+
+// The mirrors are tried one after another rather than raced. A race would
+// answer faster when the first is down, at the cost of hitting all three
+// public servers on every single search — these are free infrastructure run by
+// volunteers, and asking three of them for the same thing is not a fair way to
+// use it. Sequential with a per-mirror limit means the common case is one
+// request, and the worst case ends rather than hanging.
+
+/**
+ * "OSM has nothing here" and "we could not reach OSM" are different answers.
+ *
+ * Both used to come back as an empty list, so a screen could only ever say
+ * "no kosher food nearby" — which is a claim about the place when it is really
+ * a claim about the network. `reached` is false only when every mirror failed.
+ */
+export type KosherLookup = { reached: boolean; places: KosherPlace[] };
+
+/**
+ * Ask OpenStreetMap what kosher places are near a point, and say whether it
+ * answered. Runs in the browser. Never throws.
+ */
+export async function lookupKosherPlaces(center: { lat: number; lng: number }, radiusKm = 8): Promise<KosherLookup> {
   const body = `data=${encodeURIComponent(overpassQuery(center.lat, center.lng, radiusKm * 1000))}`;
   for (const endpoint of OVERPASS_ENDPOINTS) {
     try {
@@ -164,13 +191,22 @@ export async function fetchKosherPlaces(center: { lat: number; lng: number }, ra
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body,
+        signal: AbortSignal.timeout(MIRROR_TIMEOUT_MS),
       });
       if (!res.ok) continue;
       const data = (await res.json()) as { elements?: OverpassElement[] };
-      return parseOverpass(data.elements ?? [], center);
+      return { reached: true, places: parseOverpass(data.elements ?? [], center) };
     } catch {
       // try the next mirror
     }
   }
-  return [];
+  return { reached: false, places: [] };
+}
+
+/**
+ * The places only, for callers that treat "none" and "could not ask" alike.
+ * Prefer `lookupKosherPlaces` where the difference can be shown to somebody.
+ */
+export async function fetchKosherPlaces(center: { lat: number; lng: number }, radiusKm = 8): Promise<KosherPlace[]> {
+  return (await lookupKosherPlaces(center, radiusKm)).places;
 }

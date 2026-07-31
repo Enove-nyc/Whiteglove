@@ -28,9 +28,16 @@ import { cleanKey } from "@/lib/api-key";
  */
 export type LatLng = { lat: number; lng: number };
 
+export type GLatLngBounds = {
+  extend(position: LatLng): GLatLngBounds;
+  isEmpty(): boolean;
+};
+
 export type GMap = {
   setCenter(position: LatLng): void;
   setZoom(zoom: number): void;
+  /** Frame a box. Used when the map opens on everything rather than a search. */
+  fitBounds(bounds: GLatLngBounds, padding?: number): void;
 };
 
 export type GMarker = {
@@ -49,6 +56,10 @@ export type GoogleMapsApi = {
   Marker: new (options: Record<string, unknown>) => GMarker;
   InfoWindow: new (options?: Record<string, unknown>) => GInfoWindow;
   SymbolPath: { CIRCLE: number };
+  /** For sizing and anchoring a drawn marker icon. */
+  Size: new (width: number, height: number) => object;
+  Point: new (x: number, y: number) => object;
+  LatLngBounds: new () => GLatLngBounds;
 };
 
 type MapsGlobal = { maps?: GoogleMapsApi };
