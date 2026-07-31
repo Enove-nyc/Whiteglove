@@ -1,7 +1,7 @@
 import { cemeteries } from "@/data/cemeteries";
 import { destinations, guidedDestinations } from "@/data/destinations";
 import { destinationDatabase } from "@/data/destination-database";
-import type { DestinationFacts } from "@/lib/completeness-source";
+import { NOTHING_ENTERED, type DestinationFacts } from "@/lib/completeness-source";
 import { completeness } from "@/lib/verification";
 
 /**
@@ -37,7 +37,9 @@ export type ContentTotals = {
  *   the built-in content. Without it the numbers are the same as they were.
  */
 export function contentTotals(facts?: Map<string, DestinationFacts> | null): ContentTotals {
-  const scored = destinationDatabase.map((record) => completeness(record, facts?.get(record.id)));
+  const scored = destinationDatabase.map((record) =>
+    completeness(record, facts ? facts.get(record.id) ?? NOTHING_ENTERED : undefined),
+  );
   const total = scored.length || 1;
 
   return {

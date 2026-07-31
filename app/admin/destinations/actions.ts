@@ -5,6 +5,9 @@ import { cookies } from "next/headers";
 import type { ContentStatus, PlaceCategory, VerificationStatus } from "@prisma/client";
 import { isValidAccessToken } from "@/lib/secure-access";
 import {
+  createPhoto,
+  deletePhoto,
+  updatePhoto,
   createContact,
   createPlace,
   deleteContact,
@@ -77,6 +80,62 @@ function dateOrNull(value: string): Date | null {
   if (!trimmed) return null;
   const date = new Date(`${trimmed}T12:00:00Z`);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * A photo may not be published without a credit.
+ *
+ * Enforced here as well as on the screen, because the screen can be skipped.
+ * A picture nobody can say where it came from is one the site cannot defend
+ * publishing, and the safe direction for that is a draft, not a refusal —
+ * upload it, find out whose it is, then publish.
+ */
+export async function savePhotoAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const slug = str(formData, "slug");
+  const destinationId = str(formData, "destinationId");
+  const photoId = str(formData, "photoId");
+  const url = str(formData, "url");
+  const credit = nullable(formData, "credit");
+  let status = (str(formData, "status") as ContentStatus) || "DRAFT";
+  let message = photoId ? "Picture updated." : "Picture added.";
+  if (status === "PUBLISHED" && !credit) {
+    status = "DRAFT";
+    message = "Saved as a draft — a picture needs a credit before it goes on the site.";
+  }
+  const fields = { caption: nullable(formData, "caption"), credit, sourceUrl: nullable(formData, "sourceUrl"), status };
+  try {
+    if (photoId) {
+      await updatePhoto(photoId, fields);
+    } else {
+      if (!destinationId) return { ok: false, message: "Missing destination." };
+      if (!url) return { ok: false, message: "Choose a picture first." };
+      await createPhoto(destinationId, { ...fields, url });
+    }
+    revalidateDestination(slug);
+    return { ok: true, message };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
+  }
+}
+
+export async function deletePhotoAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const id = str(formData, "photoId");
+  if (!id) return { ok: false, message: "Missing picture." };
+  try {
+    await deletePhoto(id);
+    revalidateDestination(str(formData, "slug"));
+    return { ok: true, message: "Picture removed." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
+  }
 }
 
 export async function savePlaceAction(

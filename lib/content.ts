@@ -6,11 +6,13 @@
 // static `data/*.ts` content, so the live site keeps working before Neon is
 // connected and automatically upgrades to DB-backed content afterwards.
 
-import type { Contact, PracticalPlace } from "@prisma/client";
+import type { Contact, Photo, PracticalPlace } from "@prisma/client";
 
 export type DestinationContent = {
   contacts: Contact[];
   places: PracticalPlace[];
+  /** Published pictures only — a draft is one nobody has credited yet. */
+  photos: Photo[];
 };
 
 import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
@@ -48,10 +50,16 @@ export async function getPublishedDestinationContent(
           where: { status: "PUBLISHED" },
           orderBy: [{ category: "asc" }, { name: "asc" }],
         },
+        // Published only. A draft is a picture nobody has credited yet, and
+        // the whole point of drafting it was to keep it off the page.
+        photos: {
+          where: { status: "PUBLISHED" },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        },
       },
     });
     if (!destination) return null;
-    return { contacts: destination.contacts, places: destination.places };
+    return { contacts: destination.contacts, places: destination.places, photos: destination.photos };
   } catch (error) {
     console.error("[content] DB read failed for", slug, "- using static fallback", error);
     return null;

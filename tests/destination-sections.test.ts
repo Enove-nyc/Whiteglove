@@ -11,6 +11,7 @@ import {
   sectionsInGroup,
 } from "@/lib/destination-sections";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
+import { NOTHING_ENTERED } from "@/lib/completeness-source";
 import { completeness } from "@/lib/verification";
 
 // There used to be five copies of this list — the admin dropdown, the
@@ -147,5 +148,17 @@ describe("counting from the database instead of the built-in content", () => {
       );
     }
     assert.ok(withDb.filled >= without.filled, "connecting a database cannot lose an answer");
+  });
+});
+
+describe("a destination the database has no row for", () => {
+  it("reads as empty, not as unmeasurable", () => {
+    // With a database that answered, "nothing entered for this town" is an
+    // answer. Treating it as unmeasured would put a header on the queue
+    // saying every section was counted while the rows underneath said
+    // otherwise.
+    const scored = completeness(destinationDatabase[0], NOTHING_ENTERED);
+    assert.equal(scored.notTracked.length, 0);
+    assert.ok(scored.missing.includes("Hospital"));
   });
 });

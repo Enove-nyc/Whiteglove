@@ -1,9 +1,10 @@
 "use client";
 
 import FormDateField from "@/components/FormDateField";
+import PhotoManager from "@/components/PhotoManager";
 import { useActionState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import type { Contact, Destination, PracticalPlace } from "@prisma/client";
+import type { Contact, Destination, Photo, PracticalPlace } from "@prisma/client";
 import {
   type ActionResult,
   deleteContactAction,
@@ -17,6 +18,7 @@ import { sectionLabel, sectionOptions } from "@/lib/destination-sections";
 type EditorDestination = Destination & {
   contacts: Contact[];
   places: PracticalPlace[];
+  photos: Photo[];
 };
 
 // The kinds of listing come from lib/destination-sections.ts, the same list
@@ -364,6 +366,10 @@ export default function DestinationEditor({ destination }: { destination: Editor
       </section>
 
       {/* Practical places */}
+      <section>
+        <PhotoManager destinationId={destination.id} slug={destination.slug} photos={destination.photos} />
+      </section>
+
       <section>
         <SectionHeader
           eyebrow="Listings"

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { destinationDatabase } from "@/data/destination-database";
-import { readDestinationFacts } from "@/lib/completeness-source";
+import { NOTHING_ENTERED, readDestinationFacts } from "@/lib/completeness-source";
 import { completeness, destinationTrust } from "@/lib/verification";
 
 /**
@@ -22,7 +22,10 @@ export default async function CompletenessQueue({ limit = 12 }: { limit?: number
   const facts = await readDestinationFacts();
   const scored = destinationDatabase
     .map((record) => {
-      const forThis = facts?.get(record.id);
+      // A destination the database has no row for has nothing entered, which
+      // is an answer — not the same as not being able to ask. Only a database
+      // that would not answer at all leaves every section unmeasured.
+      const forThis = facts ? facts.get(record.id) ?? NOTHING_ENTERED : undefined;
       return { record, score: completeness(record, forThis), trust: destinationTrust(record) };
     })
     .sort((a, b) => a.score.score - b.score.score || a.record.city.localeCompare(b.record.city));
