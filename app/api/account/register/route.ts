@@ -8,7 +8,7 @@ import { verificationCodeTo } from "@/lib/verification-delivery";
 // visitor should not have to decide which kind of person they are before they
 // have typed anything.
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => null)) as { email?: string; password?: string; name?: string } | null;
+  const body = (await request.json().catch(() => null)) as { email?: string; password?: string; name?: string; phone?: string } | null;
   if (!body?.email || !body?.password) {
     return NextResponse.json({ error: "Enter an email address or phone number, and a password." }, { status: 400 });
   }
@@ -23,7 +23,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await createAccount(body.email, body.password, body.name);
+    // Optional, and only ever a way to reach them. A number given here does not
+  // become a second way to sign in — that would let one person end up with two
+  // accounts without meaning to.
+  const contactPhone = body.phone?.trim().slice(0, 40) || undefined;
+  const result = await createAccount(body.email, body.password, body.name, contactPhone);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
   const delivery = await verificationCodeTo(result.email, result.verificationCode);

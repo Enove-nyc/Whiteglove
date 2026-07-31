@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import { useEffect, useMemo, useState } from "react";
 import type { Expense } from "@/lib/expenses";
 
@@ -129,7 +130,7 @@ export default function AdminExpenses() {
       <form onSubmit={add} className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Add an expense</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="block"><span className={caption}>Date</span><input type="date" className={inputClass} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></label>
+          <label className="block"><span className={caption}>Date</span><DateField value={form.date} onChange={(v) => setForm({ ...form, date: v })} className={inputClass} ariaLabel="Date" /></label>
           <label className="block lg:col-span-2"><span className={caption}>Description *</span><input required className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What was it for?" /></label>
           <label className="block"><span className={caption}>Amount *</span><input type="number" required step="0.01" min="0" className={inputClass} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
           <label className="block"><span className={caption}>Currency</span><input className={inputClass} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} maxLength={6} /></label>

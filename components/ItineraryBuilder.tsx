@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
+import AssistantAnswer from "@/components/AssistantAnswer";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
@@ -911,7 +912,7 @@ function DayCard({ day, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLo
         <div className="mt-3 border border-[var(--gold-light)] bg-white text-sm text-stone-700">
           {/* Scrolls rather than clipping when the assistant gives several ideas. */}
           <div className="max-h-72 overflow-y-auto overscroll-contain p-3">
-            {ai.text ? <p className="whitespace-pre-line">{ai.text}</p> : <p className="text-stone-500">{ai.reason}</p>}
+            {ai.text ? <AssistantAnswer answer={ai.text} /> : <p className="text-stone-500">{ai.reason}</p>}
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import { useEffect, useState } from "react";
 import DirectoryListingFields from "@/components/DirectoryListingFields";
 import { FEATURED_REASONS, featuredReasonLabel } from "@/lib/features";
@@ -91,7 +92,7 @@ export default function AdminDirectoryManager() {
           </div>
           <label className="block sm:col-span-2"><span className={caption}>Services offered</span><input className={inputClass} value={form.services} onChange={(e) => setForm({ ...form, services: e.target.value })} placeholder="Airport pickup, kever transport, hotel booking, guided tours…" /></label>
           <label className="block sm:col-span-2"><span className={caption}>Private notes (not shown to visitors)</span><input className={inputClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
-          <label className="block"><span className={caption}>Date you last checked this listing</span><input type="date" className={inputClass} value={form.verifiedAt} onChange={(e) => setForm({ ...form, verifiedAt: e.target.value })} /></label>
+          <label className="block"><span className={caption}>Date you last checked this listing</span><DateField value={form.verifiedAt} onChange={(v) => setForm({ ...form, verifiedAt: v })} className={inputClass} ariaLabel="Date you last checked this listing" /></label>
 
           {/* Permission to publish their number. Off unless somebody asked. */}
           <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">

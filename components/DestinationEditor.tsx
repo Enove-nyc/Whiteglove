@@ -1,5 +1,6 @@
 "use client";
 
+import FormDateField from "@/components/FormDateField";
 import { useActionState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import type { Contact, Destination, PracticalPlace } from "@prisma/client";
@@ -275,12 +276,15 @@ function PlaceFields({ place }: { place?: PracticalPlace }) {
             this is "how much of it do we stand behind", and it is what becomes
             "Verified on 3 March 2026" on the page. */}
         <SelectField label="Checked?" name="verification" options={HOW_CHECKED} defaultValue={place?.verification} />
-        <Field
-          label="Date checked"
-          name="lastVerified"
-          type="date"
-          defaultValue={place?.lastVerified ? place.lastVerified.toISOString().slice(0, 10) : ""}
-        />
+        <label className="block">
+          <span className={captionClass}>Date checked</span>
+          <FormDateField
+            name="lastVerified"
+            defaultValue={place?.lastVerified ? place.lastVerified.toISOString().slice(0, 10) : ""}
+            className={inputClass}
+            ariaLabel="Date checked"
+          />
+        </label>
       </Group>
       <div className="mt-4">
         <Field label="Where this came from" name="sourceUrl" defaultValue={place?.sourceUrl} placeholder="A link, or who told you" />

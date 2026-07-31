@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import Image from "next/image";
 import { useState } from "react";
 import { AD_KINDS, SPOTS_BY_KIND, type AdKind, readAd, writeAd } from "@/lib/ad-types";
@@ -377,16 +378,21 @@ export default function AdWizard({
               </label>
               <label className="block">
                 <span className={captionClass}>Starts</span>
-                <input type="date" value={ad.startDate} onChange={(e) => {
-                  // Moving the start past the end carries the end with it, so
-                  // an advertisement cannot be set to finish before it runs.
-                  const startDate = e.target.value;
-                  set({ startDate, endDate: correctedEnd(startDate, ad.endDate) });
-                }} className={inputClass} />
+                <DateField
+                  value={ad.startDate}
+                  onChange={(startDate) => {
+                    // Moving the start past the end carries the end with it,
+                    // so an advertisement cannot be set to finish before it
+                    // runs.
+                    set({ startDate, endDate: correctedEnd(startDate, ad.endDate) });
+                  }}
+                  className={inputClass}
+                  ariaLabel="Start date"
+                />
               </label>
               <label className="block">
                 <span className={captionClass}>Ends</span>
-                <input type="date" min={earliestEnd(ad.startDate)} value={ad.endDate} onChange={(e) => set({ endDate: correctedEnd(ad.startDate, e.target.value) })} className={inputClass} />
+                <DateField min={earliestEnd(ad.startDate)} value={ad.endDate} onChange={(v) => set({ endDate: correctedEnd(ad.startDate, v) })} className={inputClass} ariaLabel="End date" />
               </label>
             </div>
 

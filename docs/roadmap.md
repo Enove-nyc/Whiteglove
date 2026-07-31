@@ -108,6 +108,29 @@ and Photos as untracked because the *record type it reads* has not changed yet.
 
 ---
 
+## Known: what cannot be made to look like the site
+
+Two browser controls draw part of themselves and will not be styled:
+
+- **A `<select>`'s open list.** The closed control is the site's — cream,
+  navy, a gold chevron. The list that drops down is drawn by the operating
+  system and no CSS reaches it, in any browser. The only way to change it is
+  to stop using `<select>` and build a listbox, which means re-implementing
+  keyboard handling, screen-reader announcements and the phone's native
+  wheel picker. Not worth it for a menu of four options; possibly worth it if
+  a dropdown ever becomes something people stare at.
+- **A `<input type="date">`'s calendar popup.** Same problem, solved: on
+  anything with a pointer the site draws its own calendar over the top
+  (`components/DateField.tsx`), and on a touch screen the native one is left
+  alone, because a hand-drawn popover loses to the one built into the phone
+  when you are choosing with a thumb.
+
+`components/BookingSearch.tsx` keeps its own date field on purpose: it masks
+to MM/DD/YYYY for the partner search forms, and changing the value format
+could break an integration that cannot be tested from here.
+
+---
+
 ## Known: how long an edit takes to appear
 
 Three different answers, now one. `/directory`, `/attractions`, `/kosher-stays`
