@@ -4,6 +4,7 @@ import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
 import LogoutButton from "@/components/LogoutButton";
+import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { isAdminAccount } from "@/lib/admin-roles";
@@ -47,14 +48,7 @@ export default async function AccountPage() {
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">This is where your saved destinations, personal notes, and future itineraries live.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            {canAdmin && (
-              <Link
-                href="/admin"
-                className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-              >
-                Open the admin area →
-              </Link>
-            )}
+            {canAdmin && <OpenAdminButton />}
             <LogoutButton />
           </div>
         </div>

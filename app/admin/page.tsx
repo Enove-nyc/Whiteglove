@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
 import { readDestinationFacts } from "@/lib/completeness-source";
@@ -6,6 +7,7 @@ import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
+import { ADMIN_WHO_COOKIE, adminIdentity, describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
 import { getDashboardStats } from "@/lib/site-analytics";
@@ -73,6 +75,12 @@ function Metric({ label, value, detail }: { label: string; value: string | numbe
 }
 
 export default async function AdminHome() {
+  const cookieStore = await cookies();
+  const signedInAs = adminIdentity(
+    cookieStore.get(ADMIN_WHO_COOKIE)?.value,
+    Boolean(cookieStore.get("white_glove_admin")?.value),
+  );
+
   const [stats, inventory, promotions, content, pages, picturesWaiting] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
@@ -134,7 +142,12 @@ export default async function AdminHome() {
             See what needs attention, handle common jobs, and reach every management area from one organized screen.
           </p>
         </div>
-        <AdminSignOut />
+        <div className="text-right">
+          {/* Who is actually signed in. Before this the answer was "somebody
+              with the password", which is not an answer. */}
+          <p className="mb-2 text-xs leading-5 text-stone-500">{describeAdmin(signedInAs)}</p>
+          <AdminSignOut />
+        </div>
       </header>
 
       {/* What the site holds. The dashboard knew how many people had visited
