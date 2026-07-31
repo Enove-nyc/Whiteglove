@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import AdminTrail from "@/components/AdminTrail";
 import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdminPath } from "@/lib/admin-nav";
 
 /**
@@ -207,6 +208,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </a>
         </div>
       </header>
+
+      {/* Where you are, where you have been, and the thing you probably
+          came to add. Under the header so it is on every screen without
+          each screen having to remember to draw it. */}
+      <AdminTrail />
 
       <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6">
         <aside

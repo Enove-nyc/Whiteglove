@@ -2,7 +2,8 @@ import Link from "next/link";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
 import { getEditableInventory } from "@/lib/admin-inventory";
-import { ADMIN_SECTIONS } from "@/lib/admin-nav";
+import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
+import { contentTotals } from "@/lib/admin-overview";
 import { listPagesForAdmin } from "@/lib/pages";
 import { getDashboardStats } from "@/lib/site-analytics";
 
@@ -97,6 +98,7 @@ export default async function AdminHome() {
     });
   }
 
+  const totals = contentTotals();
   const attentionCount = alerts.length + unpublishedPages.length + pendingSuggestions.length + unfinished.length;
 
   return (
@@ -113,6 +115,50 @@ export default async function AdminHome() {
         </div>
         <AdminSignOut />
       </header>
+
+      {/* What the site holds. The dashboard knew how many people had visited
+          and nothing about what they had visited. Counted from the built-in
+          content, so these survive the database being away. */}
+      <section aria-labelledby="totals-heading" className="mt-7">
+        <h2 id="totals-heading" className="sr-only">What the site holds</h2>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {([
+            ["Destinations", totals.destinations],
+            ["Full guides", totals.guides],
+            ["Batei hachaim", totals.cemeteries],
+            ["Kevarim listed", totals.tzaddikim],
+            ["Countries", totals.countries],
+            ["Nothing yet", totals.empty],
+          ] as const).map(([label, value]) => (
+            <div key={label} className="rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+              <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{label}</dt>
+              <dd className="mt-1 font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-3 text-xs leading-5 text-stone-500">
+          {totals.started} of {totals.destinations + totals.cemeteries} records have something checked on them, averaging{" "}
+          {totals.averageCompleteness}% of the content standard. Visitors never see these numbers — they see what has
+          been checked, and when.
+        </p>
+      </section>
+
+      {/* The jobs somebody opens the admin to do, rather than a place to go
+          and then find the button. */}
+      <section aria-labelledby="quick-heading" className="mt-7">
+        <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add something</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {ADMIN_QUICK_ADD.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--navy)] hover:bg-[var(--navy)] hover:text-white"
+            >
+              + {item.label}
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {alerts.length > 0 && (
         <section aria-labelledby="attention-heading" className="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5">

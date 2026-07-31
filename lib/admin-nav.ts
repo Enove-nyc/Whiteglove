@@ -134,3 +134,70 @@ export function allAdminDestinations(): Array<{ href: string; label: string; blu
   }
   return out;
 }
+
+/**
+ * Where you are, as a trail.
+ *
+ * The admin has five sections and about twenty screens, and several of them
+ * look alike once you are two clicks in — "Everything", "Towns" and "Kevarim"
+ * are all lists of places. A trail says which list you are looking at without
+ * having to recognise it.
+ *
+ * The last crumb is the page itself and carries no link: a link to where you
+ * already are is a dead control.
+ */
+export type Crumb = { label: string; href?: string };
+
+export function adminBreadcrumbs(pathname: string): Crumb[] {
+  const here = toAdminPath(pathname);
+  const home: Crumb = here === "/admin" ? { label: "Dashboard" } : { label: "Dashboard", href: "/admin" };
+  if (here === "/admin") return [home];
+
+  const section = activeSection(here);
+  const child = section.children?.find((c) => here === c.href || here.startsWith(`${c.href}/`));
+
+  const trail: Crumb[] = [home];
+  if (section.href !== "/admin") {
+    // The section itself is only a link when it is not where we have ended up.
+    trail.push(section.href === here ? { label: section.label } : { label: section.label, href: section.href });
+  }
+  if (child && child.href !== section.href) {
+    trail.push(child.href === here ? { label: child.label } : { label: child.label, href: child.href });
+  }
+
+  // A screen the nav does not list — /admin/settings/passwords, say, when it
+  // is not a child anywhere. Name it from its own path rather than leaving the
+  // trail claiming you are on the section's front page.
+  const last = trail[trail.length - 1];
+  if (last.href !== undefined || trail.length === 1) {
+    const tail = here.split("/").filter(Boolean).pop();
+    if (tail && tail !== "admin") {
+      trail.push({ label: tail.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()) });
+    }
+  }
+  return trail;
+}
+
+/**
+ * The things worth being one click from anywhere.
+ *
+ * Not everything that can be added — the ones somebody actually reaches for
+ * mid-task, when they have just been given a phone number or told about a
+ * place. A long menu here would be a second navigation.
+ */
+export const ADMIN_QUICK_ADD: Array<{ href: string; label: string }> = [
+  { href: "/admin/add", label: "Add anything" },
+  { href: "/admin/kevarim", label: "Kever or beis hachaim" },
+  { href: "/admin/destinations", label: "Town details" },
+  { href: "/admin/shomrim", label: "Shomer number" },
+  { href: "/admin/directory/businesses", label: "Business listing" },
+  { href: "/admin/advertisements", label: "Advertisement" },
+  { href: "/admin/pages", label: "Page" },
+];
+
+/** The label for a path, for the recently-visited list. */
+export function adminLabelFor(pathname: string): string {
+  const here = toAdminPath(pathname);
+  const crumbs = adminBreadcrumbs(here);
+  return crumbs[crumbs.length - 1]?.label ?? here;
+}
