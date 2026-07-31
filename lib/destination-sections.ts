@@ -35,10 +35,11 @@ export type DestinationSection = {
    * the English word made harder to read, and it says the site does not know
    * the difference.
    *
-   * What is left is the words people actually use: כשרות עסן, מנינים, מקוה,
-   * אכסניא. The rest show English alone until somebody who speaks the language
-   * supplies a real one — an invented translation is wrong in a way only the
-   * reader can see.
+   * What is left is the words people actually use. תפילות, שבת and כשר came
+   * from the owner, who speaks the language; hospital, emergency and parking
+   * he marked as having no natural Yiddish, so those stay English. That is the
+   * right answer, not a gap waiting to be filled — some things are said in
+   * English by the people who would read this.
    */
   yiddish?: string;
   /**
@@ -93,6 +94,7 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "TEFILLOS",
+    yiddish: "תפילות",
     label: "Tefillos",
     blurb: "The shul or beis medrash itself, seder hayom, and anything about davening at the kever.",
     group: "essentials",
@@ -100,6 +102,7 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "SHABBOS",
+    yiddish: "שבת",
     label: "Shabbos",
     blurb: "Eruv, seudos, hospitality, what closes and when. The questions somebody arriving Friday asks first.",
     group: "essentials",
@@ -107,6 +110,7 @@ export const DESTINATION_SECTIONS: DestinationSection[] = [
   },
   {
     key: "GROCERY",
+    yiddish: "כשר",
     label: "Kosher shops",
     blurb: "Where to buy food to cook — the question a family in a rented flat is actually asking.",
     group: "the rest of the day",

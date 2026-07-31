@@ -15,9 +15,13 @@ import SitePromotions from "@/components/SitePromotions";
  * letters. To somebody who reads Yiddish that is not a translation, it is the
  * English word made harder to read.
  *
- * What stays is what people say: היים, נסיעות, בתי החיים, כשר עסן,
- * רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן, פֿאַרבינדונג. The rest are English
- * until somebody who speaks the language gives us real ones.
+ * What stays is what people say: היים, נסיעות, בתי החיים, כשר עסן.
+ *
+ * A second pass removed four more the owner — who speaks the language —
+ * marked as not natural: רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן and
+ * פֿאַרבינדונג. Being made of real Yiddish words is not the same as being what
+ * anybody would say, and that distinction is not one this codebase can make
+ * for itself. When in doubt the label is English.
  *
  * Nothing renders these today — the bar and the menu both show the English.
  * They are kept as the record of which words are right, so that when the
@@ -30,14 +34,14 @@ const menuItems: Array<{ yiddish?: string; english: string; href: string }> = [
   { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
   { english: "Map", href: "/map" },
   { yiddish: "כשר עסן", english: "Kosher food", href: "/kosher" },
-  { yiddish: "רײַזע פֿירער", english: "Travel guide", href: "/travel-guide" },
+  { english: "Travel guide", href: "/travel-guide" },
   { english: "Directory", href: "/directory" },
   { english: "Services", href: "/services" },
   { english: "Honeymoon", href: "/honeymoon" },
-  { yiddish: "וואו צו גיין", english: "Things to do", href: "/attractions" },
-  { yiddish: "וואו צו שלאפן", english: "Where to stay", href: "/kosher-stays" },
+  { english: "Things to do", href: "/attractions" },
+  { english: "Where to stay", href: "/kosher-stays" },
   { english: "Book flights, hotels & cars", href: "/book" },
-  { yiddish: "פֿאַרבינדונג", english: "Contact", href: "/contact" },
+  { english: "Contact", href: "/contact" },
 ];
 
 /**
