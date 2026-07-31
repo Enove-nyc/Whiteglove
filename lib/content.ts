@@ -7,10 +7,20 @@
 // connected and automatically upgrades to DB-backed content afterwards.
 
 import type { Contact, Photo, PracticalPlace } from "@prisma/client";
+import type { GalleryPhoto } from "@/components/PhotoGallery";
+
+/**
+ * One listing, with pictures of that listing.
+ *
+ * Separate from the town's pictures on purpose. A town photo says what the
+ * place looks like; this says what THIS hotel looks like, which is the
+ * question somebody choosing between two of them is actually asking.
+ */
+export type PublicPlace = PracticalPlace & { photos: GalleryPhoto[] };
 
 export type DestinationContent = {
   contacts: Contact[];
-  places: PracticalPlace[];
+  places: PublicPlace[];
   /** Published pictures only — a draft is one nobody has credited yet. */
   photos: Photo[];
 };
@@ -49,6 +59,13 @@ export async function getPublishedDestinationContent(
         places: {
           where: { status: "PUBLISHED" },
           orderBy: [{ category: "asc" }, { name: "asc" }],
+          include: {
+            photos: {
+              where: { status: "PUBLISHED" },
+              orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+              select: { id: true, url: true, caption: true, credit: true, sourceUrl: true },
+            },
+          },
         },
         // Published only. A draft is a picture nobody has credited yet, and
         // the whole point of drafting it was to keep it off the page.

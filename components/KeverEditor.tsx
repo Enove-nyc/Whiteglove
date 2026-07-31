@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import type { Photo } from "@prisma/client";
 import MixedText from "@/components/MixedText";
+import PhotoManager from "@/components/PhotoManager";
 import SearchableSelect from "@/components/SearchableSelect";
 import {
   addCemeteryForPersonAction,
@@ -31,6 +33,8 @@ export type EditorCemetery = {
     yahrzeit: string | null;
     note: string | null;
   }>;
+  /** Pictures uploaded for this beis hachaim, published or still draft. */
+  photos: Photo[];
 };
 
 const inputClass =
@@ -243,6 +247,20 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
               </div>
               <Status state={addState} />
             </form>
+
+            {/* Pictures of the beis hachaim. What somebody wants before they
+                travel is the gate, the path, the ohel — so they know they are
+                in the right place when they arrive at night. */}
+            <div className="mt-8 border-t border-[var(--gold-light)] pt-6">
+              <PhotoManager
+                key={selected.slug}
+                target={{ kind: "cemetery", ref: selected.slug }}
+                slug={selected.slug}
+                photos={selected.photos}
+                heading={`Pictures of ${selected.city}`}
+                intro="The gate, the path, the ohel — what a traveler needs to recognise the place when they arrive. A picture goes on the page only once it has a credit; whoever took it owns it."
+              />
+            </div>
           </>
         )}
       </section>

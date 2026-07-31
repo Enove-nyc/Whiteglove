@@ -1,7 +1,7 @@
 import Link from "next/link";
 import KeverEditor, { type EditorCemetery } from "@/components/KeverEditor";
 import { cemeteries } from "@/data/cemeteries";
-import { isDbEnabled, listCemeteriesForAdmin, listCemeteryBurials } from "@/lib/content-admin";
+import { cemeteryPhotosBySlug, isDbEnabled, listCemeteriesForAdmin, listCemeteryBurials } from "@/lib/content-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,10 @@ export default async function AdminKevarimPage() {
   if (dbReady) {
     try {
       const builtInSlugs = new Set(cemeteries.map((c) => c.slug));
-      const added = (await listCemeteriesForAdmin()).filter((c) => !builtInSlugs.has(c.slug));
+      // One query for every stored picture rather than one per beis hachaim:
+      // 175 round trips to answer "none" for nearly all of them is not a page.
+      const [rowsForAdmin, photos] = await Promise.all([listCemeteriesForAdmin(), cemeteryPhotosBySlug()]);
+      const added = rowsForAdmin.filter((c) => !builtInSlugs.has(c.slug));
 
       const all = [
         ...cemeteries.map((c) => ({
@@ -35,7 +38,9 @@ export default async function AdminKevarimPage() {
         ...added.map((c) => ({ slug: c.slug, city: c.city, country: c.country, name: c.name, builtIn: [] })),
       ].sort((a, b) => a.city.localeCompare(b.city));
 
-      rows = await Promise.all(all.map(async (c) => ({ ...c, stored: await listCemeteryBurials(c.slug) })));
+      rows = await Promise.all(
+        all.map(async (c) => ({ ...c, stored: await listCemeteryBurials(c.slug), photos: photos.get(c.slug) ?? [] })),
+      );
     } catch {
       failed = true;
     }

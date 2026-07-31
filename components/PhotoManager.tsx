@@ -5,11 +5,12 @@ import type { Photo } from "@prisma/client";
 import { type ActionResult, deletePhotoAction, savePhotoAction } from "@/app/admin/destinations/actions";
 
 /**
- * Pictures for a destination.
+ * Pictures — of a town, of a beis hachaim, or of one listing.
  *
- * The schema has held photos since the July migration and nothing could put
- * one there — the completeness tracker counted them as missing on every record
- * and always would have.
+ * Those are three different questions and they wanted three different answers.
+ * A town photo says what the place looks like. A listing photo says what THIS
+ * hotel looks like, which is the question somebody choosing between two of
+ * them is actually asking. Only the town level existed.
  *
  * CREDIT IS THE POINT, not decoration. A photograph belongs to whoever took
  * it, and the site cannot publish one on the strength of having found it. So a
@@ -18,14 +19,28 @@ import { type ActionResult, deletePhotoAction, savePhotoAction } from "@/app/adm
  * this screen can be skipped.
  */
 
+/**
+ * What the picture is of.
+ *
+ * `ref` is a database id for a destination or a listing, and a SLUG for a beis
+ * hachaim — the 97 built-in ones have no row until something is saved against
+ * them, so the row is made on demand exactly as it is for a shomer's number.
+ */
+export type PhotoTarget = { kind: "destination" | "cemetery" | "place"; ref: string };
+
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none";
 const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
-export default function PhotoManager({ destinationId, slug, photos }: {
-  destinationId: string;
+export default function PhotoManager({ target, slug, photos, heading, intro, compact = false }: {
+  target: PhotoTarget;
+  /** The page to refresh after a save — the town's slug, or the cemetery's. */
   slug: string;
   photos: Photo[];
+  heading?: string;
+  intro?: string;
+  /** Inside a listing card, where the full heading would drown the listing. */
+  compact?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState("");
@@ -67,60 +82,88 @@ export default function PhotoManager({ destinationId, slug, photos }: {
     }
   }
 
+  const addButton = (
+    <label className={`inline-flex cursor-pointer items-center border border-[var(--navy)] bg-[var(--navy)] font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] ${compact ? "min-h-9 px-4 text-[11px]" : "min-h-11 px-5 text-xs"}`}>
+      {uploading ? "Adding…" : "Add a picture"}
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void upload(file);
+          e.target.value = "";
+        }}
+      />
+    </label>
+  );
+
   return (
     <section>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Pictures</p>
-          <h3 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">What this place looks like</h3>
-          <p className="mt-1 max-w-xl text-sm leading-6 text-stone-600">
-            A picture goes on the page only once it has a credit. Whoever took it owns it, and &ldquo;found online&rdquo;
-            is not permission.
+      {compact ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+            {heading ?? "Pictures of this listing"}
           </p>
+          {addButton}
         </div>
-        <label className="inline-flex min-h-11 cursor-pointer items-center border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">
-          {uploading ? "Adding…" : "Add a picture"}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void upload(file);
-              e.target.value = "";
-            }}
-          />
-        </label>
-      </div>
+      ) : (
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Pictures</p>
+            <h3 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              {heading ?? "What this place looks like"}
+            </h3>
+            <p className="mt-1 max-w-xl text-sm leading-6 text-stone-600">
+              {intro ??
+                "A picture goes on the page only once it has a credit. Whoever took it owns it, and “found online” is not permission."}
+            </p>
+          </div>
+          {addButton}
+        </div>
+      )}
       {uploadNote && <p className="mt-2 text-sm font-semibold text-[var(--navy)]">{uploadNote}</p>}
 
+      {/* Saving the new picture unmounts this row — the saved one takes its
+          place in the list below. So the outcome is handed up here first: a
+          picture held back for having no credit said so on a row that then
+          disappeared, which is the same as not saying it. */}
       {pending && (
-        <PhotoRow key={pending} destinationId={destinationId} slug={slug} url={pending} onDone={() => setPending("")} />
+        <PhotoRow
+          key={pending}
+          target={target}
+          slug={slug}
+          url={pending}
+          onDone={(message) => {
+            setPending("");
+            setUploadNote(message);
+          }}
+        />
       )}
 
-      <div className="mt-5 space-y-4">
+      <div className={compact ? "mt-3 space-y-3" : "mt-5 space-y-4"}>
         {photos.length === 0 && !pending ? (
-          <p className="border border-dashed border-[var(--gold-light)] p-6 text-center text-sm text-stone-500">
+          <p className={`border border-dashed border-[var(--gold-light)] text-center text-sm text-stone-500 ${compact ? "p-3" : "p-6"}`}>
             No pictures yet.
           </p>
         ) : (
-          photos.map((photo) => <PhotoRow key={photo.id} destinationId={destinationId} slug={slug} photo={photo} />)
+          photos.map((photo) => <PhotoRow key={photo.id} target={target} slug={slug} photo={photo} />)
         )}
       </div>
     </section>
   );
 }
 
-function PhotoRow({ destinationId, slug, photo, url, onDone }: {
-  destinationId: string;
+function PhotoRow({ target, slug, photo, url, onDone }: {
+  target: PhotoTarget;
   slug: string;
   photo?: Photo;
   url?: string;
-  onDone?: () => void;
+  onDone?: (message: string) => void;
 }) {
   const [state, action, busy] = useActionState<ActionResult | null, FormData>(async (prev, data) => {
     const result = await savePhotoAction(prev, data);
-    if (result.ok) onDone?.();
+    if (result.ok) onDone?.(result.message);
     return result;
   }, null);
   const [delState, delAction, delBusy] = useActionState<ActionResult | null, FormData>(deletePhotoAction, null);
@@ -135,7 +178,8 @@ function PhotoRow({ destinationId, slug, photo, url, onDone }: {
         <img src={src} alt={photo?.caption ?? ""} className="h-28 w-40 shrink-0 border border-[var(--gold-light)] object-cover" />
         <form action={action} className="min-w-0 flex-1">
           <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="destinationId" value={destinationId} />
+          <input type="hidden" name="ownerKind" value={target.kind} />
+          <input type="hidden" name="ownerRef" value={target.ref} />
           {photo && <input type="hidden" name="photoId" value={photo.id} />}
           {!photo && <input type="hidden" name="url" value={src} />}
           <div className="grid gap-3 sm:grid-cols-2">
@@ -170,6 +214,7 @@ function PhotoRow({ destinationId, slug, photo, url, onDone }: {
       {photo && (
         <form action={delAction} className="mt-3 border-t border-[var(--gold-light)] pt-3">
           <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="ownerKind" value={target.kind} />
           <input type="hidden" name="photoId" value={photo.id} />
           <button type="submit" disabled={delBusy} className="text-xs font-bold uppercase tracking-[0.12em] text-red-700 underline decoration-red-300 underline-offset-4 disabled:opacity-60">
             {delBusy ? "Removing…" : "Remove this picture"}

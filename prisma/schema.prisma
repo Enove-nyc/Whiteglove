@@ -226,6 +226,7 @@ model PracticalPlace {
 
   destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
   destinationId String
+  photos        Photo[]
 
   @@index([destinationId, category])
 }
@@ -337,9 +338,18 @@ model Photo {
   destinationId String?
   cemetery      Cemetery?    @relation(fields: [cemeteryId], references: [id], onDelete: Cascade)
   cemeteryId    String?
+  /**
+   * A picture of one listing — a hotel room, the front of a shul, the door of
+   * a mikvah. A town-level photo says what the place looks like; this says
+   * what THIS one looks like, which is the question somebody deciding between
+   * two hotels is actually asking.
+   */
+  place         PracticalPlace? @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  placeId       String?
 
   @@index([destinationId])
   @@index([cemeteryId])
+  @@index([placeId])
 }
 
 // ---- CMS operational tables (migrated from the Redis content bundle) --

@@ -6,7 +6,7 @@
 // message instead of a stack trace.
 
 import { randomUUID } from "node:crypto";
-import type { ContentStatus, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
+import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -48,7 +48,12 @@ export async function getDestinationForAdmin(slug: string) {
     where: { slug },
     include: {
       contacts: { orderBy: { label: "asc" } },
-      places: { orderBy: [{ category: "asc" }, { name: "asc" }] },
+      // Each listing brings its own pictures, so the editor can show them on
+      // the listing they belong to rather than in one pile at the top.
+      places: {
+        orderBy: [{ category: "asc" }, { name: "asc" }],
+        include: { photos: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
+      },
       photos: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
     },
   });
@@ -143,14 +148,73 @@ export type PhotoFields = {
   status: ContentStatus;
 };
 
-export async function listPhotosForDestination(destinationId: string) {
-  const prisma = await db();
-  return prisma.photo.findMany({ where: { destinationId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+/**
+ * What a picture is of.
+ *
+ * One of the three, never more than one. A picture of a hotel room belongs to
+ * that hotel, not also to the town — and letting it be both would mean every
+ * gallery had to decide which it was showing.
+ */
+export type PhotoOwner =
+  | { kind: "destination"; id: string }
+  | { kind: "cemetery"; id: string }
+  | { kind: "place"; id: string };
+
+function ownerWhere(owner: PhotoOwner) {
+  if (owner.kind === "destination") return { destinationId: owner.id };
+  if (owner.kind === "cemetery") return { cemeteryId: owner.id };
+  return { placeId: owner.id };
 }
 
-export async function createPhoto(destinationId: string, fields: PhotoFields) {
+export async function listPhotosFor(owner: PhotoOwner) {
   const prisma = await db();
-  return prisma.photo.create({ data: { ...fields, destinationId } });
+  return prisma.photo.findMany({ where: ownerWhere(owner), orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+}
+
+/**
+ * The owner record for a beis hachaim, by slug.
+ *
+ * A cemetery is addressed by slug rather than by id everywhere in the admin,
+ * because the 97 built-in ones live in code and have no database row until
+ * something is saved against them. Uploading the first picture of Lizhensk
+ * creates that row, exactly as saving the first shomer's number does.
+ */
+export async function cemeteryPhotoOwner(
+  slug: string,
+  fallback: { city: string; yiddishCity: string; name: string; yiddishName: string; country: string },
+): Promise<PhotoOwner> {
+  const row = await cemeteryRowForSlug(slug, fallback);
+  return { kind: "cemetery", id: row.id };
+}
+
+/**
+ * Every stored cemetery picture, keyed by slug.
+ *
+ * One query rather than one per beis hachaim: the kevarim screen lists all 175
+ * of them, and asking separately would be 175 round trips to draw a page whose
+ * answer for nearly all of them is "none".
+ */
+export async function cemeteryPhotosBySlug(): Promise<Map<string, Photo[]>> {
+  const prisma = await db();
+  const rows = await prisma.photo.findMany({
+    where: { cemeteryId: { not: null } },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: { cemetery: { select: { slug: true } } },
+  });
+  const bySlug = new Map<string, Photo[]>();
+  for (const row of rows) {
+    const slug = row.cemetery?.slug;
+    if (!slug) continue;
+    const list = bySlug.get(slug) ?? [];
+    list.push(row);
+    bySlug.set(slug, list);
+  }
+  return bySlug;
+}
+
+export async function createPhoto(owner: PhotoOwner, fields: PhotoFields) {
+  const prisma = await db();
+  return prisma.photo.create({ data: { ...fields, ...ownerWhere(owner) } });
 }
 
 export async function updatePhoto(id: string, fields: Omit<PhotoFields, "url">) {

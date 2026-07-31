@@ -1,10 +1,14 @@
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
+import { PhotoCredit, type GalleryPhoto } from "@/components/PhotoGallery";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 import { trustLabel, type TrustLabel } from "@/lib/verification";
 import { DESTINATION_SECTIONS, LEGACY_RECORD_SECTIONS } from "@/lib/destination-sections";
 import type { PracticalPlace } from "@prisma/client";
+
+/** A listing carries pictures of itself — this hotel, this shul, this mikvah. */
+type PlaceWithPhotos = PracticalPlace & { photos?: GalleryPhoto[] };
 
 type SectionKey = "accommodations" | "kosherFood" | "minyanim" | "mikvaos" | "transport";
 
@@ -70,11 +74,44 @@ const mapHref = (address: string, coordinates?: string | null) => placeMapUrl(ad
 
 const pill = "border border-[var(--gold)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white";
 
+/**
+ * The pictures of one listing, on the listing.
+ *
+ * Small and side by side, because this is a card in a column — a full-width
+ * gallery here would bury the phone number under a photograph. The credit
+ * stays under each one: it is the reason the picture may be shown at all.
+ */
+function PlacePhotos({ photos, name }: { photos: GalleryPhoto[]; name: string }) {
+  if (!photos.length) return null;
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      {photos.map((photo) => (
+        <figure key={photo.id}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- an uploaded
+              blob served from /api/media; next/image cannot optimise it and
+              would only add a second fetch. */}
+          <img
+            src={photo.url}
+            alt={photo.caption ?? name}
+            loading="lazy"
+            className="aspect-[4/3] w-full border border-[var(--gold-light)] object-cover"
+          />
+          <figcaption>
+            {photo.caption && <p className="mt-1 text-xs leading-5 text-stone-600">{photo.caption}</p>}
+            <PhotoCredit photo={photo} className="mt-0.5" />
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
+
 // A single editable listing — the data an admin maintains for each place.
-function PlaceCard({ place }: { place: PracticalPlace }) {
+function PlaceCard({ place }: { place: PlaceWithPhotos }) {
   return (
     <div className="border-t border-[var(--gold-light)] pt-4 first:border-t-0 first:pt-0">
       <h4 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{place.name}</h4>
+      <PlacePhotos photos={place.photos ?? []} name={place.name} />
       {place.hours && (
         <p className="mt-2 text-sm leading-6 text-stone-600">
           <span className="font-semibold text-[var(--navy)]">Hours:</span> {place.hours}
@@ -116,7 +153,7 @@ export default function PracticalInformation({
   record: DestinationRecord;
   // Published places from the content database. When present for a section,
   // they replace the static placeholder for that section.
-  places?: PracticalPlace[];
+  places?: PlaceWithPhotos[];
 }) {
   return (
     <div className="mt-12">

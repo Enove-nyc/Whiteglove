@@ -3,11 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { ContentStatus, PlaceCategory, VerificationStatus } from "@prisma/client";
+import { getCemetery } from "@/data/cemeteries";
+import { isPhotoOwnerKind, pathsToRefresh, photoDecision, type PhotoOwnerKind } from "@/lib/photos";
 import { isValidAccessToken } from "@/lib/secure-access";
 import {
+  cemeteryPhotoOwner,
   createPhoto,
   deletePhoto,
   updatePhoto,
+  type PhotoOwner,
   createContact,
   createPlace,
   deleteContact,
@@ -32,6 +36,11 @@ function revalidateDestination(slug: string) {
   revalidatePath(`/${slug}`);
   revalidatePath(`/destinations/${slug}`);
   revalidatePath("/admin/destinations");
+}
+
+/** The pages a picture could have changed — see pathsToRefresh for which and why. */
+function revalidatePhoto(ownerKind: string, slug: string) {
+  for (const path of pathsToRefresh(ownerKind, slug)) revalidatePath(path);
 }
 
 function str(formData: FormData, key: string): string {
@@ -96,30 +105,49 @@ export async function savePhotoAction(
 ): Promise<ActionResult> {
   if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
   const slug = str(formData, "slug");
-  const destinationId = str(formData, "destinationId");
   const photoId = str(formData, "photoId");
   const url = str(formData, "url");
+  // Which of the three this belongs to, sent by the screen. One only.
+  const ownerKind = str(formData, "ownerKind");
+  const ownerRef = str(formData, "ownerRef");
   const credit = nullable(formData, "credit");
-  let status = (str(formData, "status") as ContentStatus) || "DRAFT";
-  let message = photoId ? "Picture updated." : "Picture added.";
-  if (status === "PUBLISHED" && !credit) {
-    status = "DRAFT";
-    message = "Saved as a draft — a picture needs a credit before it goes on the site.";
-  }
+  const { status, message } = photoDecision(str(formData, "status"), credit, !photoId);
   const fields = { caption: nullable(formData, "caption"), credit, sourceUrl: nullable(formData, "sourceUrl"), status };
   try {
     if (photoId) {
       await updatePhoto(photoId, fields);
     } else {
-      if (!destinationId) return { ok: false, message: "Missing destination." };
+      if (!ownerRef || !isPhotoOwnerKind(ownerKind)) {
+        return { ok: false, message: "Missing what this picture is of." };
+      }
       if (!url) return { ok: false, message: "Choose a picture first." };
-      await createPhoto(destinationId, { ...fields, url });
+      await createPhoto(await photoOwner(ownerKind, ownerRef), { ...fields, url });
     }
-    revalidateDestination(slug);
+    revalidatePhoto(ownerKind, slug);
     return { ok: true, message };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
   }
+}
+
+/**
+ * What a picture is of, from what the screen sent.
+ *
+ * A destination and a listing arrive as database ids. A beis hachaim arrives
+ * as a SLUG, because the built-in ones have no row until something is saved
+ * against them — so the first picture of Lizhensk makes the row, carrying the
+ * town's details across from the built-in record to fill it.
+ */
+async function photoOwner(kind: PhotoOwnerKind, ref: string): Promise<PhotoOwner> {
+  if (kind !== "cemetery") return { kind, id: ref };
+  const builtIn = getCemetery(ref);
+  return cemeteryPhotoOwner(ref, {
+    city: builtIn?.city ?? ref,
+    yiddishCity: builtIn?.yiddishCity ?? ref,
+    name: builtIn?.name ?? ref,
+    yiddishName: builtIn?.yiddishName ?? ref,
+    country: builtIn?.country ?? "",
+  });
 }
 
 export async function deletePhotoAction(
@@ -131,7 +159,7 @@ export async function deletePhotoAction(
   if (!id) return { ok: false, message: "Missing picture." };
   try {
     await deletePhoto(id);
-    revalidateDestination(str(formData, "slug"));
+    revalidatePhoto(str(formData, "ownerKind"), str(formData, "slug"));
     return { ok: true, message: "Picture removed." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
