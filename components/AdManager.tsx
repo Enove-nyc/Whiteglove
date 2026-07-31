@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { adConcerns, adState, performance, stateWord } from "@/lib/ad-performance";
 import AdWizard from "@/components/AdWizard";
 import { adStatus, describeAd } from "@/lib/ad-types";
 import type { Promotion } from "@/lib/admin-content";
@@ -67,7 +68,13 @@ function explainFailure(status: number, serverSaid?: string): string {
   return serverSaid || `The site answered ${status} and would not say why.`;
 }
 
-export default function AdManager({ initial, configured }: { initial: Promotion[]; configured: boolean }) {
+/**
+ * `today` comes from the server rather than being read here. Whether an advert
+ * has finished depends on the date, and a component that reads the clock as it
+ * draws is a component whose output changes for no reason — the same rule the
+ * suggestions screen follows with readAt.
+ */
+export default function AdManager({ initial, configured, today }: { initial: Promotion[]; configured: boolean; today: string }) {
   const [ads, setAds] = useState(initial);
   const [editing, setEditing] = useState<Promotion | null>(null);
   const [saving, setSaving] = useState(false);
@@ -186,10 +193,35 @@ export default function AdManager({ initial, configured }: { initial: Promotion[
                   </p>
                 )}
 
-                <p className="mt-3 text-sm text-stone-600">
-                  <strong className="text-[var(--navy)]">{ad.impressions}</strong> seen ·{" "}
-                  <strong className="text-[var(--navy)]">{ad.clicks}</strong> clicked
+                {/* Whether it is running, and what its numbers may claim.
+                    "12 seen · 3 clicked" was both of these badly: an advert
+                    that finished in March still read as enabled, and three
+                    from twelve is 25%, which sounds excellent and means
+                    nothing. See lib/ad-performance.ts. */}
+                <p className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className={`inline-block px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${
+                    adState(ad, today) === "live"
+                      ? "bg-emerald-100 text-emerald-900"
+                      : adState(ad, today) === "nowhere"
+                        ? "bg-red-100 text-red-900"
+                        : adState(ad, today) === "finished"
+                          ? "bg-amber-100 text-amber-900"
+                          : "bg-stone-200 text-stone-700"
+                  }`}>
+                    {stateWord(adState(ad, today))}
+                  </span>
+                  <span className="text-sm text-stone-600">{performance(ad).says}</span>
                 </p>
+
+                {adConcerns(ad, today).length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {adConcerns(ad, today).map((concern) => (
+                      <li key={concern.says} className={`text-sm leading-6 ${concern.weight === 1 ? "font-semibold text-red-800" : concern.weight === 2 ? "font-semibold text-amber-800" : "text-stone-600"}`}>
+                        {concern.says}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button type="button" onClick={() => setEditing(ad)} className={buttonClass}>
