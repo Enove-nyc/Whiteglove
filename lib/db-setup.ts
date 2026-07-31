@@ -162,22 +162,101 @@ export async function seedDatabase(prisma: PrismaClient) {
       { destination: { slug: { in: destinationSlugs } } },
     ],
   };
-  await prisma.contact.deleteMany({ where: builtInChildFilter });
-  await prisma.tzaddik.deleteMany({ where: builtInChildFilter });
-  await prisma.practicalPlace.deleteMany({ where: { destination: { slug: { in: destinationSlugs } } } });
-  await prisma.cemetery.deleteMany({ where: { slug: { in: cemeterySlugs } } });
-  await prisma.destination.deleteMany({ where: { slug: { in: destinationSlugs } } });
+  // ONLY the ones this import is about to write again.
+  //
+  // These used to delete EVERY child of a built-in parent, then re-create the
+  // built-in ones — so a kever the owner added to Albertirsa, or a phone number
+  // he corrected on a built-in beis hachaim, was destroyed by an import he
+  // pressed for an unrelated reason. He would not have been told; the row was
+  // simply gone, and the page went back to what ships in the code.
+  //
+  // Matching by name means the built-in records are still refreshed from
+  // data/*.ts, which is what a re-import is for, while anything the owner added
+  // under his own name survives. A correction he made to a built-in person is
+  // still overwritten — that is what "reload the built-in content" means — but
+  // it no longer takes his own additions down with it.
+  await prisma.contact.deleteMany({
+    where: { AND: [builtInChildFilter, { label: { in: rows.contacts.map((c) => c.label) } }] },
+  });
+  await prisma.tzaddik.deleteMany({
+    where: { AND: [builtInChildFilter, { name: { in: rows.tzaddikim.map((t) => t.name) } }] },
+  });
+  await prisma.practicalPlace.deleteMany({
+    where: {
+      destination: { slug: { in: destinationSlugs } },
+      name: { in: rows.places.map((p) => p.name) },
+    },
+  });
+  // These four have no children, so replacing them outright costs nothing.
   await prisma.directoryProvider.deleteMany({ where: { slug: { in: providerSlugs } } });
   await prisma.attraction.deleteMany({ where: { slug: { in: rows.attractions.map((a) => a.slug) } } });
   await prisma.kosherStay.deleteMany({ where: { slug: { in: rows.stays.map((s) => s.slug) } } });
   await prisma.kosherArea.deleteMany({ where: { slug: { in: rows.areas.map((a) => a.slug) } } });
 
-  await prisma.destination.createMany({ data: rows.destinations });
-  await prisma.cemetery.createMany({ data: rows.cemeteries });
-  await prisma.tzaddik.createMany({ data: rows.tzaddikim });
-  await prisma.contact.createMany({ data: rows.contacts });
-  await prisma.practicalPlace.createMany({ data: rows.places });
-  await prisma.directoryProvider.createMany({ data: rows.directory });
+  // DESTINATIONS AND CEMETERIES ARE UPDATED IN PLACE, NEVER DELETED.
+  //
+  // Deleting a built-in beis hachaim took its contacts with it (Contact
+  // cascades) and — worse — ORPHANED every tzadik the owner had added to it:
+  // Tzaddik.cemetery is SetNull, so the row survived with no cemetery, which
+  // means it exists, is on no page, and never will be. That is what "I added a
+  // kever and it doesn't show up" looks like from the inside, and it happened
+  // on an import pressed for a completely unrelated reason.
+  //
+  // Updating in place keeps the row id, so everything hanging off it stays
+  // attached. Batched in one transaction rather than 297 round trips.
+  const upsertBySlug = async <T extends { slug: string; id?: string }>(
+    model: { upsert: (args: unknown) => unknown },
+    list: T[],
+  ) => {
+    await prisma.$transaction(
+      list.map(({ id, ...fields }) =>
+        // `update` deliberately omits the id: the row keeps the one it has, and
+        // that is the whole point — everything attached to it stays attached.
+        model.upsert({ where: { slug: fields.slug }, update: fields, create: { id, ...fields } }),
+      ) as never,
+    );
+  };
+
+  await upsertBySlug(prisma.destination as never, rows.destinations);
+
+  // The seed wires children to the ids it just invented. An upserted parent
+  // keeps whatever id it already had, so those references have to be pointed
+  // at the real rows before anything is written against them.
+  const realDestinationId = new Map(
+    (await prisma.destination.findMany({
+      where: { slug: { in: destinationSlugs } },
+      select: { id: true, slug: true },
+    })).map((d) => [d.slug, d.id]),
+  );
+  const seededDestinationSlug = new Map(rows.destinations.map((d) => [d.id, d.slug]));
+  const remapDestination = <T extends { destinationId?: string | null }>(row: T): T => {
+    if (!row.destinationId) return row;
+    const slug = seededDestinationSlug.get(row.destinationId);
+    const real = slug ? realDestinationId.get(slug) : undefined;
+    return real ? { ...row, destinationId: real } : row;
+  };
+
+  await upsertBySlug(prisma.cemetery as never, rows.cemeteries.map(remapDestination));
+
+  // And the same for cemeteries, which the tzaddikim point at.
+  const realCemeteryId = new Map(
+    (await prisma.cemetery.findMany({
+      where: { slug: { in: cemeterySlugs } },
+      select: { id: true, slug: true },
+    })).map((c) => [c.slug, c.id]),
+  );
+  const seededCemeterySlug = new Map(rows.cemeteries.map((c) => [c.id, c.slug]));
+  const remap = <T extends { destinationId?: string | null; cemeteryId?: string | null }>(row: T): T => {
+    const next = remapDestination(row);
+    if (!next.cemeteryId) return next;
+    const slug = seededCemeterySlug.get(next.cemeteryId);
+    const real = slug ? realCemeteryId.get(slug) : undefined;
+    return real ? { ...next, cemeteryId: real } : next;
+  };
+
+  await prisma.tzaddik.createMany({ data: rows.tzaddikim.map(remap) });
+  await prisma.contact.createMany({ data: rows.contacts.map(remap) });
+  await prisma.practicalPlace.createMany({ data: rows.places.map(remap) });
   await prisma.attraction.createMany({ data: rows.attractions });
   await prisma.kosherStay.createMany({ data: rows.stays });
   await prisma.kosherArea.createMany({ data: rows.areas });

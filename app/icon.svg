@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>White Glove Itineraries</title>
+  <!--
+    THE TAB ICON. The compass rose from the logo, and nothing else.
+
+    app/icon.png was the whole logo — a gloved hand holding a compass, drawn in
+    fine gold line-work. It is transparent, which was the first complaint, and
+    it was still wrong: at sixteen pixels those hairlines cannot resolve, so the
+    mark dissolves into a pale gold smudge. That reads as "a gold background",
+    which was the second complaint, and it was the honest description of what
+    was on screen.
+
+    A favicon is sixteen pixels. It gets one shape, drawn thick. The rose is
+    already the site's mark on every map pin (lib/map-icons.ts), so the tab now
+    matches the pins, and both are the logo's own compass.
+
+    SVG rather than a bitmap so it is sharp at every size, and because it is one
+    path — about half a kilobyte, no rasterising at four sizes to keep in step.
+    The ring is filled cream rather than left open: on a dark browser theme a
+    gold outline on nothing has nothing behind it, and the rose disappears.
+  -->
+  <circle cx="12" cy="12" r="11.1" fill="#fffdf9" stroke="#aa8b52" stroke-width="1.6"/>
+  <path
+    d="M12.00 2.70 L12.75 10.20 L16.31 7.69 L13.80 11.25 L21.30 12.00 L13.80 12.75 L16.31 16.31 L12.75 13.80 L12.00 21.30 L11.25 13.80 L7.69 16.31 L10.20 12.75 L2.70 12.00 L10.20 11.25 L7.69 7.69 L11.25 10.20Z"
+    fill="#aa8b52"
+  />
+</svg>
