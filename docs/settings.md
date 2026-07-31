@@ -140,7 +140,7 @@ not affected and keep working.
 
 | Variable | What it does |
 | --- | --- |
-| `DIRECTORY_FEATURED_NOTE` | What "★ Featured" means in the provider directory, in your own words — shown above the listings and on the badge. **Until it is set, featured providers appear as ordinary listings with no star.** A promotional badge a visitor cannot interpret is worse than none: they cannot tell whether a starred provider was chosen because they are good or because they paid, and only you know which. Set it to whichever is true, e.g. `Featured providers pay for placement.` or `Featured providers are ones we have worked with directly. Nobody pays for placement.` Read at build time, so it takes a redeploy. |
+| `DIRECTORY_FEATURED_NOTE` | What "★ Featured" means in the provider directory, in your own words — printed above the listings and on the badge. There is **always** a disclosure: without this, a default is used that makes no claim about payment either way (`Featured listings appear first in their category. Check each provider's details with them directly before booking.`). Set this to the real answer once there is one — `Featured providers pay for placement.` or `Featured providers are ones we have worked with directly. Nobody pays for placement.` A visitor cannot tell which is true, and only you know. Read at build time, so it takes a redeploy. |
 
 ## Storage and services
 
