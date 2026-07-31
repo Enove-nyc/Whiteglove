@@ -155,6 +155,18 @@ export default function PrintableItinerary({
           <p className="wg-empty">This trip has no dates and stops yet.</p>
         </section>
       )}
+
+      {/* The traveler's own notes, on their own page at the back. A note you
+          cannot take with you is not a note — and this is the printout that
+          goes in the bag. */}
+      {itin.notes?.trim() && (
+        <section className="wg-page wg-day">
+          <header className="wg-day-head">
+            <p className="wg-day-eyebrow">Your notes</p>
+          </header>
+          <p className="wg-notes">{itin.notes.trim()}</p>
+        </section>
+      )}
     </>
   );
 }
@@ -170,6 +182,10 @@ const css = `
   .wg-toolbar button {
     border: 1px solid ${INK}; background: ${INK}; color: #fff; padding: 10px 18px;
     font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+  }
+
+  .wg-notes {
+    margin: 18px 0 0; white-space: pre-wrap; font-size: 14px; line-height: 1.85; color: ${BODY};
   }
 
   .wg-page {

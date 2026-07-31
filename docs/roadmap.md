@@ -65,7 +65,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 12. Border crossing management (admin) | The public warnings are hardcoded rules; this is the data behind them. |
 | 15. Personal Travel Command Center | |
 | 16. Command Center alerts | |
-| 17. Travel documents and confirmations | Storing passport copies raises real obligations — see the note below. |
+| 17. Travel documents and confirmations | **Scoped down by decision: no passport or identity-document storage.** Per-trip notes are built (below); confirmations and PDFs are still open. |
 | 18. User and permission management | |
 | 19. Advertisement manager | Partly present: promotions exist with placements and tracking. |
 | 20. API management | |
@@ -115,6 +115,7 @@ inside a feature PR.
 - **Account enumeration on password reset.** It answers differently for a
   known and an unknown address. Closing that costs a typo'd address any
   feedback that it was a typo.
-- **Storing passport copies** (scan 2, section 17) puts identity documents in
-  the site's care. That is a different class of obligation from storing a trip
-  plan, and worth deciding deliberately rather than as a feature.
+- ~~**Storing passport copies**~~ — **decided: no.** The site does not store
+  passport copies or identity documents. Per-trip notes exist instead, for the
+  things a traveler wants to remember, and the field says plainly that notes
+  travel with the trip and are not the place for anything private.

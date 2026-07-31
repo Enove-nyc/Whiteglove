@@ -119,6 +119,15 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           </div>
         )}
 
+        {/* The traveler's own notes travel with the trip, which is what the
+            planner tells them when they write them. */}
+        {itin.notes?.trim() && (
+          <div className="mt-8 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Notes</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-700">{itin.notes.trim()}</p>
+          </div>
+        )}
+
         <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
 
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />
