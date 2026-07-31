@@ -1,4 +1,5 @@
 import type { SavedPlace } from "@/data/route-utils";
+import { type BorderAdvice, type Crossing, borderAdvice } from "@/lib/border-crossings";
 
 /**
  * Where a route crosses a border, and which crossings actually cost a day.
@@ -77,6 +78,14 @@ export type BorderCrossing = {
   /** True when it leaves or enters the Schengen area — the ones that queue. */
   major: boolean;
   message: string;
+  /**
+   * Which crossings are on this border and what has been checked on them.
+   *
+   * Absent when nothing was passed in, which is every caller that only wants
+   * to know a border is there. The message above never depends on it — a
+   * border takes time whether or not anybody looked this week.
+   */
+  advice?: BorderAdvice;
 };
 
 /**
@@ -86,7 +95,10 @@ export type BorderCrossing = {
  * cannot be worked out is skipped rather than guessed at — announcing a
  * crossing that is not there would train somebody to ignore the warnings.
  */
-export function borderCrossings(places: Array<Pick<SavedPlace, "name" | "address"> & { country?: string }>): BorderCrossing[] {
+export function borderCrossings(
+  places: Array<Pick<SavedPlace, "name" | "address"> & { country?: string }>,
+  known?: { crossings: Crossing[]; today: string },
+): BorderCrossing[] {
   const crossings: BorderCrossing[] = [];
   let previous: { country: string; name: string } | null = null;
 
@@ -95,6 +107,9 @@ export function borderCrossings(places: Array<Pick<SavedPlace, "name" | "address
     if (!country) continue;
     if (previous && previous.country !== country) {
       const major = SCHENGEN.has(previous.country) !== SCHENGEN.has(country);
+      const advice = known
+        ? borderAdvice({ from: previous.country, to: country, major, all: known.crossings, today: known.today })
+        : undefined;
       crossings.push({
         from: previous.country,
         to: country,
@@ -104,6 +119,7 @@ export function borderCrossings(places: Array<Pick<SavedPlace, "name" | "address
         message: major
           ? `Border crossing between ${previous.country} and ${country}, on the way from ${previous.name} to ${place.name}. This is an external EU border — allow several hours, and more at the end of a week or around a yom tov. Passports for everyone travelling.`
           : `Border crossing between ${previous.country} and ${country}, on the way from ${previous.name} to ${place.name}. Normally drive-through, but carry passports.`,
+        advice,
       });
     }
     previous = { country, name: place.name };
