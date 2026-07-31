@@ -78,22 +78,33 @@ sections with an honest status, so nothing is quietly assumed to be done.
 
 ---
 
-## The migration everything is waiting on
+## The migration — written, not yet run
 
-Several items above cannot start until the content database can hold the
-fields they are about. Two changes are needed:
+The schema can now hold everything the items above were waiting for. The
+migrations are on record and were checked against a real PostgreSQL 16; see
+**[docs/migrations.md](./migrations.md)** for what they do and how to apply
+them.
 
-1. **New `PlaceCategory` values** — `TEFILLOS`, `SHABBOS`, `HOSPITAL`,
-   `EMERGENCY`, `GROCERY`, `PARKING`. This is `ALTER TYPE … ADD VALUE` on a
-   live Postgres enum.
-2. **New columns** on `Destination`, `DirectoryProvider` and a new `Tzaddik`
-   table — photos, sources, verification status and date, consent flags for
-   publishing a personal phone number, service response times.
+- Six new `PlaceCategory` values — `TEFILLOS`, `SHABBOS`, `HOSPITAL`,
+  `EMERGENCY`, `GROCERY`, `PARKING`. In their own migration, because
+  `ALTER TYPE … ADD VALUE` is the one statement here that is not ordinary.
+- Verification status and date on `Destination`, `Cemetery`, `PracticalPlace`
+  and `DirectoryProvider`; `sources` on `Destination`.
+- Consent to publish a personal phone number on `DirectoryProvider` —
+  `contactConsent`, defaulting to **false**, with when and how it was given.
+- A `Photo` table, with credit and source, draft by default.
+- A catch-up migration for four tables that had been added to the schema
+  without one: `DirectoryProvider`, `Attraction`, `KosherStay`, `KosherArea`.
 
-Adding columns is routine. Adding enum values is not reversible in the same
-transaction and wants reviewing before it runs against live data. It has not
-been written yet, and when it is it should be reviewed on its own rather than
-inside a feature PR.
+**Still to do: run it.** `npm run db:migrate`, after one `prisma migrate
+resolve --applied 0_init`. Until it runs, the columns exist in the schema and
+not in the database.
+
+**Also still to do: use it.** This migration only makes room. Reading and
+writing the new fields — the destination manager (§4), the provider consent
+flags (scan 1 item 12), the photo library (§7) — is the next piece of work,
+and `lib/verification.ts` still counts Tefillos, Shabbos, Hospital, Emergency
+and Photos as untracked because the *record type it reads* has not changed yet.
 
 ---
 
