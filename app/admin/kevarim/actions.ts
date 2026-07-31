@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { getCemetery } from "@/data/cemeteries";
-import { createCemeteryWithBurial, deleteCemeteryBurial, saveCemeteryBurial } from "@/lib/content-admin";
+import { createCemeteryWithBurial, deleteCemeteryBurial, reattachBurial, saveCemeteryBurial } from "@/lib/content-admin";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -125,4 +125,33 @@ export async function removePersonAction(_prev: ActionResult | null, formData: F
   revalidatePath("/cemeteries");
   revalidatePath("/admin/kevarim");
   return { ok: true, message: "Removed." };
+}
+
+/**
+ * Put back a person who was detached from his beis hachaim.
+ *
+ * See listOrphanedBurials: a re-import used to delete the built-in cemetery
+ * row before rewriting it, and Tzaddik.cemetery is SetNull, so anyone the
+ * owner had added survived with no cemetery — present in the database, absent
+ * from every page. This is how he gets them back.
+ */
+export async function reattachBurialAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const id = str(formData, "id");
+  const slug = str(formData, "slug");
+  if (!id) return { ok: false, message: "Nothing to put back." };
+  if (!slug) return { ok: false, message: "Choose which beis hachaim he belongs to." };
+
+  const fallback = fallbackFor(slug);
+  try {
+    await reattachBurial(id, slug, fallback);
+  } catch (error) {
+    console.error("[kevarim] reattach failed:", error);
+    return { ok: false, message: "Could not put him back. Try again." };
+  }
+
+  revalidatePath(`/cemeteries/${slug}`);
+  revalidatePath("/cemeteries");
+  revalidatePath("/admin/kevarim");
+  return { ok: true, message: `Back on the ${fallback.city} page.` };
 }

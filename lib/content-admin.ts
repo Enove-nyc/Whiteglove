@@ -515,6 +515,39 @@ export type BurialFields = {
   note: string | null;
 };
 
+/**
+ * People who are in the database but attached to nothing.
+ *
+ * These are recoverable, not lost. A re-import used to DELETE the built-in
+ * beis hachaim before writing it again, and Tzaddik.cemetery is SetNull — so
+ * the tzadik the owner had added survived the delete with no cemetery. The row
+ * is still there. It is on no page, it is in no list, and nothing would ever
+ * have shown it to him again.
+ *
+ * The re-import no longer does that (destinations and cemeteries are updated
+ * in place now), but anyone whose database it already happened to still has
+ * the rows, and this is how they get them back.
+ */
+export async function listOrphanedBurials() {
+  const prisma = await db();
+  return prisma.tzaddik.findMany({
+    where: { cemeteryId: null, destinationId: null },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, yiddishName: true, knownAs: true, seforim: true, yahrzeit: true, note: true },
+  });
+}
+
+/** Put one back where it belongs. */
+export async function reattachBurial(
+  id: string,
+  slug: string,
+  fallback: { city: string; yiddishCity: string; name: string; yiddishName: string; country: string },
+) {
+  const prisma = await db();
+  const cemetery = await cemeteryRowForSlug(slug, fallback);
+  return prisma.tzaddik.update({ where: { id }, data: { cemeteryId: cemetery.id } });
+}
+
 /** Tzaddikim stored against a cemetery slug (empty for an untouched one). */
 export async function listCemeteryBurials(slug: string) {
   const prisma = await db();

@@ -8,6 +8,7 @@ import SearchableSelect from "@/components/SearchableSelect";
 import {
   addCemeteryForPersonAction,
   addPersonToCemeteryAction,
+  reattachBurialAction,
   removePersonAction,
   type ActionResult,
 } from "@/app/admin/kevarim/actions";
@@ -103,7 +104,74 @@ function PersonFields({ idPrefix, values }: { idPrefix: string; values?: PersonD
   );
 }
 
-export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery[] }) {
+/** Somebody in the database, attached to no beis hachaim. */
+export type OrphanedBurial = {
+  id: string;
+  name: string;
+  yiddishName: string;
+  knownAs: string | null;
+  yahrzeit: string | null;
+};
+
+/**
+ * The people a re-import detached, and the box to put them back.
+ *
+ * Not a normal part of this screen — it appears only when there is something
+ * in it, and for most databases there never will be. But somebody whose
+ * re-import already orphaned a kever has the row sitting there with nothing
+ * pointing at it, and no other screen on the site would ever show it to him.
+ */
+function Orphans({ orphans, cemeteries }: { orphans: OrphanedBurial[]; cemeteries: EditorCemetery[] }) {
+  const [target, setTarget] = useState<Record<string, string>>({});
+  const [state, action] = useFormAction(reattachBurialAction);
+  if (!orphans.length) return null;
+
+  return (
+    <section className="border-2 border-amber-400 bg-amber-50 p-6">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Found in the database</p>
+      <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
+        {orphans.length === 1 ? "Somebody is" : `${orphans.length} people are`} not on any beis hachaim
+      </h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-900">
+        A re-import used to delete a beis hachaim before writing it back, which left anyone you had added to it
+        attached to nothing — still saved, on no page. That has been fixed, but {orphans.length === 1 ? "this one was" : "these were"} caught
+        by it. Say where {orphans.length === 1 ? "he belongs" : "they belong"} and {orphans.length === 1 ? "he is" : "they are"} back.
+      </p>
+
+      <ul className="mt-5 space-y-4">
+        {orphans.map((person) => (
+          <li key={person.id} className="border border-amber-300 bg-white p-4">
+            <p className="font-semibold text-[var(--navy)]">
+              {person.name}
+              {person.knownAs && <span className="font-normal text-stone-500"> · {person.knownAs}</span>}
+            </p>
+            {person.yahrzeit && <p className="mt-1 text-sm text-stone-500"><MixedText text={person.yahrzeit} /></p>}
+            <form action={action} className="mt-3 flex flex-wrap items-end gap-3">
+              <input type="hidden" name="id" value={person.id} />
+              <input type="hidden" name="slug" value={target[person.id] ?? ""} />
+              <div className="min-w-[16rem] flex-1">
+                <SearchableSelect
+                  id={`orphan-${person.id}`}
+                  label="Which beis hachaim?"
+                  value={target[person.id] ?? ""}
+                  onChange={(value) => setTarget((current) => ({ ...current, [person.id]: value }))}
+                  placeholder="Type a town…"
+                  options={cemeteries.map((c) => ({ value: c.slug, label: `${c.city} · ${c.country}`, hint: c.name, keywords: c.slug }))}
+                />
+              </div>
+              <button type="submit" disabled={!target[person.id]} className={submitClass}>
+                Put him back
+              </button>
+            </form>
+          </li>
+        ))}
+      </ul>
+      <Status state={state} />
+    </section>
+  );
+}
+
+export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: EditorCemetery[]; orphans?: OrphanedBurial[] }) {
   const [slug, setSlug] = useState(cemeteries[0]?.slug ?? "");
 
   const [addState, addAction, addPending] = useFormAction(addPersonToCemeteryAction);
@@ -119,6 +187,10 @@ export default function KeverEditor({ cemeteries }: { cemeteries: EditorCemetery
 
   return (
     <div className="space-y-8">
+      {/* Anything a re-import detached, before anything else — it is the only
+          screen that can show it. */}
+      <Orphans orphans={orphans} cemeteries={cemeteries} />
+
       {/* ---- Direction 1: a person into a beis hachaim we already have ---- */}
       <section className={cardClass}>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add a person to a beis hachaim</p>

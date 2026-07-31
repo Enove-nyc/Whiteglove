@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
-import { getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, reviewSuggestion } from "@/lib/admin-content";
+import { deletePromotion, getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, reviewSuggestion } from "@/lib/admin-content";
 import { applyDirectorySuggestion } from "@/lib/directory-suggestions";
 import { reviewProblem, type ReviewDecision } from "@/lib/suggestions";
 
@@ -57,6 +57,17 @@ export async function POST(request: NextRequest) {
     if (!saved) return NextResponse.json({ error: "Connect the private database before editing suggestions." }, { status: 503 });
   } else if (body.kind === "promotion") {
     const saved = await upsertPromotion(body.data as Parameters<typeof upsertPromotion>[0]);
+    if (!saved) return NextResponse.json({ error: "Connect the private database before editing promotions." }, { status: 503 });
+  } else if (body.kind === "promotion-delete") {
+    // This branch did not exist. The Delete button on the advertisements
+    // screen has always sent "promotion-delete", so it fell through to
+    // "Unsupported update type" below — an advertisement could be created and
+    // never removed, and deletePromotion() sat in lib/admin-content.ts with no
+    // caller at all. Nothing was wrong with the button or the storage; the two
+    // were simply never joined up.
+    const id = (body.data as { id?: string } | undefined)?.id;
+    if (!id) return NextResponse.json({ error: "Which advertisement?" }, { status: 400 });
+    const saved = await deletePromotion(id);
     if (!saved) return NextResponse.json({ error: "Connect the private database before editing promotions." }, { status: 503 });
   } else {
     return NextResponse.json({ error: "Unsupported update type." }, { status: 400 });
