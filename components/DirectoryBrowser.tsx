@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import SuggestEditButton from "@/components/SuggestEditButton";
+import { responseNote, verifiedLabel } from "@/lib/provider-contact";
 import { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER, type ProviderCat, type PublicProvider } from "@/lib/directory";
 
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
@@ -185,12 +186,38 @@ export default function DirectoryBrowser({
               </div>
             )}
 
+            {/* Only ever a positive claim, and only with a date behind it.
+                An unchecked listing gets nothing rather than "unverified":
+                this is somebody else's business, and stamping a judgement on
+                a public page is a different act from marking our own content
+                unfinished. The blanket line at the foot of the page covers
+                the rest. */}
+            {verifiedLabel(p.verifiedAt) && (
+              <p className="mt-3 text-xs font-semibold text-[var(--navy)]">
+                <span aria-hidden="true">✓</span> {verifiedLabel(p.verifiedAt)}
+              </p>
+            )}
+            {responseNote(p.responseTime) && (
+              <p className="mt-1 text-xs text-stone-500">Says they answer: {responseNote(p.responseTime)}</p>
+            )}
+
             <div className="mt-auto flex flex-wrap gap-2 pt-5">
               {p.phone && <a href={telHref(p.phone)} className="inline-flex min-h-11 items-center border border-[var(--gold)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Call</a>}
               {p.whatsapp && <a href={waHref(p.whatsapp)} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">WhatsApp</a>}
               {p.email && <a href={`mailto:${p.email}`} className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Email</a>}
               {p.website && <a href={p.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Website ↗</a>}
             </div>
+
+            {/* Said, rather than silently leaving the card without a Call
+                button. Somebody who can see there is a number and cannot see
+                the number knows to use another way; somebody shown nothing
+                assumes there is nothing. */}
+            {p.contactWithheld && (
+              <p className="mt-3 text-xs leading-5 text-stone-500">
+                We hold a phone number for them but have not been given permission to publish it.
+                {p.email || p.website ? " Reach them by the buttons above." : " Ask us and we will pass a message on."}
+              </p>
+            )}
 
             {/* A phone number that has stopped working is worse than no number
                 — somebody stands at a kever ringing it. This is how that gets

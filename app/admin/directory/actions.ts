@@ -33,6 +33,14 @@ function list(formData: FormData, key: string): string[] {
 
 const CATEGORIES = ["TOUR_OPERATOR", "VACATION_PLANNER", "TRAVEL_AGENCY", "GUIDE_DRIVER"];
 
+/** A date field left blank is no date, not the epoch. */
+function dateOrNull(value: string): Date | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const date = new Date(`${trimmed}T12:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function revalidateDirectory() {
   revalidatePath("/directory");
   revalidatePath("/admin/directory");
@@ -48,6 +56,7 @@ export async function saveProviderAction(
   if (!name) return { ok: false, message: "A business name is required." };
   const categoryValue = str(formData, "category");
   const category = (CATEGORIES.includes(categoryValue) ? categoryValue : "TOUR_OPERATOR") as ProviderCategory;
+  const contactConsent = str(formData, "contactConsent") === "on";
   const fields = {
     name,
     category,
@@ -63,6 +72,13 @@ export async function saveProviderAction(
     specialties: list(formData, "specialties"),
     featured: str(formData, "featured") === "on",
     status: (str(formData, "status") as ContentStatus) || "PUBLISHED",
+    // Permission to publish their number. Read from the box somebody ticked,
+    // never inferred from the number being present.
+    contactConsent,
+    contactConsentAt: contactConsent ? new Date() : null,
+    contactConsentNote: nullable(formData, "contactConsentNote"),
+    verifiedAt: dateOrNull(str(formData, "verifiedAt")),
+    responseTime: nullable(formData, "responseTime"),
   };
   try {
     if (slug) {

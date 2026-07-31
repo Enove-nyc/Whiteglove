@@ -88,6 +88,33 @@ export default function DirectoryProviderForm({ provider }: { provider: Director
           <span className={captionClass}>Specialties (comma-separated)</span>
           <input name="specialties" defaultValue={p?.specialties.join(", ") ?? ""} className={inputClass} placeholder="Uman, kevarim tours, honeymoons" />
         </label>
+        <label className="block">
+          <span className={captionClass}>How quickly they answer (their words)</span>
+          <input name="responseTime" defaultValue={p?.responseTime ?? ""} className={inputClass} placeholder="same day / within a week" />
+        </label>
+        <label className="block">
+          <span className={captionClass}>Date you last checked this listing</span>
+          <input type="date" name="verifiedAt" defaultValue={p?.verifiedAt ? p.verifiedAt.toISOString().slice(0, 10) : ""} className={inputClass} />
+        </label>
+
+        {/* Permission to publish their number. Off unless somebody asked. */}
+        <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+          <label className="flex min-h-11 items-center gap-2">
+            <input type="checkbox" name="contactConsent" defaultChecked={p?.contactConsent ?? false} className="h-4 w-4" />
+            <span className="text-sm font-semibold text-[var(--navy)]">They agreed their phone number may be published</span>
+          </label>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            Off unless somebody asked them. Many of these are one person with a mobile, and having been given a number
+            is not the same as agreeing it goes on a public page. Left off, the number is kept here and the directory
+            says a number is held but not publishable — unless the listing has a public source of their own, which is
+            its own ground.
+          </p>
+          <label className="mt-3 block">
+            <span className={captionClass}>How they gave it</span>
+            <input name="contactConsentNote" defaultValue={p?.contactConsentNote ?? ""} className={inputClass} placeholder="asked by phone, 4 March" />
+          </label>
+        </div>
+
         <label className="flex items-center gap-2 sm:col-span-2">
           <input type="checkbox" name="featured" defaultChecked={p?.featured ?? false} className="h-4 w-4" />
           <span className="text-sm text-[var(--navy)]">Featured (shown first)</span>
