@@ -5,6 +5,7 @@
 
 import type { PrismaClient } from "@prisma/client";
 import { INIT_SQL } from "@/lib/init-sql";
+import { UPGRADE_SQL } from "@/lib/upgrade-sql";
 import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data";
 
 /**
@@ -19,20 +20,40 @@ import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data"
  * whole run stopped there. Setup and re-import both failed, and the three Page
  * columns the page editor needs were never added.
  *
- * So: semicolons inside single-quoted literals, double-quoted identifiers, and
- * both kinds of comment are left alone. Fragments that turn out to hold no SQL
- * at all — a trailing run of comments — are dropped rather than sent to the
- * database as an empty query.
+ * So: semicolons inside single-quoted literals, double-quoted identifiers,
+ * dollar-quoted blocks and both kinds of comment are left alone. Fragments that
+ * turn out to hold no SQL at all — a trailing run of comments — are dropped
+ * rather than sent to the database as an empty query.
+ *
+ * DOLLAR QUOTING is the same bug again, found the same way. A statement of the
+ * form `DO $$ BEGIN … EXCEPTION … END $$;` — the only way to add a foreign key
+ * only if it is missing — has two semicolons INSIDE it, so it came out as three
+ * fragments: an unterminated block, a bare `EXCEPTION`, and a stray `END $$`.
+ * All three are syntax errors rather than "already exists", so the run stopped
+ * and everything after it was skipped.
  */
 export function splitSql(sql: string): string[] {
   const statements: string[] = [];
   let current = "";
   let quote: "'" | '"' | null = null;
   let comment: "line" | "block" | null = null;
+  // The tag of the dollar-quoted block we are inside — "$$" or "$name$".
+  let dollar: string | null = null;
 
   for (let i = 0; i < sql.length; i += 1) {
     const c = sql[i];
     const next = sql[i + 1];
+
+    if (dollar) {
+      if (sql.startsWith(dollar, i)) {
+        current += dollar;
+        i += dollar.length - 1;
+        dollar = null;
+        continue;
+      }
+      current += c;
+      continue;
+    }
 
     if (comment === "line") {
       current += c;
@@ -54,6 +75,12 @@ export function splitSql(sql: string): string[] {
     if (c === "-" && next === "-") { current += c + next; i += 1; comment = "line"; continue; }
     if (c === "/" && next === "*") { current += c + next; i += 1; comment = "block"; continue; }
     if (c === "'" || c === '"') { current += c; quote = c; continue; }
+    // $$ … $$ or $tag$ … $tag$. Only an opening tag counts here; the closing
+    // one is matched above, against the tag we opened with.
+    if (c === "$") {
+      const tag = /^\$\w*\$/.exec(sql.slice(i))?.[0];
+      if (tag) { current += tag; i += tag.length - 1; dollar = tag; continue; }
+    }
     if (c === ";") { statements.push(current); current = ""; continue; }
     current += c;
   }
@@ -90,7 +117,11 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
   );
   const alreadyProvisioned = Boolean(existing?.[0]?.present);
 
-  for (const statement of splitSql(INIT_SQL)) {
+  // INIT_SQL builds a database from empty. UPGRADE_SQL is what an older one
+  // still needs — the columns and enum values a from-empty script cannot add,
+  // because on an existing table every CREATE in it fails "already exists" and
+  // is skipped. Both, in that order, so one button does the whole job.
+  for (const statement of [...splitSql(INIT_SQL), ...splitSql(UPGRADE_SQL)]) {
     try {
       await prisma.$executeRawUnsafe(statement);
     } catch (error) {

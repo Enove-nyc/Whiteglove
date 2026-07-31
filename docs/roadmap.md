@@ -96,9 +96,13 @@ them.
 - A catch-up migration for four tables that had been added to the schema
   without one: `DirectoryProvider`, `Attraction`, `KosherStay`, `KosherArea`.
 
-**Still to do: run it.** `npm run db:migrate`, after one `prisma migrate
-resolve --applied 0_init`. Until it runs, the columns exist in the schema and
-not in the database.
+**Two ways to run it.** In the admin: Towns → "Set up database & import
+destinations", which now brings an older database up to date as well as
+creating a new one — checked against a real PostgreSQL 16 from empty, from an
+April-era database, and pressed twice, all three landing exactly on the schema.
+Or `npm run db:migrate` in a terminal, after one `prisma migrate resolve
+--applied 0_init`; that is still the record, and the only one that writes the
+migration bookkeeping.
 
 **Also still to do: use it.** This migration only makes room. Reading and
 writing the new fields — the destination manager (§4), the provider consent

@@ -6,6 +6,27 @@ nothing in the build calls it. That is on purpose: a schema change against live
 content should be something somebody decides to do, not a side effect of
 pushing a branch.
 
+## The short way, with no terminal
+
+**Admin → Towns → “Set up database & import destinations”.**
+
+That button runs `lib/init-sql.ts` (generated from the schema, builds a
+database from empty) followed by `lib/upgrade-sql.ts` (the columns and enum
+values an older database is still missing). Both are safe to run twice, and
+together they reach the same place the migrations do.
+
+Measured against a real PostgreSQL 16, three ways: on an empty database, on a
+database built from the April-era script, and pressed a second time. All three
+came out with `prisma migrate diff --to-schema` reporting no difference.
+
+Two things it does **not** do, so the terminal is still the record: it does not
+write the `_prisma_migrations` bookkeeping table, and it will not drop or
+rename anything. Every migration so far only adds.
+
+**When a migration adds a column, add it to `lib/upgrade-sql.ts` too** —
+`tests/db-setup-sql.test.ts` checks the shape of what is there, not that you
+remembered.
+
 ## The one thing to know first
 
 The live database was set up with `prisma db push`, which applies a schema

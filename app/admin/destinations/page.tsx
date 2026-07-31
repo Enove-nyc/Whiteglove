@@ -72,6 +72,15 @@ export default async function AdminDestinationsPage({
             <p className="mt-4 text-xs leading-5 text-stone-500">
               Safe to run again later — it reloads the imported content from the site&apos;s built-in data. Your own added listings live in separate tables and are not touched.
             </p>
+            {/* It used to only create tables, so a database set up before a
+                column existed stayed without it and the only fix was a
+                terminal. It now brings an older database up to date as well —
+                measured: an April-era one, pressed once, comes out exactly
+                matching the schema. */}
+            <p className="mt-3 border-l-4 border-[var(--gold)] pl-3 text-xs leading-5 text-stone-500">
+              This also brings an older database up to date — new columns, new kinds of listing, everything added
+              since it was set up. If a save ever fails with a database error, press this.
+            </p>
           </div>
         </section>
       ) : (
