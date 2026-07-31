@@ -67,7 +67,11 @@ export default async function AdminDestinationsPage({
               Your database is connected. Tap the button below once to create the tables and import all destinations from the current site (about 136 places). It takes roughly a minute. After it finishes, this page becomes your editor.
             </p>
             <div className="mt-6">
-              <DbSetupButton />
+              <DbSetupButton
+                label="Set up database & import destinations"
+                reimport
+                confirmMessage="This replaces every built-in record with the version that ships in the site. Anything you added under your own name is kept. Continue?"
+              />
             </div>
             <p className="mt-4 text-xs leading-5 text-stone-500">
               Safe to run again later — it reloads the imported content from the site&apos;s built-in data. Your own added listings live in separate tables and are not touched.
@@ -79,8 +83,21 @@ export default async function AdminDestinationsPage({
                 matching the schema. */}
             <p className="mt-3 border-l-4 border-[var(--gold)] pl-3 text-xs leading-5 text-stone-500">
               This also brings an older database up to date — new columns, new kinds of listing, everything added
-              since it was set up. If a save ever fails with a database error, press this.
+              since it was set up.
             </p>
+
+            {/* The safe half on its own, because it is the one needed often.
+                The import above replaces the built-in records; this touches no
+                content at all, and it is what a database error is asking for. */}
+            <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+              <p className="text-xs leading-5 text-stone-500">
+                Already set up, and a save failed with a database error? This adds whatever is missing and leaves
+                every word you have entered alone.
+              </p>
+              <div className="mt-3">
+                <DbSetupButton />
+              </div>
+            </div>
           </div>
         </section>
       ) : (
@@ -90,6 +107,22 @@ export default async function AdminDestinationsPage({
             {/* Which records are thinnest, and what each is missing. The only
                 place a percentage belongs. */}
             <CompletenessQueue />
+            {/* The one that is needed often, and is safe. It was only ever
+                reachable on the first-run setup screen, which disappears the
+                moment the database is set up — so the only button left was the
+                destructive one, and pressing that to fix a database error is
+                how work got deleted. */}
+            <div className="border border-[var(--gold)] bg-[#fcfaf6] p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Database</p>
+              <p className="mt-2 text-sm leading-6 text-stone-600">
+                Adds anything the database is missing — new columns, new kinds of listing. Nothing you have entered
+                is touched. If a save ever fails with a database error, this is what it is asking for.
+              </p>
+              <div className="mt-4">
+                <DbSetupButton />
+              </div>
+            </div>
+
             <details className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
               <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
                 Re-import built-in content
@@ -98,12 +131,15 @@ export default async function AdminDestinationsPage({
                 Reloads all destinations and the researched practical listings from the site&apos;s built-in data — use this after an update adds new content (e.g. the city-guide details). It refreshes the imported destinations, cemeteries, tzaddikim, contacts, and places.
               </p>
               <p className="mt-2 text-xs leading-5 text-amber-700">
-                Note: this overwrites edits you made to <strong>imported</strong> destinations. Your added listings, page edits, and promotions are kept.
+                This overwrites edits you made to an <strong>imported</strong> record — a phone number you corrected
+                on a built-in beis hachaim goes back to what ships in the site. Kevarim, contacts and listings you
+                added <strong>yourself</strong> are kept, and so are your pages and promotions.
               </p>
               <div className="mt-4">
                 <DbSetupButton
                   label="Re-import content now"
-                  confirmMessage="Re-import the built-in content? This reloads imported destinations and practical listings and will overwrite edits made to imported destinations. Your added listings and page edits are kept."
+                  reimport
+                  confirmMessage="Re-import the built-in content? Records that ship with the site go back to their built-in version. Anything you added yourself is kept."
                 />
               </div>
             </details>
