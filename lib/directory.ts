@@ -10,6 +10,7 @@ import {
   PROVIDER_CATEGORY_LABELS,
   PROVIDER_CATEGORY_ORDER,
   type ProviderCat,
+  type PublicProvider,
 } from "@/data/directory";
 import { listStoredProviders } from "@/lib/directory-store";
 import { publishableContact } from "@/lib/provider-contact";
@@ -19,29 +20,7 @@ export type { ProviderCat };
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
-export type PublicProvider = {
-  slug: string;
-  name: string;
-  category: ProviderCat;
-  tagline: string | null;
-  description: string | null;
-  phone: string | null;
-  whatsapp: string | null;
-  email: string | null;
-  website: string | null;
-  basedIn: string | null;
-  regions: string[];
-  languages: string[];
-  specialties: string[];
-  featured: boolean;
-  source: string | null;
-  /** Set when a number is held on file but may not be published. */
-  contactWithheld: boolean;
-  /** When somebody last checked this listing. Null unless it was checked. */
-  verifiedAt: string | null;
-  /** How quickly they answer, in their own words. */
-  responseTime: string | null;
-};
+export type { PublicProvider };
 
 function fromStatic(): PublicProvider[] {
   // Every built-in entry is gathered from a public page of the provider's own

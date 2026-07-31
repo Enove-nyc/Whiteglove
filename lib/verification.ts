@@ -1,4 +1,5 @@
 import type { DestinationRecord, PracticalSection, VerificationStatus } from "@/data/destination-database";
+import { DESTINATION_SECTIONS, LEGACY_RECORD_SECTIONS } from "@/lib/destination-sections";
 
 /**
  * How much a visitor should trust what a page says, and how much work a
@@ -99,12 +100,21 @@ export function destinationTrust(record: DestinationRecord): TrustLabel {
 }
 
 /**
- * Every field a destination record is meant to carry, from the content
- * standard. `tracked: false` means the schema has nowhere to put it yet —
- * counted as missing, because it is missing, but listed separately so the
- * admin can tell "nobody has filled this in" from "the site cannot hold it".
+ * Every field a destination record is meant to carry.
+ *
+ * The practical sections are no longer typed out here. They come from
+ * lib/destination-sections.ts, which is the same list the admin editor offers
+ * and the public page renders — so a section can never again be editable but
+ * uncounted, or counted but with nowhere to put it.
+ *
+ * `tracked: false` means this record type has nowhere to read the answer from.
+ * It is still counted as missing, because it IS missing; it is listed apart so
+ * the admin can tell "nobody has filled this in" from "the record cannot hold
+ * it yet". The five that used to be hardcoded here — Tefillos, Shabbos,
+ * Hospital, Emergency, Photos — are now four sections plus photos, and the
+ * four are named by the shared list rather than by hand.
  */
-const FIELDS: Array<{ label: string; tracked: boolean; has?: (record: DestinationRecord) => boolean }> = [
+const CEMETERY_FIELDS: Array<{ label: string; tracked: boolean; has?: (record: DestinationRecord) => boolean }> = [
   { label: "Address", tracked: true, has: (r) => r.cemeteries.some((c) => Boolean(c.address?.trim())) },
   { label: "Exact coordinates", tracked: true, has: (r) => r.cemeteries.some((c) => Boolean(c.coordinates?.trim())) },
   { label: "Navigation link", tracked: true, has: (r) => r.cemeteries.some((c) => Boolean(c.coordinates?.trim() || c.address?.trim())) },
@@ -112,20 +122,24 @@ const FIELDS: Array<{ label: string; tracked: boolean; has?: (record: Destinatio
   { label: "Tzaddikim", tracked: true, has: (r) => r.cemeteries.some((c) => c.burials.length > 0) },
   { label: "Access instructions", tracked: true, has: (r) => r.cemeteries.some((c) => c.arrivalNotes.length > 0) },
   { label: "Shomer or local contact", tracked: true, has: (r) => r.cemeteries.some((c) => c.shomerContacts.length > 0) },
-  { label: "Kosher food", tracked: true, has: (r) => r.kosherFood.status !== "unavailable" },
-  { label: "Minyanim", tracked: true, has: (r) => r.minyanim.status !== "unavailable" },
-  { label: "Mikvaos", tracked: true, has: (r) => r.mikvaos.status !== "unavailable" },
-  { label: "Hotels", tracked: true, has: (r) => r.accommodations.status !== "unavailable" },
-  { label: "Drivers, transport and airports", tracked: true, has: (r) => r.transport.status !== "unavailable" },
   { label: "Sources", tracked: true, has: (r) => r.cemeteries.some((c) => Boolean(c.sourceUrl)) },
   { label: "Verification status", tracked: true, has: (r) => r.cemeteries.some((c) => c.status === "verified") || SECTION_KEYS.some((k) => r[k].status !== "unavailable") },
   { label: "Last verified date", tracked: true, has: (r) => Boolean(r.lastChecked) || SECTION_KEYS.some((k) => Boolean(r[k].lastChecked)) },
-  // Not in the schema yet. Each needs somewhere to live before it can be
-  // filled in; until then it is honestly counted as absent.
-  { label: "Tefillos", tracked: false },
-  { label: "Shabbos arrangements", tracked: false },
-  { label: "Hospital", tracked: false },
-  { label: "Emergency services", tracked: false },
+];
+
+/** One entry per practical section, from the shared list. */
+const SECTION_FIELDS = DESTINATION_SECTIONS.map((section) => {
+  const legacy = LEGACY_RECORD_SECTIONS[section.key];
+  return legacy
+    ? { label: section.label, tracked: true, has: (r: DestinationRecord) => r[legacy].status !== "unavailable" }
+    : { label: section.label, tracked: false };
+});
+
+const FIELDS: Array<{ label: string; tracked: boolean; has?: (record: DestinationRecord) => boolean }> = [
+  ...CEMETERY_FIELDS,
+  ...SECTION_FIELDS,
+  // Not a section. Photos hang off the destination and the cemetery, and the
+  // static record has none.
   { label: "Photos", tracked: false },
 ];
 

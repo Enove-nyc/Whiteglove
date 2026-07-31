@@ -50,6 +50,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | 2. Simplified admin navigation | **Part** | sections and global "go to" search already existed. Added: breadcrumbs, a named back link, quick-add, recently visited. Still open: pinned sections, draft/published filters. |
 | 3. Admin dashboard homepage | **Part** | content totals and quick-add actions added, on top of the alerts, work panels and completeness queue already there. Still open: broken links, missing images, expired ads, API health, popular destinations/routes. |
 | Map (owner request, not in either scan) | **Done** | opens on everything the site holds — 287 places — instead of Kraków at 50 km. Things to do and places to stay added alongside kevarim, kosher food and airports. Counts per category for whatever area you are looking at. Markers are the logo's eight-point compass rose, shrinking at continent zoom so three hundred of them stay separable. **Open:** clustering, so a hundred places in one region become one pin with a number. |
+| 4. Complete destination manager | **Part** | thirteen sections instead of seven — Tefillos, Shabbos, hospital, emergency, kosher shops and parking now exist end to end, from one shared list that the editor, the completeness tracker and the public page all read. Each listing carries how far it has been checked, when, and where it came from. **Still open:** photos (the table exists; §7 is the library), and the completeness tracker still reads the built-in record rather than the database, so the eight new sections count as missing rather than being answerable. |
 | 8. Suggest-an-edit workflow | **Done** | Review side: a queue ordered oldest-waiting-first, filters by answer, a required reason for turning down or asking for more, append-only history, a link to the page it is about, and a reply draft the owner sends. **Directory submissions arrive on the same form the owner has**, field by field; the review shows only what would change and Accept writes the listing. Corrections to other kinds of content still arrive as prose. |
 
 ### Not started
@@ -57,7 +58,6 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | Section | Note |
 | --- | --- |
 
-| 4. Complete destination manager | Depends on the migration below — most of the listed fields have nowhere to live. |
 | 5. Cemetery and tzaddik management | Records exist; the separate reusable tzaddik record does not. |
 | 6. Searchable forms and address autocomplete | `AddressAutocomplete` and `AirportAutocomplete` exist and could be generalised. |
 | 7. Rich media library | |
@@ -105,6 +105,23 @@ writing the new fields — the destination manager (§4), the provider consent
 flags (scan 1 item 12), the photo library (§7) — is the next piece of work,
 and `lib/verification.ts` still counts Tefillos, Shabbos, Hospital, Emergency
 and Photos as untracked because the *record type it reads* has not changed yet.
+
+---
+
+## Known: how long an edit takes to appear
+
+Three different answers, now one. `/directory`, `/attractions`, `/kosher-stays`
+and `/map` render per request. The destination, city-guide and cemetery pages
+rebuild at most once a minute — measured, not assumed: with a sixty-second
+window an edit made after the build does appear.
+
+It used to be an hour on those three, while the admin promised "changes go
+live within a minute". Wrong by a factor of sixty, and the shape of a bug
+report that reads "the editor does not work".
+
+The difference between the two groups is real and worth remembering: a page
+whose reads are `cache: "no-store"` fetches is NOT refreshed by `revalidate`
+and needs `force-dynamic`; a page reading through Prisma is.
 
 ---
 

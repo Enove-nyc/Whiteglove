@@ -21,7 +21,18 @@ export function generateStaticParams() {
 }
 
 // Re-render at most hourly; admin edits also trigger on-demand revalidation.
-export const revalidate = 3600;
+// A minute, not an hour.
+//
+// This page shows listings the owner edits in the admin, and the admin says
+// "changes go live within a minute — no code, no redeploy." It was an hour,
+// so that promise was wrong by a factor of sixty and the owner would have
+// concluded the editor was broken.
+//
+// Measured rather than assumed: with a sixty-second window an edit made after
+// the build did appear. (That is not true of the pages whose reads are
+// `cache: "no-store"` fetches — those needed force-dynamic. Prisma reads are
+// not fetch-cached, so revalidation reaches them.)
+export const revalidate = 60;
 
 /**
  * Every guide says who is buried there, in the title.

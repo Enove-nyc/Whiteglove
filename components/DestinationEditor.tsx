@@ -11,23 +11,23 @@ import {
   saveDestinationAction,
   savePlaceAction,
 } from "@/app/admin/destinations/actions";
+import { sectionLabel, sectionOptions } from "@/lib/destination-sections";
 
 type EditorDestination = Destination & {
   contacts: Contact[];
   places: PracticalPlace[];
 };
 
-const CATEGORIES: Array<[string, string]> = [
-  ["ACCOMMODATION", "Accommodation"],
-  ["KOSHER_FOOD", "Kosher food"],
-  ["MINYAN", "Minyan"],
-  ["MIKVAH", "Mikvah"],
-  ["TRANSPORT", "Transport"],
-  ["AIRPORT", "Airport"],
-  ["DRIVER", "Driver"],
-];
+// The kinds of listing come from lib/destination-sections.ts, the same list
+// the completeness tracker counts and the public page renders. Seven of the
+// thirteen used to be typed out here, which is why a town could have a
+// hospital recorded nowhere and a Shabbos note recorded nowhere.
 
-const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(CATEGORIES);
+const HOW_CHECKED: Array<[string, string]> = [
+  ["NEEDS_VERIFICATION", "Not checked yet"],
+  ["VERIFIED", "Checked — details confirmed"],
+  ["UNAVAILABLE", "Could not be confirmed"],
+];
 
 const STATUSES: Array<[string, string]> = [
   ["PUBLISHED", "Published — visible on the site"],
@@ -241,7 +241,18 @@ function PlaceFields({ place }: { place?: PracticalPlace }) {
     <>
       <Group label="Name & type">
         <Field label="Name" name="name" defaultValue={place?.name} placeholder="e.g. Hotel Sanz" />
-        <SelectField label="Type" name="category" options={CATEGORIES} defaultValue={place?.category} />
+        <label className="block">
+          <span className={captionClass}>Type</span>
+          {/* Grouped, because thirteen in a flat list is a list nobody reads
+              to the bottom of — and the six added last are at the bottom. */}
+          <select name="category" defaultValue={place?.category ?? "KOSHER_FOOD"} className={inputClass}>
+            {sectionOptions().map((group) => (
+              <optgroup key={group.group} label={group.group}>
+                {group.options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
       </Group>
       <Group label="How to reach them">
         <Field label="Phone" name="phone" defaultValue={place?.phone} placeholder="+48 ..." />
@@ -258,6 +269,21 @@ function PlaceFields({ place }: { place?: PracticalPlace }) {
       </Group>
       <div className="mt-4">
         <TextArea label="Notes" name="notes" defaultValue={place?.notes} placeholder="Anything else visitors should know" rows={2} />
+      </div>
+      <Group label="How far this has been checked">
+        {/* Separate from Visibility on purpose. Visibility is "is this live";
+            this is "how much of it do we stand behind", and it is what becomes
+            "Verified on 3 March 2026" on the page. */}
+        <SelectField label="Checked?" name="verification" options={HOW_CHECKED} defaultValue={place?.verification} />
+        <Field
+          label="Date checked"
+          name="lastVerified"
+          type="date"
+          defaultValue={place?.lastVerified ? place.lastVerified.toISOString().slice(0, 10) : ""}
+        />
+      </Group>
+      <div className="mt-4">
+        <Field label="Where this came from" name="sourceUrl" defaultValue={place?.sourceUrl} placeholder="A link, or who told you" />
       </div>
       <div className="mt-4 sm:max-w-sm">
         <SelectField label="Visibility" name="status" options={STATUSES} defaultValue={place?.status} />
@@ -337,7 +363,7 @@ export default function DestinationEditor({ destination }: { destination: Editor
       <section>
         <SectionHeader
           eyebrow="Listings"
-          title="Hotels, food, minyanim, mikvaos, transport"
+          title="Everything practical about this place"
           hint="Everything practical around the visit. Only Published listings appear to visitors."
           count={destination.places.length}
         />
@@ -346,7 +372,7 @@ export default function DestinationEditor({ destination }: { destination: Editor
             <Card
               key={place.id}
               title={place.name || "Listing"}
-              badge={CATEGORY_LABEL[place.category] ?? place.category}
+              badge={sectionLabel(place.category)}
               footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label="Delete listing" />}
             >
               <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }}>

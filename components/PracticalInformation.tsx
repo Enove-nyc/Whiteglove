@@ -3,22 +3,30 @@ import KosherNearby from "@/components/KosherNearby";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 import { trustLabel, type TrustLabel } from "@/lib/verification";
+import { DESTINATION_SECTIONS, LEGACY_RECORD_SECTIONS } from "@/lib/destination-sections";
 import type { PracticalPlace } from "@prisma/client";
 
 type SectionKey = "accommodations" | "kosherFood" | "minyanim" | "mikvaos" | "transport";
 
-const sections: Array<{
-  yiddish: string;
-  english: string;
-  key: SectionKey;
-  categories: readonly string[];
-}> = [
-  { yiddish: "אכסניא", english: "Accommodations", key: "accommodations", categories: ["ACCOMMODATION"] },
-  { yiddish: "כשרות עסן", english: "Kosher food", key: "kosherFood", categories: ["KOSHER_FOOD"] },
-  { yiddish: "מנינים", english: "Minyanim", key: "minyanim", categories: ["MINYAN"] },
-  { yiddish: "מקוה", english: "Mikvaos", key: "mikvaos", categories: ["MIKVAH"] },
-  { yiddish: "טראַנספארט", english: "Transport & drivers", key: "transport", categories: ["TRANSPORT", "DRIVER", "AIRPORT"] },
-];
+/**
+ * The sections of a destination page, from the one shared list.
+ *
+ * This component used to carry its own copy of five, which meant a hospital
+ * or a Shabbos note recorded in the admin had no heading to appear under and
+ * was silently dropped on the way to the page.
+ *
+ * Five of them also have a section on the built-in record — a status, a note,
+ * a last-checked date — from before the database existed. Those keep it, so a
+ * town with nothing in the database still says "being checked" rather than
+ * going blank. The rest have no such record, so they appear only when there
+ * is something real to show.
+ */
+const sections = DESTINATION_SECTIONS.map((section) => ({
+  yiddish: section.yiddish,
+  english: section.label,
+  key: LEGACY_RECORD_SECTIONS[section.key] as SectionKey | undefined,
+  categories: section.key === "TRANSPORT" ? ["TRANSPORT", "DRIVER", "AIRPORT"] : [section.key],
+}));
 
 function Detail({ section }: { section: PracticalSection }) {
   if (section.entries.length) {
@@ -115,10 +123,24 @@ export default function PracticalInformation({
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {sections.map(({ yiddish, english, key, categories }) => {
           const dbPlaces = places.filter((place) => categories.includes(place.category));
+          // A section with no built-in record and nothing recorded is not a
+          // section yet. Printing an empty heading for it would tell a
+          // visitor there is a hospital section and then say nothing in it.
+          if (!key && dbPlaces.length === 0) return null;
           return (
-            <article key={key} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-              <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{yiddish}</h3>
-              <p className="mt-1 text-sm text-stone-500">{english}</p>
+            <article key={english} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+              {/* Yiddish where there is a heading for it. The sections added
+                  in July 2026 have none yet, and an invented translation is
+                  wrong in a way only the reader can see — so English alone
+                  until the owner supplies them. */}
+              {yiddish ? (
+                <>
+                  <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{yiddish}</h3>
+                  <p className="mt-1 text-sm text-stone-500">{english}</p>
+                </>
+              ) : (
+                <h3 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{english}</h3>
+              )}
               {dbPlaces.length ? (
                 <>
                   <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">Checked information</p>
@@ -126,13 +148,13 @@ export default function PracticalInformation({
                     {dbPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
                   </div>
                 </>
-              ) : (
+              ) : key ? (
                 <>
                   <Status section={record[key]} />
                   <Detail section={record[key]} />
                   {record[key].lastChecked && <p className="mt-4 text-xs uppercase tracking-[0.12em] text-stone-500">Last checked: {record[key].lastChecked}</p>}
                 </>
-              )}
+              ) : null}
             </article>
           );
         })}

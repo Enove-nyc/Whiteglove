@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import DirectoryListingForm from "@/components/DirectoryListingForm";
-import type { PublicProvider } from "@/lib/directory";
+import type { PublicProvider } from "@/data/directory";
 import type { DirectoryDraft } from "@/lib/directory-fields";
 
 /**

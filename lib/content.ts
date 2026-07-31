@@ -13,28 +13,22 @@ export type DestinationContent = {
   places: PracticalPlace[];
 };
 
+import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
+
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
-// Category order for public display (matches the practical-guide sections).
-export const PLACE_CATEGORY_ORDER = [
-  "ACCOMMODATION",
-  "KOSHER_FOOD",
-  "MINYAN",
-  "MIKVAH",
-  "TRANSPORT",
-  "AIRPORT",
-  "DRIVER",
-] as const;
+// The order and headings come from lib/destination-sections.ts — the same
+// list the admin editor offers and the completeness tracker counts.
+//
+// This used to be a fourth copy with seven entries, and groupPlacesByCategory
+// filters to it: a hospital or a Shabbos note recorded in the admin was
+// silently dropped on the way to the page. Nobody would have seen an error;
+// the section simply would not have been there.
+export const PLACE_CATEGORY_ORDER = DESTINATION_SECTIONS.map((section) => section.key);
 
-export const PLACE_CATEGORY_LABELS: Record<string, { english: string; yiddish: string }> = {
-  ACCOMMODATION: { english: "Accommodations", yiddish: "אכסניא" },
-  KOSHER_FOOD: { english: "Kosher food", yiddish: "כשרות עסן" },
-  MINYAN: { english: "Minyanim", yiddish: "מנינים" },
-  MIKVAH: { english: "Mikvaos", yiddish: "מקוה" },
-  TRANSPORT: { english: "Transport & drivers", yiddish: "טראַנספארט" },
-  AIRPORT: { english: "Airports", yiddish: "פליגפעלד" },
-  DRIVER: { english: "Drivers", yiddish: "דרייווערס" },
-};
+export const PLACE_CATEGORY_LABELS: Record<string, { english: string; yiddish?: string }> = Object.fromEntries(
+  DESTINATION_SECTIONS.map((section) => [section.key, { english: section.label, yiddish: section.yiddish }]),
+);
 
 /**
  * Published contacts + practical places for one destination slug.

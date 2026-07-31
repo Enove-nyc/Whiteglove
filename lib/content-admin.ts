@@ -6,7 +6,7 @@
 // message instead of a stack trace.
 
 import { randomUUID } from "node:crypto";
-import type { ContentStatus, PlaceCategory, ProviderCategory } from "@prisma/client";
+import type { ContentStatus, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -121,6 +121,10 @@ export type PlaceFields = {
   hours: string | null;
   notes: string | null;
   status: ContentStatus;
+  /** How far this listing has been checked — not the same as whether it is live. */
+  verification: VerificationStatus;
+  sourceUrl: string | null;
+  lastVerified: Date | null;
 };
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {

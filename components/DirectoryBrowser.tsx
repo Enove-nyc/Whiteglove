@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import DirectoryCorrectionButton from "@/components/DirectoryCorrectionButton";
 import { responseNote, verifiedLabel } from "@/lib/provider-contact";
-import { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER, type ProviderCat, type PublicProvider } from "@/lib/directory";
+// From the data file, not the read layer: this runs in the browser, and
+// lib/directory.ts reaches for Prisma and Redis.
+import { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER, type ProviderCat, type PublicProvider } from "@/data/directory";
 
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 const waHref = (value: string) => `https://wa.me/${value.replace(/[^\d]/g, "")}`;
