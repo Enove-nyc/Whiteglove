@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { type Collaborator, ROLE_BLURB, ROLE_LABELS, TRIP_ROLES, type TripRole } from "@/lib/trip-roles";
 
 // Owner-side sharing controls for the itinerary planner: create a public link,
 // add people by email (they get emailed the link and see the trip in their
@@ -9,7 +10,10 @@ import { useEffect, useState } from "react";
 export default function ShareItineraryPanel() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [url, setUrl] = useState<string | null>(null);
-  const [collaborators, setCollaborators] = useState<string[]>([]);
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  // No default. Whoever is sharing decides what this person can do, in front
+  // of them — see lib/trip-roles.ts.
+  const [role, setRole] = useState<TripRole | "">("");
   const [emailInput, setEmailInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -56,7 +60,7 @@ export default function ShareItineraryPanel() {
     const email = emailInput.trim();
     if (!email) { setError("Enter an email address."); return; }
     setBusy(true);
-    const res = await fetch("/api/account/itinerary/collaborators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+    const res = await fetch("/api/account/itinerary/collaborators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, role }) });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) { setError(data.error || "Could not add that person."); return; }
@@ -64,6 +68,22 @@ export default function ShareItineraryPanel() {
     setUrl((u) => u ?? data.url ?? null);
     setEmailInput("");
     setNote(data.emailed ? `Added ${email} — we emailed them the link.` : `Added ${email}. (We couldn't send the email, but they'll see it in their account and you can send them the link.)`);
+  }
+
+  /** Change what somebody already on the trip may do. Same door as adding. */
+  async function setPersonRole(person: string, next: TripRole) {
+    setError(""); setNote("");
+    setBusy(true);
+    const res = await fetch("/api/account/itinerary/collaborators", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: person, role: next }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (!res.ok) { setError(data.error || "Could not change that."); return; }
+    setCollaborators(data.collaborators ?? []);
+    setNote(`${person} — ${ROLE_LABELS[next].toLowerCase()}.`);
   }
 
   async function removePerson(email: string) {
@@ -115,14 +135,38 @@ export default function ShareItineraryPanel() {
         <p className="mt-1 text-xs text-stone-500">They&apos;ll get an email with the link, and the trip will appear under &ldquo;Shared with you&rdquo; when they log in.</p>
         <form onSubmit={addPerson} className="mt-2 flex flex-wrap items-center gap-2">
           <input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="name@example.com" className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)]" />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as TripRole | "")}
+            aria-label="What they can do"
+            className="rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)]"
+          >
+            <option value="">What can they do?</option>
+            {TRIP_ROLES.map((r) => (
+              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+            ))}
+          </select>
           <button type="submit" disabled={busy} className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">{busy ? "…" : "Add person"}</button>
         </form>
+        {role && <p className="mt-2 text-xs leading-5 text-stone-500">{ROLE_BLURB[role]}</p>}
         {collaborators.length > 0 && (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {collaborators.map((email) => (
-              <li key={email} className="inline-flex items-center gap-2 rounded-full border border-[var(--gold-light)] bg-white px-3 py-1 text-xs text-[var(--navy)]">
-                {email}
-                <button type="button" onClick={() => removePerson(email)} className="text-stone-400 hover:text-red-700" aria-label={`Remove ${email}`}>✕</button>
+          <ul className="mt-3 space-y-2">
+            {collaborators.map((person) => (
+              <li key={person.person} className="flex flex-wrap items-center gap-2 border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)]">
+                <span className="min-w-0 flex-1 truncate">{person.person}</span>
+                {/* Changing somebody's role is the same request as adding them,
+                    so this is also how an editor is put back to a viewer. */}
+                <select
+                  value={person.role}
+                  aria-label={`What ${person.person} can do`}
+                  onChange={(e) => void setPersonRole(person.person, e.target.value as TripRole)}
+                  className="rounded-md border border-[var(--gold-light)] bg-white px-2 py-1 text-xs text-[var(--navy)]"
+                >
+                  {TRIP_ROLES.map((r) => (
+                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => removePerson(person.person)} className="px-1 text-stone-400 hover:text-red-700" aria-label={`Remove ${person.person}`}>✕</button>
               </li>
             ))}
           </ul>

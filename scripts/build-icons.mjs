@@ -25,11 +25,20 @@
  * strokes grow outward without softening — by more for the smaller sizes. The
  * drawing keeps its shape; only its weight changes.
  *
- * THE TAB ICON IS FRAMED TIGHTER than the app icons, and deliberately: it drops
- * the "N" above the compass, which is the sparsest part of the artwork and the
- * first thing to disappear anyway. Losing it lets everything else be bigger.
- * The app icons — the ones drawn at 180 and 512 pixels on a home screen — keep
- * the whole mark, because at that size there is room for all of it.
+ * THE WHOLE MARK, EVERYWHERE. An earlier version cropped the "N" above the
+ * compass off the tab icon, on the reasoning that it is the sparsest part and
+ * the first to disappear anyway, and that losing it lets everything else be
+ * bigger. It does — and it also stops the icon being the logo. Every size now
+ * carries the whole thing, and the weight is the only thing that changes.
+ *
+ * WHAT EACH SIZE IS ACTUALLY FOR. app/icon.png is 180 pixels and is what a
+ * modern browser takes; at that size the artwork needs almost nothing done to
+ * it and is the mark exactly as drawn. The .ico is the fallback a browser asks
+ * for before it has parsed any HTML. Its 32-pixel frame is what a 2x display
+ * really draws for a 16-pixel favicon, and that one reads. The 16-pixel frame
+ * is soft however it is treated — a drawing this fine cannot resolve in 256
+ * pixels, and no amount of weight changes that. It is there so an old display
+ * gets the mark rather than nothing.
  */
 import { writeFileSync } from "node:fs";
 import { deflateSync } from "node:zlib";
@@ -40,23 +49,14 @@ const GOLD = [0xa8, 0x84, 0x46];
 /** The home-screen tile. iOS ignores transparency and composites onto black. */
 const TILE = [0x14, 0x21, 0x3d];
 
-/** How much of the top is the "N" and its loop. */
-const N_BAND = 0.2;
-
 /**
  * The artwork as gold ink with a real alpha, optionally fattened and cropped.
  *
  * `dilate` is in source pixels, so the same number means the same amount of
  * growth whatever it is later shrunk to.
  */
-async function ink({ dilate = 0, dropN = false } = {}) {
-  const meta = await sharp(SRC).metadata();
-  const top = dropN ? Math.round(meta.height * N_BAND) : 0;
-  const base = dropN
-    ? sharp(SRC).extract({ left: 0, top, width: meta.width, height: meta.height - top })
-    : sharp(SRC);
-
-  const { data, info } = await base.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+async function ink({ dilate = 0 } = {}) {
+  const { data, info } = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
   let a = new Uint8Array(w * h);
   for (let i = 0, p = 0; i < data.length; i += 4, p++) a[p] = data[i + 3];
@@ -105,15 +105,15 @@ const square = (img, size, background = clear) => img.resize(size, size, { fit: 
  * How hard each frame is pushed.
  *
  * More weight the smaller it gets, because the same stroke has fewer pixels to
- * land on. Sixteen is the hardest: even flattened this far the drawing is at
- * the edge of what a sixteen-pixel square can hold, and it is included because
- * a display that asks for it should get the mark rather than nothing.
+ * land on — and no more than that. Past a point the strokes merge and the
+ * drawing stops being the drawing, which is worse than being faint: a soft
+ * version of the logo is still the logo, and a blob is not.
  */
 const ICO_FRAMES = [
-  { size: 16, dilate: 12 },
-  { size: 32, dilate: 7 },
-  { size: 48, dilate: 5 },
-  { size: 64, dilate: 4 },
+  { size: 16, dilate: 14 },
+  { size: 32, dilate: 8 },
+  { size: 48, dilate: 7 },
+  { size: 64, dilate: 5 },
 ];
 
 function crc32(buf) {
@@ -161,7 +161,7 @@ function png(raw, size) {
 export async function buildIco() {
   const frames = [];
   for (const { size, dilate } of ICO_FRAMES) {
-    const raw = await square(await ink({ dilate, dropN: true }), size).raw().toBuffer();
+    const raw = await square(await ink({ dilate }), size).raw().toBuffer();
     frames.push({ size, data: png(raw, size) });
   }
   const header = Buffer.alloc(6);
@@ -189,9 +189,11 @@ if (process.argv[1]?.endsWith("build-icons.mjs")) {
   writeFileSync("app/favicon.ico", await buildIco());
   console.log(`app/favicon.ico — ${ICO_FRAMES.map((f) => f.size).join(", ")}px`);
 
-  // The tab's own PNG, which a modern browser prefers over the .ico.
-  await square(await ink({ dilate: 4, dropN: true }), 96).png().toFile("app/icon.png");
-  console.log("app/icon.png — 96px");
+  // The tab's own PNG, which a modern browser prefers over the .ico. Large
+  // enough that the artwork needs almost nothing done to it — this one is the
+  // mark as drawn, and it is the one most people will actually see.
+  await square(await ink({ dilate: 3 }), 180).png().toFile("app/icon.png");
+  console.log("app/icon.png — 180px");
 
   // Home-screen icons. Opaque on purpose: iOS does not honour transparency in
   // an apple-touch-icon, it composites onto black, and a gold mark on black is
