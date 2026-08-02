@@ -11,7 +11,7 @@
 // not a vague version of "Heathrow"; it is a different and usually better
 // question, and this file is what tells the two apart.
 
-import { AIRPORTS, METRO_AREAS } from "@/data/airports";
+import { AIRPORTS, type Airport, METRO_AREAS } from "@/data/airports";
 
 export type Endpoint = {
   /** What goes to Duffel: an airport code, or a metropolitan code. */
@@ -93,15 +93,25 @@ export function resolveEndpoint(input: unknown): Endpoint | null {
  * Only where the city genuinely has more than one airport — offering
  * "Kraków — all airports" for a city with one would be noise.
  */
-export function metroMatches(query: string): Array<{ code: string; label: string; airports: string[] }> {
+export function metroMatches(
+  query: string,
+  // The lists to search. Default to the built-in ones, so every existing
+  // caller is unchanged; the airport picker passes the merged lists so groups
+  // the owner added are offered too.
+  airports: Airport[] = AIRPORTS,
+  metros: Record<string, { label: string; country: string }> = METRO_AREAS,
+): Array<{ code: string; label: string; airports: string[] }> {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  return Object.entries(METRO_AREAS)
+  const inGroup = (code: string) =>
+    airports.filter((a) => a.cityCode?.toUpperCase() === code.toUpperCase()).map((a) => a.code);
+  return Object.entries(metros)
     .filter(([code, area]) => {
-      const airports = airportsInMetro(code);
-      if (airports.length < 2) return false;
-      const haystack = `${code} ${area.label} ${area.country} ${airports.join(" ")}`.toLowerCase();
-      return haystack.includes(q);
+      const inside = inGroup(code);
+      // A group holding one airport is a duplicate row saying the same thing
+      // twice, so it is never offered — see lib/airport-admin.ts.
+      if (inside.length < 2) return false;
+      return `${code} ${area.label} ${area.country} ${inside.join(" ")}`.toLowerCase().includes(q);
     })
-    .map(([code, area]) => ({ code, label: area.label, airports: airportsInMetro(code) }));
+    .map(([code, area]) => ({ code, label: area.label, airports: inGroup(code) }));
 }
