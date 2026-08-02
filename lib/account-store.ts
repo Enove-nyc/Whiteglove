@@ -1,4 +1,5 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
+import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
 import { passwordProblem } from "@/lib/password-rules";
@@ -769,7 +770,12 @@ export async function getSharedItineraryByShareId(shareId: string) {
   if (!ownerEmail) return null;
   const [data, record] = await Promise.all([getAccountData(ownerEmail), getAccountRecord(ownerEmail)]);
   if (!data.itinerary) return null;
-  return { itinerary: data.itinerary, ownerName: record?.name, ownerEmail };
+  // Boarding passes and tickets do not leave the account they were uploaded
+  // to. Serving one already checks the owner, so the reference alone would
+  // fetch nothing — but stripping it here means the person holding the link is
+  // not even told a pass exists. Two answers to the same question, because
+  // this is the one that costs somebody their flight if it is wrong.
+  return { itinerary: withoutAttachments(data.itinerary), ownerName: record?.name, ownerEmail };
 }
 
 async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {

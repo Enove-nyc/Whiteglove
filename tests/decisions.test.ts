@@ -6,9 +6,10 @@ import { DEFAULT_FEATURED_NOTE, FEATURED_REASONS, featuredDisclosure, featuredRe
 // quietly reverted by a later edit.
 
 describe("which site this is", () => {
-  it("names White Glove, not the domain that only redirects here", () => {
-    // The terms and the privacy policy both named enovenyc.com — a different
-    // business, and the wrong answer to "who is holding my data".
+  it("names White Glove and nothing else", () => {
+    // The terms and the privacy policy once named a different business's
+    // domain — the wrong answer to "who is holding my data". That domain has
+    // since been given up; the assertion stays so it cannot come back.
     assert.equal(SITE_DOMAIN, "whitegloveitineraries.com");
     assert.equal(SITE_NAME, "White Glove Itineraries");
     assert.ok(!SITE_DOMAIN.includes("enove"));

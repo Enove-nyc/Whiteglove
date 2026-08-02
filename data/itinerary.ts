@@ -4,6 +4,23 @@
 import { AIRPORTS } from "@/data/airports";
 import { coordinatesToPoint } from "@/data/route-utils";
 
+/**
+ * What an itinerary holds about a file, which is deliberately not the file.
+ *
+ * Structural rather than imported from lib/, the same as everything else here
+ * — this file is the day-by-day arithmetic and holds no knowledge of stores,
+ * uploads or who may read what.
+ */
+export type ItinAttachment = {
+  id: string;
+  kind: string;
+  name: string;
+  contentType: string;
+  bytes: number;
+  addedAt: string;
+  note?: string;
+};
+
 export type LodgingType = "hotel" | "overnight-transit" | "other";
 
 export type ItinLodging = {
@@ -25,6 +42,17 @@ export type ItinLodging = {
    * thing to find on a phone with one bar of signal.
    */
   confirmation?: string;
+  /**
+   * Boarding passes, tickets, booking confirmations.
+   *
+   * A reference only — a name, a size and an id. The file itself is kept
+   * against the account that uploaded it (lib/attachment-store.ts) and served
+   * only to them, because an itinerary is saved, shared and printed as
+   * ordinary JSON and a pass baked into it would travel everywhere the trip
+   * travels. Stripped entirely from anything that leaves the account; see
+   * withoutAttachments in lib/attachments.ts.
+   */
+  attachments?: ItinAttachment[];
 };
 
 /**
@@ -68,6 +96,17 @@ export type ItinFlight = {
   bookedOnSite?: boolean;
   /** The airline's booking reference. See ItinLodging.confirmation. */
   confirmation?: string;
+  /**
+   * Boarding passes, tickets, booking confirmations.
+   *
+   * A reference only — a name, a size and an id. The file itself is kept
+   * against the account that uploaded it (lib/attachment-store.ts) and served
+   * only to them, because an itinerary is saved, shared and printed as
+   * ordinary JSON and a pass baked into it would travel everywhere the trip
+   * travels. Stripped entirely from anything that leaves the account; see
+   * withoutAttachments in lib/attachments.ts.
+   */
+  attachments?: ItinAttachment[];
 };
 
 /** "JFK → WAW → KRK" — the whole journey, connections included. */
@@ -109,6 +148,17 @@ export type ItinActivity = {
   country?: string;
   notes?: string;
   bookedOnSite?: boolean;
+  /**
+   * Boarding passes, tickets, booking confirmations.
+   *
+   * A reference only — a name, a size and an id. The file itself is kept
+   * against the account that uploaded it (lib/attachment-store.ts) and served
+   * only to them, because an itinerary is saved, shared and printed as
+   * ordinary JSON and a pass baked into it would travel everywhere the trip
+   * travels. Stripped entirely from anything that leaves the account; see
+   * withoutAttachments in lib/attachments.ts.
+   */
+  attachments?: ItinAttachment[];
 };
 
 /**
