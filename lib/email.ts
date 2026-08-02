@@ -273,6 +273,48 @@ export async function sendItineraryShareEmail(to: string, opts: { fromName: stri
   return result.ok;
 }
 
+/**
+ * "Somebody left a note on your trip."
+ *
+ * WHY THIS EXISTS. Notes shipped with nothing to tell anybody about them: a
+ * person could leave a question on a trip and the only way the owner would
+ * find it was by happening to open the trip. That makes the whole thing a
+ * suggestion box nobody empties.
+ *
+ * BEST EFFORT, ALWAYS. The note is saved before this is called and stays saved
+ * whether or not it sends. Losing somebody's question because an email
+ * provider was down would be the worst possible trade.
+ *
+ * The note's own words are in the email, because "you have a new note" makes
+ * somebody open a page to find out something that would have fitted in the
+ * sentence they just read.
+ */
+export async function sendTripNoteEmail(
+  to: string,
+  opts: { fromName: string; tripTitle: string; note: string; about?: string; url: string },
+): Promise<boolean> {
+  const who = escapeHtml(opts.fromName || "Somebody");
+  const title = escapeHtml(opts.tripTitle || "your trip");
+  const note = escapeHtml(opts.note);
+  const url = escapeHtml(opts.url);
+  const on = opts.about ? ` on ${escapeHtml(opts.about)}` : "";
+  const result = await postResend(
+    {
+      to,
+      subject: `${opts.fromName || "Somebody"} left a note on "${opts.tripTitle}"`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} left a note${on}</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">On <strong>${title}</strong>:</p>` +
+        `<blockquote style="font-family:Arial,sans-serif;font-size:14px;color:#333;border-left:4px solid #aa8b52;margin:0;padding:8px 16px;">${note}</blockquote>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open the trip →</a></p>`,
+      text: `${opts.fromName || "Somebody"} left a note${opts.about ? ` on ${opts.about}` : ""} on "${opts.tripTitle}":\n\n${opts.note}\n\nOpen the trip: ${opts.url}`,
+    },
+    to,
+    "trip note",
+  );
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {
