@@ -2,7 +2,9 @@
 
 import FormDateField from "@/components/FormDateField";
 import PhotoManager from "@/components/PhotoManager";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useFormDraft } from "@/components/useFormDraft";
+import { describeDraft, draftKey, worthOffering } from "@/lib/drafts";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import type { Contact, Destination, Photo, PracticalPlace } from "@prisma/client";
 import {
@@ -137,21 +139,87 @@ function Hidden({ values }: { values: Record<string, string> }) {
 
 /* ---- action-bound forms ---------------------------------------------- */
 
+/**
+ * Every form in this editor, with what was typed kept until it is saved.
+ *
+ * The save happens on the button and not before, which is right. It also means
+ * an overview somebody spent twenty minutes on lives nowhere until they press
+ * it — one closed tab and it is gone with nothing to say it existed. So the
+ * typing is kept in their own browser, offered back when they return, and
+ * thrown away the moment a save succeeds.
+ */
 function ActionForm({
   action,
   submitLabel,
   hidden,
+  draftName,
   children,
 }: {
   action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
   submitLabel: string;
   hidden: Record<string, string>;
+  /** Names this form's draft. Omit and nothing is kept. */
+  draftName?: string;
   children?: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
+  const [restored, setRestored] = useState(false);
+  // Keyed by the record as well as the form, so two towns never share one.
+  const { draft, now, watch, remember, restoreInto, forget } = useFormDraft(
+    draftKey(draftName, hidden.slug, hidden.contactId ?? hidden.placeId ?? ""),
+  );
+  const offer = Boolean(draftName) && !restored && worthOffering(draft, now);
+
+  // Saved means there is nothing left to rescue. Writing to storage is
+  // updating an outside system, which is what an effect is for.
+  useEffect(() => {
+    if (state?.ok) forget();
+  }, [state, forget]);
+
+  // Leaving with something unsaved should not be silent — the same warning
+  // the page editor already gives.
+  useEffect(() => {
+    if (!draft) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [draft]);
+
   return (
-    <form action={formAction}>
+    <form ref={watch} action={formAction} onInput={() => draftName && remember()}>
       <Hidden values={hidden} />
+
+      {offer && draft && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3">
+          <p className="text-sm leading-6 text-stone-700">
+            You typed something here {describeDraft(draft, now)} and did not save it. It is still on this
+            computer.
+          </p>
+          <span className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                restoreInto();
+                setRestored(true);
+              }}
+              className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white"
+            >
+              Put it back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                forget();
+                setRestored(true);
+              }}
+              className="min-h-11 rounded-md border border-[var(--gold-light)] px-3 text-xs font-bold uppercase tracking-[0.1em] text-stone-500"
+            >
+              Throw it away
+            </button>
+          </span>
+        </div>
+      )}
+
       {children}
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button
@@ -163,6 +231,10 @@ function ActionForm({
         </button>
         {state && (
           <span className={`text-sm font-semibold ${state.ok ? "text-emerald-700" : "text-red-700"}`}>{state.message}</span>
+        )}
+        {/* Quiet, and only while there is something to lose. */}
+        {draft && !offer && !state?.ok && (
+          <span className="text-xs text-stone-400">Kept on this computer until you save.</span>
         )}
       </div>
     </form>
@@ -328,7 +400,7 @@ export default function DestinationEditor({ destination }: { destination: Editor
       <section>
         <SectionHeader eyebrow={`Editing · ${destination.country}`} title={destination.city} hint="The headline details shown at the top of this destination's page." />
         <div className="rounded-lg border border-[var(--gold-light)] bg-white p-6 shadow-sm sm:p-7">
-          <ActionForm action={saveDestinationAction} submitLabel="Save details" hidden={{ slug }}>
+          <ActionForm action={saveDestinationAction} submitLabel="Save details" hidden={{ slug }} draftName="destination">
             <Group label="Names">
               <Field label="City name" name="city" defaultValue={destination.city} />
               <Field label="Yiddish name" name="yiddishCity" defaultValue={destination.yiddishCity} />
@@ -355,13 +427,17 @@ export default function DestinationEditor({ destination }: { destination: Editor
               badge="Contact"
               footer={<DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" />}
             >
-              <ActionForm action={saveContactAction} submitLabel="Save contact" hidden={{ ...base, contactId: contact.id }}>
+              <ActionForm action={saveContactAction} submitLabel="Save contact" hidden={{ ...base, contactId: contact.id }} draftName="contact">
                 <ContactFields contact={contact} />
               </ActionForm>
             </Card>
           ))}
+          {/* The one most worth keeping: a contact being typed for the first
+              time has nothing in the database to fall back on. Its key has no
+              contact id in it, which is exactly right — there is no contact
+              yet, and it cannot collide with a saved one. */}
           <Card title="Add a contact" accent>
-            <ActionForm action={saveContactAction} submitLabel="Add contact" hidden={base}>
+            <ActionForm action={saveContactAction} submitLabel="Add contact" hidden={base} draftName="new-contact">
               <ContactFields />
             </ActionForm>
           </Card>
@@ -394,7 +470,7 @@ export default function DestinationEditor({ destination }: { destination: Editor
               badge={sectionLabel(place.category)}
               footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label="Delete listing" />}
             >
-              <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }}>
+              <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }} draftName="listing">
                 <PlaceFields place={place} />
               </ActionForm>
               {/* Pictures of this one listing. Below the fields rather than
@@ -412,7 +488,7 @@ export default function DestinationEditor({ destination }: { destination: Editor
             </Card>
           ))}
           <Card title="Add a listing" accent>
-            <ActionForm action={savePlaceAction} submitLabel="Add listing" hidden={base}>
+            <ActionForm action={savePlaceAction} submitLabel="Add listing" hidden={base} draftName="new-listing">
               <PlaceFields />
             </ActionForm>
           </Card>
