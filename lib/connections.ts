@@ -1,0 +1,312 @@
+/**
+ * Every outside thing this site is connected to, and what stops without it.
+ *
+ * There are two dozen environment variables behind this site and no screen
+ * that said which were set. That is a bad way to run anything and a worse way
+ * to go live: a missing key here does not throw, it makes one feature quietly
+ * stop working. Nobody notices that flight-number lookup is dead until
+ * somebody types LO282 and gets nothing back.
+ *
+ * SET IS NOT THE SAME AS WORKING, and this file never pretends otherwise. All
+ * it can see is whether a variable has a value. Whether the key is valid, the
+ * account is in credit, or the service is up is a different question, and one
+ * only a real request can answer — which is what the test buttons beside this
+ * are for. Saying "connected" from the presence of a string would be the exact
+ * kind of false comfort a launch checklist must not give.
+ *
+ * WHAT BREAKS, NOT WHAT IS MISSING. "AERODATABOX_API_KEY is not set" tells
+ * nobody anything. "A traveller typing a flight number gets nothing back" is
+ * the same fact in a form somebody can decide about.
+ *
+ * THE VALUE IS NEVER READ HERE. Only whether it is empty. Nothing in this file
+ * can leak a secret into a page, because nothing in it ever holds one.
+ */
+
+/** How much of the site goes with it. */
+export type Weight =
+  /** The site cannot do its job. */
+  | "essential"
+  /** A whole feature stops. The rest of the site is fine. */
+  | "feature"
+  /** Something gets worse, quietly. Nothing stops. */
+  | "nicety";
+
+export type Connection = {
+  /** The variables that make this work. All of them are needed. */
+  vars: string[];
+  what: string;
+  /** What a person loses. Written as the consequence, not as the cause. */
+  without: string;
+  weight: Weight;
+  /** Where to go and get one, when it is not obvious. */
+  where?: string;
+};
+
+/**
+ * Every connection, in the order somebody setting the site up would want them.
+ *
+ * A variable the code reads and this list does not name is a connection nobody
+ * can see. tests/connections.test.ts reads the source and fails on one, so a
+ * new integration added later cannot be invisible.
+ */
+export const CONNECTIONS: Connection[] = [
+  {
+    vars: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    what: "The private store. Accounts, trips, notes, uploads, the admin's own settings.",
+    without:
+      "Nobody can make an account or save a trip, no picture can be uploaded, and every setting on these screens falls back to what is written in the code.",
+    weight: "essential",
+    where: "Upstash — a free Redis database.",
+  },
+  {
+    vars: ["DATABASE_URL"],
+    what: "The content database. Towns, kevarim, listings, shomer numbers.",
+    without: "The admin cannot edit any destination, and the public pages show only what is built into the code.",
+    weight: "essential",
+    where: "Neon — a free Postgres database.",
+  },
+  {
+    vars: ["ADMIN_PASSWORD"],
+    what: "The shared password for the admin.",
+    without: "Nobody can get into the admin except a named administrator signing in from their own account.",
+    weight: "essential",
+  },
+  {
+    vars: ["WHITE_GLOVE_SESSION_SECRET"],
+    what: "What signs the session cookies.",
+    without:
+      "The admin password is used instead, which works — but changing that password then signs everybody out, including travellers who have nothing to do with the admin.",
+    weight: "feature",
+  },
+  {
+    vars: ["NEXT_PUBLIC_SITE_URL"],
+    what: "This deployment's own address.",
+    without:
+      "Every page's canonical link and share image is relative, so a link posted to WhatsApp shows no picture and search engines may treat the preview deployments as copies of the site.",
+    weight: "feature",
+    where: "Set it to https://whitegloveitineraries.com.",
+  },
+  {
+    vars: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],
+    what: "Sending email.",
+    without:
+      "No verification code, no password reset, no share invitation, and no word to you when somebody writes in or leaves a note on a trip. Accounts still work; the emails simply never arrive.",
+    weight: "feature",
+    where: "Resend.",
+  },
+  {
+    vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
+    what: "Where messages to you are sent.",
+    without: "Contact messages and suggestions are still saved to the admin, but nothing lands in your inbox.",
+    weight: "feature",
+  },
+  {
+    vars: ["NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY"],
+    what: "The map, and the address boxes that finish what you type.",
+    without: "The map does not draw, and every address has to be typed in full and correctly.",
+    weight: "feature",
+    where: "Google Cloud. This one is public by design — it is in the browser, and is restricted by domain rather than kept secret.",
+  },
+  {
+    vars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"],
+    what: "Text messages.",
+    without: "Somebody who signed up with a phone number rather than an email cannot be sent a verification code, so they cannot finish signing up.",
+    weight: "feature",
+    where: "Twilio. Either the messaging service or the from-number is enough.",
+  },
+  {
+    vars: ["DUFFEL_ACCESS_TOKEN"],
+    what: "Searching and booking flights and hotels on this site.",
+    without: "Nothing — flights go to Kayak and hotels to Booking.com, which is the default either way. See lib/booking-partners.ts.",
+    weight: "nicety",
+  },
+  {
+    vars: ["DUFFEL_FLIGHTS"],
+    what: 'Set to "1" to move flight search onto this site instead of Kayak.',
+    without: "Nothing. Flights go to Kayak, which is the default.",
+    weight: "nicety",
+  },
+  {
+    vars: ["DUFFEL_STAYS"],
+    what: 'Set to "1" to move hotel search onto this site instead of Booking.com.',
+    without: "Nothing. Hotels go to Booking.com, which is the default.",
+    weight: "nicety",
+  },
+  {
+    vars: ["AMADEUS_CLIENT_ID", "AMADEUS_CLIENT_SECRET"],
+    what: "Live flight schedules.",
+    without: "A traveller typing a flight number gets nothing back and has to enter the times by hand.",
+    weight: "nicety",
+    where: "Amadeus for Developers — free tier.",
+  },
+  {
+    vars: ["AERODATABOX_API_KEY"],
+    what: "The second source for a flight number, when Amadeus does not have it.",
+    without: "Some flight numbers — smaller carriers especially — cannot be looked up.",
+    weight: "nicety",
+  },
+  {
+    vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY"],
+    what: "The assistant that answers a traveller's question in words.",
+    without: "The assistant says it cannot answer and points at the search instead. Nothing else changes.",
+    weight: "nicety",
+    where: "Either one is enough.",
+  },
+  {
+    vars: ["KAYAK_AFFILIATE_PARAMS"],
+    what: "Your affiliate key for the flight and car searches that open on Kayak.",
+    without:
+      "The searches still open and still work. They simply earn nothing, and the page looks exactly the same either way — which is why nobody would ever notice.",
+    weight: "feature",
+  },
+  {
+    vars: ["BOOKING_AFFILIATE_ID"],
+    what: "Your affiliate ID for the hotel searches that open on Booking.com.",
+    without: "The same: the search works, earns nothing, and looks identical.",
+    weight: "feature",
+  },
+  {
+    vars: ["TRAVELPAYOUTS_MARKER"],
+    what: "One affiliate account covering flights, hotels and insurance.",
+    without: "Those links earn nothing. Nothing a traveller sees changes.",
+    weight: "feature",
+  },
+  {
+    vars: ["SITE_ACCESS_PASSWORD"],
+    what: "The full code that gets somebody into the site while it is closed, and keeps them in.",
+    without:
+      "The admin password is used for both, so anybody you let in to look at the site is holding the key to the admin as well.",
+    weight: "feature",
+  },
+  {
+    vars: ["SITE_PREVIEW_PASSWORD"],
+    what: "The one-off code for somebody you want to show the site to while it is closed.",
+    without: "Only the full code gets anybody in while the site is locked, and that code lets them keep coming back.",
+    weight: "nicety",
+  },
+  {
+    vars: ["AMADEUS_HOSTNAME"],
+    what: "Which Amadeus to talk to. Their test environment unless this says otherwise.",
+    without:
+      "Flight lookups go to the test service, which has a small and out-of-date set of flights. Set it to the live host once the account is approved.",
+    weight: "nicety",
+  },
+  {
+    vars: ["GOOGLE_ROUTES_URL"],
+    what: "Where the traffic-aware driving times are asked for. Google's own address unless this says otherwise.",
+    without: "Nothing. It exists so this path can be pointed at a stub during testing.",
+    weight: "nicety",
+  },
+  {
+    vars: ["OSRM_ROUTER_URL"],
+    what: "The open router used when Google has no answer. The public one unless this points somewhere else.",
+    without: "Nothing. Set it only to use a self-hosted router.",
+    weight: "nicety",
+  },
+  {
+    vars: ["TRIP_ARRANGEMENT"],
+    what: 'Set to "1" to switch on arranging trips for people — taking the request and acting on it.',
+    without:
+      "The pages that offer it stay up and say it is coming soon, and the form does not send. That is the decision, not an accident: nobody should be able to ask for something there is nobody to do yet.",
+    weight: "nicety",
+  },
+  {
+    vars: ["DEFAULT_PHONE_COUNTRY"],
+    what: "Which country a phone number typed without a code belongs to.",
+    without: "It is read as American, so somebody in London typing their own number gets it stored wrong.",
+    weight: "nicety",
+  },
+  {
+    vars: ["DIRECTORY_FEATURED_NOTE"],
+    what: "The wording shown beside a featured listing in the directory.",
+    without: "The built-in wording is used. Nothing breaks.",
+    weight: "nicety",
+  },
+  {
+    vars: ["SITE_LOCK_ENABLED"],
+    what: "Closes the whole website to anybody without a code.",
+    without: "The site is open, which is what you want once it is live.",
+    weight: "nicety",
+  },
+];
+
+/** Set means "has a value". It does NOT mean the key works. */
+export type Reading = { connection: Connection; missing: string[]; ready: boolean };
+
+/**
+ * Which connections are configured, given a map of name to value.
+ *
+ * The values are read only for emptiness. `env` is passed in rather than read
+ * here so this can be tested, and so the caller is the one that decides which
+ * variables to look at — Next substitutes them by name, and a whole-object
+ * read is not the same thing.
+ */
+export function readConnections(env: Record<string, string | undefined>): Reading[] {
+  return CONNECTIONS.map((connection) => {
+    const missing = connection.vars.filter((name) => !env[name]?.trim());
+    return { connection, missing, ready: missing.length === 0 };
+  });
+}
+
+/**
+ * Some connections are happy with one of their variables rather than all.
+ *
+ * Twilio takes either a messaging service or a from-number; the assistant
+ * takes either model. Saying "not set" because the other one is absent would
+ * send somebody looking for a key they do not need.
+ */
+const ANY_ONE_OF: Record<string, string[][]> = {
+  TWILIO_ACCOUNT_SID: [["TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"]],
+  ANTHROPIC_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY"]],
+  OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"]],
+};
+
+/** The same reading, with the either-or connections judged properly. */
+export function readConnectionsProperly(env: Record<string, string | undefined>): Reading[] {
+  return readConnections(env).map((reading) => {
+    const groups = ANY_ONE_OF[reading.connection.vars[0]];
+    if (!groups) return reading;
+    const missing = reading.missing.filter((name) => {
+      const group = groups.find((g) => g.includes(name));
+      // Not missing if anything else in its group is set.
+      return !group?.some((other) => env[other]?.trim());
+    });
+    return { ...reading, missing, ready: missing.length === 0 };
+  });
+}
+
+/**
+ * What to say at the top: the things that would stop the site working.
+ *
+ * Counts only the essentials, because a launch checklist that says "6 things
+ * are not set" when five of them are optional teaches somebody to ignore it.
+ */
+export function launchSummary(readings: Reading[]): string {
+  const broken = readings.filter((r) => !r.ready && r.connection.weight === "essential");
+  const features = readings.filter((r) => !r.ready && r.connection.weight === "feature");
+  if (broken.length > 0) {
+    return `${broken.length} thing${broken.length === 1 ? "" : "s"} the site cannot run without ${broken.length === 1 ? "is" : "are"} not set.`;
+  }
+  if (features.length > 0) {
+    return `Everything essential is set. ${features.length} whole feature${features.length === 1 ? "" : "s"} would be off.`;
+  }
+  return "Everything is set. Whether each key actually works is a separate question — use the tests below.";
+}
+
+const ORDER: Record<Weight, number> = { essential: 0, feature: 1, nicety: 2 };
+
+/** Worst first, and within that the ones that are not set. */
+export function sortForReview(readings: Reading[]): Reading[] {
+  return [...readings].sort(
+    (a, b) =>
+      ORDER[a.connection.weight] - ORDER[b.connection.weight] ||
+      Number(a.ready) - Number(b.ready) ||
+      a.connection.vars[0].localeCompare(b.connection.vars[0]),
+  );
+}
+
+export const WEIGHT_LABELS: Record<Weight, string> = {
+  essential: "The site needs this",
+  feature: "A whole feature depends on it",
+  nicety: "Optional",
+};

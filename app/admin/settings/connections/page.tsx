@@ -1,8 +1,10 @@
 import AiConnectionTest from "@/components/AiConnectionTest";
 import EmailDeliveryTest from "@/components/EmailDeliveryTest";
 import ContentExportPanel from "@/components/ContentExportPanel";
+import ConnectionsPanel from "@/components/ConnectionsPanel";
 import DuffelKeyTest from "@/components/DuffelKeyTest";
 import { describeFlights, describeHotels, flightsVia, hotelsVia } from "@/lib/booking-partners";
+import { CONNECTIONS, readConnectionsProperly } from "@/lib/connections";
 import MapKeyStatus from "@/components/MapKeyStatus";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
 import SmsStatus from "@/components/SmsStatus";
@@ -10,6 +12,46 @@ import SmsStatus from "@/components/SmsStatus";
 export const dynamic = "force-dynamic";
 
 export default function ConnectionSettings() {
+  // Named one by one, because Next replaces `process.env.X` by name.
+  const ENV: Record<string, string | undefined> = {
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    DATABASE_URL: process.env.DATABASE_URL,
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+    WHITE_GLOVE_SESSION_SECRET: process.env.WHITE_GLOVE_SESSION_SECRET,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    OWNER_NOTIFICATION_EMAIL: process.env.OWNER_NOTIFICATION_EMAIL,
+    CONTACT_NOTIFICATION_EMAIL: process.env.CONTACT_NOTIFICATION_EMAIL,
+    OWNER_EMAIL: process.env.OWNER_EMAIL,
+    NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY,
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+    TWILIO_MESSAGING_SERVICE_SID: process.env.TWILIO_MESSAGING_SERVICE_SID,
+    TWILIO_FROM_NUMBER: process.env.TWILIO_FROM_NUMBER,
+    DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
+    DUFFEL_FLIGHTS: process.env.DUFFEL_FLIGHTS,
+    DUFFEL_STAYS: process.env.DUFFEL_STAYS,
+    AMADEUS_CLIENT_ID: process.env.AMADEUS_CLIENT_ID,
+    AMADEUS_CLIENT_SECRET: process.env.AMADEUS_CLIENT_SECRET,
+    AMADEUS_HOSTNAME: process.env.AMADEUS_HOSTNAME,
+    AERODATABOX_API_KEY: process.env.AERODATABOX_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    KAYAK_AFFILIATE_PARAMS: process.env.KAYAK_AFFILIATE_PARAMS,
+    BOOKING_AFFILIATE_ID: process.env.BOOKING_AFFILIATE_ID,
+    TRAVELPAYOUTS_MARKER: process.env.TRAVELPAYOUTS_MARKER,
+    SITE_ACCESS_PASSWORD: process.env.SITE_ACCESS_PASSWORD,
+    SITE_PREVIEW_PASSWORD: process.env.SITE_PREVIEW_PASSWORD,
+    SITE_LOCK_ENABLED: process.env.SITE_LOCK_ENABLED,
+    TRIP_ARRANGEMENT: process.env.TRIP_ARRANGEMENT,
+    DEFAULT_PHONE_COUNTRY: process.env.DEFAULT_PHONE_COUNTRY,
+    DIRECTORY_FEATURED_NOTE: process.env.DIRECTORY_FEATURED_NOTE,
+    GOOGLE_ROUTES_URL: process.env.GOOGLE_ROUTES_URL,
+    OSRM_ROUTER_URL: process.env.OSRM_ROUTER_URL,
+  };
+
   const flights = flightsVia({
     DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
     DUFFEL_FLIGHTS: process.env.DUFFEL_FLIGHTS,
@@ -32,6 +74,11 @@ export default function ConnectionSettings() {
           — with one deliberate exception, the map key, which is public by design and explained in its own panel.
         </p>
       </header>
+
+      {/* Every variable read by name: Next substitutes these at build time, so
+          a whole-object read is not the same thing. Only emptiness is ever
+          looked at — no value reaches the browser. */}
+      <ConnectionsPanel readings={readConnectionsProperly(Object.fromEntries(CONNECTIONS.flatMap((c) => c.vars).map((name) => [name, ENV[name]])))} />
 
       <div className="mt-8 space-y-5">
         <EmailDeliveryTest />
