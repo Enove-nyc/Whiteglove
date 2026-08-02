@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import AccountPlanPanel from "@/components/AccountPlanPanel";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -7,6 +8,7 @@ import LogoutButton from "@/components/LogoutButton";
 import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { isAdminAccount } from "@/lib/admin-roles";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
@@ -31,6 +33,12 @@ export default async function AccountPage() {
   // Someone who helps run the site gets a way through to the admin from their
   // own account, rather than having to remember a separate address.
   const canAdmin = await isAdminAccount(account?.email || sessionEmail);
+  // Which kind of account this is, and whether they are waiting on an answer
+  // about a different one. Both are Traveler/none for somebody not signed in.
+  const who = account?.email || sessionEmail || "";
+  const [plan, openRequest] = who
+    ? await Promise.all([getPlan(who), openRequestFor(who)])
+    : (["traveler", null] as const);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -95,7 +103,10 @@ export default async function AccountPage() {
         </div>
         <AccountRoutePanel loggedIn={signedIn} />
         {(account || sessionEmail) && (
-          <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
+          <>
+            <AccountPlanPanel plan={plan} openRequest={openRequest} />
+            <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
+          </>
         )}
         <div className="mt-10 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>

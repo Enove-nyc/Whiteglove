@@ -1,0 +1,53 @@
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { askForPlan, getPlan, openRequestFor, planStoreAvailable } from "@/lib/account-plan-store";
+import { requestProblem } from "@/lib/account-plans";
+import { accountCookieName, readSessionEmail } from "@/lib/account-store";
+
+/**
+ * Asking for a different kind of account.
+ *
+ * NOTHING IS CHARGED HERE, and there is nothing in this file that could
+ * charge anybody: no card, no processor, no order. It writes down that a
+ * person wants Pro or a Business account so the owner can see it and answer.
+ * The screen that calls this says so in as many words.
+ *
+ * The plan itself is never set from here. A person saying they would like Pro
+ * is not the same as having it, and an endpoint that granted what it was
+ * asked for would make the whole thing meaningless.
+ */
+export async function POST(request: NextRequest) {
+  const cookieStore = await cookies();
+  const account = readSessionEmail(cookieStore.get(accountCookieName())?.value);
+  if (!account) return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
+  if (!planStoreAvailable()) {
+    return NextResponse.json({ error: "This is not connected yet. Please try again later." }, { status: 503 });
+  }
+
+  const body = (await request.json().catch(() => null)) as
+    | { wanted?: string; businessName?: string; note?: string }
+    | null;
+  if (!body) return NextResponse.json({ error: "Choose which kind of account you want." }, { status: 400 });
+
+  // Checked against what they are actually on, read now — not against
+  // whatever the page believed when it was drawn.
+  const current = await getPlan(account);
+  const problem = requestProblem({
+    current,
+    wanted: body.wanted,
+    businessName: body.businessName,
+    note: body.note,
+  });
+  if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+
+  const saved = await askForPlan({
+    account,
+    // Safe: requestProblem returned null, so this is one of the known plans.
+    wanted: body.wanted as "pro" | "business",
+    businessName: body.businessName,
+    note: body.note,
+  });
+  if (!saved) return NextResponse.json({ error: "That could not be saved. Please try again." }, { status: 500 });
+
+  return NextResponse.json({ ok: true, request: await openRequestFor(account) });
+}
