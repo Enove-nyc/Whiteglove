@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AIRPORTS } from "@/data/airports";
 import { metroMatches } from "@/lib/flight-endpoint";
+import { searchTermFor } from "@/lib/kayak-search";
 
 // Airport picker for flight search. The dropdown only appears once the traveler
 // types, sits directly under the box, and matches by city too — so "NYC" or
@@ -34,7 +35,11 @@ export default function AirportAutocomplete({
   // Sync when the value is set from outside (e.g. after a flight-number lookup).
   useEffect(() => { setQuery(value); }, [value]);
 
-  const q = query.trim().toLowerCase();
+  // ONCE SOMETHING IS PICKED, SEARCH ON ITS CODE. The box then holds the whole
+  // label — "New York — all airports (NYC)" — which matches nothing, so the
+  // list reopened empty and there was no way to choose a different airport
+  // without deleting the text by hand. Picking one airport locked the field.
+  const q = searchTermFor(query).toLowerCase();
   const cities = q.length >= 1 ? metroMatches(q) : [];
   const matches = q.length >= 1
     ? AIRPORTS.filter((a) => `${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`.toLowerCase().includes(q)).slice(0, 8)
@@ -46,12 +51,33 @@ export default function AirportAutocomplete({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
+  /**
+   * Open the list and select what is in the box.
+   *
+   * The select happens AFTER the paint. Opening the list re-renders, and a
+   * controlled input being handed the same value again drops any selection —
+   * so selecting first is undone a moment later, and the next keystroke lands
+   * wherever the caret happened to be. That is how somebody typing over a
+   * pick got "New York — all ai|krak|rports (NYC)".
+   */
+  function openAndSelect(el: HTMLInputElement) {
+    setOpen(true);
+    requestAnimationFrame(() => el.select());
+  }
+
   return (
     <div ref={boxRef} className="relative">
       <input
         value={query}
         onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        // ON CLICK AS WELL AS ON FOCUS. Picking from the list keeps the focus
+        // in this input — the option's onMouseDown prevents default so the box
+        // never blurs — so clicking back into it fires NO focus event at all.
+        // With only onFocus the list stayed shut after a pick and the caret
+        // landed mid-word, which is how "New York — all ai|krak|rports (NYC)"
+        // happened.
+        onFocus={(e) => openAndSelect(e.currentTarget)}
+        onClick={(e) => openAndSelect(e.currentTarget)}
         placeholder={placeholder || "City or airport"}
         autoComplete="off"
         required={required}
