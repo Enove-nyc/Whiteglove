@@ -295,11 +295,18 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      {/* THREE ACROSS, ALWAYS. This was a wrapping row, and on a phone the third
+          one — Multi-city — dropped onto a line of its own below the fold. The
+          row that was left read as the whole choice: round trip or one way, and
+          multi-city looked like something this site could not do. Reported
+          twice as "there is no multi city", which is exactly what it looked
+          like. A grid of equal thirds cannot come apart at any width. */}
+      <div className="mb-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center" data-choice-row="trip type">
         <TripTypeButton active={trip === "round-trip"} onClick={() => chooseTrip("round-trip")}>Round trip</TripTypeButton>
         <TripTypeButton active={trip === "one-way"} onClick={() => chooseTrip("one-way")}>One way</TripTypeButton>
         <TripTypeButton active={multi} onClick={() => chooseTrip("multi-city")}>Multi-city</TripTypeButton>
-        <label className="ml-auto flex items-center gap-2 text-xs font-semibold text-[var(--navy)]">
+        {/* Its own row on a phone, where there is no width left beside them. */}
+        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
           <input type="checkbox" checked={nonstop} onChange={(e) => setNonstop(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />
           Nonstop only
         </label>
@@ -533,7 +540,7 @@ function TripTypeButton({ active, onClick, children }: { active: boolean; onClic
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-11 rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.12em] transition ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
+      className={`min-h-11 w-full rounded-full border px-2 text-[11px] font-bold uppercase tracking-[0.12em] transition sm:w-auto sm:px-4 ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
     >
       {children}
     </button>

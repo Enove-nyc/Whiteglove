@@ -115,6 +115,33 @@ for (const [path, label] of PAGES) {
       });
       if (searches.length > 1) note(label, width, "duplicate-search", `${searches.length} visible: ${searches.join(" ; ")}`);
 
+      // 2b. A row of choices that has come apart onto two lines.
+      //
+      // This is here because it happened and nobody could see it. The three
+      // trip types on the booking page — round trip, one way, multi-city —
+      // were a wrapping row, and on a phone the third dropped onto a line of
+      // its own below the fold. The row that was left read as the whole
+      // choice, and multi-city looked like something this site could not do.
+      // It was reported twice as "there is no multi city".
+      //
+      // A wrapped row is not overflow and it is not an error; nothing else
+      // here would ever have caught it.
+      const split = await p.evaluate(() => {
+        const out = [];
+        for (const group of document.querySelectorAll("[data-choice-row]")) {
+          const tops = new Set();
+          for (const child of group.children) {
+            const r = child.getBoundingClientRect();
+            if (r.width === 0 || r.height === 0) continue;
+            if (child.tagName !== "BUTTON") continue;
+            tops.add(Math.round(r.top));
+          }
+          if (tops.size > 1) out.push(`${group.dataset.choiceRow}: ${tops.size} lines`);
+        }
+        return out;
+      });
+      for (const detail of split) note(label, width, "row-split", detail);
+
       // 3. The desktop bar and a control calling itself the navigation menu,
       // both on screen at the same width.
       const nav = await p.evaluate(() => {
