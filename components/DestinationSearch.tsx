@@ -1,5 +1,6 @@
 "use client";
 
+import { BUILT_IN_WORDS } from "@/data/site-words";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
@@ -56,7 +57,7 @@ function recordSearch(value: string, found: number) {
   });
 }
 
-export default function DestinationSearch({ compact = false }: { compact?: boolean }) {
+export default function DestinationSearch({ compact = false, placeholder = BUILT_IN_WORDS.searchPlaceholder }: { compact?: boolean; placeholder?: string }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -154,7 +155,7 @@ export default function DestinationSearch({ compact = false }: { compact?: boole
           aria-autocomplete="list"
           role="combobox"
           aria-controls="site-search-results"
-          placeholder="Search a city, tzaddik, kever, or anything to do…"
+          placeholder={placeholder}
           autoComplete="off"
         />
         <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`} type="submit">

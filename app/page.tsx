@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import DestinationCard from "@/components/DestinationCard";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
@@ -65,10 +66,12 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, topVisitedPaths] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, topVisitedPaths, words] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
     getTopVisitedPaths(60),
+    // The first three lines anybody reads. /admin/settings/words.
+    readWords(),
   ]);
 
   const visitCounts = new Map(topVisitedPaths.map((path) => [path.path, path.count]));
@@ -87,12 +90,12 @@ export default async function Home() {
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
           <div className="max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">Two kinds of journeys. One standard of care.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">{words.heroEyebrow}</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-[1.04] text-[var(--navy)] sm:text-6xl lg:text-7xl">
-              Travel planned around what matters to you.
+              {words.heroTitle}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">
-              Jewish heritage nesios to kevarim, and personalized destination planning for kosher travel — with every practical detail handled thoughtfully.
+              {words.heroSubtitle}
             </p>
           </div>
 
@@ -124,7 +127,7 @@ export default async function Home() {
 
           <div className="mt-9 rounded-xl border border-[var(--gold-light)] bg-[rgba(255,253,249,.78)] p-5 sm:p-6">
             <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Looking for a kever or destination?</p>
-            <DestinationSearch />
+            <DestinationSearch placeholder={words.searchPlaceholder} />
           </div>
 
           <div className="mt-8">

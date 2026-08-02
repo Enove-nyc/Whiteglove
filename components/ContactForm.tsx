@@ -1,11 +1,19 @@
 "use client";
 
+import { BUILT_IN_WORDS, type SiteWords } from "@/data/site-words";
 import { useState } from "react";
 
 const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
-export default function ContactForm() {
+export default function ContactForm({ words = BUILT_IN_WORDS }: {
+  /**
+   * The site's own wording, read on the server (/admin/settings/words). The
+   * built-in set is a complete one, so a caller that passes nothing shows
+   * exactly what this said before any of it was editable.
+   */
+  words?: SiteWords;
+}) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +46,7 @@ export default function ContactForm() {
     return (
       <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center">
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Thank you — your message is on its way.</p>
-        <p className="mt-3 text-sm leading-7 text-stone-600">We&apos;ll be in touch soon. For anything urgent, email us directly at contact@whitegloveitineraries.com.</p>
+        <p className="mt-3 text-sm leading-7 text-stone-600">{words.replyPromise} For anything urgent, email us directly at {words.contactEmail}.</p>
         <button type="button" onClick={() => setSent(false)} className="mt-6 border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Send another message</button>
       </div>
     );

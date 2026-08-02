@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL } from "@/lib/features";
+import { BUILT_IN_WORDS } from "@/data/site-words";
 
 /**
  * Sits above a form that is deliberately switched off.
@@ -12,10 +12,13 @@ import { CONTACT_EMAIL } from "@/lib/features";
 export default function ComingSoonNotice({
   what,
   className = "",
+  contactEmail = BUILT_IN_WORDS.contactEmail,
 }: {
   /** What is not open yet, as a sentence subject: "Personal flight booking". */
   what: string;
   className?: string;
+  /** Where to write instead. Set from /admin/settings/words. */
+  contactEmail?: string;
 }) {
   return (
     <div
@@ -31,10 +34,10 @@ export default function ComingSoonNotice({
         on the site is yours to use — search and book your own flights, hotels and cars, and build the route yourself.
         For anything urgent, email{" "}
         <a
-          href={`mailto:${CONTACT_EMAIL}`}
+          href={`mailto:${contactEmail}`}
           className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
         >
-          {CONTACT_EMAIL}
+          {contactEmail}
         </a>
         .
       </p>

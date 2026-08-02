@@ -1,5 +1,6 @@
 "use client";
 
+import { BUILT_IN_WORDS, type SiteWords } from "@/data/site-words";
 import { useState } from "react";
 import ComingSoonNotice from "@/components/ComingSoonNotice";
 
@@ -20,6 +21,7 @@ export default function InquiryForm({
   whenPlaceholder = "Dates, flexibility, or season",
   detailsLabel = "What do you need?",
   detailsPlaceholder,
+  words = BUILT_IN_WORDS,
 }: {
   subject: string;
   open?: boolean;
@@ -28,6 +30,12 @@ export default function InquiryForm({
   whenPlaceholder?: string;
   detailsLabel?: string;
   detailsPlaceholder?: string;
+  /**
+   * The site's own wording, read on the server (/admin/settings/words). The
+   * built-in set is a complete one, so a caller that passes nothing shows
+   * exactly what this said before any of it was editable.
+   */
+  words?: SiteWords;
 }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", when: "", details: "" });
   const [busy, setBusy] = useState(false);
@@ -66,14 +74,14 @@ export default function InquiryForm({
     return (
       <div className="border border-[var(--gold-light)] bg-white p-6 text-center">
         <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Thank you — your request is on its way.</p>
-        <p className="mt-3 text-sm leading-7 text-stone-600">We&apos;ll be in touch soon. For anything urgent, email contact@whitegloveitineraries.com.</p>
+        <p className="mt-3 text-sm leading-7 text-stone-600">{words.replyPromise} For anything urgent, email {words.contactEmail}.</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={submit} className="border border-[var(--gold-light)] bg-white p-6">
-      {!open && <ComingSoonNotice what={comingSoonLabel} className="mb-6" />}
+      {!open && <ComingSoonNotice what={comingSoonLabel} className="mb-6" contactEmail={words.contactEmail} />}
       <fieldset disabled={!open} className={`grid gap-4 sm:grid-cols-2 ${open ? "" : "opacity-55"}`}>
         <label className={caption}>Name<input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" /></label>
         <label className={caption}>Email<input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" /></label>

@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/features";
 import Footer from "@/components/Footer";
@@ -20,7 +21,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function TermsOfUsePage() {
+export default async function TermsOfUsePage() {
+  const { contactEmail } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -93,7 +95,7 @@ export default function TermsOfUsePage() {
         <Section title="Contact us">
           <p>
             Questions about these terms? Email{" "}
-            <a href="mailto:contact@whitegloveitineraries.com" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">contact@whitegloveitineraries.com</a>.
+            <a href={`mailto:${contactEmail}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">{contactEmail}</a>.
           </p>
         </Section>
       </article>

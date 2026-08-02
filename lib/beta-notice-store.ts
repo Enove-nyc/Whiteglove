@@ -9,9 +9,11 @@
  * whether or not Redis is connected.
  */
 
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { type BetaNotice, DEFAULT_NOTICE, noticeFrom } from "@/lib/beta-notice";
 
 const KEY = "white-glove:beta-notice";
+const TAG = "beta-notice";
 
 export function betaStoreAvailable() {
   return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
@@ -43,8 +45,7 @@ async function redis<T>(path: string, body?: string): Promise<T | null> {
  * value and an empty one all give the default, because the alternative is a
  * launch where the warning quietly stopped appearing and nobody noticed.
  */
-export async function getBetaNotice(): Promise<BetaNotice> {
-  if (!betaStoreAvailable()) return DEFAULT_NOTICE;
+async function read(): Promise<BetaNotice> {
   const raw = await redis<string>(`get/${KEY}`);
   if (!raw) return DEFAULT_NOTICE;
   try {
@@ -54,7 +55,36 @@ export async function getBetaNotice(): Promise<BetaNotice> {
   }
 }
 
+/**
+ * CACHED, and it has to be. This is read in the root layout, so it is on every
+ * page on the site — including the hundreds that are prerendered.
+ *
+ * An uncached read here was a landmine, found by running it: a `no-store` fetch
+ * inside a page Next is regenerating fails with "page changed from static to
+ * dynamic at runtime", and the page 500s. That never showed up because nothing
+ * had ever triggered a regeneration; the moment anything did — a revalidate
+ * firing, or the site-words save — every prerendered page on the site went to
+ * a 500. Caching it takes the fetch out of the render, and saving the notice
+ * clears the cache.
+ */
+const cached = unstable_cache(read, ["beta-notice"], { tags: [TAG], revalidate: 3600 });
+
+export async function getBetaNotice(): Promise<BetaNotice> {
+  if (!betaStoreAvailable()) return DEFAULT_NOTICE;
+  return cached();
+}
+
+/** Uncached, for the admin screen — it must show what was just saved. */
+export async function getBetaNoticeFresh(): Promise<BetaNotice> {
+  if (!betaStoreAvailable()) return DEFAULT_NOTICE;
+  return read();
+}
+
 export async function saveBetaNotice(notice: BetaNotice): Promise<boolean> {
   if (!betaStoreAvailable()) return false;
-  return (await redis(`set/${KEY}`, JSON.stringify(notice))) !== null;
+  if ((await redis(`set/${KEY}`, JSON.stringify(notice))) === null) return false;
+  // The notice is in the root layout, so a change to it makes every page stale.
+  updateTag(TAG);
+  revalidatePath("/", "layout");
+  return true;
 }
