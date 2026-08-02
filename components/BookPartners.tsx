@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import BookingSearch from "@/components/BookingSearch";
+import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem } from "@/lib/kayak-search";
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
@@ -21,6 +22,8 @@ import { correctedEnd, earliestEnd } from "@/lib/date-range";
 
 type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
+type TripKind = "round-trip" | "one-way" | "multi-city";
+
 export type Affiliate = { bookingAid?: string; kayakParams?: string; travelpayoutsMarker?: string };
 
 // The search panel is laid out the way booking sites lay one out: fields sit
@@ -48,14 +51,6 @@ function Field({ label, children, className = "" }: { label: string; children: R
 const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
-function airportCode(value: string): string {
-  const upper = value.toUpperCase();
-  const inParens = upper.match(/\(([A-Z]{3})\)/);
-  if (inParens) return inParens[1];
-  const bare = upper.match(/\b([A-Z]{3})\b/);
-  return bare ? bare[1] : "";
-}
-
 function openPartner(url: string) {
   if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer");
 }
@@ -68,11 +63,6 @@ export type PendingBooking = {
   /** Puts it on the trip, with the reference they were given. */
   save: (confirmation: string) => void;
 };
-
-function withKayakAffiliate(url: string, params?: string) {
-  if (!params) return url;
-  return `${url}${url.includes("?") ? "&" : "?"}${params.replace(/^[?&]/, "")}`;
-}
 
 /**
  * `flightsVia` and `hotelsVia` decide who runs the search.
@@ -232,58 +222,129 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 // ---- Cash --------------------------------------------------------------
 
 function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
-  const [from, setFrom] = useState(prefill?.from ?? "");
-  const [to, setTo] = useState(prefill?.to ?? "");
-  const [depart, setDepart] = useState(prefill?.depart ?? "");
+  const [trip, setTrip] = useState<TripKind>("round-trip");
+  const [legs, setLegs] = useState<Leg[]>([{ from: prefill?.from ?? "", to: prefill?.to ?? "", date: prefill?.depart ?? "" }]);
   const [ret, setRet] = useState(prefill?.ret ?? "");
-  const [oneWay, setOneWay] = useState(false);
+  const [nonstop, setNonstop] = useState(false);
   const [error, setError] = useState("");
 
-  function validate() {
-    const o = airportCode(from);
-    const d = airportCode(to);
-    if (!o || !d) { setError("Enter airport codes (e.g. JFK, KRK) for both cities."); return null; }
-    if (!depart) { setError("Choose a departure date."); return null; }
-    if (!oneWay && ret && ret < depart) { setError("Return must be after departure."); return null; }
+  const setLeg = (index: number, patch: Partial<Leg>) =>
+    setLegs((current) => current.map((leg, i) => (i === index ? { ...leg, ...patch } : leg)));
+
+  /**
+   * Switching trip type keeps what has been typed.
+   *
+   * Somebody who has filled in JFK → Kraków and then realises they want a
+   * second leg should not have to type it again. Going back to one leg keeps
+   * the first, which is the one they started with.
+   */
+  function chooseTrip(next: TripKind) {
+    setTrip(next);
     setError("");
-    return { o, d };
+    if (next === "multi-city") {
+      setLegs((current) => (current.length > 1 ? current : [...current, { from: current[0]?.to ?? "", to: "", date: "" }]));
+    } else {
+      setLegs((current) => [current[0]]);
+    }
+  }
+
+  const shape = (): SearchShape =>
+    trip === "round-trip"
+      ? { trip: "round-trip", legs: [legs[0]], ret }
+      : trip === "one-way"
+        ? { trip: "one-way", legs: [legs[0]] }
+        : { trip: "multi-city", legs };
+
+  function checked(): SearchShape | null {
+    const wanted = shape();
+    const problem = searchProblem(wanted);
+    setError(problem ?? "");
+    return problem ? null : wanted;
   }
 
   function search() {
-    const v = validate();
-    if (!v) return;
-    const url = withKayakAffiliate(`https://www.kayak.com/flights/${v.o}-${v.d}/${depart}${!oneWay && ret ? `/${ret}` : ""}?sort=bestflight_a`, affiliate?.kayakParams);
-    openPartner(url);
+    const wanted = checked();
+    if (!wanted) return;
+    openPartner(kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams }));
     // The booking itself happens on the other site, where we cannot see it.
     // So ask for it back, with the reference, rather than letting the trip
     // quietly not know about the flight they just paid for.
-    onOpened({
-      kind: "flight",
-      summary: `${v.o} → ${v.d}${depart ? `, ${depart}` : ""}${!oneWay && ret ? ` and back ${ret}` : ""}`,
-      save: (confirmation) => addToTrip(confirmation),
-    });
+    onOpened({ kind: "flight", summary: describeSearch(wanted), save: (confirmation) => addToTrip(confirmation) });
   }
 
   function addToTrip(confirmation?: string) {
-    const v = validate();
-    if (!v) return;
-    const flights: ItinFlight[] = [{ id: uid(), from: v.o, to: v.d, date: depart, bookedOnSite: false, confirmation }];
-    if (!oneWay && ret) flights.push({ id: uid(), from: v.d, to: v.o, date: ret, bookedOnSite: false, confirmation });
-    onAdd({ flights, dates: [depart, ret] });
+    const wanted = checked();
+    if (!wanted) return;
+    const flights: ItinFlight[] = wanted.legs.map((leg) => ({
+      id: uid(),
+      from: airportCode(leg.from),
+      to: airportCode(leg.to),
+      date: leg.date,
+      bookedOnSite: false,
+      confirmation,
+    }));
+    // The return leg of a round trip is a flight in its own right on the
+    // itinerary, even though Kayak searches it as one journey.
+    if (wanted.trip === "round-trip") {
+      flights.push({ id: uid(), from: airportCode(wanted.legs[0].to), to: airportCode(wanted.legs[0].from), date: wanted.ret, bookedOnSite: false, confirmation });
+    }
+    onAdd({ flights, dates: flights.map((f) => f.date) });
   }
+
+  const multi = trip === "multi-city";
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <TripTypeButton active={!oneWay} onClick={() => setOneWay(false)}>Round trip</TripTypeButton>
-        <TripTypeButton active={oneWay} onClick={() => setOneWay(true)}>One way</TripTypeButton>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <TripTypeButton active={trip === "round-trip"} onClick={() => chooseTrip("round-trip")}>Round trip</TripTypeButton>
+        <TripTypeButton active={trip === "one-way"} onClick={() => chooseTrip("one-way")}>One way</TripTypeButton>
+        <TripTypeButton active={multi} onClick={() => chooseTrip("multi-city")}>Multi-city</TripTypeButton>
+        <label className="ml-auto flex items-center gap-2 text-xs font-semibold text-[var(--navy)]">
+          <input type="checkbox" checked={nonstop} onChange={(e) => setNonstop(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />
+          Nonstop only
+        </label>
       </div>
-      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Departure"><DateField ariaLabel="Departure date" value={depart} onChange={(v) => { setDepart(v); setRet((r) => correctedEnd(v, r)); }} className={bareInput} /></Field>
-        <Field label="Return" className={oneWay ? "opacity-45" : ""}><DateField ariaLabel="Return date" value={ret} disabled={oneWay} min={earliestEnd(depart)} onChange={(v) => setRet(correctedEnd(depart, v))} className={bareInput} /></Field>
-      </SearchGrid>
+
+      {legs.map((leg, index) => (
+        <SearchGrid key={index} className={`sm:grid-cols-2 lg:grid-cols-4 ${index > 0 ? "mt-4" : ""}`}>
+          <Field label={multi ? `From — flight ${index + 1}` : "From"}>
+            <AirportAutocomplete value={leg.from} onChange={(from) => setLeg(index, { from })} placeholder="City or airport" className={bareInput} />
+          </Field>
+          <Field label={multi ? `To — flight ${index + 1}` : "To"}>
+            <AirportAutocomplete value={leg.to} onChange={(to) => setLeg(index, { to })} placeholder="City or airport" className={bareInput} />
+          </Field>
+          <Field label={multi ? `Departure — flight ${index + 1}` : "Departure"}>
+            <DateField
+              ariaLabel={`Departure date${multi ? ` for flight ${index + 1}` : ""}`}
+              value={leg.date}
+              onChange={(v) => { setLeg(index, { date: v }); if (index === 0 && !multi) setRet((r) => correctedEnd(v, r)); }}
+              className={bareInput}
+            />
+          </Field>
+          {multi ? (
+            index > 0 ? (
+              <div className="flex items-end">
+                <button type="button" onClick={() => setLegs((c) => c.filter((_, i) => i !== index))} className="min-h-11 w-full border border-[var(--gold-light)] px-3 text-xs font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-300 hover:text-red-700">
+                  Remove flight
+                </button>
+              </div>
+            ) : (
+              <div aria-hidden="true" />
+            )
+          ) : (
+            <Field label="Return" className={trip === "one-way" ? "opacity-45" : ""}>
+              <DateField ariaLabel="Return date" value={ret} disabled={trip === "one-way"} min={earliestEnd(legs[0]?.date ?? "")} onChange={(v) => setRet(correctedEnd(legs[0]?.date ?? "", v))} className={bareInput} />
+            </Field>
+          )}
+        </SearchGrid>
+      ))}
+
+      {multi && (
+        <button type="button" onClick={() => setLegs((c) => [...c, { from: c[c.length - 1]?.to ?? "", to: "", date: "" }])} className="mt-4 min-h-11 border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream)]">
+          + Add another flight
+        </button>
+      )}
+
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search flights on Kayak" />
     </div>
