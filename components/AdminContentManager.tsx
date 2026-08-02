@@ -1,5 +1,6 @@
 "use client";
 
+import AddressAndCoordinate from "@/components/AddressAndCoordinate";
 import { useMemo, useState } from "react";
 import SuggestionReview from "@/components/SuggestionReview";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
@@ -296,12 +297,19 @@ export default function AdminContentManager({ initialBundle, configured, initial
               <Field label="Title" value={newLocation.title} onChange={(value) => setNewLocation((current) => ({ ...current, title: value }))} />
               <Field label="Yiddish title" value={newLocation.yiddishTitle} onChange={(value) => setNewLocation((current) => ({ ...current, yiddishTitle: value }))} />
               <Field label="Country" value={newLocation.country} onChange={(value) => setNewLocation((current) => ({ ...current, country: value }))} />
-              <Field label="Coordinates" value={newLocation.coordinates} onChange={(value) => setNewLocation((current) => ({ ...current, coordinates: value }))} />
               <Field label="Shomer contact" value={newLocation.shomerContact} onChange={(value) => setNewLocation((current) => ({ ...current, shomerContact: value }))} />
               <Field label="Source" value={newLocation.source} onChange={(value) => setNewLocation((current) => ({ ...current, source: value }))} />
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Field label="Address" value={newLocation.address} onChange={(value) => setNewLocation((current) => ({ ...current, address: value }))} textarea />
+              {/* Picked, not typed — and the coordinate beside it so a
+                  transposed digit shows up here rather than on a road. */}
+              <AddressAndCoordinate
+                address={newLocation.address}
+                coordinates={newLocation.coordinates}
+                onChange={({ address, coordinates }) => setNewLocation((current) => ({ ...current, address, coordinates }))}
+                captionClass={fieldCaptionClass}
+                inputClass={fieldInputClass}
+              />
               <Field label="Notes" value={newLocation.notes} onChange={(value) => setNewLocation((current) => ({ ...current, notes: value }))} textarea />
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -414,8 +422,13 @@ function ReportCard({ title, value, note, onClick }: { title: string; value: num
   );
 }
 
+// The same two classes Field uses, named so AddressAndCoordinate can match it
+// rather than approximate it.
+const fieldCaptionClass = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
+const fieldInputClass = "mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none";
+
 function Field({ label, value, onChange, textarea = false }: { label: string; value: string; onChange: (value: string) => void; textarea?: boolean }) {
-  const className = "mt-2 w-full border border-[var(--gold-light)] bg-white px-3 py-3 text-sm outline-none";
+  const className = fieldInputClass;
   return <label className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">{label}{textarea ? <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={3} className={className} /> : <input value={value} onChange={(event) => onChange(event.target.value)} className={className} />}</label>;
 }
 
@@ -436,8 +449,13 @@ function LocationEditor({ item, onSave, saving }: { item: EditableLocation; onSa
         <Field label="Yiddish title" value={draft.yiddishTitle} onChange={(value) => setDraft((current) => ({ ...current, yiddishTitle: value }))} />
         <Field label="Country" value={draft.country} onChange={(value) => setDraft((current) => ({ ...current, country: value }))} />
         <Field label="Route" value={draft.route} onChange={(value) => setDraft((current) => ({ ...current, route: value }))} />
-        <Field label="Address" value={draft.address} onChange={(value) => setDraft((current) => ({ ...current, address: value }))} textarea />
-        <Field label="Coordinates" value={draft.coordinates} onChange={(value) => setDraft((current) => ({ ...current, coordinates: value }))} />
+        <AddressAndCoordinate
+          address={draft.address}
+          coordinates={draft.coordinates}
+          onChange={({ address, coordinates }) => setDraft((current) => ({ ...current, address, coordinates }))}
+          captionClass={fieldCaptionClass}
+          inputClass={fieldInputClass}
+        />
         <Field label="Shomer contact" value={draft.shomerContact} onChange={(value) => setDraft((current) => ({ ...current, shomerContact: value }))} />
         <Field label="Source" value={draft.source} onChange={(value) => setDraft((current) => ({ ...current, source: value }))} />
       </div>
