@@ -46,6 +46,37 @@ describe("the tab icon", () => {
     }
   });
 
+  it("is well-formed XML, so a browser will actually draw it", () => {
+    // Served as image/svg+xml, this file is parsed as XML — stricter than
+    // HTML. A comment containing two hyphens in a row ends there, the rest of
+    // the file becomes rubbish, and the browser draws NO icon. It is silent
+    // everywhere except the tab, which is the one place nobody is looking.
+    // This has happened once already, from writing "var(--gold)" in a comment.
+    const svg = readFileSync(SOURCE, "utf8");
+    for (const comment of svg.match(/<!--[\s\S]*?-->/g) ?? []) {
+      const inside = comment.slice(4, -3);
+      assert.ok(!inside.includes("--"), `a comment contains "--", which ends it early:\n${inside.slice(0, 200)}`);
+    }
+    // Nothing left unclosed, and no stray comment openers outside one.
+    assert.equal((svg.match(/<!--/g) ?? []).length, (svg.match(/-->/g) ?? []).length, "unbalanced comment markers");
+    assert.ok(svg.trimEnd().endsWith("</svg>"), "the file does not end with </svg>");
+  });
+
+  it("is drawn in the logo's gold", () => {
+    // In public/logo.png only the "White Glove" wordmark is navy — the hand
+    // and the compass are gold. This was navy for one commit because it was
+    // traced from public/logo-hand-navy.png, a recoloured copy used as a
+    // bullet in the page body, which is not the mark.
+    const svg = readFileSync(SOURCE, "utf8").replace(/<!--[\s\S]*?-->/g, "");
+    const inks = new Set(svg.match(/(?:stroke|fill)="#[0-9a-f]{6}"/gi) ?? []);
+    const gold = [...inks].filter((ink) => /#aa8b52/i.test(ink));
+    assert.ok(gold.length > 0, "the mark is not drawn in --gold #aa8b52");
+    for (const ink of inks) {
+      // Cream is the glove and the compass face, which are white in the logo.
+      assert.ok(/#aa8b52|#fffdf9/i.test(ink), `${ink} is neither the logo's gold nor its cream`);
+    }
+  });
+
   it("is the hand and compass, not the rose on its own", () => {
     // The rose belongs to the map: it is the marker on every pin and the key
     // in the legend. Where the site names itself, it is the whole logo.

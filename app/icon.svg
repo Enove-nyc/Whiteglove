@@ -8,19 +8,31 @@
     before it has parsed any HTML cannot drift away from the SVG a modern one
     uses. Change the shape here and run `node scripts/build-favicon.mjs`.
 
-    WHY IT IS REDRAWN RATHER THAN SHRUNK. public/logo-hand-navy.png is the real
-    artwork, and it is fine line-work: at 32 pixels it still reads, and at 16 it
-    dissolves into a grey smudge — which is what "a coloured background" looked
-    like on the tab. A favicon is sixteen pixels. It gets the same mark drawn
+    GOLD, BECAUSE THE MARK IS GOLD. public/logo.png is the logo, and in it only
+    the "White Glove" wordmark is navy — the hand and the compass are drawn in
+    gold, #aa8b52, the site's own gold token. This was navy for one commit
+    because it was traced from public/logo-hand-navy.png, which is a recoloured
+    copy used as a bullet in the page body and is not the mark.
+
+    (Nothing in this comment may contain two hyphens in a row. An SVG served as
+    image/svg+xml is parsed as XML, where that ends the comment — the file
+    becomes malformed and a browser draws no icon at all. tests/favicon.test.ts
+    checks it, because the failure is silent everywhere except the tab.)
+
+    WHY IT IS REDRAWN RATHER THAN SHRUNK. The real artwork is fine line-work: at
+    32 pixels it still reads, and at 16 it dissolves into a pale smudge — which
+    is what "a gold background" looked like on the tab, and was an honest
+    description of it. A favicon is sixteen pixels. It gets the same mark drawn
     with a weight that survives them: the compass large enough for its rose to
     register, the hand reduced to the gesture that identifies it — two fingers
-    over the top, the palm cupping underneath, the cuff at the wrist.
+    over the top, the palm cupping underneath, the cuff at the wrist. Bold, so
+    it reads as a gold MARK rather than a gold smear.
 
     NO BACKGROUND TILE. The square behind it is transparent, so nothing sits
-    behind the mark on a tab strip of any colour. It stays legible in both
+    behind the mark on a tab strip of any colour. It stays legible on both
     because the artwork itself carries a light and a dark: the glove and the
-    compass face are filled cream, the outline and the rose are navy. On a pale
-    tab the navy reads; on a dark one the cream does. That cream is the logo's
+    compass face are filled cream, the outline and the rose are gold. On a pale
+    tab the gold reads; on a dark one the cream does. That cream is the logo's
     own — the glove is white — not a plate put behind it.
 
     The compass rose keeps its own job: it is the map's marker (lib/map-icons.ts)
@@ -29,19 +41,19 @@
   -->
   <path
     d="M17.8 6.4 C17.8 3.6 18.4 1.8 19.6 1.8 C20.6 1.8 21.1 2.7 21.2 4.2 C21.5 3.3 22.0 2.9 22.5 3.2 C23.1 3.5 23.2 4.7 22.9 6.8 C22.4 10.4 21.3 13.3 19.6 15.7 C17.4 18.7 13.8 21.1 9.1 22.6 L4.9 23.1 L3.4 18.6 L5.5 17.9 C8.6 16.8 11.1 15.5 13.2 14.0 C15.4 12.3 17.0 10.4 18.1 8.3 C18.7 7.2 19.1 6.3 19.3 5.4 Z"
-    fill="#fffdf9" stroke="#172d52" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round"
+    fill="#fffdf9" stroke="#aa8b52" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round"
   />
   <path
     d="M5.0 23.2 L1.9 19.9 L3.3 18.5 L6.4 21.8 Z"
-    fill="#fffdf9" stroke="#172d52" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round"
+    fill="#fffdf9" stroke="#aa8b52" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round"
   />
   <path
     d="M21.3 4.6 C21.0 7.0 20.4 9.1 19.4 11.0"
-    fill="none" stroke="#172d52" stroke-width="1.1" stroke-linecap="round"
+    fill="none" stroke="#aa8b52" stroke-width="1.1" stroke-linecap="round"
   />
-  <circle cx="10.7" cy="8.4" r="6.3" fill="#fffdf9" stroke="#172d52" stroke-width="1.6"/>
+  <circle cx="10.7" cy="8.4" r="6.3" fill="#fffdf9" stroke="#aa8b52" stroke-width="1.6"/>
   <path
     d="M10.70 3.40 L11.19 7.93 L13.36 6.40 L11.83 8.57 L16.36 9.06 L11.83 9.55 L13.36 11.72 L11.19 10.19 L10.70 14.72 L10.21 10.19 L8.04 11.72 L9.57 9.55 L5.04 9.06 L9.57 8.57 L8.04 6.40 L10.21 7.93 Z"
-    fill="#172d52"
+    fill="#aa8b52"
   />
 </svg>
