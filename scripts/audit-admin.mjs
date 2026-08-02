@@ -75,6 +75,7 @@ const SCREENS = [
   "/admin/airports",
   "/admin/borders",
   "/admin/planner",
+  "/admin/settings/words",
 ];
 
 const browser = await launchChromium();

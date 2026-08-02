@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN } from "@/lib/features";
 import Footer from "@/components/Footer";
@@ -20,7 +21,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const { contactEmail } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -91,7 +93,7 @@ export default function PrivacyPolicyPage() {
         <Section title="Contact us">
           <p>
             Questions about this policy or your information? Email{" "}
-            <a href="mailto:contact@whitegloveitineraries.com" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">contact@whitegloveitineraries.com</a>.
+            <a href={`mailto:${contactEmail}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">{contactEmail}</a>.
           </p>
         </Section>
       </article>

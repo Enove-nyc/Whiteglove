@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -25,7 +26,7 @@ export default async function ContactPage() {
       <Navbar />
       <PageBlocks blocks={page.blocks} />
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <ContactForm />
+        <ContactForm words={await readWords()} />
       </section>
       <Footer />
     </main>

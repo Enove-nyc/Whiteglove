@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -33,7 +34,7 @@ const preparationChecklist = [
   "Check minyan and mikvah arrangements before Shabbos or a busy yahrzeit period.",
 ];
 
-const verifiedDetails = [
+const verifiedDetails = (contactEmail: string) => [
   {
     label: "Ohel & cemetery",
     title: "Ohel of Reb Elimelech",
@@ -53,7 +54,7 @@ const verifiedDetails = [
     title: "Hachnasas Orchim · Building A",
     detail: "A second facility opposite the kever at Plac Targowy 6B. Public travel information describes guest rooms, a beis midrash, mikveh, hot drinks, and light refreshments; its current contact and booking arrangements are being reconfirmed.",
     action: "Contact White Glove for updates",
-    href: "mailto:contact@whitegloveitineraries.com?subject=Lizhensk%20Hachnasas%20Orchim%20Building%20A",
+    href: `mailto:${contactEmail}?subject=Lizhensk%20Hachnasas%20Orchim%20Building%20A`,
   },
   {
     label: "Medical help",
@@ -71,7 +72,8 @@ const verifiedDetails = [
   },
 ];
 
-export default function LizenskPage() {
+export default async function LizenskPage() {
+  const { contactEmail } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <StructuredData
@@ -120,9 +122,9 @@ Górna 16, 37-300 Leżajsk, Poland" /><div className="mt-8 border-t border-[var(
       <section id="contacts" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <SectionHeading eyebrow="Practical contacts" title="Key information, ready when you need it." description="These details are drawn from the published Lizhensk and local Leżajsk sources. Confirm availability before traveling, especially around Shabbos and the yahrzeit." />
         <div className="mt-12 grid gap-5 md:grid-cols-2">
-          {verifiedDetails.map((item) => <article key={item.title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.label}</p><h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{item.title}</h2><p className="mt-4 leading-7 text-stone-600">{item.detail}</p><a className="mt-6 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold)]" href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noreferrer" : undefined}>{item.action} →</a></article>)}
+          {verifiedDetails(contactEmail).map((item) => <article key={item.title} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.label}</p><h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{item.title}</h2><p className="mt-4 leading-7 text-stone-600">{item.detail}</p><a className="mt-6 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold)]" href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noreferrer" : undefined}>{item.action} →</a></article>)}
         </div>
-        <div className="mt-8 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-light)]">Help us keep this useful</p><p className="mt-2 text-lg text-slate-100">Have a trusted driver, food contact, or current minyan detail for Lizhensk?</p></div><a href="mailto:contact@whitegloveitineraries.com?subject=Lizhensk%20information" className="mt-5 inline-block shrink-0 border border-[var(--gold-light)] px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] transition hover:bg-[var(--gold)] hover:text-[var(--navy-deep)] sm:mt-0">Share a trusted contact</a></div>
+        <div className="mt-8 border border-[var(--gold-light)] bg-[var(--navy)] p-8 text-white sm:flex sm:items-center sm:justify-between sm:gap-8"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-light)]">Help us keep this useful</p><p className="mt-2 text-lg text-slate-100">Have a trusted driver, food contact, or current minyan detail for Lizhensk?</p></div><a href={`mailto:${contactEmail}?subject=Lizhensk%20information`} className="mt-5 inline-block shrink-0 border border-[var(--gold-light)] px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] transition hover:bg-[var(--gold)] hover:text-[var(--navy-deep)] sm:mt-0">Share a trusted contact</a></div>
       </section>
       <Footer />
     </main>

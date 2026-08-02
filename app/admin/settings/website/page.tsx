@@ -3,7 +3,7 @@ import AccessLog from "@/components/AccessLog";
 import BetaNoticeControl from "@/components/BetaNoticeControl";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import SiteLockControl from "@/components/SiteLockControl";
-import { betaStoreAvailable, getBetaNotice } from "@/lib/beta-notice-store";
+import { betaStoreAvailable, getBetaNoticeFresh } from "@/lib/beta-notice-store";
 import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
 import { readSignIns, signInLogAvailable } from "@/lib/signin-log";
 
@@ -14,7 +14,8 @@ export default async function WebsiteAccessSettings() {
     getDashboardStats(),
     getLockedPaths(),
     readSignIns(100),
-    getBetaNotice(),
+    // Uncached: this screen has to show what was saved a second ago.
+    getBetaNoticeFresh(),
   ]);
 
   return (

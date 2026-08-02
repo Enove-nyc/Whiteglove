@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
 import FlightRequestForm from "@/components/FlightRequestForm";
 import Footer from "@/components/Footer";
@@ -48,7 +49,7 @@ export default async function FlightBookingAssistancePage() {
         {/* The page keeps saying what we do — that is the service, and it is
             true. The form is what waits: it does not take requests until the
             concierge side is open. */}
-        <FlightRequestForm open={tripArrangementOpen()} />
+        <FlightRequestForm open={tripArrangementOpen()} words={await readWords()} />
       </section>
       <Footer />
     </main>

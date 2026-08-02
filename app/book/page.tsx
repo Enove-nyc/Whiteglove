@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -51,6 +52,8 @@ export default async function BookPage({
   // The planner links here with the trip's dates already worked out, so nobody
   // has to type them a second time.
   const q = await searchParams;
+  // The paragraph under the heading. /admin/settings/words.
+  const words = await readWords();
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   const prefill = {
     from: clean(q.from),
@@ -93,9 +96,7 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
             <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">Book with cash, or with miles</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Flights, hotels and rental cars in one place. Choose how you&apos;re paying, book it, and keep the rest of the trip together in White Glove.
-            </p>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">{words.bookingNotice}</p>
           </div>
           <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={via.flights} hotelsVia={via.hotels} /></div>
         </div>

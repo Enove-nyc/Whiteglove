@@ -1,5 +1,6 @@
 "use client";
 
+import { BUILT_IN_WORDS, type SiteWords } from "@/data/site-words";
 import DateField from "@/components/DateField";
 import { useState } from "react";
 import ComingSoonNotice from "@/components/ComingSoonNotice";
@@ -36,7 +37,15 @@ const EMPTY = {
   notes: "",
 };
 
-export default function FlightRequestForm({ open }: { open: boolean }) {
+export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
+  open: boolean;
+  /**
+   * The site's own wording, read on the server (/admin/settings/words). The
+   * built-in set is a complete one, so a caller that passes nothing shows
+   * exactly what this said before any of it was editable.
+   */
+  words?: SiteWords;
+}) {
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +103,7 @@ export default function FlightRequestForm({ open }: { open: boolean }) {
       setSent(true);
       setForm(EMPTY);
     } catch {
-      setError("Could not reach us just now. Please try again, or email contact@whitegloveitineraries.com.");
+      setError(`Could not reach us just now. Please try again, or email ${words.contactEmail}.`);
     } finally {
       setBusy(false);
     }
@@ -106,7 +115,7 @@ export default function FlightRequestForm({ open }: { open: boolean }) {
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">We have your flight details.</p>
         <p className="mt-3 text-sm leading-7 text-stone-600">
           A person reads this — nothing is booked automatically, and nothing is charged until you have seen what is
-          proposed and said yes. For anything urgent, email contact@whitegloveitineraries.com.
+          proposed and said yes. For anything urgent, email {words.contactEmail}.
         </p>
         <button
           type="button"
@@ -127,7 +136,7 @@ export default function FlightRequestForm({ open }: { open: boolean }) {
         back to you with what is available.
       </p>
 
-      {!open && <ComingSoonNotice what="Personal flight booking" className="mt-6" />}
+      {!open && <ComingSoonNotice what="Personal flight booking" className="mt-6" contactEmail={words.contactEmail} />}
 
       {/* One disabled fieldset rather than a `disabled` on each field: it takes
           the whole form out of the tab order and out of validation in one

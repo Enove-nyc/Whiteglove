@@ -24,8 +24,13 @@ export function tripArrangementOpen(): boolean {
   return process.env.TRIP_ARRANGEMENT?.trim() === "1";
 }
 
-/** Where to send somebody while a service is closed. */
-export const CONTACT_EMAIL = "contact@whitegloveitineraries.com";
+/*
+ * Where to send somebody while a service is closed USED TO LIVE HERE, as
+ * `CONTACT_EMAIL`, and the address was also typed into four components
+ * separately — so changing where mail should go meant finding five places and
+ * one of them twice. It is now one editable line: BUILT_IN_WORDS.contactEmail
+ * in data/site-words.ts, overridden from /admin/settings/words.
+ */
 
 /**
  * The name of this site, for the pages that have to say it in a sentence.

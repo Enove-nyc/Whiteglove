@@ -1,3 +1,4 @@
+import { readWords } from "@/lib/site-words-store";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,18 +20,19 @@ const utilityLinks = [
   { label: "Owner login", href: "/admin" },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  // Cached and tagged, so putting these two sentences in the owner's hands did
+  // not turn three hundred prerendered pages dynamic. See lib/site-words-store.ts.
+  const words = await readWords();
   return (
     <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#f7f3eb]">
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.25fr_.75fr_1fr] lg:gap-14">
           <div className="min-w-0 border-b border-white/10 pb-9 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-12">
             <Image src="/logo-footer.png" alt="White Glove Itineraries" width={977} height={754} className="h-24 w-auto max-w-full object-contain" />
-            <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">
-              Thoughtfully planned kosher travel and Jewish heritage journeys, with every detail handled with care.
-            </p>
+            <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">{words.footerBlurb}</p>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">
-              Personalized travel, planned with purpose.
+              {words.footerStrapline}
             </p>
           </div>
 

@@ -35,6 +35,18 @@ export default async function AdminSettingsPage() {
       </header>
 
       <section className="mt-8">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The website itself</h2>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Card
+            href="/admin/settings/words"
+            title="The website’s words"
+            detail="The headline on the front page, the address people write to, the line in the footer."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+        </div>
+      </section>
+
+      <section className="mt-8">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Access</h2>
         <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Card
