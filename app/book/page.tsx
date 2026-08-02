@@ -2,6 +2,7 @@ import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
+import { flightsVia, hotelsVia } from "@/lib/booking-partners";
 import { pageMetadata } from "@/lib/seo";
 
 // The one booking page. `/booking` was a second one — same job, different
@@ -65,17 +66,22 @@ export default async function BookPage({
     // Travelpayouts: one free account covering flights, hotels and insurance.
     travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
   };
-  // Flights go through Duffel — searched and booked here — until there is a
-  // Kayak affiliate key to send them out with. A Kayak link without the key
-  // works but earns nothing, so there is no reason to prefer it.
-  const flightsVia = process.env.DUFFEL_ACCESS_TOKEN?.trim() && !affiliate.kayakParams ? "duffel" : "kayak";
-  // Hotels are the same idea with one extra condition. The Duffel token alone
-  // does not mean Stays is enabled on the account — that is approved
-  // separately, and the search 403s until it is. Defaulting to it would
-  // replace a hotel search that works with one that returns an error, so it
-  // takes an explicit DUFFEL_STAYS=1 to switch over. Until then, and whenever
-  // there is a Booking.com affiliate ID to earn on, hotels go to Booking.com.
-  const hotelsVia = process.env.DUFFEL_ACCESS_TOKEN?.trim() && process.env.DUFFEL_STAYS?.trim() === "1" && !affiliate.bookingAid ? "duffel" : "booking";
+  // Flights go to Kayak and hotels to Booking.com unless somebody has said
+  // otherwise, in as many words. The rule used to be "a Duffel token is
+  // present", which meant adding a token to try a search quietly moved every
+  // flight on the site onto it. See lib/booking-partners.ts.
+  // Each variable named rather than handing over process.env: Next substitutes
+  // these by name at build time, so a whole-object read is not the same thing.
+  const via = {
+    flights: flightsVia({
+      DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
+      DUFFEL_FLIGHTS: process.env.DUFFEL_FLIGHTS,
+    }),
+    hotels: hotelsVia({
+      DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
+      DUFFEL_STAYS: process.env.DUFFEL_STAYS,
+    }),
+  };
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -91,7 +97,7 @@ export default async function BookPage({
               Flights, hotels and rental cars in one place. Choose how you&apos;re paying, book it, and keep the rest of the trip together in White Glove.
             </p>
           </div>
-          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={flightsVia} hotelsVia={hotelsVia} /></div>
+          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={via.flights} hotelsVia={via.hotels} /></div>
         </div>
       </section>
 
