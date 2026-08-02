@@ -1,13 +1,20 @@
 import Link from "next/link";
 import AdminAccountsTable from "@/components/AdminAccountsTable";
+import PlanRequests from "@/components/PlanRequests";
+import { listPlanRequests } from "@/lib/account-plan-store";
 import { hasAccountStorage, listAllAccounts } from "@/lib/account-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAccountsPage() {
   const available = hasAccountStorage();
-  const accounts = available ? await listAllAccounts() : [];
+  const [accounts, requests] = available
+    ? await Promise.all([listAllAccounts(), listPlanRequests()])
+    : [[], []];
   const verified = accounts.filter((a) => a.verifiedAt).length;
+  // Read once on the server, so "3 days ago" is worked out in one place and no
+  // component reaches for a clock while it renders.
+  const now = new Date().toISOString();
 
   return (
     <>
@@ -46,6 +53,7 @@ export default async function AdminAccountsPage() {
             <p className="mt-4 text-xs leading-5 text-stone-400">
               This list is private to the owner. Only handle travelers&apos; details in line with your privacy policy — they entrusted their name, email, and phone to book with you.
             </p>
+            <PlanRequests requests={requests} now={now} />
           </>
         )}
       </section>

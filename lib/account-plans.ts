@@ -1,0 +1,179 @@
+/**
+ * What kind of account somebody has.
+ *
+ * Three: the one everybody starts on, Pro, and Business.
+ *
+ * NOTHING IS BEHIND ANY OF THEM YET, and that is deliberate rather than
+ * unfinished. The plans exist so that a person can say which one they want and
+ * the owner can see who asked; what each one eventually includes is his to
+ * decide, and inventing it here would put promises on the website that nobody
+ * has agreed to keep.
+ *
+ * So the rule this file exists to hold: **a plan never decides what anybody can
+ * do.** Nothing reads it to allow or refuse anything. If that changes, it
+ * changes on purpose, in one place, with the words on the page changed to match
+ * — not by a gate quietly appearing somewhere and a traveller finding out that
+ * something they had yesterday now costs money.
+ *
+ * AND NOTHING IS CHARGED. There is no payment of any kind on this site. Asking
+ * for Pro registers interest and tells the owner; it does not take a card, does
+ * not start a subscription, and says so plainly where it is asked for. A page
+ * that looks like a checkout and is not one is worse than no page.
+ */
+
+export const ACCOUNT_PLANS = ["traveler", "pro", "business"] as const;
+export type AccountPlan = (typeof ACCOUNT_PLANS)[number];
+
+/** The one an account has when nobody has said otherwise. */
+export const DEFAULT_PLAN: AccountPlan = "traveler";
+
+export const PLAN_LABELS: Record<AccountPlan, string> = {
+  traveler: "Traveler",
+  pro: "Pro",
+  business: "Business",
+};
+
+/**
+ * What each one is FOR — who it is meant for, not what it includes.
+ *
+ * Written this way on purpose. "Who this is for" is true today; "what you get"
+ * would not be, and the moment it is written down somebody has been promised
+ * it.
+ */
+export const PLAN_BLURB: Record<AccountPlan, string> = {
+  traveler: "Everything on the site, for planning your own trips. This is what every account is.",
+  pro: "For people who plan trips often, or plan them for others.",
+  business: "For a hotel, a kitchen, a shomer or a driver listed in the directory.",
+};
+
+/** Higher means further up. Used only to work out what counts as an upgrade. */
+const RANK: Record<AccountPlan, number> = { traveler: 0, pro: 1, business: 2 };
+
+export function isAccountPlan(value: unknown): value is AccountPlan {
+  return typeof value === "string" && (ACCOUNT_PLANS as readonly string[]).includes(value);
+}
+
+/**
+ * The plan on a record.
+ *
+ * Anything unset or unrecognised is the default. An account made before plans
+ * existed has no field at all, and it is a Traveler — which is exactly what it
+ * was before, so nothing about it changes.
+ */
+export function planOf(record: { plan?: string } | null | undefined): AccountPlan {
+  return isAccountPlan(record?.plan) ? record.plan : DEFAULT_PLAN;
+}
+
+/**
+ * What a person on this plan can ask about.
+ *
+ * Only upwards, and never the one they are on — offering somebody an "upgrade"
+ * to what they already have reads as the site not knowing who they are.
+ * Business is not above Pro in what it costs or gives; it is a different thing,
+ * so somebody on Pro can still ask about it.
+ */
+export function plansToAskAbout(current: AccountPlan): AccountPlan[] {
+  return ACCOUNT_PLANS.filter((plan) => plan !== "traveler" && plan !== current && RANK[plan] >= RANK[current]);
+}
+
+export function isUpgrade(from: AccountPlan, to: AccountPlan): boolean {
+  return to !== "traveler" && to !== from && RANK[to] >= RANK[from];
+}
+
+/**
+ * What each plan gets you, in words.
+ *
+ * Empty for all three, and this is the table those lines go in on the day
+ * there are any. Until then the pages that read it must say so in a sentence
+ * rather than render an empty list — an empty list under a heading reads as
+ * something that failed to load.
+ */
+const PLAN_INCLUDES: Record<AccountPlan, readonly string[]> = {
+  traveler: [],
+  pro: [],
+  business: [],
+};
+
+export function whatYouGet(plan: AccountPlan): readonly string[] {
+  return PLAN_INCLUDES[plan] ?? [];
+}
+
+/* ---- asking for one ---------------------------------------------------- */
+
+/** Where a request has got to. */
+export type PlanRequestState = "asked" | "granted" | "declined";
+
+export type PlanRequest = {
+  /** The account that asked — an email or a phone, the same string it signs in with. */
+  account: string;
+  wanted: AccountPlan;
+  /** Named when the request is for a Business account. */
+  businessName?: string;
+  /** Anything they wanted to say. Never required. */
+  note?: string;
+  askedAt: string;
+  state: PlanRequestState;
+  /** When it stopped being "asked". */
+  answeredAt?: string;
+  /** Who answered it — a name, or "the shared password". */
+  answeredBy?: string;
+};
+
+export const MAX_NOTE = 600;
+export const MAX_BUSINESS_NAME = 120;
+
+/**
+ * Why this request cannot be taken, or null.
+ *
+ * A Business account has to name the business. Not paperwork: the whole point
+ * of one is that it belongs to a business somebody can find in the directory,
+ * and a request that does not say which is a request nobody can act on.
+ */
+export function requestProblem(input: {
+  current: AccountPlan;
+  wanted: unknown;
+  businessName?: string;
+  note?: string;
+}): string | null {
+  if (!isAccountPlan(input.wanted)) return "Choose which kind of account you want.";
+  if (!isUpgrade(input.current, input.wanted)) {
+    return input.wanted === input.current
+      ? `You are already on ${PLAN_LABELS[input.wanted]}.`
+      : "That is not a change this can make.";
+  }
+  if (input.wanted === "business" && !input.businessName?.trim()) return "Tell us the name of the business.";
+  if ((input.businessName?.trim().length ?? 0) > MAX_BUSINESS_NAME) return `Keep the business name under ${MAX_BUSINESS_NAME} characters.`;
+  if ((input.note?.trim().length ?? 0) > MAX_NOTE) return `Keep the note under ${MAX_NOTE} characters.`;
+  return null;
+}
+
+/**
+ * "asked 3 days ago" — how long a request has been sitting there.
+ *
+ * `now` is an ISO timestamp rather than an epoch because this is worked out on
+ * the server and handed to a screen: a component may not read a clock while it
+ * renders, so the page reads one once and passes the answer down.
+ */
+export function waitingFor(request: PlanRequest, now: string): string {
+  const then = Date.parse(request.askedAt);
+  const at = Date.parse(now);
+  if (Number.isNaN(then) || Number.isNaN(at)) return "at some point";
+  const hours = Math.floor((at - then) / 3_600_000);
+  if (hours < 1) return "in the last hour";
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "yesterday" : `${days} days ago`;
+}
+
+/**
+ * What to say about somebody's plan on their own account page.
+ *
+ * Says what they are on and, when they have asked for something, that the ask
+ * is sitting with a person rather than with a machine that has forgotten it.
+ */
+export function describePlan(plan: AccountPlan, open: PlanRequest | null): string {
+  if (open) {
+    return `You are on ${PLAN_LABELS[plan]}. You asked about ${PLAN_LABELS[open.wanted]} — we have it, and we will be in touch.`;
+  }
+  return `You are on ${PLAN_LABELS[plan]}.`;
+}

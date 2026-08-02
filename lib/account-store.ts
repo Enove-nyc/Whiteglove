@@ -1,4 +1,5 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
+import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
@@ -27,6 +28,16 @@ export type AccountRecord = {
   passwordHash: string;
   salt: string;
   createdAt: string;
+  /**
+   * Traveler, Pro or Business. Absent on every account made before plans
+   * existed, which reads as Traveler — exactly what it was before.
+   *
+   * Set only from the admin (app/admin/accounts/actions.ts). Nothing reads it
+   * to allow or refuse anything; see lib/account-plans.ts for why.
+   */
+  plan?: AccountPlan;
+  planSince?: string;
+  planSetBy?: string;
   verifiedAt?: string;
   verificationCodeHash?: string;
   verificationCodeExpiresAt?: string;
@@ -195,6 +206,8 @@ export type AdminAccountSummary = {
   routeCount: number;
   favoriteCount: number;
   hasItinerary: boolean;
+  /** Traveler, Pro or Business. See lib/account-plans.ts — nothing is behind one yet. */
+  plan: AccountPlan;
 };
 
 const ACCOUNT_PREFIX = "white-glove:account:";
@@ -234,6 +247,7 @@ export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
         routeCount: data.route?.length ?? 0,
         favoriteCount: data.favorites?.length ?? 0,
         hasItinerary: Boolean(data.itinerary),
+        plan: planOf(record),
       };
     }),
   );

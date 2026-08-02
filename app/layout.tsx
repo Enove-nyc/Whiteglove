@@ -20,17 +20,20 @@ export const metadata: Metadata = {
     // stops — it will not offer both on its own. A browser that understands SVG
     // takes this one and stays sharp at any size; anything older falls back to
     // the .ico, which Next links for us and which scripts/build-favicon.mjs
-    // draws from the very same compass rose.
+    // rasterises from this very file, so the two cannot disagree.
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    // Two earlier goes at this, both wrong in different ways. First /icon-192.png
-    // was named here, which is the one file with a solid navy square baked in —
-    // the blue box. Removing it fell back to the full logo, transparent but
-    // drawn in hairlines that cannot resolve at sixteen pixels, so it dissolved
-    // into a gold smudge that read as a gold background. Both complaints were
-    // accurate descriptions of what was on screen.
+    // Three earlier goes at this, each wrong in its own way. /icon-192.png was
+    // named here first, the one file with a solid navy square baked in — the
+    // blue box. Removing it fell back to the full logo, transparent but drawn
+    // in hairlines that cannot resolve at sixteen pixels, so it dissolved into
+    // a gold smudge that read as a gold background. Both complaints were
+    // accurate descriptions of what was on screen. The third was the compass
+    // rose on its own: legible, but the rose is the MAP's mark — it is the pin
+    // on every marker and the key in the legend — and the site does not name
+    // itself with it.
     //
-    // A favicon gets one shape, drawn thick. It is the compass rose from the
-    // logo now — the same mark as the map pins.
+    // app/icon.svg is the logo, the gloved hand holding the compass, redrawn
+    // at a weight that survives sixteen pixels rather than shrunk to them.
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and
