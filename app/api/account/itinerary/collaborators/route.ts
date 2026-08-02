@@ -8,6 +8,7 @@ import {
 } from "@/lib/account-store";
 import { sendItineraryShareEmail } from "@/lib/email";
 import { isPhoneIdentity, normalizeIdentity } from "@/lib/identity";
+import { type TripRole, shareProblem } from "@/lib/trip-roles";
 
 export const dynamic = "force-dynamic";
 
@@ -29,14 +30,22 @@ async function requireAccount() {
 export async function POST(request: NextRequest) {
   const account = await requireAccount();
   if (!account) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  const body = (await request.json().catch(() => null)) as { email?: string } | null;
+  const body = (await request.json().catch(() => null)) as { email?: string; role?: string } | null;
   const typed = body?.email?.trim();
-  if (!typed) return NextResponse.json({ error: "Enter an email address or a phone number." }, { status: 400 });
 
-  const result = await addItineraryCollaborator(account.email, typed);
+  // The role is checked here as well as in the browser, and there is no
+  // default: whoever is sharing decides what this person can do, once, in
+  // front of them. A missing role becoming "editor" through some later
+  // refactor is the kind of accident this file exists to prevent.
+  const problem = shareProblem({ owner: account.email, person: typed ?? "", role: body?.role });
+  if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+  const person0 = typed as string;
+  const role = body?.role as TripRole;
+
+  const result = await addItineraryCollaborator(account.email, person0, role);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
-  const person = normalizeIdentity(typed)?.value ?? typed;
+  const person = normalizeIdentity(person0)?.value ?? person0;
   const url = shareUrl(request, result.shareId);
 
   // Best-effort email; sharing still succeeds even if the email can't be sent.

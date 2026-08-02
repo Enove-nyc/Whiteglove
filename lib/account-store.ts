@@ -3,6 +3,7 @@ import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
+import { type Collaborator, type TripRole, may, readCollaborators, roleOf } from "@/lib/trip-roles";
 import { passwordProblem } from "@/lib/password-rules";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
@@ -61,7 +62,14 @@ export type SavedTrip = {
   route: SavedPlace[];
   /** Public read-only token, when this particular trip is shared. */
   shareId?: string;
-  collaborators?: string[];
+  /**
+   * Who it is shared with and what each may do.
+   *
+   * Stored as `Collaborator[]`. Trips saved before roles existed hold plain
+   * strings; readCollaborators takes both and calls every old one a VIEWER,
+   * which is what they could already do. See lib/trip-roles.ts.
+   */
+  collaborators?: (string | Collaborator)[];
   createdAt: string;
   updatedAt: string;
 };
@@ -79,7 +87,8 @@ export type AccountData = {
   favorites: SavedPlace[];
   itinerary?: Itinerary;
   itineraryShareId?: string;
-  itineraryCollaborators?: string[];
+  /** Strings on trips saved before roles. Read with readCollaborators. */
+  itineraryCollaborators?: (string | Collaborator)[];
   /** Every trip in the account. Absent on accounts made before this existed. */
   trips?: SavedTrip[];
   activeTripId?: string;
@@ -92,6 +101,8 @@ export type SharedTrip = {
   ownerName?: string;
   title: string;
   shareId: string;
+  /** What this person may do on it. Absent on entries written before roles. */
+  role?: TripRole;
 };
 
 export type AccountSummary = {
@@ -669,8 +680,8 @@ export async function deleteTrip(email: string, id: string) {
   // Take its share link down with it, or the link would keep resolving to the
   // account and show whatever trip happened to be open.
   if (going.shareId) await deleteKey(shareKey(going.shareId));
-  for (const collaborator of going.collaborators ?? []) {
-    await removeFromSharedWith(collaborator, normalized);
+  for (const collaborator of readCollaborators(going.collaborators)) {
+    await removeFromSharedWith(collaborator.person, normalized);
   }
   const remaining = trips.filter((t) => t.id !== id);
   const nextActive = activeId === id ? remaining[0].id : activeId;
@@ -737,10 +748,30 @@ async function patchAccountData(email: string, patch: Partial<AccountData>) {
   return ok ? next : null;
 }
 
-/** Current share state for the owner's trip. */
+/** Current share state for the owner's trip, with everyone's role. */
 export async function getItineraryShareState(email: string) {
   const data = await getAccountData(email);
-  return { shareId: data.itineraryShareId, collaborators: data.itineraryCollaborators ?? [] };
+  return { shareId: data.itineraryShareId, collaborators: readCollaborators(data.itineraryCollaborators) };
+}
+
+/**
+ * Who this person is on somebody else's trip, and what they may do.
+ *
+ * The one function the server asks before it changes a shared trip. It reads
+ * the owner's own record every time rather than trusting anything the browser
+ * sent, because the browser is where somebody would lie about being an editor.
+ */
+export async function tripAccessFor(ownerEmail: string, asker: string | null) {
+  const owner = normalizeId(ownerEmail);
+  const collaborators = readCollaborators((await getAccountData(owner)).itineraryCollaborators);
+  const who = asker ? normalizeId(asker) : null;
+  const at = { owner, asker: who, collaborators };
+  return {
+    role: who && who === owner ? ("owner" as const) : roleOf(who, collaborators),
+    canView: may("view", at),
+    canComment: may("comment", at),
+    canEdit: may("edit", at),
+  };
 }
 
 /** Ensure a public share token exists for this account's trip; returns it. */
@@ -766,8 +797,8 @@ export async function stopItineraryShare(email: string) {
   const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   if (data.itineraryShareId) await deleteKey(shareKey(data.itineraryShareId));
-  for (const collaborator of data.itineraryCollaborators ?? []) {
-    await removeFromSharedWith(collaborator, normalized);
+  for (const collaborator of readCollaborators(data.itineraryCollaborators)) {
+    await removeFromSharedWith(collaborator.person, normalized);
   }
   await patchAccountData(normalized, { itineraryShareId: undefined, itineraryCollaborators: [] });
   return true;
@@ -813,7 +844,7 @@ async function removeFromSharedWith(collaboratorEmail: string, ownerEmail: strin
  * you" message, though — a share link is not worth a text message, and the
  * trip is waiting for them either way when they next sign in.
  */
-export async function addItineraryCollaborator(ownerEmail: string, collaboratorEmail: string) {
+export async function addItineraryCollaborator(ownerEmail: string, collaboratorEmail: string, role: TripRole = "viewer") {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const owner = normalizeId(ownerEmail);
   const identity = normalizeIdentity(collaboratorEmail ?? "");
@@ -823,8 +854,13 @@ export async function addItineraryCollaborator(ownerEmail: string, collaboratorE
   const shareId = await ensureItineraryShare(owner);
   if (!shareId) return { ok: false as const, error: "Could not create the share link." };
   const data = await getAccountData(owner);
-  const current = data.itineraryCollaborators ?? [];
-  const collaborators = current.includes(person) ? current : [...current, person].slice(0, 50);
+  const current = readCollaborators(data.itineraryCollaborators);
+  // Sharing with somebody already on it CHANGES their role rather than adding
+  // them twice — which is also how the owner demotes an editor back to a
+  // viewer, so taking access away needs no separate door.
+  const collaborators = current.some((c) => c.person === person)
+    ? current.map((c) => (c.person === person ? { ...c, role } : c))
+    : [...current, { person, role, addedAt: new Date().toISOString() }].slice(0, 50);
   await patchAccountData(owner, { itineraryCollaborators: collaborators });
   const [record] = await Promise.all([getAccountRecord(owner)]);
   await upsertSharedWith(person, { ownerEmail: owner, ownerName: record?.name, title: data.itinerary?.title || "Shared trip", shareId });
@@ -836,7 +872,7 @@ export async function removeItineraryCollaborator(ownerEmail: string, collaborat
   const owner = normalizeId(ownerEmail);
   const person = normalizeId(collaboratorEmail);
   const data = await getAccountData(owner);
-  const collaborators = (data.itineraryCollaborators ?? []).filter((e) => e !== person);
+  const collaborators = readCollaborators(data.itineraryCollaborators).filter((c) => c.person !== person);
   await patchAccountData(owner, { itineraryCollaborators: collaborators });
   await removeFromSharedWith(person, owner);
   return { ok: true as const, collaborators };
@@ -850,9 +886,12 @@ export async function listSharedWithMe(email: string): Promise<SharedTrip[]> {
       const owner = await getShareOwnerEmail(e.shareId);
       if (!owner || normalizeId(owner) !== normalizeId(e.ownerEmail)) return null;
       const data = await getAccountData(owner);
-      // Confirm the person is still a collaborator (owner may have removed them).
-      if (!(data.itineraryCollaborators ?? []).includes(normalizeId(email))) return null;
-      return { ...e, title: data.itinerary?.title || e.title };
+      // Confirm the person is still a collaborator (owner may have removed
+      // them) and carry what they may do, so the list can say so before it is
+      // opened rather than after Save has failed.
+      const role = roleOf(normalizeId(email), readCollaborators(data.itineraryCollaborators));
+      if (!role) return null;
+      return { ...e, title: data.itinerary?.title || e.title, role };
     }),
   );
   return valid.filter((e): e is SharedTrip => e !== null);
