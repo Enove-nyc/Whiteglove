@@ -1,3 +1,4 @@
+import { describeProblem, googleConfig } from "@/lib/google-signin";
 import Footer from "@/components/Footer";
 import LoginForm from "@/components/LoginForm";
 import { smsConfigured } from "@/lib/sms";
@@ -13,8 +14,8 @@ export const metadata = pageMetadata({
   noIndex: true,
 });
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; google?: string; googleSays?: string }> }) {
+  const { next, google, googleSays } = await searchParams;
   // Only a path on this site. A full URL here would turn the sign-in page into
   // an open redirect somebody could point anywhere.
   const back = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
@@ -35,7 +36,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Sign in or create an account</p>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Your personal travel book.</h2>
-          <LoginForm phoneSignupAvailable={smsConfigured()} next={back} />
+          <LoginForm
+            phoneSignupAvailable={smsConfigured()}
+            next={back}
+            googleAvailable={Boolean(googleConfig({ GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET }))}
+            // Two ways this can come back: a short code for the things that go
+            // wrong in the flow, and a sentence for the things worth saying in
+            // full — above all "Google has not verified that address".
+            googleProblem={googleSays?.slice(0, 300) || describeProblem(google) || undefined}
+          />
         </div>
       </section>
       <Footer />

@@ -16,6 +16,8 @@ const HOW_TONE: Record<SignInEntry["how"], string> = {
   // A named administrator, so the line carries an email rather than nothing.
   "admin account": "border-emerald-500 text-emerald-800",
   account: "border-stone-300 text-stone-600",
+  // The same account as a password sign-in; only the way in was different.
+  google: "border-sky-400 text-sky-800",
   invited: "border-emerald-400 text-emerald-800",
 };
 
