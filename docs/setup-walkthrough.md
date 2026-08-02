@@ -311,6 +311,55 @@ What it changes and what it does not:
 
 ---
 
+## 9. Signing in with Google
+
+Optional. Without it everybody signs in with an email and a password exactly as
+they do now; with it they can press one button instead. **It signs them into the
+same account either way** — somebody who already has a password account with
+that email lands in it, with their trips and notes, having simply skipped typing
+the password.
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → pick the same
+   project the Maps key is in (or make a new one; it does not matter which).
+2. **APIs & Services → OAuth consent screen**. If it has never been set up:
+   - *User type*: **External**. *Create*.
+   - *App name*: **White Glove Itineraries**. *User support email*: yours.
+   - *App domain → Application home page*: `https://whitegloveitineraries.com`
+   - *Authorised domains*: add `whitegloveitineraries.com`
+   - *Developer contact*: your email. **Save and continue**.
+   - *Scopes*: leave them. The site only asks for the email address and the
+     name, and both come as standard. **Save and continue**.
+   - *Publishing status*: press **Publish app**. While it says "Testing", only
+     the addresses you list as test users can sign in.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID**.
+   - *Application type*: **Web application**.
+   - *Name*: anything — "White Glove website" will do.
+   - *Authorised JavaScript origins*: `https://whitegloveitineraries.com`
+   - *Authorised redirect URIs*: this one, **exactly**, with no trailing slash:
+
+     ```
+     https://whitegloveitineraries.com/api/account/google/callback
+     ```
+
+     If this does not match character for character, Google refuses the sign-in
+     with an error the visitor can do nothing about. It is the single most
+     common thing to get wrong here.
+   - **Create**. Google shows a **Client ID** and a **Client secret**.
+4. In Vercel, add both:
+   - `GOOGLE_CLIENT_ID` — the client ID (it ends in
+     `.apps.googleusercontent.com`).
+   - `GOOGLE_CLIENT_SECRET` — the client secret.
+5. **Redeploy.** The "Continue with Google" button appears on the sign-in page.
+   Until both are set it is simply not there.
+
+**What to expect afterwards.** An account opened by Google has no password —
+"Forgotten your password?" sets one if they ever want to sign in the other way.
+An address Google has **not verified** is refused rather than linked, and the
+page says so: linking by email means whoever proves they hold an address gets
+the account behind it, so the proof has to be a real one.
+
+---
+
 ## After all of it
 
 Admin → **Settings → Connections** is the one screen that says what is working

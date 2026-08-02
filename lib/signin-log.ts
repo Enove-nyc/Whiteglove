@@ -23,7 +23,7 @@ export type SignInEntry = {
    * same secret for everybody who has ever held it. "admin account" is a named
    * administrator opening the admin as themselves, and carries `email`.
    */
-  how: "full code" | "five-minute code" | "admin code" | "admin account" | "account" | "invited";
+  how: "full code" | "five-minute code" | "admin code" | "admin account" | "account" | "google" | "invited";
   /** The account's email, when there was one. Codes are anonymous by nature. */
   email?: string;
   country?: string;

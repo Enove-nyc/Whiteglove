@@ -45,6 +45,24 @@ export type AccountRecord = {
   verificationRequestedAt?: string;
   resetCodeHash?: string;
   resetCodeExpiresAt?: string;
+  /**
+   * When this account was first signed into with Google.
+   *
+   * The SAME account either way — signing in with Google is this person
+   * skipping the password, not a second identity. Kept so the account screen
+   * can say how they get in, and so support can answer "why is there no
+   * password on this one".
+   */
+  googleLinkedAt?: string;
+  /**
+   * True when the account was opened by signing in with Google and no password
+   * has ever been chosen for it.
+   *
+   * `passwordHash` and `salt` are still filled, with random bytes that are the
+   * hash of nothing — so every existing check keeps working and no password
+   * anybody can type will ever match. "Forgotten password" sets a real one.
+   */
+  noPasswordYet?: boolean;
 };
 
 /**
@@ -322,6 +340,76 @@ export async function createAccount(identifier: string, password: string, name?:
   if (!saved) return { ok: false as const, error: "The account could not be created." };
   await writeJson(dataKey(normalized), { route: [], favorites: [], updatedAt: new Date().toISOString() } satisfies AccountData);
   return { ok: true as const, email: normalized, verificationCode: code };
+}
+
+/**
+ * Sign in with Google, onto the account that is already there.
+ *
+ * THE OWNER'S DECISION: the same account as the password, not a second one.
+ * Somebody who signed up with a password and later presses the Google button
+ * lands in the account they already have, with their trips, their notes and
+ * their boarding passes in it — they have simply skipped typing the password.
+ *
+ * The caller must have already established that GOOGLE VERIFIED THE ADDRESS
+ * (lib/google-signin.ts refuses otherwise). Everything below rests on it: this
+ * hands over an existing account to whoever proved they hold the email.
+ *
+ * A GOOGLE SIGN-IN ALSO COUNTS AS VERIFYING THE ACCOUNT. An account still
+ * waiting on our own six-digit code is verified by this, because Google
+ * checking the address is the same evidence the code was asking for and better
+ * evidence than a code sitting unread in the same inbox.
+ *
+ * A NEW ACCOUNT GETS NO PASSWORD, rather than one nobody chose. The hash is
+ * random bytes — the hash of nothing, so no password anyone types can match —
+ * and `noPasswordYet` records why. "Forgotten password" sets a real one, which
+ * is the same path as any other account and needs nothing new.
+ */
+export async function signInWithGoogle(input: { email: string; name?: string; googleId: string }) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const identity = normalizeIdentity(input.email);
+  if (!identity || identity.kind !== "email") return { ok: false as const, error: "Google did not share a usable email address." };
+  const normalized = identity.value;
+  const now = new Date().toISOString();
+
+  const existing = await getAccountRecord(normalized);
+  if (existing) {
+    const record: AccountRecord = {
+      ...existing,
+      // Read from the record and written back whole, so signing in cannot drop
+      // the password hash, the plan, or anything else added since.
+      name: existing.name || input.name?.trim() || undefined,
+      googleLinkedAt: existing.googleLinkedAt ?? now,
+      verifiedAt: existing.verifiedAt ?? now,
+    };
+    // A pending code is spent: it was asking the question Google just answered,
+    // and leaving it live is one more live credential for no reason.
+    delete record.verificationCodeHash;
+    delete record.verificationCodeExpiresAt;
+    if (!(await writeJson(accountKey(normalized), record))) {
+      return { ok: false as const, error: "Could not sign you in just now. Try again." };
+    }
+    return { ok: true as const, email: normalized, created: false };
+  }
+
+  const salt = randomBytes(16).toString("hex");
+  const record: AccountRecord = {
+    email: normalized,
+    identityKind: "email",
+    name: input.name?.trim() || undefined,
+    salt,
+    // The hash of nothing. Random bytes of the same shape hashPassword makes,
+    // so verifyAccount runs exactly as it always does and never matches.
+    passwordHash: randomBytes(64).toString("hex"),
+    noPasswordYet: true,
+    createdAt: now,
+    googleLinkedAt: now,
+    verifiedAt: now,
+  };
+  if (!(await writeJson(accountKey(normalized), record))) {
+    return { ok: false as const, error: "The account could not be created." };
+  }
+  await writeJson(dataKey(normalized), { route: [], favorites: [], updatedAt: now } satisfies AccountData);
+  return { ok: true as const, email: normalized, created: true };
 }
 
 export async function verifyAccount(email: string, password: string) {

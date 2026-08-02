@@ -87,6 +87,14 @@ export const CONNECTIONS: Connection[] = [
     where: "Set it to https://whitegloveitineraries.com.",
   },
   {
+    vars: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    what: "Signing in with Google.",
+    without:
+      "The Google button does not appear on the sign-in page, and everybody signs in by typing an email and a password as before. Nothing else changes and no account is affected.",
+    weight: "nicety",
+    where: "Google Cloud console, under APIs & Services → Credentials → OAuth client ID (Web application). The redirect URI must be exactly https://whitegloveitineraries.com/api/account/google/callback.",
+  },
+  {
     vars: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],
     what: "Sending email.",
     without:
