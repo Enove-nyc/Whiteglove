@@ -1,5 +1,6 @@
 "use client";
 
+import AddressAndCoordinate from "@/components/AddressAndCoordinate";
 import { useActionState, useState } from "react";
 import type { Photo } from "@prisma/client";
 import MixedText from "@/components/MixedText";
@@ -366,10 +367,6 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
               <span className={captionClass}>Country</span>
               <input name="country" className={inputClass} placeholder="Poland" />
             </label>
-            <label className="block">
-              <span className={captionClass}>Coordinates</span>
-              <input name="coordinates" className={inputClass} placeholder="50.251139, 22.422611" />
-            </label>
             <label className="block sm:col-span-2">
               <span className={captionClass}>Name of the beis hachaim</span>
               <input name="cemeteryName" className={inputClass} placeholder="Leave blank and we call it “Leżajsk — Jewish cemetery”" />
@@ -378,10 +375,14 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
               <span className={captionClass}>Name in Hebrew</span>
               <input name="cemeteryYiddishName" dir="rtl" lang="yi" className={inputClass} />
             </label>
-            <label className="block sm:col-span-2">
-              <span className={captionClass}>Address</span>
-              <input name="address" className={inputClass} placeholder="Górna 16, 37-300 Leżajsk, Poland" />
-            </label>
+            {/* The address and the coordinate together, so the second can be
+                checked against the first. They used to sit in different halves
+                of the form with nothing comparing them. */}
+            <AddressAndCoordinate
+              addressPlaceholder="Górna 16, 37-300 Leżajsk, Poland"
+              captionClass={captionClass}
+              inputClass={inputClass}
+            />
             <label className="block sm:col-span-2">
               <span className={captionClass}>Getting in</span>
               <textarea name="accessNote" rows={2} className={inputClass} placeholder="Who holds the key, when the gate is open." />
