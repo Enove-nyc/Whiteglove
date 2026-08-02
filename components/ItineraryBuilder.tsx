@@ -11,6 +11,7 @@ import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import type { Crossing } from "@/lib/border-crossings";
 import { borderCostForLegs } from "@/lib/border-legs";
+import { documentsForDay, tripDocuments } from "@/lib/trip-documents";
 import { borderIsWorthSaying, formatWait } from "@/lib/border-time";
 import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
@@ -269,7 +270,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       {/* How long until it, and once it starts, where in it you are. Above
           everything else, because on the third morning in Kraków it is the
           only part of this page anybody needs. */}
-      <TripProgressStrip startDate={itin.startDate} endDate={itin.endDate} days={days} onGoToToday={goToToday} />
+      <TripProgressStrip
+        startDate={itin.startDate}
+        endDate={itin.endDate}
+        days={days}
+        documentsToday={todayInTrip ? documentsForDay(tripDocuments(itin), todayInTrip).map((d) => d.attachment) : []}
+        onGoToToday={goToToday}
+      />
 
       {/* Trip header */}
       <section className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_10px_30px_rgba(23,45,82,.06)] sm:p-6">

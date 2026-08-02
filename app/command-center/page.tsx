@@ -3,10 +3,12 @@ import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import MixedText from "@/components/MixedText";
+import TripDocuments from "@/components/TripDocuments";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
 import { stopsForTrip } from "@/lib/command-center-data";
 import { tripAlerts } from "@/lib/trip-alerts";
+import { tripDocuments } from "@/lib/trip-documents";
 import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +61,10 @@ export default async function CommandCenterPage() {
   // The clock time each stop was planned for, which is what decides whether a
   // Friday afternoon runs past candle-lighting.
   const timesById = Object.fromEntries((trip?.itinerary.activities ?? []).map((a) => [a.id, a.startTime]));
+  // Read here, from the owner's own trip. Nothing is fetched — these are the
+  // references the itinerary already holds, and each one opens only for the
+  // account that uploaded it.
+  const documents = tripDocuments(trip?.itinerary);
   const alerts = tripAlerts({
     stops,
     readiness,
@@ -173,6 +179,14 @@ export default async function CommandCenterPage() {
               .filter((item) => !readiness.needsAttention.includes(item))
               .map((item) => <StopCard key={item.stop.id} item={item} today={today} />)}
           </div>
+        </div>
+
+        {/* The passes and tickets, read by the day they are needed rather than
+            by which stop they were filed on. The planner's shape is right for
+            building a trip; this one is right at half past five at the
+            airport. */}
+        <div className="mt-12 border-t border-[var(--gold-light)] pt-10">
+          <TripDocuments documents={documents} today={today} />
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3">
