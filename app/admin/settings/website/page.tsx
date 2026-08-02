@@ -1,14 +1,21 @@
 import Link from "next/link";
 import AccessLog from "@/components/AccessLog";
+import BetaNoticeControl from "@/components/BetaNoticeControl";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import SiteLockControl from "@/components/SiteLockControl";
+import { betaStoreAvailable, getBetaNotice } from "@/lib/beta-notice-store";
 import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
 import { readSignIns, signInLogAvailable } from "@/lib/signin-log";
 
 export const dynamic = "force-dynamic";
 
 export default async function WebsiteAccessSettings() {
-  const [stats, lockedPaths, signIns] = await Promise.all([getDashboardStats(), getLockedPaths(), readSignIns(100)]);
+  const [stats, lockedPaths, signIns, betaNotice] = await Promise.all([
+    getDashboardStats(),
+    getLockedPaths(),
+    readSignIns(100),
+    getBetaNotice(),
+  ]);
 
   return (
     <>
@@ -23,6 +30,7 @@ export default async function WebsiteAccessSettings() {
       <div className="mt-8 space-y-5">
         <SiteLockControl initialLocked={stats.siteLocked} configured={stats.configured} />
         <LockedSectionsControl initialPaths={lockedPaths} available={stats.configured} />
+        <BetaNoticeControl notice={betaNotice} storeReady={betaStoreAvailable()} />
 
         <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
           <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Three ways in</p>
