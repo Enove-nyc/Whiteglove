@@ -22,6 +22,7 @@ import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
+import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
 import StopAttachments from "@/components/StopAttachments";
 import { useViewer } from "@/lib/use-signed-in";
@@ -63,11 +64,18 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "" }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
   /** The server's date, for judging how fresh a border check is. */
   today?: string;
+  /**
+   * The owner's planning figures — how long a day is, how long a stop takes,
+   * how fast the driving goes. Read on the server (/admin/planner sets them).
+   * The shared view and the printed copy read the same set, so one trip cannot
+   * say three different things about the same day.
+   */
+  assume?: PlannerAssumptions;
 }) {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
@@ -181,8 +189,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [crossings, serverToday],
   );
   const days = useMemo(
-    () => (itin.startDate && itin.endDate ? buildDays(itin, borderCost) : []),
-    [itin, borderCost],
+    () => (itin.startDate && itin.endDate ? buildDays(itin, borderCost, assume) : []),
+    [itin, borderCost, assume],
   );
   const summary = useMemo(() => summarize(days), [days]);
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
@@ -230,12 +238,12 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       }
     }
     setPlanNote("Planning the fastest route…");
-    const result = planRoute(working);
+    const result = planRoute(working, assume);
     let planned = result.itinerary;
 
     // Replace the straight-line estimates with real road driving times.
     setPlanNote("Getting real driving times…");
-    const chains = buildDays(planned)
+    const chains = buildDays(planned, borderCost, assume)
       .map((d) => {
         const legs = d.travelLegs;
         if (!legs.length) return [];

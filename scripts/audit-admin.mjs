@@ -69,6 +69,12 @@ const SCREENS = [
   "/admin/add",
   "/admin/settings",
   "/admin/settings/website",
+  // Screens added after this list was written. It is hand-maintained, so it
+  // goes stale exactly when a new screen most needs measuring.
+  "/admin/settings/connections",
+  "/admin/airports",
+  "/admin/borders",
+  "/admin/planner",
 ];
 
 const browser = await launchChromium();

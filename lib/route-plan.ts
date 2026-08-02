@@ -10,14 +10,11 @@
 // (the same estimate the day cards show); the exact road time always comes from
 // the live Maps links.
 
-import { eachDate, estimateTravelMinutes, kmBetween, lodgingForNight, sortDayActivities, type ItinActivity, type Itinerary } from "@/data/itinerary";
+import { eachDate, estimateTravelMinutes, kmBetween, lodgingForNight, sortDayActivities, stopMinutes, type ItinActivity, type Itinerary } from "@/data/itinerary";
+import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions, usableDayHours } from "@/data/planner-assumptions";
 import { coordinatesToPoint } from "@/data/route-utils";
 
-const USABLE_DAY_MINS = 14 * 60;
-const DEFAULT_ACTIVITY_MINS = 90;
-
 const located = (a: ItinActivity) => Boolean(coordinatesToPoint(a.coordinates));
-const stopMins = (a: ItinActivity) => a.durationMins ?? DEFAULT_ACTIVITY_MINS;
 
 /** Where a day begins: last night's lodging, else that day's first fixed stop. */
 function dayAnchor(itin: Itinerary, dates: string[], index: number): string | undefined {
@@ -59,11 +56,11 @@ export function orderDay(acts: ItinActivity[], anchor?: string): ItinActivity[] 
 }
 
 /** Total straight-line driving minutes for a day, including the start anchor. */
-function dayTravelMins(acts: ItinActivity[], anchor?: string): number {
+function dayTravelMins(acts: ItinActivity[], anchor: string | undefined, assume: PlannerAssumptions): number {
   let total = 0;
   let cursor = anchor;
   for (const a of acts) {
-    if (cursor) total += estimateTravelMinutes(kmBetween(cursor, a.coordinates)) ?? 0;
+    if (cursor) total += estimateTravelMinutes(kmBetween(cursor, a.coordinates), assume) ?? 0;
     cursor = a.coordinates ?? cursor;
   }
   return total;
@@ -80,7 +77,9 @@ export type PlanResult = {
  * Plan the whole trip: keep every dated stop on its date, place the undated
  * ones on the day that adds the least driving, and order each day fastest-first.
  */
-export function planRoute(itin: Itinerary): PlanResult {
+export function planRoute(itin: Itinerary, assume: PlannerAssumptions = BUILT_IN_ASSUMPTIONS): PlanResult {
+  const usableDayMins = usableDayHours(assume) * 60;
+  const stopMins = (a: ItinActivity) => stopMinutes(a, assume);
   const dates = eachDate(itin.startDate, itin.endDate);
   if (!dates.length) return { itinerary: itin, placed: 0, unplaceable: [], reordered: false };
 
@@ -109,10 +108,10 @@ export function planRoute(itin: Itinerary): PlanResult {
     dates.forEach((date, index) => {
       const current = byDate.get(date)!;
       const anchor = dayAnchor(itin, dates, index);
-      const busyMins = current.reduce((s, a) => s + stopMins(a), 0) + dayTravelMins(orderDay(current, anchor), anchor);
+      const busyMins = current.reduce((s, a) => s + stopMins(a), 0) + dayTravelMins(orderDay(current, anchor), anchor, assume);
       const withStop = orderDay([...current, stop], anchor);
-      const nextMins = current.reduce((s, a) => s + stopMins(a), 0) + stopMins(stop) + dayTravelMins(withStop, anchor);
-      if (nextMins > USABLE_DAY_MINS) return; // would overfill the day
+      const nextMins = current.reduce((s, a) => s + stopMins(a), 0) + stopMins(stop) + dayTravelMins(withStop, anchor, assume);
+      if (nextMins > usableDayMins) return; // would overfill the day
       const added = nextMins - busyMins;
       if (added < bestCost) {
         bestCost = added;

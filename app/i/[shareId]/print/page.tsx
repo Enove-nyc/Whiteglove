@@ -3,6 +3,7 @@ import PrintableItinerary from "@/components/PrintableItinerary";
 import { emptyItinerary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { burialsForSlugs } from "@/lib/kever-search";
+import { readAssumptions } from "@/lib/planner-settings-store";
 
 export const dynamic = "force-dynamic";
 
@@ -33,5 +34,5 @@ export default async function SharedItineraryPrintPage({ params }: { params: Pro
   // rather than fetched the way the planner has to.
   const burials = burialsForSlugs(itin.activities.map((a) => a.keverSlug ?? ""));
 
-  return <PrintableItinerary itin={itin} burials={burials} sharedBy={shared.ownerName || shared.ownerEmail} />;
+  return <PrintableItinerary itin={itin} burials={burials} sharedBy={shared.ownerName || shared.ownerEmail} assume={await readAssumptions()} />;
 }

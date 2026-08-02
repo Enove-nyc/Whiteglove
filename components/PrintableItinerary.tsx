@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { buildDays, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
+import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
 
 // The printed itinerary — a keepsake document, not a screen dump.
@@ -26,12 +27,23 @@ export default function PrintableItinerary({
   burials,
   /** Whose trip it is, when somebody else is printing it. */
   sharedBy,
+  /**
+   * The owner's planning figures. The same set the planner used, so the paper
+   * copy cannot give a different arrival time from the screen it came off.
+   */
+  assume = BUILT_IN_ASSUMPTIONS,
 }: {
   itin: Itinerary;
   burials: Record<string, string[]>;
   sharedBy?: string;
+  assume?: PlannerAssumptions;
 }) {
-  const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
+  // No border cost, deliberately, and unchanged by the planning figures above.
+  // A printed itinerary is made once and read weeks later; a queue somebody
+  // measured at the crossing in June is not a fact about the morning this page
+  // is actually carried through it. What to put on paper about a border is
+  // still open — see the border crossings screen.
+  const days = itin.startDate && itin.endDate ? buildDays(itin, undefined, assume) : [];
   const title = itin.title || "Itinerary";
   const countries = tripCountries(itin);
   const dates = coverDates(itin.startDate, itin.endDate);

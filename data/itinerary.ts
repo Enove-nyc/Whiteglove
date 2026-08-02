@@ -2,6 +2,7 @@
 // view, and the account store). No DB or browser APIs here.
 
 import { AIRPORTS } from "@/data/airports";
+import { bandFor, BUILT_IN_ASSUMPTIONS, clockToMins, type PlannerAssumptions, usableDayHours } from "@/data/planner-assumptions";
 import { coordinatesToPoint } from "@/data/route-utils";
 
 /**
@@ -355,37 +356,56 @@ export type ItineraryDay = {
   overnightFlight?: ItinFlight | null;
 };
 
-const USABLE_DAY_HOURS = 14; // 8am–10pm planning window
-const DEFAULT_ACTIVITY_HOURS = 1.5;
-const DEFAULT_DAY_START_MINS = 8 * 60; // 08:00 unless the traveler says otherwise
-const LATE_FINISH_MINS = 21 * 60; // a day ending after 21:00 is worth flagging
-const FREE_HOURS_THRESHOLD = 4; // flag a day with this many free hours overall
-const GAP_HOURS_THRESHOLD = 3; // flag an empty gap this long between two stops
+// How long a day is, how long a stop takes, and how fast the driving goes are
+// now in data/planner-assumptions.ts, where the owner's admin screen can change
+// them. BUILT_IN_ASSUMPTIONS holds exactly the figures that used to be written
+// here, so every caller that passes nothing behaves as it always did.
 
-// --- Travel-time estimate ---------------------------------------------
-// The last-resort figure, used only when routing could not be reached at all.
-// Roads are never straight, so scale the straight-line distance up, then apply
-// a speed that reflects the trip type (short hops are slow town driving; long
-// legs run closer to highway speed), plus a fixed allowance for parking and
-// getting going.
-//
-// The speeds below are deliberately on the cautious side. An estimate that runs
-// slightly long costs a traveler nothing; one that runs short hands them free
-// hours that do not exist and a kever they arrive at after it has closed. Every
-// number derived from this is shown with a "≈" and never called a Maps time.
-const ROAD_DETOUR_FACTOR = 1.35;
-const TRANSFER_OVERHEAD_MINS = 10;
 // Beyond this, an airport isn't a ground transfer for the day — it's the other
 // end of a flight (guards against "driving" from Krakow to JFK).
 const MAX_AIRPORT_TRANSFER_KM = 300;
 
-export function estimateTravelMinutes(straightLineKm: number | null): number | null {
+/**
+ * The last-resort travel figure, used only when routing could not be reached.
+ *
+ * Roads are never straight, so scale the straight-line distance up, then apply
+ * a speed that reflects the leg (short hops are slow town driving; long legs
+ * run closer to highway speed), plus a fixed allowance for parking and getting
+ * going.
+ *
+ * The built-in speeds are deliberately on the cautious side. An estimate that
+ * runs slightly long costs a traveler nothing; one that runs short hands them
+ * free hours that do not exist and a kever they arrive at after it has closed.
+ * Every number derived from this is shown with a "≈" and never called a Maps
+ * time.
+ */
+export function estimateTravelMinutes(
+  straightLineKm: number | null,
+  assume: PlannerAssumptions = BUILT_IN_ASSUMPTIONS,
+): number | null {
   if (straightLineKm === null || !Number.isFinite(straightLineKm)) return null;
   if (straightLineKm <= 0.05) return 0; // same spot
-  const roadKm = straightLineKm * ROAD_DETOUR_FACTOR;
-  // Town crawl, rural road, cross-country road, motorway.
-  const kmh = roadKm < 5 ? 22 : roadKm < 25 ? 38 : roadKm < 100 ? 58 : 88;
-  return Math.round((roadKm / kmh) * 60 + TRANSFER_OVERHEAD_MINS);
+  const roadKm = straightLineKm * assume.detourFactor;
+  // Town crawl, back road, cross-country road, motorway — one list, shared with
+  // the admin screen, so a leg cannot be labelled with a band it is not driven at.
+  const kmh = assume[bandFor(straightLineKm, assume).key];
+  return Math.round((roadKm / kmh) * 60 + assume.transferMins);
+}
+
+/**
+ * How long this stop takes when nobody has said.
+ *
+ * A beis hachaim gets its own figure, because it is the one kind of stop the
+ * data can actually tell apart — `keverSlug` is set when the stop came from our
+ * directory — and because it is the one whose length is least like the others.
+ */
+export function defaultStopMins(a: ItinActivity, assume: PlannerAssumptions = BUILT_IN_ASSUMPTIONS): number {
+  return a.keverSlug ? assume.keverMins : assume.stopMins;
+}
+
+/** How long a stop takes: what the traveller typed, else the default above. */
+export function stopMinutes(a: ItinActivity, assume: PlannerAssumptions = BUILT_IN_ASSUMPTIONS): number {
+  return a.durationMins ?? defaultStopMins(a, assume);
 }
 
 /** "1 h 25 m" / "45 min" for a minute count. */
@@ -813,8 +833,22 @@ function borderOnLeg(
  * only wants the days laid out should not have to fetch them. Without it the
  * planner behaves exactly as it did — the border is warned about further down
  * and not counted, which is what it did before this existed.
+ *
+ * `assume` is the owner's set of planning figures (see
+ * data/planner-assumptions.ts). Also optional, and the built-in defaults are
+ * exactly the numbers this file used to carry, so a caller that passes nothing
+ * gets the behaviour it always had. IT MUST BE THE SAME SET EVERYWHERE a trip
+ * is shown: the planner, the shared link and the printed copy reading different
+ * figures would have one trip saying three different things about the same day.
  */
-export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): ItineraryDay[] {
+export function buildDays(
+  itin: Itinerary,
+  borderCostFor?: BorderCostFn,
+  assume: PlannerAssumptions = BUILT_IN_ASSUMPTIONS,
+): ItineraryDay[] {
+  const usableDay = usableDayHours(assume);
+  const defaultDayStartMins = clockToMins(assume.dayStart) ?? 8 * 60;
+  const lateFinishMins = clockToMins(assume.lateFinish) ?? 21 * 60;
   const dates = eachDate(itin.startDate, itin.endDate);
   // Worked out once for the whole trip, not per day: whether two flights are
   // one journey depends on both of them, and on where the traveler sleeps.
@@ -832,7 +866,7 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
       return {
         ...a,
         distanceFromPrev,
-        travelMinutesFromPrev: measured ?? estimateTravelMinutes(distanceFromPrev),
+        travelMinutesFromPrev: measured ?? estimateTravelMinutes(distanceFromPrev, assume),
         travelIsMeasured: measured !== undefined,
         travelSource: roadSource(prev.coordinates, a.coordinates),
       };
@@ -878,7 +912,7 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
     ): TravelLeg | null => {
       const km = kmBetween(from, to);
       const measured = roadMinutes(from, to);
-      const minutes = measured ?? estimateTravelMinutes(km);
+      const minutes = measured ?? estimateTravelMinutes(km, assume);
       if (km === null || minutes === null || minutes <= 0) return null;
       const border = borderOnLeg(borderCostFor, fromPlace, toPlace);
       return {
@@ -956,7 +990,7 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
     const landedAt = arrivalAirport
       ? flightsArriving.map((f) => timeToMins(f.arriveTime)).filter((v): v is number => v !== null).sort((a, b) => a - b)[0] ?? null
       : null;
-    const dayStart = Math.max(timeToMins(itin.dayStartTime) ?? DEFAULT_DAY_START_MINS, landedAt ?? 0);
+    const dayStart = Math.max(timeToMins(itin.dayStartTime) ?? defaultDayStartMins, landedAt ?? 0);
     let clock = dayStart;
     const openingLeg = travelLegs.find((l) => l.kind === "arrive-airport" || l.kind === "from-lodging");
     if (openingLeg) clock += openingLeg.minutes;
@@ -971,7 +1005,7 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
         clock = Math.max(clock, stated);
       }
       a.arrivalTime = minsToTime(clock);
-      clock += a.durationMins ?? DEFAULT_ACTIVITY_HOURS * 60;
+      clock += stopMinutes(a, assume);
       a.departureTime = minsToTime(clock);
     });
     const closingLeg = travelLegs.find((l) => l.kind === "to-lodging" || l.kind === "depart-airport");
@@ -999,7 +1033,7 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
         warnings.push(
           `Running late: leaving at ${minsToTime(dayStart)} you reach ${late[0].name} after its ${late[0].startTime} start. Start earlier, drop a stop, or move it to another day.`,
         );
-      } else if (dayEnd > LATE_FINISH_MINS) {
+      } else if (dayEnd > lateFinishMins) {
         warnings.push(
           `This day finishes around ${minsToTime(dayEnd)} — later than most kevarim and hotels expect. Consider starting earlier or moving a stop.`,
         );
@@ -1011,13 +1045,13 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
     // Free hours: the usable window minus time at the stops AND the time it
     // takes to get between them. Ignoring the driving is what used to report a
     // packed, spread-out day as mostly free.
-    const scheduled = dayActs.reduce((sum, a) => sum + (a.durationMins ? a.durationMins / 60 : DEFAULT_ACTIVITY_HOURS), 0);
+    const scheduled = dayActs.reduce((sum, a) => sum + stopMinutes(a, assume) / 60, 0);
     const committed = scheduled + travelHours;
     const freeHours = dayActs.length
-      ? Math.max(0, Math.round((USABLE_DAY_HOURS - committed) * 10) / 10)
+      ? Math.max(0, Math.round((usableDay - committed) * 10) / 10)
       : travelDay
         ? null
-        : USABLE_DAY_HOURS;
+        : usableDay;
 
     const hasTransfer = travelLegs.some((l) => l.kind !== "stop");
     const travelNote = travelHours >= 0.5 ? ` (after about ${travelHours} h of driving${hasTransfer ? ", including transfers" : " between stops"})` : "";
@@ -1029,15 +1063,15 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
     const timed = dayActs.filter((a) => timeToMins(a.startTime) !== null);
     for (let i = 1; i < timed.length; i += 1) {
       const prevStart = timeToMins(timed[i - 1].startTime) ?? 0;
-      const prevEnd = prevStart + (timed[i - 1].durationMins ?? DEFAULT_ACTIVITY_HOURS * 60);
+      const prevEnd = prevStart + stopMinutes(timed[i - 1], assume);
       const nextStart = timeToMins(timed[i].startTime) ?? 0;
-      const legMins = roadMinutes(timed[i - 1].coordinates, timed[i].coordinates) ?? estimateTravelMinutes(kmBetween(timed[i - 1].coordinates, timed[i].coordinates)) ?? 0;
+      const legMins = roadMinutes(timed[i - 1].coordinates, timed[i].coordinates) ?? estimateTravelMinutes(kmBetween(timed[i - 1].coordinates, timed[i].coordinates), assume) ?? 0;
       const gapHours = Math.round(((nextStart - prevEnd - legMins) / 60) * 10) / 10;
       if (nextStart - prevEnd < legMins) {
         // Not enough time to make it there — a scheduling conflict, not free time.
         hasTimingConflict = true;
         legWarnings.push(`Tight timing: leaving ${timed[i - 1].name} and driving roughly ${formatDuration(legMins)} does not leave enough time before ${timed[i].name} starts at ${timed[i].startTime}.`);
-      } else if (gapHours >= GAP_HOURS_THRESHOLD) {
+      } else if (gapHours >= assume.gapHoursWorthMentioning) {
         // A "gap" that is really a long drive is not offered as free time.
         legWarnings.push(`About ${gapHours} free hours after ${timed[i - 1].name} (not counting the ~${formatDuration(legMins)} drive), with nothing planned until ${timed[i].name} — room for another stop.`);
       }
@@ -1074,11 +1108,11 @@ export function buildDays(itin: Itinerary, borderCostFor?: BorderCostFn): Itiner
     }
 
     if (isEmpty) {
-      warnings.push(`Nothing planned yet — about ${USABLE_DAY_HOURS} hours open. Add stops, or get ideas for the free time below.`);
-    } else if (committed > USABLE_DAY_HOURS) {
-      const over = Math.round((committed - USABLE_DAY_HOURS) * 10) / 10;
-      warnings.push(`This day is over-packed — about ${Math.round(scheduled * 10) / 10} h at the stops plus roughly ${travelHours} h of driving is about ${over} h more than a ${USABLE_DAY_HOURS}-hour day. Consider moving a stop to another day.`);
-    } else if (!hasTimingConflict && missingLocation.length === 0 && freeHours !== null && freeHours >= FREE_HOURS_THRESHOLD) {
+      warnings.push(`Nothing planned yet — about ${usableDay} hours open. Add stops, or get ideas for the free time below.`);
+    } else if (committed > usableDay) {
+      const over = Math.round((committed - usableDay) * 10) / 10;
+      warnings.push(`This day is over-packed — about ${Math.round(scheduled * 10) / 10} h at the stops plus roughly ${travelHours} h of driving is about ${over} h more than a ${usableDay}-hour day. Consider moving a stop to another day.`);
+    } else if (!hasTimingConflict && missingLocation.length === 0 && freeHours !== null && freeHours >= assume.freeHoursWorthMentioning) {
       warnings.push(`About ${freeHours} free hours this day${travelNote} — room for another stop.`);
     }
     warnings.push(...legWarnings);
