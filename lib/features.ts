@@ -30,10 +30,10 @@ export const CONTACT_EMAIL = "contact@whitegloveitineraries.com";
 /**
  * The name of this site, for the pages that have to say it in a sentence.
  *
- * The terms and the privacy policy both named `enovenyc.com`, which is a
- * different business and has nothing to do with this one — it only ever
- * redirected here. A policy that names the wrong company is not a small typo:
- * it is the document a visitor reads to find out who is holding their data.
+ * The terms and the privacy policy once named a different business's domain,
+ * which had nothing to do with this one and has since been given up entirely.
+ * A policy that names the wrong company is not a small typo: it is the
+ * document a visitor reads to find out who is holding their data.
  *
  * One constant rather than the string typed into each page, so the next one
  * cannot be written differently. `siteOrigin()` is not used here because these

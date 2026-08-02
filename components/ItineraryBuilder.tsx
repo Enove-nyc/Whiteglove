@@ -20,6 +20,7 @@ import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
+import StopAttachments from "@/components/StopAttachments";
 import { useViewer } from "@/lib/use-signed-in";
 import { fetchRoadTimes } from "@/lib/road-times";
 import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
@@ -38,6 +39,7 @@ import {
   unscheduledActivities,
   type Itinerary,
   type ItinActivity,
+  type ItinAttachment,
   type ItinFlight,
   type ItinJourney,
   type FlightStop,
@@ -177,6 +179,10 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const burials = useKeverBurials(itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
 
+  // Boarding passes need an account; without one there is nowhere to keep
+  // them that survives closing the browser.
+  const viewer = useViewer();
+
   // The traveler's own date, so the day they are actually on opens first
   // instead of day one. Empty until the browser has said what day it is where
   // they are standing, which is the only place that question has an answer.
@@ -252,6 +258,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
 
   // Change any detail of a stop after it's on the route.
   const updateActivity = (updated: ItinActivity) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === updated.id ? updated : a)) });
+  const setActivityAttachments = (id: string, attachments: ItinAttachment[]) =>
+    persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, attachments } : a)) });
 
   const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
   const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
@@ -459,6 +467,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 <DayCard
                   key={day.date}
                   day={day}
+                  signedIn={Boolean(viewer?.signedIn)}
                   isToday={day.date === todayInTrip}
                   // Day one opens by default, except while the trip is running
                   // — then the day they are on does, and day one is history.
@@ -466,6 +475,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   burials={burials}
                   onMove={moveStopBy}
                   onUpdate={updateActivity}
+                  onSetAttachments={setActivityAttachments}
                   onRemove={removeActivity}
                   onAddStop={addActivity}
                   onSaveLodging={saveLodging}
@@ -543,14 +553,25 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
   defaultOpen?: boolean;
+  /** Boarding passes need an account; without one there is nowhere to put them. */
+  signedIn: boolean;
   burials: Record<string, string[]>;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
+  /**
+   * Only the attachments, by id.
+   *
+   * Not `onUpdate` with the whole row: what the day card holds is a
+   * DayActivity, which carries worked-out arrival times and distances, and
+   * writing one back would store the arithmetic as if the traveller had typed
+   * it.
+   */
+  onSetAttachments: (id: string, attachments: ItinAttachment[]) => void;
   onRemove: (id: string) => void;
   /** Add straight onto this day, so a gap is filled where it is noticed. */
   onAddStop: (a: ItinActivity) => void;
@@ -652,6 +673,17 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
             onCancel={() => setEditingFlight(null)}
           />
         )}
+        {/* The pass goes on the LEG, not the journey. A connection entered as
+            two flights has two passes, and the journey is a reading of them
+            rather than a thing that exists to hang a file on. */}
+        {f.legs.map((legFlight) => (
+          <StopAttachments
+            key={legFlight.id}
+            attachments={legFlight.attachments}
+            signedIn={signedIn}
+            onChange={(attachments) => onUpdateFlight({ ...legFlight, attachments })}
+          />
+        ))}
       </div>
     );
   };
@@ -740,6 +772,13 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
           />
         )}
         {a.address && <p className="mt-2 break-words text-sm leading-6 text-stone-600">{a.address}</p>}
+        {/* The ticket for this stop, kept on the stop. Only the traveller can
+            open it; it is stripped from anything shared or printed. */}
+        <StopAttachments
+          attachments={a.attachments}
+          signedIn={signedIn}
+          onChange={(attachments) => onSetAttachments(a.id, attachments)}
+        />
         {/* No location means no driving time and an overstated free day.
             Say it on the stop, with the way to fix it right there. */}
         {!a.coordinates && editingId !== a.id && (
@@ -893,6 +932,13 @@ function DayCard({ day, isToday, defaultOpen, burials, onMove, onUpdate, onRemov
           <span className="text-stone-400">— not set —</span>
         )}
       </p>
+      {day.lodging && (
+        <StopAttachments
+          attachments={day.lodging.attachments}
+          signedIn={signedIn}
+          onChange={(attachments) => onSaveLodging({ ...day.lodging!, attachments })}
+        />
+      )}
       {day.lodging && editingLodging && (
         <LodgingForm
           startDate={day.date}

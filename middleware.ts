@@ -12,7 +12,8 @@ import {
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
- * (e.g. "enovenyc.com"). Lets one domain stay public for reviewers while the
+ * (e.g. "preview.whitegloveitineraries.com"). Lets one hostname stay public for
+ * reviewers while the
  * main domain stays private. Matching ignores case, port and a "www." prefix.
  */
 function hostIsOpen(request: NextRequest): boolean {
