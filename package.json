@@ -15,7 +15,8 @@
     "export-content": "tsx scripts/export-content.ts",
     "audit:ui": "node scripts/audit-ui.mjs",
     "audit:admin": "node scripts/audit-admin.mjs",
-    "build:sql": "tsx scripts/build-sql.ts"
+    "build:sql": "tsx scripts/build-sql.ts",
+    "audit:outage": "node scripts/audit-outage.mjs"
   },
   "dependencies": {
     "@duffel/components": "^3.17.0",

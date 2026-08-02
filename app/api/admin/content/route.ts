@@ -21,16 +21,16 @@ export async function POST(request: NextRequest) {
 
   if (body.kind === "settings") {
     const saved = await saveSiteSettings((body.data as Record<string, string>) ?? {});
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing site settings." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "location") {
     const saved = await upsertLocation(body.data as Parameters<typeof upsertLocation>[0]);
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing locations." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "accommodation") {
     const saved = await upsertAccommodation(body.data as Parameters<typeof upsertAccommodation>[0]);
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing accommodations." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "locations-bulk") {
     const saved = await upsertLocations(body.data as Parameters<typeof upsertLocations>[0]);
-    if (!saved) return NextResponse.json({ error: "Connect the private database before importing locations." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "suggestion") {
     const payload = body.data as { id?: string; status?: ReviewDecision; reviewerNotes?: string; acceptedInfo?: string; apply?: boolean };
     if (!payload?.id || !payload.status) return NextResponse.json({ error: "Choose a suggestion status." }, { status: 400 });
@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
       acceptedInfo: payload.acceptedInfo ?? "",
     });
     if (saved === "missing") return NextResponse.json({ error: "That suggestion is no longer there." }, { status: 404 });
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing suggestions." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "promotion") {
     const saved = await upsertPromotion(body.data as Parameters<typeof upsertPromotion>[0]);
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing promotions." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "promotion-delete") {
     // This branch did not exist. The Delete button on the advertisements
     // screen has always sent "promotion-delete", so it fell through to
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const id = (body.data as { id?: string } | undefined)?.id;
     if (!id) return NextResponse.json({ error: "Which advertisement?" }, { status: 400 });
     const saved = await deletePromotion(id);
-    if (!saved) return NextResponse.json({ error: "Connect the private database before editing promotions." }, { status: 503 });
+    if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else {
     return NextResponse.json({ error: "Unsupported update type." }, { status: 400 });
   }

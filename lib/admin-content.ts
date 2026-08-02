@@ -180,17 +180,36 @@ function redisConfig() {
  *
  * The same shape lib/hechsher-store.ts and lib/media.ts already use.
  */
-async function redis<T>(command: string, body?: string) {
+/**
+ * Configured, but the store could not be reached at all.
+ *
+ * Told apart from "there is nothing there" ON PURPOSE, and the distinction is
+ * the whole point of it. Every save in this file reads the bundle, changes one
+ * thing and writes the whole thing back — so a read that quietly returned
+ * "empty" during a blip, followed by a write that succeeded, would replace
+ * every location, every listing and every advert with nothing. A hard failure
+ * was protecting against that by accident; this protects against it on purpose.
+ */
+const UNREACHABLE = Symbol("the content store could not be reached");
+
+async function redis<T>(command: string, body?: string): Promise<RedisResult<T> | undefined | typeof UNREACHABLE> {
   const config = redisConfig();
   if (!config) return undefined;
-  const response = await fetch(`${config.url}/${command}`, {
-    method: body === undefined ? "GET" : "POST",
-    headers: { Authorization: `Bearer ${config.token}` },
-    body,
-    cache: "no-store",
-  });
-  if (!response.ok) return undefined;
-  return (await response.json()) as RedisResult<T>;
+  try {
+    const response = await fetch(`${config.url}/${command}`, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { Authorization: `Bearer ${config.token}` },
+      body,
+      cache: "no-store",
+    });
+    if (!response.ok) return undefined;
+    return (await response.json()) as RedisResult<T>;
+  } catch {
+    // A network failure used to come straight out of here and out of the page
+    // that asked. The front page and the route planner both returned a 500
+    // when this store had a blip — because of an advert. See readBundle.
+    return UNREACHABLE;
+  }
 }
 
 function slugify(value: string) {
@@ -319,15 +338,40 @@ function parseBundle(value?: string): AdminContentBundle {
   }
 }
 
+/**
+ * The bundle, for anything that is going to SHOW it.
+ *
+ * An unreachable store reads as the built-in defaults, which for a visitor
+ * means no advert and nothing promoted. That is the right way for this to
+ * fail: an advert that does not appear is a great deal better than a front
+ * page that does not appear.
+ *
+ * NEVER USE THIS FOR A SAVE. See bundleToModify.
+ */
 async function readBundle() {
   const response = await redis<string>(`get/${encodeURIComponent(contentKey)}`);
+  return parseBundle(response === UNREACHABLE ? undefined : response?.result);
+}
+
+/**
+ * The bundle, for anything that is going to WRITE IT BACK, or null.
+ *
+ * Null means the store could not be read — and a save must stop there. Every
+ * save in this file is read-modify-write over one big value, so writing on top
+ * of a bundle that was never actually read would replace the whole content
+ * store with defaults. Losing an edit to a blip is a nuisance; losing three
+ * hundred locations to one is not.
+ */
+async function bundleToModify(): Promise<AdminContentBundle | null> {
+  const response = await redis<string>(`get/${encodeURIComponent(contentKey)}`);
+  if (response === UNREACHABLE) return null;
   return parseBundle(response?.result);
 }
 
 async function writeBundle(bundle: AdminContentBundle) {
   const payload = JSON.stringify({ ...bundle, updatedAt: new Date().toISOString() });
   const response = await redis(`set/${encodeURIComponent(contentKey)}`, payload);
-  return Boolean(response);
+  return response !== undefined && response !== UNREACHABLE;
 }
 
 export function contentStorageIsConfigured() {
@@ -345,27 +389,35 @@ export async function getAdminContent() {
 
 export async function saveSiteSettings(settings: Partial<SiteSettings>) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   return writeBundle({ ...bundle, settings: { ...bundle.settings, ...settings } });
 }
 
 export async function upsertLocation(location: EditableLocation) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const next = bundle.locations.filter((item) => item.id !== location.id).concat({ ...location });
   return writeBundle({ ...bundle, locations: next });
 }
 
 export async function upsertAccommodation(accommodation: EditableAccommodation) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const next = bundle.accommodations.filter((item) => item.id !== accommodation.id).concat({ ...accommodation });
   return writeBundle({ ...bundle, accommodations: next });
 }
 
 export async function upsertLocations(locations: EditableLocation[]) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const incoming = locations.filter((location) => location.id.trim() && location.title.trim());
   const map = new Map(bundle.locations.map((item) => [item.id, item]));
   for (const location of incoming) {
@@ -456,7 +508,9 @@ function isPromotionActive(promotion: Promotion) {
 
 export async function upsertPromotion(promotion: Promotion) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const nextPromotion = normalizePromotion(promotion);
   const promotions = bundle.promotions.filter((item) => item.id !== nextPromotion.id).concat(nextPromotion);
   return writeBundle({ ...bundle, promotions });
@@ -464,7 +518,9 @@ export async function upsertPromotion(promotion: Promotion) {
 
 export async function recordPromotionEvent(id: string, kind: "impression" | "click") {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const promotions = bundle.promotions.map((item) => {
     if (item.id !== id) return item;
     if (kind === "impression") {
@@ -477,7 +533,9 @@ export async function recordPromotionEvent(id: string, kind: "impression" | "cli
 
 /** Remove an advertisement for good. */
 export async function deletePromotion(id: string) {
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   if (!bundle) return null;
   // Kept for a month, the same as every other deletion. An advertisement is an
   // arrangement with somebody — its dates, its placements and its numbers should
@@ -504,8 +562,10 @@ export async function deletePromotion(id: string) {
  * the same id is already there would show as two on the page.
  */
 export async function restorePromotion(promotion: Promotion): Promise<{ ok: boolean; message: string }> {
-  const bundle = await readBundle();
-  if (!bundle) return { ok: false, message: "The content store is not available, so it cannot go back yet." };
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing on top of a bundle that was never
+  // read would replace the whole content store with defaults.
+  if (!bundle) return { ok: false, message: "The private store could not be reached, so it cannot go back yet. Nothing was changed." };
   if (bundle.promotions.some((p) => p.id === promotion.id)) {
     return { ok: false, message: `${promotion.title} is already there.` };
   }
@@ -542,7 +602,9 @@ export async function getPromotionsDashboard() {
 
 export async function addSuggestion(suggestion: Omit<EditSuggestion, "id" | "status" | "createdAt">) {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults.
+  if (!bundle) return false;
   const next: EditSuggestion = {
     ...suggestion,
     id: `suggestion-${slugify(`${suggestion.targetType}-${suggestion.targetId}-${suggestion.name}-${Date.now()}`)}`,
@@ -561,7 +623,11 @@ export async function addSuggestion(suggestion: Omit<EditSuggestion, "id" | "sta
  */
 export async function reviewSuggestion(id: string, input: ReviewInput): Promise<boolean | "missing"> {
   if (!contentStorageIsConfigured()) return false;
-  const bundle = await readBundle();
+  const bundle = await bundleToModify();
+  // The store could not be read. Writing now would replace it with defaults —
+  // and "missing" would tell somebody their suggestion had been deleted, which
+  // is not what happened.
+  if (!bundle) return false;
   if (!bundle.suggestions.some((item) => item.id === id)) return "missing";
   const at = new Date().toISOString();
   const suggestions = bundle.suggestions.map((item) => (item.id === id ? applyReview(item, input, at) : item));
