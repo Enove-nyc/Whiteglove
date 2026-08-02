@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getAccountRecord, getShareOwnerEmail, readSessionEmail, tripAccessFor } from "@/lib/account-store";
+import { accountCookieName, getAccountData, getAccountRecord, getShareOwnerEmail, readSessionEmail, tripAccessFor } from "@/lib/account-store";
+import { sendTripNoteEmail } from "@/lib/email";
+import { isPhoneIdentity } from "@/lib/identity";
 import { addComment, commentStoreAvailable, deleteComment, findComment, readComments, setCommentDone } from "@/lib/trip-comment-store";
-import { commentProblem, mayDelete, mayResolve } from "@/lib/trip-comments";
+import { type TripComment, commentProblem, mayDelete, mayResolve, whoWrote } from "@/lib/trip-comments";
 
 /**
  * Notes on a shared trip.
@@ -67,10 +69,48 @@ export async function POST(request: NextRequest) {
     about: body?.about,
   });
   if (!written) return NextResponse.json({ error: "That could not be saved." }, { status: 503 });
+
+  // Tell the owner, unless he wrote it himself. AFTER the save and never in
+  // its way: the note is already stored, and losing somebody's question
+  // because an email provider was down would be the worst possible trade.
+  // Nothing is awaited into the response for the same reason.
+  if (found.asker !== found.owner) {
+    void notifyOwner(found.owner, found.asker, written, request);
+  }
+
   return NextResponse.json({ ok: true, comments: await readComments(found.owner) });
 }
 
 /** Mark one dealt with, or put it back. */
+/**
+ * The email that says somebody has written on the trip.
+ *
+ * Fire and forget. Every step can fail — no email key, an owner signed in with
+ * a phone number rather than an address, the provider refusing — and none of
+ * them is a reason for the person who wrote the note to see an error.
+ */
+async function notifyOwner(owner: string, from: string, comment: TripComment, request: NextRequest) {
+  try {
+    if (isPhoneIdentity(owner)) return; // Nowhere to send it.
+    const [data, writer] = await Promise.all([getAccountData(owner), getAccountRecord(from)]);
+    const shareId = data.itineraryShareId;
+    if (!shareId) return;
+    const about = comment.about
+      ? [...(data.itinerary?.flights ?? []), ...(data.itinerary?.lodging ?? []), ...(data.itinerary?.activities ?? [])]
+          .find((item) => item.id === comment.about)
+      : null;
+    await sendTripNoteEmail(owner, {
+      fromName: writer?.name?.trim() || whoWrote(comment),
+      tripTitle: data.itinerary?.title || "your trip",
+      note: comment.body,
+      about: about && "name" in about ? (about.name as string) : undefined,
+      url: new URL(`/i/${shareId}`, request.nextUrl.origin).toString(),
+    });
+  } catch {
+    // The note is saved. That is the part that mattered.
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   const found = await whoAndWhat(request);
   if ("error" in found) return found.error;
