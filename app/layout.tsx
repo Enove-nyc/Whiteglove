@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     // the .ico, which Next links for us and which scripts/build-favicon.mjs
     // rasterises from this very file, so the two cannot disagree.
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    // Three earlier goes at this, each wrong in its own way. /icon-192.png was
+    // Four earlier goes at this, each wrong in its own way. /icon-192.png was
     // named here first, the one file with a solid navy square baked in — the
     // blue box. Removing it fell back to the full logo, transparent but drawn
     // in hairlines that cannot resolve at sixteen pixels, so it dissolved into
@@ -30,10 +30,14 @@ export const metadata: Metadata = {
     // accurate descriptions of what was on screen. The third was the compass
     // rose on its own: legible, but the rose is the MAP's mark — it is the pin
     // on every marker and the key in the legend — and the site does not name
-    // itself with it.
+    // itself with it. The fourth was the right shape in the wrong colour: navy,
+    // traced from /logo-hand-navy.png, which is a recoloured bullet and not
+    // the mark. In the logo the hand and compass are gold; only the wordmark
+    // is navy.
     //
-    // app/icon.svg is the logo, the gloved hand holding the compass, redrawn
-    // at a weight that survives sixteen pixels rather than shrunk to them.
+    // app/icon.svg is the logo, the gloved hand holding the compass, in gold,
+    // redrawn at a weight that survives sixteen pixels rather than shrunk to
+    // them.
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and
