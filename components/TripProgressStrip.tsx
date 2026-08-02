@@ -1,7 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { ItineraryDay } from "@/data/itinerary";
+import type { ItinAttachment, ItineraryDay } from "@/data/itinerary";
+import { KIND_LABELS, type AttachmentKind } from "@/lib/attachments";
 import { followAlong, minutesOfClock, tripProgress, type FollowStop } from "@/lib/trip-progress";
 
 /**
@@ -100,12 +101,22 @@ export default function TripProgressStrip({
   startDate,
   endDate,
   days,
+  documentsToday = [],
   onGoToToday,
 }: {
   startDate?: string;
   endDate?: string;
   /** The trip laid out, so the day you are on can be followed. */
   days: ItineraryDay[];
+  /**
+   * The passes and tickets needed today.
+   *
+   * Here rather than only on the stop they hang from, because at half past
+   * five at the airport the question is "give me the pass" and not "which day
+   * did I put it on". Passed in, so this component knows nothing about how a
+   * file is stored or who may open it.
+   */
+  documentsToday?: ItinAttachment[];
   /** Scroll the day open, when today is one of the days on screen. */
   onGoToToday?: (date: string) => void;
 }) {
@@ -209,6 +220,25 @@ export default function TripProgressStrip({
               Tonight: {todayDay.lodging.name}
               {todayDay.lodging.address ? ` — ${todayDay.lodging.address}` : ""}.
             </p>
+          )}
+
+          {/* One tap from the top of the page on the morning it is needed. */}
+          {documentsToday.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">On your phone today</span>
+              {documentsToday.map((document) => (
+                <a
+                  key={document.id}
+                  href={`/api/account/attachments?id=${encodeURIComponent(document.id)}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold)] bg-white px-3.5 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+                >
+                  <span aria-hidden="true" className="mr-1.5">📎</span>
+                  {KIND_LABELS[document.kind as AttachmentKind]?.label ?? "File"}
+                </a>
+              ))}
+            </div>
           )}
         </div>
       )}
