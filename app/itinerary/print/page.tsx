@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { useKeverBurials } from "@/lib/use-kever-burials";
+import { usePlannerAssumptions } from "@/components/usePlannerAssumptions";
 
 // The traveler printing their own trip.
 //
@@ -43,8 +44,12 @@ export default function PrintItineraryPage() {
   }, []);
 
   const burials = useKeverBurials(itin?.activities ?? EMPTY_ACTIVITIES);
+  // Waited for here, unlike everywhere else this is read. A page somebody is
+  // about to send to a printer should be laid out once, with the right times
+  // on it, rather than redrawn under their hands.
+  const { assume, ready } = usePlannerAssumptions();
 
-  if (!itin) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
+  if (!itin || !ready) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
 
-  return <PrintableItinerary itin={itin} burials={burials} />;
+  return <PrintableItinerary itin={itin} burials={burials} assume={assume} />;
 }

@@ -8,6 +8,7 @@ import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
+import { readAssumptions } from "@/lib/planner-settings-store";
 
 export const metadata = pageMetadata({
   title: "Itinerary planner — White Glove Itineraries",
@@ -23,6 +24,9 @@ export default async function ItineraryPage() {
   // Which crossings are on each border and what was found at them. Read here
   // because the planner runs in the browser and the crossings do not.
   const crossings = await allCrossings();
+  // How long a day is, how long a stop takes, how fast the driving goes —
+  // /admin/planner. Read here for the same reason the crossings are.
+  const assume = await readAssumptions();
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -45,7 +49,7 @@ export default async function ItineraryPage() {
 
         <div className="itinerary-planner mt-8">
           <SharedWithMe />
-          <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} />
+          <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} />
         </div>
 
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />

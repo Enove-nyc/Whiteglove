@@ -7,6 +7,9 @@ import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { allCrossings } from "@/lib/border-store";
+import { borderCostForLegs } from "@/lib/border-legs";
+import { readAssumptions } from "@/lib/planner-settings-store";
 import { getActivePromotions } from "@/lib/admin-content";
 import { burialsForSlugs } from "@/lib/kever-search";
 
@@ -42,7 +45,12 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   }
 
   const itin = { ...emptyItinerary(), ...shared.itinerary };
-  const days = itin.startDate && itin.endDate ? buildDays(itin) : [];
+  // The same two things the planner reads. This page was reading neither, so
+  // one trip gave one set of driving times on the screen it was built on and
+  // another on the link that was sent to the person actually driving it.
+  const [crossings, assume] = await Promise.all([allCrossings(), readAssumptions()]);
+  const borderCost = borderCostForLegs(crossings, new Date().toISOString().slice(0, 10));
+  const days = itin.startDate && itin.endDate ? buildDays(itin, borderCost, assume) : [];
   const sharedByName = shared.ownerName || shared.ownerEmail;
 
   // The same short list the printed cover carries.
