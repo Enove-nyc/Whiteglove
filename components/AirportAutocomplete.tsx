@@ -1,9 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AIRPORTS } from "@/data/airports";
+import { AIRPORTS, type Airport } from "@/data/airports";
 import { metroMatches } from "@/lib/flight-endpoint";
 import { searchTermFor } from "@/lib/kayak-search";
+import { type AddedAirport, type AddedMetro, mergeAirports, mergeMetros } from "@/lib/airport-admin";
+
+/**
+ * The airports the owner added, fetched once and shared by every picker.
+ *
+ * ONE REQUEST FOR THE WHOLE PAGE, not one per box — a multi-city form has six
+ * of these. Kept at module level because the answer is the same for all of
+ * them and does not change while somebody is typing.
+ *
+ * THE BUILT-IN LIST IS NEVER WAITED FOR. It is already in the bundle and
+ * answers the instant somebody types; this only ever adds to it. If the
+ * request fails the box keeps working with the hundred it shipped with, which
+ * is the right way for this to fail.
+ */
+let extrasPromise: Promise<{ airports: AddedAirport[]; metros: AddedMetro[] }> | null = null;
+function loadExtras() {
+  extrasPromise ??= fetch("/api/airports")
+    .then((r) => (r.ok ? r.json() : { airports: [], metros: [] }))
+    .catch(() => ({ airports: [], metros: [] }));
+  return extrasPromise;
+}
 
 // Airport picker for flight search. The dropdown only appears once the traveler
 // types, sits directly under the box, and matches by city too — so "NYC" or
@@ -30,7 +51,15 @@ export default function AirportAutocomplete({
 }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [extras, setExtras] = useState<{ airports: AddedAirport[]; metros: AddedMetro[] }>({ airports: [], metros: [] });
   const boxRef = useRef<HTMLDivElement>(null);
+
+  // Written from the promise's own callback, not from the effect body.
+  useEffect(() => {
+    let alive = true;
+    loadExtras().then((found) => { if (alive) setExtras(found); });
+    return () => { alive = false; };
+  }, []);
 
   // Sync when the value is set from outside (e.g. after a flight-number lookup).
   useEffect(() => { setQuery(value); }, [value]);
@@ -40,9 +69,12 @@ export default function AirportAutocomplete({
   // list reopened empty and there was no way to choose a different airport
   // without deleting the text by hand. Picking one airport locked the field.
   const q = searchTermFor(query).toLowerCase();
-  const cities = q.length >= 1 ? metroMatches(q) : [];
+  // The built-in list with the owner's on top. Until the fetch lands `extras`
+  // is empty, so this is exactly the built-in list and the box works at once.
+  const all: Airport[] = extras.airports.length ? mergeAirports(extras.airports) : AIRPORTS;
+  const cities = q.length >= 1 ? metroMatches(q, all, mergeMetros(extras.metros)) : [];
   const matches = q.length >= 1
-    ? AIRPORTS.filter((a) => `${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`.toLowerCase().includes(q)).slice(0, 8)
+    ? all.filter((a) => `${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`.toLowerCase().includes(q)).slice(0, 8)
     : [];
 
   useEffect(() => {
