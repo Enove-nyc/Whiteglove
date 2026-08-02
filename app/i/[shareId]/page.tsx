@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import Footer from "@/components/Footer";
+import TripComments from "@/components/TripComments";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
@@ -57,6 +58,15 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   // Read straight from the data here — this page renders on the server, so it
   // needs no round trip the way the planner does.
   const burials = burialsForSlugs(itin.activities.map((a) => a.keverSlug ?? ""));
+
+  // What a note can be attached to, by the name a person would recognise. Only
+  // what is still on the trip: a note about a deleted stop is kept and says so
+  // rather than being filed under something that is not there.
+  const commentTargets = [
+    ...itin.flights.map((f) => ({ id: f.id, label: `Flight ${f.from} → ${f.to}` })),
+    ...itin.lodging.filter((l) => l.name?.trim()).map((l) => ({ id: l.id, label: l.name })),
+    ...itin.activities.filter((a) => a.name?.trim()).map((a) => ({ id: a.id, label: a.name })),
+  ];
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", `/i/${shareId}`, device);
@@ -127,6 +137,17 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-700">{itin.notes.trim()}</p>
           </div>
         )}
+
+        {/* Notes from the people this was shared with. Reading and writing are
+            both checked on the server against the owner's record — this only
+            decides what to draw. Signed-out visitors see nothing at all. */}
+        <TripComments
+          shareId={shareId}
+          owner={shared.ownerEmail}
+          now={new Date().toISOString()}
+          liveIds={commentTargets.map((t) => t.id)}
+          labels={Object.fromEntries(commentTargets.map((t) => [t.id, t.label]))}
+        />
 
         <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
 
