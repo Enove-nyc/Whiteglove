@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import BetaNoticeModal from "@/components/BetaNoticeModal";
 import IdleLogout from "@/components/IdleLogout";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
+import { getBetaNotice } from "@/lib/beta-notice-store";
 import { siteOrigin } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -16,28 +18,30 @@ export const metadata: Metadata = {
   applicationName: "White Glove Itineraries",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
-    // The SVG named explicitly, because the App Router links favicon.ico and
-    // stops — it will not offer both on its own. A browser that understands SVG
-    // takes this one and stays sharp at any size; anything older falls back to
-    // the .ico, which Next links for us and which scripts/build-favicon.mjs
-    // rasterises from this very file, so the two cannot disagree.
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    // Four earlier goes at this, each wrong in its own way. /icon-192.png was
-    // named here first, the one file with a solid navy square baked in — the
-    // blue box. Removing it fell back to the full logo, transparent but drawn
-    // in hairlines that cannot resolve at sixteen pixels, so it dissolved into
-    // a gold smudge that read as a gold background. Both complaints were
-    // accurate descriptions of what was on screen. The third was the compass
-    // rose on its own: legible, but the rose is the MAP's mark — it is the pin
-    // on every marker and the key in the legend — and the site does not name
-    // itself with it. The fourth was the right shape in the wrong colour: navy,
-    // traced from /logo-hand-navy.png, which is a recoloured bullet and not
-    // the mark. In the logo the hand and compass are gold; only the wordmark
-    // is navy.
+    // Every icon here is built from public/logo-mark.png — the logo artwork
+    // itself — by scripts/build-icons.mjs. Nothing is drawn by hand any more.
     //
-    // app/icon.svg is the logo, the gloved hand holding the compass, in gold,
-    // redrawn at a weight that survives sixteen pixels rather than shrunk to
-    // them.
+    // Five earlier goes at this. /icon-192.png was named here first, the one
+    // file with a solid navy square baked in: the blue box. Removing it fell
+    // back to the full logo, transparent but shrunk naively, so its hairlines
+    // dissolved into a gold smudge that read as a gold background. Both
+    // complaints were accurate descriptions of what was on screen. The third
+    // was the compass rose alone: legible, but the rose is the MAP's mark —
+    // the pin on every marker, the key in its legend — and the site does not
+    // name itself with it. The fourth and fifth were a redrawing of the logo,
+    // first in the wrong colour and then in the right one. Legible, and still
+    // not the mark.
+    //
+    // What makes the artwork itself work small is not redrawing it but two
+    // steps that keep it: lifting the white out by solving for coverage rather
+    // than keying it, so edges have a real alpha instead of a pale fringe; and
+    // thickening the ink BEFORE shrinking, so a stroke has a pixel to land on.
+    // scripts/build-icons.mjs says how, and why the tab icon is framed tighter
+    // than the app icons.
+    //
+    // app/icon.png is the tab icon; the App Router links favicon.ico for us
+    // and both come out of the same build.
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "96x96" }],
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and
@@ -57,11 +61,15 @@ export const viewport: Viewport = {
   themeColor: "#14213d",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read here rather than in the modal, so the words come from the settings on
+  // the server and the browser is only deciding whether this visitor has
+  // already seen them.
+  const betaNotice = await getBetaNotice();
   return (
     <html
       lang="en"
@@ -80,6 +88,9 @@ export default function RootLayout({
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           {children}
         </div>
+        {/* "This is new — check anything you are going to rely on." Once per
+            visitor, and never over the admin or a sign-in box. */}
+        <BetaNoticeModal notice={betaNotice} />
       </body>
     </html>
   );
