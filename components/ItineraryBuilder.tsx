@@ -7,7 +7,9 @@ import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
+import SendPlaceIn from "@/components/SendPlaceIn";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
+import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import type { Crossing } from "@/lib/border-crossings";
 import { borderCostForLegs } from "@/lib/border-legs";
@@ -138,12 +140,20 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const addFlight = (f: ItinFlight) => persist({ ...itin, flights: [...itin.flights, f] });
   // Adds a stay, or replaces the one with the same id. Editing keeps the id, so
   // changing a hotel changes it rather than leaving two on the same night.
-  const saveLodging = (l: ItinLodging) =>
+  const saveLodging = (l: ItinLodging) => {
+    const isNew = !itin.lodging.some((x) => x.id === l.id);
     persist({
       ...itin,
-      lodging: itin.lodging.some((x) => x.id === l.id) ? itin.lodging.map((x) => (x.id === l.id ? l : x)) : [...itin.lodging, l],
+      lodging: isNew ? [...itin.lodging, l] : itin.lodging.map((x) => (x.id === l.id ? l : x)),
     });
-  const addActivity = (a: ItinActivity) => persist({ ...itin, activities: [...itin.activities, a] });
+    // Only a new one. Editing a hotel that is already here is not the moment
+    // to ask about it — they came to change a date, not to answer a question.
+    if (isNew) void considerPlace(placeFromStay(l));
+  };
+  const addActivity = (a: ItinActivity) => {
+    persist({ ...itin, activities: [...itin.activities, a] });
+    void considerPlace(placeFromStop(a));
+  };
   const removeFlight = (id: string) => persist({ ...itin, flights: itin.flights.filter((x) => x.id !== id) });
   // Editing keeps the id, so the flight is changed rather than swapped for a
   // new one — its connections and its booking reference come with it.
@@ -183,6 +193,12 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // Boarding passes need an account; without one there is nowhere to keep
   // them that survives closing the browser.
   const viewer = useViewer();
+
+  // Somebody adding a place the site has not got is asked whether they would
+  // send it in. Only when signed in — a suggestion needs a name to credit and
+  // somebody to ask back, and collecting an address through a pop-up to get
+  // them would be worse than not asking at all.
+  const { offering, consider: considerPlace, answer: answerOffer } = usePlaceOffer(Boolean(viewer?.signedIn));
 
   // The traveler's own date, so the day they are actually on opens first
   // instead of day one. Empty until the browser has said what day it is where
@@ -503,6 +519,16 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Choose your dates to begin.</p>
           <p className="mt-2 text-sm text-stone-600">Then add flights, hotels, and stops.</p>
         </div>
+      )}
+
+      {/* "You have added somewhere we do not have — would you send it in?"
+          The trip is theirs; nothing leaves it without this being answered. */}
+      {offering && (
+        <SendPlaceIn
+          place={offering}
+          from={{ name: viewer?.name?.trim() || "", email: viewer?.id ?? "" }}
+          onAnswered={answerOffer}
+        />
       )}
     </div>
   );
