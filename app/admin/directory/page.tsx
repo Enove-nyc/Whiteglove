@@ -1,7 +1,7 @@
 import Link from "next/link";
 import DirectoryBrowserAdmin from "@/components/DirectoryBrowserAdmin";
 import { builtInDirectory, type DirectoryEntry } from "@/lib/directory-index";
-import { getPublicProviders } from "@/lib/directory";
+import { describeDirectorySource, readProviders, type DirectorySource } from "@/lib/directory";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +13,17 @@ export const dynamic = "force-dynamic";
 // than a reason to show nothing.
 export default async function AdminDirectoryPage() {
   const entries: DirectoryEntry[] = builtInDirectory();
+  // Where the businesses came from, so this screen can say when it is showing
+  // the ones that ship with the site rather than his. It used to show them
+  // silently, which is how a directory can look as though it has been lost.
+  let source: DirectorySource = "database-failed";
+  let builtInCount = 0;
 
   try {
-    const providers = await getPublicProviders();
-    for (const p of providers) {
+    const reading = await readProviders();
+    source = reading.source;
+    builtInCount = reading.providers.length;
+    for (const p of reading.providers) {
       entries.push({
         id: `business:${p.slug}`,
         kind: "business",
@@ -45,6 +52,13 @@ export default async function AdminDirectoryPage() {
           Every beis hachaim, town and business in one list. Search it, narrow it by country, or show only the
           entries that are still missing something.
         </p>
+
+        {/* Never a reassurance — only ever a reason the list might not be his. */}
+        {describeDirectorySource(source, builtInCount) && (
+          <p className="mt-4 max-w-3xl border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+            <strong>These are not your businesses.</strong> {describeDirectorySource(source, builtInCount)}
+          </p>
+        )}
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/admin/kevarim"
