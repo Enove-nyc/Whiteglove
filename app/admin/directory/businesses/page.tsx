@@ -3,6 +3,7 @@ import DbSetupButton from "@/components/DbSetupButton";
 import DirectoryProviderForm from "@/components/DirectoryProviderForm";
 import { getProviderForAdmin, isDbEnabled, listProvidersForAdmin } from "@/lib/content-admin";
 import { PROVIDER_CATEGORY_LABELS } from "@/data/directory";
+import { businessList, describeBusinessList } from "@/lib/directory-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,10 @@ export default async function AdminDirectoryPage({
   }
   const selected = dbReady && !needsSetup && slug ? await getProviderForAdmin(slug) : null;
   const showForm = Boolean(isNew) || Boolean(selected);
+  // His own AND the ones that ship with the site. The list used to be his own
+  // only, so an empty table read as an empty directory while every visitor was
+  // being shown thirty businesses this screen never mentioned.
+  const list = businessList(providers.map((p) => ({ slug: p.slug, name: p.name, category: p.category as string })));
 
   return (
     <>
@@ -66,9 +71,11 @@ export default async function AdminDirectoryPage({
               + Add a provider
             </Link>
             <nav className="border border-[var(--gold-light)] bg-[#fcfaf6] p-3">
-              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">{providers.length} providers</p>
+              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">
+                {list.ownCount} yours · {list.builtInCount} built in
+              </p>
               <ul className="space-y-1">
-                {providers.map((provider) => {
+                {list.rows.map((provider) => {
                   const active = provider.slug === slug;
                   return (
                     <li key={provider.slug}>
@@ -76,7 +83,16 @@ export default async function AdminDirectoryPage({
                         href={`/admin/directory?slug=${provider.slug}`}
                         className={`flex items-center justify-between gap-2 px-3 py-2.5 text-sm transition ${active ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}
                       >
-                        <span className="min-w-0 truncate font-semibold">{provider.name}</span>
+                        <span className="min-w-0 truncate font-semibold">
+                          {provider.name}
+                          {/* Marked, so nobody mistakes one that ships with the
+                              site for something he entered. */}
+                          {provider.builtIn && (
+                            <span className={`ml-2 text-[9px] font-bold uppercase tracking-[0.1em] ${active ? "text-[var(--gold-light)]" : "text-stone-400"}`}>
+                              built in
+                            </span>
+                          )}
+                        </span>
                         <span className={`shrink-0 text-[9px] font-bold uppercase tracking-[0.1em] ${active ? "text-[var(--gold-light)]" : "text-stone-400"}`}>
                           {PROVIDER_CATEGORY_LABELS[provider.category as keyof typeof PROVIDER_CATEGORY_LABELS]?.english}
                         </span>
@@ -92,9 +108,14 @@ export default async function AdminDirectoryPage({
             {showForm ? (
               <DirectoryProviderForm provider={selected} />
             ) : (
-              <div className="border border-dashed border-[var(--gold-light)] p-10 text-center">
-                <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Pick a provider or add a new one.</p>
-                <p className="mt-2 text-sm text-stone-600">Choose a listing on the left, or press “Add a provider.”</p>
+              <div className="border border-dashed border-[var(--gold-light)] p-10">
+                <p className="text-center font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Pick a provider or add a new one.</p>
+                <p className="mt-2 text-center text-sm text-stone-600">Choose a listing on the left, or press “Add a provider.”</p>
+                {/* The two numbers that used to disagree: what is in the
+                    database, and what a visitor is actually being shown. */}
+                <p className="mt-6 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-left text-sm leading-6 text-stone-700">
+                  {describeBusinessList(list)}
+                </p>
               </div>
             )}
           </div>
