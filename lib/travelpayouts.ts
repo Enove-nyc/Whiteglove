@@ -1,0 +1,193 @@
+/**
+ * Routing the three searches through Travelpayouts, so they earn.
+ *
+ * WHY THIS IS NOT "APPEND THE MARKER". A marker is not a key you sprinkle on a
+ * link. Travelpayouts earns by owning the redirect: the visitor goes to
+ * tp.media, Travelpayouts records the marker and forwards them to the partner.
+ * Adding `marker=761677` to a kayak.com address does nothing at all — Kayak has
+ * never heard of it. That is exactly what the site was doing with the marker it
+ * already had: reading it from the environment, carrying it into the booking
+ * page, and applying it to nothing.
+ *
+ * AND THE PROGRAMME HAS TO MATCH. A redirect link generated for Booking.com
+ * forwards to Booking.com and credits the Booking.com programme. Handing it a
+ * Kayak address does not turn it into a Kayak link; it produces a link that
+ * either fails to forward or forwards untracked. So the pasted link is checked
+ * against the address this site actually builds for that search, and refused —
+ * out loud, before it is saved — when the two disagree. A search can only be
+ * configured into a state that really earns.
+ *
+ * WHAT THE OWNER PASTES is whatever the Travelpayouts dashboard's link builder
+ * gives him for that partner. Nothing to learn, no placeholder syntax, no
+ * programme number to copy by hand — those numbers differ per account and per
+ * programme, and a wrong one is invisible. The link already contains them.
+ */
+
+/** The three searches on /book that hand off to somebody else. */
+export type SearchSlot = "flights" | "hotels" | "cars";
+
+export type SlotInfo = {
+  slot: SearchSlot;
+  label: string;
+  /**
+   * The host this site builds its own search address on. A pasted link has to
+   * forward to the same place, or it is a link for a different programme.
+   */
+  host: string;
+  /** Where that address is built, for anybody going to look. */
+  builtIn: string;
+};
+
+export const SLOTS: readonly SlotInfo[] = [
+  { slot: "flights", label: "Flights", host: "www.kayak.com", builtIn: "lib/kayak-search.ts" },
+  { slot: "hotels", label: "Hotels", host: "www.booking.com", builtIn: "components/BookPartners.tsx" },
+  { slot: "cars", label: "Car hire", host: "www.kayak.com", builtIn: "components/BookPartners.tsx" },
+] as const;
+
+export function slotInfo(slot: SearchSlot): SlotInfo {
+  // Non-null by construction: SLOTS covers the union.
+  return SLOTS.find((s) => s.slot === slot)!;
+}
+
+/** One pasted redirect link per search. Absent means that search goes out direct. */
+export type TravelpayoutsLinks = Partial<Record<SearchSlot, string>>;
+
+/** The hosts Travelpayouts redirects through. */
+const REDIRECT_HOSTS = ["tp.media", "tp.st", "c.travelpayouts.com", "travelpayouts.com"];
+
+function parse(value: string): URL | null {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:" ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+function isRedirectHost(host: string): boolean {
+  const lower = host.toLowerCase();
+  return REDIRECT_HOSTS.some((h) => lower === h || lower.endsWith(`.${h}`));
+}
+
+/**
+ * Why this marker cannot be used, or null.
+ *
+ * Travelpayouts markers are plain numbers. The common mistake is pasting the
+ * whole script tag or the base64 blob out of it, which looks like an ID and is
+ * not one.
+ */
+export function markerProblem(marker: string): string | null {
+  const value = marker.trim();
+  if (!value) return null;
+  if (/<|script|https?:/i.test(value)) {
+    return "That looks like a script or a link rather than the ID. The marker is the plain number from your Travelpayouts dashboard, e.g. 761677.";
+  }
+  if (!/^\d+$/.test(value)) return "A Travelpayouts marker is digits only.";
+  if (value.length < 4) return "That is too short to be a Travelpayouts marker.";
+  return null;
+}
+
+/** The marker a pasted redirect link carries, or "". */
+export function markerIn(pasted: string): string {
+  const url = parse(pasted);
+  return url?.searchParams.get("marker")?.trim() ?? "";
+}
+
+/** The address a pasted redirect link forwards to, or "". */
+export function forwardsTo(pasted: string): string {
+  const url = parse(pasted);
+  const target = url?.searchParams.get("u")?.trim();
+  if (!target) return "";
+  // Travelpayouts accepts the target with or without a scheme.
+  const absolute = parse(target) ?? parse(`https://${target.replace(/^\/+/, "")}`);
+  return absolute?.host ?? "";
+}
+
+/**
+ * Why this pasted link cannot be used for this search, or null.
+ *
+ * Every refusal names the consequence rather than the rule, because the whole
+ * failure mode here is silent: a link that is wrong in any of these ways still
+ * opens a working search page, and the only symptom is that no money ever
+ * arrives.
+ */
+export function linkProblem(pasted: string, slot: SearchSlot): string | null {
+  const value = pasted.trim();
+  if (!value) return null;
+  const info = slotInfo(slot);
+
+  const url = parse(value);
+  if (!url) {
+    return "That is not a link. Paste the whole address the Travelpayouts link builder gives you, starting with https://.";
+  }
+  if (!isRedirectHost(url.host)) {
+    return (
+      `That link goes straight to ${url.host}, so nothing passes through Travelpayouts and nothing is credited. ` +
+      "Use the link builder in your Travelpayouts dashboard — the link it gives you goes through tp.media."
+    );
+  }
+  if (!markerIn(value)) {
+    return "That link carries no marker, so a booking made through it would not be credited to you. Generate it again from your own dashboard.";
+  }
+
+  const target = forwardsTo(value);
+  if (!target) {
+    return (
+      "That is a short link, and this site has to be able to swap in the traveller's own search. " +
+      "In the link builder, paste a full address for the partner rather than taking the short link, so the link comes back with a u= on the end."
+    );
+  }
+  // The one that catches a genuine mistake: a Booking.com link cannot earn on
+  // a Kayak search, however valid it is in itself.
+  if (target.replace(/^www\./, "") !== info.host.replace(/^www\./, "")) {
+    return (
+      `That link forwards to ${target}, but the ${info.label.toLowerCase()} search on this site opens ${info.host}. ` +
+      `A link made for one partner does not track another. Generate it from the ${info.host} programme, or leave this empty.`
+    );
+  }
+  return null;
+}
+
+/**
+ * The address to actually open: the visitor's search, sent through Travelpayouts.
+ *
+ * NEVER THROWS AND NEVER BREAKS A SEARCH. A link that is missing, malformed or
+ * for the wrong partner gives back the plain search unchanged — the traveller
+ * gets where they were going and the booking simply earns nothing, which is
+ * where the site already was. The alternative, a search that fails because a
+ * setting is wrong, costs a customer to save a commission.
+ */
+export function throughTravelpayouts(searchUrl: string, pasted: string | undefined, slot: SearchSlot): string {
+  if (!pasted?.trim()) return searchUrl;
+  if (linkProblem(pasted, slot)) return searchUrl;
+  const url = parse(pasted);
+  if (!url) return searchUrl;
+  url.searchParams.set("u", searchUrl);
+  return url.toString();
+}
+
+/** What this search is doing right now, in one sentence. Never null. */
+export function describeSlot(slot: SearchSlot, pasted: string | undefined): string {
+  const info = slotInfo(slot);
+  const value = pasted?.trim() ?? "";
+  if (!value) {
+    return `Opens ${info.host} directly. It works, and it earns nothing.`;
+  }
+  const problem = linkProblem(value, slot);
+  if (problem) return `Not in use — ${problem}`;
+  return `Goes through Travelpayouts under marker ${markerIn(value)}, then on to ${info.host}.`;
+}
+
+/** How many of the three are earning, for the top of the screen. */
+export function describeLinks(links: TravelpayoutsLinks): string {
+  const live = SLOTS.filter((s) => !linkProblem(links[s.slot] ?? "", s.slot) && (links[s.slot] ?? "").trim());
+  if (live.length === 0) {
+    return "None of the three searches is going through Travelpayouts yet, so none of them earns anything. Paste a link below to change that.";
+  }
+  if (live.length === SLOTS.length) {
+    return "All three searches go through Travelpayouts. A booking made after one of them should show up in your dashboard.";
+  }
+  const names = live.map((s) => s.label.toLowerCase()).join(" and ");
+  const rest = SLOTS.filter((s) => !live.includes(s)).map((s) => s.label.toLowerCase()).join(" and ");
+  return `${names[0].toUpperCase()}${names.slice(1)} go through Travelpayouts and earn. ${rest[0].toUpperCase()}${rest.slice(1)} still open direct and earn nothing.`;
+}

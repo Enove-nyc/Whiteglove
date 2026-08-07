@@ -175,16 +175,15 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["TRAVELPAYOUTS_MARKER"],
-    // NOT WIRED TO ANYTHING YET, and this says so rather than implying money is
-    // being left on the table by not setting it. The marker was read from the
-    // environment, passed all the way into the booking page and then applied to
-    // no link at all — every search goes to Kayak and Booking.com directly.
-    // Setting it today would change nothing and earn nothing, and a screen that
-    // listed it beside the two that do work would send somebody off to open an
-    // account for no reason.
-    what: "An affiliate account covering flights, hotels and cars under one marker. NOT IN USE YET.",
+    // NOT WHERE THE ROUTING IS SET, and this says so. A marker on its own earns
+    // nothing: Travelpayouts is paid by owning the redirect, so the search has
+    // to be sent through tp.media, not merely tagged. That is a pasted link per
+    // search, and it lives on a screen rather than in the environment — see
+    // /admin/settings/earnings. This variable is only the account number, kept
+    // for reference.
+    what: "Your Travelpayouts account number, for reference. The searches are routed on Settings → What the searches earn.",
     without:
-      "Nothing, today. The searches go straight to Kayak and Booking.com, which have their own keys above. Setting this on its own earns nothing until the searches are pointed through it.",
+      "Nothing changes either way. Whether a search earns depends on the link pasted on the earnings screen, not on this.",
     weight: "nicety",
   },
   {

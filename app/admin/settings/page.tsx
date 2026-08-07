@@ -43,6 +43,12 @@ export default async function AdminSettingsPage() {
             detail="The headline on the front page, the address people write to, the line in the footer."
             state={stats.configured ? undefined : "Needs the private store"}
           />
+          <Card
+            href="/admin/settings/earnings"
+            title="What the searches earn"
+            detail="Route the flight, hotel and car searches through Travelpayouts so a booking made afterwards is credited to you."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
         </div>
       </section>
 
