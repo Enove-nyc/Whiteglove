@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
+import { DEFAULT_PROVIDER, isProvider, type Stay22Settings } from "@/lib/stay22";
+import { saveStay22 } from "@/lib/stay22-store";
 import { listProblem, type TravelExtra } from "@/lib/travel-extras";
 import { saveExtras } from "@/lib/travel-extras-store";
 import { SLOTS, type TravelpayoutsLinks } from "@/lib/travelpayouts";
@@ -74,6 +76,25 @@ export async function saveExtrasAction(_prev: ActionResult | null, form: FormDat
   if (problem) return { ok: false, message: problem };
 
   const saved = await saveExtras(rows);
+  if (saved.ok) {
+    revalidatePath("/admin/settings/earnings");
+    revalidatePath("/book");
+  }
+  return saved;
+}
+
+/** Turning the hotel search over to Stay22, or handing it back. */
+export async function saveStay22Action(_prev: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const refused = await allowed();
+  if (refused) return refused;
+
+  const provider = String(form.get("provider") ?? "");
+  const next: Stay22Settings = {
+    aid: String(form.get("aid") ?? "").trim(),
+    provider: isProvider(provider) ? provider : DEFAULT_PROVIDER,
+  };
+
+  const saved = await saveStay22(next);
   if (saved.ok) {
     revalidatePath("/admin/settings/earnings");
     revalidatePath("/book");

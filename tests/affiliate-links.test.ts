@@ -29,7 +29,10 @@ describe("no partner link goes out untagged", () => {
       // The helper's own definition is not a call.
       if (match[1].trim() === "function") continue;
       const call = match[2];
-      if (/withAffiliate|kayakUrl|affiliate\?\./.test(call)) continue;
+      // allezUrl cannot be built without a Stay22 ID — the ID is a required
+      // field on the settings it takes, and stay22IsOn refuses a malformed one
+      // before it is ever called. So a call to it always carries the money.
+      if (/withAffiliate|kayakUrl|allezUrl|affiliate\?\./.test(call)) continue;
       // A URL built on the line above and tagged there is fine; check back a
       // little for the marker being applied to it.
       const before = SOURCE.slice(Math.max(0, (match.index ?? 0) - 400), match.index);
@@ -53,9 +56,35 @@ describe("no partner link goes out untagged", () => {
       if (match[1].trim() === "function") continue;
       const call = match[2];
       if (/"(flights|hotels|cars)"/.test(call)) continue;
+      // A hand-off built for a network of its own must NOT be routed through
+      // Travelpayouts as well: Stay22 owns its own redirect, and wrapping one
+      // in the other would hand the booking to whichever got there first.
+      if (/allezUrl/.test(call)) continue;
       unrouted.push(call.replace(/\s+/g, " ").slice(0, 70));
     }
     assert.deepEqual(unrouted, [], `a hand-off that can never be routed through Travelpayouts: ${unrouted.join(" | ")}`);
+  });
+});
+
+describe("hotels reach Stay22 when it is on", () => {
+  it("builds the hotel search for Stay22 rather than sending Booking.com's URL through it", () => {
+    // Wrapping a Booking.com search inside an Allez link would work and would
+    // throw away the traveller's dates. The form's own fields are what Allez
+    // wants, so the search is built.
+    assert.match(SOURCE, /if \(stay22IsOn\(affiliate\?\.stay22\)\)/);
+    assert.match(SOURCE, /allezUrl\(/);
+  });
+
+  it("never sends a Stay22 search through Travelpayouts as well", () => {
+    // Two redirects racing for the same booking credits whichever wins, which
+    // is not a thing anybody should be guessing about.
+    const call = SOURCE.slice(SOURCE.indexOf("allezUrl("), SOURCE.indexOf("allezUrl(") + 300);
+    assert.doesNotMatch(call, /travelpayouts/);
+  });
+
+  it("stops the button saying Booking.com when it is no longer Booking.com", () => {
+    // The button is the only warning before a new tab opens somewhere else.
+    assert.match(SOURCE, /searchLabel=\{hotelButtonLabel\(affiliate\?\.stay22\)\}/);
   });
 });
 

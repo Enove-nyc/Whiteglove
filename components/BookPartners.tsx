@@ -5,6 +5,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import BookingSearch from "@/components/BookingSearch";
 import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
+import { allezUrl, hotelButtonLabel, type Stay22Settings, stay22IsOn } from "@/lib/stay22";
 import { type SearchSlot, throughTravelpayouts, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
@@ -34,6 +35,13 @@ export type Affiliate = {
    * Absent means that search opens the partner directly and earns nothing.
    */
   travelpayouts?: TravelpayoutsLinks;
+  /**
+   * Stay22, which sits in front of Booking.com, Expedia and the rest under one
+   * ID. Set means the hotel search is built for Stay22 rather than sent to
+   * Booking.com — the only route to earning on hotels, since Booking.com turned
+   * the site down directly and Travelpayouts has no hotel programme here.
+   */
+  stay22?: Stay22Settings;
 };
 
 // The search panel is laid out the way booking sites lay one out: fields sit
@@ -393,9 +401,22 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
 
   function search() {
     if (!validate()) return;
-    let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
-    if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
-    openPartner(url, "hotels", affiliate?.travelpayouts);
+    // Stay22 is built rather than wrapped: it publishes its search format, and
+    // it wants exactly what this form already holds. So the traveller's own
+    // place and dates carry across properly instead of being smuggled inside
+    // somebody else's URL.
+    if (stay22IsOn(affiliate?.stay22)) {
+      openPartner(
+        allezUrl(
+          { address: dest.trim(), checkin, checkout, adults: Math.max(1, Number(guests) || 1) },
+          affiliate!.stay22!,
+        ),
+      );
+    } else {
+      let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
+      if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
+      openPartner(url, "hotels", affiliate?.travelpayouts);
+    }
     onOpened({
       kind: "hotel",
       summary: `${dest.trim()}, ${checkin} → ${checkout}`,
@@ -418,7 +439,7 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search hotels on Booking.com" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel={hotelButtonLabel(affiliate?.stay22)} />
     </div>
   );
 }

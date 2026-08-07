@@ -22,7 +22,21 @@ import { describeSlot, linkProblem, markerIn, SLOTS, type TravelpayoutsLinks } f
 const input =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 font-mono text-xs text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 
-export default function EarningsForm({ current, storeReady }: { current: TravelpayoutsLinks; storeReady: boolean }) {
+export default function EarningsForm({
+  current,
+  storeReady,
+  hotelsElsewhere,
+}: {
+  current: TravelpayoutsLinks;
+  storeReady: boolean;
+  /**
+   * Set when Stay22 has taken the hotel search over. Without it this screen
+   * would go on saying hotels open Booking.com and earn nothing, which stopped
+   * being true the moment the ID above was saved — and a settings screen that
+   * contradicts the site is worse than one that says less.
+   */
+  hotelsElsewhere?: string;
+}) {
   const [links, setLinks] = useState<TravelpayoutsLinks>(current);
   const [state, act, busy] = useActionState(saveLinksAction, null);
 
@@ -48,7 +62,9 @@ export default function EarningsForm({ current, storeReady }: { current: Travelp
           return (
             <label key={s.slot} className="block rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
               <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">{s.label}</span>
-              <span className="mt-1 block text-sm leading-6 text-stone-600">{describeSlot(s.slot, value)}</span>
+              <span className="mt-1 block text-sm leading-6 text-stone-600">
+                {s.slot === "hotels" && hotelsElsewhere ? hotelsElsewhere : describeSlot(s.slot, value)}
+              </span>
               <input
                 name={s.slot}
                 type="text"

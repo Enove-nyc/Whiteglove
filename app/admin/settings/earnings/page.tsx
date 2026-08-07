@@ -1,6 +1,9 @@
 import Link from "next/link";
 import EarningsForm from "@/components/EarningsForm";
+import Stay22Form from "@/components/Stay22Form";
 import TravelExtrasForm from "@/components/TravelExtrasForm";
+import { readStay22Fresh } from "@/lib/stay22-store";
+import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
 import { describeLinks, SLOTS } from "@/lib/travelpayouts";
 import { readTravelpayoutsLinksFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
@@ -12,6 +15,7 @@ export default async function EarningsSettings() {
   // ago, not what the site is serving.
   const current = await readTravelpayoutsLinksFresh();
   const extras = await readExtrasFresh();
+  const stay22 = await readStay22Fresh();
 
   return (
     <>
@@ -59,7 +63,31 @@ export default async function EarningsSettings() {
         </p>
       </section>
 
-      <EarningsForm current={current} storeReady={travelpayoutsStoreAvailable()} />
+      <section className="mt-12 rounded-lg border border-[var(--gold-light)] bg-white p-5">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Hotels, through Stay22</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Booking.com turned this site down for their own programme, and the Travelpayouts account came back with
+          flights and car hire but no hotels — so of the three searches, the one most likely to be used was the one
+          with no way to earn. Stay22 sits in front of Booking.com, Expedia, Hotels.com, Vrbo and Agoda under a single
+          ID, and takes sites the big ones turn down.
+        </p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Nothing to paste here but the ID. The place, the dates and the number of guests are already on the search
+          form, so the hotel search is built for Stay22 properly rather than wrapped — which means what a traveller
+          typed survives the hand-off.
+        </p>
+        <Stay22Form current={stay22} storeReady={travelpayoutsStoreAvailable()} />
+      </section>
+
+      <EarningsForm
+        current={current}
+        storeReady={travelpayoutsStoreAvailable()}
+        hotelsElsewhere={
+          stay22IsOn(stay22)
+            ? `${describeStay22(stay22)} Nothing pasted in this box is used while that is set.`
+            : undefined
+        }
+      />
 
       <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Everything else worth offering</h2>
