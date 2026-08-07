@@ -3,6 +3,7 @@
 // runtime — so setup needs no terminal. Safe to re-run: it recreates the
 // imported content tables from the static data each time.
 
+import { recordChange } from "@/lib/changes-store";
 import type { PrismaClient } from "@prisma/client";
 import { INIT_SQL } from "@/lib/init-sql";
 import { UPGRADE_SQL } from "@/lib/upgrade-sql";
@@ -147,6 +148,51 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
  * to a *built-in* cemetery or destination is refreshed away, since that parent
  * is reloaded; owner-created cemeteries and their tzaddikim persist.)
  */
+/**
+ * Put the businesses a re-import is about to overwrite into the change history.
+ *
+ * ONLY the ones that would actually change. A re-import that restores a
+ * business to exactly what it already said is not an edit, and recording thirty
+ * of those every time would bury the one that mattered.
+ *
+ * Never throws. A history that cannot be written is not a reason to refuse the
+ * re-import — but it is a reason to say so, which the count returned here lets
+ * the setup result do.
+ */
+async function recordProvidersBeingReplaced(
+  prisma: PrismaClient,
+  slugs: string[],
+  incoming: Array<Record<string, unknown> & { slug: string; name: string }>,
+): Promise<number> {
+  try {
+    const existing = await prisma.directoryProvider.findMany({ where: { slug: { in: slugs } } });
+    const shipped = new Map(incoming.map((p) => [p.slug, p]));
+    let recorded = 0;
+    for (const row of existing) {
+      const next = shipped.get(row.slug);
+      if (!next) continue;
+      // Compare only the fields the import actually writes back — a differing
+      // updatedAt is not something the owner typed.
+      const changed = Object.keys(next).some((field) => {
+        const before = (row as unknown as Record<string, unknown>)[field];
+        return JSON.stringify(before ?? null) !== JSON.stringify(next[field] ?? null);
+      });
+      if (!changed) continue;
+      await recordChange({
+        kind: "business",
+        rowId: row.slug,
+        title: row.name,
+        before: row as unknown as Record<string, unknown>,
+        after: next as Record<string, unknown>,
+      });
+      recorded += 1;
+    }
+    return recorded;
+  } catch {
+    return 0;
+  }
+}
+
 export async function seedDatabase(prisma: PrismaClient) {
   const rows = buildSeedRows();
 
@@ -188,6 +234,23 @@ export async function seedDatabase(prisma: PrismaClient) {
     },
   });
   // These four have no children, so replacing them outright costs nothing.
+  //
+  // EXCEPT THAT IT COSTS THE OWNER'S EDITS, and that is the whole point of the
+  // lines above it. A re-import restores the thirty built-in businesses to what
+  // ships in data/directory.ts — which is what "reload the built-in content"
+  // means and is not a bug. What WAS a bug is that it happened without a trace:
+  // a phone number he corrected, a description he rewrote, the note about who
+  // to ask for — all silently back to the shipped text, with the count still
+  // reading thirty so nothing looked missing until somebody read them.
+  //
+  // Reported as "my whole directory got lost", and rightly.
+  //
+  // Every ordinary edit goes through updateProvider, which records what it said
+  // before. This did not, because it writes to Prisma directly. So it records
+  // them itself, first — one entry per business that is actually about to
+  // change, putting the previous values into /admin/history where the owner can
+  // read them and put any of them back.
+  const replacedProviders = await recordProvidersBeingReplaced(prisma, providerSlugs, rows.directory);
   await prisma.directoryProvider.deleteMany({ where: { slug: { in: providerSlugs } } });
   await prisma.attraction.deleteMany({ where: { slug: { in: rows.attractions.map((a) => a.slug) } } });
   await prisma.kosherStay.deleteMany({ where: { slug: { in: rows.stays.map((s) => s.slug) } } });
@@ -257,6 +320,12 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.tzaddik.createMany({ data: rows.tzaddikim.map(remap) });
   await prisma.contact.createMany({ data: rows.contacts.map(remap) });
   await prisma.practicalPlace.createMany({ data: rows.places.map(remap) });
+  // THIS LINE WAS MISSING, and it is the bug behind "my whole directory got
+  // lost". The re-import deleted all thirty built-in businesses and never wrote
+  // them back — while countSeedRows still reported "imported 30 directory
+  // listings", so the button said it had done the thing it had just undone.
+  // Everything else in the seed had its createMany; this one did not.
+  await prisma.directoryProvider.createMany({ data: rows.directory });
   await prisma.attraction.createMany({ data: rows.attractions });
   await prisma.kosherStay.createMany({ data: rows.stays });
   await prisma.kosherArea.createMany({ data: rows.areas });
@@ -267,5 +336,8 @@ export async function seedDatabase(prisma: PrismaClient) {
     create: DEFAULT_SETTINGS,
   });
 
-  return countSeedRows(rows);
+  // The count of businesses whose own wording this import has just replaced,
+  // alongside the row counts. Silence here is what made a re-import feel like
+  // a lost directory.
+  return { ...countSeedRows(rows), replacedProviders };
 }

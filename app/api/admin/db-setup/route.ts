@@ -37,7 +37,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, tablesCreated: tables.created, upgradedOnly: true });
     }
     const counts = await seedDatabase(prisma);
-    return NextResponse.json({ ok: true, tablesCreated: tables.created, counts });
+    return NextResponse.json({
+      ok: true,
+      tablesCreated: tables.created,
+      counts,
+      // Named separately from the row counts, because it is the only number
+      // here that describes something the owner LOST rather than gained.
+      replacedProviders: counts.replacedProviders,
+      replacedNote:
+        counts.replacedProviders > 0
+          ? `${counts.replacedProviders} ${counts.replacedProviders === 1 ? "business had" : "businesses had"} wording of your own, and the built-in text has replaced it. What each one said before is in Admin → History, and can be put back.`
+          : "",
+    });
   } catch (error) {
     console.error("[db-setup] failed:", error);
     return NextResponse.json(
