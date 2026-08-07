@@ -5,6 +5,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import BookingSearch from "@/components/BookingSearch";
 import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
+import { type SearchSlot, throughTravelpayouts, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
@@ -24,7 +25,16 @@ type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
 type TripKind = "round-trip" | "one-way" | "multi-city";
 
-export type Affiliate = { bookingAid?: string; kayakParams?: string; travelpayoutsMarker?: string };
+export type Affiliate = {
+  bookingAid?: string;
+  kayakParams?: string;
+  travelpayoutsMarker?: string;
+  /**
+   * The redirect link each search is routed through, from /admin/settings/earnings.
+   * Absent means that search opens the partner directly and earns nothing.
+   */
+  travelpayouts?: TravelpayoutsLinks;
+};
 
 // The search panel is laid out the way booking sites lay one out: fields sit
 // shoulder to shoulder inside a single bordered block, divided by hairlines,
@@ -51,8 +61,16 @@ function Field({ label, children, className = "" }: { label: string; children: R
 const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
-function openPartner(url: string) {
-  if (typeof window !== "undefined") window.open(url, "_blank", "noopener,noreferrer");
+/**
+ * Hand the traveller off to the partner, through Travelpayouts when it is set up.
+ *
+ * THE ROUTING LIVES HERE rather than at each call site, because the last time it
+ * did not, the car search went out untagged for months while the settings screen
+ * said the key covered it. One door out means one place to check.
+ */
+function openPartner(url: string, slot?: SearchSlot, links?: TravelpayoutsLinks) {
+  const final = slot ? throughTravelpayouts(url, links?.[slot], slot) : url;
+  if (typeof window !== "undefined") window.open(final, "_blank", "noopener,noreferrer");
 }
 
 /** What a form would put on the trip, once we know it was actually booked. */
@@ -265,7 +283,7 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
   function search() {
     const wanted = checked();
     if (!wanted) return;
-    openPartner(kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams }));
+    openPartner(kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams }), "flights", affiliate?.travelpayouts);
     // The booking itself happens on the other site, where we cannot see it.
     // So ask for it back, with the reference, rather than letting the trip
     // quietly not know about the flight they just paid for.
@@ -377,7 +395,7 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
     if (!validate()) return;
     let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
     if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
-    openPartner(url);
+    openPartner(url, "hotels", affiliate?.travelpayouts);
     onOpened({
       kind: "hotel",
       summary: `${dest.trim()}, ${checkin} → ${checkout}`,
@@ -431,7 +449,11 @@ function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd
 
   function search() {
     if (!validate()) return;
-    openPartner(withAffiliate(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`, affiliate?.kayakParams));
+    openPartner(
+      withAffiliate(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`, affiliate?.kayakParams),
+      "cars",
+      affiliate?.travelpayouts,
+    );
     onOpened({
       kind: "car",
       summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
