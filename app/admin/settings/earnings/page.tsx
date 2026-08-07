@@ -1,5 +1,7 @@
 import Link from "next/link";
 import EarningsForm from "@/components/EarningsForm";
+import TravelExtrasForm from "@/components/TravelExtrasForm";
+import { readExtrasFresh } from "@/lib/travel-extras-store";
 import { describeLinks, SLOTS } from "@/lib/travelpayouts";
 import { readTravelpayoutsLinksFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 
@@ -9,6 +11,7 @@ export default async function EarningsSettings() {
   // Uncached, unlike /book: this screen has to show what was saved a second
   // ago, not what the site is serving.
   const current = await readTravelpayoutsLinksFresh();
+  const extras = await readExtrasFresh();
 
   return (
     <>
@@ -57,6 +60,23 @@ export default async function EarningsSettings() {
       </section>
 
       <EarningsForm current={current} storeReady={travelpayoutsStoreAvailable()} />
+
+      <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Everything else worth offering</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          An eSIM, travel insurance, an airport transfer — anything a traveller buys that is not a flight, a room or a
+          car. These are simpler than the searches above: there is no search to carry across, so the link you paste is
+          the link that opens, and it earns from the moment you save it.
+        </p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          They show under the search on{" "}
+          <Link href="/book" target="_blank" className="underline decoration-[var(--gold)] underline-offset-2">
+            the booking page
+          </Link>
+          , where somebody has just picked their dates.
+        </p>
+        <TravelExtrasForm current={extras} storeReady={travelpayoutsStoreAvailable()} />
+      </section>
     </>
   );
 }
