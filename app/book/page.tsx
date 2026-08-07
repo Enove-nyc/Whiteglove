@@ -1,4 +1,5 @@
 import { readWords } from "@/lib/site-words-store";
+import { readStay22 } from "@/lib/stay22-store";
 import { readTravelpayoutsLinks } from "@/lib/travelpayouts-store";
 import { readExtras } from "@/lib/travel-extras-store";
 import TravelExtras from "@/components/TravelExtras";
@@ -75,6 +76,9 @@ export default async function BookPage({
     // which is what these links do. /admin/settings/earnings.
     travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
     travelpayouts: await readTravelpayoutsLinks(),
+    // Hotels: the only route to earning on them, since Booking.com turned the
+    // site down directly and the Travelpayouts account has no hotel programme.
+    stay22: await readStay22(),
   };
   // Flights go to Kayak and hotels to Booking.com unless somebody has said
   // otherwise, in as many words. The rule used to be "a Duffel token is
