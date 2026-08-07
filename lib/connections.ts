@@ -175,9 +175,17 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["TRAVELPAYOUTS_MARKER"],
-    what: "One affiliate account covering flights, hotels and insurance.",
-    without: "Those links earn nothing. Nothing a traveller sees changes.",
-    weight: "feature",
+    // NOT WIRED TO ANYTHING YET, and this says so rather than implying money is
+    // being left on the table by not setting it. The marker was read from the
+    // environment, passed all the way into the booking page and then applied to
+    // no link at all — every search goes to Kayak and Booking.com directly.
+    // Setting it today would change nothing and earn nothing, and a screen that
+    // listed it beside the two that do work would send somebody off to open an
+    // account for no reason.
+    what: "An affiliate account covering flights, hotels and cars under one marker. NOT IN USE YET.",
+    without:
+      "Nothing, today. The searches go straight to Kayak and Booking.com, which have their own keys above. Setting this on its own earns nothing until the searches are pointed through it.",
+    weight: "nicety",
   },
   {
     vars: ["SITE_ACCESS_PASSWORD"],
