@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import BookingSearch from "@/components/BookingSearch";
-import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem } from "@/lib/kayak-search";
+import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
@@ -179,7 +179,7 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
           <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />
         )
       )}
-      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "cars" && <CarsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "hotels" && <MilesHotelsForm onAdd={addToTrip} />}
@@ -405,7 +405,17 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
   );
 }
 
-function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
+/**
+ * Car hire.
+ *
+ * The affiliate key was never passed in here at all — flights and hotels each
+ * tagged their outgoing link and this one did not, so every car search opened
+ * on Kayak untagged and earned nothing no matter what was configured. The
+ * connections screen has always said KAYAK_AFFILIATE_PARAMS is "your affiliate
+ * key for the flight AND CAR searches that open on Kayak", which was a promise
+ * the code did not keep.
+ */
+function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
   const [loc, setLoc] = useState("");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
@@ -421,7 +431,7 @@ function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBook
 
   function search() {
     if (!validate()) return;
-    openPartner(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`);
+    openPartner(withAffiliate(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`, affiliate?.kayakParams));
     onOpened({
       kind: "car",
       summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
