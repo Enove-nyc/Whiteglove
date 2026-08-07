@@ -1,5 +1,7 @@
 import { readWords } from "@/lib/site-words-store";
 import { readTravelpayoutsLinks } from "@/lib/travelpayouts-store";
+import { readExtras } from "@/lib/travel-extras-store";
+import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -55,6 +57,7 @@ export default async function BookPage({
   const q = await searchParams;
   // The paragraph under the heading. /admin/settings/words.
   const words = await readWords();
+  const extras = await readExtras();
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   const prefill = {
     from: clean(q.from),
@@ -105,6 +108,11 @@ export default async function BookPage({
           <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={via.flights} hotelsVia={via.hotels} /></div>
         </div>
       </section>
+
+      {/* Once the flights are booked: eSIM, insurance, transfers. Under the
+          search rather than above it — the same cards at the top would be a row
+          of adverts in front of the thing they came for. */}
+      <TravelExtras extras={extras} />
 
       {/* Cash and points, set side by side per category. Two independent
           columns of cards never lined up — each card sized to its own text —
