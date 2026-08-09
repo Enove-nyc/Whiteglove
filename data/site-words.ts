@@ -52,20 +52,36 @@ export type SiteWords = {
 /**
  * What the site says today.
  *
- * Copied from the components these replace, character for character. If one of
- * these is edited here, the website changes for everybody with no way to put it
- * back from the admin — which is the situation this file exists to end. Change
- * them from /admin/settings/words.
+ * If one of these is edited here, the website changes for everybody with no way
+ * to put it back from the admin — which is the situation this file exists to
+ * end. Change them from /admin/settings/words.
+ *
+ * THE FRONT-PAGE FOUR WERE REWRITTEN when the site stopped describing itself
+ * kevarim-first. They used to open with "Two kinds of journeys" and name the
+ * heritage side before the vacation side, which is the right emphasis for the
+ * heritage database and the wrong one for a business that plans kosher
+ * holidays. A visitor has about five seconds to work out what a site is for,
+ * and these are the words they spend them on.
+ *
+ * The heritage side is not diminished by this and is not meant to be — it has
+ * its own section, its own identity and its own landing page. It is simply no
+ * longer what the front door says first.
+ *
+ * Anything the owner has already changed from /admin/settings/words still wins
+ * over every line here; only what he has not touched moves.
  */
 export const BUILT_IN_WORDS: SiteWords = {
-  heroEyebrow: "Two kinds of journeys. One standard of care.",
-  heroTitle: "Travel planned around what matters to you.",
+  heroEyebrow: "Kosher vacations, thoughtfully planned",
+  heroTitle: "Plan your next vacation with every kosher detail in place.",
   heroSubtitle:
-    "Jewish heritage nesios to kevarim, and personalized destination planning for kosher travel — with every practical detail handled thoughtfully.",
-  searchPlaceholder: "Search a city, tzaddik, kever, or anything to do…",
+    "Discover where to go, build your itinerary, find kosher food and religious essentials, or let White Glove arrange the trip for you.",
+  // No longer "a city, tzaddik, kever" — the same search still finds all three,
+  // and the box no longer announces the heritage database on every page.
+  searchPlaceholder: "Search a destination, hotel, kosher restaurant, or kever…",
   contactEmail: "contact@whitegloveitineraries.com",
   replyPromise: "We’ll be in touch soon.",
-  footerBlurb: "Thoughtfully planned kosher travel and Jewish heritage journeys, with every detail handled with care.",
+  footerBlurb:
+    "Kosher vacations planned end to end — where to go, where to stay, what to do, and the food, Shabbos and religious essentials arranged around it. Jewish heritage journeys too, in their own section.",
   footerStrapline: "Personalized travel, planned with purpose.",
   bookingNotice:
     "Flights, hotels and rental cars in one place. Choose how you’re paying, book it, and keep the rest of the trip together in White Glove.",
