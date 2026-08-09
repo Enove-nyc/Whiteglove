@@ -99,9 +99,13 @@ export type PendingBooking = {
  * off the public site entirely. lib/booking-partners.ts cannot route the
  * public site to it at all.
  */
-export default function BookPartners({ affiliate, prefill }: { affiliate?: Affiliate; prefill?: Prefill }) {
+export default function BookPartners({ affiliate, prefill, disclosure }: { affiliate?: Affiliate; prefill?: Prefill; disclosure: string }) {
   const [pay, setPay] = useState<Pay>("cash");
-  const [kind, setKind] = useState<Kind>("flights");
+  // HOTELS OPENS, not flights. Accommodation is the one product this site
+  // knows something a comparison site does not — which quarter makes Shabbos
+  // walkable, what is within a walk of it — so it is the tab that earns the
+  // visit. Flights and cars are the same search anybody can run anywhere.
+  const [kind, setKind] = useState<Kind>("hotels");
   const [added, setAdded] = useState(false);
   const [pending, setPending] = useState<PendingBooking | null>(null);
 
@@ -164,8 +168,8 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
 
       {/* ---- What are you booking? ---- */}
       <div className="grid grid-cols-3 gap-1.5 border-b border-[var(--gold-light)] bg-white px-5 py-4 sm:px-8">
-        <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "hotels"} onClick={() => setKind("hotels")}>Hotels</TabButton>
+        <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "cars"} onClick={() => setKind("cars")}>Cars</TabButton>
       </div>
 
@@ -209,6 +213,17 @@ export default function BookPartners({ affiliate, prefill }: { affiliate?: Affil
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
           : "Cash searches open with a trusted partner — Kayak or Booking.com — where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
+      </p>
+
+      {/* THE COMMISSION DISCLOSURE, BESIDE THE SEARCH. Not in the page footer,
+          where it is technically present and practically unread: the FTC's
+          endorsement guides, the UK CAP code and the EU unfair-practices
+          directive all ask for it where the person is when they decide. One
+          editable line, from /admin/settings/words, shown by every commercial
+          surface on the site. */}
+      <p className="border-t border-[var(--gold-light)] bg-white px-5 py-4 text-xs leading-5 text-stone-600 sm:px-8">
+        <span className="font-semibold text-[var(--navy)]">How this site is paid: </span>
+        {disclosure}
       </p>
     </div>
   );

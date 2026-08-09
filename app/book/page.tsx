@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { readWords } from "@/lib/site-words-store";
 import { readStay22 } from "@/lib/stay22-store";
 import { readTravelpayoutsLinks } from "@/lib/travelpayouts-store";
@@ -9,11 +10,23 @@ import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
 
-// The one booking page. `/booking` was a second one — same job, different
-// heading, a different search component and its own idea of the flow — and it
-// now redirects here (see next.config.ts). Everything it could do lives on
-// this page: the Duffel flight search, the Duffel Stays hotel search, and the
-// three steps that tie a booking back to the rest of the trip.
+// The one booking page.
+//
+// REWRITTEN AROUND A HOLIDAY, not around a kevarim route. It used to compare
+// "airlines and routes to the towns your trip is built around", offer "stays
+// near the kever or in the city", and explain how a booking sits "alongside
+// the kevarim and destinations the journey is actually built around". Every
+// one of those sentences was written when the site was a heritage database
+// with a travel page attached, and a family booking a week in Rome read them
+// as evidence that this page was not for them.
+//
+// The heritage side is not diminished by that and is not meant to be: it has
+// its own section, and one line here says these tools work for it too. What
+// changed is that the general booking page is now general.
+//
+// HOTELS OPENS. Accommodation is the one product this site knows something a
+// comparison site does not — which quarter makes Shabbos walkable — so it is
+// the tab that earns the visit.
 export const metadata = pageMetadata({
   title: "Book Flights, Hotels & Cars with Cash or Miles | White Glove",
   description:
@@ -23,28 +36,48 @@ export const metadata = pageMetadata({
 
 const COMPARISON: Array<[string, string, string]> = [
   [
-    "Flights",
-    "Compare airlines and routes to the towns your trip is built around, and pay by card.",
-    "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
-  ],
-  [
     "Hotels",
-    "Find kosher-friendly stays near the kever or in the city, for your dates.",
+    "Compare places to stay for your dates — and check which quarter they are in before you book one.",
     "See which chains have a property in town, and whether the points beat the cash rate for that stay.",
   ],
   [
+    "Flights",
+    "Compare airlines and routes for your dates, and pay by card.",
+    "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
+  ],
+  [
     "Cars",
-    "Arrange a rental for getting between towns and kevarim at your own pace.",
+    "Hire a car where the destination needs one — and each destination page says whether it does.",
     "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
   ],
 ];
 
-// Carried over from the old /booking page, which was the only place that said
-// how a booking connects to the rest of the trip.
+// How a booking connects to the rest of the trip. The three steps are the
+// reason to search here rather than on the partner's own site.
 const STEPS: Array<[string, string]> = [
-  ["Choose your travel", "Search the flight, hotel or car that suits your dates — with cash, or with your own miles and points."],
-  ["Build your route", "Save it to your trip, alongside the kevarim and destinations the journey is actually built around."],
-  ["Travel prepared", "Keep the address, access guidance and available local contacts with the booking, in one itinerary."],
+  ["Search for your dates", "Hotels, flights or a car — with cash, or with your own miles and points."],
+  ["Save it to the trip", "It goes into your itinerary with the rest of the days, and the planner works out the driving between them."],
+  ["Travel with it in one place", "Confirmation numbers, addresses and the kosher and Shabbos notes for each place, on one printable page."],
+];
+
+/**
+ * What is not bookable here, said plainly.
+ *
+ * The brief names transfers and activities alongside hotels, flights and cars.
+ * No programme is joined for either, and lib/affiliate/partners.ts refuses to
+ * build a link for a product that has none — so the honest thing is a sentence
+ * about each rather than a tab that takes somebody's dates and gives them
+ * nothing. These become searches the day there is something behind them.
+ */
+const NOT_YET: Array<[string, string]> = [
+  [
+    "Airport transfers",
+    "No transfer partner is connected yet. For now, the car search above covers most of it, and a destination page will tell you where a transfer is the better answer.",
+  ],
+  [
+    "Things to do",
+    "Tickets are not bookable here yet. What each attraction is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
+  ],
 ];
 
 export default async function BookPage({
@@ -93,10 +126,29 @@ export default async function BookPage({
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
-            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">Book with cash, or with miles</h1>
+            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">
+              Search the travel that fits your trip
+            </h1>
+            {/* The owner's line. /admin/settings/words — it ships saying what
+                the page is for, and he can change it without a deploy. */}
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">{words.bookingNotice}</p>
+            {/* ONE LINE, not a page of it. The heritage side has its own
+                section; what it needs here is to know these tools serve it
+                too, which is a sentence rather than a theme. */}
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
+              Planning a heritage journey?{" "}
+              <Link
+                href="/heritage"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+              >
+                These booking tools work for that too
+              </Link>
+              .
+            </p>
           </div>
-          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} /></div>
+          <div className="mt-10">
+            <BookPartners affiliate={affiliate} prefill={prefill} disclosure={words.affiliateDisclosure} />
+          </div>
         </div>
       </section>
 
@@ -150,7 +202,8 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Booked here, planned here</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            The travel side and the rest of the journey — kevarim, shomer details, practical guidance — stay in one itinerary.
+            The travel and the rest of the trip — where you are eating, where Shabbos falls, what to see between — stay
+            in one itinerary.
           </p>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             {STEPS.map(([heading, body], index) => (
@@ -163,6 +216,39 @@ export default async function BookPage({
           </div>
         </div>
       </section>
+      {/* What is NOT bookable here. A tab that takes somebody's dates and
+          gives them nothing is worse than a sentence saying so. */}
+      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+            Two things people ask for here that we cannot book yet, and what to do about each in the meantime.
+          </p>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            {NOT_YET.map(([heading, body]) => (
+              <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
+                <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
+                <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/cars"
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
+            >
+              Cars and transfers
+            </Link>
+            <Link
+              href="/things-to-do"
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
+            >
+              Things to do
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );

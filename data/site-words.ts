@@ -139,8 +139,11 @@ export const BUILT_IN_WORDS: SiteWords = {
   footerBlurb:
     "Kosher vacations planned end to end — where to go, where to stay, what to do, and the food, Shabbos and religious essentials arranged around it. Jewish heritage journeys too, in their own section.",
   footerStrapline: "Personalized travel, planned with purpose.",
+  // Rewritten with the booking page. It used to open on flights and on how you
+  // were paying; the page is now about the trip the travel is for, and hotels
+  // are the product this site knows something a comparison site does not.
   bookingNotice:
-    "Flights, hotels and rental cars in one place. Choose how you’re paying, book it, and keep the rest of the trip together in White Glove.",
+    "Search the travel that fits your destination, dates, and kosher needs — with cash, or with your own miles and points.",
 
   // Three answers the site can already stand behind, because they are said
   // elsewhere on it, and three it cannot. The three it cannot say so.
