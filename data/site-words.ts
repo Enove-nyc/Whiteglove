@@ -77,6 +77,21 @@ export type SiteWords = {
   pricingBookingSupport: string;
   /** Whether a planning fee comes off anything else. */
   pricingFeeCredit: string;
+
+  /**
+   * What is said beside a link that earns a commission.
+   *
+   * ONE LINE, EDITABLE ONCE. It appears beside every booking action on the
+   * site, and the reason it is a setting rather than a string in a component
+   * is that a disclosure which is wrong in one of nine places is worse than no
+   * disclosure at all — it proves the site knows it owes one.
+   *
+   * It is beside the action, never only in the footer. The FTC's endorsement
+   * guides, the UK CAP code and the EU unfair-practices directive all ask for
+   * the same thing in the same words: clear, and where the person is when they
+   * decide.
+   */
+  affiliateDisclosure: string;
 };
 
 /**
@@ -138,4 +153,6 @@ export const BUILT_IN_WORDS: SiteWords = {
   pricingBookingSupport:
     "Booking your own travel through the search on this site costs you nothing extra — the site may earn a commission from the travel provider, which does not change your price. Booking on your behalf is a separate service and is not open yet.",
   pricingFeeCredit: PRICE_NOT_PUBLISHED,
+  affiliateDisclosure:
+    "White Glove may earn a commission if you book through a partner link, at no additional cost to you.",
 };
