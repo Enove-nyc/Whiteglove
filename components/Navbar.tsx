@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
+import MembersOnlyLink from "@/components/MembersOnlyLink";
 import SitePromotions from "@/components/SitePromotions";
+import { GATED_FEATURES } from "@/lib/members-only";
 
 /**
  * The menu. A Yiddish label only where there is a real Yiddish word for it.
@@ -280,11 +282,23 @@ export default function Navbar() {
 
               <div className="border-t border-[var(--gold-light)] pt-5 md:col-span-3 md:flex md:items-center md:justify-between">
                 <div className="flex flex-wrap gap-2">
+                  {/* THE PLANNER AND MY ROUTE ARE HERE FOR EVERYBODY. They used
+                      to be inside the signed-in branch, so somebody who had not
+                      signed in never learned they existed — and therefore had
+                      no reason to make an account. Pressing one signed out
+                      opens a note saying what it is; see lib/members-only.ts
+                      for why that note does not say "you must log in". */}
+                  {GATED_FEATURES.map((feature) => (
+                    <MembersOnlyLink
+                      key={feature.key}
+                      feature={feature}
+                      onNavigate={() => setMenuOpen(false)}
+                      className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]"
+                    />
+                  ))}
                   {signedIn ? (
                     <>
                       <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href="/account">My account</Link>
-                      <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href="/itinerary">Itinerary planner</Link>
-                      <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href="/my-route">My Route</Link>
                       <button type="button" onClick={() => { setMenuOpen(false); signOut(); }} className="rounded-md px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">Sign out</button>
                     </>
                   ) : (
