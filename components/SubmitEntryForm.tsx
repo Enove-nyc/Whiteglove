@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 
-const TYPES = ["A kever / tzadik", "A cemetery (beis hachaim)", "A tour operator / planner / agency", "A guide or driver", "Something else / a correction"];
+// The vacation side is on this list because "Report an update" now sits in the
+// notice at the top of every page, including a page about a week on a beach.
+// A form whose only choices were kevarim, cemeteries and drivers told that
+// visitor the same thing the old front page did: this is not for you.
+const TYPES = [
+  "A kosher restaurant, hotel or shop",
+  "A destination detail — kosher food, Shabbos, getting around",
+  "A kever / tzadik",
+  "A cemetery (beis hachaim)",
+  "A tour operator / planner / agency",
+  "A guide or driver",
+  "Something else / a correction",
+];
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";

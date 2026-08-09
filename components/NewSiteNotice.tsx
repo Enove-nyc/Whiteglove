@@ -6,7 +6,19 @@ import { useState, useSyncExternalStore } from "react";
 import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow } from "@/lib/beta-notice";
 
 /**
- * "White Glove is new — check anything you are going to rely on."
+ * "Travel information changes. Here is how we label what we have checked."
+ *
+ * WHAT IT SAYS CHANGED, AND WHY. It used to lead with the site being
+ * unfinished, and its examples were towns, kevarim, phone numbers and opening
+ * times — three of the four being the heritage database. So the first thing a
+ * family asking about the Dolomites read, at the top of every page, was an
+ * apology about a different business. The wording is in lib/beta-notice.ts and
+ * the reasoning is written out there.
+ *
+ * THREE ACTIONS, and each is a different thing somebody might want at that
+ * moment: read how the labels work, tell us something is out of date, or make
+ * the strip go away. The third used to be "I understand", which is not an
+ * action and does not say what pressing it does.
  *
  * THIS USED TO BE A MODAL, and it was the first thing every visitor met: a
  * dialog over the front page, before they had seen a single word about what
@@ -96,20 +108,29 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
           nothing looked broken above the fold, which is why `npm run
           audit:ui` — which measures the real page at the real widths — is the
           only thing that found it. */}
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
         <div className="min-w-0 flex-1 text-sm leading-6">
           <p>
             <span className="font-bold">{notice.heading}.</span> {notice.body}
           </p>
-          <p className="mt-1.5 border-l-2 border-[var(--gold)] pl-3">
-            {notice.caution}{" "}
-            <Link href="/verification" className="font-semibold underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-              How we check what is on this site
-            </Link>
-          </p>
+          <p className="mt-1 text-stone-600">{notice.caution}</p>
         </div>
-        <div className="flex shrink-0 flex-col gap-1.5 sm:max-w-xs">
+        {/* STACKED FIRST, side by side only when there is room.
+            It was `flex-wrap` with a `shrink-0` column of buttons beside a
+            `flex-1` paragraph, and on a 390px screen the buttons took the
+            whole row: the text column was squeezed to a few characters wide
+            and the notice grew to eight thousand pixels tall. Nothing
+            overflowed and nothing looked broken above the fold, which is why
+            `npm run audit:ui` — which measures the real page at the real
+            widths — is the only thing that found it. */}
+        <div className="flex shrink-0 flex-col gap-1.5 sm:max-w-sm">
           <div className="flex flex-wrap gap-2">
+            <Link
+              href="/verification"
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--gold)] hover:text-white"
+            >
+              How verification works
+            </Link>
             <Link
               href={notice.feedbackHref}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--gold)] hover:text-white"
@@ -121,12 +142,11 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
               onClick={close}
               className="inline-flex min-h-11 items-center rounded-md px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--cream-deep)]"
             >
-              {/* The owner's word for it, and then what it does to this
-                  notice — a screen reader listing a page's buttons should be
-                  able to tell this one from the eleven others, and "I
-                  understand" on its own does not. */}
+              {/* The owner's word for it. It used to be "I understand", which
+                  is not an action and does not say what pressing it does — a
+                  screen reader listing this page's buttons could not tell it
+                  from the eleven others. */}
               {notice.dismissLabel}
-              <span className="sr-only"> — hide this notice</span>
             </button>
           </div>
           <p className="text-xs leading-5 text-stone-600">{notice.feedback}</p>

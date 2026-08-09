@@ -52,23 +52,37 @@ export const metadata = pageMetadata({
  *
  * WHAT IS NOT HERE: testimonials. There is no real testimonial on this site
  * and there is nowhere to read one from, so the section the brief asked for
- * "if real data is available" is absent rather than invented. The trust
- * section carries verifiable facts instead — how many records, checked how,
- * and what we refuse to print.
+ * "if real data is available" is absent rather than invented.
+ *
+ * AND WHAT IS NO LONGER HERE: the explaining. This page had six destination
+ * cards each carrying its kosher answer, its Shabbos answer, what is on record
+ * and two buttons; a four-line promise about coordinates and road routing; and
+ * a trust section that set out how the checking works before the visitor had
+ * asked. All of it true, all of it in the wrong place — a front page is where
+ * somebody decides whether to keep reading, and every one of those paragraphs
+ * is on the page it belongs to.
+ *
+ * So: three destinations rather than six, on the short card; the heritage and
+ * verification sections cut to the one sentence each that a stranger needs;
+ * and the four labels named in a single line that links to the page which
+ * explains them. Nothing was deleted from the site, only from this page.
  */
 
+// "What you keep" was the phrase here and in three other places. It is a
+// perfectly good phrase inside the community and it means nothing to somebody
+// meeting the site for the first time, which is exactly who reads step one.
 const HOW_IT_WORKS: Array<[string, string]> = [
   [
     "Tell us the shape of it",
-    "Where, when, who is coming, what you keep and how fast you like to travel. Two minutes, nothing required, and “I don’t know yet” is a real answer to every question.",
+    "Where, when, who is coming, and your kosher standards and religious needs. Three short steps, nothing required.",
   ],
   [
     "We show you what is actually there",
-    "Destinations that suit the dates and the ages, with the kosher food, the Shabbos situation and the practical cautions on the same page — not buried in a forum thread from 2019.",
+    "Destinations that suit the dates and the ages, with the kosher food and the Shabbos situation on the same page.",
   ],
   [
     "Build it yourself, or hand it over",
-    "The planner is free and holds the whole trip: flights, hotels, stops, driving times, documents, and a printable copy. Or send us the answers and we will arrange it.",
+    "The planner is free and holds the whole trip. Or send us the answers and we will arrange it.",
   ],
 ];
 
@@ -76,35 +90,39 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
   {
     title: "Kosher food, anywhere",
     href: "/kosher",
-    body: "A live lookup of restaurants, bakeries and groceries anywhere in the world, plus the places we hold our own record for.",
+    body: "Restaurants, bakeries and groceries, live, anywhere in the world.",
     cta: "Open the food finder",
   },
   {
     title: "Where to stay",
     href: "/kosher-stays",
-    body: "Kosher hotels, seasonal programmes and the Jewish quarters themselves — measured from the shul rather than the middle of town.",
+    body: "Kosher hotels, seasonal programmes and which quarter to book in.",
     cta: "Compare places to stay",
   },
   {
     title: "Things to do",
     href: "/attractions",
-    body: "What to do on the days in between, with the two facts a guidebook never gives you: how far it is from the kosher food, and what it does on Shabbos.",
+    body: "What to do on the days between — and what each one does on Shabbos.",
     cta: "Browse things to do",
   },
   {
     title: "The whole kosher side",
     href: "/kosher-travel",
-    body: "Shabbos away from home, minyanim and mikvaos, hechsherim, documents, and who to ask locally — in one place.",
+    body: "Shabbos away from home, minyanim, mikvaos, hechsherim and documents.",
     cta: "Open the kosher travel guide",
   },
 ];
 
-const PROMISE = [
-  "Kosher food and Shabbos answered per destination, from records with sources — never a guess to fill a gap.",
-  "Coordinates that open the pin in Google Maps, not the nearest street.",
-  "Driving times taken from real road routing, so a day's plan holds up.",
-  "No opening hours and no prices anywhere on the site, because a stale one sends a family to a locked door.",
-];
+/**
+ * The one sentence about verification that belongs on a front page.
+ *
+ * There were four bullets and a two-paragraph panel here, explaining how the
+ * checking is done to somebody who had not yet asked whether it was. All of it
+ * is on /verification, which is written for the moment a person is actually
+ * deciding whether to rely on something.
+ */
+const VERIFICATION_LINE =
+  "Every practical detail is labeled Verified, Reported, Being Checked, or Reconfirm Before Travel.";
 
 export default async function Home() {
   const requestHeaders = await headers();
@@ -124,9 +142,13 @@ export default async function Home() {
   // the tie-break — so this stays honest as the site is used rather than being
   // six destinations somebody picked once.
   const visits = new Map(topVisitedPaths.map((path) => [path.path, path.count]));
+  // THREE. Six full cards were most of the scroll between the categories and
+  // the two paths, and each one repeated the kosher and Shabbos answers that
+  // its own page gives properly. Three, on the short card, with the way to all
+  // of them underneath.
   const featured = [...cards]
     .sort((a, b) => (visits.get(destinationHref(b.destination)) ?? 0) - (visits.get(destinationHref(a.destination)) ?? 0))
-    .slice(0, 6);
+    .slice(0, 3);
 
   const guides = guidedDestinations();
   const kevarim = allTzaddikim();
@@ -190,7 +212,7 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Start here"
             title="What kind of trip are you planning?"
-            description="Press one and we will take it from there. You can change your mind at any point, and “not sure yet” is on the list because it is where most people start."
+            description="Press one and we will take it from there — “not sure yet” is on the list, because it is where most people start."
           />
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {TRIP_KINDS.map((kind) => (
@@ -218,7 +240,7 @@ export default async function Home() {
         <SectionHeading
           eyebrow="How it works"
           title="Three steps, and you can stop after any of them."
-          description="Nothing here requires an account, a card, or a decision you have not made yet."
+          description="No account, no card, and no decision you have not made yet."
         />
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {HOW_IT_WORKS.map(([title, body], index) => (
@@ -239,7 +261,7 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Vacation categories"
             title="Browse by the kind of holiday."
-            description="Each one is a filter on the same list of destinations, and each says how many are behind it."
+            description="Each one is a filter on the same list of destinations."
           />
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TRIP_THEMES.map((theme) => {
@@ -257,8 +279,16 @@ export default async function Home() {
                       </span>
                       <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
                     </span>
-                    <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                      {count}
+                    {/* NO COUNT HERE. The categories are honest about being
+                        empty — one with nothing behind it is not rendered at
+                        all — but a number is a comparison, and "1" beside
+                        Beach and resort says something about how far this
+                        section has got rather than about the holiday. The
+                        counts stay on /vacation-ideas, where somebody is
+                        choosing between filters and wants to know before they
+                        press one. */}
+                    <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold-ink)]">
+                      →
                     </span>
                   </Link>
                 </li>
@@ -273,11 +303,11 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Vacation destinations"
           title="Somewhere to start."
-          description="Every one of these says what is on record about kosher food and about Shabbos there — the two questions that decide whether a holiday is workable."
+          description="Each one answers the two questions that decide whether a holiday is workable: what there is to eat, and what happens on Shabbos."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((card) => (
-            <VacationCard key={card.destination.slug} card={card} />
+            <VacationCard key={card.destination.slug} card={card} compact />
           ))}
         </div>
         <div className="mt-10">
@@ -296,7 +326,7 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Two ways to do this"
             title="As much or as little of it as you want."
-            description="Most people start with the first and ask for the second when they hit the part they do not want to work out."
+            description="Most people start with the first and ask for the second when they reach the part they would rather not work out."
           />
           <div className="mt-12 grid gap-5 lg:grid-cols-2">
             <article className="flex flex-col rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-7 sm:p-9">
@@ -305,9 +335,8 @@ export default async function Home() {
                 Plan it yourself
               </h3>
               <p className="mt-4 flex-1 leading-7 text-stone-600">
-                The planner holds the whole trip — flights with their connections, hotels, every stop, the driving time
-                between them, your documents, and a printable copy for the car. It works without an account, and an
-                account is what makes it follow you onto your phone.
+                The planner holds the whole trip — flights, hotels, every stop, the driving time between them, and a
+                printable copy for the car. An account is what makes it follow you onto your phone.
               </p>
               <GloveList
                 items={[
@@ -337,8 +366,8 @@ export default async function Home() {
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">The white glove part</p>
               <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight">Have us plan it</h3>
               <p className="mt-4 flex-1 leading-7 text-slate-200">
-                Tell us the shape of the trip and we do the working out: where it should be, in what order, what is
-                actually available to eat, where Shabbos falls, and who to speak to when you get there.
+                Tell us the shape of the trip and we do the working out: where, in what order, what there is to eat,
+                where Shabbos falls, and who to speak to when you arrive.
               </p>
               <GloveList
                 items={[
@@ -372,7 +401,7 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Kosher travel"
           title="The half of a trip nobody else plans for you."
-          description="All of it free to use, whether or not you ever ask us for anything."
+          description="Free to use, whether or not you ever ask us for anything."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {RESOURCES.map((resource) => (
@@ -395,9 +424,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 8. Heritage travel, as its own section ----------------------- */}
-      <section className="border-y border-[var(--gold-light)] bg-[var(--navy)] px-5 py-16 text-white sm:px-8 sm:py-20">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
+      {/* ---- 8. Heritage travel, compact ---------------------------------- */}
+      {/* It is its own section, and on this page it is one sentence and four
+          doors. The paragraph that was here explained what the heritage side
+          is to somebody who has read eight sections about holidays; the person
+          it is for knows the word and is looking for the link. */}
+      <section className="border-y border-[var(--gold-light)] bg-[var(--navy)] px-5 py-12 text-white sm:px-8 sm:py-14">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-light)]">
               <span lang="he" dir="rtl">
@@ -405,15 +438,14 @@ export default async function Home() {
               </span>{" "}
               by White Glove
             </p>
-            <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight sm:text-5xl">
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">
               Heritage travel, in its own section.
             </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-              {kevarim.length} kevarim, {guides.length} researched town guides, and cemetery records with the address,
-              the access notes and the shomer where we hold one. It is the deepest thing this site has, and it has its
-              own door rather than being the door.
+            <p className="mt-4 max-w-xl leading-7 text-slate-200">
+              {kevarim.length} kevarim, {guides.length} researched town guides, and cemetery records with the access
+              notes and the shomer where we hold one.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/heritage"
                 className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]"
@@ -428,7 +460,7 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-2 sm:grid-cols-2">
             {[
               ["Who is buried where", "/tzaddikim"],
               ["Batei hachaim", "/cemeteries"],
@@ -438,7 +470,7 @@ export default async function Home() {
               <li key={href}>
                 <Link
                   href={href}
-                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/[0.05] px-5 py-4 text-sm font-semibold transition hover:border-[var(--gold-light)]"
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3 text-sm font-semibold transition hover:border-[var(--gold-light)]"
                 >
                   {label}
                   <span aria-hidden="true" className="text-[var(--gold-light)]">
@@ -451,44 +483,32 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 9. Trust and verification ------------------------------------ */}
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_.8fr] lg:items-start">
-          <div>
-            <SectionHeading
-              eyebrow="How we check"
-              title="Somebody drives four hours on the strength of a line on a page."
-              description="So every practical detail on this site carries a label saying how far it has been checked, and where the checking is not finished the page says that instead of filling the gap."
-            />
-            <div className="mt-8 flex flex-wrap gap-3">
-              {TRUST_ORDER.map((level) => (
-                <VerificationBadge key={level} descriptor={TRUST_LEVELS[level]} />
-              ))}
-            </div>
-            <GloveList items={PROMISE} className="mt-8 space-y-3 leading-7 text-stone-600" />
-            <p className="mt-8">
-              <Link
-                href="/verification"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
-              >
-                What each label means, and what we will not print
-              </Link>
-            </p>
+      {/* ---- 9. Verification, in one line --------------------------------- */}
+      {/* A four-bullet promise, a two-paragraph panel and a heading about
+          driving four hours: all of it true, all of it explaining the checking
+          to somebody who had not yet asked whether there was any. The labels
+          are named — which is the fact — and the page that explains them is one
+          press away, at the moment a person is actually deciding whether to
+          rely on something. */}
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-14">
+        <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6 sm:p-8">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <GloveMark size="lg" />
+            <p className="max-w-3xl text-lg leading-8 text-[var(--navy)]">{VERIFICATION_LINE}</p>
           </div>
-
-          <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-7">
-            <div className="flex items-center gap-3">
-              <GloveMark size="lg" />
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Our promise</p>
-            </div>
-            <p className="mt-4 font-[family-name:var(--font-display)] text-2xl leading-snug text-[var(--navy)]">
-              The details should never distract from the reason you came.
-            </p>
-            <p className="mt-4 leading-7 text-stone-600">
-              We gather the essentials in one calm, dependable place, and we tell you plainly which of them we have
-              confirmed and which you should check again before you travel.
-            </p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {TRUST_ORDER.map((level) => (
+              <VerificationBadge key={level} descriptor={TRUST_LEVELS[level]} size="sm" />
+            ))}
           </div>
+          <p className="mt-6">
+            <Link
+              href="/verification"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              How we check what goes on this site →
+            </Link>
+          </p>
         </div>
       </section>
 

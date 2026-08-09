@@ -93,12 +93,51 @@ describe("the order of the page", () => {
       "As much or as little of it as you want.",
       "The half of a trip nobody else plans for you.",
       "Heritage travel, in its own section.",
-      "Somebody drives four hours on the strength of a line on a page.",
+      "VERIFICATION_LINE}",
       "Where do you want to go?",
     ].map(at);
     for (let i = 1; i < order.length; i += 1) {
       assert.ok(order[i] > order[i - 1], `section ${i + 1} of the front page has moved above section ${i}`);
     }
+  });
+
+  it("SHOWS THREE DESTINATIONS, ON THE SHORT CARD", () => {
+    // Six full cards were most of the scroll between the categories and the
+    // two ways to plan, and each repeated the kosher and Shabbos answers that
+    // its own page gives properly.
+    assert.match(HOME, /\.slice\(0, 3\)/);
+    assert.match(HOME, /<VacationCard key=\{card\.destination\.slug\} card=\{card\} compact \/>/);
+    assert.match(HOME, /Browse all \{cards\.length\} destinations/);
+  });
+
+  it("STATES THE FOUR LABELS AND LINKS TO THE PAGE THAT EXPLAINS THEM", () => {
+    // Exactly the sentence that was asked for. The four-bullet promise and the
+    // two-paragraph panel that were here belong on /verification, which is
+    // read at the moment somebody is deciding whether to rely on something.
+    assert.match(
+      HOME,
+      /Every practical detail is labeled Verified, Reported, Being Checked, or Reconfirm Before Travel\./,
+    );
+    assert.match(HOME, /href="\/verification"/);
+    assert.doesNotMatch(PROSE, /straight-line distance|road routing/);
+    assert.doesNotMatch(PROSE, /Somebody drives four hours/);
+  });
+
+  it("HIDES THE CATEGORY COUNTS", () => {
+    // "1" beside Beach and resort says something about how far this section
+    // has got rather than about the holiday. The counts stay on
+    // /vacation-ideas, where somebody is choosing between filters.
+    const categories = HOME.slice(at("Browse by the kind of holiday."), at('id="destinations"'));
+    assert.doesNotMatch(categories, /\{count\}/);
+    // …but a category with nothing behind it is still not offered at all.
+    assert.match(categories, /if \(count === 0\) return null/);
+  });
+
+  it("does not explain kosher food and Shabbos twice on one page", () => {
+    // The long-form answers live on the destination pages. The front page
+    // names the two questions; it does not answer them per destination.
+    assert.doesNotMatch(PROSE, /never a guess to fill a gap/);
+    assert.doesNotMatch(PROSE, /opening hours/i);
   });
 
   it("offers both paths, and says which is free", () => {
@@ -136,6 +175,15 @@ describe("the new-site notice", () => {
   it("is dismissible, once per wording", () => {
     assert.match(NOTICE, /DISMISS_KEY/);
     assert.match(NOTICE, /notice\.version/);
+  });
+
+  it("OFFERS THE THREE ACTIONS THE NOTICE HAS TO CARRY", () => {
+    // How verification works, report an update, hide this notice. The third
+    // used to read "I understand", which is not an action.
+    assert.match(NOTICE, /How verification works/);
+    assert.match(NOTICE, /href="\/verification"/);
+    assert.match(NOTICE, /notice\.feedbackLabel/);
+    assert.match(NOTICE, /onClick=\{close\}/);
   });
 
   it("SHOWS EVERY LINE THE OWNER CAN EDIT", () => {
