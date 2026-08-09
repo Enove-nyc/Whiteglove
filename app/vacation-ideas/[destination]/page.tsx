@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -20,13 +21,53 @@ import {
   type Signal,
   type VacationFacts,
 } from "@/lib/vacation-ideas";
-import { loadVacationSources } from "@/lib/vacation-sources";
+import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
-import type { VacationDestination } from "@/data/vacation-destinations";
+import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 
-// Per request, like every other page that reads through lib/attractions-view.ts
-// — an entry the owner adds in the admin has to appear here without a deploy.
-export const dynamic = "force-dynamic";
+/**
+ * PRERENDERED, AND THIS IS THE FIX FOR THE THING PEOPLE ACTUALLY NOTICED.
+ *
+ * This page was `force-dynamic`. Opening /vacation-ideas/rome directly meant:
+ * render nothing, show app/vacation-ideas/loading.tsx — "Loading vacation
+ * destinations…" — and wait while three unfiltered reads of every attraction,
+ * stay and quarter on the site came back, on every single view, for a page
+ * whose heading and summary are in a file that has not changed since the build.
+ *
+ * The reason it was dynamic was real: an entry the owner adds in the admin has
+ * to appear here without a deploy. That is what the cache TAG is for. It is
+ * cleared the moment an entry is saved (app/admin/add/actions.ts), so the page
+ * is rebuilt then rather than being refused a cache for ever.
+ *
+ * generateStaticParams builds every destination at deploy time, so a direct hit
+ * is served from HTML with the H1, the summary and the practical sections
+ * already in it. `revalidate` is the backstop for a change this process cannot
+ * see: the owner adding a stay in Rome clears the tag and this page is rebuilt.
+ *
+ * `dynamicParams` is OFF because the destination list is a file in this repo —
+ * a new destination arrives with a deploy and never between two of them. With
+ * it on, an address that is not a destination was answered 200 with the loading
+ * skeleton on it for ever: the notFound() below never reached the response,
+ * because there is nothing to render it into once the shell has been served.
+ * A wrong address should be a 404, and off is the only setting that gives one.
+ */
+export const revalidate = 900;
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return vacationDestinations.map((destination) => ({ destination: destination.slug }));
+}
+
+/**
+ * Everything the practical sections need, read once per request.
+ *
+ * Four Suspense boundaries below all want the same facts. React's cache() makes
+ * that one read: without it the boundaries would each start their own, and the
+ * page would do the work four times to render it once.
+ */
+const factsOf = cache(async (destination: VacationDestination): Promise<VacationFacts> =>
+  factsFor(destination, await loadDestinationSources(destination)),
+);
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }) {
   const { destination: slug } = await params;
@@ -174,21 +215,186 @@ function StaysSection({ destination, facts }: { destination: VacationDestination
   );
 }
 
-export default async function VacationDestinationPage({ params }: { params: Promise<{ destination: string }> }) {
-  const { destination: slug } = await params;
-  const destination = getVacationDestination(slug);
-  if (!destination) notFound();
+/* ---- the parts that need a read, and what stands in while they wait ------
+ *
+ * SHAPED LIKE WHAT IS COMING rather than a spinner, and announced rather than
+ * merely drawn: a screen reader gets nothing from a grey rectangle, so the
+ * status line is the real message and the blocks are hidden from the
+ * accessibility tree. Only ever seen for a destination that was not in the
+ * build — everything in data/vacation-destinations.ts is prerendered whole. */
 
-  const [sources, booking] = await Promise.all([loadVacationSources(), readBookingLink()]);
-  const facts = factsFor(destination, sources);
-  const kosher = kosherAvailability(destination, facts);
-  const shabbos = shabbosPracticality(destination, facts);
-  const heritage = heritageGuideFor(destination);
+function Skeleton({ what, rows = 2 }: { what: string; rows?: number }) {
+  return (
+    <div aria-busy="true">
+      <p role="status" className="text-sm font-semibold text-[var(--navy)]">
+        Loading {what}…
+      </p>
+      <div aria-hidden="true" className="mt-4 grid animate-pulse gap-4 md:grid-cols-2">
+        {Array.from({ length: rows * 2 }, (_, index) => (
+          <div key={index} className="h-28 rounded-xl border border-[var(--gold-light)] bg-[var(--cream-deep)]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A signal panel's own placeholder: the same box, without a claim in it. */
+function SignalFallback({ label }: { label: string }) {
+  return (
+    <div className="rounded-xl border border-stone-300 bg-stone-50 p-5" aria-busy="true">
+      <p role="status" className="text-sm font-bold text-stone-600">
+        {label} — checking what is on record…
+      </p>
+    </div>
+  );
+}
+
+async function KosherSignal({ destination }: { destination: VacationDestination }) {
+  return <SignalPanel signal={kosherAvailability(destination, await factsOf(destination))} />;
+}
+
+async function ShabbosSignal({ destination }: { destination: VacationDestination }) {
+  return <SignalPanel signal={shabbosPracticality(destination, await factsOf(destination))} />;
+}
+
+async function WhereToStay({ destination }: { destination: VacationDestination }) {
+  return <StaysSection destination={destination} facts={await factsOf(destination)} />;
+}
+
+async function ThingsToDo({ destination }: { destination: VacationDestination }) {
+  const facts = await factsOf(destination);
+  if (facts.attractions.length === 0) return <NothingPublishedYet what={`things to do in ${destination.name}`} />;
+  return (
+    <>
+      <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {facts.attractions.map((attraction) => (
+          <li key={attraction.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
+              {attraction.kind} · {attraction.city}
+            </p>
+            <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+              {attraction.name}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-stone-600">{attraction.summary}</p>
+            {attraction.shabbos && (
+              <p className="mt-3 border-t border-[var(--gold-light)] pt-3 text-sm leading-6 text-stone-600">
+                <span className="font-semibold text-[var(--navy)]">On Shabbos: </span>
+                {attraction.shabbos}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 text-sm">
+        <Link
+          href="/attractions"
+          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+        >
+          Browse everything to do on the site
+        </Link>
+      </p>
+    </>
+  );
+}
+
+async function KosherFood({ destination }: { destination: VacationDestination }) {
+  const facts = await factsOf(destination);
   // Where the live kosher lookup should be centred: the quarter's own
   // published coordinate, or failing that the anchor a stay is measured from.
   // Both are real positions for a shul or a street — never a guess at the
   // middle of a city, which would return the wrong half of it.
   const anchor = facts.areas[0]?.coordinates ?? facts.stays[0]?.anchor?.coordinates;
+  return (
+    <>
+      <SignalPanel signal={kosherAvailability(destination, facts)} />
+
+      {facts.eateries.length > 0 && (
+        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          {facts.eateries.map((eatery) => {
+            const hechsher = fromHechsherState(eatery.hechsher.state);
+            return (
+              <li key={eatery.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
+                  {eatery.kind} · {eatery.diet}
+                </p>
+                <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+                  {eatery.name}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-stone-600">{eatery.summary}</p>
+                <div className="mt-3">
+                  {hechsher ? (
+                    <VerificationBadge descriptor={hechsher} size="sm" />
+                  ) : (
+                    <VerificationBadge descriptor={TRUST_LEVELS["being-checked"]} size="sm" />
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {facts.base && (facts.base.eateries.length > 0 || facts.base.areas.length > 0) && (
+        <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+            Where to shop on the way in
+          </h3>
+          <p className="mt-2 leading-7 text-stone-600">{facts.base.note}</p>
+          <ul className="mt-3 space-y-2">
+            {facts.base.eateries.map((eatery) => (
+              <li key={eatery.slug} className="text-sm leading-6 text-stone-600">
+                <span className="font-semibold text-[var(--navy)]">{eatery.name}</span> — {eatery.summary}
+              </li>
+            ))}
+            {facts.base.areas.map((area) => (
+              <li key={area.slug} className="text-sm leading-6 text-stone-600">
+                <span className="font-semibold text-[var(--navy)]">{area.name}</span> — {area.note}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {anchor ? (
+        <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+          {/* Live, and deliberately not loaded until it is asked for: this
+              reaches OpenStreetMap, and a page that fires that on every
+              view is slow for everybody and rude to a free service. */}
+          <KosherNearby
+            coordinates={anchor}
+            heading={`Kosher places tagged near ${destination.name}, live`}
+            radiusKm={10}
+            showAddToTrip
+          />
+          <p className="mt-3 text-xs leading-5 text-stone-500">
+            This lookup is OpenStreetMap data, not our own checking — anybody can add to it. Treat it as a lead and
+            confirm the hechsher yourself.
+          </p>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm">
+          <Link
+            href="/kosher"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Search live for kosher food anywhere
+          </Link>
+        </p>
+      )}
+    </>
+  );
+}
+
+export default async function VacationDestinationPage({ params }: { params: Promise<{ destination: string }> }) {
+  const { destination: slug } = await params;
+  const destination = getVacationDestination(slug);
+  if (!destination) notFound();
+
+  // The only await the SHELL does. Everything below the heading that needs a
+  // read is behind a Suspense boundary, so the H1, the summary and the
+  // editorial sections are in the first byte of HTML either way.
+  const booking = await readBookingLink();
+  const heritage = heritageGuideFor(destination);
 
   const contents: Array<[string, string]> = [
     ["why-visit", "Why visit"],
@@ -240,8 +446,12 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Best for</p>
               <p className="mt-1 font-semibold text-[var(--navy)]">{destination.bestFor.join(" · ")}</p>
             </div>
-            <SignalPanel signal={kosher} />
-            <SignalPanel signal={shabbos} />
+            <Suspense fallback={<SignalFallback label="Kosher food" />}>
+              <KosherSignal destination={destination} />
+            </Suspense>
+            <Suspense fallback={<SignalFallback label="Shabbos" />}>
+              <ShabbosSignal destination={destination} />
+            </Suspense>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -316,43 +526,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           title="Where to stay"
           lead="Which part of town matters more than which hotel — that is the decision that makes Shabbos walkable or not."
         >
-          <StaysSection destination={destination} facts={facts} />
+          <Suspense fallback={<Skeleton what={`where to stay in ${destination.name}`} />}>
+            <WhereToStay destination={destination} />
+          </Suspense>
         </Section>
 
         <Section id="things-to-do" title="Things to do">
-          {facts.attractions.length > 0 ? (
-            <>
-              <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {facts.attractions.map((attraction) => (
-                  <li key={attraction.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                      {attraction.kind} · {attraction.city}
-                    </p>
-                    <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
-                      {attraction.name}
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-stone-600">{attraction.summary}</p>
-                    {attraction.shabbos && (
-                      <p className="mt-3 border-t border-[var(--gold-light)] pt-3 text-sm leading-6 text-stone-600">
-                        <span className="font-semibold text-[var(--navy)]">On Shabbos: </span>
-                        {attraction.shabbos}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-5 text-sm">
-                <Link
-                  href="/attractions"
-                  className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                >
-                  Browse everything to do on the site
-                </Link>
-              </p>
-            </>
-          ) : (
-            <NothingPublishedYet what={`things to do in ${destination.name}`} />
-          )}
+          <Suspense fallback={<Skeleton what={`things to do in ${destination.name}`} rows={3} />}>
+            <ThingsToDo destination={destination} />
+          </Suspense>
         </Section>
 
         <Section
@@ -360,85 +542,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           title="Kosher food"
           lead="What is on record here, and a live lookup for whatever has opened since."
         >
-          <SignalPanel signal={kosher} />
-
-          {facts.eateries.length > 0 && (
-            <ul className="mt-6 grid gap-4 md:grid-cols-2">
-              {facts.eateries.map((eatery) => {
-                const hechsher = fromHechsherState(eatery.hechsher.state);
-                return (
-                  <li key={eatery.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                      {eatery.kind} · {eatery.diet}
-                    </p>
-                    <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
-                      {eatery.name}
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-stone-600">{eatery.summary}</p>
-                    <div className="mt-3">
-                      {hechsher ? (
-                        <VerificationBadge descriptor={hechsher} size="sm" />
-                      ) : (
-                        <VerificationBadge descriptor={TRUST_LEVELS["being-checked"]} size="sm" />
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {facts.base && (facts.base.eateries.length > 0 || facts.base.areas.length > 0) && (
-            <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-                Where to shop on the way in
-              </h3>
-              <p className="mt-2 leading-7 text-stone-600">{facts.base.note}</p>
-              <ul className="mt-3 space-y-2">
-                {facts.base.eateries.map((eatery) => (
-                  <li key={eatery.slug} className="text-sm leading-6 text-stone-600">
-                    <span className="font-semibold text-[var(--navy)]">{eatery.name}</span> — {eatery.summary}
-                  </li>
-                ))}
-                {facts.base.areas.map((area) => (
-                  <li key={area.slug} className="text-sm leading-6 text-stone-600">
-                    <span className="font-semibold text-[var(--navy)]">{area.name}</span> — {area.note}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {anchor ? (
-            <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-              {/* Live, and deliberately not loaded until it is asked for: this
-                  reaches OpenStreetMap, and a page that fires that on every
-                  view is slow for everybody and rude to a free service. */}
-              <KosherNearby
-                coordinates={anchor}
-                heading={`Kosher places tagged near ${destination.name}, live`}
-                radiusKm={10}
-                showAddToTrip
-              />
-              <p className="mt-3 text-xs leading-5 text-stone-500">
-                This lookup is OpenStreetMap data, not our own checking — anybody can add to it. Treat it as a lead and
-                confirm the hechsher yourself.
-              </p>
-            </div>
-          ) : (
-            <p className="mt-6 text-sm">
-              <Link
-                href="/kosher"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Search live for kosher food anywhere
-              </Link>
-            </p>
-          )}
+          <Suspense fallback={<Skeleton what={`kosher food in ${destination.name}`} />}>
+            <KosherFood destination={destination} />
+          </Suspense>
         </Section>
 
         <Section id="shabbos" title="Shabbos">
-          <SignalPanel signal={shabbos} />
+          <Suspense fallback={<SignalFallback label="Shabbos" />}>
+            <ShabbosSignal destination={destination} />
+          </Suspense>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <VerificationBadge descriptor={reconfirmBeforeTravel()} />
             <p className="max-w-2xl text-sm leading-6 text-stone-600">

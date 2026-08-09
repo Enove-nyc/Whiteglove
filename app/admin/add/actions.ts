@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { VACATION_SOURCES_TAG } from "@/lib/vacation-sources";
 import { cookies } from "next/headers";
 import type { ContentStatus } from "@prisma/client";
 import { createAttraction, createCemetery, createInfoPage, createKosherStay } from "@/lib/content-admin";
@@ -80,6 +81,15 @@ function revalidateTripContent(kind: "attraction" | "stay") {
   revalidatePath("/stops");
   revalidatePath("/itinerary");
   revalidatePath("/admin/add");
+  // The vacation pages read the same entries and are prerendered rather than
+  // rendered per request — they used to be force-dynamic, which is what made
+  // opening one slow. The tag throws away the stored read and the paths throw
+  // away the built HTML; both are needed, or a new entry appears in the
+  // directory and is missing from the destination page that should show it.
+  updateTag(VACATION_SOURCES_TAG);
+  revalidatePath("/vacation-ideas");
+  revalidatePath("/vacation-ideas/[destination]", "page");
+  revalidatePath("/");
 }
 
 /** Multi-line textarea → one note per line, blanks dropped. */
