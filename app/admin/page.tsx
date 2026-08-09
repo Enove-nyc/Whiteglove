@@ -11,6 +11,7 @@ import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
+import { listPlanRequests } from "@/lib/account-plan-store";
 import { getDashboardStats } from "@/lib/site-analytics";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,19 @@ export default async function AdminHome() {
       text: `${picturesWaiting} picture${picturesWaiting === 1 ? "" : "s"} sent in by visitors, waiting for you. Nothing is on the site until you say so.`,
       href: "/admin/photos",
       label: "Look at them",
+    });
+  }
+
+  // Somebody asked about Pro or Business and is waiting on a person. This used
+  // to arrive in complete silence: written to the store, shown on
+  // /admin/accounts, and announced nowhere — while the person who asked was
+  // told "we have it, and we will be in touch".
+  const plansWaiting = (await listPlanRequests()).filter((r) => r.state === "asked").length;
+  if (plansWaiting > 0) {
+    alerts.push({
+      text: `${plansWaiting} ${plansWaiting === 1 ? "person has" : "people have"} asked about a Pro or Business account. Nothing is charged either way — they are waiting on an answer from you.`,
+      href: "/admin/accounts",
+      label: "Answer them",
     });
   }
 
