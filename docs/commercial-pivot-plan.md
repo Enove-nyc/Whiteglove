@@ -1,6 +1,7 @@
 # Commercial pivot: discovery, booking referral, and advertising
 
-**Status: plan for approval. No code written yet.**
+**Status: decisions taken, Phase 1 in progress.**
+See "Decisions taken" at the foot of this document.
 
 This is the pre-work the brief asked for: what exists today, what the new
 architecture is, and what changes page by page. Everything below was read out of
@@ -408,21 +409,50 @@ Each stage: lint, `tsc --noEmit`, tests, `npm run audit:ui`,
 
 ---
 
-## Four decisions I need from you
+## Decisions taken
 
-1. **Route naming.** Vacation hub at `/destinations` (heritage towns move, with
-   redirects) or keep `/vacation-ideas` and label the nav item "Destinations"?
-   *I recommend the second — same visitor experience, no SEO risk.*
-2. **Nav width.** Cars & Transfers in the menu panel, or in the bar with sign-in
-   moved out?
-3. **Which affiliate programmes are actually joined?** The registry can only
-   contain partners you have accounts with. Today: Travelpayouts, Stay22, Kayak,
-   Booking.com, Duffel. Activities (GetYourGuide/Viator), insurance, eSIM and
-   car partners are named in the brief but not configured — I will build the
-   slots and leave them inactive rather than invent links.
-4. **Duffel.** Confirmed that the existing flight booking stays as-is and is not
-   extended? The brief says not to build an OTA without separate approval, and
-   `/book/review` already takes card payments.
+1. **Route naming — move heritage.** The vacation hub takes `/destinations`;
+   heritage towns move to `/heritage/towns/[place]` with permanent redirects.
+   This is a real migration and carries the SEO risk noted above; it is
+   scheduled as its own stage with the redirects landing in the same commit.
+2. **Navigation — Cars & Transfers in the menu.** Seven items in the bar plus
+   the primary action; Cars keeps its own page at `/cars` and is linked from
+   every destination page. One line to swap later.
+3. **Programmes joined: Travelpayouts and Stay22.** Nothing else.
+4. **Duffel off the public site**, kept working in the admin only.
+
+### A correction to §2 and §3, made after these answers
+
+I had described Kayak and Booking.com as affiliate partners alongside
+Travelpayouts, which made "we have Travelpayouts and Stay22" read as "Kayak and
+Booking.com come out". **That was wrong, and the opposite is true.** Kayak and
+Booking.com are where the traveler LANDS; Travelpayouts is the network that is
+paid for sending them, and it works by wrapping their URL (`?u=<the search>`).
+Removing them would remove the thing Travelpayouts is paid to forward to.
+
+So the registry separates two axes rather than keeping one list:
+
+| | |
+|---|---|
+| **Network** — who records and pays | Travelpayouts, Stay22, or `none` |
+| **Destination** — where the traveler arrives | Kayak, Booking.com, Stay22's provider |
+
+`none` is a real, reported state meaning the link works and earns nothing. A
+link that breaks because the money is not configured costs a customer to save a
+commission; the site keeps the link and makes the state legible in the admin
+instead — which is the failure mode the untagged-car-hire episode was.
+
+### Phase 1 progress
+
+| Stage | State |
+|---|---|
+| Affiliate registry, `/go` redirect, click tracking, disclosure | **Done** — `db4113e` |
+| Duffel off the public site, into the admin, guarded | **Done** — `0475d9e` |
+| Route migration: `/destinations`, heritage towns, redirects | Next |
+| Navigation rewrite | Next |
+| Booking page rewrite, hotels-first | Next |
+| Homepage rebuild, booking-first | Next |
+| Personal assistance into Contact only; remove `/honeymoon`, owner login, weak counts | Next |
 
 **Nothing in this plan publishes an invented price, availability, review,
 partner, advertiser or traffic figure.** Where inventory does not exist, the
