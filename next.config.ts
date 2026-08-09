@@ -19,7 +19,14 @@ const nextConfig: NextConfig = {
       // addresses redirect permanently so links in the wild carry across
       // rather than looking like a second, competing page.
       { source: "/booking", destination: "/book", permanent: true },
-      { source: "/booking/review", destination: "/book/review", permanent: true },
+      // /book/review was the Duffel checkout. Duffel takes a card and issues a
+      // ticket, which is a different business from sending somebody to a
+      // partner, so it moved to /admin/duffel and off the public site
+      // entirely. The two old public addresses land on the booking page rather
+      // than on a 404: somebody following a stale link wanted to book travel,
+      // and that is still here.
+      { source: "/booking/review", destination: "/book", permanent: true },
+      { source: "/book/review", destination: "/book", permanent: true },
       // "Getaways" was one editable hero block and nothing under it, on a
       // page whose name told a vacation customer very little. It is
       // /vacation-ideas now — a real hub over the destinations the site holds

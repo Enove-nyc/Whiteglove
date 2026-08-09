@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { duffelRefusal } from "@/lib/duffel-guard";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
 import { redact } from "@/lib/redact";
 
@@ -70,7 +71,15 @@ export function explainDuffelError(status: number, body: string): { message: str
 type Carrier = { name?: string; iata_code?: string; logo_symbol_url?: string; logo_lockup_url?: string };
 type RawSegment = { origin?: { iata_code?: string; name?: string; terminal?: string }; destination?: { iata_code?: string; name?: string; terminal?: string }; departing_at?: string; arriving_at?: string; duration?: string; marketing_carrier?: Carrier; operating_carrier?: Carrier; marketing_carrier_flight_number?: string; aircraft?: { name?: string; iata_code?: string } };
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // ADMIN ONLY. Taking the buttons off the public page is not the same as
+  // closing the door: anybody who saw the site last month can still post here,
+  // and this endpoint reaches the White Glove Duffel account. See
+  // lib/duffel-guard.ts.
+  const refused = duffelRefusal(request);
+  if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
+
+
   const token = process.env.DUFFEL_ACCESS_TOKEN;
   if (!token) return NextResponse.json({ message: "Flight search will be available once the White Glove Duffel account is connected.", detail: "Add DUFFEL_ACCESS_TOKEN to the secure site settings. The key is never sent to visitors." });
 

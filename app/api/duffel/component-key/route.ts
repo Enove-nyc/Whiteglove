@@ -1,6 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { duffelRefusal } from "@/lib/duffel-guard";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // ADMIN ONLY. Taking the buttons off the public page is not the same as
+  // closing the door: anybody who saw the site last month can still post here,
+  // and this endpoint reaches the White Glove Duffel account. See
+  // lib/duffel-guard.ts.
+  const refused = duffelRefusal(request);
+  if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
+
+
   const token = process.env.DUFFEL_ACCESS_TOKEN;
   if (!token) {
     return NextResponse.json({ message: "The White Glove Duffel account is not connected yet." }, { status: 503 });

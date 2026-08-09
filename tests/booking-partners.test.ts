@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { describeFlights, describeHotels, flightsVia, hotelsVia } from "@/lib/booking-partners";
+import { describeFlights, describeHotels, duffelReady, flightsVia, hotelsVia, publicFlightsVia, publicHotelsVia } from "@/lib/booking-partners";
 
 /**
  * Who runs a search on /book.
@@ -11,6 +12,44 @@ import { describeFlights, describeHotels, flightsVia, hotelsVia } from "@/lib/bo
  * flow without choosing to. Where the bookings go is a business decision and
  * it takes somebody deciding.
  */
+
+describe("Duffel is off the public site", () => {
+  it("CANNOT BE ROUTED TO FROM A PUBLIC PAGE, by any configuration", () => {
+    // Duffel takes a card and issues a ticket, which is a different business
+    // from being paid to send somebody to a partner. The public pair takes no
+    // environment at all — there is no setting, and no accident, that turns it
+    // back on. It lives at /admin/duffel.
+    assert.equal(publicFlightsVia(), "kayak");
+    assert.equal(publicHotelsVia(), "booking");
+    assert.equal(publicFlightsVia.length, 0, "the public router reads configuration");
+    assert.equal(publicHotelsVia.length, 0, "the public router reads configuration");
+  });
+
+  it("still tells the admin whether the account is connected", () => {
+    assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc" }), true);
+    assert.equal(duffelReady({}), false);
+    assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "   " }), false);
+  });
+
+  it("is reachable from the public booking page nowhere at all", () => {
+    const book = readFileSync("app/book/page.tsx", "utf8");
+    const partners = readFileSync("components/BookPartners.tsx", "utf8");
+    assert.doesNotMatch(book, /flightsVia|hotelsVia|BookingSearch/);
+    assert.doesNotMatch(partners, /BookingSearch/);
+  });
+
+  it("guards its endpoints rather than only hiding the buttons", () => {
+    // Anybody who saw the site last month can still post to these.
+    for (const route of [
+      "app/api/flights/search/route.ts",
+      "app/api/flights/book/route.ts",
+      "app/api/hotels/search/route.ts",
+      "app/api/duffel/component-key/route.ts",
+    ]) {
+      assert.match(readFileSync(route, "utf8"), /duffelRefusal\(request\)/, route);
+    }
+  });
+});
 
 describe("where a flight search goes", () => {
   it("goes to Kayak when nothing is set", () => {

@@ -7,7 +7,6 @@ import BookPartners from "@/components/BookPartners";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
-import { flightsVia, hotelsVia } from "@/lib/booking-partners";
 import { pageMetadata } from "@/lib/seo";
 
 // The one booking page. `/booking` was a second one — same job, different
@@ -80,22 +79,10 @@ export default async function BookPage({
     // site down directly and the Travelpayouts account has no hotel programme.
     stay22: await readStay22(),
   };
-  // Flights go to Kayak and hotels to Booking.com unless somebody has said
-  // otherwise, in as many words. The rule used to be "a Duffel token is
-  // present", which meant adding a token to try a search quietly moved every
-  // flight on the site onto it. See lib/booking-partners.ts.
-  // Each variable named rather than handing over process.env: Next substitutes
-  // these by name at build time, so a whole-object read is not the same thing.
-  const via = {
-    flights: flightsVia({
-      DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
-      DUFFEL_FLIGHTS: process.env.DUFFEL_FLIGHTS,
-    }),
-    hotels: hotelsVia({
-      DUFFEL_ACCESS_TOKEN: process.env.DUFFEL_ACCESS_TOKEN,
-      DUFFEL_STAYS: process.env.DUFFEL_STAYS,
-    }),
-  };
+  // Flights go to Kayak and hotels to Booking.com, and there is no longer a
+  // configuration that changes it. Duffel — the one integration that takes a
+  // card and issues a ticket — is off the public site and lives at
+  // /admin/duffel; see lib/booking-partners.ts for why.
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -109,7 +96,7 @@ export default async function BookPage({
             <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">Book with cash, or with miles</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">{words.bookingNotice}</p>
           </div>
-          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} flightsVia={via.flights} hotelsVia={via.hotels} /></div>
+          <div className="mt-10"><BookPartners affiliate={affiliate} prefill={prefill} /></div>
         </div>
       </section>
 

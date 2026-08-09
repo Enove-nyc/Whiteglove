@@ -67,14 +67,14 @@ const fromIsoDate = (value: string) => { const [year, month, day] = value.split(
  * two sets of tabs saying the same thing once /book embedded it. /book owns
  * the tabs now, and there is one of them.
  */
-export default function BookingSearch({ only }: { only: SearchKind }) {
+export default function BookingSearch({ only, reviewHref = "/admin/duffel/review" }: { only: SearchKind; reviewHref?: string }) {
   const router = useRouter();
   const kind = only; const [tripType, setTripType] = useState<TripType>("round-trip");
   const [slices, setSlices] = useState<Slice[]>([blankSlice()]); const [returnDate, setReturnDate] = useState(""); const [nonstopOnly, setNonstopOnly] = useState(false); const [stops, setStops] = useState("2"); const [cabin, setCabin] = useState("economy"); const [departureTime, setDepartureTime] = useState("any"); const [loading, setLoading] = useState(false); const [state, setState] = useState<SearchState>(null);
   useEffect(() => { const saved = sessionStorage.getItem("whiteGloveFlightResults"); if (!saved) return; queueMicrotask(() => { try { setState(JSON.parse(saved) as SearchState); } catch { sessionStorage.removeItem("whiteGloveFlightResults"); } }); }, []);
   const setSlice = (index: number, update: Partial<Slice>) => setSlices((current) => current.map((slice, itemIndex) => itemIndex === index ? { ...slice, ...update } : slice));
   const swapSlice = (index: number) => setSlices((current) => current.map((slice, itemIndex) => itemIndex === index ? { ...slice, origin: slice.destination, destination: slice.origin } : slice));
-  const chooseFlight = (flight: FlightOption) => { if (state?.flights) sessionStorage.setItem("whiteGloveFlightResults", JSON.stringify(state)); sessionStorage.setItem("whiteGloveSelectedFlight", JSON.stringify(flight)); router.push("/book/review"); };
+  const chooseFlight = (flight: FlightOption) => { if (state?.flights) sessionStorage.setItem("whiteGloveFlightResults", JSON.stringify(state)); sessionStorage.setItem("whiteGloveSelectedFlight", JSON.stringify(flight)); router.push(reviewHref); };
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setState(null); const form = new FormData(event.currentTarget); const filters = { maxConnections: Number(stops), cabin, departureTime };
     const normalizedSlices = slices.map((slice) => ({ ...slice, departureDate: toIsoDate(slice.departureDate) })); const normalizedReturn = toIsoDate(returnDate);

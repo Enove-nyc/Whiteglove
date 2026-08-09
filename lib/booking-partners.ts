@@ -25,6 +25,35 @@
 export type FlightsVia = "duffel" | "kayak";
 export type HotelsVia = "duffel" | "booking";
 
+/**
+ * DUFFEL IS OFF THE PUBLIC SITE.
+ *
+ * It is a real booking engine — it takes a card, issues a ticket and creates
+ * an obligation to the traveler that a referral link does not. Running it on
+ * the public site made this an online travel agent in every way that matters
+ * legally, alongside a business that is otherwise paid for sending people
+ * somewhere else. The owner's decision is to keep it, working, in the admin
+ * only, until that is a scope somebody has deliberately taken on.
+ *
+ * So `publicFlightsVia` and `publicHotelsVia` below are the ones the public
+ * pages call, and they cannot return "duffel" — not by configuration, not by
+ * accident, not by somebody setting DUFFEL_FLIGHTS=1 in a hurry. The env-driven
+ * pair is kept for the admin screen, which still has to be able to say whether
+ * the account is connected and what it would do.
+ */
+export function publicFlightsVia(): "kayak" {
+  return "kayak";
+}
+
+export function publicHotelsVia(): "booking" {
+  return "booking";
+}
+
+/** Whether the admin's Duffel tools can run at all. */
+export function duffelReady(env: { DUFFEL_ACCESS_TOKEN?: string }): boolean {
+  return Boolean(env.DUFFEL_ACCESS_TOKEN?.trim());
+}
+
 /** Set to exactly "1" to move that search onto Duffel. Anything else is off. */
 const on = (value: string | undefined) => value?.trim() === "1";
 const set = (value: string | undefined) => Boolean(value?.trim());

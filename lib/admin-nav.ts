@@ -79,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/accounts", label: "Visitor accounts", blurb: "People who signed up." },
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
+      { href: "/admin/duffel", label: "Duffel flights", blurb: "Search and ticket directly. Not on the public site." },
     ],
   },
 ];
