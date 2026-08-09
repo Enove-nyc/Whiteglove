@@ -48,6 +48,7 @@ export async function savePlannerAction(_prev: ActionResult | null, form: FormDa
     lateFinish: time(form, "lateFinish"),
     stopMins: number(form, "stopMins"),
     keverMins: number(form, "keverMins"),
+    borderAllowanceMins: number(form, "borderAllowanceMins"),
     detourFactor: number(form, "detourFactor"),
     transferMins: number(form, "transferMins"),
     townKmh: number(form, "townKmh"),

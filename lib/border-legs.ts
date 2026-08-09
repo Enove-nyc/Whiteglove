@@ -15,7 +15,7 @@ import { borderBetween, countryOf } from "@/lib/borders";
  * fortnight's itinerary asks the same Poland-to-Ukraine question on every day
  * it happens and the ranking behind it is not free.
  */
-export function borderCostForLegs(crossings: Crossing[], today: string): BorderCostFn {
+export function borderCostForLegs(crossings: Crossing[], today: string, allowanceMinutes?: number): BorderCostFn {
   const seen = new Map<string, { minutes: number; says: string }>();
 
   return (from: BorderEnd, to: BorderEnd) => {
@@ -28,7 +28,7 @@ export function borderCostForLegs(crossings: Crossing[], today: string): BorderC
     const remembered = seen.get(key);
     if (remembered) return remembered;
 
-    const cost = borderCost({ from: fromCountry, to: toCountry, major: crossing.major, crossings, today });
+    const cost = borderCost({ from: fromCountry, to: toCountry, major: crossing.major, crossings, today, allowanceMinutes });
     const answer = { minutes: cost.minutes, says: cost.says };
     seen.set(key, answer);
     return answer;

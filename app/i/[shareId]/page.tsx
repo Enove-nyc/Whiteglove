@@ -49,7 +49,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   // one trip gave one set of driving times on the screen it was built on and
   // another on the link that was sent to the person actually driving it.
   const [crossings, assume] = await Promise.all([allCrossings(), readAssumptions()]);
-  const borderCost = borderCostForLegs(crossings, new Date().toISOString().slice(0, 10));
+  const borderCost = borderCostForLegs(crossings, new Date().toISOString().slice(0, 10), assume.borderAllowanceMins);
   const days = itin.startDate && itin.endDate ? buildDays(itin, borderCost, assume) : [];
   const sharedByName = shared.ownerName || shared.ownerEmail;
 

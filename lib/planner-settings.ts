@@ -24,6 +24,7 @@ export type StoredAssumptions = Partial<PlannerAssumptions>;
 const NUMBER_KEYS = [
   "stopMins",
   "keverMins",
+  "borderAllowanceMins",
   "detourFactor",
   "transferMins",
   "townKmh",
@@ -99,6 +100,11 @@ export function assumptionProblem(a: PlannerAssumptions): string | null {
     if (!(mins > 0)) return `${label} that takes no time is one the planner will pack a day full of. Give it a length in minutes.`;
     if (mins > end - start) return `${label} longer than the whole day would make every single day over-packed.`;
   }
+
+  // Zero is a real answer here — an open border somebody drives straight
+  // through — so this is checked separately from the stop lengths above.
+  if (!(a.borderAllowanceMins >= 0)) return "A border cannot take less than no time. Use 0 for a crossing you drive straight through.";
+  if (a.borderAllowanceMins > end - start) return "A border allowance longer than the whole day would leave no time to travel on either side of it.";
 
   if (!(a.detourFactor >= 1)) return "A road cannot be shorter than the straight line between its ends. The road allowance is 1 or more.";
   if (a.detourFactor > 3) return "Roads three times the straight-line distance would put hours on every leg. Something between 1.2 and 1.6 is usual.";
@@ -181,6 +187,7 @@ export const FIELDS: AssumptionField[] = [
 
   { key: "stopMins", group: "stops", kind: "number", unit: "minutes", step: 5, label: "A stop, when nobody has said", changes: "How much of the day each untimed stop is counted as using." },
   { key: "keverMins", group: "stops", kind: "number", unit: "minutes", step: 5, label: "A beis hachaim, when nobody has said", changes: "The same, for a stop taken from our kever directory." },
+  { key: "borderAllowanceMins", group: "stops", kind: "number", unit: "minutes", step: 15, label: "A border nobody has checked", changes: "What a day is charged for crossing out of Schengen when no one has recorded a wait for that crossing lately. A crossing with a checked figure on it uses that instead." },
 
   { key: "detourFactor", group: "driving", kind: "number", step: 0.05, label: "Roads are longer than the straight line by", changes: "Every estimated distance, and so every estimated driving time." },
   { key: "transferMins", group: "driving", kind: "number", unit: "minutes", step: 5, label: "Parking and getting going, per leg", changes: "A fixed amount added to every leg of every day." },

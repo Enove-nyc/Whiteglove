@@ -12,6 +12,7 @@ import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import type { Crossing } from "@/lib/border-crossings";
+import DayProgress from "@/components/DayProgress";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { documentsForDay, tripDocuments } from "@/lib/trip-documents";
 import { borderIsWorthSaying, formatWait } from "@/lib/border-time";
@@ -51,6 +52,7 @@ import {
   type ItinTraveler,
   type LodgingType,
   type TravelLeg,
+  type DayAdjustment as ItinAdjustment,
 } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
 
@@ -185,9 +187,24 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // Time at a border is folded into the driving rather than mentioned beside
   // it: the planner used to say "five hours" for a day that takes seven.
   const borderCost = useMemo(
-    () => (serverToday ? borderCostForLegs(crossings, serverToday) : undefined),
-    [crossings, serverToday],
+    // The allowance comes from the same assumptions the rest of the day uses,
+    // so changing it on /admin/planner moves the border too rather than only
+    // the stops.
+    () => (serverToday ? borderCostForLegs(crossings, serverToday, assume.borderAllowanceMins) : undefined),
+    [crossings, serverToday, assume.borderAllowanceMins],
   );
+  // What actually happened today, against the plan. Kept on the itinerary so
+  // it saves and shares with everything else — see lib/day-progress.ts.
+  function recordAdjustment(adjustment: ItinAdjustment) {
+    setItin((prev) => ({ ...prev, adjustments: [...(prev.adjustments ?? []), adjustment] }));
+  }
+  function clearAdjustments(dayKey: string) {
+    setItin((prev) => ({
+      ...prev,
+      adjustments: (prev.adjustments ?? []).filter((a) => !a.stopId.startsWith(`${dayKey}:`)),
+    }));
+  }
+
   const days = useMemo(
     () => (itin.startDate && itin.endDate ? buildDays(itin, borderCost, assume) : []),
     [itin, borderCost, assume],
@@ -500,6 +517,9 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   day={day}
                   signedIn={Boolean(viewer?.signedIn)}
                   isToday={day.date === todayInTrip}
+                  adjustments={itin.adjustments ?? []}
+                  onRecordAdjustment={recordAdjustment}
+                  onClearAdjustments={clearAdjustments}
                   // Day one opens by default, except while the trip is running
                   // — then the day they are on does, and day one is history.
                   defaultOpen={todayInTrip ? day.date === todayInTrip : day.index === 0}
@@ -594,10 +614,14 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
+  /** What actually happened, against the plan. Only asked about on the day. */
+  adjustments: ItinAdjustment[];
+  onRecordAdjustment: (adjustment: ItinAdjustment) => void;
+  onClearAdjustments: (dayKey: string) => void;
   defaultOpen?: boolean;
   /** Boarding passes need an account; without one there is nowhere to put them. */
   signedIn: boolean;
@@ -921,6 +945,20 @@ function DayCard({ day, isToday, defaultOpen, burials, signedIn, onMove, onUpdat
       </summary>
 
       <div className="border-t border-[var(--gold-light)] px-4 pb-5 sm:px-5">
+        {/* Only on the day itself. A trip three weeks away has nothing to say
+            about how it is going, and a row of "are you running late?" buttons
+            on every day of a fortnight would be noise on thirteen of them. */}
+        {isToday && (
+          <DayProgress
+            dayKey={day.date}
+            adjustments={adjustments}
+            stopsLeft={day.activities.length}
+            typicalStopMins={90}
+            onRecord={onRecordAdjustment}
+            onClear={() => onClearAdjustments(day.date)}
+          />
+        )}
+
         {/* A warning that can be acted on carries the button to act on it, on
             the day it is about. Being told on day 4 that day 4 has nowhere to
             sleep, and then having to scroll back to the top of the page and
