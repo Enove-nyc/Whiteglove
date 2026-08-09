@@ -29,7 +29,7 @@ export default function SharedWithMe() {
 
   return (
     <div className="wg-card mb-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Shared with you</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Shared with you</p>
       <ul className="mt-3 divide-y divide-[var(--gold-light)]">
         {trips.map((t) => (
           <li key={t.shareId} className="flex items-center justify-between gap-4 py-2">

@@ -8,84 +8,34 @@ import DestinationSearch from "@/components/DestinationSearch";
 import MembersOnlyLink from "@/components/MembersOnlyLink";
 import SitePromotions from "@/components/SitePromotions";
 import { GATED_FEATURES } from "@/lib/members-only";
+import { isCurrent, MENU_GROUPS, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
 
 /**
- * The menu. A Yiddish label only where there is a real Yiddish word for it.
+ * The header.
  *
- * Half of these used to carry one and half of those were not Yiddish:
- * סערוויסעס, האָנימאָן, דירעקטאָרי, וואַקאַציעס — English words spelled in Hebrew
- * letters. To somebody who reads Yiddish that is not a translation, it is the
- * English word made harder to read.
+ * WHAT IT SAYS IS IN lib/navigation.ts, not here, and the rules about what may
+ * and may not be in it are tests. The bar is the site's positioning — it used
+ * to read Destinations · Cemeteries · Getaways · Directory · Services · Book,
+ * which is an accurate description of a kevarim database with a travel page
+ * attached, and the wrong first sentence for a business that plans kosher
+ * holidays. That list is now one screen of reviewable text with its reasoning
+ * beside it.
  *
- * What stays is what people say: היים, נסיעות, בתי החיים, כשר עסן.
+ * WHAT DID NOT CHANGE, and must not: the site search, the sign-in state, the
+ * promotions strip, and the members-only
+ * links — the planner and My Route are offered to everybody, signed in or not,
+ * because a feature nobody can see is a feature nobody asks for. See
+ * lib/members-only.ts.
  *
- * A second pass removed four more the owner — who speaks the language —
- * marked as not natural: רײַזע פֿירער, וואו צו גיין, וואו צו שלאפן and
- * פֿאַרבינדונג. Being made of real Yiddish words is not the same as being what
- * anybody would say, and that distinction is not one this codebase can make
- * for itself. When in doubt the label is English.
- *
- * Nothing renders these today — the bar and the menu both show the English.
- * They are kept as the record of which words are right, so that when the
- * menu does show them, it shows those and not the ones just removed.
+ * The Yiddish labels that used to sit in this file were a record of which
+ * words are right rather than anything that rendered; they have moved to
+ * lib/navigation.ts's history along with the menu, and the bar shows English
+ * as it always did.
  */
-const menuItems: Array<{ yiddish?: string; english: string; href: string }> = [
-  { yiddish: "היים", english: "Home", href: "/" },
-  { yiddish: "נסיעות", english: "Destinations", href: "/stops" },
-  { english: "Getaways", href: "/getaways" },
-  { yiddish: "בתי החיים", english: "Cemeteries", href: "/cemeteries" },
-  // By the person rather than by the town — which is how people search.
-  { english: "Kevarim", href: "/tzaddikim" },
-  { english: "Map", href: "/map" },
-  { yiddish: "כשר עסן", english: "Kosher food", href: "/kosher" },
-  { english: "Travel guide", href: "/travel-guide" },
-  { english: "Directory", href: "/directory" },
-  { english: "Services", href: "/services" },
-  { english: "Honeymoon", href: "/honeymoon" },
-  { english: "Things to do", href: "/attractions" },
-  { english: "Where to stay", href: "/kosher-stays" },
-  { english: "Book flights, hotels & cars", href: "/book" },
-  { english: "Contact", href: "/contact" },
-];
-
-/**
- * The bar at desktop width. Destinations and Cemeteries are deliberately
- * separate entries: one is towns you travel to, the other is where people are
- * buried, and collapsing them loses the distinction the site is built on.
- *
- * `wide` is a longer label for the widths that have room for it — "Book" says
- * very little about a page that searches flights, hotels and cars.
- */
-const primaryLinks: Array<{ label: string; wide?: string; href: string }> = [
-  { label: "Destinations", href: "/stops" },
-  { label: "Cemeteries", href: "/cemeteries" },
-  { label: "Getaways", href: "/getaways" },
-  { label: "Directory", href: "/directory" },
-  { label: "Services", href: "/services" },
-  { label: "Book", wide: "Flights, hotels & cars", href: "/book" },
-];
-
-const PRIMARY_HREFS = new Set(primaryLinks.map((link) => link.href));
-
-const menuGroups = [
-  {
-    title: "Explore",
-    links: menuItems.filter((item) => ["/stops", "/cemeteries", "/tzaddikim", "/attractions", "/map", "/kosher", "/travel-guide", "/directory"].includes(item.href)),
-  },
-  {
-    title: "Plan & book",
-    links: menuItems.filter((item) => ["/services", "/book", "/kosher-stays", "/getaways", "/honeymoon"].includes(item.href)),
-  },
-  {
-    title: "White Glove",
-    links: menuItems.filter((item) => ["/", "/contact"].includes(item.href)),
-  },
-];
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const showSearch = pathname !== "/";
   const [menuOpen, setMenuOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const navRef = useRef<HTMLElement>(null);
@@ -151,48 +101,47 @@ export default function Navbar() {
 
   return (
     <>
-      <nav ref={navRef} className="sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md">
+      <nav
+        ref={navRef}
+        aria-label="Main"
+        className="sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md"
+      >
         <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-4 px-5 sm:px-8">
-          <Link href="/" className="mr-5 flex shrink-0 items-center xl:mr-8" aria-label="White Glove Itineraries home">
+          <Link href="/" className="mr-4 flex shrink-0 items-center xl:mr-6" aria-label="White Glove Itineraries home">
             <Image src="/logo.png" alt="White Glove Itineraries" width={500} height={300} className="h-[4.5rem] w-auto object-contain" priority />
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex">
-            {primaryLinks.map((link) => {
-              const current = !link.href.includes("?") && (pathname === link.href || pathname.startsWith(`${link.href}/`));
+            {PRIMARY_NAV.map((item) => {
+              const current = isCurrent(item.href, pathname);
               return (
                 <Link
-                  key={link.label}
-                  href={link.href}
+                  key={item.href}
+                  href={item.href}
                   aria-current={current ? "page" : undefined}
                   // The current section is marked three ways, not one: a filled
                   // pill, a gold underline, and aria-current. Colour alone
                   // leaves anyone who cannot separate cream from cream-deep
                   // with no idea where they are.
-                  className={`relative min-h-11 rounded-full px-3 py-2 text-sm font-semibold transition inline-flex items-center ${
+                  className={`relative inline-flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-semibold transition ${
                     current
                       ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
                       : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                   }`}
                 >
-                  {link.wide ? (
-                    <>
-                      <span className="2xl:hidden">{link.label}</span>
-                      <span className="hidden 2xl:inline">{link.wide}</span>
-                    </>
-                  ) : (
-                    link.label
-                  )}
+                  {item.label}
                 </Link>
               );
             })}
           </div>
 
-          {showSearch && (
-            <div className="ml-8 mr-3 hidden w-full max-w-xs min-w-0 md:block xl:ml-12 xl:mr-5 xl:max-w-sm">
-              <DestinationSearch compact />
-            </div>
-          )}
+          {/* On every page, including the front one. The front page used to
+              carry its own search box in the hero and hide the header's; the
+              hero is the proposition and two buttons now, so there is one
+              search box on the site and it is always in the same place. */}
+          <div className="ml-6 mr-2 hidden w-full max-w-xs min-w-0 md:block xl:ml-8 xl:mr-4 xl:max-w-[15rem]">
+            <DestinationSearch compact />
+          </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <div className="hidden items-center gap-2 sm:flex">
@@ -206,11 +155,22 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/login">
-                  Sign in
+                <Link className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]" href={SIGN_IN.href}>
+                  {SIGN_IN.label}
                 </Link>
               )}
             </div>
+
+            {/* The one filled control in the header, and it starts a trip.
+                Not "contact us" and not "book" — the thing this business does
+                is plan the trip, and a header with two equal buttons has no
+                primary action at all. */}
+            <Link
+              href={PRIMARY_CTA.href}
+              className="hidden min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] sm:inline-flex"
+            >
+              {PRIMARY_CTA.label}
+            </Link>
 
             {/* At compact widths this IS the navigation, so it says "Menu".
                 At desktop the bar above is the navigation and this only holds
@@ -242,21 +202,19 @@ export default function Navbar() {
           </div>
         </div>
 
-        {showSearch && (
-          <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 md:hidden sm:px-8">
-            <DestinationSearch compact />
-          </div>
-        )}
+        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 md:hidden sm:px-8">
+          <DestinationSearch compact />
+        </div>
 
         {menuOpen && (
           <div id="site-menu" className="absolute inset-x-0 top-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
             <div className="mx-auto grid max-h-[calc(100vh-5rem)] max-w-7xl gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-3 md:py-9">
-              {menuGroups.map((group) => (
+              {MENU_GROUPS.map((group) => (
                 <section key={group.title}>
-                  <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{group.title}</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</h2>
                   <ul className="mt-3 space-y-1">
                     {group.links.map((item) => {
-                      const current = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+                      const current = isCurrent(item.href, pathname);
                       return (
                         // Hidden at desktop when the bar above already shows
                         // it, so this panel is "the rest of the site" there
@@ -266,12 +224,20 @@ export default function Navbar() {
                             onClick={() => setMenuOpen(false)}
                             href={item.href}
                             aria-current={current ? "page" : undefined}
-                            className={`flex min-h-11 items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold transition ${
+                            className={`flex min-h-11 items-start justify-between gap-3 rounded-md px-3 py-2.5 transition ${
                               current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                             }`}
                           >
-                            <span>{item.english}</span>
-                            <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold)]"}>→</span>
+                            <span>
+                              <span className="block text-sm font-semibold">{item.label}</span>
+                              {/* What is actually behind it. A menu of bare
+                                  nouns is a menu somebody presses once and
+                                  learns nothing from. */}
+                              <span className={`mt-0.5 block text-xs leading-5 ${current ? "text-slate-200" : "text-stone-500"}`}>
+                                {item.description}
+                              </span>
+                            </span>
+                            <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>→</span>
                           </Link>
                         </li>
                       );
@@ -302,11 +268,15 @@ export default function Navbar() {
                       <button type="button" onClick={() => { setMenuOpen(false); signOut(); }} className="rounded-md px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">Sign out</button>
                     </>
                   ) : (
-                    <Link onClick={() => setMenuOpen(false)} className="rounded-md bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--navy-deep)]" href="/login">Sign in</Link>
+                    <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href={SIGN_IN.href}>{SIGN_IN.label}</Link>
                   )}
                 </div>
-                <Link onClick={() => setMenuOpen(false)} href="/contact" className="mt-5 inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4 md:mt-0">
-                  Need help planning? Contact us →
+                <Link
+                  onClick={() => setMenuOpen(false)}
+                  href={PRIMARY_CTA.href}
+                  className="mt-5 inline-flex min-h-11 items-center rounded-md bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] md:mt-0"
+                >
+                  {PRIMARY_CTA.label}
                 </Link>
               </div>
             </div>

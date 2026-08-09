@@ -35,7 +35,7 @@ export default function DestinationPicker({
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-      <label htmlFor="dest-search" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+      <label htmlFor="dest-search" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
         Find a destination
       </label>
       <input
@@ -66,7 +66,7 @@ export default function DestinationPicker({
               <span className="font-semibold">{d.city}</span>
               <span className={`ml-2 text-xs ${active ? "text-white/70" : "text-stone-500"}`}>{d.country}</span>
               {count > 0 && (
-                <span className={`ml-2 text-xs ${active ? "text-white/70" : "text-[var(--gold)]"}`}>
+                <span className={`ml-2 text-xs ${active ? "text-white/70" : "text-[var(--gold-ink)]"}`}>
                   · {d._count.places} listings, {d._count.contacts} contacts
                 </span>
               )}

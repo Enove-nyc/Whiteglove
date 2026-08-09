@@ -46,7 +46,7 @@ export default function TravelExtras({ extras }: { extras: TravelExtra[] }) {
                 <h3 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{extra.name}</h3>
                 {extra.blurb.trim() && <p className="mt-2 text-sm leading-6 text-stone-600">{extra.blurb}</p>}
               </div>
-              <span className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{ctaFor(extra)}</span>
+              <span className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{ctaFor(extra)}</span>
             </a>
           ))}
         </div>

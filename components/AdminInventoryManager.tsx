@@ -67,15 +67,15 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Total items</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Total items</p>
           <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{items.length}</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Not completed</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not completed</p>
           <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{open}</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Completed</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Completed</p>
           <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{completed}</p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function AdminInventoryManager({ initialItems, configured }: { in
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`border px-2 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${statusClass(item.status)}`}>{inventoryStatusLabel(item.status)}</span>
-                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{item.priority} priority</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{item.priority} priority</span>
                   <span className="text-xs text-stone-500">{item.area}</span>
                 </div>
                 <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{item.title}</h2>

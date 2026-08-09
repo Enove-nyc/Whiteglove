@@ -75,7 +75,7 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         {shown.map((e) => (
           <article key={e.slug} id={e.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {e.city} · {e.country} · {e.kind} · {e.diet}
             </p>
             <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{e.name}</h3>

@@ -43,7 +43,7 @@ export default function KeverCoordinates({
 
   return (
     <div className="border border-[var(--gold)] bg-white p-4">
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{label}</p>
 
       {/* The address, as the headline. This is the thing a person reads out. */}
       {street ? (

@@ -48,7 +48,7 @@ function Field({ field, value, onChange }: { field: AssumptionField; value: stri
         {field.changes}
         {/* What the site ships with, always visible, so it is obvious what has
             been decided here and what is simply the figure it came with. */}
-        {changed && <span className="ml-1 font-semibold text-[var(--gold)]">Was {builtIn}.</span>}
+        {changed && <span className="ml-1 font-semibold text-[var(--gold-ink)]">Was {builtIn}.</span>}
       </span>
     </label>
   );
@@ -84,7 +84,7 @@ export default function PlannerAssumptionsForm({ current, storeReady }: { curren
     <>
       <form action={save} className="mt-8 space-y-8">
         <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">What these figures make of it</p>
+          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">What these figures make of it</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Four real legs</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeDay(typed)}</p>
 

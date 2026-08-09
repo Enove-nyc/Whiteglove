@@ -2,7 +2,6 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAttractionList } from "@/lib/attractions-view";
 
@@ -34,19 +33,17 @@ export default async function AttractionsPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <SubBrandBanner />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">For the days in between</p>
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">For the days in between</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">Things to do</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               Nobody davens for eight hours a day. This is the rest of the trip — with the two things a guidebook never
               tells you: how far it is from the kosher food, and what it does on Shabbos.
             </p>
           </div>
-          <SubBrandCrest className="hidden shrink-0 sm:block" />
         </div>
       </section>
 

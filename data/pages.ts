@@ -29,101 +29,23 @@ export const editablePages: PageDef[] = [
     slug: "services",
     href: "/services",
     label: "Services",
-    seoTitle: "Services — White Glove Itineraries",
+    seoTitle: "Travel services — planning, booking, kosher and Shabbos | White Glove",
     seoDescription:
-      "Everything White Glove does, on one page: trip planning, flights, hotels, kosher food, phones, insurance, honeymoons, and Jewish heritage journeys.",
+      "Six services, each saying who it is for, what is included, how it works, what you end up with and what to expect about price.",
     blocks: [
       {
         id: "services-hero",
         kind: "hero",
-        eyebrow: "White Glove services",
-        heading: "Services",
+        eyebrow: "Travel services",
+        heading: "What we actually do for you.",
         intro:
-          "Everything we do, in one place. Tell us what matters and we shape the route, the flights, the hotels and the kosher details around it — or use the tools here and plan it yourself.",
+          "Six services. Each one below says who it is for, what is included, how the process works, what you end up holding at the end, and what to expect about price — because a services page that never mentions cost reads as one with something to hide.",
       },
       {
-        id: "services-planning",
-        kind: "cards",
-        heading: "Planning a trip",
-        intro:
-          "The heart of it: you say where you are going and what matters most, and the trip is built around the actual route rather than around a template.",
-        items: [
-          {
-            title: "Route planning",
-            body: "Tell us where you are going, what matters most, and how much flexibility you want. We shape the trip around the actual route.",
-            href: "/itinerary",
-          },
-          {
-            title: "Flights",
-            body: "Air travel kept in step with the rest of the trip — arrival times, departure buffers, and connections that do not strand you.",
-            href: "/flight-booking-assistance",
-          },
-          {
-            title: "Hotels",
-            body: "Stays that work with your schedule, your kosher needs, and how far you are willing to walk.",
-            href: "/book",
-          },
-          {
-            title: "Kosher food",
-            body: "Food for the whole journey, including Shabbos, travel days, and whatever the destination does and does not have.",
-            href: "/kosher",
-          },
-          {
-            title: "Religious needs",
-            body: "Minyanim, mikvaos, tefillos and access notes, kept in the same plan as everything else.",
-            href: "/directory",
-          },
-          {
-            title: "Your saved itinerary",
-            body: "One place to keep the trip organised, with room for notes, bookings and changes. As many trips as you need.",
-            href: "/itinerary",
-          },
-        ],
-      },
-      {
-        id: "services-more",
-        kind: "cards",
-        heading: "The rest of what we do",
-        items: [
-          {
-            title: "שתוליכנו לשלום — Jewish heritage journeys",
-            body: "Kevarim and nesios across Europe and Asia: who is buried where, how to get in, who holds the key, and what is around it.",
-            href: "/stops",
-          },
-          {
-            title: "Honeymoon",
-            body: "A quiet, well-planned honeymoon with the kosher details handled from the start.",
-            href: "/honeymoon",
-          },
-          {
-            title: "Kosher getaways",
-            body: "Shorter trips and programmes, with the food and the davening already worked out.",
-            href: "/getaways",
-          },
-          {
-            title: "Phone rentals",
-            body: "SIMs, eSIMs and hotspots, so you land with a working phone instead of hunting for one.",
-            href: "/phone-rentals",
-          },
-          {
-            title: "Travel insurance",
-            body: "What the cover actually includes, said plainly, and where to get it.",
-            href: "/travel-insurance",
-          },
-          {
-            title: "Flight booking assistance",
-            body: "Send us the details and a person books it, rather than you fighting a booking engine.",
-            href: "/flight-booking-assistance",
-          },
-        ],
-      },
-      {
-        id: "services-cta",
-        kind: "buttons",
-        items: [
-          { label: "Plan it with us", href: "/contact", style: "solid" },
-          { label: "Plan it yourself", href: "/itinerary", style: "outline" },
-        ],
+        id: "services-note",
+        kind: "note",
+        body:
+          "Everything on this site is yours to use for free: the planner, the route timing, the kosher lookups, the whole heritage database. The services below are for when you would rather somebody else did the work.",
       },
     ],
   },
@@ -151,13 +73,25 @@ export const editablePages: PageDef[] = [
     ],
   },
   {
+    // STILL "getaways" — the slug is the key the owner's stored edits are
+    // filed under, and renaming it would throw away whatever he has already
+    // written for a page that has only moved address. The page is
+    // /vacation-ideas now, and /getaways redirects to it (next.config.ts).
     slug: "getaways",
-    href: "/getaways",
-    label: "Getaways",
-    seoTitle: "Vacations and getaways, planned kosher. — White Glove Itineraries",
-    seoDescription: "Beyond kevarim and nesios, White Glove plans the trips you take to unwind — resorts, beaches, mountains, and cities like Rome and Paris — with kosher ",
+    href: "/vacation-ideas",
+    label: "Vacation Ideas",
+    seoTitle: "Kosher vacation ideas — where to go | White Glove Itineraries",
+    seoDescription:
+      "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
     blocks: [
-    { id: "getaways-hero", kind: "hero", eyebrow: "Kosher getaways", heading: "Vacations and getaways, planned kosher.", intro: "Beyond kevarim and nesios, White Glove plans the trips you take to unwind — resorts, beaches, mountains, and cities like Rome and Paris — with kosher food, Shabbos, and every detail arranged." },
+      {
+        id: "getaways-hero",
+        kind: "hero",
+        eyebrow: "Vacation ideas",
+        heading: "Where to go, with the kosher side already worked out.",
+        intro:
+          "Beaches, cities, mountains and family trips. Every destination here says what we hold on record about kosher food and about Shabbos — because those are the two questions that decide whether a holiday is workable, and no other travel site answers them.",
+      },
     ],
   },
   {
@@ -229,10 +163,23 @@ export const editablePages: PageDef[] = [
     slug: "contact",
     href: "/contact",
     label: "Contact",
-    seoTitle: "Contact — White Glove Itineraries",
-    seoDescription: "Get in touch with White Glove Itineraries about kosher travel, kevarim, and trip planning.",
+    seoTitle: "Tell us about the trip you want to take — White Glove Itineraries",
+    seoDescription:
+      "Vacations, family trips, honeymoons, group travel and Jewish heritage journeys. Tell us what you have in mind — or ask us to help you choose.",
     blocks: [
-    { id: "contact-hero", kind: "hero", eyebrow: "White Glove Itineraries", heading: "Contact", intro: "Tell us about your trip — kevarim, dates, and kosher needs — and we'll be in touch." },
+      {
+        id: "contact-hero",
+        kind: "hero",
+        eyebrow: "Start a conversation",
+        // Was: "Tell us about your trip — kevarim, dates, and kosher needs".
+        // That sentence asked every visitor, including a family asking about a
+        // week in the Dolomites, which graves they wanted to visit. The
+        // kevarim question is still asked — of somebody who has said they are
+        // planning a heritage journey, and of nobody else.
+        heading: "Tell us about the trip you want to take.",
+        intro:
+          "Wherever you are going, and whether or not you have decided yet. Answer what you know, leave the rest, and we will come back to you.",
+      },
     ],
   },
   {

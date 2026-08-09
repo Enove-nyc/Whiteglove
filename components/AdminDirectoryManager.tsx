@@ -72,7 +72,7 @@ export default function AdminDirectoryManager() {
   return (
     <div>
       <form onSubmit={save} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{form.id ? "Edit provider" : "Add a provider"}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{form.id ? "Edit provider" : "Add a provider"}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {/* The same component the public form uses. One definition of what
               a listing is made of, so a submission arrives as the boxes you
@@ -156,7 +156,7 @@ export default function AdminDirectoryManager() {
               <tr><td colSpan={5} className="px-4 py-8 text-center text-stone-400">No providers yet — add your first above.</td></tr>
             ) : providers.map((p) => (
               <tr key={p.id} className="text-stone-700">
-                <td className="px-4 py-3"><span className="font-semibold text-[var(--navy)]">{p.name}</span>{p.featured ? <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]" title={featuredReasonLabel(p.featuredReason)}>★ Featured — {featuredReasonLabel(p.featuredReason)}</span> : null}{p.basedIn ? <span className="block text-xs text-stone-500">{p.basedIn}</span> : null}</td>
+                <td className="px-4 py-3"><span className="font-semibold text-[var(--navy)]">{p.name}</span>{p.featured ? <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]" title={featuredReasonLabel(p.featuredReason)}>★ Featured — {featuredReasonLabel(p.featuredReason)}</span> : null}{p.basedIn ? <span className="block text-xs text-stone-500">{p.basedIn}</span> : null}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-xs">{CAT_LABEL[p.category] ?? p.category}</td>
                 <td className="px-4 py-3 text-xs text-stone-600">
                   {[p.phone, p.email].filter(Boolean).join(" · ") || "—"}

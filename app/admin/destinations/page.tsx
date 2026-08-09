@@ -39,7 +39,7 @@ export default async function AdminDestinationsPage({
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Destination editor</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Edit the phone numbers, names, addresses, hours, and contacts shown on each destination page. Changes go live within a minute — no code, no redeploy.
@@ -51,7 +51,7 @@ export default async function AdminDestinationsPage({
       {!dbReady ? (
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Not connected yet</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Not connected yet</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The content database isn&apos;t connected.</h2>
             <p className="mt-4 text-sm leading-7 text-stone-600">
               Once the database is set up, this page becomes your editor for every destination&apos;s practical details. Setup is a one-time step: create a free Neon database, add its connection string as <code className="rounded bg-[var(--cream)] px-1">DATABASE_URL</code>, then run the import. Full instructions are in <code className="rounded bg-[var(--cream)] px-1">docs/DATABASE.md</code>.
@@ -61,7 +61,7 @@ export default async function AdminDestinationsPage({
       ) : needsSetup ? (
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
           <div className="border border-[var(--gold)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One-time setup</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">One-time setup</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Set up your content database.</h2>
             <p className="mt-4 text-sm leading-7 text-stone-600">
               Your database is connected. Tap the button below once to create the tables and import all destinations from the current site (about 136 places). It takes roughly a minute. After it finishes, this page becomes your editor.
@@ -113,7 +113,7 @@ export default async function AdminDestinationsPage({
                 destructive one, and pressing that to fix a database error is
                 how work got deleted. */}
             <div className="border border-[var(--gold)] bg-[#fcfaf6] p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Database</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Database</p>
               <p className="mt-2 text-sm leading-6 text-stone-600">
                 Adds anything the database is missing — new columns, new kinds of listing. Nothing you have entered
                 is touched. If a save ever fails with a database error, this is what it is asking for.
@@ -124,7 +124,7 @@ export default async function AdminDestinationsPage({
             </div>
 
             <details className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
+              <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
                 Re-import built-in content
               </summary>
               <p className="mt-3 text-sm leading-6 text-stone-600">

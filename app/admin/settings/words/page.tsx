@@ -20,7 +20,7 @@ export default async function SiteWordsSettings() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">The website’s words</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               The headline on the front page, the line under it, the address people are told to write to, and the

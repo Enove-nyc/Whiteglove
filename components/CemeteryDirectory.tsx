@@ -19,9 +19,22 @@ import type { CemeteryListItem } from "@/lib/cemeteries-view";
 
 type Order = "city" | "country" | "tzaddik" | "kevarim";
 
-export default function CemeteryDirectory({ cemeteries }: { cemeteries: CemeteryListItem[] }) {
+export default function CemeteryDirectory({
+  cemeteries,
+  initialCountry = "",
+}: {
+  cemeteries: CemeteryListItem[];
+  /**
+   * Arrived from "Browse by country" on the heritage landing page.
+   *
+   * A prop rather than a query the component reads for itself, so this stays
+   * the same self-contained filter it has always been and the page above it
+   * decides what a link means.
+   */
+  initialCountry?: string;
+}) {
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(initialCountry);
   const [order, setOrder] = useState<Order>("city");
 
   const countries = useMemo(
@@ -86,12 +99,12 @@ export default function CemeteryDirectory({ cemeteries }: { cemeteries: Cemetery
             className="min-w-0 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7"
           >
             <p dir="rtl" lang="yi" className="text-xl font-semibold leading-tight text-[var(--navy)]">{cemetery.yiddishCity}</p>
-            <p className="mt-1 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
+            <p className="mt-1 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
             <h2 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
             <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
             <p className="mt-5 text-sm leading-6 text-stone-600">{cemetery.burialCount} known {cemetery.burialCount === 1 ? "kever" : "kevarim"} listed</p>
             {cemetery.ownerAdded && (
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Newly added</p>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Newly added</p>
             )}
           </Link>
         ))}

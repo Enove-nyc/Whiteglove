@@ -36,7 +36,7 @@ export default function AssistantAnswer({ answer }: { answer: string }) {
         if (block.kind === "list") {
           const Tag = block.ordered ? "ol" : "ul";
           return (
-            <Tag key={index} className={`space-y-1.5 pl-5 ${block.ordered ? "list-decimal" : "list-disc"} marker:text-[var(--gold)]`}>
+            <Tag key={index} className={`space-y-1.5 pl-5 ${block.ordered ? "list-decimal" : "list-disc"} marker:text-[var(--gold-ink)]`}>
               {block.items.map((item, itemIndex) => (
                 <li key={itemIndex} className="leading-6"><Spans spans={item} /></li>
               ))}

@@ -157,17 +157,17 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
     <>
       <div className="mt-12 grid gap-5 md:grid-cols-3">
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">My Route</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">My Route</p>
           <p className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{activeRoute.length}</p>
           <p className="mt-3 leading-7 text-stone-600">Destinations in your active journey.</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Favorites</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Favorites</p>
           <p className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{activeFavorites.length}</p>
           <p className="mt-3 leading-7 text-stone-600">Places saved for another time.</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Storage</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Storage</p>
           <p className="mt-4 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{sourceLabel}</p>
           <p className="mt-3 leading-7 text-stone-600">When you are logged in, saved places are available on every device.</p>
         </div>
@@ -261,7 +261,7 @@ function TripBox({ eyebrow, heading, blurb, newLabel, newHref, onNew, error, tri
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{eyebrow}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">{eyebrow}</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{heading}</h2>
         </div>
         {onNew ? (
@@ -294,7 +294,7 @@ function TripBox({ eyebrow, heading, blurb, newLabel, newHref, onNew, error, tri
               <div className="min-w-0">
                 <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                   {trip.name}
-                  {trip.active && <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Open now</span>}
+                  {trip.active && <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Open now</span>}
                   {trip.shared && <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400">Shared</span>}
                 </p>
                 <p className="mt-1 text-sm text-stone-600">{line(trip)}</p>

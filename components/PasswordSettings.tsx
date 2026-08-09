@@ -45,7 +45,7 @@ function ChangeForm({
 
   return (
     <form onSubmit={submit} className="border border-[var(--gold-light)] bg-white p-5">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{title}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{title}</p>
       <p className="mt-1 text-sm leading-6 text-stone-600">{hint}</p>
       <div className="mt-4 space-y-3">
         {requireCurrent && (
@@ -78,7 +78,7 @@ function ChangeForm({
 export default function PasswordSettings({ available }: { available: boolean }) {
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Passwords</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Passwords</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Change your codes</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
         Three codes. One opens this admin area. The other two both open the closed website — the difference is how long

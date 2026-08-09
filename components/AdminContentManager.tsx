@@ -339,7 +339,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
           <p className="mt-3 text-sm leading-6 text-stone-600">
             Paste CSV rows for cemetery and tzaddik records here. Use English and Yiddish fields together so the public pages stay searchable in both languages.
           </p>
-          <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Columns</p>
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Columns</p>
           <p className="mt-2 text-sm leading-6 text-stone-600">id, route, title, yiddishTitle, category, country, address, coordinates, shomerContact, source, notes, status, lastVerified</p>
           <textarea value={bulkCsv} onChange={(event) => setBulkCsv(event.target.value)} rows={14} className="mt-4 w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
           <div className="mt-4 flex flex-wrap gap-3">
@@ -404,7 +404,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
 function Metric({ label, value, onClick }: { label: string; value: number; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{label}</p>
       <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
       <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
     </button>
@@ -414,7 +414,7 @@ function Metric({ label, value, onClick }: { label: string; value: number; onCli
 function ReportCard({ title, value, note, onClick }: { title: string; value: number; note: string; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{title}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{title}</p>
       <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
       <p className="mt-3 text-sm leading-6 text-stone-600">{note}</p>
       <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
@@ -438,7 +438,7 @@ function LocationEditor({ item, onSave, saving }: { item: EditableLocation; onSa
     <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{draft.category}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{draft.category}</p>
           <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{draft.title}</h3>
           <p className="text-sm text-stone-500">{draft.route}</p>
         </div>
@@ -479,7 +479,7 @@ function AccommodationEditor({ item, onSave, saving }: { item: EditableAccommoda
     <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{draft.locationId}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{draft.locationId}</p>
           <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{draft.name || "Accommodation"}</h3>
         </div>
         <span className={`border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${statusClass(draft.status)}`}>{draft.status}</span>

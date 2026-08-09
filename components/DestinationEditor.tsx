@@ -121,7 +121,7 @@ function SelectField({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-5 first:mt-0">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p>
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{label}</p>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
   );
@@ -303,7 +303,7 @@ function SectionHeader({ eyebrow, title, hint, count }: { eyebrow: string; title
   return (
     <div className="mb-5 flex items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{eyebrow}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">{eyebrow}</p>
         <h2 className="mt-1.5 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{title}</h2>
         {hint && <p className="mt-1 text-sm text-stone-500">{hint}</p>}
       </div>

@@ -21,7 +21,7 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
       <div className="border-t border-[var(--gold-light)] pt-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">
               <GloveMark size="xs" />
               Planned with White Glove
             </p>

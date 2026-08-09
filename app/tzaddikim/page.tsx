@@ -33,7 +33,7 @@ export default function TzaddikimPage() {
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Kevarim</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kevarim</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-tight text-[var(--navy)]">
             Who is buried where
           </h1>
@@ -54,7 +54,7 @@ export default function TzaddikimPage() {
               >
                 {burial.yiddishName && (
                   <span dir="rtl" lang="yi" className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                    <MixedText text={burial.yiddishName} />
+                    <MixedText text={burial.yiddishName} lang="yi" />
                   </span>
                 )}
                 <span className="mt-1 block font-semibold text-[var(--navy)]">{burial.knownAs || burial.name}</span>

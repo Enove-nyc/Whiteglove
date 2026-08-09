@@ -58,7 +58,7 @@ export default function AccountSettings({
     <div className="wg-card mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Account settings</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Account settings</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your details</h2>
         </div>
         <button

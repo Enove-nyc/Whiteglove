@@ -76,7 +76,7 @@ function Row({ change, today }: { change: Change; today: string }) {
             <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">{fieldLabel(field.field)}</dt>
             <dd className="text-sm leading-6">
               <span className="text-stone-500 line-through decoration-stone-300">{shorten(field.before)}</span>
-              <span aria-hidden="true" className="mx-2 text-[var(--gold)]">→</span>
+              <span aria-hidden="true" className="mx-2 text-[var(--gold-ink)]">→</span>
               <span className="text-[var(--navy)]">{shorten(field.after)}</span>
             </dd>
           </div>

@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
+import { vacationDestinations } from "@/data/vacation-destinations";
 import { isPrivatePath, PRIVATE_PATHS, publicPaths } from "@/lib/site-map";
 import { allTzaddikim } from "@/lib/tzaddikim";
 
@@ -52,6 +53,7 @@ describe("every page on the site is accounted for", () => {
     for (const place of bulkDestinations) assert.ok(pathSet.has(`/destinations/${place.slug}`), place.slug);
     for (const cemetery of cemeteries) assert.ok(pathSet.has(`/cemeteries/${cemetery.slug}`), cemetery.slug);
     for (const t of allTzaddikim()) assert.ok(pathSet.has(`/tzaddikim/${t.slug}`), t.slug);
+    for (const d of vacationDestinations) assert.ok(pathSet.has(`/vacation-ideas/${d.slug}`), d.slug);
   });
 
   it("is actually a big list, not an empty one that looks fine", () => {
@@ -128,7 +130,15 @@ describe("the sitemap and the pages agree about indexing", () => {
     // Google on purpose.
     const real = new Set(ALL_ROUTES.map((r) => r.route));
     const missing = paths
-      .filter((entry) => !entry.path.startsWith("/destinations/") && !entry.path.startsWith("/cemeteries/") && !entry.path.startsWith("/tzaddikim/"))
+      .filter(
+        (entry) =>
+          !entry.path.startsWith("/destinations/") &&
+          !entry.path.startsWith("/cemeteries/") &&
+          !entry.path.startsWith("/tzaddikim/") &&
+          // Served by /vacation-ideas/[destination], which the walk below sees
+          // as one route with a bracket in it rather than eighteen addresses.
+          !(entry.path.startsWith("/vacation-ideas/") && entry.path !== "/vacation-ideas"),
+      )
       // A city guide is served by the [city] route rather than a folder.
       .filter((entry) => !cityGuides.some((g) => `/${g.slug}` === entry.path))
       .filter((entry) => !real.has(entry.path))

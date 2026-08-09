@@ -18,7 +18,7 @@ function Block({ block }: { block: PageBlock }) {
         <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             {block.eyebrow && (
-              <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{block.eyebrow}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">{block.eyebrow}</p>
             )}
             {block.heading && (
               <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.25rem)] leading-[1.08] text-[var(--navy)]">

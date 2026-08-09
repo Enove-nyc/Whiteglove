@@ -93,7 +93,7 @@ export default function SendPlaceIn({
           </>
         ) : (
           <>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Not on the site yet</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Not on the site yet</p>
             <h2 id="send-place-in-title" className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
               {offerTitle(place)}
             </h2>

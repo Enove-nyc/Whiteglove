@@ -88,7 +88,7 @@ export default function ConnectionSettings() {
         {/* Where the bookings actually go. Nobody could see this before, which
             is how flights moved onto Duffel without anybody deciding to. */}
         <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Bookings</p>
+          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Bookings</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Where searches go</h2>
           <dl className="mt-4 space-y-3 text-sm leading-6">
             <div>

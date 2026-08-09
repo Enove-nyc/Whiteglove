@@ -194,7 +194,7 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
 
       {/* ---- Direction 1: a person into a beis hachaim we already have ---- */}
       <section className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add a person to a beis hachaim</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add a person to a beis hachaim</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Someone buried in a place we already have</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Find the beis hachaim, see who is listed there now, and add whoever is missing. He appears on that
@@ -340,7 +340,7 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
 
       {/* ---- Direction 2: a beis hachaim for a person we don't have yet ---- */}
       <section className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add a beis hachaim to a person</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add a beis hachaim to a person</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Someone whose town isn&apos;t on the site yet</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Start from the person. Give the town he is buried in and both are created together — the beis hachaim

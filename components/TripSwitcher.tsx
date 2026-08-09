@@ -87,7 +87,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     <section className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Your trips</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your trips</p>
           <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
             {active?.name ?? "My trip"}
           </h3>
@@ -132,7 +132,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                   <p className="font-semibold text-[var(--navy)]">
                     {trip.name}
                     {trip.active && (
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Open</span>
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Open</span>
                     )}
                   </p>
                   <p className="text-xs text-stone-500">

@@ -79,7 +79,7 @@ export default async function AdminContentPage({ searchParams }: {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Content manager</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">Edit the site settings, locations, accommodations, and suggestions from one place.</p>
           </div>
@@ -117,7 +117,7 @@ export default async function AdminContentPage({ searchParams }: {
 function Metric({ label, value, href }: { label: string; value: number; href: string }) {
   return (
     <Link href={href} className="block border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{label}</p>
       <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
       <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
     </Link>

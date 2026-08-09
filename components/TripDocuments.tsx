@@ -34,7 +34,7 @@ export default function TripDocuments({
         <div className="mt-6 space-y-6">
           {days.map((day) => (
             <div key={day.date ?? "no-day"}>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
                 {day.date ? formatDateLong(day.date) : "Not on a day yet"}
                 {day.date && today && day.date === today ? " — today" : ""}
               </p>

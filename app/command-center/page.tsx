@@ -93,7 +93,7 @@ export default async function CommandCenterPage() {
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Your trip</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Your trip</p>
           <h1 className="mt-4 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4rem)] leading-tight text-[var(--navy)]">
             {trip?.tripName || trip?.itinerary.title || "Before you go"}
           </h1>
@@ -135,7 +135,7 @@ export default async function CommandCenterPage() {
         {/* The phone calls, first, because that is the thing to actually do. */}
         {readiness.callAhead.length > 0 && (
           <div className="border border-[var(--gold)] bg-white p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Call before you go</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Call before you go</p>
             <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
               The numbers worth having in your phone
             </h2>
@@ -215,7 +215,7 @@ function StopCard({ item, today }: { item: StopReadiness; today: string }) {
         <div>
           {stop.yiddishName && (
             <h3 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
-              <MixedText text={stop.yiddishName} />
+              <MixedText text={stop.yiddishName} lang="yi" />
             </h3>
           )}
           <p className={stop.yiddishName ? "mt-1 text-base text-stone-500" : "font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]"}>
@@ -258,7 +258,7 @@ function Shell({ children, name }: { children: React.ReactNode; name?: string })
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-3xl px-5 py-20 sm:px-8">
-        <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Your trip</p>
+        <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Your trip</p>
         <h1 className="mt-4 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4rem)] leading-tight text-[var(--navy)]">
           {name || "Before you go"}
         </h1>

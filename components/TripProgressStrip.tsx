@@ -85,7 +85,7 @@ const cardClass = "rounded-2xl border p-4 shadow-[0_10px_30px_rgba(23,45,82,.06)
 function Stop({ label, stop, tone }: { label: string; stop: FollowStop; tone: "now" | "next" }) {
   return (
     <div className={`min-w-0 flex-1 border-l-2 pl-3 ${tone === "now" ? "border-[var(--gold)]" : "border-[var(--gold-light)]"}`}>
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{label}</p>
       <p className="mt-1 font-semibold leading-6 text-[var(--navy)]">{stop.name}</p>
       <p className="text-sm leading-6 text-stone-600">
         {[stop.arrivalTime && `from ${stop.arrivalTime}`, stop.departureTime && `until ${stop.departureTime}`]
@@ -153,7 +153,7 @@ export default function TripProgressStrip({
     <section className={`${cardClass} ${tone}`} aria-label="Where this trip stands">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
             {during ? "You are on this trip" : progress.phase === "after" ? "Been and gone" : "Counting down"}
           </p>
           <p className="mt-1 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
@@ -225,7 +225,7 @@ export default function TripProgressStrip({
           {/* One tap from the top of the page on the morning it is needed. */}
           {documentsToday.length > 0 && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">On your phone today</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">On your phone today</span>
               {documentsToday.map((document) => (
                 <a
                   key={document.id}

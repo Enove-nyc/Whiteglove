@@ -25,7 +25,7 @@ export default function BetaNoticeControl({ notice, storeReady }: { notice: Beta
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">While the site is new</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">While the site is new</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The notice on the first visit</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
         Shown once to each visitor, on the first page they land on — never over the admin, and never over a sign-in

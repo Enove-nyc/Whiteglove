@@ -34,7 +34,7 @@ export default async function WebsiteAccessSettings() {
         <BetaNoticeControl notice={betaNotice} storeReady={betaStoreAvailable()} />
 
         <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Three ways in</p>
+          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Three ways in</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Who can see it while it is closed</h2>
           <dl className="mt-5 space-y-4 text-sm leading-6">
             <div>

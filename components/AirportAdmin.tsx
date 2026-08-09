@@ -66,7 +66,7 @@ export default function AirportAdmin({
   return (
     <div className="mt-8 space-y-8">
       <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Add or correct</p>
+        <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Add or correct</p>
         <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">An airport</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           A regional field near a kever town, or a correction to one of the {merged.length} already here. Saving a code
@@ -105,7 +105,7 @@ export default function AirportAdmin({
                   <span>
                     <strong className="text-[var(--navy)]">{a.code}</strong> — {a.name}, {a.city}
                     {a.cityCode && <span className="ml-2 text-xs text-stone-500">in {a.cityCode}</span>}
-                    {isBuiltInAirport(a.code) && <span className="ml-2 text-xs text-[var(--gold)]">correcting a built-in one</span>}
+                    {isBuiltInAirport(a.code) && <span className="ml-2 text-xs text-[var(--gold-ink)]">correcting a built-in one</span>}
                   </span>
                   <RemoveButton code={a.code} kind="airport" />
                 </li>
@@ -116,7 +116,7 @@ export default function AirportAdmin({
       </section>
 
       <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Searched together</p>
+        <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Searched together</p>
         <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">City groups</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Somebody flying to a city with two airports usually does not mind which. A group is offered above the

@@ -10,6 +10,17 @@ import {
   type DirectoryEntry,
   type DirectoryFilters,
 } from "@/lib/directory-browse";
+import { TRUST_LEVELS } from "@/lib/trust-status";
+
+/**
+ * "Being checked", from the one place the site keeps that wording.
+ *
+ * A record with no researched guide behind it is in exactly the state the
+ * shared scale calls Being checked, and this filter was saying so in its own
+ * words before that scale existed. Read rather than repeated, so the directory
+ * and every badge on the site cannot drift apart.
+ */
+const BEING_CHECKED = TRUST_LEVELS["being-checked"].label;
 
 /**
  * The destination directory: 297 records, filtered, and shown a page at a
@@ -30,7 +41,7 @@ const KINDS: Array<{ value: DirectoryFilters["kind"]; label: string }> = [
   { value: "", label: "Everything" },
   { value: "guide", label: "Full guides" },
   { value: "cemetery", label: "Batei hachaim" },
-  { value: "destination", label: "Being checked" },
+  { value: "destination", label: BEING_CHECKED },
 ];
 
 const NEEDS: Array<{ value: keyof DirectoryEntry["f"]; label: string }> = [
@@ -47,7 +58,7 @@ const chipOn = `${chip} border-[var(--navy)] bg-[var(--navy)] text-white`;
 const KIND_LABEL: Record<DirectoryEntry["k"], string> = {
   guide: "Full guide",
   cemetery: "Beis hachaim",
-  destination: "Being checked",
+  destination: BEING_CHECKED,
 };
 
 export default function DestinationDirectory({ entries, initialQuery = "" }: { entries: DirectoryEntry[]; initialQuery?: string }) {
@@ -91,7 +102,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
     <div>
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Search the directory</span>
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Search the directory</span>
           <input
             type="search"
             value={filters.query}
@@ -199,7 +210,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {results.slice(0, shown).map((entry) => (
               <Link key={`${entry.k}-${entry.s}`} href={entry.h} className="flex min-w-0 flex-col rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{entry.c} · {KIND_LABEL[entry.k]}</p>
+                <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{entry.c} · {KIND_LABEL[entry.k]}</p>
                 <h3 dir="rtl" lang="yi" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{entry.y}</h3>
                 <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{entry.n}</p>
                 {entry.b > 0 && <p className="mt-3 text-sm leading-6 text-stone-600">{entry.b} known {entry.b === 1 ? "kever" : "kevarim"} listed</p>}

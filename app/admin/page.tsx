@@ -26,7 +26,7 @@ function QuickAction({ href, title, detail, number }: { href: string; title: str
       className={`${cardClass} group flex min-h-44 flex-col justify-between p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]`}
     >
       <span>
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{number}</span>
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{number}</span>
         <span className="mt-4 block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
           {title}
         </span>
@@ -160,7 +160,7 @@ export default async function AdminHome() {
     <div className="pb-12">
       <header className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--gold-light)] pb-7">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Admin overview</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Admin overview</p>
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
             Your website at a glance
           </h1>
@@ -194,7 +194,7 @@ export default async function AdminHome() {
             ["Nothing yet", totals.empty],
           ] as const).map(([label, value]) => (
             <div key={label} className="rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-              <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{label}</dt>
+              <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</dt>
               <dd className="mt-1 font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</dd>
             </div>
           ))}
@@ -210,7 +210,7 @@ export default async function AdminHome() {
           and then find the button. */}
       {quickAdd.length > 0 && (
       <section aria-labelledby="quick-heading" className="mt-7">
-        <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Add something</h2>
+        <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add something</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {quickAdd.map((item) => (
             <Link
@@ -247,7 +247,7 @@ export default async function AdminHome() {
       <section aria-labelledby="snapshot-heading" className={`${cardClass} mt-7 p-5 sm:p-6`}>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Today</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Today</p>
             <h2 id="snapshot-heading" className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Website snapshot</h2>
           </div>
           <p className="text-xs text-stone-500">{stats.configured ? "Live website activity" : "Activity tracking is not connected"}</p>
@@ -269,7 +269,7 @@ export default async function AdminHome() {
       <section aria-labelledby="quick-actions-heading" className="mt-9">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Common jobs</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Common jobs</p>
             <h2 id="quick-actions-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Quick actions</h2>
           </div>
           <p className="text-sm text-stone-500">The tasks you are most likely to need</p>
@@ -288,7 +288,7 @@ export default async function AdminHome() {
       {(may("/admin/pages") || may("/admin/content") || may("/admin/inventory")) && (
       <section aria-labelledby="work-heading" className="mt-9">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Your queue</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your queue</p>
           <h2 id="work-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work waiting for you</h2>
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -341,7 +341,7 @@ export default async function AdminHome() {
 
       <section aria-labelledby="all-tools-heading" className="mt-10 border-t border-[var(--gold-light)] pt-9">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Full dashboard</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Full dashboard</p>
           <h2 id="all-tools-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Everything you can manage</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">Every existing admin area, organized by purpose. Nothing has been added or removed.</p>
         </div>
@@ -351,7 +351,7 @@ export default async function AdminHome() {
               {/* A section whose own front page is closed still opens — to the
                   first screen inside it this person may use. */}
               <Link href={may(section.href) ? section.href : section.children[0].href} className="group flex items-start gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-lg text-[var(--gold)]">{section.icon}</span>
+                <span aria-hidden="true" className="mt-0.5 text-lg text-[var(--gold-ink)]">{section.icon}</span>
                 <span>
                   <span className="block font-[family-name:var(--font-display)] text-2xl text-[var(--navy)] group-hover:underline group-hover:decoration-[var(--gold)] group-hover:underline-offset-4">{section.label}</span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">{section.blurb}</span>
@@ -363,7 +363,7 @@ export default async function AdminHome() {
                     <li key={child.href + child.label}>
                       <Link href={child.href} className="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm text-stone-700 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
                         <span>{child.label}</span>
-                        <span aria-hidden="true" className="text-[var(--gold)]">→</span>
+                        <span aria-hidden="true" className="text-[var(--gold-ink)]">→</span>
                       </Link>
                     </li>
                   ))}

@@ -25,6 +25,7 @@
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
+import { vacationDestinations } from "@/data/vacation-destinations";
 import { allTzaddikim } from "@/lib/tzaddikim";
 
 /**
@@ -65,6 +66,11 @@ export function isPrivatePath(path: string): boolean {
  */
 const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFrequency: ChangeFrequency }> = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
+  { path: "/plan", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/kosher-travel", priority: 0.8, changeFrequency: "monthly" },
+  // The heritage section's own landing page. Its contents — the towns, the
+  // batei hachaim, the tzaddikim — are listed below as they always were.
+  { path: "/heritage", priority: 0.8, changeFrequency: "weekly" },
   { path: "/stops", priority: 0.9, changeFrequency: "weekly" },
   { path: "/cemeteries", priority: 0.9, changeFrequency: "weekly" },
   { path: "/tzaddikim", priority: 0.9, changeFrequency: "weekly" },
@@ -75,8 +81,14 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/attractions", priority: 0.7, changeFrequency: "weekly" },
   { path: "/travel-guide", priority: 0.8, changeFrequency: "monthly" },
   { path: "/services", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/getaways", priority: 0.7, changeFrequency: "monthly" },
+  // /getaways is gone and redirects here (next.config.ts). A redirecting
+  // address must not be in the sitemap — Google reports that as an error
+  // against the site, the same way a noindexed one is.
+  { path: "/vacation-ideas", priority: 0.9, changeFrequency: "weekly" },
   { path: "/honeymoon", priority: 0.6, changeFrequency: "monthly" },
+  // How the four labels on every practical detail are decided. Indexed
+  // deliberately: it is the page that makes the rest of the site checkable.
+  { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },
   { path: "/flight-booking-assistance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
@@ -117,6 +129,9 @@ export function publicPaths(): SitemapEntry[] {
   }
   for (const cemetery of cemeteries) {
     entries.push({ path: `/cemeteries/${cemetery.slug}`, priority: 0.7, changeFrequency: "monthly" });
+  }
+  for (const destination of vacationDestinations) {
+    entries.push({ path: `/vacation-ideas/${destination.slug}`, priority: 0.8, changeFrequency: "monthly" });
   }
   for (const tzaddik of allTzaddikim()) {
     entries.push({ path: `/tzaddikim/${tzaddik.slug}`, priority: 0.7, changeFrequency: "monthly" });

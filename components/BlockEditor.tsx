@@ -307,7 +307,7 @@ export default function BlockEditor({ page }: { page: Page }) {
                   aria-expanded={open}
                   className="min-w-0 flex-1 text-left"
                 >
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                     {BLOCK_LABELS[block.kind].label}
                     {block.hidden ? " · hidden" : ""}
                   </span>

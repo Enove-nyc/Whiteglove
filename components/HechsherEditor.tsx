@@ -355,7 +355,7 @@ function AgencyList({ agencies, ownAdded, storeReady, saveAction, savePending, s
                   <p className="font-semibold text-[var(--navy)]">
                     {h.name}
                     {ownAdded.includes(h.id) && (
-                      <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">Yours</span>
+                      <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Yours</span>
                     )}
                   </p>
                   <p className="text-sm text-stone-500">{h.region}{h.logo ? " · mark uploaded" : ""}</p>
