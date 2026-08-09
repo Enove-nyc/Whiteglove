@@ -19,9 +19,22 @@ import type { CemeteryListItem } from "@/lib/cemeteries-view";
 
 type Order = "city" | "country" | "tzaddik" | "kevarim";
 
-export default function CemeteryDirectory({ cemeteries }: { cemeteries: CemeteryListItem[] }) {
+export default function CemeteryDirectory({
+  cemeteries,
+  initialCountry = "",
+}: {
+  cemeteries: CemeteryListItem[];
+  /**
+   * Arrived from "Browse by country" on the heritage landing page.
+   *
+   * A prop rather than a query the component reads for itself, so this stays
+   * the same self-contained filter it has always been and the page above it
+   * decides what a link means.
+   */
+  initialCountry?: string;
+}) {
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(initialCountry);
   const [order, setOrder] = useState<Order>("city");
 
   const countries = useMemo(

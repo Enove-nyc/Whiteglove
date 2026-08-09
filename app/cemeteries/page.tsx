@@ -15,8 +15,11 @@ export const metadata = pageMetadata({
   path: "/cemeteries",
 });
 
-export default async function CemeteriesPage() {
-  const cemeteries = await getCemeteryList();
+export default async function CemeteriesPage({ searchParams }: { searchParams: Promise<{ country?: string }> }) {
+  const [{ country }, cemeteries] = await Promise.all([searchParams, getCemeteryList()]);
+  // Only a country we actually hold records for. A made-up one would silently
+  // filter the list down to nothing and read as a broken page.
+  const initialCountry = cemeteries.some((entry) => entry.country === country) ? (country as string) : "";
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <StructuredData
@@ -50,7 +53,7 @@ export default async function CemeteriesPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <CemeteryDirectory cemeteries={cemeteries} />
+        <CemeteryDirectory cemeteries={cemeteries} initialCountry={initialCountry} />
 
         <div className="mt-10">
           <SuggestEditButton

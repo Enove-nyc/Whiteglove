@@ -67,6 +67,10 @@ export function isPrivatePath(path: string): boolean {
 const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFrequency: ChangeFrequency }> = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/plan", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/kosher-travel", priority: 0.8, changeFrequency: "monthly" },
+  // The heritage section's own landing page. Its contents — the towns, the
+  // batei hachaim, the tzaddikim — are listed below as they always were.
+  { path: "/heritage", priority: 0.8, changeFrequency: "weekly" },
   { path: "/stops", priority: 0.9, changeFrequency: "weekly" },
   { path: "/cemeteries", priority: 0.9, changeFrequency: "weekly" },
   { path: "/tzaddikim", priority: 0.9, changeFrequency: "weekly" },

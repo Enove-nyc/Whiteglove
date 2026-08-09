@@ -2,7 +2,6 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAttractionList } from "@/lib/attractions-view";
 
@@ -34,7 +33,6 @@ export default async function AttractionsPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <SubBrandBanner />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
@@ -46,7 +44,6 @@ export default async function AttractionsPage() {
               tells you: how far it is from the kosher food, and what it does on Shabbos.
             </p>
           </div>
-          <SubBrandCrest className="hidden shrink-0 sm:block" />
         </div>
       </section>
 

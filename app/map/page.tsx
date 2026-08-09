@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type MapStay } from "@/components/MapExplorer";
 import Navbar from "@/components/Navbar";
-import SubBrandBanner from "@/components/SubBrand";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
@@ -68,7 +67,6 @@ export default async function MapPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <SubBrandBanner />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">

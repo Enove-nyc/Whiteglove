@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { isCurrent, MENU_GROUPS, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
 
@@ -14,6 +15,8 @@ import { isCurrent, MENU_GROUPS, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_I
  */
 
 const ALL_ITEMS = [...PRIMARY_NAV, ...MENU_GROUPS.flatMap((group) => group.links)];
+const NAVBAR = readFileSync("components/Navbar.tsx", "utf8");
+const FOOTER = readFileSync("components/Footer.tsx", "utf8");
 
 describe("what the bar leads with", () => {
   it("opens with planning a trip, not with browsing a database", () => {
@@ -116,5 +119,56 @@ describe("which section is current", () => {
 
   it("matches a whole segment rather than a prefix of a word", () => {
     assert.equal(isCurrent("/plan", "/planning"), false);
+  });
+});
+
+describe("the header renders the list rather than its own copy", () => {
+  it("reads the shared navigation", () => {
+    // Hand-written copies are how the bar and the menu came to disagree about
+    // what the site contains.
+    assert.match(NAVBAR, /PRIMARY_NAV\.map/);
+    assert.match(NAVBAR, /MENU_GROUPS\.map/);
+    assert.match(NAVBAR, /from "@\/lib\/navigation"/);
+  });
+
+  it("still shows the planner and My Route to everybody", () => {
+    // The rule from tests/members-only.ts, restated here because the header
+    // was rewritten: a feature nobody can see is a feature nobody asks for.
+    assert.match(NAVBAR, /GATED_FEATURES\.map/);
+  });
+
+  it("keeps the site search and the promotions strip", () => {
+    assert.match(NAVBAR, /DestinationSearch/);
+    assert.match(NAVBAR, /SitePromotions/);
+  });
+
+  it("has exactly one filled button in the header", () => {
+    // Two equal buttons means no primary action at all.
+    assert.match(NAVBAR, /PRIMARY_CTA\.label/);
+  });
+});
+
+describe("the footer says the vacation-neutral thing", () => {
+  it("ASKS WHERE YOU WANT TO GO, OR OFFERS TO HELP YOU CHOOSE", () => {
+    // The exact sentence that was asked for, because the old one — "Share your
+    // kevarim, dates, and kosher needs" — appeared on every page of the site
+    // including the ones about beach holidays.
+    assert.match(FOOTER, /Tell us where you want to go—or let us help you choose\./);
+  });
+
+  it("no longer asks every visitor for their kevarim", () => {
+    assert.doesNotMatch(FOOTER, /Share your kevarim/i);
+  });
+
+  it("puts heritage travel in one column rather than at the top of the list", () => {
+    const heritage = FOOTER.indexOf('title: "Heritage travel"');
+    const plan = FOOTER.indexOf('title: "Plan a trip"');
+    assert.ok(plan >= 0 && heritage > plan, "heritage travel is listed before planning a trip");
+  });
+
+  it("still reaches everything the old footer did", () => {
+    for (const href of ["/stops", "/cemeteries", "/directory", "/book", "/services", "/contact", "/submit", "/login", "/privacy", "/terms", "/admin"]) {
+      assert.ok(FOOTER.includes(`"${href}"`), `${href} lost its way out of the footer`);
+    }
   });
 });

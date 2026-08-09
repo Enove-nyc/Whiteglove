@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import BetaNoticeModal from "@/components/BetaNoticeModal";
+import NewSiteNotice from "@/components/NewSiteNotice";
 import IdleLogout from "@/components/IdleLogout";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
@@ -66,8 +66,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read here rather than in the modal, so the words come from the settings on
-  // the server and the browser is only deciding whether this visitor has
+  // Read here rather than in the notice, so the words come from the settings
+  // on the server and the browser is only deciding whether this visitor has
   // already seen them.
   const betaNotice = await getBetaNotice();
   return (
@@ -78,6 +78,12 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         {/* First thing in the tab order, on every page. */}
         <a href="#main-content" className="wg-skip-link">Skip to content</a>
+        {/* "This is new — check anything you are going to rely on." Once per
+            visitor, never over the admin or a sign-in box, and above the page
+            rather than across it: this used to be a modal in front of the
+            front page, which is a box to dismiss before finding out what the
+            site sells. */}
+        <NewSiteNotice notice={betaNotice} />
         <SiteTracker />
         <RequiredFields />
         <ServiceWorkerRegister />
@@ -88,9 +94,6 @@ export default async function RootLayout({
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           {children}
         </div>
-        {/* "This is new — check anything you are going to rely on." Once per
-            visitor, and never over the admin or a sign-in box. */}
-        <BetaNoticeModal notice={betaNotice} />
       </body>
     </html>
   );

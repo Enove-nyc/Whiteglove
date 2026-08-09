@@ -2,7 +2,6 @@ import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import KosherStayDirectory from "@/components/KosherStayDirectory";
 import Navbar from "@/components/Navbar";
-import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 
@@ -34,7 +33,6 @@ export default async function KosherStaysPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <SubBrandBanner />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
@@ -47,7 +45,6 @@ export default async function KosherStaysPage() {
               room and nothing to eat.
             </p>
           </div>
-          <SubBrandCrest className="hidden shrink-0 sm:block" />
         </div>
       </section>
 
