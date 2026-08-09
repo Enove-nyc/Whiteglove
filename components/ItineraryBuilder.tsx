@@ -11,6 +11,7 @@ import SendPlaceIn from "@/components/SendPlaceIn";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
+import TripSetupPanel from "@/components/TripSetupPanel";
 import type { Crossing } from "@/lib/border-crossings";
 import DayProgress from "@/components/DayProgress";
 import { borderCostForLegs } from "@/lib/border-legs";
@@ -23,6 +24,7 @@ import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
+import { applyTemplate, type TripTemplate } from "@/lib/trip-setup";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
 import StopAttachments from "@/components/StopAttachments";
@@ -66,9 +68,15 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [] }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
+  /**
+   * Somewhere to start from, built on the server from the vacation
+   * destinations that have an outline written for them. Empty is fine: the
+   * setup panel simply does not offer templates. See lib/trip-setup.ts.
+   */
+  templates?: TripTemplate[];
   /** The server's date, for judging how fresh a border check is. */
   today?: string;
   /**
@@ -317,6 +325,20 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         days={days}
         documentsToday={todayInTrip ? documentsForDay(tripDocuments(itin), todayInTrip).map((d) => d.attachment) : []}
         onGoToToday={goToToday}
+      />
+
+      {/* What this trip still needs, why each one matters, and somewhere real
+          to start from. In front of the editor rather than instead of it —
+          everything below stays usable with this ignored or collapsed. See
+          lib/trip-setup.ts. */}
+      <TripSetupPanel
+        itin={itin}
+        templates={templates}
+        signedIn={viewer === null ? null : Boolean(viewer.signedIn)}
+        onApply={(patch, template) => {
+          const base = { ...itin, ...patch };
+          persist(template ? applyTemplate(base, template, uid) : base);
+        }}
       />
 
       {/* Trip header */}

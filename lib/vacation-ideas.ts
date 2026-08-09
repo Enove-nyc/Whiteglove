@@ -49,6 +49,14 @@ export type AttractionLike = {
   kind: string;
   summary: string;
   shabbos?: string;
+  /**
+   * "lat, lng" — a real, navigable position for a public landmark.
+   *
+   * Safe to store and to navigate to, unlike a kever's; see the note at the
+   * top of data/attractions.ts. A stop with no coordinate cannot be routed,
+   * which is why the planner templates skip those.
+   */
+  coordinates?: string;
 };
 
 export type StayLike = {
