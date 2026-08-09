@@ -27,7 +27,16 @@ import { type Crossing, checkAge, crossingsBetween } from "@/lib/border-crossing
  * reasoning the driving estimate already uses.
  */
 
-/** What a crossing out of the EU costs when nobody has checked it. */
+/**
+ * What a crossing out of the EU costs when nobody has checked it.
+ *
+ * THE FALLBACK, NOT THE SETTING. This was the only figure there was, hardcoded
+ * here and reachable from nowhere — two hours is a very large piece of a day to
+ * be unable to change, and somebody who knows their crossing is usually twenty
+ * minutes had no way to say so. It now lives in the planner's assumptions
+ * (`borderAllowanceMins`, /admin/planner) and this is what that falls back to,
+ * so a caller that has not been given one behaves exactly as before.
+ */
 export const UNCHECKED_EXTERNAL_MINUTES = 120;
 
 export type BorderCost = {
@@ -55,6 +64,8 @@ export function borderCost(input: {
   major: boolean;
   crossings: Crossing[];
   today: string;
+  /** From the planner's assumptions. The built-in two hours when absent. */
+  allowanceMinutes?: number;
 }): BorderCost {
   // Inside Schengen. Passports still matter and the planner still says so;
   // the clock does not.
@@ -82,10 +93,20 @@ export function borderCost(input: {
     };
   }
 
+  const allowance =
+    typeof input.allowanceMinutes === "number" && Number.isFinite(input.allowanceMinutes) && input.allowanceMinutes >= 0
+      ? Math.round(input.allowanceMinutes)
+      : UNCHECKED_EXTERNAL_MINUTES;
+
+  // Zero is a real answer — a crossing the owner knows is driven straight
+  // through. It must add nothing AND say nothing, rather than "0 min allowed",
+  // which would read as a measurement of no wait at all.
+  if (allowance === 0) return NO_BORDER;
+
   return {
-    minutes: UNCHECKED_EXTERNAL_MINUTES,
+    minutes: allowance,
     measured: false,
-    says: `${formatWait(UNCHECKED_EXTERNAL_MINUTES)} allowed for the border — nobody has checked it lately`,
+    says: `${formatWait(allowance)} allowed for the border — nobody has checked it lately`,
   };
 }
 

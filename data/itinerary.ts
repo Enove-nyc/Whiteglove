@@ -178,6 +178,14 @@ export type ItinTraveler = {
   notes?: string;
 };
 
+/** Re-exported shape; the rules live in lib/day-progress.ts. */
+export type DayAdjustment = {
+  stopId: string;
+  deltaMins: number;
+  at: string;
+  kind: "done" | "longer";
+};
+
 export type Itinerary = {
   title: string;
   /** Superseded by `travelers`; kept so older saved trips still read. */
@@ -201,6 +209,16 @@ export type Itinerary = {
    * as a Maps time.
    */
   roadTimeSources?: Record<string, "google" | "osrm">;
+  /**
+   * What actually happened on the day, against what was planned — a fast
+   * border, a kever that took longer. See lib/day-progress.ts.
+   *
+   * On the itinerary rather than in a store of its own because it belongs to
+   * the trip and travels with it: a shared trip should show the group where
+   * the day stands, and a trip put on another device should not forget that
+   * this morning's border took twenty minutes.
+   */
+  adjustments?: DayAdjustment[];
   /**
    * Whether the person planning is going themselves.
    *

@@ -37,6 +37,20 @@ export type PlannerAssumptions = {
   /** How long a beis hachaim takes when nobody has said. */
   keverMins: number;
 
+  /**
+   * What to allow at a border out of the Schengen area when NOBODY HAS CHECKED
+   * that crossing lately.
+   *
+   * An allowance, not a measurement — and this is why it has to be editable. It
+   * was hardcoded at two hours, reachable from nowhere, and two hours is a very
+   * large piece of a day to be unable to change. Somebody who knows the crossing
+   * they use is usually twenty minutes should be able to say so; somebody
+   * travelling at Rosh Hashanah, when Korczowa can take five hours, should be
+   * able to say that too. A crossing that HAS been checked recently uses the
+   * figure written down for it at /admin/borders and ignores this.
+   */
+  borderAllowanceMins: number;
+
   /** Roads are not straight. Straight-line distance is multiplied by this. */
   detourFactor: number;
   /** Parking, getting going, finding the entrance. Added to every leg. */
@@ -72,6 +86,9 @@ export const BUILT_IN_ASSUMPTIONS: PlannerAssumptions = {
 
   stopMins: 90,
   keverMins: 90,
+  // Two hours: what the planner has always allowed, kept exactly so nothing
+  // about an existing plan changes on the day this became editable.
+  borderAllowanceMins: 120,
 
   detourFactor: 1.35,
   transferMins: 10,
