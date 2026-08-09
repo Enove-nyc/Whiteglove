@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
       // described the record; "Hotels & Stays" is what somebody is looking
       // for, and the page is about to become a search rather than a list.
       // "Attractions" is a word from a guidebook.
+      // A page that said, in its own words, that it was being built. It
+      // promised a premium honeymoon service, listed six things that service
+      // would include, and offered a quote — none of which existed. "Couples
+      // and honeymoon" is a real filter over destinations this site holds
+      // records for, so that is where the address goes.
+      { source: "/honeymoon", destination: "/destinations?kind=couples", permanent: true },
       { source: "/kosher-stays", destination: "/hotels", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];

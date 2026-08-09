@@ -70,14 +70,27 @@ const columnsFor = (
   },
 ];
 
+/**
+ * The small print, and one link that is no longer in it.
+ *
+ * "OWNER LOGIN" POINTED AT /admin FROM THE BOTTOM OF EVERY PUBLIC PAGE. It
+ * protected nothing — /admin is gated by lib/admin-auth.ts and robots.ts
+ * disallows it — but it advertised the door to every visitor and every
+ * crawler, on three hundred pages, and it is the kind of thing a person
+ * reasonably reads as "this site has one person behind it and here is his
+ * way in".
+ *
+ * The owner types the address. "Sign in" stays: that is for travellers, whose
+ * account holds their own trips.
+ */
 const utilityLinks = [
   { label: "Contact", href: "/contact" },
   { label: "How we verify", href: "/verification" },
   { label: "Submit an entry", href: "/submit" },
+  { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
-  { label: "Owner login", href: "/admin" },
 ];
 
 export default async function Footer() {
@@ -97,19 +110,25 @@ export default async function Footer() {
             </p>
 
             <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.04] p-6">
+              {/* THE ONE SENTENCE THAT HAD TO CHANGE, and the reason this box
+                  exists at all. It used to open "Share your kevarim, dates and
+                  kosher needs" on every page of the site, including the ones
+                  about beach holidays. It now asks the question a footer can
+                  reasonably ask anybody, and points at the two pages that
+                  answer it rather than at a form. */}
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-white">
                 Tell us where you want to go—or let us help you choose.
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Vacations, family trips, honeymoons and heritage journeys. Nothing is charged for asking, and you do not
-                need to have decided anything first.
+                Vacations, family trips and heritage journeys. Every destination here has the kosher food and the
+                Shabbos side worked out before a single price is quoted.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/plan" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">
-                  Start planning
+                <Link href="/destinations" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">
+                  Browse destinations
                 </Link>
-                <Link href="/contact" className="inline-flex min-h-11 items-center rounded-md border border-white/30 px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold-light)] hover:text-[var(--gold-light)]">
-                  Talk to us
+                <Link href="/hotels" className="inline-flex min-h-11 items-center rounded-md border border-white/30 px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold-light)] hover:text-[var(--gold-light)]">
+                  Where to stay
                 </Link>
               </div>
             </div>

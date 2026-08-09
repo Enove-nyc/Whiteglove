@@ -86,7 +86,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   // address must not be in the sitemap — Google reports that as an error
   // against the site, the same way a noindexed one is.
   { path: "/destinations", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/honeymoon", priority: 0.6, changeFrequency: "monthly" },
   // How the four labels on every practical detail are decided. Indexed
   // deliberately: it is the page that makes the rest of the site checkable.
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },

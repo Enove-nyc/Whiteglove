@@ -18,6 +18,8 @@ import { bookingLink } from "@/lib/booking-access";
 const ALL_ITEMS = [...PRIMARY_NAV, ...MENU_GROUPS.flatMap((group) => group.links)];
 const NAVBAR = readFileSync("components/Navbar.tsx", "utf8");
 const FOOTER = readFileSync("components/Footer.tsx", "utf8");
+/** Without the comments: those quote the old wording in order to record it. */
+const FOOTER_PROSE = FOOTER.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
 describe("what the bar leads with", () => {
   it("OPENS WITH WHERE TO GO, not with a form", () => {
@@ -224,7 +226,7 @@ describe("the footer says the vacation-neutral thing", () => {
   });
 
   it("no longer asks every visitor for their kevarim", () => {
-    assert.doesNotMatch(FOOTER, /Share your kevarim/i);
+    assert.doesNotMatch(FOOTER_PROSE, /Share your kevarim/i);
   });
 
   it("puts heritage travel in one column rather than at the top of the list", () => {
@@ -233,10 +235,25 @@ describe("the footer says the vacation-neutral thing", () => {
     assert.ok(plan >= 0 && heritage > plan, "heritage travel is listed before planning a trip");
   });
 
-  it("still reaches everything the old footer did", () => {
-    for (const href of ["/stops", "/cemeteries", "/directory", "/services", "/contact", "/submit", "/login", "/privacy", "/terms", "/admin"]) {
+  it("still reaches everything the old footer did, bar one", () => {
+    for (const href of ["/stops", "/cemeteries", "/directory", "/services", "/contact", "/submit", "/login", "/privacy", "/terms"]) {
       assert.ok(FOOTER.includes(`"${href}"`), `${href} lost its way out of the footer`);
     }
+  });
+
+  it("DOES NOT POINT AT THE ADMIN DOOR FROM THREE HUNDRED PAGES", () => {
+    // "Owner login" protected nothing — /admin is gated by lib/admin-auth.ts
+    // and robots.ts disallows it — but it advertised the door to every visitor
+    // and every crawler. The owner types the address.
+    assert.doesNotMatch(FOOTER_PROSE, /"\/admin"/);
+    assert.doesNotMatch(FOOTER_PROSE, /Owner login/);
+    // "Sign in" stays: that one is for travellers, whose account holds their
+    // own trips.
+    assert.ok(FOOTER.includes('"/login"'));
+  });
+
+  it("OFFERS ADVERTISING, at the reason on the contact page rather than as a page that is not built", () => {
+    assert.ok(FOOTER.includes('"/contact?reason=advertise"'));
   });
 
   it("still offers flights and hotels, without typing the address in", () => {

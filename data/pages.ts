@@ -53,29 +53,6 @@ export const editablePages: PageDef[] = [
     ],
   },
   {
-    slug: "honeymoon",
-    href: "/honeymoon",
-    label: "Honeymoon",
-    seoTitle: "Honeymoon — White Glove Itineraries",
-    seoDescription: "We are building this page as a premium honeymoon planning service for kosher travelers. It is being developed carefully so the final version feels cal",
-    blocks: [
-    { id: "honeymoon-hero", kind: "hero", eyebrow: "White Glove special service", heading: "Honeymoon", intro: "We are building this page as a premium honeymoon planning service for kosher travelers. It is being developed carefully so the final version feels calm, private, and practical." },
-    {
-      id: "honeymoon-cards",
-      kind: "cards",
-      heading: "What is included",
-      items: [
-        { title: "Kosher honeymoon destinations", body: "Romantic trips in Europe and beyond, with kosher food and practical travel details built in from the start." },
-        { title: "Romantic accommodations", body: "Private rooms, suites, and boutique stays that fit a quiet, well-planned honeymoon." },
-        { title: "Kosher dining", body: "Restaurant planning, catered meals, and Shabbos-friendly food options wherever you go." },
-        { title: "Private experiences", body: "Thoughtful outings and memorable moments without losing the structure and standards you need." },
-        { title: "Sample itineraries", body: "1-day, 3-day, and longer honeymoon plans that can be adapted around flights and accommodations." },
-        { title: "Request a quote", body: "Send us your dates and preferences, and we can shape a honeymoon plan around your needs." },
-      ],
-    },
-    ],
-  },
-  {
     // STILL "getaways" — the slug is the key the owner's stored edits are
     // filed under, and renaming it would throw away whatever he has already
     // written for a page that has only moved address. The page is
@@ -166,22 +143,24 @@ export const editablePages: PageDef[] = [
     slug: "contact",
     href: "/contact",
     label: "Contact",
-    seoTitle: "Tell us about the trip you want to take — White Glove Itineraries",
+    seoTitle: "Contact — White Glove Itineraries",
     seoDescription:
-      "Vacations, family trips, honeymoons, group travel and Jewish heritage journeys. Tell us what you have in mind — or ask us to help you choose.",
+      "Ask us to plan or book a trip, tell us something on the site is wrong, ask about advertising, or ask a question.",
     blocks: [
       {
         id: "contact-hero",
         kind: "hero",
         eyebrow: "Start a conversation",
-        // Was: "Tell us about your trip — kevarim, dates, and kosher needs".
-        // That sentence asked every visitor, including a family asking about a
-        // week in the Dolomites, which graves they wanted to visit. The
-        // kevarim question is still asked — of somebody who has said they are
-        // planning a heritage journey, and of nobody else.
-        heading: "Tell us about the trip you want to take.",
+        // Was: "Tell us about your trip — kevarim, dates, and kosher needs",
+        // and then "Tell us about the trip you want to take." The first asked
+        // every visitor which graves they wanted to see. The second asked
+        // everybody about a trip, including the person writing to say a shul's
+        // address had changed and the one asking about advertising. The page
+        // asks what the message is about first now, so the heading has to be
+        // one that fits all four answers.
+        heading: "Get in touch.",
         intro:
-          "Wherever you are going, and whether or not you have decided yet. Answer what you know, leave the rest, and we will come back to you.",
+          "Answer what you know, leave the rest, and we will come back to you.",
       },
     ],
   },

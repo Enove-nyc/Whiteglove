@@ -10,7 +10,6 @@ const KNOWN_SECTIONS: Array<{ path: string; label: string }> = [
   { path: "/cemeteries", label: "Cemeteries" },
   { path: "/services", label: "Services" },
   { path: "/services", label: "Services" },
-  { path: "/honeymoon", label: "Honeymoon" },
   { path: "/book", label: "Book flights, hotels & cars" },
   { path: "/my-route", label: "My Route" },
   { path: "/account", label: "Account" },

@@ -70,6 +70,9 @@ const PAGES = [
   ["/plan", "trip start flow"],
   ["/destinations", "destinations hub"],
   ["/hotels", "hotels and stays"],
+  // With a search in it, which is a different page: a summary line, a
+  // prefilled form, and a filtered list rather than the whole directory.
+  ["/hotels?destination=Rome&in=2026-09-01&out=2026-09-08&adults=3&children=2", "hotels, searched"],
   ["/flights", "flights"],
   ["/cars", "cars and transfers"],
   ["/things-to-do", "things to do"],
@@ -78,7 +81,11 @@ const PAGES = [
   ["/heritage", "heritage landing"],
   ["/services", "services"],
   ["/sample-itinerary", "sample itinerary"],
-  ["/contact", "planning request"],
+  ["/contact", "contact reasons"],
+  // The conditional fields only exist behind a reason, so auditing the bare
+  // page would measure a form nobody is shown.
+  ["/contact?reason=trip", "contact — trip"],
+  ["/contact?reason=advertise", "contact — advertising"],
   ["/verification", "verification method"],
   ["/stops", "destination directory"],
   ["/cemeteries", "cemetery directory"],
