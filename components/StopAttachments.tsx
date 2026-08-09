@@ -132,7 +132,7 @@ export default function StopAttachments({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)] transition hover:text-[var(--navy)]"
+          className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)] transition hover:text-[var(--navy)]"
         >
           + Boarding pass or ticket
         </button>

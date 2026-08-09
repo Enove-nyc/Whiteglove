@@ -49,7 +49,7 @@ export default function EmailDeliveryTest() {
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Email delivery</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Email delivery</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Do form submissions reach your inbox?</h2>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
         Send a real test message to each inbox and see exactly what the mail service says. If it fails, the reason is shown here instead of being hidden in the server log.

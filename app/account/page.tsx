@@ -60,7 +60,7 @@ export default async function AccountPage() {
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">Your White Glove account</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Your White Glove account</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Welcome, {displayName}.</h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">This is where your saved destinations, personal notes, and future itineraries live.</p>
           </div>
@@ -82,32 +82,32 @@ export default async function AccountPage() {
             it. First, because it is the one with something to DO in it. */}
         <Link href="/command-center" className="group mt-8 flex flex-col justify-between border border-[var(--gold)] bg-white p-6 transition hover:shadow-md">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Before you go</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Before you go</p>
             <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your trip, checked</h2>
             <p className="mt-3 text-sm leading-7 text-stone-600">
               Every stop on your trip with what is still missing on it — which kevarim have nobody to let you in,
               which have no checked coordinate, and the numbers worth having in your phone before you leave.
             </p>
           </div>
-          <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Check the trip →</span>
+          <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">Check the trip →</span>
         </Link>
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <Link href="/itinerary" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Plan your trip</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Plan your trip</p>
               <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Itinerary planner</h2>
               <p className="mt-3 text-sm leading-7 text-stone-600">Build a day-by-day plan — flights, hotels, and stops — with distances, free-time tips, and a printable PDF.</p>
             </div>
-            <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Open the planner →</span>
+            <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">Open the planner →</span>
           </Link>
           <Link href="/my-route" className="group flex flex-col justify-between border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:shadow-md">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Your saved places</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Your saved places</p>
               <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">My Route</h2>
               <p className="mt-3 text-sm leading-7 text-stone-600">The kevarim, destinations, and favorites you&apos;ve saved — gathered in one place for your journey.</p>
             </div>
-            <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold)]">Open my route →</span>
+            <span className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">Open my route →</span>
           </Link>
         </div>
         <AccountRoutePanel loggedIn={signedIn} />

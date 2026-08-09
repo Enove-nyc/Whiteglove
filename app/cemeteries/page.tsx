@@ -42,8 +42,8 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Cemetery directory</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cemetery directory</p>
+            <h1 lang="he" dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               Open a cemetery page to see the known kevarim, direct navigation, and arrival notes. Each list is researched and will grow as more records are verified.
             </p>

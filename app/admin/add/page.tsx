@@ -26,7 +26,7 @@ export default async function AdminAddPage({ searchParams }: { searchParams: Pro
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Add a new entry</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Add a cemetery, a tzadik, or a new page — save what you have now and fill in the rest later. Your additions are kept even when built-in content is re-imported.
@@ -45,12 +45,12 @@ export default async function AdminAddPage({ searchParams }: { searchParams: Pro
       <section className="mt-8">
         {!dbReady ? (
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Not connected yet</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Not connected yet</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">Connect the content database (add <code className="rounded bg-[var(--cream)] px-1">DATABASE_URL</code> and run setup on the Destination editor) before adding new entries.</p>
           </div>
         ) : needsSetup ? (
           <div className="border border-[var(--gold)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One-time setup needed</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">One-time setup needed</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">Run the database import once on the <Link href="/admin/destinations" className="underline">Destination editor</Link>, then come back here.</p>
           </div>
         ) : (
@@ -59,7 +59,7 @@ export default async function AdminAddPage({ searchParams }: { searchParams: Pro
 
             {infoPages.length > 0 && (
               <div className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Your info pages</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Your info pages</p>
                 <ul className="mt-4 divide-y divide-[var(--gold-light)]">
                   {infoPages.map((page) => (
                     <li key={page.slug} className="flex items-center justify-between gap-3 py-3">

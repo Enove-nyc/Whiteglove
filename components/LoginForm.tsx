@@ -281,7 +281,7 @@ export default function LoginForm({
               placeholder={mode === "login" ? "Your password" : "Choose a password"}
               className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]"
             />
-            <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold)]">
+            <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold-ink)]">
               <EyeIcon open={showPassword} />
             </button>
           </div>
@@ -335,7 +335,7 @@ export default function LoginForm({
           <label className="block text-sm font-semibold text-[var(--navy)]">New password
             <div className="relative mt-2">
               <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type={showPassword ? "text" : "password"} required autoComplete="new-password" name="new-password" placeholder="Choose a new password" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 pr-12 outline-none focus:border-[var(--gold)]" />
-              <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold)]">
+              <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--navy)] hover:text-[var(--gold-ink)]">
                 <EyeIcon open={showPassword} />
               </button>
             </div>

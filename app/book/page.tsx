@@ -144,11 +144,11 @@ export default async function BookPage({
                 {category}
               </h3>
               <p className="text-sm leading-6 text-stone-600">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)] sm:hidden">With cash</span>
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)] sm:hidden">With cash</span>
                 {cash}
               </p>
               <p className="text-sm leading-6 text-stone-600">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)] sm:hidden">With miles &amp; points</span>
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)] sm:hidden">With miles &amp; points</span>
                 {points}
               </p>
             </div>
@@ -168,7 +168,7 @@ export default async function BookPage({
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             {STEPS.map(([heading, body], index) => (
               <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">0{index + 1}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">0{index + 1}</p>
                 <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
               </article>

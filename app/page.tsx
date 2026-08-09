@@ -141,7 +141,7 @@ export default async function Home() {
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
           <div className="max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold)]">{words.heroEyebrow}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-ink)]">{words.heroEyebrow}</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-[1.04] text-[var(--navy)]">
               {words.heroTitle}
             </h1>
@@ -203,7 +203,7 @@ export default async function Home() {
                     {kind.label}
                   </span>
                   <span className="mt-2 text-sm leading-6 text-stone-600">{kind.blurb}</span>
-                  <span className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                  <span className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                     Plan this →
                   </span>
                 </Link>
@@ -223,7 +223,7 @@ export default async function Home() {
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {HOW_IT_WORKS.map(([title, body], index) => (
             <li key={title} className="border-t border-[var(--gold-light)] pt-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Step {index + 1}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Step {index + 1}</p>
               <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {title}
               </h3>
@@ -257,7 +257,7 @@ export default async function Home() {
                       </span>
                       <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
                     </span>
-                    <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                    <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                       {count}
                     </span>
                   </Link>
@@ -300,7 +300,7 @@ export default async function Home() {
           />
           <div className="mt-12 grid gap-5 lg:grid-cols-2">
             <article className="flex flex-col rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-7 sm:p-9">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Free, and yours</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Free, and yours</p>
               <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
                 Plan it yourself
               </h3>
@@ -387,7 +387,7 @@ export default async function Home() {
               <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{resource.body}</p>
               {/* Named after where it goes. Four cards all saying "Learn more"
                   is four identical links in a screen reader's list. */}
-              <span className="mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold)]">
+              <span className="mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
                 {resource.cta} →
               </span>
             </Link>
@@ -479,7 +479,7 @@ export default async function Home() {
           <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-7">
             <div className="flex items-center gap-3">
               <GloveMark size="lg" />
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Our promise</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Our promise</p>
             </div>
             <p className="mt-4 font-[family-name:var(--font-display)] text-2xl leading-snug text-[var(--navy)]">
               The details should never distract from the reason you came.

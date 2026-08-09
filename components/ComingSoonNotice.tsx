@@ -25,7 +25,7 @@ export default function ComingSoonNotice({
       className={`rounded-2xl border border-[var(--gold)] bg-[var(--cream)] p-5 sm:p-6 ${className}`}
       role="status"
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Coming soon</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Coming soon</p>
       <p className="mt-2 text-base font-semibold leading-7 text-[var(--navy)]">
         {what} is not open yet.
       </p>

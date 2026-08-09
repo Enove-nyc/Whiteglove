@@ -33,7 +33,7 @@ function Answer({ request, now }: { request: PlanRequest; now: string }) {
             asked {waitingFor(request, now)}
           </p>
         </div>
-        <span className="shrink-0 border border-[var(--gold)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+        <span className="shrink-0 border border-[var(--gold)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
           {PLAN_LABELS[request.wanted]}
         </span>
       </div>
@@ -75,7 +75,7 @@ export default function PlanRequests({ requests, now }: { requests: PlanRequest[
 
   return (
     <section className="mt-10">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Pro and Business</p>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Pro and Business</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Who has asked</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
         Nothing is behind Pro or Business yet, and nobody has been charged anything — this is a list of people who

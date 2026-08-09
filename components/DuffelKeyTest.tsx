@@ -55,7 +55,7 @@ export default function DuffelKeyTest() {
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Flight search</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Flight search</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Is the Duffel token working?</h2>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
         This runs a real search — London to New York, three weeks out, both as whole cities — and shows exactly what

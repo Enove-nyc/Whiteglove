@@ -79,9 +79,11 @@ export default function KosherNearby({
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{heading}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{heading}</p>
+        {/* 44px tall: this is the one control on a destination page that
+            somebody presses standing in the street with one hand. */}
         {places === null && !loading && (
-          <button type="button" onClick={load} className="border border-[var(--gold)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Find kosher nearby</button>
+          <button type="button" onClick={load} className="inline-flex min-h-11 items-center border border-[var(--gold)] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Find kosher nearby</button>
         )}
         {loading && <span className="text-xs text-stone-500">Searching OpenStreetMap…</span>}
       </div>
@@ -95,7 +97,7 @@ export default function KosherNearby({
               <li key={p.id} className="py-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                   <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{p.name}</span>
-                  <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">{p.category}{p.km !== undefined ? ` · ${formatKm(p.km)}` : ""}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">{p.category}{p.km !== undefined ? ` · ${formatKm(p.km)}` : ""}</span>
                 </div>
                 {(p.cuisine || p.address) && <p className="mt-0.5 text-sm text-stone-600">{[p.cuisine, p.address].filter(Boolean).join(" — ")}</p>}
                 <div className="mt-1.5">

@@ -133,7 +133,7 @@ export default function SearchableSelect({
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
       />
-      <span aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 text-[var(--gold)]">▾</span>
+      <span aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 text-[var(--gold-ink)]">▾</span>
 
       {open && (
         <div className="absolute left-0 right-0 top-full z-40 mt-1 border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.16)]">

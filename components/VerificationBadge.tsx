@@ -24,21 +24,22 @@ import {
  *     ("Reported"); the accessible name is the full sentence, because a badge
  *     read out as the single word "reported" tells a blind traveler nothing.
  *
- *   • It goes somewhere. Every badge is a link to the page that explains the
- *     four, so the scale can be learned once rather than guessed at on each
- *     page. The link text is the status itself, not "learn more" — a screen
- *     reader listing the links on a destination page would otherwise read
- *     "learn more" eleven times.
+ * WHY IT IS NOT A LINK BY DEFAULT. It was, and the audit was right to object
+ * twice over. Four badges on one page became four links to the same place —
+ * four identical rows in a screen reader's link list — and a 30px pill is
+ * under the 44px target this site holds itself to, while a 44px status pill
+ * looks absurd. So a badge is a label: a span carrying its full sentence as
+ * its accessible name. Each page carries ONE descriptive link to the method
+ * instead, which is what somebody trying to learn the scale wants anyway.
  *
- * `explain={false}` is for the places a link cannot go — inside another link,
- * such as a card that is itself clickable. There the sentence stays in the
- * accessible name and the page carries one explanatory link of its own.
+ * `explain` turns a badge into that link where a page has nowhere better to
+ * put it. It gets the full 44px then, because it is a control.
  */
 export default function VerificationBadge({
   descriptor,
   lastChecked,
   size = "md",
-  explain = true,
+  explain = false,
   className = "",
 }: {
   descriptor: TrustDescriptor;
@@ -54,6 +55,9 @@ export default function VerificationBadge({
   const shell = [
     "inline-flex items-center gap-1.5 rounded-full border font-semibold",
     size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
+    // A control gets a thumb-sized hit area. A label does not need one, and a
+    // 44px-tall status pill beside a line of text looks like a mistake.
+    explain ? "min-h-11" : "",
     tone.border,
     tone.background,
     tone.text,

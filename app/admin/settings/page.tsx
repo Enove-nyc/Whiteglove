@@ -17,7 +17,7 @@ function Card({ href, title, detail, state }: { href: string; title: string; det
     >
       <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{title}</span>
       <span className="mt-2 text-sm leading-6 text-stone-600">{detail}</span>
-      {state && <span className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{state}</span>}
+      {state && <span className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{state}</span>}
     </Link>
   );
 }

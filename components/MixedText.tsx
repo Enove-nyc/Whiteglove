@@ -14,15 +14,33 @@
 
 const SEPARATOR = " · ";
 
-export default function MixedText({ text, className }: { text: string; className?: string }) {
+/** Any Hebrew-script character. Both Hebrew and Yiddish are written in it. */
+const HEBREW_SCRIPT = /[\u0590-\u05FF\uFB1D-\uFB4F]/;
+
+/**
+ * `lang` on the segments that are in Hebrew script, and on no others.
+ *
+ * dir= alone gets the ORDER right and says nothing about the LANGUAGE, so a
+ * screen reader reads a Yiddish name with English phonetics — which is not a
+ * near miss, it is unintelligible. The digits and the Latin in a yahrzeit
+ * ("כ״א אדר · 5547 / 1787") must NOT be marked, or the year gets read in
+ * Hebrew too.
+ *
+ * `lang` defaults to Hebrew because the commonest use here is a yahrzeit. A
+ * caller showing a Yiddish town or a person's Yiddish name passes "yi" — both
+ * are written in the same script and a screen reader pronounces them
+ * differently.
+ */
+export default function MixedText({ text, className, lang = "he" }: { text: string; className?: string; lang?: "he" | "yi" }) {
+  const langOf = (part: string) => (HEBREW_SCRIPT.test(part) ? lang : undefined);
   const parts = text.split(SEPARATOR);
-  if (parts.length === 1) return <span dir="auto" className={className}>{text}</span>;
+  if (parts.length === 1) return <span dir="auto" lang={langOf(text)} className={className}>{text}</span>;
   return (
     <span className={className}>
       {parts.map((part, i) => (
         <span key={i}>
           {i > 0 && SEPARATOR}
-          <span dir="auto" style={{ unicodeBidi: "isolate" }}>{part}</span>
+          <span dir="auto" lang={langOf(part)} style={{ unicodeBidi: "isolate" }}>{part}</span>
         </span>
       ))}
     </span>

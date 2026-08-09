@@ -260,7 +260,7 @@ export default function PlanningRequestForm({
 
       {fromPlan && (
         <div className="mt-6 rounded-xl border border-[var(--gold)] bg-white p-5" role="status">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
             Filled in from your planning answers
           </p>
           <p className="mt-2 text-sm leading-6 text-stone-600">

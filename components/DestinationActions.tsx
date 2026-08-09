@@ -267,7 +267,7 @@ export default function DestinationActions({
 
       {panel === "nearby" && (
         <div className="mt-4 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Also near {place.name}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Also near {place.name}</p>
           {nearby === null ? (
             <p className="mt-2 text-sm text-stone-500">Looking…</p>
           ) : nearby.length === 0 ? (
@@ -289,7 +289,7 @@ export default function DestinationActions({
 
       {panel === "airports" && (
         <div className="mt-4 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Flying in</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Flying in</p>
           <ul className="mt-3 space-y-1">
             {airports.map((airport) => (
               <li key={airport.code} className="flex flex-wrap items-center justify-between gap-2">

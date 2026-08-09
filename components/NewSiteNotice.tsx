@@ -88,7 +88,15 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
           line on it that no page shows is the exact failure data/site-words.ts
           was written to end, and dropping "body" and "feedback" when this
           stopped being a modal would have recreated it. */}
-      <div className="mx-auto flex max-w-7xl flex-wrap items-start gap-x-6 gap-y-3">
+      {/* STACKED FIRST, side by side only when there is room.
+          It was `flex-wrap` with a `shrink-0` column of buttons beside a
+          `flex-1` paragraph, and on a 390px screen the buttons took the whole
+          row: the text column was squeezed to a few characters wide and the
+          notice grew to eight thousand pixels tall. Nothing overflowed and
+          nothing looked broken above the fold, which is why `npm run
+          audit:ui` — which measures the real page at the real widths — is the
+          only thing that found it. */}
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
         <div className="min-w-0 flex-1 text-sm leading-6">
           <p>
             <span className="font-bold">{notice.heading}.</span> {notice.body}
@@ -100,7 +108,7 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
             </Link>
           </p>
         </div>
-        <div className="flex shrink-0 flex-col gap-1.5">
+        <div className="flex shrink-0 flex-col gap-1.5 sm:max-w-xs">
           <div className="flex flex-wrap gap-2">
             <Link
               href={notice.feedbackHref}
@@ -121,7 +129,7 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
               <span className="sr-only"> — hide this notice</span>
             </button>
           </div>
-          <p className="max-w-xs text-xs leading-5 text-stone-600">{notice.feedback}</p>
+          <p className="text-xs leading-5 text-stone-600">{notice.feedback}</p>
         </div>
       </div>
     </aside>

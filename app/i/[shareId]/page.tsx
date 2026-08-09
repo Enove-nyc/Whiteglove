@@ -84,7 +84,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
       <Navbar />
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Shared itinerary</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Shared itinerary</p>
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
             {itin.title || "A trip"}
           </h1>
@@ -95,7 +95,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           <dl className="mt-4 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
             {summary.map((item) => (
               <div key={item.label} className="flex flex-wrap items-baseline gap-x-2 border-b border-[var(--gold-light)] pb-1.5">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{item.label}</dt>
+                <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{item.label}</dt>
                 <dd className="text-sm text-stone-600">{item.value}</dd>
               </div>
             ))}
@@ -122,7 +122,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
                       <p className="text-base"><strong className="text-[var(--navy)]">{a.startTime ? `${a.startTime} · ` : ""}{a.name}</strong>{a.yiddishName ? <span className="text-stone-500"> · {a.yiddishName}</span> : null}</p>
                       {a.address ? <p className="text-stone-600">{a.address}</p> : null}
                       {a.keverSlug && burials[a.keverSlug]?.length ? (
-                        <p className="text-stone-700"><span className="font-semibold text-[var(--gold)]">Buried here: </span>{burials[a.keverSlug].join(" · ")}</p>
+                        <p className="text-stone-700"><span className="font-semibold text-[var(--gold-ink)]">Buried here: </span>{burials[a.keverSlug].join(" · ")}</p>
                       ) : null}
                       {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
                       {a.href ? <p><a href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2" target="_blank" rel="noreferrer">Details →</a></p> : null}
@@ -141,7 +141,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
             planner tells them when they write them. */}
         {itin.notes?.trim() && (
           <div className="mt-8 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Notes</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Notes</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-700">{itin.notes.trim()}</p>
           </div>
         )}

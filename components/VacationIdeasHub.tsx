@@ -68,7 +68,7 @@ function FilterGroup<V extends string>({
   if (options.length === 0) return null;
   return (
     <fieldset className="min-w-0">
-      <legend className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{legend}</legend>
+      <legend className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{legend}</legend>
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" onClick={() => onChange("")} aria-pressed={value === ""} className={value === "" ? chipOn : chipOff}>
           {allLabel}
@@ -116,7 +116,7 @@ export default function VacationIdeasHub({
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
         <div className="grid gap-6 lg:grid-cols-2">
           <label className="block lg:col-span-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
               Search these destinations
             </span>
             <input

@@ -1,7 +1,7 @@
 "use client";
 
 import { BUILT_IN_WORDS } from "@/data/site-words";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
 import { destinationHref, guidedDestinations } from "@/data/destinations";
@@ -57,8 +57,30 @@ function recordSearch(value: string, found: number) {
   });
 }
 
-export default function DestinationSearch({ compact = false, placeholder = BUILT_IN_WORDS.searchPlaceholder }: { compact?: boolean; placeholder?: string }) {
+export default function DestinationSearch({
+  compact = false,
+  placeholder = BUILT_IN_WORDS.searchPlaceholder,
+  ariaLabel = "Search the site",
+}: {
+  compact?: boolean;
+  placeholder?: string;
+  /**
+   * What this particular box is for.
+   *
+   * The header carries the site-wide one and is named "Search the site". A
+   * page that offers a second box — the heritage landing page, whose search is
+   * the whole point of it — must say what THAT one searches: two controls with
+   * the same accessible name on one page is a real problem for anybody
+   * navigating by them, and it is also how the audit tells an intentional
+   * second search from an accidental duplicate.
+   */
+  ariaLabel?: string;
+}) {
   const router = useRouter();
+  // A page may carry two of these — the header's and the heritage page's own —
+  // and two elements sharing an id is how aria-controls starts pointing at the
+  // wrong list.
+  const listId = `${useId()}-search-results`;
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   // The results are stored WITH the query they answer, so which list belongs
@@ -150,11 +172,11 @@ export default function DestinationSearch({ compact = false, placeholder = BUILT
           }}
           onKeyDown={onKeyDown}
           className={`min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-stone-400 ${compact ? "min-h-11 py-2 text-sm" : "min-h-11 py-3"}`}
-          aria-label="Search the site"
+          aria-label={ariaLabel}
           aria-expanded={open}
           aria-autocomplete="list"
           role="combobox"
-          aria-controls="site-search-results"
+          aria-controls={listId}
           placeholder={placeholder}
           autoComplete="off"
         />
@@ -164,7 +186,7 @@ export default function DestinationSearch({ compact = false, placeholder = BUILT
       </form>
 
       {open && (
-        <div id="site-search-results" role="listbox" className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
+        <div id={listId} role="listbox" className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
           {matches.length > 0 ? (
             matches.map((match, index) => (
               <button
@@ -188,7 +210,7 @@ export default function DestinationSearch({ compact = false, placeholder = BUILT
                   )}
                   <p className="mt-2 text-sm leading-6 text-stone-600">{match.subtitle}</p>
                 </div>
-                <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{match.kind}</span>
+                <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{match.kind}</span>
               </button>
             ))
           ) : (

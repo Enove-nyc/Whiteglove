@@ -103,7 +103,7 @@ export default function PhotoManager({ target, slug, photos, heading, intro, com
     <section>
       {compact ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
             {heading ?? "Pictures of this listing"}
           </p>
           {addButton}
@@ -111,7 +111,7 @@ export default function PhotoManager({ target, slug, photos, heading, intro, com
       ) : (
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Pictures</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Pictures</p>
             <h3 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
               {heading ?? "What this place looks like"}
             </h3>

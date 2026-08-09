@@ -42,7 +42,7 @@ export default async function ItineraryPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Itinerary planner</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Itinerary planner</p>
           <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
             Your trip, day by day.
           </h1>

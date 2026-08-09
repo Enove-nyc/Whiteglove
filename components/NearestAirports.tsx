@@ -24,7 +24,7 @@ export default function NearestAirports({
 
   return (
     <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Closest airports</p>
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Closest airports</p>
       <p className="mt-1 text-xs text-stone-500">
         {haveDistance ? "The three nearest airports with scheduled service — tap for exact driving or transit time." : `Main airports serving ${country} — tap for exact driving or transit time.`}
       </p>
@@ -34,7 +34,7 @@ export default function NearestAirports({
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="font-semibold text-[var(--navy)]">{airport.city} ({airport.code})</span>
               <span className="text-xs text-stone-500">{airport.name}</span>
-              {km !== null && <span className="text-xs font-semibold text-[var(--gold)]">· {formatKm(km)} straight-line</span>}
+              {km !== null && <span className="text-xs font-semibold text-[var(--gold-ink)]">· {formatKm(km)} straight-line</span>}
               <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-stone-400">· {airport.size === "major" ? "major hub" : "regional"}</span>
             </div>
             <div className="mt-1 flex flex-wrap gap-x-5 gap-y-0">

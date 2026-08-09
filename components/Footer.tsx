@@ -17,7 +17,14 @@ import Link from "next/link";
  * than the first three entries.
  */
 
-const columns: Array<{ title: string; links: Array<{ label: string; href: string }> }> = [
+/**
+ * `lang` on the Hebrew half of a label, where there is one.
+ *
+ * dir= would get the order right and say nothing about the language, and a
+ * screen reader reading שתוליכנו לשלום with English phonetics is not a near
+ * miss — it is noise. Only the Hebrew is marked; the English beside it is not.
+ */
+const columns: Array<{ title: string; links: Array<{ label: string; hebrew?: string; href: string }> }> = [
   {
     title: "Plan a trip",
     links: [
@@ -41,7 +48,7 @@ const columns: Array<{ title: string; links: Array<{ label: string; href: string
   {
     title: "Heritage travel",
     links: [
-      { label: "שתוליכנו לשלום — heritage travel", href: "/heritage" },
+      { hebrew: "שתוליכנו לשלום", label: "heritage travel", href: "/heritage" },
       { label: "Towns and guides", href: "/stops" },
       { label: "Batei hachaim", href: "/cemeteries" },
       { label: "Kevarim by name", href: "/tzaddikim" },
@@ -102,7 +109,17 @@ export default async function Footer() {
                   {column.links.map((link) => (
                     <li key={link.href}>
                       <Link href={link.href} className="group flex min-h-11 items-center justify-between gap-2 rounded-md py-2 text-sm text-slate-300 transition hover:text-white">
-                        <span>{link.label}</span>
+                        <span>
+                          {link.hebrew && (
+                            <>
+                              <span lang="he" dir="rtl">
+                                {link.hebrew}
+                              </span>{" "}
+                              —{" "}
+                            </>
+                          )}
+                          {link.label}
+                        </span>
                         <span aria-hidden="true" className="text-[var(--gold-light)] opacity-0 transition group-hover:opacity-100">→</span>
                       </Link>
                     </li>

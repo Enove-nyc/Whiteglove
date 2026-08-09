@@ -37,7 +37,7 @@ export default async function KosherStaysPage() {
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Where to sleep</p>
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to sleep</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">Where to stay</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               Which part of a city to be in, and what is within walking distance of it. Most alpine kosher hotels are
@@ -62,7 +62,7 @@ export default async function KosherStaysPage() {
                 <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                   {area.city}, {area.country}
                 </p>
-                <p className="mt-1 text-sm font-semibold text-[var(--gold)]">{area.name}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--gold-ink)]">{area.name}</p>
                 <p className="mt-1 text-sm leading-6 text-stone-600">{area.note}</p>
               </li>
             ))}

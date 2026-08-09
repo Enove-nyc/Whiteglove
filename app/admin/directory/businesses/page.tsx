@@ -36,7 +36,7 @@ export default async function AdminDirectoryPage({
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Directory editor</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Add and edit the tour operators, vacation planners, travel agencies, and guides/drivers shown at <code className="rounded bg-[var(--cream)] px-1">/directory</code>. Business submissions from visitors appear in the Content manager for review.
@@ -52,14 +52,14 @@ export default async function AdminDirectoryPage({
       {!dbReady ? (
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Not connected yet</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Not connected yet</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">The content database isn&apos;t connected. The public directory shows the built-in list until you connect <code className="rounded bg-[var(--cream)] px-1">DATABASE_URL</code> and run setup.</p>
           </div>
         </section>
       ) : needsSetup ? (
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
           <div className="border border-[var(--gold)] bg-[#fcfaf6] p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One-time setup</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">One-time setup</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">Tap below to create the tables and import the built-in directory listings.</p>
             <div className="mt-6"><DbSetupButton /></div>
           </div>

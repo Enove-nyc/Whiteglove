@@ -127,7 +127,7 @@ export default function SitePromotions() {
         <div className="fixed inset-0 z-[var(--wg-z-modal)] flex items-center justify-center bg-stone-950/60 px-5 py-8" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
           <div ref={popupRef} tabIndex={-1} className="w-full max-w-md border border-[var(--gold-light)] bg-[var(--cream)] p-6 shadow-2xl outline-none sm:p-8">
             <div className="flex items-start justify-between gap-4">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">Sponsored</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Sponsored</p>
               <button type="button" onClick={() => setShowPopup(false)} aria-label="Close" className="-mr-2 -mt-2 flex min-h-11 min-w-11 items-center justify-center text-stone-500 hover:text-[var(--navy)]">✕</button>
             </div>
             <h2 id="promo-popup-title" className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{popup.title}</h2>
@@ -153,7 +153,7 @@ export default function SitePromotions() {
         <div className="fixed inset-x-0 bottom-0 z-[var(--wg-z-ad)] border-t border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_-6px_20px_rgba(23,45,82,0.08)]">
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-8">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Sponsored</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Sponsored</p>
               <p className="truncate text-sm text-[var(--navy)]"><span className="font-semibold">{bottomBanner.title}</span>{bottomBanner.description ? <span className="hidden text-stone-500 sm:inline"> — {bottomBanner.description}</span> : null}</p>
             </div>
             {bottomBanner.buttonText && (

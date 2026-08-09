@@ -180,7 +180,7 @@ export default function AdminTrail({ areas = null }: { areas?: AdminArea[] | nul
 
       {recent.length > 0 && (
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 pb-2 sm:px-6">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Recently visited</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Recently visited</span>
           {recent.map((visit) => (
             <Link
               key={visit.href}

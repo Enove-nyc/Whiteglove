@@ -63,7 +63,7 @@ function Card({ submission }: { submission: PendingSubmission }) {
     <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
             Sent in · waiting {submission.waiting}
           </p>
           <h3 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">

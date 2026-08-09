@@ -61,7 +61,7 @@ export default function LockedSectionsControl({
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Lock sections</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Lock sections</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Require the access code for parts of the site</h2>
       <p className="mt-3 text-sm leading-6 text-stone-600">
         Locked sections ask visitors for the website access password (set under Passwords) before they can be viewed. The rest of the site stays open.

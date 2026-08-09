@@ -153,7 +153,7 @@ function SuggestionCard({ item, publicHref, readAt, current, currentConsent = fa
     <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
             {item.targetType}
             {/* A real space, not just a margin — a margin is invisible to a
                 screen reader, which reads "locationwaiting today". */}
@@ -176,7 +176,7 @@ function SuggestionCard({ item, publicHref, readAt, current, currentConsent = fa
            changes: a table of thirteen rows with one difference in it buries
            the difference. */
         <div className="mt-3 border border-[var(--gold-light)] bg-white">
-          <p className="border-b border-[var(--gold-light)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+          <p className="border-b border-[var(--gold-light)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
             {current && Object.keys(current).length ? `${changes.length} ${changes.length === 1 ? "change" : "changes"} to this listing` : "A new listing"}
           </p>
           {changes.length === 0 ? (

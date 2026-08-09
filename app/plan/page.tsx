@@ -40,7 +40,7 @@ export default async function PlanPage({
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Start a trip</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Start a trip</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
             {destination ? `Let’s plan ${destination.name}.` : "Tell us roughly what you have in mind."}
           </h1>

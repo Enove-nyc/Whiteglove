@@ -162,12 +162,15 @@ export default function DirectoryBrowser({
         {filtered.map((p) => (
           <article key={p.slug} className="wg-card flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{PROVIDER_CATEGORY_LABELS[p.category].english}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{PROVIDER_CATEGORY_LABELS[p.category].english}</p>
               {p.featured && (
                 <span title={featuredNote} className="shrink-0 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">★ Featured</span>
               )}
             </div>
-            <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{p.name}</h3>
+            {/* h2, not h3: the page's only heading above this is its h1, and
+                a jump from h1 to h3 reads to a screen reader as a section that
+                is missing rather than a size choice. */}
+            <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{p.name}</h2>
             {p.tagline && <p className="mt-1 text-sm font-semibold text-stone-500">{p.tagline}</p>}
             {p.description && <p className="mt-3 text-sm leading-6 text-stone-600">{p.description}</p>}
 

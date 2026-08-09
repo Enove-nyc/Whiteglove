@@ -36,7 +36,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
     <div className="space-y-8">
       {/* New cemetery */}
       <form action={cemAction} className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New beis hachaim</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New beis hachaim</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add a cemetery</h2>
         <p className="mt-2 text-sm leading-6 text-stone-600">Only a name and city are required — fill in the rest later. It appears in the directory right away, marked for verification.</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -61,7 +61,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
           person now lives on /admin/kevarim, where every beis hachaim on the
           site is offered and the row is created on demand. */}
       <div className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New kever</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New kever</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add a tzadik</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Adding a person has its own screen now, so you can pick any beis hachaim on the site — including the
@@ -74,7 +74,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
           list is seeded into, so it is in the directory, the /stops search and
           the planner's picker straight away — no redeploy. */}
       <form action={attrAction} className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New thing to do</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New thing to do</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to go</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           A museum, a mountain, a castle, somewhere for the children. It does not have to be kosher or Jewish. It appears
@@ -114,7 +114,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
 
       {/* Somewhere to stay. */}
       <form action={stayAction} className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New place to stay</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New place to stay</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to stay</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           Distances are measured from the shul or quarter it is near, not from the hotel — so that is what you fill in.
@@ -160,7 +160,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
 
       {/* New page */}
       <form action={pageAction} className={cardClass}>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">New page</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New page</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add an info page</h2>
         <p className="mt-2 text-sm leading-6 text-stone-600">Create a standalone page with its own link (/info/…). Blank lines make paragraphs; start a line with &ldquo;## &rdquo; for a heading or &ldquo;- &rdquo; for a bullet.</p>
         <div className="mt-5 grid gap-4">

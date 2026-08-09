@@ -92,7 +92,7 @@ export default function SiteWordsForm({
           decision he made a long time ago and may not remember. */}
       {oldSettings.length > 0 && (
         <section className="mt-8 border border-[var(--gold)] bg-[#fcfaf6] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">From the old settings screen</p>
+          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">From the old settings screen</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
             {oldSettings.length === 1 ? "One line was" : `${oldSettings.length} lines were`} saved here before, and never shown anywhere
           </h2>

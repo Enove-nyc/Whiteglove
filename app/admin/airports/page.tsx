@@ -16,7 +16,7 @@ export default async function AdminAirportsPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">White Glove admin</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Airports</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               The {AIRPORTS.length} airports the site came with, plus any you add. This is what the flight search

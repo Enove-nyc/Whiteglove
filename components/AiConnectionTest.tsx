@@ -25,7 +25,7 @@ export default function AiConnectionTest() {
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">AI assistant</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">AI assistant</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Travel-assistant connection</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
         The &ldquo;Ask the assistant&rdquo; box and the itinerary AI suggestions need a key. Add a free{" "}

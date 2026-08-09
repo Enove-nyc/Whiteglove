@@ -104,7 +104,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Beis hachaim · {cemetery.country}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Beis hachaim · {cemetery.country}</p>
           <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{cemetery.yiddishName}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{cemetery.name}</p>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{cemetery.city} · {cemetery.yiddishCity}</p>
@@ -128,7 +128,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <ol className="mt-6 space-y-4 border-t border-[var(--gold-light)] pt-5">
               {cemetery.arrivalNotes.map((note, index) => (
                 <li key={note} className="flex gap-3 text-sm leading-6 text-stone-600">
-                  <span className="font-semibold text-[var(--gold)]">{index + 1}.</span>
+                  <span className="font-semibold text-[var(--gold-ink)]">{index + 1}.</span>
                   {note}
                 </li>
               ))}
@@ -157,7 +157,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           </aside>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Who is buried here</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who is buried here</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
 
             <div className="mt-8 space-y-4">
@@ -184,7 +184,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
             {alsoHere.length > 0 && (
               <div className="mt-8 border-t border-[var(--gold-light)] pt-5">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Also resting in this beis hachaim</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Also resting in this beis hachaim</p>
                 <p className="mt-1 text-sm text-stone-500">Other kevarim recorded at the same cemetery:</p>
                 <ul className="mt-3 space-y-2">
                   {alsoHere.map((c) => (
@@ -201,7 +201,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
         {placeGroups.length > 0 && (
           <div className="mt-14">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Practical information nearby</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Practical information nearby</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Kosher food, lodging, minyanim & more</h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-500">Gathered from public sources — please confirm details before you rely on them.</p>
             <div className="mt-8 space-y-10">
@@ -239,7 +239,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
         {cemetery.coordinates && (
           <div className="mt-14">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Kosher food nearby</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Kosher food nearby</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">What&apos;s kosher around here</h2>
             <p className="mt-3 mb-6 max-w-3xl text-sm leading-6 text-stone-500">Live kosher restaurants, bakeries, and groceries near the kever, from OpenStreetMap.</p>
             <KosherNearby coordinates={cemetery.coordinates} radiusKm={15} heading="Kosher near this kever" />
@@ -248,7 +248,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
           <section className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Verification and source</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Verification and source</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">
               {hasAccessContacts ? "This cemetery has a public access contact listed above. Please confirm it before traveling." : "No public access contact has been verified for this cemetery yet."}
             </p>

@@ -63,10 +63,10 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">Kevarim &amp; nesios directory</p>
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kevarim &amp; nesios directory</p>
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Find the destination you are looking for.</h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-              Search in English or יידיש for kevarim, cities, and essential locations. Each entry grows into a complete guide as its practical and historical details are verified.
+              Search in English or <span lang="yi">יידיש</span> for kevarim, cities, and essential locations. Each entry grows into a complete guide as its practical and historical details are verified.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 sm:block" />
@@ -89,11 +89,11 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {matchingAttractions.length > 0 && (
           <div className="mt-14">
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Things to do</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.2em]">Things to do</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingAttractions.map((a) => (
                 <Link key={a.slug} href={a.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{a.city} · {a.country} · {a.kind}</p>
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{a.city} · {a.country} · {a.kind}</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{a.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{a.summary}</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open in things to do →</span>
@@ -105,11 +105,11 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {(matchingStays.length > 0 || matchingAreas.length > 0) && (
           <div className="mt-14">
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Where to stay</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.2em]">Where to stay</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingAreas.map((area) => (
                 <Link key={`area-${area.slug}`} href={`/kosher-stays#${area.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{area.city} · {area.country} · Jewish quarter</p>
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{area.city} · {area.country} · Jewish quarter</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{area.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{area.note}</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open where to stay →</span>
@@ -117,7 +117,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
               ))}
               {matchingStays.map((s) => (
                 <Link key={s.slug} href={s.href} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{s.city} · {s.country} · {s.kind}</p>
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{s.city} · {s.country} · {s.kind}</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{s.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{s.summary}</p>
                   {/* A season is the thing that costs somebody a Shabbos, so it
@@ -132,11 +132,11 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
 
         {matchingEateries.length > 0 && (
           <div className="mt-14">
-            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.2em]">Somewhere to eat</p>
+            <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.2em]">Somewhere to eat</p>
             <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {matchingEateries.map((e) => (
                 <Link key={e.slug} href={`/kosher#${e.slug}`} className="flex min-w-0 flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7">
-                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)] sm:tracking-[0.18em]">{e.city} · {e.country} · {e.kind}</p>
+                  <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{e.city} · {e.country} · {e.kind}</p>
                   <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere]">{e.name}</h2>
                   <p className="mt-4 text-sm leading-6 text-stone-600">{e.summary}</p>
                   <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Open where to eat →</span>

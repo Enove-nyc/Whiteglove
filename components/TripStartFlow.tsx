@@ -519,7 +519,7 @@ export default function TripStartFlow({
                 onClick={() => choose("myself")}
                 className="wg-card flex h-full flex-col items-start border border-[var(--gold-light)] bg-[var(--surface)] p-7 text-left transition hover:border-[var(--gold)]"
               >
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Free, and yours</span>
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Free, and yours</span>
                 <span className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
                   I want to plan it myself
                 </span>
@@ -548,7 +548,7 @@ export default function TripStartFlow({
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Not decided?</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided?</p>
               <p className="mt-2 leading-7 text-stone-600">
                 You can look around first and come back — your answers stay in this browser either way.
               </p>

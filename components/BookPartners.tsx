@@ -529,7 +529,7 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
   return (
     <div className="fixed inset-0 z-[var(--wg-z-modal)] flex items-end justify-center bg-[rgba(13,31,59,.45)] p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="booked-title">
       <div ref={dialogRef} tabIndex={-1} className="w-full max-w-lg rounded-3xl border border-[var(--gold)] bg-[#fcfaf6] p-6 shadow-[0_24px_60px_rgba(23,45,82,.35)] outline-none sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Searching in the other tab</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Searching in the other tab</p>
         <h2 id="booked-title" className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
           When you have booked, come back and tell us.
         </h2>
@@ -730,7 +730,7 @@ function MilesNote({ children }: { children: React.ReactNode }) {
 }
 
 function StepLabel({ n, children }: { n: number; children: React.ReactNode }) {
-  return <p className="mt-8 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">{n} · {children}</p>;
+  return <p className="mt-8 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{n} · {children}</p>;
 }
 
 const linkPrimary = "inline-flex min-h-[44px] items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";

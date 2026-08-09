@@ -13,7 +13,7 @@ export default function SmsStatus() {
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Text messages</p>
+      <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Text messages</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Can people sign up with a phone number?</h2>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
         Not everybody has an email they check. With a text service connected, somebody can sign up with their number

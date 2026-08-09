@@ -222,3 +222,84 @@ fields; kevarim are asked about only when Heritage Journey is chosen.
 
 **Verification** — one methodology page explaining Verified, Reported, Being
 checked, and Reconfirm before travel, linked from every badge.
+
+---
+
+## 6. What was actually built, and how it was checked
+
+### New routes
+
+`/plan` · `/vacation-ideas` · `/vacation-ideas/[destination]` (18) ·
+`/kosher-travel` · `/heritage` · `/verification`. `/getaways` redirects
+permanently to `/vacation-ideas`, and the CMS still knows that page by its old
+slug so nothing the owner wrote there is lost.
+
+### New modules, and why each is a module rather than a component
+
+| Module | Why it is separate |
+| --- | --- |
+| `lib/navigation.ts` | The bar is the positioning. Its rules are tested, not commented. |
+| `lib/trust-status.ts` | One vocabulary where there were four. Mapping in one place. |
+| `lib/vacation-ideas.ts` | Kosher and Shabbos answers computed from real records, testable without a browser. |
+| `lib/vacation-sources.ts` | The server read, kept out of the client bundle. |
+| `lib/trip-plan.ts` | What a set of planning answers is, and what it turns into. |
+| `lib/trip-setup.ts` | What "started" means for a trip, and what a template may and may not overwrite. |
+| `data/vacation-destinations.ts` | Editorial only. No fact about kosher food, Shabbos, hotels or opening. |
+| `data/services.ts` | Six services, six questions each, including price. |
+
+### Deleted
+
+`components/BetaNoticeModal.tsx` (replaced by the dismissible strip),
+`components/InquiryForm.tsx` (unused; superseded by `PlanningRequestForm`),
+`components/DestinationCard.tsx` (unused after the homepage rebuild).
+
+### Checks
+
+`npm run check` — lint, `tsc --noEmit`, and the test suite — plus
+`npm run build`, after every stage. The suite went from 1,480 tests to 1,640;
+the new ones cover the navigation rules, the four-label status system, the
+vacation indicators and filters, the planning flow and its handoff, the
+conditional kevarim field, the planner templates, the homepage order, and the
+accessibility invariants that can be read from source.
+
+`npm run audit:ui` loads 17 pages in a real browser at 8 widths and measures
+what source cannot tell you. Two checks were added to it for this work —
+heading order, and the contrast of every rendered line against whatever is
+actually painted behind it — and it reports what it cannot measure (gradients,
+sliding pills) rather than guessing at them.
+
+It found five things worth having:
+
+1. **The accent gold was unreadable as text.** `--gold` is 2.6:1 to 3.2:1 on
+   the site's own backgrounds, and it was the colour of every small-caps
+   eyebrow on the site. Split into `--gold` for borders and `--gold-ink`
+   (#7a602c, 4.79:1 at worst) for words, across 307 usages.
+2. **The focus ring could be removed by a utility class.** It was wrapped in
+   `:where()`, which has zero specificity, so `outline-none` on an input beat
+   it — a dozen fields across the search box, the booking form, the map
+   filters and the planner had no focus ring at all.
+3. **The new-site notice collapsed on a phone.** A `shrink-0` column of
+   buttons beside a `flex-1` paragraph squeezed the text to a few characters
+   wide and made the notice eight thousand pixels tall. Nothing overflowed and
+   nothing looked wrong above the fold.
+4. **The vacation card washes failed contrast.** The eyebrow is gold-light at
+   11px on a gradient; the beach wash gave 2.77:1. Every light end darkened
+   until all six clear 4.5:1, with the numbers written into the file because
+   the audit cannot measure a gradient.
+5. **A heading level skipped** in the provider directory (h1 → h3), and the
+   kosher-nearby button was 32px on a phone.
+
+Final state: **0 findings** across all 17 pages and 8 widths.
+
+### Known limits
+
+- **No photography.** The picture library refuses an uncredited image and holds
+  no destination photographs. Cards and destination pages are typographic until
+  there are real, credited pictures; nothing else about them changes when there
+  are.
+- **No testimonials**, for the same reason.
+- **The 17 pre-existing lint errors are untouched** (`react-hooks/set-state-in-effect`
+  in nine older components). Nothing added here introduces a new one, and
+  fixing those is a separate piece of work with its own risk.
+- **`audit:ui` is Chromium only.** Safari's date and form controls still need
+  checking by hand on a real device.

@@ -29,14 +29,27 @@ import type { TripTheme } from "@/data/vacation-destinations";
 /**
  * The wash behind the name, by what kind of trip it is.
  *
- * Decoration, and it is aria-hidden. Nothing here is the only carrier of any
- * information — the themes are also printed as words on the card.
+ * Decoration only: nothing here is the sole carrier of any information — the
+ * themes are printed as words on the card as well.
+ *
+ * BUT IT CARRIES TEXT, so the light end of every one of these is chosen for
+ * contrast rather than for looks. The eyebrow is gold-light at eleven pixels,
+ * which needs 4.5:1, and the first version of this list failed it badly — the
+ * beach wash ended at #2f7f92 and gave 2.77:1. Measured against gold-light and
+ * against white, every end below now clears 4.5:1:
+ *
+ *   beach 4.52 · city 5.90 · mountains 4.82 · family 4.75 · couples 4.86 ·
+ *   short break 5.12   (gold-light on the lighter end of each)
+ *
+ * `npm run audit:ui` cannot check these itself — a gradient has no single
+ * colour to compare against, and it says so rather than guessing. That is
+ * exactly why the numbers are written down here.
  */
 const THEME_WASH: Record<TripTheme, string> = {
-  beach: "from-[#1d4a63] to-[#2f7f92]",
+  beach: "from-[#12384a] to-[#1f5c6b]",
   city: "from-[var(--navy)] to-[#344461]",
-  mountains: "from-[#1f3b57] to-[#4c6b7a]",
-  family: "from-[#23405f] to-[#5a6a86]",
+  mountains: "from-[#1f3b57] to-[#3a5462]",
+  family: "from-[#23405f] to-[#44526b]",
   couples: "from-[#2a2f52] to-[#5b4a63]",
   "short-break": "from-[var(--navy-deep)] to-[#3a4d6f]",
 };

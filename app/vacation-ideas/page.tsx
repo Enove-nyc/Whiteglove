@@ -89,7 +89,7 @@ export default async function VacationIdeasPage({
                     </span>
                     <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
                   </span>
-                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                     {count} destination{count === 1 ? "" : "s"}
                   </span>
                 </Link>

@@ -73,11 +73,11 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
             Kever · {cemetery.city} · {cemetery.country}
           </p>
           <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-tight text-[var(--navy)]">
-            <MixedText text={burial.yiddishName || burial.name} />
+            <MixedText text={burial.yiddishName || burial.name} lang="yi" />
           </h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500">{burial.name}</p>
           {burial.knownAs && <p className="mt-4 text-lg font-semibold text-[var(--navy)]">{burial.knownAs}</p>}
@@ -100,18 +100,18 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
             <dl className="mt-8 divide-y divide-[var(--gold-light)] border-y border-[var(--gold-light)]">
               {burial.seforim && (
                 <div className="flex flex-wrap gap-2 py-4">
-                  <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Seforim</dt>
-                  <dd dir="rtl" lang="yi" className="flex-1 text-xl leading-8 text-[var(--navy)]"><MixedText text={burial.seforim} /></dd>
+                  <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Seforim</dt>
+                  <dd dir="rtl" lang="yi" className="flex-1 text-xl leading-8 text-[var(--navy)]"><MixedText text={burial.seforim} lang="he" /></dd>
                 </div>
               )}
               {burial.yahrzeit && (
                 <div className="flex flex-wrap gap-2 py-4">
-                  <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Yahrzeit</dt>
+                  <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Yahrzeit</dt>
                   <dd className="flex-1 text-lg leading-8 text-stone-700"><MixedText text={burial.yahrzeit} /></dd>
                 </div>
               )}
               <div className="flex flex-wrap gap-2 py-4">
-                <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Buried in</dt>
+                <dt className="w-40 shrink-0 text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Buried in</dt>
                 <dd className="flex-1 text-lg leading-8 text-stone-700">
                   <Link href={`/cemeteries/${cemetery.slug}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
                     {cemetery.name}
@@ -123,7 +123,7 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
 
             {others.length > 0 && (
               <div className="mt-8">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Also buried there</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Also buried there</p>
                 <ul className="mt-3 space-y-2">
                   {others.slice(0, 8).map((other) => {
                     const link = allTzaddikim().find((e) => e.burial.name === other.name && e.cemetery.slug === cemetery.slug);
@@ -158,7 +158,7 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
               href={`/cemeteries/${cemetery.slug}`}
               className="block border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600 transition hover:border-[var(--gold)]"
             >
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)]">Getting in</span>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Getting in</span>
               <span className="mt-1 block font-semibold text-[var(--navy)]">
                 Arrival notes and shomer numbers for {cemetery.city} →
               </span>

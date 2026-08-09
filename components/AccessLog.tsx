@@ -58,7 +58,7 @@ export default function AccessLog({ entries, available }: { entries: SignInEntry
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold)]">Who has been in</p>
+          <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Who has been in</p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Recent sign-ins</h2>
         </div>
         <div className="flex flex-wrap gap-2">

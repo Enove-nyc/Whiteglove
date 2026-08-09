@@ -70,7 +70,7 @@ export default function VerificationPage() {
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">How we check</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">How we check</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
             What each label on this site means.
           </h1>

@@ -211,7 +211,7 @@ export default function Navbar() {
             <div className="mx-auto grid max-h-[calc(100vh-5rem)] max-w-7xl gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-3 md:py-9">
               {MENU_GROUPS.map((group) => (
                 <section key={group.title}>
-                  <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">{group.title}</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</h2>
                   <ul className="mt-3 space-y-1">
                     {group.links.map((item) => {
                       const current = isCurrent(item.href, pathname);
@@ -237,7 +237,7 @@ export default function Navbar() {
                                 {item.description}
                               </span>
                             </span>
-                            <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold)]"}>→</span>
+                            <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>→</span>
                           </Link>
                         </li>
                       );

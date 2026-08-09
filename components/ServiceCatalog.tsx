@@ -20,7 +20,7 @@ import { services } from "@/data/services";
 function Detail({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <div className="border-t border-[var(--gold-light)] pt-4">
-      <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{term}</dt>
+      <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{term}</dt>
       <dd className="mt-2 leading-7 text-stone-600">{children}</dd>
     </div>
   );
@@ -36,7 +36,7 @@ export default function ServiceCatalog() {
           className="scroll-mt-28 rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6 shadow-[0_8px_28px_rgba(23,45,82,.055)] sm:p-9"
         >
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <span aria-hidden="true" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+            <span aria-hidden="true" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
               {String(index + 1).padStart(2, "0")}
             </span>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
@@ -60,7 +60,7 @@ export default function ServiceCatalog() {
               <ol className="space-y-3">
                 {service.process.map((step, stepIndex) => (
                   <li key={step} className="flex gap-3">
-                    <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold)]">
+                    <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold-ink)]">
                       {stepIndex + 1}
                     </span>
                     <span>{step}</span>
@@ -78,7 +78,7 @@ export default function ServiceCatalog() {
             </Detail>
 
             <div className="border-t border-[var(--gold-light)] pt-4 lg:col-span-2">
-              <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">What it costs</dt>
+              <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">What it costs</dt>
               <dd className="mt-2 flex gap-3 leading-7 text-stone-600">
                 <GloveMark size="sm" className="mt-1" />
                 <span>{service.pricing}</span>

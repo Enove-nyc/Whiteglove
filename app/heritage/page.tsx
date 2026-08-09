@@ -72,7 +72,7 @@ export default async function HeritagePage() {
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-14 gap-y-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
               <span lang="he" dir="rtl">
                 {SUB_BRAND_HEBREW}
               </span>{" "}
@@ -100,7 +100,7 @@ export default async function HeritagePage() {
 
       <section className="border-b border-[var(--gold-light)] bg-[var(--surface)] px-5 py-10 sm:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">
             Search for a kever, a town or a tzaddik
           </h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -108,7 +108,11 @@ export default async function HeritagePage() {
             Noam Elimelech or Reb Elimelech.
           </p>
           <div className="mt-4">
-            <DestinationSearch compact placeholder="A kever, a town, or a tzaddik…" />
+            <DestinationSearch
+              compact
+              placeholder="A kever, a town, or a tzaddik…"
+              ariaLabel="Search the heritage directory for a kever, a town or a tzaddik"
+            />
           </div>
         </div>
       </section>
@@ -151,7 +155,7 @@ export default async function HeritagePage() {
             },
           ].map((card) => (
             <article key={card.href} className="wg-card flex h-full flex-col border border-[var(--gold-light)] bg-[var(--surface)] p-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{card.count}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{card.count}</p>
               <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {card.title}
               </h3>
@@ -203,7 +207,7 @@ export default async function HeritagePage() {
               href={destinationHref(guide)}
               className="wg-card block border border-[var(--gold-light)] bg-[var(--surface)] p-6"
             >
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">{guide.country}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{guide.country}</p>
               <p className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {guide.city}{" "}
                 <span lang="yi" dir="rtl" className="text-xl text-stone-500">

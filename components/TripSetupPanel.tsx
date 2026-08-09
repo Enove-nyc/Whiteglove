@@ -112,7 +112,7 @@ export default function TripSetupPanel({
           {/* ---- carry the answers over ------------------------------------ */}
           {canSeed && answers && (
             <div className="rounded-xl border border-[var(--gold)] bg-white p-5">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
                 You answered these a moment ago
               </p>
               <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -188,7 +188,7 @@ export default function TripSetupPanel({
               <ul className="mt-4 grid gap-3 md:grid-cols-2">
                 {templates.map((template) => (
                   <li key={template.slug} className="rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                       {template.destination} · {template.country}
                     </p>
                     <p className="mt-1 font-semibold text-[var(--navy)]">{template.title}</p>

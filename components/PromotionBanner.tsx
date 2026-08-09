@@ -59,7 +59,7 @@ export default function PromotionBanner({
       <div className={cardClass}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">Sponsored</p>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Sponsored</p>
             <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">{promotion.title}</h2>
             <p className="mt-3 text-sm leading-6 text-stone-600">{promotion.description}</p>
           </div>

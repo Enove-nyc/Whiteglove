@@ -102,7 +102,7 @@ export default function MyRouteDashboard({
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-      <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold)]">My Route</p>
+      <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">My Route</p>
       <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Your journey, arranged with care.</h1>
       <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">Save the places that matter to you, set any kever you must reach on a specific date, then organize the flexible stops around it.</p>
 
@@ -117,7 +117,7 @@ export default function MyRouteDashboard({
           <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-9">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Saved places</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Saved places</p>
                 <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">My Route</h2>
               </div>
               <span className="text-sm text-stone-500">{activeRoute.length} places</span>
@@ -129,7 +129,7 @@ export default function MyRouteDashboard({
                   <div className="min-w-0 flex-1">
                     <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{place.name}{place.yiddishName && <span className="ml-2 text-lg text-stone-500">{place.yiddishName}</span>}</p>
                     <p className="mt-1 text-sm leading-6 text-stone-600">{place.address}</p>
-                    <label className="mt-3 flex max-w-xs items-center gap-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">Fixed date<DateField value={place.plannedDate ?? ""} onChange={(v) => setPlannedDate(place.id, v)} className="border border-[var(--gold-light)] bg-white px-2 py-1 text-sm font-normal tracking-normal text-[var(--navy)]" ariaLabel="Fixed date" /></label>
+                    <label className="mt-3 flex max-w-xs items-center gap-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Fixed date<DateField value={place.plannedDate ?? ""} onChange={(v) => setPlannedDate(place.id, v)} className="border border-[var(--gold-light)] bg-white px-2 py-1 text-sm font-normal tracking-normal text-[var(--navy)]" ariaLabel="Fixed date" /></label>
                     {place.anchor && (
                       <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--navy)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
                         <span aria-hidden="true">⚓</span>
@@ -174,7 +174,7 @@ export default function MyRouteDashboard({
             </ol>
           </div>
           <aside className="border border-[var(--gold-light)] bg-[var(--cream-deep)] p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Route helper</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Route helper</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Optimize the flexible stops.</h2>
             <p className="mt-4 leading-7 text-stone-600">A place with a fixed date stays in its place. The other kevarim are ordered by nearby distance within the flexible parts of your route. Places without coordinates remain at the end until we verify them.</p>
             <button type="button" disabled={activeRoute.length < 2} onClick={openDirections} className="mt-7 w-full bg-[var(--navy)] px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-50">Open optimized route in maps</button>
@@ -184,7 +184,7 @@ export default function MyRouteDashboard({
                 the border, and the deadline that cannot move. */}
             {(crossings.length > 0 || shabbos.length > 0) && (
               <div className="mt-7 border-t border-[var(--gold)] pt-6">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Before you fix these dates</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Before you fix these dates</p>
                 <ul className="mt-3 space-y-3">
                   {crossings.map((crossing) => (
                     <li key={`${crossing.fromPlace}-${crossing.toPlace}`} className="text-sm leading-6 text-stone-700">
@@ -200,7 +200,7 @@ export default function MyRouteDashboard({
                       )}
                       {crossing.advice && crossing.advice.crossings.length > 0 && (
                         <details className="mt-1">
-                          <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold)]">
+                          <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">
                             {crossing.advice.crossings.length} crossing{crossing.advice.crossings.length === 1 ? "" : "s"} on this border
                           </summary>
                           <ul className="mt-2 space-y-2 border-l border-[var(--gold-light)] pl-3">
@@ -229,7 +229,7 @@ export default function MyRouteDashboard({
       )}
 
       <div className="mt-14">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Favorites - {activeFavorites.length}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Favorites - {activeFavorites.length}</p>
         <p className="mt-3 text-stone-600">Favorites are saved separately from your active route, so you can keep places for a future trip.</p>
       </div>
     </section>

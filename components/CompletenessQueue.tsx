@@ -37,7 +37,7 @@ export default async function CompletenessQueue({ limit = 12 }: { limit?: number
 
   return (
     <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Completeness</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Completeness</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
         What needs filling in
       </h2>

@@ -53,7 +53,7 @@ export default function TravelAssistantBox() {
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">Ask the White Glove assistant</p>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Ask the White Glove assistant</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Kosher travel questions, answered.</h2>
       <p className="mt-2 text-sm leading-6 text-stone-600">Ask about where to go, how long to give it, kosher food, Shabbos, or a kever. (Travel questions only.)</p>
 

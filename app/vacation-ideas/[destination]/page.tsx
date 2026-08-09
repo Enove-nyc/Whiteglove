@@ -115,7 +115,7 @@ function StaysSection({ destination, facts }: { destination: VacationDestination
     <div className="space-y-6">
       {facts.areas.length > 0 && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Which part of town</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Which part of town</h3>
           <ul className="mt-3 space-y-3">
             {facts.areas.map((area) => (
               <li key={area.slug} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
@@ -131,7 +131,7 @@ function StaysSection({ destination, facts }: { destination: VacationDestination
 
       {facts.stays.length > 0 && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Places on record</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Places on record</h3>
           <ul className="mt-3 grid gap-4 md:grid-cols-2">
             {facts.stays.map((stay) => {
               const claim = fromKosherClaim(stay.kosherClaim);
@@ -215,7 +215,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
-          <nav aria-label="Breadcrumb" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+          <nav aria-label="Breadcrumb" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
             <Link href="/vacation-ideas" className="underline decoration-[var(--gold)] underline-offset-4">
               Vacation ideas
             </Link>
@@ -262,7 +262,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <nav aria-label="On this page" className="border-b border-[var(--gold-light)] py-6">
-          <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">On this page</h2>
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">On this page</h2>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
             {contents.map(([id, label]) => (
               <li key={id}>
@@ -293,9 +293,9 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <Section id="when-and-how-long" title="When to go, and for how long">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Best time</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Best time</h3>
               <p className="mt-2 max-w-2xl text-lg leading-8 text-stone-600">{destination.bestTime}</p>
-              <h3 className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Who it suits</h3>
+              <h3 className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Who it suits</h3>
               <p className="mt-2 max-w-2xl text-lg leading-8 text-stone-600">{destination.suits}</p>
             </div>
             <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
@@ -389,7 +389,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
           {facts.base && (facts.base.eateries.length > 0 || facts.base.areas.length > 0) && (
             <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
                 Where to shop on the way in
               </h3>
               <p className="mt-2 leading-7 text-stone-600">{facts.base.note}</p>
@@ -442,7 +442,13 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             <VerificationBadge descriptor={reconfirmBeforeTravel()} />
             <p className="max-w-2xl text-sm leading-6 text-stone-600">
               Candle-lighting times, whether a shul still has a regular minyan, and whether a seasonal kosher kitchen is
-              running are all things that move. Confirm them for your dates.
+              running are all things that move. Confirm them for your dates.{" "}
+              <Link
+                href="/verification"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                What the labels on this page mean
+              </Link>
             </p>
           </div>
         </Section>
@@ -505,7 +511,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             <ol className="mt-5 max-w-3xl space-y-4">
               {destination.outline.days.map((day, index) => (
                 <li key={day} className="flex gap-4 border-t border-[var(--gold-light)] pt-4">
-                  <span className="mt-1 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                  <span className="mt-1 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
                     Day {index + 1}
                   </span>
                   <span className="leading-7 text-stone-600">{day}</span>

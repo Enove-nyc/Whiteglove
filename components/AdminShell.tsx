@@ -98,7 +98,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
                 current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
               }`}
             >
-              <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold)]"}>
+              <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>
                 {s.icon}
               </span>
               <span className="min-w-0">
@@ -163,7 +163,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
           <span aria-hidden="true" className="hidden text-[var(--gold-light)] sm:inline">
             /
           </span>
-          <span className="hidden text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold)] sm:inline">
+          <span className="hidden text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)] sm:inline">
             {section.label}
           </span>
 

@@ -28,7 +28,7 @@ export default async function TermsOfUsePage() {
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold)]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Itineraries</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Terms of Use</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>

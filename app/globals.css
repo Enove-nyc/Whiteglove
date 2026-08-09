@@ -5,6 +5,28 @@
   --navy: #172d52;
   --navy-deep: #0d1f3b;
   --gold: #aa8b52;
+  /**
+   * The same gold, dark enough to be read.
+   *
+   * MEASURED, NOT GUESSED. `npm run audit:ui` computes the contrast of every
+   * rendered line against whatever is actually behind it, and --gold on the
+   * site's own backgrounds comes out at 2.6:1 to 3.2:1. That is fine for a
+   * rule or a border, which need 3:1, and it fails 1.4.3 for text, which needs
+   * 4.5:1 — and --gold was the colour of every small-caps eyebrow on the site,
+   * eleven or twelve pixels tall, in exactly the size where it matters most.
+   *
+   * So the accent splits in two. --gold stays for borders, rules, dividers and
+   * the ornament, where it is not text and the lighter tone is the brand.
+   * --gold-ink is for words, and it clears 4.5:1 on all four of the light
+   * backgrounds the site uses, the darkest included:
+   *
+   *   cream #f7f3eb 5.36:1 · #fcfaf6 5.70:1 · surface #fffdf9 5.84:1
+   *   cream-deep #eee6d7 4.79:1 · white 5.94:1
+   *
+   * On the navy sections the text accent is --gold-light, which is what it
+   * always was; this one would be unreadable there and the audit says so.
+   */
+  --gold-ink: #7a602c;
   --gold-light: #d9c7a3;
   --cream: #f7f3eb;
   --cream-deep: #eee6d7;
@@ -92,7 +114,21 @@ a {
    cream, where a gold-on-cream outline was close to invisible. 3px because a
    2px hairline at the edge of a pale control is not something you can find at
    a glance while tabbing. */
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+/* NOT WRAPPED IN :where(), AND THAT IS THE POINT.
+   :where() has zero specificity, so `outline-none` on a single input — which
+   Tailwind emits as a class, specificity 0-1-0 — silently beat this rule and
+   that field had no focus ring at all. A dozen of them across the search box,
+   the booking fields, the map filters and the planner did. Written plainly the
+   selector is 0-1-1 and wins, so a utility can no longer take the ring away by
+   accident. Anything that genuinely needs no ring says so with
+   `focus-visible:outline-none` and provides its own. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
   box-shadow: 0 0 0 5px rgba(23, 45, 82, 0.55);

@@ -39,7 +39,7 @@ export default function DirectoryListingFields({
             <label htmlFor={id} className="block">
               <span className={caption}>
                 {field.label}
-                {field.required && <span className="ml-1 text-[var(--gold)]">·</span>}
+                {field.required && <span className="ml-1 text-[var(--gold-ink)]">·</span>}
               </span>
               {field.type === "category" ? (
                 <select id={id} value={value} disabled={disabled} onChange={(e) => onChange(field.key, e.target.value)} className={input}>
