@@ -151,13 +151,25 @@ export const editablePages: PageDef[] = [
     ],
   },
   {
+    // STILL "getaways" — the slug is the key the owner's stored edits are
+    // filed under, and renaming it would throw away whatever he has already
+    // written for a page that has only moved address. The page is
+    // /vacation-ideas now, and /getaways redirects to it (next.config.ts).
     slug: "getaways",
-    href: "/getaways",
-    label: "Getaways",
-    seoTitle: "Vacations and getaways, planned kosher. — White Glove Itineraries",
-    seoDescription: "Beyond kevarim and nesios, White Glove plans the trips you take to unwind — resorts, beaches, mountains, and cities like Rome and Paris — with kosher ",
+    href: "/vacation-ideas",
+    label: "Vacation Ideas",
+    seoTitle: "Kosher vacation ideas — where to go | White Glove Itineraries",
+    seoDescription:
+      "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
     blocks: [
-    { id: "getaways-hero", kind: "hero", eyebrow: "Kosher getaways", heading: "Vacations and getaways, planned kosher.", intro: "Beyond kevarim and nesios, White Glove plans the trips you take to unwind — resorts, beaches, mountains, and cities like Rome and Paris — with kosher food, Shabbos, and every detail arranged." },
+      {
+        id: "getaways-hero",
+        kind: "hero",
+        eyebrow: "Vacation ideas",
+        heading: "Where to go, with the kosher side already worked out.",
+        intro:
+          "Beaches, cities, mountains and family trips. Every destination here says what we hold on record about kosher food and about Shabbos — because those are the two questions that decide whether a holiday is workable, and no other travel site answers them.",
+      },
     ],
   },
   {

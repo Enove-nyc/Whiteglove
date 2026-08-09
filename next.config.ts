@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
       // rather than looking like a second, competing page.
       { source: "/booking", destination: "/book", permanent: true },
       { source: "/booking/review", destination: "/book/review", permanent: true },
+      // "Getaways" was one editable hero block and nothing under it, on a
+      // page whose name told a vacation customer very little. It is
+      // /vacation-ideas now — a real hub over the destinations the site holds
+      // data for — and the old address carries its links and its ranking
+      // across rather than competing with the new one.
+      //
+      // The CMS still knows the page by the slug "getaways", deliberately:
+      // renaming the key would have thrown away whatever the owner has
+      // already written there, for a cosmetic tidy. See app/vacation-ideas.
+      { source: "/getaways", destination: "/vacation-ideas", permanent: true },
     ];
   },
 };
