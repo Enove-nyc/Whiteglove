@@ -119,7 +119,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
 
             <div className="mt-7 flex flex-wrap gap-3">
               {graveMapUrl && <a href={graveMapUrl} target="_blank" rel="noreferrer" className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to the kever →</a>}
-              {cemetery && <a href={`/cemeteries/${cemetery.slug}`} className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">View this <span lang="he">בית החיים</span> →</a>}
+              {cemetery && <a href={`/cemeteries/${cemetery.slug}`} className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">View this <span lang="he" dir="rtl">בית החיים</span> →</a>}
             </div>
             <DestinationActions place={{ id: guide.slug, name: guide.city, yiddishName: guide.yiddishCity, address: guide.graveAddress ?? `${guide.city}, ${guide.country}`, coordinates: guide.graveCoordinates, href: `/${guide.slug}` }} airports={airportsFor(guide.country, guide.graveAddress, guide.graveCoordinates)} />
 

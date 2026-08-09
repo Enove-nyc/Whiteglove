@@ -555,6 +555,11 @@ export default function PlanningRequestForm({
         <button
           type="submit"
           disabled={busy}
+          // Announced as well as disabled. A button that changes its own label
+          // to "Sending…" tells a sighted person what is happening and tells a
+          // screen reader nothing, because the name of the control that
+          // currently has focus is not re-read when it changes.
+          aria-busy={busy || undefined}
           className="inline-flex min-h-12 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
         >
           {busy ? "Sending…" : "Send this to White Glove"}
@@ -563,6 +568,13 @@ export default function PlanningRequestForm({
           Nothing is booked or charged by sending this. {words.replyPromise}
         </p>
       </div>
+
+      {/* The three states of a submission, in one polite region: sending,
+          and then either the thank-you (which replaces this whole form) or
+          the failure below. Without it, pressing Send and waiting is silent. */}
+      <p role="status" aria-live="polite" className="sr-only">
+        {busy ? "Sending your planning request…" : ""}
+      </p>
 
       {failed && (
         <p role="alert" className="mt-4 rounded-lg border-2 border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900">

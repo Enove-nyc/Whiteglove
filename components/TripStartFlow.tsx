@@ -265,7 +265,8 @@ export default function TripStartFlow({
                       {kind.label}
                     </span>
                     <span className={`mt-2 text-sm leading-6 ${on ? "text-slate-200" : "text-stone-600"}`}>{kind.blurb}</span>
-                    {on && <span className="sr-only">Selected</span>}
+                    {/* No sr-only "Selected" here: aria-pressed already says
+                        so, and both together read as "Rome, selected, pressed". */}
                   </button>
                 );
               })}

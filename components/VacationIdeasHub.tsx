@@ -35,7 +35,12 @@ import {
  * 2. **The result count is announced.** Filtering with a keyboard or a screen
  *    reader used to change the page silently: you pressed "Mountains", nothing
  *    said anything, and the only way to find out what happened was to tab
- *    through the whole list. The count lives in a polite live region.
+ *    through the whole list. The count lives in a polite live region — and in
+ *    a live region that holds NOTHING BUT the count. The "Clear all filters"
+ *    button used to be inside it, so every press announced the button's label
+ *    along with the number, and appearing or disappearing changed the region's
+ *    structure rather than its text, which some screen readers read out whole
+ *    and others do not read at all.
  *
  * 3. **Each filter group is a real fieldset with a legend.** Six loose rows of
  *    buttons read as thirty unrelated controls; grouped, each one is announced
@@ -115,18 +120,26 @@ export default function VacationIdeasHub({
     <div>
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
         <div className="grid gap-6 lg:grid-cols-2">
-          <label className="block lg:col-span-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+          {/* A REAL LABEL, TIED TO THE FIELD BY ID, and visible whether or
+              not anything has been typed. The placeholder is a hint and not a
+              name: it disappears at the first keystroke, so a person who tabs
+              back to a filled field has nothing left telling them what it is,
+              and voice control has no name to speak. The two are different
+              things and this field needs both. */}
+          <div className="lg:col-span-2">
+            <label htmlFor="vacation-search" className="block text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
               Search these destinations
-            </span>
+            </label>
             <input
+              id="vacation-search"
               type="search"
               value={filters.query}
               onChange={(event) => set("query", event.target.value)}
+              aria-describedby="vacation-search-hint"
               placeholder="A place, a country, or the kind of trip — Rome, Switzerland, mountains…"
               className="mt-2 w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
             />
-            <span className="mt-1.5 block text-xs leading-5 text-stone-500">
+            <p id="vacation-search-hint" className="mt-1.5 text-xs leading-5 text-stone-500">
               Looking for a kever or a town rather than a holiday?{" "}
               <Link
                 href="/heritage"
@@ -135,8 +148,8 @@ export default function VacationIdeasHub({
                 Search the heritage directory
               </Link>
               .
-            </span>
-          </label>
+            </p>
+          </div>
 
           <FilterGroup legend="Kind of trip" allLabel="Any kind" options={themes} value={filters.theme} onChange={(v) => set("theme", v as TripTheme | "")} />
           <FilterGroup legend="Season" allLabel="Any season" options={seasons} value={filters.season} onChange={(v) => set("season", v as Season | "")} />
@@ -173,28 +186,31 @@ export default function VacationIdeasHub({
         </p>
       </div>
 
-      {/* Politely, so a filter press is not announced over whatever is being
-          read — but announced, which is the part that was missing. */}
-      <p aria-live="polite" className="mt-8 text-sm font-semibold text-[var(--navy)]">
-        {results.length === cards.length
-          ? `${cards.length} destinations`
-          : `${results.length} of ${cards.length} destinations`}
+      <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
+        {/* Politely, so a filter press is not announced over whatever is being
+            read — but announced, which is the part that was missing. Text
+            only: a live region that also holds a button announces the button
+            every time the number changes, and announces nothing reliably when
+            the button appears or disappears. */}
+        <p role="status" aria-live="polite" className="text-sm font-semibold text-[var(--navy)]">
+          {results.length === cards.length
+            ? `${cards.length} destinations`
+            : `Showing ${results.length} of ${cards.length} destinations`}
+          {active > 0 && `, ${active === 1 ? "1 filter" : `${active} filters`} applied`}
+        </p>
         {active > 0 && (
-          <>
-            {" "}
-            <button
-              type="button"
-              onClick={() => setFilters({ ...NO_VACATION_FILTERS })}
-              className="ml-2 inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              Clear {active === 1 ? "the filter" : `all ${active} filters`}
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={() => setFilters({ ...NO_VACATION_FILTERS })}
+            className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Clear {active === 1 ? "the filter" : `all ${active} filters`}
+          </button>
         )}
-      </p>
+      </div>
 
       {results.length > 0 ? (
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {results.map((card) => (
             <VacationCard key={card.destination.slug} card={card} />
           ))}
@@ -202,7 +218,7 @@ export default function VacationIdeasHub({
       ) : (
         /* An empty result has to say what to do next. "No matches" and a blank
            page is where somebody leaves. */
-        <div className="mt-6 rounded-2xl border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-8 text-center">
+        <div className="mt-4 rounded-2xl border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-8 text-center">
           <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
             Nothing here matches all of those at once.
           </p>

@@ -66,7 +66,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kevarim &amp; nesios directory</p>
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Find the destination you are looking for.</h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-              Search in English or <span lang="yi">יידיש</span> for kevarim, cities, and essential locations. Each entry grows into a complete guide as its practical and historical details are verified.
+              Search in English or <span lang="yi" dir="rtl">יידיש</span> for kevarim, cities, and essential locations. Each entry grows into a complete guide as its practical and historical details are verified.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 sm:block" />

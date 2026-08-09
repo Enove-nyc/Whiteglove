@@ -104,7 +104,7 @@ export default async function HeritagePage() {
             Search for a kever, a town or a tzaddik
           </h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            In English or in <span lang="yi">יידיש</span> — Lizhensk or <span lang="yi" dir="rtl">ליזענסק</span>, the
+            In English or in <span lang="yi" dir="rtl">יידיש</span> — Lizhensk or <span lang="yi" dir="rtl">ליזענסק</span>, the
             Noam Elimelech or Reb Elimelech.
           </p>
           <div className="mt-4">

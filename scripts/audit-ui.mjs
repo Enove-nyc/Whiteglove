@@ -17,6 +17,8 @@
 //   heading-order    no h1, more than one h1, or a level skipped on the way down
 //   contrast         text under 4.5:1 against what is actually behind it
 //                    (3:1 for large text), measured from the rendered colours
+//   zoom-overflow    the page scrolls sideways at 200% browser zoom, or with
+//                    the text alone doubled (WCAG 1.4.10 and 1.4.4)
 //
 // Findings are not all bugs — read them. Inline links inside a paragraph are
 // deliberately exempt from the touch-target check (making a link in running
@@ -58,6 +60,9 @@ async function launchChromium() {
 const BASE = process.argv[2] ?? "http://127.0.0.1:3130";
 const WIDTHS = [
   [320, 568], [375, 667], [390, 844], [430, 932],
+  // 640×360 is a 1280×720 desktop at 200% browser zoom: zoom shrinks the CSS
+  // viewport and lays the page out at that width, so the reflow is identical.
+  [640, 360],
   [768, 1024], [1024, 768], [1280, 720], [1440, 900],
 ];
 const PAGES = [
@@ -361,6 +366,74 @@ for (const [path, label] of PAGES) {
     await p.close();
   }
 }
+/**
+ * TEXT ALONE AT 200%, which is the harder half of the zoom question.
+ *
+ * Browser zoom is covered by the widths above — zooming to 200% on a 1280
+ * screen lays the page out at 640, and that width is in the list. What it does
+ * NOT cover is somebody who has set a larger default font size and left the
+ * window where it was (WCAG 1.4.4). Then the text doubles and the boxes do
+ * not, which is how a fixed-height card starts clipping its own last line and
+ * a nav bar starts scrolling sideways.
+ *
+ * Root font-size rather than a CSS transform, because that is what the setting
+ * actually changes: rem-based spacing grows with it and px-based spacing does
+ * not, and the difference between those two is exactly what breaks.
+ */
+for (const [path, label] of PAGES) {
+  const p = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  try {
+    await p.goto(BASE + path, { waitUntil: "load", timeout: 60000 });
+    await p.waitForFunction(() => getComputedStyle(document.body).backgroundColor !== "rgba(0, 0, 0, 0)", null, { timeout: 20000 });
+    await p.addStyleTag({ content: "html { font-size: 200% !important; }" });
+    await p.waitForTimeout(500);
+
+    const problems = await p.evaluate(() => {
+      const docW = document.documentElement.clientWidth;
+      const guilty = [];
+      if (document.documentElement.scrollWidth > docW + 1) {
+        for (const el of document.querySelectorAll("body *")) {
+          const r = el.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0) continue;
+          const style = getComputedStyle(el);
+          if (style.visibility === "hidden" || style.display === "none") continue;
+          if (r.right > docW + 1 || r.left < -1) {
+            guilty.push(`${el.tagName.toLowerCase()}.${(el.className || "").toString().split(" ").slice(0, 3).join(".")} right=${Math.round(r.right)}`);
+          }
+        }
+      }
+      // Text cut off by a fixed height. `overflow: hidden` on a box whose
+      // content is now taller than it is the way doubled text disappears
+      // silently rather than pushing the page about.
+      const clipped = [];
+      for (const el of document.querySelectorAll("p, h1, h2, h3, li, dd, span, button, a")) {
+        // Visually-hidden text is a 1px box with overflow:hidden BY DESIGN —
+        // that is how sr-only works, and every one of them would otherwise be
+        // reported as clipped, which is how a check stops being read.
+        if (el.closest(".sr-only") || el.className.toString().includes("sr-only")) continue;
+        const style = getComputedStyle(el);
+        if (style.overflow !== "hidden" && style.overflowY !== "hidden") continue;
+        if (style.textOverflow === "ellipsis" || style.webkitLineClamp !== "none") continue;
+        if (el.scrollHeight > el.clientHeight + 2 && el.clientHeight > 0) {
+          clipped.push(`${el.tagName.toLowerCase()} ${el.scrollHeight}>${el.clientHeight}`);
+        }
+      }
+      return {
+        overflow: guilty.length ? { docW, scrollW: document.documentElement.scrollWidth, guilty: guilty.slice(0, 4) } : null,
+        clipped: clipped.slice(0, 4),
+      };
+    });
+
+    if (problems.overflow) {
+      note(label, "text-200%", "zoom-overflow", `${problems.overflow.scrollW}>${problems.overflow.docW} :: ${problems.overflow.guilty.join(" | ")}`);
+    }
+    if (problems.clipped.length) note(label, "text-200%", "zoom-clipped", problems.clipped.join(" | "));
+  } catch (error) {
+    note(label, "text-200%", "error", String(error).split("\n")[0].slice(0, 140));
+  }
+  await p.close();
+}
+
 await browser.close();
 
 const byKind = {};
