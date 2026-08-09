@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { addSuggestion } from "@/lib/admin-content";
 import { cleanDraft, consentFromSubmission, draftProblems, type DirectoryDraft, type SubmitterConsent } from "@/lib/directory-fields";
 import { sendSubmissionNotification } from "@/lib/email";
+import { siteOrigin } from "@/lib/seo";
+import { cardIfWanted } from "@/lib/trello-store";
 
 const KIND_LABEL: Record<string, string> = {
   location: "Edit suggestion",
@@ -77,6 +79,17 @@ export async function POST(request: NextRequest) {
       ...consent,
     }),
   ]);
+
+  // A card on the board, for an owner who works from one. Not awaited and
+  // never able to fail the submission: a correction somebody bothered to send
+  // must not be lost to Trello being away.
+  void cardIfWanted({
+    // A directory entry is a business asking to be listed; everything else is
+    // somebody correcting a page.
+    kind: body.targetType === "directory" ? "listing" : "suggestion",
+    about: body.title,
+    siteUrl: siteOrigin()?.toString(),
+  });
 
   if (!emailed && !saved) {
     return NextResponse.json({ error: "We couldn't record your submission just now. Please try again shortly." }, { status: 503 });

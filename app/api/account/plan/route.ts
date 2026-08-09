@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { askForPlan, getPlan, openRequestFor, planStoreAvailable } from "@/lib/account-plan-store";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { sendPlanRequestNotification } from "@/lib/email";
+import { siteOrigin } from "@/lib/seo";
+import { cardIfWanted } from "@/lib/trello-store";
 import { requestProblem } from "@/lib/account-plans";
 import { accountCookieName, readSessionEmail } from "@/lib/account-store";
 
@@ -65,6 +67,15 @@ export async function POST(request: NextRequest) {
     businessName: body.businessName,
     note: body.note,
   }).catch(() => undefined);
+
+  // And a card, for an owner who works from a board rather than an inbox.
+  void cardIfWanted({
+    // The business name where there is one, never the person's email address:
+    // a Trello board is shared, often outside the team.
+    kind: "plan",
+    about: body.businessName?.trim() || PLAN_LABELS[body.wanted as "pro" | "business"],
+    siteUrl: siteOrigin()?.toString(),
+  });
 
   return NextResponse.json({ ok: true, request: await openRequestFor(account) });
 }

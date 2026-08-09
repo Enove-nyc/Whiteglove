@@ -79,6 +79,12 @@ export default async function AdminSettingsPage() {
             detail="Change the code for the admin area and the code visitors use when the site is closed."
             state={passwordStorageAvailable() ? undefined : "Set in the host for now"}
           />
+          <Card
+            href="/admin/settings/trello"
+            title="Cards on your Trello board"
+            detail="Send pictures, listing requests and reports to your team's board, with a link back to the screen that handles each one."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
           <Card href="/admin/accounts" title="Visitor accounts" detail="Everyone who has signed up, and what they have saved." />
         </div>
       </section>

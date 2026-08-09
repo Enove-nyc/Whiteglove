@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCemetery } from "@/data/cemeteries";
 import { sendSubmissionNotification } from "@/lib/email";
+import { siteOrigin } from "@/lib/seo";
+import { cardIfWanted } from "@/lib/trello-store";
 import { isAllowedMediaType, putMedia, mediaStoreAvailable } from "@/lib/media";
 import {
   dataUrlBytes,
@@ -120,6 +122,11 @@ export async function POST(request: NextRequest) {
     suggestedInfo: body.caption?.trim() || "(no caption)",
     source: body.note?.trim() || "",
   }).catch(() => undefined);
+
+  // And a card on the board, if the owner works from one. Same rule as the
+  // email above and for the same reason: a picture somebody took the trouble
+  // to send must not be lost to an outside service being away.
+  void cardIfWanted({ kind: "photo", about: owner.title, siteUrl: siteOrigin()?.toString() });
 
   return NextResponse.json({ ok: true });
 }
