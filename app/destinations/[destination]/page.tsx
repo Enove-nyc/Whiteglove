@@ -203,7 +203,7 @@ function StaysSection({ destination, facts }: { destination: VacationDestination
           </ul>
           <p className="mt-4 text-sm">
             <Link
-              href="/kosher-stays"
+              href="/hotels"
               className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
               Compare every place to stay on the site
@@ -287,7 +287,7 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
       </ul>
       <p className="mt-5 text-sm">
         <Link
-          href="/attractions"
+          href="/things-to-do"
           className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
         >
           Browse everything to do on the site

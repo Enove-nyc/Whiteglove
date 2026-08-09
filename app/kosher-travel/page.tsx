@@ -51,7 +51,7 @@ const questions: Array<{
   },
   {
     title: "Which part of town do we stay in?",
-    href: "/kosher-stays",
+    href: "/hotels",
     cta: "Compare places to stay",
     body: "Kosher hotels, seasonal programmes, and the Jewish quarters themselves — measured from the shul, not from the middle of the city.",
     detail:

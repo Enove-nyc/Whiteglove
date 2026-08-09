@@ -1,21 +1,17 @@
 /**
  * What the site says it is, in the order it says it.
  *
- * THE NAVIGATION WAS THE POSITIONING, and it said the wrong thing. The bar
- * read: Destinations · Cemeteries · Getaways · Directory · Services · Book.
- * Three of those six were the heritage database, one was a word that means
- * something else to the customer this site is for, and one led to a page that
- * can be behind an access code.
+ * THE NAVIGATION IS THE POSITIONING, and it has now been rewritten twice for
+ * that reason. The first time it read Destinations · Cemeteries · Getaways ·
+ * Directory · Services · Book, which was an accurate description of a kevarim
+ * database with a travel page attached. The second time it led with Plan a
+ * Trip and Travel Services, which described a personal planning service.
  *
- * Somebody who has just been told about "a kosher vacation planner" reads
- * "Destinations" as places to go on holiday, presses it, and lands in a
- * directory of batei hachaim. Nothing about that is a labelling accident — it
- * is what the site was, and the bar was honest about it.
- *
- * So the bar is here rather than typed into the header, for two reasons. It is
- * the shape of the business and it should be reviewable as one screen of text;
- * and the rules below are the kind that get broken by somebody adding "just one
- * more link", so they are enforced by a test rather than by this comment.
+ * The business is neither. It helps somebody choose a kosher-friendly holiday
+ * and earns when they book it, so the bar is the products a person books —
+ * where to go, where to stay, how to get there, what to do — with the kosher
+ * research beside them because that is the reason to book here rather than on
+ * a comparison site.
  *
  * THE RULES, each with the mistake it exists to prevent:
  *
@@ -24,21 +20,29 @@
  *      press away inside Heritage Travel where the person looking for it will
  *      look.
  *
- *   2. **No item called "Destinations".** Not because the word is wrong, but
- *      because it is ambiguous exactly here: to a vacation customer it promises
- *      places to go, and on this site it opened the kevarim directory. Vacation
- *      places live under Vacation Ideas; towns with kevarim live under Heritage
- *      Travel; neither is called Destinations.
+ *   2. **"Destinations" means holidays.** It used to be forbidden here,
+ *      because it was ambiguous: to a vacation customer it promises places to
+ *      go, and on this site it opened a directory of towns with kevarim in
+ *      them. The heritage towns have moved (lib/route-migration.ts), so the
+ *      word is free to mean the thing a visitor expects — and it must keep
+ *      meaning it.
  *
- *   3. **Nothing in the bar may lead to an access code.** `/book` is not
- *      itself gated, but the site can be closed and single paths can be locked
- *      from the admin, and the booking search is the least finished thing on
- *      the public site. A first-time visitor pressing a main navigation item
- *      and meeting a password box is the end of that visit. It stays reachable
- *      from Travel Services, from the planner and from the footer.
+ *   3. **Nothing in the bar may lead to an access code.** The booking search
+ *      is the primary action now, so this rule could not be kept by leaving it
+ *      out; it is kept by RESOLVING it. `menuGroupsFor` and `primaryCtaFor`
+ *      below take the resolved link (lib/booking-access.ts), so when the owner
+ *      has that path locked the bar offers the public assistance page instead
+ *      of a password box. A first-time visitor pressing the one filled button
+ *      and meeting a login is the end of that visit.
  *
- *   4. **One primary action, and it starts a trip.** Not "contact us", not
- *      "book" — the thing this business does is plan the trip.
+ *   4. **No personal planning in the bar, at all.** Not "Plan a Trip", not
+ *      "Travel Services", not "Have us book it". The service still exists and
+ *      is offered inside Contact; promoting it here would tell every visitor
+ *      that the business is a planning agency, which is what the whole pivot
+ *      is away from.
+ *
+ *   5. **One primary action, and it is a search.** The thing this business
+ *      does is help somebody find and book a trip.
  */
 
 import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
@@ -56,17 +60,36 @@ export type NavItem = {
   description: string;
 };
 
-/** The bar, in order, at the widths that have room for it. */
+/**
+ * The bar, in order, at the widths that have room for it.
+ *
+ * SEVEN, NOT NINE. The brief named nine items; seven is what fits at 1280px
+ * beside the site search and the sign-in link without the bar wrapping or the
+ * search being squeezed to nothing. Cars & Transfers is the one that moved
+ * into the menu — it is what somebody looks for AFTER they have chosen a hotel,
+ * not before — and it keeps its own page at /cars, linked from every
+ * destination. Swapping it back is one line here.
+ */
 export const PRIMARY_NAV: readonly NavItem[] = [
   {
-    label: "Plan a Trip",
-    href: "/plan",
-    description: "Answer a few questions and we will open a trip for you — or take it from here ourselves.",
-  },
-  {
-    label: "Vacation Ideas",
+    label: "Destinations",
     href: "/destinations",
     description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher side worked out.",
+  },
+  {
+    label: "Hotels & Stays",
+    href: "/hotels",
+    description: "Kosher hotels, seasonal programmes, and which quarter makes Shabbos walkable.",
+  },
+  {
+    label: "Flights",
+    href: "/flights",
+    description: "Search flights for your dates, then build the trip around them.",
+  },
+  {
+    label: "Things to Do",
+    href: "/things-to-do",
+    description: "What to do on the days between — and what each one does on Shabbos.",
   },
   {
     label: "Kosher Travel",
@@ -74,23 +97,35 @@ export const PRIMARY_NAV: readonly NavItem[] = [
     description: "Food, Shabbos, minyanim, mikvaos, hechsherim and the practical side of travelling kosher.",
   },
   {
-    label: "Travel Services",
-    href: "/services",
-    description: "What we do for you: planning, flights and hotels, kosher arrangements, and the essentials.",
-  },
-  {
     label: "Heritage Travel",
     href: "/heritage",
     description: "שתוליכנו לשלום — kevarim, batei hachaim and Jewish heritage journeys.",
   },
+  {
+    label: "My Trips",
+    href: "/itinerary",
+    description: "The trips you have saved, day by day, with everything you have booked in them.",
+  },
 ] as const;
 
-/** The one button. Filled, and the only filled thing in the header. */
+/**
+ * The one button. Filled, and the only filled thing in the header.
+ *
+ * RESOLVED, NOT TYPED. It points at the booking search, which the owner can
+ * lock from the admin — and rule 3 above says nothing in the bar may end at a
+ * password box. `primaryCtaFor` swaps in the public assistance page when that
+ * happens, so the most prominent control on the site cannot become a login
+ * screen because of a setting somewhere else.
+ */
 export const PRIMARY_CTA: NavItem = {
-  label: "Start planning",
-  href: "/plan",
-  description: "Begin a trip, whether or not you know where you are going yet.",
+  label: "Search & Book",
+  href: BOOKING_SEARCH_PATH,
+  description: "Search hotels, flights and cars for your dates.",
 };
+
+export function primaryCtaFor(booking: BookingLink): NavItem {
+  return booking.searchIsPublic ? PRIMARY_CTA : { ...PRIMARY_CTA, label: "Plan & enquire", href: booking.href, description: booking.description };
+}
 
 export const SIGN_IN: NavItem = {
   label: "Sign in",
@@ -108,50 +143,53 @@ export const SIGN_IN: NavItem = {
  */
 export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem[] }> = [
   {
-    title: "Plan",
-    links: [
-      PRIMARY_NAV[0],
-      { label: "Itinerary planner", href: "/itinerary", description: "Build the trip day by day." },
-      { label: "Destinations", href: "/destinations", description: "Somewhere to start when the destination is undecided." },
-      { label: "Have us plan it", href: "/contact", description: "Tell us about the trip and we will arrange it." },
-    ],
-  },
-  {
     title: "Where to go",
     links: [
-      { label: "Things to do", href: "/attractions", description: "What to do on the days between, and what it does on Shabbos." },
-      { label: "Where to stay", href: "/kosher-stays", description: "Kosher hotels, seasonal programmes and which quarter to book in." },
+      PRIMARY_NAV[0],
       { label: "Kosher food", href: "/kosher", description: "Restaurants, bakeries and groceries, live, anywhere in the world." },
       { label: "Map", href: "/map", description: "Everything the site knows, plotted in one place." },
     ],
   },
   {
-    title: "Heritage travel",
+    title: "Getting there",
     links: [
-      PRIMARY_NAV[4],
-      { label: "Towns and guides", href: "/stops", description: "Every town and kever on the site, searchable in English or יידיש." },
-      { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records with kevarim, access notes and shomer contacts." },
-      { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by the name he is known by." },
-      { label: "Send in a correction", href: "/submit", description: "Tell us about a kever, a cemetery or a provider we are missing." },
+      PRIMARY_NAV[2],
+      // Not in the bar — seven items is what fits — and it has a full page of
+      // its own, linked from every destination.
+      { label: "Cars & transfers", href: "/cars", description: "Hire a car, or find out whether the destination is better without one." },
+      { label: "Flights, hotels & cars", href: BOOKING_SEARCH_PATH, description: "Search and book your own travel, with cash or with points." },
+      { label: "Before you go", href: "/travel-guide", description: "Documents, entry rules, insurance and connectivity." },
     ],
   },
   {
-    title: "Services & booking",
+    title: "Where to stay",
     links: [
+      PRIMARY_NAV[1],
       PRIMARY_NAV[3],
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
-      { label: "Flights, hotels & cars", href: "/book", description: "Search and book your own travel, with cash or with points." },
-      { label: "Honeymoon", href: "/honeymoon", description: "A quiet, well-planned kosher honeymoon." },
-      { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
-      { label: "Travel guide", href: "/travel-guide", description: "Documents, entry rules and paying for the trip." },
+      { label: "Itinerary planner", href: "/itinerary", description: "Build the trip day by day." },
+    ],
+  },
+  {
+    title: "Heritage travel",
+    links: [
+      PRIMARY_NAV[5],
+      { label: "Towns and guides", href: "/stops", description: "Every town and kever on the site, searchable in English or יידיש." },
+      { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records with kevarim, access notes and shomer contacts." },
+      { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by the name he is known by." },
     ],
   },
   {
     title: "White Glove",
     links: [
       { label: "Home", href: "/", description: "The front page, and everything the site can do, in one screen." },
-      { label: "Contact", href: "/contact", description: "Tell us about the trip you want to take." },
       { label: "How we verify", href: "/verification", description: "What Verified, Reported and Being checked mean here." },
+      // Travel Services is OUT OF THE BAR (rule 4) and still reachable. What it
+      // offers commercially has moved into the journeys; what it offers
+      // personally is inside Contact.
+      { label: "Travel services", href: "/services", description: "What we do, and what to expect about price." },
+      { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
+      { label: "Contact", href: "/contact", description: "Ask a question, report a correction, or talk about advertising." },
     ],
   },
 ] as const;

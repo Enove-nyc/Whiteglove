@@ -21,8 +21,8 @@ type Missing = "" | "address" | "coordinates" | "shomer";
  */
 const SITE_PAGES: Record<string, string> = {
   "cemeteries-index": "/cemeteries",
-  "kosher-stays-index": "/kosher-stays",
-  "attractions-index": "/attractions",
+  "kosher-stays-index": "/hotels",
+  "attractions-index": "/things-to-do",
   "stops-directory": "/stops",
 };
 

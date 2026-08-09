@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: "Where to stay — White Glove Itineraries",
   description: "Kosher and kosher-friendly places to stay in Italy, France and Switzerland, and which part of each city to be in for Shabbos.",
-  path: "/kosher-stays",
+  path: "/hotels",
 });
 
 export default async function KosherStaysPage() {

@@ -53,8 +53,8 @@ const columnsFor = (
     links: [
       { label: "Kosher travel guide", href: "/kosher-travel" },
       { label: "Kosher food finder", href: "/kosher" },
-      { label: "Where to stay", href: "/kosher-stays" },
-      { label: "Things to do", href: "/attractions" },
+      { label: "Where to stay", href: "/hotels" },
+      { label: "Things to do", href: "/things-to-do" },
       { label: "Provider directory", href: "/directory" },
     ],
   },

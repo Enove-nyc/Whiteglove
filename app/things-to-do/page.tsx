@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: "Things to do — White Glove Itineraries",
   description: "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
-  path: "/attractions",
+  path: "/things-to-do",
 });
 
 export default async function AttractionsPage() {

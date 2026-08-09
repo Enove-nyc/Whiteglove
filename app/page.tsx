@@ -95,13 +95,13 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
   },
   {
     title: "Where to stay",
-    href: "/kosher-stays",
+    href: "/hotels",
     body: "Kosher hotels, seasonal programmes and which quarter to book in.",
     cta: "Compare places to stay",
   },
   {
     title: "Things to do",
-    href: "/attractions",
+    href: "/things-to-do",
     body: "What to do on the days between — and what each one does on Shabbos.",
     cta: "Browse things to do",
   },

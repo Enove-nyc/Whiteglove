@@ -77,7 +77,7 @@ export async function addInfoPageAction(_prev: ActionResult | null, formData: Fo
  * the moment it is saved rather than whenever the cache next turns over.
  */
 function revalidateTripContent(kind: "attraction" | "stay") {
-  revalidatePath(kind === "attraction" ? "/attractions" : "/kosher-stays");
+  revalidatePath(kind === "attraction" ? "/things-to-do" : "/hotels");
   revalidatePath("/stops");
   revalidatePath("/itinerary");
   revalidatePath("/admin/add");

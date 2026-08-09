@@ -47,6 +47,12 @@ const nextConfig: NextConfig = {
       // wildcard and cannot be — see lib/route-migration.ts and middleware.ts.
       { source: "/vacation-ideas", destination: "/destinations", permanent: true },
       { source: "/vacation-ideas/:slug", destination: "/destinations/:slug", permanent: true },
+      // Two pages renamed to what the navigation calls them. "Kosher stays"
+      // described the record; "Hotels & Stays" is what somebody is looking
+      // for, and the page is about to become a search rather than a list.
+      // "Attractions" is a word from a guidebook.
+      { source: "/kosher-stays", destination: "/hotels", permanent: true },
+      { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];
   },
 };
