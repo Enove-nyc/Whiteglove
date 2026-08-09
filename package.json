@@ -17,7 +17,8 @@
     "audit:admin": "node scripts/audit-admin.mjs",
     "build:sql": "tsx scripts/build-sql.ts",
     "audit:outage": "node scripts/audit-outage.mjs",
-    "audit:destinations": "node scripts/audit-destinations.mjs"
+    "audit:destinations": "node scripts/audit-destinations.mjs",
+    "audit:pipeline": "node scripts/audit-pipeline.mjs"
   },
   "dependencies": {
     "@duffel/components": "^3.17.0",
