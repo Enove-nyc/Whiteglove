@@ -53,7 +53,7 @@ export default async function ItineraryPage() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
             Not sure where to begin?{" "}
             <Link href="/plan" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-              Answer three questions first
+              Answer three short steps first
             </Link>{" "}
             and this page opens with your answers already in it.
           </p>

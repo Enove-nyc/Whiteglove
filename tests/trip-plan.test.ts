@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
+  ACCESSIBILITY_NEEDS,
   emptyAnswers,
   hasAnswers,
   INTERESTS,
@@ -87,6 +88,55 @@ describe("what is asked", () => {
     assert.match(STEPS[2].title, /how would you like to plan it/i);
   });
 
+  it("KEEPS STEP TWO TO WHERE, WHEN, FROM WHERE AND WHO", () => {
+    // The four things a person decides first. Everything else moved out from
+    // under a heading that had just promised three steps.
+    assert.match(STEPS[1].title, /where.*when.*who/i);
+    const stepTwo = FLOW.slice(FLOW.indexOf("{step === 2 &&"), FLOW.indexOf("{step === 3 &&"));
+    for (const kept of ["plan-destination", "plan-from", "Who is coming", "When"]) {
+      assert.ok(stepTwo.includes(kept), `step two lost ${kept}`);
+    }
+    for (const moved of ["PACES.map", "INTERESTS", "KOSHER_REQUIREMENTS", "SHABBOS_REQUIREMENTS", "ACCESSIBILITY_NEEDS"]) {
+      assert.ok(!stepTwo.includes(moved), `${moved} is back in step two`);
+    }
+  });
+
+  it("OFFERS THE DETAIL AFTERWARDS, OPTIONAL AND CLOSED", () => {
+    const personalize = FLOW.slice(FLOW.indexOf("Personalize my recommendations"));
+    for (const asked of ["PACES.map", "INTERESTS", "KOSHER_REQUIREMENTS", "SHABBOS_REQUIREMENTS", "ACCESSIBILITY_NEEDS", "Additional notes"]) {
+      assert.ok(personalize.includes(asked), `the personalisation section is missing ${asked}`);
+    }
+    // A <details>, so it is closed by default and one keystroke to skip —
+    // rather than a page of fields somebody has to scroll past.
+    assert.match(FLOW, /<details/);
+    assert.match(FLOW, /Optional\./);
+  });
+
+  it("lets a self-service visitor reach the planner without the detail questions", () => {
+    // Pressed the trip kind, pressed "plan it myself". Nothing typed.
+    const quick = answers({ kind: "family", method: "myself" });
+    assert.equal(nextStepHref(quick), "/itinerary?from=plan");
+    assert.equal(progressOf(quick).personalized, 0);
+    // And what does reach the planner is a usable trip rather than an error.
+    assert.equal(plannerSeed(quick).title, "Family trip");
+  });
+
+  it("asks the same detail questions on the request form", () => {
+    // "A visitor requesting personal planning can complete the additional
+    // questions as part of the request" — so the form carries all six.
+    for (const name of ["pace", "interests", "kosher", "shabbos", "accessibility", "notes"]) {
+      assert.match(FORM, new RegExp(`name="${name}"`), `the request form does not ask about ${name}`);
+    }
+  });
+
+  it("asks about access needs as what the trip must do, not who somebody is", () => {
+    assert.ok(ACCESSIBILITY_NEEDS.length >= 4);
+    for (const need of ACCESSIBILITY_NEEDS) {
+      assert.doesNotMatch(need, /disabled|handicap|impair/i, need);
+    }
+    assert.ok(ACCESSIBILITY_NEEDS.some((need) => /step-free|lift/i.test(need)));
+  });
+
   it("keeps interests short enough to read", () => {
     assert.ok(INTERESTS.length >= 6 && INTERESTS.length <= 12, `${INTERESTS.length} interests`);
   });
@@ -112,15 +162,46 @@ describe("nothing is required", () => {
     assert.deepEqual(summarize(answers({ dateMode: "" })), []);
   });
 
-  it("counts answered questions rather than completed steps", () => {
-    // Step two is nine questions long; a bar stuck on "1 of 3" while somebody
-    // fills in eight fields tells them nothing.
+  it("COUNTS OUT OF THREE, because the page promises three short steps", () => {
+    // It used to count the ten individual questions, so a page headed "three
+    // questions" carried "1 of 10 questions answered" underneath it. The fix
+    // was moving five of those questions out of the way, not renumbering them.
     const empty = progressOf(emptyAnswers());
     assert.equal(empty.answered, 0);
-    assert.ok(empty.total >= 8);
+    assert.equal(empty.total, STEPS.length);
+    assert.equal(empty.total, 3);
+
+    // Step two counts once, however many of its four fields were filled in.
     const some = progressOf(answers({ kind: "family", destination: "Rome", from: "New York", adults: "2" }));
-    assert.equal(some.answered, 4);
+    assert.equal(some.answered, 2);
     assert.ok(some.percent > 0 && some.percent < 100);
+    assert.equal(progressOf(answers({ kind: "family", destination: "Rome", method: "myself" })).answered, 3);
+  });
+
+  it("counts the optional personalisation separately", () => {
+    // Mixing them back into one number is how "three steps" became "10
+    // questions" the first time.
+    const empty = progressOf(emptyAnswers());
+    assert.equal(empty.personalized, 0);
+    assert.equal(empty.personalizeTotal, 6);
+    const some = progressOf(answers({ pace: "slow", accessibility: ["A lift rather than stairs"] }));
+    assert.equal(some.personalized, 2);
+    // And answering them does not move the step counter.
+    assert.equal(some.answered, 0);
+  });
+
+  it("keeps the six personalisation questions the brief asked for", () => {
+    const withEach = progressOf(
+      answers({
+        pace: "slow",
+        interests: ["Food"],
+        kosher: ["Cholov Yisroel"],
+        shabbos: ["An eruv"],
+        accessibility: ["Somewhere quiet"],
+        notes: "One of us cannot walk far.",
+      }),
+    );
+    assert.equal(withEach.personalized, withEach.personalizeTotal);
   });
 });
 
@@ -286,8 +367,12 @@ describe("what we suggest afterwards", () => {
 
 describe("the flow and the form behave themselves", () => {
   it("blocks nothing: no required field in the flow at all", () => {
-    // A single `required` in the wizard would stop the person it exists for.
-    assert.doesNotMatch(FLOW, /\brequired\b/);
+    // A single `required` ATTRIBUTE in the wizard would stop the person it
+    // exists for. Matched as an attribute rather than as the word, because the
+    // page also has to be able to SAY that nothing is required.
+    assert.deepEqual(FLOW.match(/^\s*required$/gm) ?? [], []);
+    assert.doesNotMatch(FLOW, /\brequired=\{/);
+    assert.doesNotMatch(FLOW, /\brequired\s*\/>/);
   });
 
   it("moves the focus with the step", () => {
