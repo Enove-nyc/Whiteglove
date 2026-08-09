@@ -108,8 +108,7 @@ export function NothingPublishedYet({
 }) {
   return (
     <p className={`rounded-lg border border-dashed border-stone-400 bg-stone-50 px-4 py-3 text-sm leading-6 text-stone-700 ${className}`}>
-      <span className="font-semibold text-[var(--navy)]">Not published yet.</span> We have not finished checking {what},
-      and we would rather say so than print something nobody has confirmed.{" "}
+      <span className="font-semibold text-[var(--navy)]">Not checked yet.</span> We have not finished checking {what}.{" "}
       <Link
         href={askHref}
         className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

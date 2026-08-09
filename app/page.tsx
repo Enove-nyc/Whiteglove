@@ -424,11 +424,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 8. Heritage travel, compact ---------------------------------- */}
-      {/* It is its own section, and on this page it is one sentence and four
-          doors. The paragraph that was here explained what the heritage side
-          is to somebody who has read eight sections about holidays; the person
-          it is for knows the word and is looking for the link. */}
+      {/* ---- 8. Heritage travel -------------------------------------------
+          One sentence and four doors. The person this is for knows the word
+          and is looking for the link, not for an explanation. */}
       <section className="border-y border-[var(--gold-light)] bg-[var(--navy)] px-5 py-12 text-white sm:px-8 sm:py-14">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
@@ -439,11 +437,11 @@ export default async function Home() {
               by White Glove
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">
-              Heritage travel, in its own section.
+              Travelling to kevarim?
             </h2>
             <p className="mt-4 max-w-xl leading-7 text-slate-200">
-              {kevarim.length} kevarim, {guides.length} researched town guides, and cemetery records with the access
-              notes and the shomer where we hold one.
+              {kevarim.length} kevarim and {guides.length} researched town guides, with the addresses, the access notes,
+              and the shomer to ring where we have his number.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link

@@ -60,11 +60,11 @@ export default function SampleItineraryPage() {
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">What you receive</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            This is the itinerary, not a picture of one.
+            A week in Rome, as it arrives.
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            A whole week in Rome for a family of five, rendered by the same planner that builds a real trip — the same
-            day-by-day, the same driving times between stops, the same printable copy for the car.
+            A family of five, seven nights, and a Shabbos in the middle of it. This is the document you are handed at
+            the end: a day per page, the walking and driving worked out, and the kosher side answered for each day.
           </p>
           <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcf6e9] px-5 py-3 leading-7 text-stone-700">
             <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
@@ -75,8 +75,8 @@ export default function SampleItineraryPage() {
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="What is in it"
-          title="Six things an ordinary travel itinerary does not have."
-          description="Each of these is visible in the document below rather than described in it."
+          title="Six things an ordinary itinerary leaves you to work out."
+          description="You will find each of them in the document below."
         />
         <dl className="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
           {WHAT_IS_IN_IT.map(([term, detail]) => (
@@ -94,8 +94,8 @@ export default function SampleItineraryPage() {
             The document
           </h2>
           <p className="mt-3 max-w-3xl leading-7 text-stone-600">
-            Below is the printable itinerary exactly as it comes out — a cover, then a page per day. On a real trip it
-            also arrives in your account here, where you can move a day, drop a stop, and print it again.
+            A cover, then a page per day. It also arrives in your account here, where you can move a day, drop a stop,
+            and print it again.
           </p>
 
           {/* Framed rather than dropped straight onto the page, so it reads as
@@ -109,7 +109,7 @@ export default function SampleItineraryPage() {
           </div>
 
           <p className="mt-4 text-sm leading-6 text-stone-500">
-            Shown at document width. On a phone this panel scrolls sideways on its own — the page behind it does not.
+            Shown at the width it prints. On a phone, slide the panel sideways to read across it.
           </p>
         </div>
       </section>
@@ -118,17 +118,16 @@ export default function SampleItineraryPage() {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_.9fr] lg:items-start">
           <div>
             <SectionHeading
-              eyebrow="What is deliberately absent"
-              title="Everything on it that would have been a claim."
-              description="The places are records this site publishes with sources. The rest is left blank on purpose."
+              eyebrow="About this sample"
+              title="What is filled in on yours, and blank on this one."
+              description="The places are real — they are the Rome records this site publishes, with their sources. Nothing else here is booked."
             />
             <GloveList
               items={[
-                "No hotel named. A real itinerary names the property, the address and the confirmation number; this one says where they sit.",
-                "No airline and no flight number, for the same reason.",
-                "No price, anywhere. There is no price list on this site to stand behind one.",
-                "No opening hours. They change by season, and a stale one sends a family to a locked door.",
-                "No testimonial. There is not a real one to print, so there is not one here.",
+                "Your itinerary names the hotel, its address and the confirmation number. This one says which quarter it is in.",
+                "Yours names the airline and the flight number. This one gives the route and the times.",
+                "Yours carries what you paid. There are no prices anywhere on this site.",
+                "Neither carries opening hours — they change by season, and a stale one sends a family to a locked door.",
               ]}
               className="mt-8 space-y-3 leading-7 text-stone-600"
             />

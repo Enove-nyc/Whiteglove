@@ -75,7 +75,7 @@ describe("what to expect about price", () => {
 
   it("MARKS AN UNANSWERED LINE, so it cannot be read as an answer", () => {
     assert.match(PRICING, /PRICE_NOT_PUBLISHED/);
-    assert.match(PRICING, /Not published yet/);
+    assert.match(PRICING, /Depends on the trip/);
     // A word rather than a colour, since this is the one distinction on the
     // panel that changes what the sentence means.
     assert.match(PRICING, /const unanswered = answer === PRICE_NOT_PUBLISHED/);
@@ -141,7 +141,7 @@ describe("the sample itinerary", () => {
   it("SAYS IT IS A SAMPLE, on the page and in the data", () => {
     assert.match(SAMPLE_NOTICE, /sample, not a booking/i);
     assert.match(SAMPLE_PAGE, /SAMPLE_NOTICE/);
-    assert.match(SAMPLE_PAGE, /not a picture of one/i);
+    assert.match(SAMPLE_PAGE, /as it arrives/i);
   });
 
   it("shows the parts an ordinary itinerary gets wrong", () => {
@@ -172,9 +172,13 @@ describe("the sample itinerary", () => {
   it("INVENTS NO TESTIMONIAL to go with it", () => {
     const prose = SAMPLE_PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
     assert.doesNotMatch(prose, /“[^”]{20,}”\s*—\s*[A-Z]/);
-    // And it says out loud that there is not one, rather than being quietly
-    // silent about it.
-    assert.match(SAMPLE_PAGE, /No testimonial/);
+    // The page no longer announces the absence either. Saying "there is no
+    // testimonial here" is an argument with an objection the reader has not
+    // made, and it is the site talking about itself — see tests/site-voice.
+    // What it does instead is name what a real itinerary carries that this
+    // sample does not, which is information rather than a defence.
+    assert.match(SAMPLE_PAGE, /About this sample/);
+    assert.match(SAMPLE_PAGE, /Your itinerary names the hotel/);
   });
 
   it("says what is in it, and is reachable", () => {

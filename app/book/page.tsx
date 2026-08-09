@@ -72,11 +72,11 @@ const STEPS: Array<[string, string]> = [
 const NOT_YET: Array<[string, string]> = [
   [
     "Airport transfers",
-    "No transfer partner is connected yet. For now, the car search above covers most of it, and a destination page will tell you where a transfer is the better answer.",
+    "We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the better answer the destination page will say so.",
   ],
   [
     "Things to do",
-    "Tickets are not bookable here yet. What each attraction is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
+    "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
   ],
 ];
 
@@ -222,7 +222,7 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            Two things people ask for here that we cannot book yet, and what to do about each in the meantime.
+            Two things people ask us for that we do not book, and where to go for each of them.
           </p>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {NOT_YET.map(([heading, body]) => (

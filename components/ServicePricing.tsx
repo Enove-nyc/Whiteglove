@@ -65,13 +65,7 @@ export default function ServicePricing({ words }: { words: SiteWords }) {
       </div>
       <p className="mt-4 max-w-3xl leading-7 text-stone-600">
         Nothing is charged for asking, and you will be told what a piece of work costs before any of it starts.
-        {outstanding > 0 && (
-          <>
-            {" "}
-            {outstanding === 1 ? "One of these" : `${outstanding} of these`} we cannot answer on a page yet, and{" "}
-            {outstanding === 1 ? "it says so" : "they say so"} rather than carrying a figure we would not stand behind.
-          </>
-        )}
+        {outstanding > 0 && " Some of it depends on the trip, and we will answer those once we know what it is."}
       </p>
 
       <dl className="mt-8 grid gap-x-10 gap-y-6 lg:grid-cols-2">
@@ -85,10 +79,10 @@ export default function ServicePricing({ words }: { words: SiteWords }) {
                   // A word, not only a colour: this is the one distinction on
                   // the panel that changes what the sentence means.
                   <span className="mr-2 inline-flex items-center rounded-md border border-stone-400 bg-stone-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-stone-700">
-                    Not published yet
+                    Depends on the trip
                   </span>
                 )}
-                {unanswered ? "Ask when you write in and we will tell you before any work starts." : answer}
+                {unanswered ? "Ask when you write in, and we will tell you before any work starts." : answer}
               </dd>
             </div>
           );

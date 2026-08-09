@@ -78,7 +78,7 @@ describe("the order of the page", () => {
     const selector = at("What kind of trip are you planning?");
     const categories = at("Browse by the kind of holiday.");
     const destinations = at('id="destinations"');
-    const heritage = at("Heritage travel, in its own section.");
+    const heritage = at("Travelling to kevarim?");
     assert.ok(selector < heritage, "the heritage section comes before the trip-type selector");
     assert.ok(categories < heritage, "the heritage section comes before the vacation categories");
     assert.ok(destinations < heritage, "the heritage section comes before the vacation destinations");
@@ -92,7 +92,7 @@ describe("the order of the page", () => {
       'id="destinations"',
       "As much or as little of it as you want.",
       "The half of a trip nobody else plans for you.",
-      "Heritage travel, in its own section.",
+      "Travelling to kevarim?",
       "VERIFICATION_LINE}",
       "Where do you want to go?",
     ].map(at);

@@ -103,7 +103,7 @@ export default async function VacationIdeasPage({
         <SectionHeading
           eyebrow="Every destination"
           title="Browse the list."
-          description="Short on purpose. A destination appears here once the site holds enough real information — things to do, somewhere to stay, what the kosher and Shabbos situation is — to be useful about it."
+          description="Every one of these has the practical side answered: somewhere to stay, things to do, and what happens about food and Shabbos."
         />
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} />
@@ -117,9 +117,8 @@ export default async function VacationIdeasPage({
               Somewhere else in mind?
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              This list is what we can already stand behind. It is not the limit of where we will plan a trip to — tell
-              us where you are thinking of and we will find out what the kosher side of it looks like before you commit
-              to anything.
+              Tell us where you are thinking of, and we will find out what the kosher side of it looks like before you
+              commit to anything.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

@@ -74,8 +74,8 @@ export default function CarsPage() {
               Airport transfers
             </h2>
             <p className="mt-3 leading-7 text-stone-600">
-              Not bookable here yet — no transfer partner is connected, and we would rather say that than show a button
-              that does nothing.
+              We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the
+              better answer the destination page will say so.
             </p>
           </article>
           <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">

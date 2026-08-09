@@ -106,8 +106,8 @@ describe("what is not bookable is named", () => {
     // nothing.
     assert.match(PROSE, /Airport transfers/);
     assert.match(PROSE, /Things to do/);
-    assert.match(PROSE, /No transfer partner is connected yet/);
-    assert.match(PROSE, /not bookable here yet/i);
+    assert.match(PROSE, /We do not book transfers yet/);
+    assert.match(PROSE, /We do not sell tickets yet/);
     // And each points somewhere that does help.
     assert.match(PROSE, /href="\/cars"/);
     assert.match(PROSE, /href="\/things-to-do"/);
