@@ -2,6 +2,9 @@ import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { limitsFor, newTripProblem } from "@/lib/account-limits";
+import { getLimitOverrides } from "@/lib/account-limits-store";
+import { getPlan } from "@/lib/account-plan-store";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
 import { type Collaborator, type TripRole, may, readCollaborators, roleOf } from "@/lib/trip-roles";
 import { passwordProblem } from "@/lib/password-rules";
@@ -646,11 +649,35 @@ async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
   return ok ? summarize(trips, open?.id ?? activeId) : null;
 }
 
+
+/**
+ * Why this account may not start another trip, or null.
+ *
+ * ONE PLACE, called by all three doors into a new trip — starting one, adding a
+ * shared one, and copying one. The hard 25 that used to sit inline in each of
+ * them is still here as the ceiling nobody is meant to reach; the plan limit
+ * sits under it and is the one anybody will actually meet.
+ *
+ * FAILS OPEN. If the plan cannot be read the trip is allowed: refusing somebody
+ * their own trip because a store blinked is a worse outcome than one extra
+ * trip on a free account.
+ */
+async function cannotAddTrip(email: string, existing: number): Promise<string | null> {
+  if (existing >= 25) return "That is 25 trips already. Delete one first.";
+  try {
+    const plan = await getPlan(email);
+    return newTripProblem(plan, existing, limitsFor(plan, await getLimitOverrides()));
+  } catch {
+    return null;
+  }
+}
+
 export async function createTrip(email: string, name?: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const data = await getAccountData(email);
   const { trips } = withTrips(data);
-  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const refused = await cannotAddTrip(email, trips.length);
+  if (refused) return { ok: false as const, error: refused };
   const now = new Date().toISOString();
   const clean = name?.trim() || `Trip ${trips.length + 1}`;
   const trip: SavedTrip = {
@@ -683,7 +710,8 @@ export async function importTrip(email: string, itinerary: Itinerary, name?: str
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const data = await getAccountData(email);
   const { trips } = withTrips(data);
-  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const refused = await cannotAddTrip(email, trips.length);
+  if (refused) return { ok: false as const, error: refused };
 
   const now = new Date().toISOString();
   const clean = (name?.trim() || itinerary.title?.trim() || "Shared trip").slice(0, 80);
@@ -737,7 +765,8 @@ export async function duplicateTrip(email: string, id: string) {
   const { trips, activeId } = withTrips(data);
   const source = trips.find((t) => t.id === id);
   if (!source) return { ok: false as const, error: "That trip is gone." };
-  if (trips.length >= 25) return { ok: false as const, error: "That is 25 trips already. Delete one first." };
+  const refused = await cannotAddTrip(email, trips.length);
+  if (refused) return { ok: false as const, error: refused };
   const now = new Date().toISOString();
   const name = `${source.name} (copy)`;
   const copy: SavedTrip = {

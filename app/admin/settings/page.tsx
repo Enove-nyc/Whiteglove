@@ -44,6 +44,12 @@ export default async function AdminSettingsPage() {
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
+            href="/admin/settings/limits"
+            title="What a free account gets"
+            detail="How many trips a Traveler can plan, and how many printable copies a week."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
             href="/admin/settings/earnings"
             title="What the searches earn"
             detail="Route the flight, hotel and car searches through Travelpayouts so a booking made afterwards is credited to you."

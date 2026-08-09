@@ -9,6 +9,9 @@ import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
+import { describeLimits, limitsFor } from "@/lib/account-limits";
+import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
+import { getTrips } from "@/lib/account-store";
 import { isAdminAccount } from "@/lib/admin-roles";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
@@ -39,6 +42,12 @@ export default async function AccountPage() {
   const [plan, openRequest] = who
     ? await Promise.all([getPlan(who), openRequestFor(who)])
     : (["traveler", null] as const);
+  // What this plan limits, and where they stand against it. Worked out here
+  // rather than in the panel: saying when the next printable copy is due means
+  // reading the clock, and a component may not do that while it renders.
+  const limits = limitsFor(plan, await getLimitOverrides());
+  const trips = who ? await getTrips(who) : [];
+  const usageLine = await usageLineFor(who, limits, trips.length);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -104,7 +113,7 @@ export default async function AccountPage() {
         <AccountRoutePanel loggedIn={signedIn} />
         {(account || sessionEmail) && (
           <>
-            <AccountPlanPanel plan={plan} openRequest={openRequest} />
+            <AccountPlanPanel plan={plan} openRequest={openRequest} limitsLine={describeLimits(plan, limits)} usageLine={usageLine} />
             <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
           </>
         )}
