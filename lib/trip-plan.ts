@@ -1,0 +1,419 @@
+/**
+ * The few questions worth asking before the itinerary editor.
+ *
+ * WHY THERE IS A STEP BEFORE THE PLANNER. The planner is a good tool and it is
+ * a terrible front door. It opens on an empty trip with a name field, two
+ * dates, a day-start time, and eleven buttons — flights, hotels, stops, saved
+ * routes, borders, documents, sharing — and somebody who has decided they
+ * would like to go away this summer has no idea which of those to press first.
+ * The site's most capable feature was also the one most likely to be closed
+ * within ten seconds.
+ *
+ * So: three steps, in the order a person actually decides. What kind of trip.
+ * Then the shape of it — where, when, who, how fast. Then the only question
+ * that changes what happens next: do you want to plan this yourself, or would
+ * you like us to.
+ *
+ * EVERY QUESTION IS SKIPPABLE AND EVERY ONE HAS "I DON'T KNOW YET". That is
+ * not politeness; it is the point. The visitor this flow exists for is
+ * precisely the one who does not know where they are going — a form that
+ * demands a destination before it will help sends them away, and they were the
+ * customer.
+ *
+ * WHAT THE ANSWERS BECOME. Self-service: a seeded trip in the planner, so the
+ * name, the dates and the travelers are already in it. Personal service: a
+ * structured message to the planning-request form, WITH THE ANSWERS ALREADY IN
+ * IT. Making somebody type their dates twice — once to the wizard and once to
+ * the contact form — is the specific failure this file exists to prevent, and
+ * it is why the answers live in one shape that both ends read.
+ *
+ * All of it is pure. The browser storage and the React are in the component;
+ * what a well-formed set of answers is, and what it turns into, is here where
+ * it can be tested.
+ */
+
+import type { TripTheme } from "@/data/vacation-destinations";
+
+/* ---- step one: what are you planning ------------------------------------ */
+
+export type TripKind =
+  | "relaxing"
+  | "city-break"
+  | "family"
+  | "honeymoon"
+  | "group"
+  | "heritage"
+  | "unsure";
+
+export const TRIP_KINDS: ReadonlyArray<{
+  value: TripKind;
+  label: string;
+  blurb: string;
+  /** Which vacation category to recommend from. Absent for the two that have none. */
+  theme?: TripTheme;
+}> = [
+  { value: "relaxing", label: "Relaxing vacation", blurb: "Sea, mountains or a quiet hotel. Not much of a schedule.", theme: "beach" },
+  { value: "city-break", label: "City break", blurb: "A few days somewhere with streets, food and things to see.", theme: "city" },
+  { value: "family", label: "Family trip", blurb: "Enough for the children and enough for you.", theme: "family" },
+  { value: "honeymoon", label: "Honeymoon", blurb: "Private, unhurried, and arranged properly.", theme: "couples" },
+  { value: "group", label: "Group trip", blurb: "Several families, a school, a shul or a simcha." },
+  { value: "heritage", label: "Jewish heritage journey", blurb: "Kevarim, batei hachaim and the towns they are in." },
+  { value: "unsure", label: "Not sure yet", blurb: "That is a normal place to start. We will help you narrow it down." },
+] as const;
+
+export function tripKind(value: string): (typeof TRIP_KINDS)[number] | undefined {
+  return TRIP_KINDS.find((kind) => kind.value === value);
+}
+
+/* ---- step two: the shape of it ------------------------------------------ */
+
+export type DateMode = "exact" | "approximate" | "unknown";
+export type Pace = "slow" | "balanced" | "full" | "unknown";
+export type PlanningMethod = "myself" | "white-glove" | "unsure";
+
+export const PACES: ReadonlyArray<{ value: Pace; label: string; blurb: string }> = [
+  { value: "slow", label: "Slow", blurb: "One thing a day, and time to sit." },
+  { value: "balanced", label: "Balanced", blurb: "Something in the morning, something after." },
+  { value: "full", label: "Full", blurb: "See as much as the days will hold." },
+  { value: "unknown", label: "I don’t know yet", blurb: "We will suggest something and you can change it." },
+] as const;
+
+export const INTERESTS: readonly string[] = [
+  "Sightseeing and landmarks",
+  "Nature and walking",
+  "Beach and water",
+  "Museums and history",
+  "Jewish heritage",
+  "Food",
+  "Shopping",
+  "Doing very little",
+  "Things for children",
+] as const;
+
+/**
+ * Kosher requirements, in the terms people actually use for them.
+ *
+ * Written as standards rather than as a slider from "less" to "more", because
+ * that is not what these are — a family that keeps cholov yisroel is not
+ * "stricter" on a scale, they need a different shop. "I don't know yet" is
+ * here for somebody planning for guests, or a first trip abroad.
+ */
+export const KOSHER_REQUIREMENTS: readonly string[] = [
+  "Glatt / Beis Yosef meat",
+  "Cholov Yisroel",
+  "Pas Yisroel",
+  "Bishul Yisroel",
+  "We will bring our own food",
+  "A kitchen or kitchenette where we stay",
+  "I don’t know yet",
+] as const;
+
+export const SHABBOS_REQUIREMENTS: readonly string[] = [
+  "Walking distance to a minyan",
+  "Shabbos meals arranged",
+  "An eruv",
+  "Hotel Shabbos arrangements — keys, lift, urn",
+  "A mikvah within reach",
+  "We will manage on our own",
+  "I don’t know yet",
+] as const;
+
+export type TripPlanAnswers = {
+  kind: TripKind | "";
+  /** A place, or empty. Free text: somebody may type "somewhere warm". */
+  destination: string;
+  /** "Help me choose" — a real answer, not a missing one. */
+  helpMeChoose: boolean;
+  /**
+   * "" is nobody has said, which is not the same as "unknown".
+   *
+   * "I don't know yet" is a decision to tell us the dates are open, and it
+   * belongs in the request. An untouched question belongs nowhere — printing
+   * "Dates: not decided yet" for somebody who never reached that part of the
+   * form puts words in their mouth.
+   */
+  dateMode: DateMode | "";
+  /** Set when dateMode is "exact". */
+  startDate: string;
+  endDate: string;
+  /** Set when dateMode is "approximate": "July", "after Pesach", "the winter". */
+  approximateWhen: string;
+  /** Where they are flying from. */
+  from: string;
+  adults: string;
+  children: string;
+  /** Free text — "4, 7 and 11". Ages decide more than the number does. */
+  childAges: string;
+  pace: Pace;
+  interests: string[];
+  kosher: string[];
+  kosherNotes: string;
+  shabbos: string[];
+  method: PlanningMethod | "";
+  /** Only asked when the trip kind is a heritage journey. */
+  kevarim: string;
+  notes: string;
+};
+
+export function emptyAnswers(): TripPlanAnswers {
+  return {
+    kind: "",
+    destination: "",
+    helpMeChoose: false,
+    dateMode: "",
+    startDate: "",
+    endDate: "",
+    approximateWhen: "",
+    from: "",
+    adults: "",
+    children: "",
+    childAges: "",
+    pace: "unknown",
+    interests: [],
+    kosher: [],
+    kosherNotes: "",
+    shabbos: [],
+    method: "",
+    kevarim: "",
+    notes: "",
+  };
+}
+
+/** Where the answers are kept between the flow, the planner and the request form. */
+export const TRIP_PLAN_KEY = "whiteGloveTripPlan";
+
+/**
+ * Read what was stored, dropping anything that is not the right shape.
+ *
+ * Storage is an outside thing — another tab, an extension, or an older version
+ * of this code put it there — so it is filtered on the way in rather than
+ * trusted because we usually write it ourselves. Same rule as lib/drafts.ts.
+ */
+export function readAnswers(raw: string | null | undefined): TripPlanAnswers | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<TripPlanAnswers>;
+    if (!parsed || typeof parsed !== "object") return null;
+    const base = emptyAnswers();
+    const text = (value: unknown) => (typeof value === "string" ? value.slice(0, 400) : "");
+    const list = (value: unknown) =>
+      Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").slice(0, 20) : [];
+    return {
+      ...base,
+      kind: TRIP_KINDS.some((k) => k.value === parsed.kind) ? (parsed.kind as TripKind) : "",
+      destination: text(parsed.destination),
+      helpMeChoose: parsed.helpMeChoose === true,
+      dateMode: (["exact", "approximate", "unknown"] as const).find((m) => m === parsed.dateMode) ?? "",
+      startDate: /^\d{4}-\d{2}-\d{2}$/.test(String(parsed.startDate ?? "")) ? String(parsed.startDate) : "",
+      endDate: /^\d{4}-\d{2}-\d{2}$/.test(String(parsed.endDate ?? "")) ? String(parsed.endDate) : "",
+      approximateWhen: text(parsed.approximateWhen),
+      from: text(parsed.from),
+      adults: text(parsed.adults),
+      children: text(parsed.children),
+      childAges: text(parsed.childAges),
+      pace: (["slow", "balanced", "full", "unknown"] as const).find((p) => p === parsed.pace) ?? "unknown",
+      interests: list(parsed.interests),
+      kosher: list(parsed.kosher),
+      kosherNotes: text(parsed.kosherNotes),
+      shabbos: list(parsed.shabbos),
+      method: (["myself", "white-glove", "unsure"] as const).find((m) => m === parsed.method) ?? "",
+      kevarim: text(parsed.kevarim),
+      notes: text(parsed.notes),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Has anybody actually answered anything? Decides whether to offer them back. */
+export function hasAnswers(answers: TripPlanAnswers | null): boolean {
+  if (!answers) return false;
+  const base = emptyAnswers();
+  // Compared against the untouched set rather than tested for truthiness. Some
+  // fields do not start empty — `pace` starts at "unknown" — and a truthiness
+  // test would report a form nobody has touched as full of answers, which is
+  // how "filled in from your planning answers" appears over nothing.
+  return (Object.keys(base) as Array<keyof TripPlanAnswers>).some((key) => {
+    const value = answers[key];
+    const original = base[key];
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === "boolean") return value !== original;
+    return String(value ?? "").trim() !== String(original ?? "");
+  });
+}
+
+/* ---- the steps ----------------------------------------------------------- */
+
+export type StepId = "kind" | "shape" | "how";
+
+export const STEPS: ReadonlyArray<{ id: StepId; number: number; title: string; blurb: string }> = [
+  { id: "kind", number: 1, title: "What are you planning?", blurb: "One press. It only shapes what we suggest." },
+  { id: "shape", number: 2, title: "The shape of the trip", blurb: "Answer what you know. Skip the rest — nothing here is required." },
+  { id: "how", number: 3, title: "How would you like to plan it?", blurb: "This is the only answer that changes what happens next." },
+] as const;
+
+/**
+ * How far through they are, for the progress indicator.
+ *
+ * Counts ANSWERED QUESTIONS rather than completed steps, because step two is
+ * nine questions long and a bar that sits at "1 of 3" while somebody fills in
+ * eight fields tells them nothing about how much is left.
+ */
+export function progressOf(answers: TripPlanAnswers): { answered: number; total: number; percent: number } {
+  const questions: boolean[] = [
+    answers.kind !== "",
+    answers.destination.trim() !== "" || answers.helpMeChoose,
+    answers.dateMode === "unknown" || Boolean(answers.startDate || answers.approximateWhen.trim()),
+    answers.from.trim() !== "",
+    answers.adults.trim() !== "" || answers.children.trim() !== "",
+    answers.pace !== "unknown",
+    answers.interests.length > 0,
+    answers.kosher.length > 0,
+    answers.shabbos.length > 0,
+    answers.method !== "",
+  ];
+  const answered = questions.filter(Boolean).length;
+  return { answered, total: questions.length, percent: Math.round((answered / questions.length) * 100) };
+}
+
+/* ---- what the answers turn into ------------------------------------------ */
+
+function peopleLine(answers: TripPlanAnswers): string | null {
+  const adults = answers.adults.trim();
+  const children = answers.children.trim();
+  if (!adults && !children) return null;
+  const parts: string[] = [];
+  if (adults) parts.push(`${adults} adult${adults === "1" ? "" : "s"}`);
+  if (children) parts.push(`${children} child${children === "1" ? "" : "ren"}`);
+  const ages = answers.childAges.trim();
+  return parts.join(", ") + (ages ? ` (ages ${ages})` : "");
+}
+
+function datesLine(answers: TripPlanAnswers): string | null {
+  if (answers.dateMode === "exact" && answers.startDate) {
+    return answers.endDate ? `${answers.startDate} to ${answers.endDate}` : `from ${answers.startDate}`;
+  }
+  if (answers.dateMode === "approximate" && answers.approximateWhen.trim()) {
+    return `${answers.approximateWhen.trim()} (approximate)`;
+  }
+  // Only when they said so. An untouched question says nothing.
+  return answers.dateMode === "unknown" ? "Not decided yet" : null;
+}
+
+/**
+ * The answers as a list of labelled lines.
+ *
+ * One function, read by the review panel at the end of the flow AND by the
+ * message the planning request sends — so what somebody was shown and what we
+ * receive are the same words, and a question they skipped is simply absent
+ * from both rather than arriving as "undefined".
+ */
+export function summarize(answers: TripPlanAnswers): Array<[string, string]> {
+  const lines: Array<[string, string]> = [];
+  const kind = tripKind(answers.kind);
+  if (kind) lines.push(["Kind of trip", kind.label]);
+  if (answers.helpMeChoose) lines.push(["Destination", "Help me choose"]);
+  else if (answers.destination.trim()) lines.push(["Destination", answers.destination.trim()]);
+  const dates = datesLine(answers);
+  if (dates) lines.push(["Dates", dates]);
+  if (answers.from.trim()) lines.push(["Travelling from", answers.from.trim()]);
+  const people = peopleLine(answers);
+  if (people) lines.push(["Travelers", people]);
+  if (answers.pace !== "unknown") {
+    lines.push(["Pace", PACES.find((p) => p.value === answers.pace)?.label ?? answers.pace]);
+  }
+  if (answers.interests.length) lines.push(["Interests", answers.interests.join(", ")]);
+  if (answers.kosher.length) lines.push(["Kosher requirements", answers.kosher.join(", ")]);
+  if (answers.kosherNotes.trim()) lines.push(["Kosher notes", answers.kosherNotes.trim()]);
+  if (answers.shabbos.length) lines.push(["Shabbos", answers.shabbos.join(", ")]);
+  // Asked only for a heritage journey, and therefore only ever present for one.
+  if (answers.kevarim.trim()) lines.push(["Kevarim or towns", answers.kevarim.trim()]);
+  if (answers.notes.trim()) lines.push(["Anything else", answers.notes.trim()]);
+  return lines;
+}
+
+/**
+ * The message body a planning request carries.
+ *
+ * Plain text, because it lands in somebody's inbox and is read by a person.
+ * /api/contact caps the message at 4,000 characters; every field here is
+ * length-capped on the way in, so a full set of answers is nowhere near it.
+ */
+export function requestMessage(answers: TripPlanAnswers, extra = ""): string {
+  const lines = summarize(answers).map(([label, value]) => `${label}: ${value}`);
+  const tail = extra.trim();
+  return [lines.join("\n"), tail].filter(Boolean).join("\n\n").slice(0, 3800);
+}
+
+/** The subject line, so the inbox can tell one kind of request from another. */
+export function requestSubject(answers: TripPlanAnswers): string {
+  const kind = tripKind(answers.kind)?.label ?? "Trip";
+  const where = answers.helpMeChoose ? "destination undecided" : answers.destination.trim();
+  return where ? `${kind} — ${where}` : kind;
+}
+
+/**
+ * What the planner should open with.
+ *
+ * Only the things the planner has a field for. An approximate "July" is
+ * deliberately NOT turned into a start date: guessing the 1st of the month
+ * would put a wrong date in a trip and look like the traveler's own answer.
+ * It goes into the notes instead, where it reads as what it is.
+ */
+export type PlannerSeed = {
+  title: string;
+  startDate: string;
+  endDate: string;
+  travelers: Array<{ name: string; kind: "adult" | "child" }>;
+  notes: string;
+};
+
+export function plannerSeed(answers: TripPlanAnswers): PlannerSeed {
+  const where = answers.destination.trim();
+  const kind = tripKind(answers.kind);
+  const title = where ? `${where} trip` : kind && kind.value !== "unsure" ? kind.label : "My trip";
+
+  const adults = Math.max(0, Math.min(20, Number.parseInt(answers.adults, 10) || 0));
+  const children = Math.max(0, Math.min(20, Number.parseInt(answers.children, 10) || 0));
+  const travelers = [
+    ...Array.from({ length: adults }, () => ({ name: "", kind: "adult" as const })),
+    ...Array.from({ length: children }, () => ({ name: "", kind: "child" as const })),
+  ];
+
+  // Everything the planner has nowhere to put, written where the traveler will
+  // see it — rather than silently dropped, which is how somebody discovers
+  // their answers went nowhere.
+  // Everything except what the planner has its own field for. The dates are
+  // only excluded when they went INTO those fields — a rough "July" has
+  // nowhere else to live and must not be silently dropped.
+  const carried = summarize(answers).filter(
+    ([label]) => label !== "Travelers" && !(label === "Dates" && answers.dateMode === "exact"),
+  );
+  const notes = carried.length ? `From your planning answers:\n${carried.map(([l, v]) => `• ${l}: ${v}`).join("\n")}` : "";
+
+  return {
+    title,
+    startDate: answers.dateMode === "exact" ? answers.startDate : "",
+    endDate: answers.dateMode === "exact" ? answers.endDate : "",
+    travelers,
+    notes,
+  };
+}
+
+/**
+ * Which vacation category to recommend from, given what they said.
+ *
+ * Null for the two kinds that have no category behind them — a group trip and
+ * a heritage journey are not a filter on the vacation list, and pretending
+ * otherwise would show somebody planning a kevarim route a page of beaches.
+ */
+export function suggestedTheme(answers: TripPlanAnswers): TripTheme | null {
+  return tripKind(answers.kind)?.theme ?? null;
+}
+
+/** Where step three sends them. */
+export function nextStepHref(answers: TripPlanAnswers): string {
+  if (answers.method === "white-glove") return "/contact?from=plan";
+  if (answers.method === "myself") return "/itinerary?from=plan";
+  return "/vacation-ideas";
+}

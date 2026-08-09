@@ -241,10 +241,23 @@ export const editablePages: PageDef[] = [
     slug: "contact",
     href: "/contact",
     label: "Contact",
-    seoTitle: "Contact — White Glove Itineraries",
-    seoDescription: "Get in touch with White Glove Itineraries about kosher travel, kevarim, and trip planning.",
+    seoTitle: "Tell us about the trip you want to take — White Glove Itineraries",
+    seoDescription:
+      "Vacations, family trips, honeymoons, group travel and Jewish heritage journeys. Tell us what you have in mind — or ask us to help you choose.",
     blocks: [
-    { id: "contact-hero", kind: "hero", eyebrow: "White Glove Itineraries", heading: "Contact", intro: "Tell us about your trip — kevarim, dates, and kosher needs — and we'll be in touch." },
+      {
+        id: "contact-hero",
+        kind: "hero",
+        eyebrow: "Start a conversation",
+        // Was: "Tell us about your trip — kevarim, dates, and kosher needs".
+        // That sentence asked every visitor, including a family asking about a
+        // week in the Dolomites, which graves they wanted to visit. The
+        // kevarim question is still asked — of somebody who has said they are
+        // planning a heritage journey, and of nobody else.
+        heading: "Tell us about the trip you want to take.",
+        intro:
+          "Wherever you are going, and whether or not you have decided yet. Answer what you know, leave the rest, and we will come back to you.",
+      },
     ],
   },
   {

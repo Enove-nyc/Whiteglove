@@ -66,6 +66,7 @@ export function isPrivatePath(path: string): boolean {
  */
 const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFrequency: ChangeFrequency }> = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
+  { path: "/plan", priority: 0.9, changeFrequency: "monthly" },
   { path: "/stops", priority: 0.9, changeFrequency: "weekly" },
   { path: "/cemeteries", priority: 0.9, changeFrequency: "weekly" },
   { path: "/tzaddikim", priority: 0.9, changeFrequency: "weekly" },
