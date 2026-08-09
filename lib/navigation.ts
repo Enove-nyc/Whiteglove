@@ -139,6 +139,7 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     title: "Services & booking",
     links: [
       PRIMARY_NAV[3],
+      { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
       { label: "Flights, hotels & cars", href: "/book", description: "Search and book your own travel, with cash or with points." },
       { label: "Honeymoon", href: "/honeymoon", description: "A quiet, well-planned kosher honeymoon." },
       { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },

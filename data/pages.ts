@@ -38,14 +38,17 @@ export const editablePages: PageDef[] = [
         kind: "hero",
         eyebrow: "Travel services",
         heading: "What we actually do for you.",
+        // The sentence, and nothing after it. The clause explaining WHY the
+        // page mentions price was arguing with an objection the reader had not
+        // made — and the page proves the point by doing it, six times over.
         intro:
-          "Six services. Each one below says who it is for, what is included, how the process works, what you end up holding at the end, and what to expect about price — because a services page that never mentions cost reads as one with something to hide.",
+          "See who each service is for, what it includes, how it works, what you receive, and what to expect about pricing.",
       },
       {
         id: "services-note",
         kind: "note",
         body:
-          "Everything on this site is yours to use for free: the planner, the route timing, the kosher lookups, the whole heritage database. The services below are for when you would rather somebody else did the work.",
+          "Everything on this site is free to use — the planner, the route timing, the kosher lookups, the heritage database. The services below are for when you would rather somebody else did the work.",
       },
     ],
   },

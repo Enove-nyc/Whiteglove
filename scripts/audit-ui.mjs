@@ -73,6 +73,7 @@ const PAGES = [
   ["/kosher-travel", "kosher travel hub"],
   ["/heritage", "heritage landing"],
   ["/services", "services"],
+  ["/sample-itinerary", "sample itinerary"],
   ["/contact", "planning request"],
   ["/verification", "verification method"],
   ["/stops", "destination directory"],

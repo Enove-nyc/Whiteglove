@@ -18,13 +18,39 @@ import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, day
 
 const INK = "#16293a";
 const MAROON = "#6f2b3e";
+/**
+ * Two golds, for the same reason the rest of the site has two.
+ *
+ * `GOLD` is a rule and a border. `GOLD_INK` is the one that carries WORDS —
+ * every eyebrow, every "Days / Flights / Where you sleep" label, every date
+ * over a day. The first was doing both jobs at 3.21:1 against the paper, which
+ * is under the 4.5:1 small text needs, and it went unmeasured for as long as
+ * this document was only ever printed. Putting it on /sample-itinerary put it
+ * in front of `npm run audit:ui`, which found it at every width at once.
+ *
+ * It was worth fixing rather than exempting: a printed itinerary is read in a
+ * car, at dusk, by somebody who is already lost. --gold-ink is the site's own
+ * answer to exactly this and measures 4.79:1 at worst.
+ */
 const GOLD = "#b0894f";
+const GOLD_INK = "#7a602c";
 const GOLD_RULE = "#e3d9cc";
 const BODY = "#545454";
 
 export default function PrintableItinerary({
   itin,
   burials,
+  /**
+   * Shown inside another page rather than being the page.
+   *
+   * /sample-itinerary frames this document under its own heading, and two h1s
+   * on one page is not a style question — it is the outline a screen reader
+   * navigates by, and `npm run audit:ui` reports it as a finding. Embedded, the
+   * trip title becomes an h2 and the day titles h3, so the document's own
+   * outline nests under the page's instead of competing with it. Printed on its
+   * own, nothing changes.
+   */
+  embedded = false,
   /** Whose trip it is, when somebody else is printing it. */
   sharedBy,
   /**
@@ -35,9 +61,12 @@ export default function PrintableItinerary({
 }: {
   itin: Itinerary;
   burials: Record<string, string[]>;
+  embedded?: boolean;
   sharedBy?: string;
   assume?: PlannerAssumptions;
 }) {
+  const CoverHeading = embedded ? "h2" : "h1";
+  const DayHeading = embedded ? "h3" : "h2";
   // No border cost, deliberately, and unchanged by the planning figures above.
   // A printed itinerary is made once and read weeks later; a queue somebody
   // measured at the crossing in June is not a fact about the morning this page
@@ -74,7 +103,12 @@ export default function PrintableItinerary({
           Use your browser&apos;s <strong>Print → Save as PDF</strong>. Choose <strong>Letter</strong>, margins{" "}
           <strong>None</strong>, and tick <strong>Background graphics</strong>.
         </p>
-        <button type="button" onClick={() => window.print()}>Print / Save as PDF</button>
+        {/* 44px, like every other control on this site. It was 40 — invisible
+            while this document only ever existed to be printed, and a finding
+            at every phone width the moment it appeared on a public page. */}
+        <button type="button" className="wg-print-button" onClick={() => window.print()}>
+          Print / Save as PDF
+        </button>
       </div>
 
       {/* ---------------- Cover ---------------- */}
@@ -87,7 +121,7 @@ export default function PrintableItinerary({
         <div className="wg-cover-inner">
           <Image src="/logo.png" alt="White Glove Itineraries" width={480} height={320} className="wg-crest" priority />
           <p className="wg-cover-eyebrow">A White Glove Itineraries journey</p>
-          <h1 className="wg-cover-title">{title}</h1>
+          <CoverHeading className="wg-cover-title">{title}</CoverHeading>
           <div className="wg-cover-rule" />
           {summary.length > 0 && (
             <ul className="wg-cover-summary">
@@ -121,13 +155,13 @@ export default function PrintableItinerary({
             <div className="wg-titleblock">
               <div>
                 <p className="wg-eyebrow">{formatDateLong(day.date)}</p>
-                <h2
+                <DayHeading
                   className="wg-daytitle"
                   dir={day.activities.some((activity) => activity.yiddishName) ? "rtl" : undefined}
                   lang={day.activities.some((activity) => activity.yiddishName) ? "yi" : undefined}
                 >
                   {dayRouteTitle(day)}
-                </h2>
+                </DayHeading>
                 {dayRouteEnglishTitle(day) && <p className="wg-daytitle-en">{dayRouteEnglishTitle(day)}</p>}
               </div>
               {dayCountries(day) && <p className="wg-daymeta">{dayCountries(day)}</p>}
@@ -193,7 +227,8 @@ const css = `
   }
   .wg-toolbar button {
     border: 1px solid ${INK}; background: ${INK}; color: #fff; padding: 10px 18px;
-    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+    min-height: 44px; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; cursor: pointer;
   }
 
   .wg-notes {
@@ -218,7 +253,7 @@ const css = `
   .wg-crest { width: 2.1in; height: auto; object-fit: contain; }
   .wg-cover-eyebrow {
     margin-top: 26px; font-size: 9px; font-weight: 700; letter-spacing: .26em;
-    text-transform: uppercase; color: ${GOLD};
+    text-transform: uppercase; color: ${GOLD_INK};
   }
   .wg-cover-title {
     margin-top: 18px; font-family: Georgia, "Times New Roman", serif; font-weight: 700;
@@ -238,7 +273,7 @@ const css = `
   }
   .wg-sum-label {
     font-size: 8.5px; font-weight: 700; letter-spacing: .16em;
-    text-transform: uppercase; color: ${GOLD};
+    text-transform: uppercase; color: ${GOLD_INK};
   }
   .wg-sum-value { font-size: 11.5px; line-height: 1.5; color: ${BODY}; }
   .wg-cover-foot {
@@ -247,7 +282,7 @@ const css = `
   }
   .wg-cover-site {
     display: block; margin-top: 6px; font-size: 10px; font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase; color: ${GOLD};
+    letter-spacing: .14em; text-transform: uppercase; color: ${GOLD_INK};
   }
 
   /* ---- day header ---- */
@@ -257,7 +292,7 @@ const css = `
   .wg-head-day { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${MAROON}; }
 
   .wg-titleblock { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-top: 30px; }
-  .wg-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: ${GOLD}; }
+  .wg-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: ${GOLD_INK}; }
   .wg-daytitle {
     margin-top: 12px; font-family: Georgia, "Times New Roman", serif; font-weight: 700;
     font-size: 31px; line-height: 1.14; color: ${INK}; max-width: 5.4in;
@@ -265,7 +300,7 @@ const css = `
   .wg-daytitle-en { margin-top: 5px; font-size: 10px; line-height: 1.4; color: ${BODY}; }
   .wg-daymeta {
     flex-shrink: 0; padding-top: 2px; font-size: 9px; letter-spacing: .16em;
-    text-transform: uppercase; color: ${GOLD}; text-align: right; max-width: 2in;
+    text-transform: uppercase; color: ${GOLD_INK}; text-align: right; max-width: 2in;
   }
 
   .wg-bar {
@@ -283,7 +318,7 @@ const css = `
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
   .wg-entry { display: block; }
-  .wg-kind { display: block; font-size: 8px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${GOLD}; }
+  .wg-kind { display: block; font-size: 8px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${GOLD_INK}; }
   .wg-what { display: block; margin-top: 3px; font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 15.5px; color: ${INK}; }
   .wg-secondary { display: block; margin-top: 2px; font-size: 9.5px; line-height: 1.4; color: ${BODY}; }
   .wg-detail { display: block; margin-top: 3px; font-size: 10.5px; line-height: 1.5; color: ${BODY}; }

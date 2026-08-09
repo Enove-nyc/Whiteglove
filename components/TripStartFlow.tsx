@@ -508,7 +508,7 @@ export default function TripStartFlow({
                     Personalize my recommendations
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">
-                    Optional. Pace, interests, what you keep, Shabbos and any access needs — it makes what we suggest
+                    Optional. Pace, interests, your kosher standards, Shabbos and any access needs — it makes what we suggest
                     fit rather than being generic.
                   </span>
                 </span>

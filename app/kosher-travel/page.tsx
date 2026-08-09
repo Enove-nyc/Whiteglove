@@ -227,7 +227,7 @@ export default function KosherTravelPage() {
               Or let us work the kosher side out for you.
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Tell us where you are going and what you keep, and we will tell you what is actually available there —
+              Tell us where you are going and your kosher standards and religious needs, and we will tell you what is actually available there —
               before you book anything.
             </p>
           </div>

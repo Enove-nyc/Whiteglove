@@ -44,6 +44,7 @@ const columnsFor = (
       { label: "Vacation ideas", href: "/vacation-ideas" },
       { label: "Itinerary planner", href: "/itinerary" },
       { label: "Travel services", href: "/services" },
+      { label: "A sample itinerary", href: "/sample-itinerary" },
       { label: booking.label, href: booking.href },
     ],
   },

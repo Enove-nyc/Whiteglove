@@ -57,7 +57,7 @@ export const services: readonly Service[] = [
     who: "You want a holiday rather than a project, and you would rather not spend six evenings working out whether a town has anything to eat.",
     included: [
       "A conversation about what you want from the trip, not a form",
-      "Destination options that suit the dates, the ages and what you keep",
+      "Destination options that suit the dates, the ages and your kosher standards and religious needs",
       "The kosher side worked out before anything is booked — food, Shabbos, minyanim, mikvaos",
       "A day-by-day outline you can change",
       "Somewhere to stay that suits the walk you are willing to do",
@@ -75,7 +75,8 @@ export const services: readonly Service[] = [
     ],
     action: { label: "Tell us about the trip", href: "/plan" },
     secondary: { label: "Or plan it yourself, free", href: "/itinerary" },
-    pricing: "Quoted once we understand the trip. Nothing is charged for asking, and we will say what it costs before any work starts.",
+    pricing:
+      "Quoted once we understand the trip, and told to you before any work starts. What moves the number, how long a quote takes and whether changes cost extra are answered under “What to expect about price” below.",
   },
   {
     id: "itinerary-design",
@@ -101,7 +102,8 @@ export const services: readonly Service[] = [
     ],
     action: { label: "Ask us to design the route", href: "/contact" },
     secondary: { label: "The planner does this for free", href: "/itinerary" },
-    pricing: "The planner does the routing and the timing at no cost. A designed route by us is quoted with the planning.",
+    pricing:
+      "The planner does the routing and the timing at no cost, for anybody, without an account. A route designed by us is quoted with the planning.",
   },
   {
     id: "flights-hotels-transport",
@@ -146,7 +148,7 @@ export const services: readonly Service[] = [
       "Provisioning — what to bring, and the last town with a shop that has it",
     ],
     process: [
-      "Tell us what you keep. There is a list on the planning form and none of it is a test.",
+      "Tell us your kosher standards and religious needs. There is a list on the planning form and none of it is a test.",
       "We check what is available, and say plainly where the answer is 'not much'.",
       "We arrange what can be arranged and tell you what you will need to bring.",
     ],
