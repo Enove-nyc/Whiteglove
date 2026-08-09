@@ -8,7 +8,8 @@ import DestinationSearch from "@/components/DestinationSearch";
 import MembersOnlyLink from "@/components/MembersOnlyLink";
 import SitePromotions from "@/components/SitePromotions";
 import { GATED_FEATURES } from "@/lib/members-only";
-import { isCurrent, MENU_GROUPS, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
+import { isCurrent, menuGroupsFor, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
+import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
  * The header.
@@ -39,6 +40,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  // "Flights, hotels & cars" goes to the search, or to the assistance page
+  // when the owner has the search locked. Resolved in the root layout; never
+  // a bare `/book` typed in here. See lib/booking-access.ts.
+  const menuGroups = menuGroupsFor(useBookingLink());
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -209,7 +214,7 @@ export default function Navbar() {
         {menuOpen && (
           <div id="site-menu" className="absolute inset-x-0 top-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
             <div className="mx-auto grid max-h-[calc(100vh-5rem)] max-w-7xl gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-3 md:py-9">
-              {MENU_GROUPS.map((group) => (
+              {menuGroups.map((group) => (
                 <section key={group.title}>
                   <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</h2>
                   <ul className="mt-3 space-y-1">

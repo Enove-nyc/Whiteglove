@@ -162,5 +162,25 @@ export async function setLockedPaths(paths: string[]) {
   if (!analyticsIsConfigured()) return false;
   const clean = [...new Set(paths.map((p) => p.trim()).filter(Boolean))];
   const response = await redis(`set/white-glove:locked-paths/${encodeURIComponent(JSON.stringify(clean))}`);
-  return Boolean(response);
+  if (!response) return false;
+
+  // Locking or unlocking a section changes where every public "Flights, hotels
+  // & cars" link on the site points (lib/booking-access.ts). Both halves are
+  // needed and for the same reasons as the words store: the tag throws away the
+  // stored answer, and the layout revalidation throws away the prerendered HTML
+  // that already has the old link baked into its footer.
+  //
+  // Imported here rather than at the top of the file: this module is also read
+  // by the middleware's neighbours and by scripts, and next/cache is only
+  // callable inside a request.
+  try {
+    const { revalidatePath, updateTag } = await import("next/cache");
+    const { BOOKING_ACCESS_TAG } = await import("@/lib/booking-access-store");
+    updateTag(BOOKING_ACCESS_TAG);
+    revalidatePath("/", "layout");
+  } catch {
+    // Called from somewhere with no request behind it. The hourly backstop in
+    // lib/booking-access-store.ts still picks the change up.
+  }
+  return true;
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useBookingLink } from "@/components/BookingLinkProvider";
+import { bookingHref } from "@/lib/booking-access";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
 import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
@@ -103,6 +105,7 @@ export default function DestinationActions({
   airports?: NearbyAirport[];
 }) {
   const signedIn = useSignedIn();
+  const booking = useBookingLink();
   const route = useSavedPlaces(ROUTE_KEY);
   const favorites = useSavedPlaces(FAVORITES_KEY);
   const favorite = favorites.some((item) => item.id === place.id);
@@ -300,7 +303,7 @@ export default function DestinationActions({
                   <a href={airport.directionsUrl} target="_blank" rel="noreferrer" className={quiet}>
                     Driving time
                   </a>
-                  <Link href={`/book?type=flights&to=${encodeURIComponent(airport.code)}`} className={quiet}>
+                  <Link href={bookingHref(booking, { type: "flights", to: airport.code })} className={quiet}>
                     Find flights
                   </Link>
                 </span>

@@ -1,5 +1,6 @@
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { readBookingLink } from "@/lib/booking-access-store";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
@@ -23,6 +24,8 @@ const TONE: Record<string, string> = {
 };
 
 export default async function TravelGuidePage() {
+  // Where the booking call to action may point today. See lib/booking-access.ts.
+  const booking = await readBookingLink();
   const feed = await fetchAdvisories();
   const rows = COUNTRY_DOCS.map((c) => ({
     ...c,
@@ -160,7 +163,7 @@ export default async function TravelGuidePage() {
           ))}
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/book" className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">Book flights, hotels &amp; cars →</Link>
+          <Link href={booking.href} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)]">{booking.label} →</Link>
           <Link href="/itinerary" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Open the planner →</Link>
         </div>
         <p className="mt-8 text-xs leading-5 text-stone-500">

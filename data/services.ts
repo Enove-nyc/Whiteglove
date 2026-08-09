@@ -35,6 +35,15 @@ export type Service = {
   /** A second way in, where one makes sense. */
   secondary?: { label: string; href: string };
   /**
+   * This service's next action is the self-service booking search.
+   *
+   * The search can be locked from the admin, so the catalogue resolves the
+   * button and the first process step through lib/booking-access.ts instead of
+   * printing what is written above. `action` here is the fallback, and it must
+   * be a page that is not the search.
+   */
+  usesBookingSearch?: boolean;
+  /**
    * What to expect about price. Never a number this site cannot stand behind.
    */
   pricing: string;
@@ -105,13 +114,21 @@ export const services: readonly Service[] = [
       "Hotels chosen for where they stand, not only for their price",
       "Airport transfers and drivers where the destination needs them",
     ],
+    // The first step and the button are NOT written here. This service's next
+    // action is the self-service search, and the owner can close that path from
+    // the admin — so the catalogue resolves both through lib/booking-access.ts.
+    // What used to be written here was "Search here and book it yourself —
+    // everything on the booking page is yours to use now", printed on a public
+    // page while the booking page was behind an access code. Both halves of
+    // that sentence were false at once, which is what a hardcoded claim about
+    // a setting somebody else controls eventually becomes.
+    usesBookingSearch: true,
     process: [
-      "Search here and book it yourself — everything on the booking page is yours to use now.",
-      "Or tell us the route and we will look, and say what we would do.",
+      "Tell us the route and we will look, and say what we would do.",
       "Whatever is booked goes into the trip alongside everything else, with the confirmation numbers.",
     ],
     receive: ["Bookings in your own name", "The confirmations kept with the rest of the itinerary"],
-    action: { label: "Search flights, hotels and cars", href: "/book" },
+    action: { label: "Ask us about flights and hotels", href: "/flight-booking-assistance" },
     secondary: { label: "Ask a person to look instead", href: "/flight-booking-assistance" },
     pricing:
       "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is not open yet — the page says so rather than taking a request nobody is there to answer.",

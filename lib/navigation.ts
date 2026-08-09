@@ -41,6 +41,8 @@
  *      "book" — the thing this business does is plan the trip.
  */
 
+import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
+
 export type NavItem = {
   label: string;
   href: string;
@@ -155,6 +157,25 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
 
 /** Everything the bar shows, for the header to hide from the panel at desktop. */
 export const PRIMARY_HREFS: ReadonlySet<string> = new Set(PRIMARY_NAV.map((item) => item.href));
+
+/**
+ * The menu, with the booking entry pointed wherever it is allowed to go today.
+ *
+ * Rule 3 above kept `/book` out of the BAR because it can be behind an access
+ * code. The menu panel kept it, and the same objection applied there — a
+ * visitor opening the menu and pressing "Flights, hotels & cars" met the
+ * password box just as squarely. The entry stays (removing it would hide a
+ * working feature from everybody to protect against a setting most deployments
+ * do not have) and its target is resolved instead. See lib/booking-access.ts.
+ */
+export function menuGroupsFor(booking: BookingLink): typeof MENU_GROUPS {
+  return MENU_GROUPS.map((group) => ({
+    ...group,
+    links: group.links.map((item) =>
+      item.href === BOOKING_SEARCH_PATH ? { ...item, href: booking.href, description: booking.description } : item,
+    ),
+  }));
+}
 
 /**
  * Is this navigation item the page we are on?

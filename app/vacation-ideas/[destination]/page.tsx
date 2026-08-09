@@ -21,6 +21,7 @@ import {
   type VacationFacts,
 } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
+import { readBookingLink } from "@/lib/booking-access-store";
 import type { VacationDestination } from "@/data/vacation-destinations";
 
 // Per request, like every other page that reads through lib/attractions-view.ts
@@ -178,7 +179,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
   const destination = getVacationDestination(slug);
   if (!destination) notFound();
 
-  const sources = await loadVacationSources();
+  const [sources, booking] = await Promise.all([loadVacationSources(), readBookingLink()]);
   const facts = factsFor(destination, sources);
   const kosher = kosherAvailability(destination, facts);
   const shabbos = shabbosPracticality(destination, facts);
@@ -489,12 +490,18 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
         <Section id="getting-around" title="Getting there and around">
           <p className="max-w-3xl text-lg leading-8 text-stone-600">{destination.transport}</p>
+          {/* Resolved, never a typed `/book`: the owner can have that path
+              behind an access code, and this is a public page. When the search
+              is closed the same link offers the thing that is actually
+              available — us looking — rather than a password box. */}
           <p className="mt-5 text-sm">
             <Link
-              href="/book"
+              href={booking.href}
               className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
-              Search flights, hotels and cars for these dates
+              {booking.searchIsPublic
+                ? "Search flights, hotels and cars for these dates"
+                : `Ask us about flights and hotels to ${destination.name}`}
             </Link>
           </p>
         </Section>

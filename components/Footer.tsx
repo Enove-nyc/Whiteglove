@@ -1,4 +1,6 @@
 import { readWords } from "@/lib/site-words-store";
+import { readBookingLink } from "@/lib/booking-access-store";
+import type { BookingLink } from "@/lib/booking-access";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,7 +26,17 @@ import Link from "next/link";
  * screen reader reading שתוליכנו לשלום with English phonetics is not a near
  * miss — it is noise. Only the Hebrew is marked; the English beside it is not.
  */
-const columns: Array<{ title: string; links: Array<{ label: string; hebrew?: string; href: string }> }> = [
+/**
+ * The columns, given where the booking link is allowed to go today.
+ *
+ * A function rather than a constant because of that one link. It used to say
+ * "Flights, hotels & cars" and point at `/book` on every page of the site,
+ * including while the owner had that path locked — so the footer of a public
+ * page sent people to an access-code box. See lib/booking-access.ts.
+ */
+const columnsFor = (
+  booking: BookingLink,
+): Array<{ title: string; links: Array<{ label: string; hebrew?: string; href: string }> }> => [
   {
     title: "Plan a trip",
     links: [
@@ -32,7 +44,7 @@ const columns: Array<{ title: string; links: Array<{ label: string; hebrew?: str
       { label: "Vacation ideas", href: "/vacation-ideas" },
       { label: "Itinerary planner", href: "/itinerary" },
       { label: "Travel services", href: "/services" },
-      { label: "Flights, hotels & cars", href: "/book" },
+      { label: booking.label, href: booking.href },
     ],
   },
   {
@@ -70,7 +82,8 @@ const utilityLinks = [
 export default async function Footer() {
   // Cached and tagged, so putting these two sentences in the owner's hands did
   // not turn three hundred prerendered pages dynamic. See lib/site-words-store.ts.
-  const words = await readWords();
+  const [words, booking] = await Promise.all([readWords(), readBookingLink()]);
+  const columns = columnsFor(booking);
   return (
     <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#f7f3eb]">
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">

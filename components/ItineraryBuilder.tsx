@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useBookingLink } from "@/components/BookingLinkProvider";
+import { bookingHref } from "@/lib/booking-access";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
@@ -2111,6 +2113,7 @@ function TravelersPanel({
 function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   const people = travelersOf(itin);
   const flights = itin.flights.length;
+  const booking = useBookingLink();
 
   const params = new URLSearchParams();
   if (itin.startDate) params.set("depart", itin.startDate);
@@ -2119,7 +2122,10 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   const first = itin.flights[0];
   if (first?.from) params.set("from", first.from);
   if (first?.to) params.set("to", first.to);
-  const href = params.toString() ? `/book?${params.toString()}` : "/book";
+  // Never a bare `/book`: the owner can have that path behind an access code,
+  // and a planner button that opens a password box is the same broken journey
+  // as the one in the footer. See lib/booking-access.ts.
+  const href = bookingHref(booking, Object.fromEntries(params));
 
   return (
     <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">

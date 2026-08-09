@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
+import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import IdleLogout from "@/components/IdleLogout";
+import { readBookingLink } from "@/lib/booking-access-store";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
@@ -69,7 +71,10 @@ export default async function RootLayout({
   // Read here rather than in the notice, so the words come from the settings
   // on the server and the browser is only deciding whether this visitor has
   // already seen them.
-  const betaNotice = await getBetaNotice();
+  // Whether the self-service booking search is reachable by the public. Read
+  // once here — cached, so it costs the prerendered pages nothing — and handed
+  // to the client components that would otherwise have `/book` typed into them.
+  const [betaNotice, booking] = await Promise.all([getBetaNotice(), readBookingLink()]);
   return (
     <html
       lang="en"
@@ -92,7 +97,7 @@ export default async function RootLayout({
             Without it the browser scrolls to the anchor and leaves the focus
             behind, and the next Tab starts at the header again. */}
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
-          {children}
+          <BookingLinkProvider value={booking}>{children}</BookingLinkProvider>
         </div>
       </body>
     </html>

@@ -127,7 +127,10 @@ describe("the header renders the list rather than its own copy", () => {
     // Hand-written copies are how the bar and the menu came to disagree about
     // what the site contains.
     assert.match(NAVBAR, /PRIMARY_NAV\.map/);
-    assert.match(NAVBAR, /MENU_GROUPS\.map/);
+    // menuGroupsFor(), not MENU_GROUPS, since the booking entry's target
+    // depends on whether the owner has that path locked. Still the shared
+    // list — the header does not keep its own copy of it.
+    assert.match(NAVBAR, /menuGroupsFor\(/);
     assert.match(NAVBAR, /from "@\/lib\/navigation"/);
   });
 
@@ -167,8 +170,17 @@ describe("the footer says the vacation-neutral thing", () => {
   });
 
   it("still reaches everything the old footer did", () => {
-    for (const href of ["/stops", "/cemeteries", "/directory", "/book", "/services", "/contact", "/submit", "/login", "/privacy", "/terms", "/admin"]) {
+    for (const href of ["/stops", "/cemeteries", "/directory", "/services", "/contact", "/submit", "/login", "/privacy", "/terms", "/admin"]) {
       assert.ok(FOOTER.includes(`"${href}"`), `${href} lost its way out of the footer`);
     }
+  });
+
+  it("still offers flights and hotels, without typing the address in", () => {
+    // It used to be `href: "/book"`, which sent people to an access-code box
+    // whenever the owner had that section locked. The entry is still there and
+    // its target is resolved per render. See lib/booking-access.ts.
+    assert.match(FOOTER, /booking\.href/);
+    assert.match(FOOTER, /readBookingLink/);
+    assert.doesNotMatch(FOOTER, /"\/book"/);
   });
 });
