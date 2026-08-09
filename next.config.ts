@@ -28,15 +28,25 @@ const nextConfig: NextConfig = {
       { source: "/booking/review", destination: "/book", permanent: true },
       { source: "/book/review", destination: "/book", permanent: true },
       // "Getaways" was one editable hero block and nothing under it, on a
-      // page whose name told a vacation customer very little. It is
-      // /vacation-ideas now — a real hub over the destinations the site holds
-      // data for — and the old address carries its links and its ranking
-      // across rather than competing with the new one.
+      // page whose name told a vacation customer very little. It became
+      // /vacation-ideas and is /destinations now — a real hub over the
+      // destinations the site holds data for — and both old addresses carry
+      // their links and their ranking across rather than competing with it.
       //
       // The CMS still knows the page by the slug "getaways", deliberately:
       // renaming the key would have thrown away whatever the owner has
-      // already written there, for a cosmetic tidy. See app/vacation-ideas.
-      { source: "/getaways", destination: "/vacation-ideas", permanent: true },
+      // already written there, for a cosmetic tidy. See app/destinations.
+      { source: "/getaways", destination: "/destinations", permanent: true },
+      // The vacation hub took the word "Destinations" in the navigation, so it
+      // took the address to match. A visitor pressing an item called
+      // Destinations and landing on /vacation-ideas is a small lie about what
+      // the site is, and the two names would have to be explained for ever.
+      //
+      // These two are safe as wildcards because nothing else lives under
+      // /vacation-ideas. The heritage half of the same rename is NOT a
+      // wildcard and cannot be — see lib/route-migration.ts and middleware.ts.
+      { source: "/vacation-ideas", destination: "/destinations", permanent: true },
+      { source: "/vacation-ideas/:slug", destination: "/destinations/:slug", permanent: true },
     ];
   },
 };

@@ -59,7 +59,7 @@ const questions: Array<{
   },
   {
     title: "What happens on Shabbos?",
-    href: "/vacation-ideas",
+    href: "/destinations",
     cta: "See Shabbos practicality by destination",
     body: "Every vacation destination on the site says whether Shabbos works on foot there, and what has to be arranged if it does not.",
     detail:

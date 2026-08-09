@@ -26,6 +26,7 @@ import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { vacationDestinations } from "@/data/vacation-destinations";
+import { heritageTownHref, vacationDestinationHref } from "@/lib/route-migration";
 import { allTzaddikim } from "@/lib/tzaddikim";
 
 /**
@@ -84,7 +85,7 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   // /getaways is gone and redirects here (next.config.ts). A redirecting
   // address must not be in the sitemap — Google reports that as an error
   // against the site, the same way a noindexed one is.
-  { path: "/vacation-ideas", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/destinations", priority: 0.9, changeFrequency: "weekly" },
   { path: "/honeymoon", priority: 0.6, changeFrequency: "monthly" },
   // How the four labels on every practical detail are decided. Indexed
   // deliberately: it is the page that makes the rest of the site checkable.
@@ -126,13 +127,13 @@ export function publicPaths(): SitemapEntry[] {
     entries.push({ path: `/${guide.slug}`, priority: 0.8, changeFrequency: "monthly" });
   }
   for (const place of bulkDestinations) {
-    entries.push({ path: `/destinations/${place.slug}`, priority: 0.6, changeFrequency: "monthly" });
+    entries.push({ path: heritageTownHref(place.slug), priority: 0.6, changeFrequency: "monthly" });
   }
   for (const cemetery of cemeteries) {
     entries.push({ path: `/cemeteries/${cemetery.slug}`, priority: 0.7, changeFrequency: "monthly" });
   }
   for (const destination of vacationDestinations) {
-    entries.push({ path: `/vacation-ideas/${destination.slug}`, priority: 0.8, changeFrequency: "monthly" });
+    entries.push({ path: vacationDestinationHref(destination.slug), priority: 0.8, changeFrequency: "monthly" });
   }
   for (const tzaddik of allTzaddikim()) {
     entries.push({ path: `/tzaddikim/${tzaddik.slug}`, priority: 0.7, changeFrequency: "monthly" });

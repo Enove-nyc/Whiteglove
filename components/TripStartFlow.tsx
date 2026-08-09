@@ -159,7 +159,7 @@ export default function TripStartFlow({
     update({ method });
     if (method === "myself") router.push("/itinerary?from=plan");
     else if (method === "white-glove") router.push("/contact?from=plan");
-    else router.push("/vacation-ideas");
+    else router.push("/destinations");
   }
 
   const progress = progressOf(answers);

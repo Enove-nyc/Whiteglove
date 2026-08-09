@@ -76,14 +76,14 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
     return pageMetadata({
       title: "Destination not found — White Glove Itineraries",
       description: "This vacation destination is not on the site.",
-      path: `/vacation-ideas/${slug}`,
+      path: `/destinations/${slug}`,
       noIndex: true,
     });
   }
   return pageMetadata({
     title: `Kosher travel in ${destination.name} — what to know before you book | White Glove`,
     description: `${destination.whyGo} What we hold on record about kosher food, Shabbos, where to stay and what to do in ${destination.name}.`,
-    path: `/vacation-ideas/${destination.slug}`,
+    path: `/destinations/${destination.slug}`,
   });
 }
 
@@ -414,8 +414,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
       <StructuredData
         data={breadcrumbs([
           { name: "Home", path: "/" },
-          { name: "Vacation ideas", path: "/vacation-ideas" },
-          { name: destination.name, path: `/vacation-ideas/${destination.slug}` },
+          { name: "Destinations", path: "/destinations" },
+          { name: destination.name, path: `/destinations/${destination.slug}` },
         ])}
       />
       <Navbar />
@@ -423,8 +423,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
           <nav aria-label="Breadcrumb" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-            <Link href="/vacation-ideas" className="underline decoration-[var(--gold)] underline-offset-4">
-              Vacation ideas
+            <Link href="/destinations" className="underline decoration-[var(--gold)] underline-offset-4">
+              Destinations
             </Link>
             <span aria-hidden="true" className="mx-2 text-stone-400">
               /

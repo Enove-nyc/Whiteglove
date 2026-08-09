@@ -67,7 +67,7 @@ describe("which pages a new picture changes", () => {
   });
 
   it("refreshes a listing's picture through its town, because that is where it shows", () => {
-    assert.deepEqual(pathsToRefresh("place", "krakow"), ["/krakow", "/destinations/krakow", "/admin/destinations"]);
+    assert.deepEqual(pathsToRefresh("place", "krakow"), ["/krakow", "/heritage/towns/krakow", "/admin/destinations"]);
   });
 
   it("treats a town the same way", () => {

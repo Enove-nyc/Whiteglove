@@ -511,5 +511,5 @@ export function suggestedTheme(answers: TripPlanAnswers): TripTheme | null {
 export function nextStepHref(answers: TripPlanAnswers): string {
   if (answers.method === "white-glove") return "/contact?from=plan";
   if (answers.method === "myself") return "/itinerary?from=plan";
-  return "/vacation-ideas";
+  return "/destinations";
 }

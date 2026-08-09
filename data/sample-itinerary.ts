@@ -118,7 +118,7 @@ export const SAMPLE_ITINERARY: Itinerary = {
       startTime: "16:00",
       durationMins: 90,
       order: 2,
-      href: "/vacation-ideas/rome",
+      href: "/destinations/rome",
       notes: "Ten minutes on foot from where you are staying. The streets you will be eating in all week.",
     },
     {

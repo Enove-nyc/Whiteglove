@@ -56,12 +56,30 @@ describe("what the bar may not do", () => {
     assert.ok(ALL_ITEMS.some((item) => item.href === "/cemeteries"), "the cemetery directory has no way in at all");
   });
 
-  it("NEVER CALLS ANYTHING “DESTINATIONS”", () => {
-    // The word is not wrong; it is ambiguous exactly here. To a vacation
-    // customer it promises places to go on holiday, and on this site it opened
-    // the kevarim directory.
+  it("MEANS HOLIDAYS BY “DESTINATIONS”, and nothing else", () => {
+    // THIS RULE IS THE INVERSE OF THE ONE IT REPLACES, and the change is the
+    // point. The bar used to be forbidden the word: it was ambiguous exactly
+    // here, because to a vacation customer it promises places to go on holiday
+    // and on this site it opened a directory of towns with kevarim in them.
+    //
+    // The ambiguity is gone because the heritage towns moved
+    // (lib/route-migration.ts), so the word is now free to mean the thing a
+    // visitor expects. What must hold is that it keeps meaning that: an item
+    // labelled Destinations goes to the vacation hub, and nothing under
+    // /destinations is the heritage directory.
     for (const item of ALL_ITEMS) {
-      assert.doesNotMatch(item.label, /^destinations$/i, `${item.href} is labelled Destinations`);
+      if (/^destinations$/i.test(item.label)) {
+        assert.equal(item.href, "/destinations", `${item.label} does not go to the vacation hub`);
+      }
+    }
+    assert.ok(
+      PRIMARY_NAV.some((item) => item.href === "/destinations"),
+      "the vacation hub is not in the bar",
+    );
+    // The heritage half of the same word keeps its own address and its own
+    // label, so neither can drift back into the other.
+    for (const item of ALL_ITEMS) {
+      if (item.href.startsWith("/heritage")) assert.doesNotMatch(item.label, /^destinations$/i, item.href);
     }
   });
 
@@ -106,15 +124,15 @@ describe("every item says what is behind it", () => {
 
 describe("which section is current", () => {
   it("marks a section from any page inside it", () => {
-    assert.equal(isCurrent("/vacation-ideas", "/vacation-ideas"), true);
-    assert.equal(isCurrent("/vacation-ideas", "/vacation-ideas/rome"), true);
+    assert.equal(isCurrent("/destinations", "/destinations"), true);
+    assert.equal(isCurrent("/destinations", "/destinations/rome"), true);
   });
 
   it("does not let the front page be current everywhere", () => {
     // Every path starts with "/", so a prefix match would light Home up on
     // every page of the site.
     assert.equal(isCurrent("/", "/"), true);
-    assert.equal(isCurrent("/", "/vacation-ideas"), false);
+    assert.equal(isCurrent("/", "/destinations"), false);
   });
 
   it("matches a whole segment rather than a prefix of a word", () => {

@@ -34,6 +34,7 @@
  */
 
 import type { Season, TripTheme, VacationDestination } from "@/data/vacation-destinations";
+import { vacationDestinationHref } from "@/lib/route-migration";
 
 /* ---- the shapes this needs, and no more --------------------------------- */
 //
@@ -417,5 +418,5 @@ export function addToTripHref(destination: VacationDestination): string {
 }
 
 export function destinationHref(destination: VacationDestination): string {
-  return `/vacation-ideas/${destination.slug}`;
+  return vacationDestinationHref(destination.slug);
 }

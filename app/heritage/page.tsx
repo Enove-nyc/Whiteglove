@@ -88,7 +88,7 @@ export default async function HeritagePage() {
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
               A section of White Glove Itineraries, not a separate company. The{" "}
-              <Link href="/vacation-ideas" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+              <Link href="/destinations" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
                 vacation side of the site
               </Link>{" "}
               is planned by the same people, and a trip can be both.

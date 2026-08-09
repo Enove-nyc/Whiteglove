@@ -37,13 +37,13 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ place: string }> }) {
   const { place: slug } = await params;
   const destination = getBulkDestination(slug);
-  if (!destination) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination could not be found.", path: `/destinations/${slug}`, noIndex: true });
+  if (!destination) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination could not be found.", path: `/heritage/towns/${slug}`, noIndex: true });
   return pageMetadata({
     title: `${destination.city}, ${destination.country} — Jewish Heritage Guide | White Glove`,
     description: destination.summary
       ? `${destination.summary} Practical details for ${destination.city} are published here once they have been checked.`
       : `${destination.city}, ${destination.country}: kevarim, addresses and travel details, published as each one is checked.`,
-    path: `/destinations/${destination.slug}`,
+    path: `/heritage/towns/${destination.slug}`,
   });
 }
 
@@ -62,7 +62,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           touristAttraction({
             name: destination.city,
             description: destination.summary ?? `Jewish heritage destination in ${destination.country}.`,
-            path: `/destinations/${destination.slug}`,
+            path: `/heritage/towns/${destination.slug}`,
             coordinates: record?.cemeteries[0]?.coordinates,
             country: destination.country,
             alternateNames: [destination.yiddishCity, ...(destination.aliases ?? [])],
@@ -70,7 +70,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           breadcrumbs([
             { name: "Home", path: "/" },
             { name: "Destinations", path: "/stops" },
-            { name: destination.city, path: `/destinations/${destination.slug}` },
+            { name: destination.city, path: `/heritage/towns/${destination.slug}` },
           ]),
         ]}
       />

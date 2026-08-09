@@ -23,7 +23,7 @@ import { publicPaths } from "@/lib/site-map";
  * and each one is a thing somebody could undo without noticing.
  */
 
-const PAGE = readFileSync("app/vacation-ideas/[destination]/page.tsx", "utf8");
+const PAGE = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
 const SOURCES = readFileSync("lib/vacation-sources.ts", "utf8");
 
 describe("the destination page is prerendered", () => {
@@ -49,7 +49,7 @@ describe("the destination page is prerendered", () => {
     assert.match(SOURCES, /VACATION_SOURCES_TAG/);
     const ADD = readFileSync("app/admin/add/actions.ts", "utf8");
     assert.match(ADD, /updateTag\(VACATION_SOURCES_TAG\)/);
-    assert.match(ADD, /revalidatePath\("\/vacation-ideas"\)/);
+    assert.match(ADD, /revalidatePath\("\/destinations"\)/);
   });
 });
 
@@ -85,11 +85,11 @@ describe("the hub's loading screen belongs to the hub", () => {
     // destination page announced "Loading vacation destinations…" over a grid
     // of card outlines, and a wrong address answered 200 with that skeleton on
     // it for ever, because the shell was flushed before notFound() ran.
-    assert.equal(existsSync("app/vacation-ideas/loading.tsx"), false);
-    assert.ok(existsSync("app/vacation-ideas/(hub)/loading.tsx"));
-    assert.ok(existsSync("app/vacation-ideas/(hub)/page.tsx"));
+    assert.equal(existsSync("app/destinations/loading.tsx"), false);
+    assert.ok(existsSync("app/destinations/(hub)/loading.tsx"));
+    assert.ok(existsSync("app/destinations/(hub)/page.tsx"));
     // A route group changes no URL, which is the point of using one here.
-    assert.equal(existsSync("app/vacation-ideas/[destination]/loading.tsx"), false);
+    assert.equal(existsSync("app/destinations/[destination]/loading.tsx"), false);
   });
 });
 
@@ -120,7 +120,7 @@ describe("search engines can still find them", () => {
   it("lists every destination in the sitemap", () => {
     const paths = new Set(publicPaths().map((entry) => entry.path));
     for (const destination of vacationDestinations) {
-      assert.ok(paths.has(`/vacation-ideas/${destination.slug}`), `${destination.slug} is not in the sitemap`);
+      assert.ok(paths.has(`/destinations/${destination.slug}`), `${destination.slug} is not in the sitemap`);
     }
   });
 

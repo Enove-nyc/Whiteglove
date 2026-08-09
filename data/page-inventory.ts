@@ -66,7 +66,7 @@ export const inventoryItems: InventoryItem[] = [
   {
     id: "page-research-destination",
     area: "Public page",
-    route: "/destinations/[place]",
+    route: "/heritage/towns/[place]",
     title: "Research-queue destination page",
     status: "partial",
     priority: "High",

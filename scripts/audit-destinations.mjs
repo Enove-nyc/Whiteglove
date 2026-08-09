@@ -67,7 +67,7 @@ async function main() {
   const failures = [];
 
   for (const destination of list) {
-    const path = `/vacation-ideas/${destination.slug}`;
+    const path = `/destinations/${destination.slug}`;
     const response = await fetch(`${BASE}${path}`, { redirect: "manual" });
     const html = await response.text();
     const markup = markupOf(html);
@@ -95,10 +95,10 @@ async function main() {
     }
   }
 
-  const missing = await fetch(`${BASE}/vacation-ideas/not-a-destination-at-all`, { redirect: "manual" });
+  const missing = await fetch(`${BASE}/destinations/not-a-destination-at-all`, { redirect: "manual" });
   if (missing.status !== 404) {
     failures.push(`an unknown destination answered ${missing.status} rather than 404`);
-    console.log(`FAIL /vacation-ideas/not-a-destination-at-all — status ${missing.status}, expected 404`);
+    console.log(`FAIL /destinations/not-a-destination-at-all — status ${missing.status}, expected 404`);
   } else {
     console.log("ok   an unknown destination is a 404");
   }

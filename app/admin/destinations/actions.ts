@@ -6,6 +6,7 @@ import type { ContentStatus, PlaceCategory, VerificationStatus } from "@prisma/c
 import { getCemetery } from "@/data/cemeteries";
 import { isPhotoOwnerKind, pathsToRefresh, photoDecision, type PhotoOwnerKind } from "@/lib/photos";
 import { isValidAccessToken } from "@/lib/secure-access";
+import { heritageTownHref } from "@/lib/route-migration";
 import {
   cemeteryPhotoOwner,
   createPhoto,
@@ -34,7 +35,7 @@ async function requireAdmin(): Promise<boolean> {
 // the editor itself. A revalidatePath on a route that doesn't match is a no-op.
 function revalidateDestination(slug: string) {
   revalidatePath(`/${slug}`);
-  revalidatePath(`/destinations/${slug}`);
+  revalidatePath(heritageTownHref(slug));
   revalidatePath("/admin/destinations");
 }
 

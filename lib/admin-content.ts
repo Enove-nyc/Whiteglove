@@ -3,6 +3,7 @@ import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 import type { DirectoryDraft } from "@/lib/directory-fields";
 import { applyReview, type ReviewInput } from "@/lib/suggestions";
 import { remember } from "@/lib/recycle-store";
+import { heritageTownHref } from "@/lib/route-migration";
 
 type RedisResult<T> = { result?: T };
 
@@ -250,7 +251,7 @@ function defaultLocations(): EditableLocation[] {
   // missing-shomer figure read far lower than the real one.
   const destinationLocations = unguidedDestinations().map((destination) => ({
     id: `destination-${destination.slug}`,
-    route: `/destinations/${destination.slug}`,
+    route: heritageTownHref(destination.slug),
     title: destination.city,
     yiddishTitle: destination.yiddishCity,
     category: "destination" as const,

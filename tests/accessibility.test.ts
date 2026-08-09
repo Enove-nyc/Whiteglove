@@ -376,7 +376,7 @@ describe("the planning request", () => {
 describe("waiting is said out loud", () => {
   it("gives every skeleton a status line, and hides the grey boxes", () => {
     // A screen reader gets nothing at all from an animated rectangle.
-    for (const path of ["app/vacation-ideas/[destination]/page.tsx", "app/vacation-ideas/(hub)/loading.tsx"]) {
+    for (const path of ["app/destinations/[destination]/page.tsx", "app/destinations/(hub)/loading.tsx"]) {
       const source = readFileSync(path, "utf8");
       assert.match(source, /role="status"/, path);
       assert.match(source, /aria-busy="true"/, path);

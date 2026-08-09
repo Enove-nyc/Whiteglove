@@ -87,8 +87,8 @@ function revalidateTripContent(kind: "attraction" | "stay") {
   // away the built HTML; both are needed, or a new entry appears in the
   // directory and is missing from the destination page that should show it.
   updateTag(VACATION_SOURCES_TAG);
-  revalidatePath("/vacation-ideas");
-  revalidatePath("/vacation-ideas/[destination]", "page");
+  revalidatePath("/destinations");
+  revalidatePath("/destinations/[destination]", "page");
   revalidatePath("/");
 }
 

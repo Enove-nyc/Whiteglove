@@ -178,7 +178,7 @@ export default async function Home() {
               Start planning my trip
             </Link>
             <Link
-              href="/vacation-ideas"
+              href="/destinations"
               className="inline-flex min-h-12 items-center rounded-md border border-[var(--gold)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
             >
               Explore vacation ideas
@@ -270,7 +270,7 @@ export default async function Home() {
               return (
                 <li key={theme.value}>
                   <Link
-                    href={`/vacation-ideas?kind=${theme.value}`}
+                    href={`/destinations?kind=${theme.value}`}
                     className="wg-card flex h-full items-start justify-between gap-4 border border-[var(--gold-light)] bg-[var(--surface)] p-5"
                   >
                     <span>
@@ -312,7 +312,7 @@ export default async function Home() {
         </div>
         <div className="mt-10">
           <Link
-            href="/vacation-ideas"
+            href="/destinations"
             className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
           >
             Browse all {cards.length} destinations →
@@ -542,7 +542,7 @@ export default async function Home() {
               Start planning my trip
             </Link>
             <Link
-              href="/vacation-ideas"
+              href="/destinations"
               className="inline-flex min-h-12 items-center rounded-md border border-[var(--gold)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
             >
               Explore vacation ideas

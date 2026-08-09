@@ -41,7 +41,7 @@ const columnsFor = (
     title: "Plan a trip",
     links: [
       { label: "Start planning", href: "/plan" },
-      { label: "Vacation ideas", href: "/vacation-ideas" },
+      { label: "Destinations", href: "/destinations" },
       { label: "Itinerary planner", href: "/itinerary" },
       { label: "Travel services", href: "/services" },
       { label: "A sample itinerary", href: "/sample-itinerary" },

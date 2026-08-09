@@ -73,7 +73,7 @@ export default async function PlanPage({
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/vacation-ideas"
+              href="/destinations"
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
               Browse vacation ideas

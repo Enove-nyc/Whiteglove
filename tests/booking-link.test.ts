@@ -106,7 +106,7 @@ describe("the menu", () => {
 describe("the words on the public pages", () => {
   const FILES = [
     "components/Footer.tsx",
-    "app/vacation-ideas/[destination]/page.tsx",
+    "app/destinations/[destination]/page.tsx",
     "app/travel-guide/page.tsx",
     "components/PracticalInformation.tsx",
     "components/ServiceCatalog.tsx",

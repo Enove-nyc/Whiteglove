@@ -28,7 +28,7 @@ export async function generateMetadata() {
     description:
       page?.seoDescription ??
       "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
-    path: "/vacation-ideas",
+    path: "/destinations",
   });
 }
 
@@ -51,12 +51,12 @@ export default async function VacationIdeasPage({
           collectionPage({
             name: "Kosher vacation ideas",
             description: "Vacation destinations with what is on record about kosher food and Shabbos in each.",
-            path: "/vacation-ideas",
+            path: "/destinations",
             count: vacationDestinations.length,
           }),
           breadcrumbs([
             { name: "Home", path: "/" },
-            { name: "Vacation ideas", path: "/vacation-ideas" },
+            { name: "Destinations", path: "/destinations" },
           ]),
         ]}
       />
@@ -80,7 +80,7 @@ export default async function VacationIdeasPage({
             return (
               <li key={theme.value}>
                 <Link
-                  href={`/vacation-ideas?kind=${theme.value}`}
+                  href={`/destinations?kind=${theme.value}`}
                   className="wg-card flex h-full min-h-11 flex-col justify-between gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5"
                 >
                   <span>

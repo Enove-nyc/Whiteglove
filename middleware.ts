@@ -9,6 +9,7 @@ import {
   edgeSiteAccessValid,
   edgeSiteIsLocked,
 } from "@/lib/edge-lock";
+import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
@@ -142,6 +143,22 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/api/")) return NextResponse.next();
   if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
+
+  // A heritage town that used to live under /destinations.
+  //
+  // NOT A WILDCARD, AND IT CANNOT BE. /destinations/:slug now serves two
+  // different kinds of page depending on the slug — eighteen vacation
+  // destinations and a hundred and nine former heritage towns — so a blanket
+  // rule would send every vacation page on the site to /heritage/towns. The
+  // decision is per slug, from the two lists, in lib/route-migration.ts where
+  // it is tested. 308 rather than 307: this is permanent, and a search engine
+  // should move the ranking across rather than keep both.
+  const moved = movedTo(pathname, MIGRATION_LISTS);
+  if (moved) {
+    const url = request.nextUrl.clone();
+    url.pathname = moved;
+    return NextResponse.redirect(url, 308);
+  }
 
   const onAdminHost = isAdminHost(request);
 

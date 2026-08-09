@@ -386,7 +386,7 @@ describe("where step three goes", () => {
   });
 
   it("shows destinations to somebody who has not decided", () => {
-    assert.equal(nextStepHref(emptyAnswers()), "/vacation-ideas");
+    assert.equal(nextStepHref(emptyAnswers()), "/destinations");
   });
 });
 

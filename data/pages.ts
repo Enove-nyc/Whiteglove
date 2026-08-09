@@ -81,7 +81,7 @@ export const editablePages: PageDef[] = [
     // written for a page that has only moved address. The page is
     // /vacation-ideas now, and /getaways redirects to it (next.config.ts).
     slug: "getaways",
-    href: "/vacation-ideas",
+    href: "/destinations",
     label: "Vacation Ideas",
     seoTitle: "Kosher vacation ideas — where to go | White Glove Itineraries",
     seoDescription:

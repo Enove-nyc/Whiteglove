@@ -65,7 +65,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   },
   {
     label: "Vacation Ideas",
-    href: "/vacation-ideas",
+    href: "/destinations",
     description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher side worked out.",
   },
   {
@@ -112,7 +112,7 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     links: [
       PRIMARY_NAV[0],
       { label: "Itinerary planner", href: "/itinerary", description: "Build the trip day by day." },
-      { label: "Vacation ideas", href: "/vacation-ideas", description: "Somewhere to start when the destination is undecided." },
+      { label: "Destinations", href: "/destinations", description: "Somewhere to start when the destination is undecided." },
       { label: "Have us plan it", href: "/contact", description: "Tell us about the trip and we will arrange it." },
     ],
   },
