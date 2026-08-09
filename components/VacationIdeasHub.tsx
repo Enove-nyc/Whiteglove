@@ -98,12 +98,19 @@ function FilterGroup<V extends string>({
 export default function VacationIdeasHub({
   cards,
   initialTheme = "",
+  initialSeason = "",
 }: {
   cards: VacationCardModel[];
   /** Set when the visitor arrived from a category on the front page. */
   initialTheme?: TripTheme | "";
+  /** Set when the visitor arrived from a time of year on the front page. */
+  initialSeason?: Season | "";
 }) {
-  const [filters, setFilters] = useState<VacationFilters>({ ...NO_VACATION_FILTERS, theme: initialTheme });
+  const [filters, setFilters] = useState<VacationFilters>({
+    ...NO_VACATION_FILTERS,
+    theme: initialTheme,
+    season: initialSeason,
+  });
 
   const themes = useMemo(() => themeOptions(cards, TRIP_THEMES), [cards]);
   const seasons = useMemo(() => seasonOptions(cards, SEASONS), [cards]);

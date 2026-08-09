@@ -1,9 +1,10 @@
 import { readWords } from "@/lib/site-words-store";
 import Footer from "@/components/Footer";
-import GloveMark, { GloveList } from "@/components/GloveMark";
+import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SectionHeading from "@/components/SectionHeading";
+import StaySearchForm from "@/components/StaySearchForm";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import VacationCard from "@/components/VacationCard";
 import VerificationBadge from "@/components/VerificationBadge";
@@ -14,8 +15,10 @@ import Link from "next/link";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { website } from "@/lib/structured-data";
-import { TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
+import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { TRIP_KINDS } from "@/lib/trip-plan";
+import { getStayList } from "@/lib/attractions-view";
+import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import { TRUST_LEVELS, TRUST_ORDER } from "@/lib/trust-status";
@@ -33,39 +36,34 @@ export const metadata = pageMetadata({
 /**
  * The front page.
  *
- * WHAT IT USED TO SAY, AND WHY THAT WAS THE PROBLEM. "Two kinds of journeys.
- * One standard of care." Then two cards side by side: heritage nesios first,
- * destination planning second. Then six kevarim. A first-time visitor had to
- * get about a third of the way down before meeting anything that looked like a
- * holiday, and the largest words on the page were about graves.
+ * IT OPENS ON A SEARCH, and that is the whole decision this file records. The
+ * page led with two buttons — start planning, explore ideas — and both were
+ * invitations to read. Somebody arriving with a month in mind and a family to
+ * house had nowhere to type it, and the question they came with went unanswered
+ * until they had found their own way three pages in.
  *
- * Every one of those was a reasonable decision when the site was a kevarim
- * database. None of them is right for a business that plans kosher vacations
- * and also has a heritage section.
+ * WHERE THE SEARCH GOES IS THE SECOND DECISION, and it is the one worth
+ * defending. It goes to /hotels, not to a partner. Sending it straight out
+ * would earn a commission a press sooner and throw away the only reason to
+ * search here at all: any comparison site can list a hotel in Rome, and none of
+ * them will tell you that the Ghetto is the quarter to be in, or that the
+ * kosher hotel in Arosa is a fortnight in August rather than a hotel. That
+ * answer comes first, and the partner hand-off sits underneath it.
  *
- * THE ORDER HERE IS THE ORDER A VISITOR DECIDES IN. What is this (hero), does
- * it fit me (trip-type selector), how does it work (three steps), what sort of
- * trips (categories), show me some (destinations), how much do I want to do
- * myself (the two paths), what about the kosher side (resources), do you do
- * the heritage thing too (yes, its own section), can I believe any of this
- * (verification), and then the one action again.
+ * THE ORDER IS THE ORDER A VISITOR DECIDES IN. Where and when (the search),
+ * what sort of trip, how this works, what kinds of holiday, which places, where
+ * to sleep in them, when in the year, the kosher side, the heritage side, can
+ * any of it be relied on, and then the search again.
  *
- * WHAT IS NOT HERE: testimonials. There is no real testimonial on this site
- * and there is nowhere to read one from, so the section the brief asked for
- * "if real data is available" is absent rather than invented.
+ * WHAT IS NOT HERE, AND IS NOT AN OVERSIGHT:
  *
- * AND WHAT IS NO LONGER HERE: the explaining. This page had six destination
- * cards each carrying its kosher answer, its Shabbos answer, what is on record
- * and two buttons; a four-line promise about coordinates and road routing; and
- * a trust section that set out how the checking works before the visitor had
- * asked. All of it true, all of it in the wrong place — a front page is where
- * somebody decides whether to keep reading, and every one of those paragraphs
- * is on the page it belongs to.
- *
- * So: three destinations rather than six, on the short card; the heritage and
- * verification sections cut to the one sentence each that a stranger needs;
- * and the four labels named in a single line that links to the page which
- * explains them. Nothing was deleted from the site, only from this page.
+ *   • Testimonials. There is no real one on this site and nowhere to read one
+ *     from, so the section is absent rather than plausible.
+ *   • Prices and star ratings. This site holds none; the partner does.
+ *   • Personal booking assistance. It exists and it is offered inside Contact.
+ *     A front page that offers to arrange the trip for you is a page about an
+ *     agency, and every commercial section below would be read as a sales
+ *     funnel into a phone call rather than as something usable on its own.
  */
 
 // "What you keep" was the phrase here and in three other places. It is a
@@ -73,16 +71,16 @@ export const metadata = pageMetadata({
 // meeting the site for the first time, which is exactly who reads step one.
 const HOW_IT_WORKS: Array<[string, string]> = [
   [
-    "Tell us the shape of it",
-    "Where, when, who is coming, and your kosher standards and religious needs. Three short steps, nothing required.",
+    "Say where and when",
+    "A city, a region, or nothing at all if the month is as far as you have got.",
   ],
   [
-    "We show you what is actually there",
-    "Destinations that suit the dates and the ages, with the kosher food and the Shabbos situation on the same page.",
+    "See what is actually there",
+    "The quarter to be in, what is walkable for Shabbos, and where the food comes from — before any price is quoted.",
   ],
   [
-    "Build it yourself, or hand it over",
-    "The planner is free and holds the whole trip. Or send us the answers and we will arrange it.",
+    "Book it where it is cheapest",
+    "Rooms and prices come from our booking partners. The planner keeps the whole trip in one place, and it is free.",
   ],
 ];
 
@@ -128,13 +126,16 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, topVisitedPaths, words, sources] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, topVisitedPaths, words, sources, stays] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
     getTopVisitedPaths(60),
     // The first three lines anybody reads. /admin/settings/words.
     readWords(),
     loadVacationSources(),
+    // Read through the view, so a stay the owner adds today is on the front
+    // page today rather than at the next deploy.
+    getStayList(),
   ]);
 
   const cards = cardModels(vacationDestinations, sources);
@@ -149,6 +150,24 @@ export default async function Home() {
   const featured = [...cards]
     .sort((a, b) => (visits.get(destinationHref(b.destination)) ?? 0) - (visits.get(destinationHref(a.destination)) ?? 0))
     .slice(0, 3);
+
+  /**
+   * The stays that belong under "places that make a kosher vacation easier".
+   *
+   * SELECTED BY THE KASHRUS CLAIM, NOT BY HAND. `kosherClaim` is the field a
+   * source stands behind; an ordinary hotel chosen for the street it is on
+   * carries "none" and cannot reach this list however well placed it is. That
+   * distinction is the site's whole position on accommodation and it should be
+   * enforced by the query rather than by whoever edits this file next.
+   *
+   * Confirmed before reported, because the stronger claim is the one worth
+   * showing first, and six at most — this is a taste of the directory rather
+   * than the directory.
+   */
+  const featuredStays = stays
+    .filter((stay) => stay.kosherClaim !== "none")
+    .sort((a, b) => Number(b.kosherClaim === "confirmed") - Number(a.kosherClaim === "confirmed"))
+    .slice(0, 6);
 
   const guides = guidedDestinations();
   const kevarim = allTzaddikim();
@@ -170,33 +189,32 @@ export default async function Home() {
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">{words.heroSubtitle}</p>
           </div>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link
-              href="/plan"
-              className="inline-flex min-h-12 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-[0_10px_28px_rgba(23,45,82,.18)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-            >
-              Start planning my trip
-            </Link>
-            <Link
-              href="/destinations"
-              className="inline-flex min-h-12 items-center rounded-md border border-[var(--gold)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-            >
-              Explore vacation ideas
-            </Link>
+          {/* The first thing on the page you can act on. Nothing in it is
+              required — the visitor who has not chosen the month is exactly
+              the one this site is for, and a form that stops them at the first
+              field loses them. */}
+          <div className="mt-9 max-w-5xl">
+            <StaySearchForm id="hero" />
           </div>
 
-          {/* The heritage side, offered as a third thing rather than as half
-              the page. Somebody who came for it knows the word and will find
-              this line; nobody else is asked to work out which of two
-              journeys they are on before they have read anything. */}
-          <p className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <Link
+              href="/destinations"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              Browse every destination →
+            </Link>
+            {/* The heritage side, offered as a line rather than as half the
+                page. Somebody who came for it knows the word and will find
+                this; nobody else is asked to work out which of two journeys
+                they are on before they have read anything. */}
             <Link
               href="/heritage"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
               Planning a heritage journey? Start here →
             </Link>
-          </p>
+          </div>
 
           {homepagePromotions.length > 0 && (
             <div className="mt-10">
@@ -320,83 +338,97 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 6. Plan it yourself, or have us plan it ---------------------- */}
-      <section className="border-y border-[var(--gold-light)] bg-[var(--surface)] px-5 py-16 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading
-            eyebrow="Two ways to do this"
-            title="As much or as little of it as you want."
-            description="Most people start with the first and ask for the second when they reach the part they would rather not work out."
-          />
-          <div className="mt-12 grid gap-5 lg:grid-cols-2">
-            <article className="flex flex-col rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-7 sm:p-9">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Free, and yours</p>
-              <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
-                Plan it yourself
-              </h3>
-              <p className="mt-4 flex-1 leading-7 text-stone-600">
-                The planner holds the whole trip — flights, hotels, every stop, the driving time between them, and a
-                printable copy for the car. An account is what makes it follow you onto your phone.
-              </p>
-              <GloveList
-                items={[
-                  "Route ordering and real road driving times",
-                  "A warning when a Friday runs into candle-lighting",
-                  "Share it with whoever is travelling with you",
-                ]}
-                className="mt-6 space-y-2 text-sm leading-6 text-stone-600"
-              />
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/plan"
-                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-                >
-                  Start a trip
-                </Link>
-                <Link
-                  href="/itinerary"
-                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-                >
-                  Open the planner
-                </Link>
-              </div>
-            </article>
-
-            <article className="flex flex-col rounded-2xl border border-[var(--navy)] bg-[var(--navy)] p-7 text-white sm:p-9">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">The white glove part</p>
-              <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight">Have us plan it</h3>
-              <p className="mt-4 flex-1 leading-7 text-slate-200">
-                Tell us the shape of the trip and we do the working out: where, in what order, what there is to eat,
-                where Shabbos falls, and who to speak to when you arrive.
-              </p>
-              <GloveList
-                items={[
-                  "A written day-by-day itinerary you can change",
-                  "The kosher side answered before anything is booked",
-                  "Quoted before any work starts — nothing is charged for asking",
-                ]}
-                className="mt-6 space-y-2 text-sm leading-6 text-slate-200"
-              />
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/contact"
-                  className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]"
-                >
-                  Tell us about the trip
-                </Link>
-                <Link
-                  href="/services"
-                  className="inline-flex min-h-11 items-center rounded-md border border-white/30 px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold-light)] hover:text-[var(--gold-light)]"
-                >
-                  What we do, in full
-                </Link>
-              </div>
-            </article>
+      {/* ---- 6. Places that make a kosher vacation easier ------------------
+          THE ONLY PLACES ON THIS SITE THAT CARRY A KASHRUS CLAIM, and there
+          are not many of them. The section is built from that claim rather
+          than from a picked list, so it cannot quietly fill up with ordinary
+          hotels: an entry appears here because data/kosher-stays.ts records a
+          source saying it is kosher, and the card prints which of the two
+          claims it is. If the count ever drops to nothing, the section does
+          not render at all. */}
+      {featuredStays.length > 0 && (
+        <section className="border-y border-[var(--gold-light)] bg-[var(--surface)] px-5 py-16 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Where to sleep"
+              title="Places that make a kosher vacation easier."
+              description="Kosher hotels, kosher B&Bs and the seasonal programmes — with the season written on the ones that are a fortnight rather than a hotel."
+            />
+            <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {featuredStays.map((stay) => (
+                <li key={stay.slug}>
+                  <article className="wg-card flex h-full flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
+                      {stay.city} · {stay.country} · {stay.kind}
+                    </p>
+                    <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+                      {stay.name}
+                    </h3>
+                    {stay.season && (
+                      <p className="mt-3 border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">
+                        <strong>Seasonal</strong> — {stay.season}
+                      </p>
+                    )}
+                    <p className="mt-3 flex-1 text-sm leading-6 text-stone-600">{stay.summary}</p>
+                    <p className="mt-3 text-xs leading-5 text-stone-500">Walkable from {stay.anchor.name}.</p>
+                    <div className="mt-5">
+                      <Link
+                        href={staySearchHref({ destination: stay.city })}
+                        className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                      >
+                        See stays in {stay.city}
+                      </Link>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-10">
+              <Link
+                href="/hotels"
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+              >
+                Every place we hold a record for →
+              </Link>
+            </div>
           </div>
-        </div>
+        </section>
+      )}
+
+      {/* ---- 7. When in the year ------------------------------------------
+          Four links and a count each, straight off the seasons written on the
+          destination records. A season with nothing in it is not offered —
+          same rule as the categories above, and for the same reason. */}
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
+        <SectionHeading
+          eyebrow="When you are going"
+          title="Some places only work in one half of the year."
+          description="An alpine kosher programme runs for a fortnight; a Roman August is thirty-eight degrees and half the city shut. Pick the time of year and see what suits it."
+        />
+        <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {SEASONS.map((season) => {
+            const count = cards.filter((card) => card.destination.seasons.includes(season.value)).length;
+            if (count === 0) return null;
+            return (
+              <li key={season.value}>
+                <Link
+                  href={`/destinations?season=${season.value}`}
+                  className="wg-card flex h-full min-h-11 flex-col justify-between gap-3 border border-[var(--gold-light)] bg-[var(--surface)] p-5"
+                >
+                  <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+                    {season.label}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+                    {count} destination{count === 1 ? "" : "s"} →
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
-      {/* ---- 7. Practical kosher travel resources ------------------------- */}
+      {/* ---- 8. Practical kosher travel resources ------------------------- */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow="Kosher travel"
@@ -424,7 +456,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 8. Heritage travel -------------------------------------------
+      {/* ---- 9. Heritage travel -------------------------------------------
           One sentence and four doors. The person this is for knows the word
           and is looking for the link, not for an explanation. */}
       <section className="border-y border-[var(--gold-light)] bg-[var(--navy)] px-5 py-12 text-white sm:px-8 sm:py-14">
@@ -481,7 +513,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 9. Verification, in one line --------------------------------- */}
+      {/* ---- 10. Verification, in one line --------------------------------- */}
       {/* A four-bullet promise, a two-paragraph panel and a heading about
           driving four hours: all of it true, all of it explaining the checking
           to somebody who had not yet asked whether there was any. The labels
@@ -510,7 +542,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 10. Ask a question, and the final call to action ------------- */}
+      {/* ---- 11. Ask a question, and the final call to action ------------- */}
       <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
         <TravelAssistantBox />
       </section>
@@ -521,31 +553,32 @@ export default async function Home() {
         </section>
       ) : null}
 
+      {/* The search again, at the bottom, for somebody who has read the whole
+          page and is now ready to type. Sending them back up to the hero is a
+          small rudeness that costs the press. */}
       <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-        <div className="grid gap-8 rounded-2xl border border-[var(--gold-light)] bg-[var(--cream-deep)] p-8 sm:p-12 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
-          <div>
-            <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-              Where do you want to go?
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              And if the honest answer is &ldquo;somewhere warm, in July, with the children&rdquo; — that is enough to
-              start with.
-            </p>
+        <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--cream-deep)] p-8 sm:p-12">
+          <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            Where do you want to go?
+          </h2>
+          <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
+            And if the honest answer is &ldquo;somewhere warm, in July, with the children&rdquo; — that is enough to
+            start with.
+          </p>
+          <div className="mt-8">
+            <StaySearchForm id="footer-search" />
           </div>
-          <div className="flex flex-wrap gap-3">
+          <p className="mt-6 text-sm leading-6 text-stone-600">
+            Keeping the whole trip in one place — flights, hotels, every stop, the driving time between them, and a
+            printable copy for the car — is what{" "}
             <Link
-              href="/plan"
-              className="inline-flex min-h-12 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              href="/itinerary"
+              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
-              Start planning my trip
-            </Link>
-            <Link
-              href="/destinations"
-              className="inline-flex min-h-12 items-center rounded-md border border-[var(--gold)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Explore vacation ideas
-            </Link>
-          </div>
+              the planner
+            </Link>{" "}
+            is for. It is free, and it does not need an account until you want it on your phone.
+          </p>
         </div>
       </section>
 

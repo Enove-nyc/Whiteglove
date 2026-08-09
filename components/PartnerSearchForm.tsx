@@ -43,6 +43,7 @@ export default async function PartnerSearchForm({
   destinationLabel = "Where to",
   destinationValue = "",
   destinationSlug = "",
+  prefill,
   id,
 }: {
   product: TravelProduct;
@@ -56,6 +57,21 @@ export default async function PartnerSearchForm({
   /** Filled in when a destination page owns this form. */
   destinationValue?: string;
   destinationSlug?: string;
+  /**
+   * What the visitor already typed, carried across.
+   *
+   * A search made on the front page and answered on /hotels must not ask for
+   * the dates a second time on the way to the partner. Re-typing is where a
+   * hand-off is abandoned, and a partner opened on the wrong month is worse
+   * than one opened on none.
+   */
+  prefill?: {
+    checkIn?: string;
+    checkOut?: string;
+    adults?: number;
+    children?: number;
+    rooms?: number;
+  };
   id: string;
 }) {
   const route = routeFor(product, await readAffiliateConfig());
@@ -111,13 +127,27 @@ export default async function PartnerSearchForm({
 
         <label className="block" htmlFor={`${id}-in`}>
           <span className={label}>{fields === "stay" ? "Check in" : "Leaving"}</span>
-          <input id={`${id}-in`} name="in" type="date" required className={field} />
+          <input
+            id={`${id}-in`}
+            name="in"
+            type="date"
+            required
+            defaultValue={prefill?.checkIn ?? ""}
+            className={field}
+          />
         </label>
         <label className="block" htmlFor={`${id}-out`}>
           <span className={label}>{fields === "stay" ? "Check out" : "Coming back"}</span>
           {/* Optional on a journey: a one-way flight is a real search, and the
               registry builds one when this is empty. */}
-          <input id={`${id}-out`} name="out" type="date" required={fields === "stay"} className={field} />
+          <input
+            id={`${id}-out`}
+            name="out"
+            type="date"
+            required={fields === "stay"}
+            defaultValue={prefill?.checkOut ?? ""}
+            className={field}
+          />
         </label>
 
         <label className="block" htmlFor={`${id}-adults`}>
@@ -128,7 +158,7 @@ export default async function PartnerSearchForm({
             type="number"
             min={1}
             max={30}
-            defaultValue={2}
+            defaultValue={prefill?.adults ?? 2}
             inputMode="numeric"
             className={field}
           />
@@ -143,7 +173,7 @@ export default async function PartnerSearchForm({
                 type="number"
                 min={0}
                 max={30}
-                defaultValue={0}
+                defaultValue={prefill?.children ?? 0}
                 inputMode="numeric"
                 className={field}
               />
@@ -156,7 +186,7 @@ export default async function PartnerSearchForm({
                 type="number"
                 min={1}
                 max={10}
-                defaultValue={1}
+                defaultValue={prefill?.rooms ?? 1}
                 inputMode="numeric"
                 className={field}
               />

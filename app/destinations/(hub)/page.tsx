@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
-import { TRIP_THEMES, vacationDestinations, type TripTheme } from "@/data/vacation-destinations";
+import { SEASONS, TRIP_THEMES, vacationDestinations, type Season, type TripTheme } from "@/data/vacation-destinations";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { cardModels } from "@/lib/vacation-ideas";
@@ -35,14 +35,16 @@ export async function generateMetadata() {
 export default async function VacationIdeasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string }>;
+  searchParams: Promise<{ kind?: string; season?: string }>;
 }) {
-  const { kind } = await searchParams;
+  const { kind, season } = await searchParams;
   const [page, sources] = await Promise.all([resolvePage("getaways"), loadVacationSources()]);
   const cards = cardModels(vacationDestinations, sources);
-  // Arrived from a category on the front page. Anything unrecognised is
-  // ignored rather than showing an empty list for a filter nobody chose.
+  // Arrived from a category or a time of year on the front page. Anything
+  // unrecognised is ignored rather than showing an empty list for a filter
+  // nobody chose.
   const initialTheme = (TRIP_THEMES.find((theme) => theme.value === kind)?.value ?? "") as TripTheme | "";
+  const initialSeason = (SEASONS.find((entry) => entry.value === season)?.value ?? "") as Season | "";
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -106,7 +108,7 @@ export default async function VacationIdeasPage({
           description="Every one of these has the practical side answered: somewhere to stay, things to do, and what happens about food and Shabbos."
         />
         <div className="mt-10">
-          <VacationIdeasHub cards={cards} initialTheme={initialTheme} />
+          <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
         </div>
       </section>
 
