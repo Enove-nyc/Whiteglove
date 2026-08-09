@@ -31,9 +31,19 @@ const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-sto
 
 export default function AccountPlanPanel({
   plan,
+  limitsLine,
+  usageLine,
   openRequest,
 }: {
   plan: AccountPlan;
+  /**
+   * What this plan limits, worked out on the server. A sentence rather than
+   * numbers, because it has to read the clock to say when the next printable
+   * copy is due and a component may not do that while it renders.
+   */
+  limitsLine: string;
+  /** Where they stand against those limits right now. */
+  usageLine: string;
   openRequest: PlanRequest | null;
 }) {
   const router = useRouter();
@@ -80,9 +90,12 @@ export default function AccountPlanPanel({
       {/* An empty list under a heading reads as something that failed to load,
           so the sentence is written out instead. */}
       {included.length === 0 ? (
+        /* This used to end "nothing is behind them yet", which stopped being
+           true the day the trip and print limits arrived. Somebody should meet
+           a limit here, in a sentence, rather than at the moment it stops
+           them. */
         <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-500">
-          Every account has the whole site — the planner, your saved places, your trips and their documents.
-          Pro and Business are being worked out, and nothing is behind them yet.
+          Every account has the whole site — the planner, your saved places, your trips and their documents. {limitsLine}
         </p>
       ) : (
         <ul className="mt-4 space-y-1.5 text-sm leading-7 text-stone-600">
@@ -91,6 +104,8 @@ export default function AccountPlanPanel({
           ))}
         </ul>
       )}
+
+      <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--navy)]">{usageLine}</p>
 
       {openRequest ? (
         <div className="mt-6 border-l-4 border-[var(--gold)] bg-white px-4 py-3">

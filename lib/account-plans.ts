@@ -3,17 +3,19 @@
  *
  * Three: the one everybody starts on, Pro, and Business.
  *
- * NOTHING IS BEHIND ANY OF THEM YET, and that is deliberate rather than
- * unfinished. The plans exist so that a person can say which one they want and
- * the owner can see who asked; what each one eventually includes is his to
- * decide, and inventing it here would put promises on the website that nobody
- * has agreed to keep.
+ * TWO THINGS ARE NOW BEHIND THEM, and they arrived the way this file said they
+ * would have to. It used to read: "a plan never decides what anybody can do…
+ * if that changes, it changes on purpose, in one place, with the words on the
+ * page changed to match — not by a gate quietly appearing somewhere and a
+ * traveller finding out that something they had yesterday now costs money."
  *
- * So the rule this file exists to hold: **a plan never decides what anybody can
- * do.** Nothing reads it to allow or refuse anything. If that changes, it
- * changes on purpose, in one place, with the words on the page changed to match
- * — not by a gate quietly appearing somewhere and a traveller finding out that
- * something they had yesterday now costs money.
+ * That happened. The one place is **lib/account-limits.ts** — a Traveler may
+ * have two trips at a time and print one copy a week — and the account page
+ * says both before anybody meets them. Nothing else reads a plan to allow or
+ * refuse anything, and a third limit belongs in that same file or nowhere.
+ *
+ * NOTHING ALREADY MADE IS TAKEN AWAY. The trip limit refuses a new trip; it
+ * never closes, hides or deletes one that exists.
  *
  * AND NOTHING IS CHARGED. There is no payment of any kind on this site. Asking
  * for Pro registers interest and tells the owner; it does not take a card, does
