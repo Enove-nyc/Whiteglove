@@ -249,6 +249,51 @@ describe("nobody types anything twice", () => {
     notes: "One of us cannot walk far.",
   });
 
+  it("CARRIES THE PERSONALISATION ANSWERS ACROSS THE HANDOFF", () => {
+    // The whole route: answered at /plan, written to one browser key, read
+    // back by the request form, sent as the message. The three fields that
+    // moved out of step two — pace, interests, access needs — are the ones a
+    // refactor would most easily drop on the floor, because nothing on the
+    // planner side has a field for them.
+    const answered = answers({
+      kind: "family",
+      destination: "Rome",
+      pace: "slow",
+      interests: ["Food", "Nature and walking"],
+      kosher: ["Cholov Yisroel"],
+      kosherNotes: "A child who eats nothing but pasta",
+      shabbos: ["An eruv"],
+      accessibility: ["Short walking distances", "A lift rather than stairs"],
+      notes: "One of us cannot walk far.",
+    });
+
+    // 1. Stored and read back, through the same validator the form uses.
+    const restored = readAnswers(JSON.stringify(answered));
+    assert.ok(restored);
+    assert.deepEqual(restored.accessibility, ["Short walking distances", "A lift rather than stairs"]);
+    assert.deepEqual(restored.interests, ["Food", "Nature and walking"]);
+    assert.equal(restored.pace, "slow");
+
+    // 2. Shown back to them, in their own words, before anything is sent.
+    const shown = new Map(summarize(restored));
+    assert.equal(shown.get("Access needs"), "Short walking distances, A lift rather than stairs");
+    assert.equal(shown.get("Pace"), "Slow");
+    assert.equal(shown.get("Kosher notes"), "A child who eats nothing but pasta");
+
+    // 3. In the message that reaches the inbox.
+    const message = requestMessage(restored);
+    for (const needle of ["Short walking distances", "A lift rather than stairs", "Slow", "An eruv", "pasta"]) {
+      assert.ok(message.includes(needle), `${needle} did not survive the handoff`);
+    }
+
+    // 4. And in the planner's notes for the self-service half, since the
+    // planner has no field of its own for any of them.
+    const seed = plannerSeed(restored);
+    for (const needle of ["Access needs", "Short walking distances", "Pace"]) {
+      assert.ok(seed.notes.includes(needle), `${needle} was dropped on the way into the planner`);
+    }
+  });
+
   it("carries every answer into the message the request sends", () => {
     const message = requestMessage(full);
     for (const needle of ["Rome", "2026-07-05", "New York", "2 adults, 3 children (ages 4, 7 and 11)", "Cholov Yisroel", "cannot walk far"]) {
