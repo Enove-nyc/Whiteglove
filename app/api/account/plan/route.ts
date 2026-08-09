@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { askForPlan, getPlan, openRequestFor, planStoreAvailable } from "@/lib/account-plan-store";
+import { PLAN_LABELS } from "@/lib/account-plans";
+import { sendPlanRequestNotification } from "@/lib/email";
 import { requestProblem } from "@/lib/account-plans";
 import { accountCookieName, readSessionEmail } from "@/lib/account-store";
 
@@ -48,6 +50,21 @@ export async function POST(request: NextRequest) {
     note: body.note,
   });
   if (!saved) return NextResponse.json({ error: "That could not be saved. Please try again." }, { status: 500 });
+
+  // Told to the owner, because the request used to arrive in complete silence
+  // — written to the store, shown on /admin/accounts, and announced nowhere.
+  // Meanwhile the person who asked was told "we will be in touch".
+  //
+  // NOT AWAITED, and it must not be. The request IS saved; an email service
+  // that is slow or away must not turn a saved request into an error the
+  // person sees, which would have them ask again and again.
+  void sendPlanRequestNotification({
+    account,
+    wanted: PLAN_LABELS[body.wanted as "pro" | "business"],
+    currentPlan: PLAN_LABELS[current],
+    businessName: body.businessName,
+    note: body.note,
+  }).catch(() => undefined);
 
   return NextResponse.json({ ok: true, request: await openRequestFor(account) });
 }

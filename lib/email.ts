@@ -204,6 +204,59 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
   return result.ok;
 }
 
+/**
+ * Somebody has asked about a Pro or Business account.
+ *
+ * THE REQUEST USED TO ARRIVE IN SILENCE. It was written to the store and shown
+ * on /admin/accounts, and nothing anywhere told the owner it had happened — so
+ * the only way to find one was to open that page and look. Meanwhile the person
+ * who asked was told "we have it, and we will be in touch", which is a promise
+ * the site had no way to keep.
+ *
+ * Goes to the same inbox as the other things visitors send in, because it is
+ * the same job: somebody is waiting on an answer from a person.
+ *
+ * NO CARD, NO SUBSCRIPTION, NOTHING CHARGED — and the email says so, so that
+ * reading it at speed cannot leave the impression that money has moved.
+ */
+export type PlanRequestNotification = {
+  /** What they sign in with — an email address or a phone number. */
+  account: string;
+  /** "Pro" or "Business", already spelled for a person. */
+  wanted: string;
+  currentPlan: string;
+  businessName?: string;
+  note?: string;
+};
+
+export async function sendPlanRequestNotification(request: PlanRequestNotification): Promise<boolean> {
+  const { html, text } = table([
+    ["Who", request.account],
+    ["Asked about", request.wanted],
+    ["On now", request.currentPlan],
+    ["Business", request.businessName],
+    ["They wrote", request.note],
+  ]);
+  const to = editsInbox();
+  const result = await postResend(
+    {
+      to,
+      // Replying lands on them when it is an email address. A phone account has
+      // no inbox, so no reply-to is set rather than one that bounces.
+      ...(request.account.includes("@") ? { reply_to: request.account } : {}),
+      subject: `White Glove: ${request.account} asked about ${request.wanted}`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">Somebody asked about ${escapeHtml(request.wanted)}</h2>${html}` +
+        `<p style="font-family:Arial,sans-serif;font-size:13px;color:#555;">Nothing has been charged and no card was taken — this is a request for you to answer.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:13px;color:#555;">Grant or decline it under <strong>Admin &rarr; Visitor accounts</strong>.</p>`,
+      text: `${text}\n\nNothing has been charged. Grant or decline under Admin > Visitor accounts.`,
+    },
+    to,
+    `plan request: ${request.wanted}`,
+  );
+  return result.ok;
+}
+
 export async function sendVerificationEmail(email: string, code: string) {
   const result = await postResend(
     {
