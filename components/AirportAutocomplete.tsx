@@ -58,7 +58,9 @@ export default function AirportAutocomplete({
   // booking card hides its overflow and clipped this list. See
   // lib/anchored-panel.ts.
   const [anchor, setAnchor] = useState<AnchorBox | null>(null);
-  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 320)), []);
+  // Same preferBelow as AddressAutocomplete — stay under the field whenever
+  // there is a usable strip of room. See lib/anchored-panel.ts.
+  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 320, { preferBelow: true })), []);
   useAnchorTracking(open, remeasure);
 
   // Written from the promise's own callback, not from the effect body.

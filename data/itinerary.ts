@@ -232,6 +232,12 @@ export type Itinerary = {
   bookingFor?: "self" | "someone-else";
   /** When the traveler gets going each morning, HH:MM. Drives arrival times. */
   dayStartTime?: string;
+  /**
+   * Who shares which room — family / group planning only.
+   *
+   * Optional on older trips. See lib/trip-collaboration.ts.
+   */
+  rooms?: Array<{ id: string; label: string; travelerIds: string[] }>;
   notes?: string;
   updatedAt?: string;
 };

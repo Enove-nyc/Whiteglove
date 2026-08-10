@@ -1,173 +1,141 @@
-// One search across everything the site holds.
-//
-// WHY THIS EXISTS. The search bar in the navbar sits on every page and knew
-// about two things: destinations and batei hachaim. Type "Colosseum", "Kosher
-// Tirol" or "Merano" into it and the dropdown said "No match yet" — while
-// /stops, one Enter away, found all three. The site had the answer and the bar
-// could not see it.
-//
-// It knew about two things because it was built when there were only two. Since
-// then the site has grown attractions, places to stay, quarters and places to
-// eat, and each was added to the pages and to /stops without anybody going back
-// to the bar.
-//
-// So the search moved here, behind one function, and the bar asks the server
-// rather than carrying the data. That fixes a second thing at the same time:
-// the bar is a client component and it was importing the whole cemetery
-// database into the browser to search it. Every visitor downloaded every kever
-// on the site to type into a box.
-
-import { cemeteries } from "@/data/cemeteries";
-import { destinationHaystack, destinationHref, destinations } from "@/data/destinations";
-import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
-import { extraSpellings, fuzzyMatch, normalize } from "@/lib/place-search";
-
 /**
- * What kind of thing a hit is, in the words a traveler would use.
+ * One search across everything the public site holds.
  *
- * Shown on the result row. The bar already had a slot for this — it said
- * "Guide", "Location" or "Beis hachaim" — so the new kinds go where the old
- * ones went and nothing about the look changes.
- */
-export type SiteHitKind = "Guide" | "Beis hachaim" | "Thing to do" | "Somewhere to stay" | "Somewhere to eat" | "Area" | "Location";
-
-export type SiteHit = {
-  id: string;
-  kind: SiteHitKind;
-  title: string;
-  /** The Yiddish name where there is one — the bar shows it above the Latin. */
-  yiddish?: string;
-  subtitle: string;
-  href: string;
-};
-
-/**
- * The order the kinds come back in.
+ * WHY THIS EXISTS. The navbar search bar sits on every page. It used to know
+ * about heritage towns and batei hachaim only — and it imported the cemetery
+ * database into the browser to do it. Vacation destinations, hotels, food and
+ * guides were invisible in the box that every visitor types into.
  *
- * A kever outranks a museum on this site and that is deliberate: somebody
- * typing "Lizhensk" wants the beis hachaim, not a restaurant in the town. The
- * rest follow the order of a trip — where to go, what to do, where to sleep,
- * where to eat.
- */
-const KIND_ORDER: SiteHitKind[] = ["Guide", "Beis hachaim", "Thing to do", "Somewhere to stay", "Somewhere to eat", "Area", "Location"];
-
-/**
- * How close a hit is to what was typed, lower being closer.
+ * Architecture:
+ *   - lib/site-search-index.ts  builds a server-side index (cached in memory)
+ *   - lib/site-search-match.ts  Damerau–Levenshtein + accent/punct folding
+ *   - lib/site-search-rank.ts   vacation-first weighted ranking (documented)
+ *   - this file                 public API for the bar, /api/search and /search
  *
- * Same rule as everywhere else on the site: the city is compared whole and
- * before the name, because substring-scoring the two together once ranked the
- * Promenade des Anglais as a strong hit for "Rome".
+ * Empty focus returns every published vacation destination in editorial order.
+ * Typed queries search the full index. Drafts, admin and private pages stay out.
  */
-function rank(query: string, city: string, name: string): number {
-  const nq = normalize(query);
-  if (!nq) return 0;
-  if (normalize(city) === nq) return 0;
-  if (normalize(city).startsWith(nq)) return 1;
-  if (normalize(name).includes(nq)) return 2;
-  return 3;
+
+import { vacationDestinations } from "@/data/vacation-destinations";
+import { getSearchIndex } from "@/lib/site-search-index";
+import { normalize } from "@/lib/site-search-match";
+import {
+  groupHits,
+  hasHeritageIntent,
+  interpretedQuery,
+  isUnambiguousExact,
+  scoreDocument,
+  sortScored,
+  type ScoredHit,
+} from "@/lib/site-search-rank";
+import type { SearchResponse, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
+import { sectionForKind } from "@/lib/site-search-types";
+import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
+
+export type { SiteHit, SiteHitKind, SiteHitSection, SearchResponse };
+export { groupHits, hasHeritageIntent, isUnambiguousExact, sectionForKind };
+export { invalidateSiteSearchIndex } from "@/lib/site-search-index";
+
+/** Vacation destinations for the empty-focus dropdown, editorial order. */
+export function vacationEmptySuggestions(): SiteHit[] {
+  return vacationDestinations.map((d) => ({
+    id: `vacation-${d.slug}`,
+    kind: "Vacation destination" as const,
+    section: "Vacation" as const,
+    title: d.name,
+    subtitle: d.region ? `${d.region} · ${d.country}` : d.country,
+    href: vacationHref(d),
+    matchRank: 0,
+    fuzzy: false,
+  }));
 }
 
 /**
- * Everything matching, best first, across all seven kinds.
+ * Full search response — empty mode or typed results.
  *
- * `limit` is applied at the end rather than per kind, so a query that only
- * matches attractions returns a full list of attractions instead of two.
+ * `limit` caps typed results (dropdown uses ~8–12). Pass a large limit for the
+ * /search page. Empty queries ignore limit and return every vacation destination.
+ */
+export async function searchSite(query: string, limit = 10): Promise<SearchResponse> {
+  const q = query.trim();
+  if (!q) {
+    return {
+      results: vacationEmptySuggestions(),
+      query: "",
+      heritageIntent: false,
+      mode: "empty",
+    };
+  }
+
+  const heritageIntent = hasHeritageIntent(q);
+  const index = await getSearchIndex();
+  const scored: ScoredHit[] = [];
+  const nq = normalize(q);
+  const qTokens = nq.split(" ").filter(Boolean);
+
+  for (const doc of index) {
+    // Cheap gate before Damerau work: every query token must share a 2-letter
+    // prefix (or be a substring) with some indexed token, or the compact name
+    // must be within a plausible length of the query. Skips most tzaddikim.
+    if (!isPlausibleCandidate(qTokens, doc.normTokens, doc.normCompact)) continue;
+    const hit = scoreDocument(q, doc, heritageIntent);
+    if (hit) scored.push(hit);
+  }
+
+  const sorted = sortScored(scored);
+  const seen = new Set<string>();
+  const results: SiteHit[] = [];
+  for (const row of sorted) {
+    const key = `${row.hit.kind}:${normalize(row.hit.title)}:${row.hit.href}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push(row.hit);
+    if (results.length >= limit) break;
+  }
+
+  return {
+    results,
+    query: q,
+    interpretedAs: interpretedQuery(sorted),
+    heritageIntent,
+    mode: "search",
+  };
+}
+
+/**
+ * Everything matching, best first — the shape older callers expect.
+ *
+ * Prefer searchSite() when you need interpretedAs / heritageIntent / empty mode.
  */
 export async function searchEverything(query: string, limit = 8): Promise<SiteHit[]> {
-  const q = query.trim();
-  if (!q) return [];
+  const response = await searchSite(query, limit);
+  // Preserve the old contract: empty query returns nothing (the bar used to
+  // supply its own defaults). New callers that want the vacation empty state
+  // should use searchSite("").
+  if (!query.trim()) return [];
+  return response.results;
+}
 
-  const [attractions, stays, areas, eateries] = await Promise.all([
-    searchAttractions(q, 30),
-    searchStays(q, 30),
-    searchAreas(q, 20),
-    searchEateries(q, 20),
-  ]);
-
-  const hits: Array<{ hit: SiteHit; score: number }> = [];
-  const push = (hit: SiteHit, city: string, name: string) => hits.push({ hit, score: rank(q, city, name) });
-
-  for (const d of destinations) {
-    if (!fuzzyMatch(q, `${destinationHaystack(d)} ${extraSpellings([d.slug, d.city])}`)) continue;
-    push(
-      {
-        id: `destination-${d.slug}`,
-        kind: d.guide ? "Guide" : "Location",
-        title: d.city,
-        yiddish: d.yiddishCity,
-        subtitle: d.guide?.tzaddik ? `${d.guide.tzaddik} · ${d.country}` : d.country,
-        href: destinationHref(d),
-      },
-      d.city,
-      d.city,
-    );
+/**
+ * Fast reject for documents that cannot possibly match, before edit-distance work.
+ */
+function isPlausibleCandidate(qTokens: string[], docTokens: string[], docCompact: string[]): boolean {
+  if (qTokens.length === 0) return false;
+  if (qTokens.length === 1 && qTokens[0].length === 1) {
+    const ch = qTokens[0];
+    return docTokens.some((t) => t.startsWith(ch));
   }
-
-  for (const c of cemeteries) {
-    const hay = `${c.city} ${c.yiddishCity} ${c.name} ${c.yiddishName} ${c.country} ${extraSpellings([c.slug, c.city])}`;
-    if (!fuzzyMatch(q, hay)) continue;
-    push(
-      {
-        id: `cemetery-${c.slug}`,
-        kind: "Beis hachaim",
-        title: c.name,
-        yiddish: c.yiddishName || c.yiddishCity,
-        subtitle: `${c.city} · ${c.country}`,
-        href: `/cemeteries/${c.slug}`,
-      },
-      c.city,
-      c.name,
-    );
-  }
-
-  for (const a of attractions) {
-    push(
-      { id: `attraction-${a.slug}`, kind: "Thing to do", title: a.name, subtitle: `${a.city} · ${a.country} · ${a.kind}`, href: a.href },
-      a.city,
-      a.name,
-    );
-  }
-
-  for (const s of stays) {
-    push(
-      { id: `stay-${s.slug}`, kind: "Somewhere to stay", title: s.name, subtitle: `${s.city} · ${s.country} · ${s.kind}`, href: s.href },
-      s.city,
-      s.name,
-    );
-  }
-
-  for (const e of eateries) {
-    push(
-      { id: `eatery-${e.slug}`, kind: "Somewhere to eat", title: e.name, subtitle: `${e.city} · ${e.country} · ${e.kind}`, href: `/kosher#${e.slug}` },
-      e.city,
-      e.name,
-    );
-  }
-
-  for (const a of areas) {
-    push(
-      { id: `area-${a.slug}`, kind: "Area", title: a.name, subtitle: `${a.city} · ${a.country}`, href: `/kosher-stays#${a.slug}` },
-      a.city,
-      a.name,
-    );
-  }
-
-  // A city with a guide and a beis hachaim of the same name produced the same
-  // row twice, which is how the bar behaved before and was always wrong.
-  const seen = new Set<string>();
-  return hits
-    .sort(
-      (x, y) =>
-        x.score - y.score ||
-        KIND_ORDER.indexOf(x.hit.kind) - KIND_ORDER.indexOf(y.hit.kind) ||
-        x.hit.title.localeCompare(y.hit.title),
-    )
-    .filter(({ hit }) => {
-      const key = `${hit.kind}:${normalize(hit.title)}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
+  return qTokens.every((qt) => {
+    if (qt.length < 2) return docTokens.some((t) => t.startsWith(qt));
+    const prefix = qt.slice(0, 2);
+    if (docTokens.some((t) => t.startsWith(prefix) || t.includes(qt) || (qt.includes(t) && t.length >= 4))) {
       return true;
-    })
-    .slice(0, limit)
-    .map(({ hit }) => hit);
+    }
+    // Compact fuzzy: “dolomits” vs “thedolomites” / “dolomites”.
+    if (qt.length >= 4) {
+      const cq = qt.replace(/[\s-]+/g, "");
+      return docCompact.some((c) => Math.abs(c.length - cq.length) <= 3 && (c.startsWith(cq.slice(0, 3)) || cq.startsWith(c.slice(0, 3))));
+    }
+    return false;
+  });
 }

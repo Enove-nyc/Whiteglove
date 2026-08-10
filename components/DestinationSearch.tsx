@@ -4,49 +4,19 @@ import { BUILT_IN_WORDS } from "@/data/site-words";
 import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
-import { destinationHref, guidedDestinations } from "@/data/destinations";
-import type { SiteHit } from "@/lib/site-search";
+import type { SearchResponse, SiteHit, SiteHitSection } from "@/lib/site-search-types";
+import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
 // The search bar in the navbar, on every page.
 //
-// IT USED TO KNOW ABOUT TWO THINGS. It searched destinations and batei
-// hachaim, because those were all the site had when it was written. Everything
-// added since — attractions, places to stay, quarters, places to eat — went
-// onto its own page and into /stops, and nobody came back to the bar. So
-// "Colosseum" and "Merano" and "Kosher Tirol" all answered "No match yet" in a
-// box on every page, while /stops found all three one Enter away.
-//
-// It now asks /api/search, which searches everything. That also fixes what it
-// was doing to get its answers: this is a client component, and it was
-// importing the entire cemetery database into the browser so it could filter
-// it in the dropdown. Every visitor downloaded every kever on the site in order
-// to type into a box.
-//
-// The guided destinations stay in the bundle, because they are what the empty
-// box offers before anybody types and a network round trip to show a default
-// list would be worse than carrying a short one.
+// Asks /api/search on the server so the browser never downloads the cemetery
+// or content databases. Empty focus lists every published vacation destination
+// (editorial order). Typing searches the full public index with typo tolerance.
 
-type Suggestion = Pick<SiteHit, "id" | "kind" | "title" | "yiddish" | "subtitle" | "href">;
+type Suggestion = Pick<SiteHit, "id" | "kind" | "section" | "title" | "yiddish" | "subtitle" | "href" | "matchRank" | "fuzzy">;
 
-const defaultSuggestions: Suggestion[] = guidedDestinations()
-  .slice(0, 5)
-  .map((guide) => ({
-    id: `destination-${guide.slug}`,
-    kind: "Guide" as const,
-    title: guide.city,
-    yiddish: guide.yiddishCity,
-    subtitle: guide.guide?.tzaddik ? `${guide.guide.tzaddik} · ${guide.country}` : guide.country,
-    href: destinationHref(guide),
-  }));
+type FooterAction = { id: string; label: string; href: string };
 
-/**
- * `found` is how many results were on screen when they searched.
- *
- * Sent because zero is the number worth knowing: it means somebody asked for a
- * town or a kever by name and this site had never heard of it. Counted at the
- * moment it happens rather than worked out later, so what the owner reads is
- * what the visitor was actually shown.
- */
 function recordSearch(value: string, found: number) {
   if (!value.trim()) return;
   void fetch("/api/analytics", {
@@ -55,6 +25,53 @@ function recordSearch(value: string, found: number) {
     body: JSON.stringify({ type: "search", value: value.trim(), found }),
     keepalive: true,
   });
+}
+
+function recordSelect(kind: string) {
+  void fetch("/api/analytics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "search_select", kind }),
+    keepalive: true,
+  });
+}
+
+/** Highlight the query (or close prefix) inside a title/subtitle for a11y. */
+function HighlightText({ text, query }: { text: string; query: string }) {
+  const q = query.trim();
+  if (!q || q.length < 1) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const needle = q.toLowerCase();
+  const index = lower.indexOf(needle);
+  if (index < 0) {
+    // Try first token for multi-word queries.
+    const token = needle.split(/\s+/)[0];
+    const ti = token.length >= 2 ? lower.indexOf(token) : -1;
+    if (ti < 0) return <>{text}</>;
+    return (
+      <>
+        {text.slice(0, ti)}
+        <mark className="rounded-sm bg-[var(--gold-light)]/50 text-inherit">{text.slice(ti, ti + token.length)}</mark>
+        {text.slice(ti + token.length)}
+      </>
+    );
+  }
+  return (
+    <>
+      {text.slice(0, index)}
+      <mark className="rounded-sm bg-[var(--gold-light)]/50 text-inherit">{text.slice(index, index + needle.length)}</mark>
+      {text.slice(index + needle.length)}
+    </>
+  );
+}
+
+function groupSuggestions(matches: Suggestion[], emptyMode: boolean): Array<{ section: SiteHitSection | "Suggestions"; hits: Suggestion[] }> {
+  if (emptyMode) {
+    return matches.length ? [{ section: "Vacation", hits: matches }] : [];
+  }
+  return SITE_HIT_SECTIONS.map((section) => ({ section, hits: matches.filter((m) => m.section === section) })).filter(
+    (g) => g.hits.length > 0,
+  );
 }
 
 export default function DestinationSearch({
@@ -77,40 +94,80 @@ export default function DestinationSearch({
   ariaLabel?: string;
 }) {
   const router = useRouter();
-  // A page may carry two of these — the header's and the heritage page's own —
-  // and two elements sharing an id is how aria-controls starts pointing at the
-  // wrong list.
   const listId = `${useId()}-search-results`;
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  // The results are stored WITH the query they answer, so which list belongs
-  // on screen is derived rather than cleared. Clearing it in an effect meant a
-  // render pass whose only job was to blank the list, and a slow reply to "ro"
-  // could still land after the reply to "rome".
-  const [hits, setHits] = useState<{ query: string; results: Suggestion[] } | null>(null);
-  // Which row the arrow keys are on. -1 means "none", and Enter then does what
-  // it always did: go to the first result, or to the full directory.
+  const [hits, setHits] = useState<{ query: string; response: SearchResponse } | null>(null);
+  const [emptyHits, setEmptyHits] = useState<Suggestion[] | null>(null);
   const [active, setActive] = useState(-1);
+  const blurTimer = useRef<number | undefined>(undefined);
 
   const trimmed = query.trim();
-  const matches = useMemo(
-    () => (trimmed ? (hits?.query === trimmed ? hits.results : []) : defaultSuggestions),
-    [trimmed, hits],
-  );
   const searching = Boolean(trimmed) && hits?.query !== trimmed;
+  const response = trimmed ? (hits?.query === trimmed ? hits.response : null) : null;
+  const matches: Suggestion[] = useMemo(() => {
+    if (!trimmed) return emptyHits ?? [];
+    return response?.results ?? [];
+  }, [trimmed, emptyHits, response]);
 
-  // One request per pause in typing, and a request that is no longer wanted is
-  // aborted rather than allowed to answer.
+  const emptyMode = !trimmed;
+  const groups = useMemo(() => groupSuggestions(matches, emptyMode), [matches, emptyMode]);
+  // Visual order (sectioned) — keyboard nav follows this, not raw rank order.
+  const orderedMatches = useMemo(() => groups.flatMap((group) => group.hits), [groups]);
+
+  const footer: FooterAction | null = useMemo(() => {
+    if (emptyMode) {
+      return { id: "footer-destinations", label: "View all vacation destinations", href: "/destinations" };
+    }
+    if (!trimmed || searching) return null;
+    return {
+      id: "footer-all",
+      label: `See all results for “${trimmed}”`,
+      href: `/search?q=${encodeURIComponent(trimmed)}`,
+    };
+  }, [emptyMode, trimmed, searching]);
+
+  // Flat list for keyboard nav: results then optional footer.
+  const navItems = useMemo(() => {
+    const items: Array<{ type: "hit"; hit: Suggestion } | { type: "footer"; action: FooterAction }> = orderedMatches.map((hit) => ({
+      type: "hit" as const,
+      hit,
+    }));
+    if (footer) items.push({ type: "footer", action: footer });
+    return items;
+  }, [orderedMatches, footer]);
+
+  // Load vacation empty state once on first focus.
+  useEffect(() => {
+    if (!open || trimmed || emptyHits) return;
+    const controller = new AbortController();
+    fetch("/api/search?limit=50", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload: SearchResponse | null) => {
+        if (payload?.mode === "empty") setEmptyHits(payload.results);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setEmptyHits([]);
+      });
+    return () => controller.abort();
+  }, [open, trimmed, emptyHits]);
+
+  // Typed search: debounce + cancel stale requests. 2+ chars for full search;
+  // 1-char still queries (API returns vacation prefixes only).
   useEffect(() => {
     if (!trimmed) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
-        .then((response) => (response.ok ? response.json() : { results: [] }))
-        .then((payload: { results?: Suggestion[] }) => setHits({ query: trimmed, results: payload.results ?? [] }))
+      fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=12`, { signal: controller.signal })
+        .then((res) => (res.ok ? res.json() : { results: [], query: trimmed, heritageIntent: false, mode: "search" as const }))
+        .then((payload: SearchResponse) => setHits({ query: trimmed, response: payload }))
         .catch(() => {
-          // An aborted request is the normal case here, not a failure.
-          if (!controller.signal.aborted) setHits({ query: trimmed, results: [] });
+          if (!controller.signal.aborted) {
+            setHits({
+              query: trimmed,
+              response: { results: [], query: trimmed, heritageIntent: false, mode: "search" },
+            });
+          }
         });
     }, 160);
     return () => {
@@ -119,50 +176,82 @@ export default function DestinationSearch({
     };
   }, [trimmed]);
 
-  const blurTimer = useRef<number | undefined>(undefined);
-
   function go(hit: Suggestion) {
-    recordSearch(query, matches.length);
+    recordSearch(query, orderedMatches.length);
+    recordSelect(hit.kind);
     router.push(hit.href);
+    setOpen(false);
+  }
+
+  function goFooter(action: FooterAction) {
+    if (trimmed) recordSearch(query, orderedMatches.length);
+    router.push(action.href);
     setOpen(false);
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    recordSearch(query, matches.length);
-    const chosen = active >= 0 ? matches[active] : query.trim() ? matches[0] : undefined;
-    if (chosen) router.push(chosen.href);
-    else router.push(`/stops${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);
+    // Never auto-navigate the first result while results are still loading.
+    if (searching) {
+      if (trimmed) {
+        recordSearch(query, 0);
+        router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      }
+      setOpen(false);
+      return;
+    }
+
+    if (active >= 0 && active < navItems.length) {
+      const item = navItems[active];
+      if (item.type === "footer") goFooter(item.action);
+      else go(item.hit);
+      return;
+    }
+
+    if (!trimmed) {
+      if (footer) goFooter(footer);
+      return;
+    }
+
+    recordSearch(query, orderedMatches.length);
+    // One exact unambiguous match → open it; otherwise the results page.
+    if (orderedMatches.length === 1 && (orderedMatches[0].matchRank ?? 99) <= 1) {
+      recordSelect(orderedMatches[0].kind);
+      router.push(orderedMatches[0].href);
+    } else {
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    }
     setOpen(false);
   }
 
-  // Arrow keys through the list, Escape to close. The dropdown had no keyboard
-  // path at all before this: a person navigating by keyboard could type into
-  // the box and never reach a result.
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Escape") {
       setOpen(false);
       return;
     }
-    if (!open || matches.length === 0) return;
+    if (!open || navItems.length === 0) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActive((i) => (i + 1) % matches.length);
+      setActive((i) => (i + 1) % navItems.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActive((i) => (i <= 0 ? matches.length - 1 : i - 1));
+      setActive((i) => (i <= 0 ? navItems.length - 1 : i - 1));
     }
   }
 
+  const hitIndexById = useMemo(() => new Map(orderedMatches.map((hit, index) => [hit.id, index])), [orderedMatches]);
+  const footerIndex = orderedMatches.length;
+
   return (
-    <div className={`relative ${compact ? "w-full" : "mt-12 max-w-3xl"}`}>
-      <form className={`flex flex-col gap-2 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`} onSubmit={submitSearch}>
+    <div className={`relative ${compact ? "w-full max-w-full" : "mt-12 max-w-3xl"}`}>
+      <form
+        className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
+        onSubmit={submitSearch}
+      >
         <input
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
-            // Reset the keyboard cursor here rather than in an effect: typing
-            // is the event that invalidates it, so this is where it belongs.
             setActive(-1);
             setOpen(true);
           }}
@@ -177,47 +266,110 @@ export default function DestinationSearch({
           aria-autocomplete="list"
           role="combobox"
           aria-controls={listId}
+          aria-activedescendant={active >= 0 ? `${listId}-opt-${active}` : undefined}
           placeholder={placeholder}
           autoComplete="off"
         />
-        <button className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`} type="submit">
+        <button
+          className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`}
+          type="submit"
+        >
           {compact ? "Search" : "Explore"}
         </button>
       </form>
 
       {open && (
-        <div id={listId} role="listbox" className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl">
-          {matches.length > 0 ? (
-            matches.map((match, index) => (
-              <button
-                key={match.id}
-                type="button"
-                role="option"
-                aria-selected={index === active}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  window.clearTimeout(blurTimer.current);
-                }}
-                onMouseEnter={() => setActive(index)}
-                onClick={() => go(match)}
-                className={`flex w-full items-center justify-between gap-5 border-b border-[var(--gold-light)] px-5 py-4 text-left last:border-b-0 transition hover:bg-[var(--cream-deep)] ${index === active ? "bg-[var(--cream-deep)]" : ""}`}
-              >
-                <div className="min-w-0">
-                  {match.yiddish ? (
-                    <BilingualLabel primary={match.yiddish} secondary={match.title} primaryClassName="text-3xl" secondaryClassName="text-base" compact />
-                  ) : (
-                    <p className="text-base font-semibold text-[var(--navy)]">{match.title}</p>
-                  )}
-                  <p className="mt-2 text-sm leading-6 text-stone-600">{match.subtitle}</p>
+        <div
+          id={listId}
+          role="listbox"
+          className="absolute z-20 mt-2 max-h-[min(28rem,70vh)] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl"
+        >
+          {response?.interpretedAs && trimmed && !searching ? (
+            <p className="border-b border-[var(--gold-light)] px-5 py-2 text-xs text-stone-500">
+              Showing matches for <span className="font-semibold text-[var(--navy)]">{response.interpretedAs}</span>
+            </p>
+          ) : null}
+
+          {searching ? (
+            <p className="px-5 py-4 text-sm text-stone-600">Searching…</p>
+          ) : matches.length > 0 ? (
+            <>
+              {groups.map((group) => (
+                <div key={group.section} role="group" aria-label={group.section}>
+                  <p className="sticky top-0 border-b border-[var(--gold-light)] bg-[#f7f3eb] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+                    {group.section}
+                  </p>
+                  {group.hits.map((match) => {
+                    const optionIndex = hitIndexById.get(match.id) ?? 0;
+                    return (
+                    <button
+                      key={match.id}
+                      id={`${listId}-opt-${optionIndex}`}
+                      type="button"
+                      role="option"
+                      aria-selected={optionIndex === active}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        window.clearTimeout(blurTimer.current);
+                      }}
+                      onMouseEnter={() => setActive(optionIndex)}
+                      onClick={() => go(match)}
+                      className={`flex w-full max-w-full items-center justify-between gap-3 border-b border-[var(--gold-light)] px-5 py-3.5 text-left transition hover:bg-[var(--cream-deep)] sm:gap-5 sm:py-4 ${optionIndex === active ? "bg-[var(--cream-deep)]" : ""}`}
+                    >
+                      <div className="min-w-0">
+                        {match.yiddish ? (
+                          <BilingualLabel
+                            primary={match.yiddish}
+                            secondary={match.title}
+                            primaryClassName="text-2xl sm:text-3xl"
+                            secondaryClassName="text-base"
+                            compact
+                          />
+                        ) : (
+                          <p className="truncate text-base font-semibold text-[var(--navy)]">
+                            <HighlightText text={match.title} query={trimmed} />
+                          </p>
+                        )}
+                        <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-stone-600">
+                          <HighlightText text={match.subtitle} query={trimmed} />
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)] sm:text-xs sm:tracking-[0.12em]">
+                        {match.kind}
+                      </span>
+                    </button>
+                    );
+                  })}
                 </div>
-                <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{match.kind}</span>
-              </button>
-            ))
+              ))}
+            </>
           ) : (
             <p className="px-5 py-4 text-sm text-stone-600">
-              {searching ? "Searching…" : "No match yet. Press Enter to search the full directory."}
+              {trimmed
+                ? "No match yet. Press Enter to open the full results page."
+                : emptyHits === null
+                  ? "Loading destinations…"
+                  : "No vacation destinations to show yet."}
             </p>
           )}
+
+          {footer && !searching ? (
+            <button
+              id={`${listId}-opt-${footerIndex}`}
+              type="button"
+              role="option"
+              aria-selected={active === footerIndex}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                window.clearTimeout(blurTimer.current);
+              }}
+              onMouseEnter={() => setActive(footerIndex)}
+              onClick={() => goFooter(footer)}
+              className={`w-full border-t border-[var(--gold-light)] px-5 py-3.5 text-left text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)] ${active === footerIndex ? "bg-[var(--cream-deep)]" : ""}`}
+            >
+              {footer.label} →
+            </button>
+          ) : null}
         </div>
       )}
     </div>

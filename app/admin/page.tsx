@@ -150,7 +150,8 @@ export default async function AdminHome() {
   const quickActions = [
     { number: "01", href: "/admin/pages", title: "Edit a page", detail: "Change the words or pictures on any website page." },
     { number: "02", href: "/admin/directory", title: "Manage the directory", detail: "Add or update a town, beis hachaim, contact, or business." },
-    { number: "03", href: "/admin/advertisements", title: "Manage advertisements", detail: "Create or update banners, popups, and promotions." },
+    { number: "03", href: "/admin/growth", title: "Search and bookings", detail: "See what people search for, which destinations convert, and alert signups." },
+    { number: "04", href: "/admin/advertisements", title: "Manage advertisements", detail: "Create or update banners, popups, and promotions." },
   ].filter((action) => may(action.href));
   const sections = ADMIN_SECTIONS.filter((section) => section.href !== "/admin")
     .map((section) => ({ ...section, children: (section.children ?? []).filter((child) => may(child.href)) }))

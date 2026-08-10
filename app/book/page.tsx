@@ -3,6 +3,7 @@ import { readWords } from "@/lib/site-words-store";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { flightPartnerDoesMultiCity } from "@/lib/affiliate/partners";
 import { readExtras } from "@/lib/travel-extras-store";
+import TravelEssentials from "@/components/TravelEssentials";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
 import StartingPoints from "@/components/StartingPoints";
@@ -148,9 +149,8 @@ export default async function BookPage({
         </div>
       </section>
 
-      {/* Once the flights are booked: eSIM, insurance, transfers. Under the
-          search rather than above it — the same cards at the top would be a row
-          of adverts in front of the thing they came for. */}
+      {/* Structured Travel Essentials first; free-form custom extras after. */}
+      <TravelEssentials pageType="book" placement="book-essentials" />
       <TravelExtras extras={extras} />
 
       {/* Cash and points, set side by side per category. Two independent

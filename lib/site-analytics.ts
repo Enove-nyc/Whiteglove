@@ -76,6 +76,78 @@ export async function trackSearch(query: string, found?: number) {
 }
 
 /**
+ * Which kind of result people open from search — no query text, no PII.
+ *
+ * Paired with zero-result tracking so the owner can see both gaps in coverage
+ * and which content types the bar is actually used for.
+ */
+export async function trackSearchSelection(kind: string) {
+  const label = cleanLabel(kind, 40);
+  if (!label) return;
+  await redis(`zincrby/white-glove:search-kinds/1/${encodeURIComponent(label)}`);
+}
+
+/**
+ * A filter chip or facet used on search — privacy-safe labels only
+ * (e.g. "country:Italy", "kind:hotel"), never free-text PII.
+ */
+export async function trackSearchFilter(filter: string) {
+  const label = cleanLabel(filter, 60);
+  if (!label) return;
+  await redis(`zincrby/white-glove:search-filters/1/${encodeURIComponent(label)}`);
+}
+
+/** Alert signup topic (+ optional destination slug) for the growth dashboard. */
+export async function trackAlertSignup(topic: string, destinationSlug?: string) {
+  const label = cleanLabel(topic, 40);
+  if (!label) return;
+  await Promise.all([
+    redis(`incr/white-glove:alerts:all`),
+    redis(`zincrby/white-glove:alert-topics/1/${encodeURIComponent(label)}`),
+    destinationSlug
+      ? redis(`zincrby/white-glove:alert-destinations/1/${encodeURIComponent(cleanLabel(destinationSlug, 80))}`)
+      : undefined,
+  ]);
+}
+
+export async function getTopSearchFilters(limit = 20): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:search-filters/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+export async function getSearchKinds(limit = 20): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:search-kinds/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+export async function getAlertTopicCounts(limit = 20): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:alert-topics/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+export async function getAlertDestinationCounts(limit = 20): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:alert-destinations/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+export async function getAlertSignupTotal(): Promise<number> {
+  if (!analyticsIsConfigured()) return 0;
+  const total = await redis<number>("get/white-glove:alerts:all");
+  return Number(total?.result || 0);
+}
+
+/** Top search terms (not only empty ones), for demand reporting. */
+export async function getTopSearches(limit = 40): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const found = await redis<unknown>(`zrevrange/white-glove:searches/0/${Math.max(0, limit - 1)}/WITHSCORES`);
+  return pairs(found?.result);
+}
+
+/**
  * What people searched for and found nothing.
  *
  * Empty when nothing is connected, and empty for a site nobody has searched —

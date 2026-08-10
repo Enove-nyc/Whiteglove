@@ -186,8 +186,15 @@ export default function AreaMap({
           // ctrl (or two fingers) zooms, which is Google's own convention.
           gestureHandling: "cooperative",
           mapTypeControl: true,
+          // Positions keep Google's chrome inside the box — TOP_RIGHT /
+          // RIGHT_BOTTOM sat flush against the edge and the compass / zoom
+          // controls were clipped by the border.
+          mapTypeControlOptions: { position: 1 }, // TOP_LEFT
           streetViewControl: false,
           fullscreenControl: true,
+          fullscreenControlOptions: { position: 3 }, // TOP_RIGHT
+          zoomControl: true,
+          zoomControlOptions: { position: 9 }, // RIGHT_BOTTOM
         });
         ginfoRef.current = new maps.InfoWindow();
         gmapRef.current.addListener?.("zoom_changed", () => setZoom(gmapRef.current?.getZoom?.() ?? 11));
@@ -251,14 +258,16 @@ export default function AreaMap({
         const bounds = new maps.LatLngBounds();
         bounds.extend({ lat: frame.north, lng: frame.east });
         bounds.extend({ lat: frame.south, lng: frame.west });
-        gmapRef.current.fitBounds(bounds, 24);
+        // Extra inset so the edge pins and Google's own controls are not cut
+        // off by the map box border.
+        gmapRef.current.fitBounds(bounds, 56);
       }
       return;
     }
     // Nothing sets the zoom here. Moving the map makes it fire its own zoom
     // event, and that is what reports the new value — the map is the external
     // system, and asking it to tell us beats guessing what it did.
-    mapRef.current?.fitBounds([[frame.south, frame.west], [frame.north, frame.east]], { padding: [24, 24] });
+    mapRef.current?.fitBounds([[frame.south, frame.west], [frame.north, frame.east]], { padding: [56, 56] });
     // Deliberately keyed on the search and the engine only: reframing every
     // time a category is switched off would jump the map under the cursor.
   }, [center, frame, engine]);
@@ -281,12 +290,12 @@ export default function AreaMap({
           position: { lat: m.lat, lng: m.lng },
           map,
           title: m.name,
-          // The compass from the logo, in this kind's colour — the same
-          // picture the legend below the map shows.
+          // The logo mark (hand + compass) on a cream disc — same PNG the
+          // legend below the map shows. Anchored at the cuff, not the centre.
           icon: {
             url: pin.url,
-            scaledSize: new maps.Size(pin.size, pin.size),
-            anchor: new maps.Point(pin.size / 2, pin.size / 2),
+            scaledSize: new maps.Size(pin.width, pin.height),
+            anchor: new maps.Point(pin.anchorX, pin.anchorY),
           },
         });
         marker.addListener("click", () => {
@@ -309,9 +318,9 @@ export default function AreaMap({
         const pin = compassFor(m.kind, zoom);
         const icon = leaflet.icon({
           iconUrl: pin.url,
-          iconSize: [pin.size, pin.size],
-          iconAnchor: [pin.size / 2, pin.size / 2],
-          popupAnchor: [0, -pin.size / 2],
+          iconSize: [pin.width, pin.height],
+          iconAnchor: [pin.anchorX, pin.anchorY],
+          popupAnchor: [0, -pin.anchorY],
         });
         const dot = leaflet.marker([m.lat, m.lng], { icon, title: m.name });
         dot.bindPopup(popupHtml(m, centerName));
@@ -372,8 +381,7 @@ export default function AreaMap({
                 strikethrough and aria-pressed — not by the colour of the mark,
                 which is exactly what somebody colour-blind cannot read. */}
             <span aria-hidden="true" className="w-2.5 text-center">{shown[kind] ? "✓" : "×"}</span>
-            {/* The same compass the pins use, drawn from the same constants,
-                so the legend cannot drift away from the map. */}
+            {/* The same glove mark the pins use, so the legend cannot drift. */}
             <CompassMark kind={kind} muted={!shown[kind]} />
             {MAP_STYLE[kind].label}
             <span className="font-normal text-stone-400">{counts[kind]}</span>
@@ -390,7 +398,7 @@ export default function AreaMap({
       <div
         ref={boxRef}
         style={{ height }}
-        className="mt-3 w-full border border-[var(--gold-light)] bg-[#eef2f5]"
+        className="wg-map-box mt-3 w-full border border-[var(--gold-light)] bg-[#eef2f5]"
         role="application"
         aria-label={centerName ? `Map of what is around ${centerName}` : "Map of everywhere on this site"}
       />

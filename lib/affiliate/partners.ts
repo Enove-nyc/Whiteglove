@@ -35,6 +35,18 @@ import { allezUrl, readStay22Link, stay22IsOn, type Stay22Settings } from "@/lib
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
 import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
+import { looksTracked } from "@/lib/travel-extras";
+
+/** HTTPS landing URL usable for Travel Essentials — shared rule with lib/travel-essentials. */
+function landingUrlOk(url: string): boolean {
+  const value = url.trim();
+  if (!value) return false;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 /** What a visitor is trying to book. */
 export type TravelProduct = "hotel" | "flight" | "car" | "transfer" | "activity" | "insurance" | "esim" | "programme";
@@ -52,6 +64,19 @@ export const TRAVEL_PRODUCTS: ReadonlyArray<{ value: TravelProduct; label: strin
 
 /** Who records the referral and pays for it. */
 export type AffiliateNetwork = "travelpayouts" | "stay22" | "none";
+
+function networkFromLanding(url: string): AffiliateNetwork {
+  if (readStay22Link(url)) return "stay22";
+  try {
+    const host = new URL(url).host.toLowerCase();
+    if (["tp.media", "tp.st", "c.travelpayouts.com", "travelpayouts.com"].some((h) => host === h || host.endsWith(`.${h}`))) {
+      return "travelpayouts";
+    }
+  } catch {
+    /* ignore */
+  }
+  return looksTracked(url) ? "travelpayouts" : "none";
+}
 
 export const NETWORK_LABELS: Record<AffiliateNetwork, string> = {
   travelpayouts: "Travelpayouts",
@@ -77,6 +102,11 @@ export type ProductRoute = {
   note: string;
 };
 
+/** Landing-page affiliate URLs for Travel Essentials (insurance, eSIM, …). */
+export type EssentialsLandings = Partial<
+  Record<"transfer" | "activity" | "insurance" | "esim", { url: string; label?: string }>
+>;
+
 /** Everything the site needs in order to build any booking link. */
 export type AffiliateConfig = {
   travelpayouts: TravelpayoutsLinks;
@@ -87,6 +117,11 @@ export type AffiliateConfig = {
   kayakParams?: string;
   /** Products the owner has switched off entirely. */
   paused?: readonly TravelProduct[];
+  /**
+   * Pasted tracked links for Travel Essentials landing products.
+   * Read from the Travel Essentials store — never invented in code.
+   */
+  essentialsLandings?: EssentialsLandings;
 };
 
 /* ---- what a link is asked for -------------------------------------------- */
@@ -202,9 +237,28 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
     };
   }
 
-  // Transfers, activities, insurance, eSIMs and seasonal programmes have no
-  // programme joined yet. The slot exists so the UI and the admin can both say
-  // so honestly; inventing a link here is the one thing that must not happen.
+  if (product === "transfer" || product === "activity" || product === "insurance" || product === "esim") {
+    const landing = config.essentialsLandings?.[product];
+    const url = landing?.url?.trim() ?? "";
+    if (!url || !landingUrlOk(url)) {
+      return NOT_CONNECTED(
+        product,
+        TRAVEL_PRODUCTS.find((entry) => entry.value === product)?.label.toLowerCase() ?? product,
+      );
+    }
+    const network = networkFromLanding(url);
+    return {
+      product,
+      destinationLabel: landing?.label?.trim() || "Partner",
+      network,
+      earns: looksTracked(url),
+      note: looksTracked(url)
+        ? `Travel Essentials link goes through ${network === "stay22" ? "Stay22" : network === "travelpayouts" ? "Travelpayouts" : "a tracked redirect"}.`
+        : "Travel Essentials link is saved but does not look tracked — it may earn nothing.",
+    };
+  }
+
+  // Seasonal programmes and anything else without a joined partner stay dark.
   return NOT_CONNECTED(product, TRAVEL_PRODUCTS.find((entry) => entry.value === product)?.label.toLowerCase() ?? product);
 }
 
@@ -288,22 +342,33 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     const from = (only?.from ?? request.from ?? "").trim();
     const to = (only?.to ?? request.to ?? "").trim();
     const out = isoDate(only?.date ?? request.checkIn);
-    if (!from || !to || !out) return null;
-    const back = isoDate(request.checkOut);
-    // The affiliate key goes on inside kayakUrl. Kayak takes no passenger
-    // count in the path, so `adults` is carried in the click record for
-    // reporting and not in the URL — inventing a parameter Kayak ignores
-    // would look like it was doing something.
-    const shape: SearchShape = back
-      ? { trip: "round-trip", legs: [{ from, to, date: out }], ret: back }
-      : { trip: "one-way", legs: [{ from, to, date: out }] };
-
-    // Whichever flight programme the owner is actually approved for. Kayak
-    // keeps its own builder because it handles multi-city and carries the
-    // legacy affiliate params; everything else comes from the registry.
     const partner = partnerFor("flights", config.partners);
-    if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
-    return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+    if (from && to && out) {
+      const back = isoDate(request.checkOut);
+      // The affiliate key goes on inside kayakUrl. Kayak takes no passenger
+      // count in the path, so `adults` is carried in the click record for
+      // reporting and not in the URL — inventing a parameter Kayak ignores
+      // would look like it was doing something.
+      const shape: SearchShape = back
+        ? { trip: "round-trip", legs: [{ from, to, date: out }], ret: back }
+        : { trip: "one-way", legs: [{ from, to, date: out }] };
+
+      // Whichever flight programme the owner is actually approved for. Kayak
+      // keeps its own builder because it handles multi-city and carries the
+      // legacy affiliate params; everything else comes from the registry.
+      if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
+      return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+    }
+
+    // Approved general landing only when a place context is present (destination
+    // page / Travel Essentials) but airports and dates are not. A bare flight
+    // request with no place still returns null — that is an incomplete search,
+    // not a landing page.
+    if (!where) return null;
+    if (partner.key === "kayak") return withAffiliate("https://www.kayak.com/flights", config.kayakParams);
+    if (partner.key === "aviasales") return "https://search.aviasales.com/flights/";
+    if (partner.key === "kiwi") return "https://www.kiwi.com/en/";
+    return null;
   }
 
   if (request.product === "car") {
@@ -311,6 +376,17 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     const built = carUrl(partner, { where, pickup: isoDate(request.checkIn), dropoff: isoDate(request.checkOut) });
     if (!built) return null;
     return partner.key === "kayak" ? withAffiliate(built, config.kayakParams) : built;
+  }
+
+  if (
+    request.product === "transfer" ||
+    request.product === "activity" ||
+    request.product === "insurance" ||
+    request.product === "esim"
+  ) {
+    const url = config.essentialsLandings?.[request.product]?.url?.trim() ?? "";
+    if (!url || !landingUrlOk(url)) return null;
+    return url;
   }
 
   return null;
@@ -338,11 +414,18 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   if (!url) return null;
 
   // The hotel search through Stay22 is BUILT with the aid already in it, so
-  // there is nothing left to wrap. Everything else is a plain partner search
-  // that a pasted link puts a network in front of — `u=` for Travelpayouts,
-  // `link=` for Stay22, both handled in throughTravelpayouts, and both a
-  // no-op when nothing usable is pasted.
+  // there is nothing left to wrap. Landing-page essentials are already full
+  // tracked URLs from the owner's dashboard — wrapping them again would break
+  // the programme's own parameters.
   if (request.product === "hotel" && route.network === "stay22") return { url, route };
+  if (
+    request.product === "transfer" ||
+    request.product === "activity" ||
+    request.product === "insurance" ||
+    request.product === "esim"
+  ) {
+    return { url, route };
+  }
 
   if (route.network === "travelpayouts" || route.network === "stay22") {
     const slot: SearchSlot = request.product === "hotel" ? "hotels" : request.product === "flight" ? "flights" : "cars";

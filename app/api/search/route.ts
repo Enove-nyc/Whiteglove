@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchEverything } from "@/lib/site-search";
+import { searchSite } from "@/lib/site-search";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +10,13 @@ export const dynamic = "force-dynamic";
 // own search box: the bar is on the /access page's chrome too, and a visitor
 // who cannot search cannot find the page they are being asked to unlock. What
 // comes back here is titles and links, the same things the sitemap shows.
+//
+// An empty `q` returns every published vacation destination (empty-focus
+// state). Heritage towns and cemeteries are not included in that list.
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q") || "";
   const raw = Number(request.nextUrl.searchParams.get("limit"));
-  const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 25) : 8;
-  return NextResponse.json({ results: await searchEverything(q, limit) });
+  const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 100) : q.trim() ? 10 : 50;
+  const response = await searchSite(q, limit);
+  return NextResponse.json(response);
 }

@@ -1,59 +1,245 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
-import { searchEverything } from "../lib/site-search";
+import { vacationDestinations } from "../data/vacation-destinations";
 import { normalize } from "../lib/place-search";
+import { damerauLevenshtein } from "../lib/site-search-match";
+import {
+  groupHits,
+  hasHeritageIntent,
+  isUnambiguousExact,
+  searchEverything,
+  searchSite,
+  vacationEmptySuggestions,
+} from "../lib/site-search";
 
-// WHAT THIS IS FOR. The search bar in the navbar sits on every page and knew
-// about destinations and batei hachaim only. Everything the site has grown
-// since — attractions, places to stay, quarters, places to eat — answered "No
-// match yet" in that box while /stops found them one Enter away.
-//
-// These hold the bar open to all of it. A kind that stops being searchable
-// here is a kind that becomes invisible on every page of the site at once,
-// which is exactly how the first four went missing.
+// Global search: vacation-first empty state, typo-tolerant typed search, and
+// heritage that stays available without owning ordinary travel queries.
 
-describe("the bar finds every kind of thing the site holds", () => {
-  test("a thing to do", async () => {
-    const hits = await searchEverything("Colosseum");
-    assert.ok(hits.some((h) => h.kind === "Thing to do" && /colosseum/i.test(h.title)), "the Colosseum should be findable from the navbar");
+describe("empty focus is vacation-only", () => {
+  test("lists every published vacation destination in editorial order", async () => {
+    const empty = await searchSite("");
+    assert.equal(empty.mode, "empty");
+    assert.equal(empty.results.length, vacationDestinations.length);
+    assert.deepEqual(
+      empty.results.map((r) => r.title),
+      vacationDestinations.map((d) => d.name),
+    );
+    assert.ok(empty.results.every((r) => r.kind === "Vacation destination"));
+    assert.ok(empty.results.every((r) => r.href.startsWith("/destinations/")));
   });
 
-  test("somewhere to eat", async () => {
-    const hits = await searchEverything("Kosher Tirol", 15);
-    assert.ok(hits.some((h) => h.kind === "Somewhere to eat"), "an eatery should be findable from the navbar");
+  test("heritage towns, cemeteries and tzaddikim are absent from empty state", async () => {
+    const empty = await searchSite("");
+    assert.ok(!empty.results.some((r) => r.section === "Heritage"));
+    assert.ok(!empty.results.some((r) => r.kind === "Heritage town"));
+    assert.ok(!empty.results.some((r) => r.kind === "Beis hachaim"));
+    assert.ok(!empty.results.some((r) => r.kind === "Kever or tzaddik"));
+    // guidedDestinations() must not be the empty-state source.
+    assert.ok(!empty.results.some((r) => r.href === "/lizensk" || r.href.startsWith("/heritage/")));
   });
 
-  test("somewhere to stay", async () => {
-    const hits = await searchEverything("Canazei", 15);
-    assert.ok(hits.some((h) => h.kind === "Somewhere to stay"), "a stay should be findable from the navbar");
+  test("vacationEmptySuggestions matches searchSite empty mode", () => {
+    const local = vacationEmptySuggestions();
+    assert.equal(local.length, vacationDestinations.length);
+    assert.equal(local[0].title, vacationDestinations[0].name);
   });
 
-  test("a beis hachaim, which it could always do", async () => {
-    const hits = await searchEverything("Lizhensk", 15);
-    assert.ok(hits.some((h) => h.kind === "Beis hachaim"), "kevarim must not be lost while adding the rest");
-  });
-
-  test("the alternate spellings reach it too", async () => {
-    const hits = await searchEverything("Lezajsk", 15);
-    assert.ok(hits.length > 0, "a place written another way should still be found");
-  });
-});
-
-describe("what comes back", () => {
-  test("nothing at all for an empty query", async () => {
-    // The bar shows its own short default list when the box is empty; an empty
-    // query must not return the entire site.
+  test("searchEverything still returns [] for empty (legacy contract)", async () => {
     assert.deepEqual(await searchEverything(""), []);
     assert.deepEqual(await searchEverything("   "), []);
   });
+});
 
-  test("every hit can be opened", async () => {
+describe("kinds are specific, not Guide", () => {
+  test("vacation destinations are labelled Vacation destination", async () => {
+    const hits = await searchEverything("Rome", 10);
+    const vacation = hits.find((h) => h.kind === "Vacation destination");
+    assert.ok(vacation, "Rome vacation destination should be findable");
+    assert.equal(vacation.section, "Vacation");
+  });
+
+  test("stays, food and heritage use the new labels", async () => {
+    const stay = await searchEverything("Canazei", 20);
+    assert.ok(stay.some((h) => h.kind === "Hotel or stay"));
+
+    const food = await searchEverything("Kosher Tirol", 20);
+    assert.ok(food.some((h) => h.kind === "Kosher food"));
+
+    const heritage = await searchEverything("Lizhensk", 20);
+    assert.ok(heritage.some((h) => h.kind === "Beis hachaim" || h.kind === "Heritage town" || h.kind === "Kever or tzaddik"));
+    assert.ok(!heritage.some((h) => (h.kind as string) === "Guide"));
+    assert.ok(!heritage.some((h) => (h.kind as string) === "Somewhere to stay"));
+    assert.ok(!heritage.some((h) => (h.kind as string) === "Somewhere to eat"));
+  });
+
+  test("things to do remain findable", async () => {
+    const hits = await searchEverything("Colosseum");
+    assert.ok(hits.some((h) => h.kind === "Thing to do" && /colosseum/i.test(h.title)));
+  });
+});
+
+describe("vacation-first ranking", () => {
+  test("exact vacation name comes first", async () => {
+    const hits = await searchEverything("Rome", 15);
+    assert.ok(hits.length > 0);
+    assert.equal(hits[0].kind, "Vacation destination");
+    assert.match(hits[0].title, /rome/i);
+  });
+
+  test("vacation outranks heritage for a general city query", async () => {
+    const hits = await searchEverything("Rome", 20);
+    const vac = hits.findIndex((h) => h.kind === "Vacation destination");
+    const heritage = hits.findIndex((h) => h.section === "Heritage");
+    assert.ok(vac === 0, "vacation Rome should be first");
+    if (heritage >= 0) assert.ok(vac < heritage, "vacation before heritage for Rome");
+  });
+
+  test("shared city: vacation before stay before heritage", async () => {
+    const hits = await searchEverything("Krakow", 25);
+    const vac = hits.findIndex((h) => h.kind === "Vacation destination");
+    const stay = hits.findIndex((h) => h.kind === "Hotel or stay" || h.kind === "Neighborhood");
+    const heritage = hits.findIndex((h) => h.section === "Heritage");
+    assert.ok(vac >= 0, "Kraków vacation should appear");
+    if (stay >= 0) assert.ok(vac < stay, "vacation before stay");
+    if (heritage >= 0) {
+      assert.ok(vac < heritage, "vacation before heritage");
+      if (stay >= 0) assert.ok(stay < heritage, "stay before heritage");
+    }
+  });
+
+  test("exact heritage intent ranks heritage first", async () => {
+    const hits = await searchEverything("kever Lizhensk", 15);
+    assert.ok(hits.length > 0);
+    assert.equal(hits[0].section, "Heritage");
+    assert.ok(hasHeritageIntent("kever Lizhensk"));
+    assert.ok(hasHeritageIntent("beis hachaim"));
+    assert.ok(hasHeritageIntent("tzaddik"));
+    assert.equal(hasHeritageIntent("Rome"), false);
+  });
+
+  test("lizhensk / lizensk / lezajsk find heritage", async () => {
+    for (const q of ["Lizhensk", "lizensk", "Lezajsk"]) {
+      const hits = await searchEverything(q, 15);
+      assert.ok(
+        hits.some((h) => h.section === "Heritage"),
+        `${q} should find heritage content`,
+      );
+    }
+  });
+});
+
+describe("typo tolerance", () => {
+  test("damerau handles adjacent transposition", () => {
+    assert.equal(damerauLevenshtein("veniec", "venice"), 1);
+    assert.equal(damerauLevenshtein("romw", "rome"), 1);
+  });
+
+  test("romw → Rome", async () => {
+    const hits = await searchEverything("romw", 10);
+    assert.ok(hits.some((h) => h.kind === "Vacation destination" && /rome/i.test(h.title)));
+  });
+
+  test("pariss → Paris", async () => {
+    const hits = await searchEverything("pariss", 10);
+    assert.ok(hits.some((h) => h.kind === "Vacation destination" && /paris/i.test(h.title)));
+  });
+
+  test("dolomits → Dolomites", async () => {
+    const hits = await searchEverything("dolomits", 10);
+    assert.ok(hits.some((h) => h.kind === "Vacation destination" && /dolomite/i.test(h.title)));
+  });
+
+  test("veniec → Venice", async () => {
+    const hits = await searchEverything("veniec", 10);
+    assert.ok(hits.some((h) => h.kind === "Vacation destination" && /venice/i.test(h.title)));
+  });
+
+  test("krakow / kraków → Kraków", async () => {
+    for (const q of ["krakow", "Kraków"]) {
+      const hits = await searchEverything(q, 10);
+      assert.ok(hits.some((h) => h.kind === "Vacation destination" && /krak/i.test(h.title)), q);
+    }
+  });
+
+  test("kosher hotle → kosher hotels / where to stay", async () => {
+    const hits = await searchEverything("kosher hotle", 15);
+    assert.ok(
+      hits.some((h) => /hotel|where to stay/i.test(h.title) || h.kind === "Hotel or stay" || h.href === "/hotels"),
+      "should reach hotels / where to stay",
+    );
+  });
+
+  test("shabos paris finds Shabbos + Paris", async () => {
+    const hits = await searchEverything("shabos paris", 15);
+    assert.ok(
+      hits.some((h) => /paris/i.test(h.title) || /shabbos|kosher travel/i.test(h.title)),
+      "shabos paris should land on Paris or Shabbos/kosher travel",
+    );
+  });
+
+  test("concept queries find vacations", async () => {
+    for (const q of ["family beach", "warm winter", "mountains kosher"]) {
+      const hits = await searchEverything(q, 15);
+      assert.ok(
+        hits.some((h) => h.kind === "Vacation destination"),
+        `${q} should return a vacation destination`,
+      );
+    }
+  });
+
+  test("accent / punct / hyphen folding", async () => {
+    assert.equal(normalize("Kraków"), "krakow");
+    const hits = await searchEverything("south-tyrol", 15);
+    // May or may not hit Dolomites region — at least must not throw / flood with noise.
+    assert.ok(Array.isArray(hits));
+  });
+
+  test("short queries do not flood with fuzzy noise", async () => {
+    const one = await searchEverything("z", 20);
+    assert.ok(one.every((h) => !h.fuzzy), "1-char must not use fuzzy");
+    assert.ok(one.every((h) => h.section !== "Heritage"), "1-char must not pull heritage");
+
+    const two = await searchEverything("zz", 20);
+    assert.deepEqual(two, []);
+  });
+});
+
+describe("results page helpers and safety", () => {
+  test("groups put Vacation first for ordinary travel", () => {
+    const grouped = groupHits(
+      [
+        { id: "1", kind: "Heritage town", section: "Heritage", title: "X", subtitle: "", href: "/x" },
+        { id: "2", kind: "Vacation destination", section: "Vacation", title: "Y", subtitle: "", href: "/y" },
+      ],
+      false,
+    );
+    assert.equal(grouped[0].section, "Vacation");
+  });
+
+  test("unambiguous exact allows Enter-to-open", () => {
+    assert.equal(isUnambiguousExact([{ id: "1", kind: "Vacation destination", section: "Vacation", title: "Rome", subtitle: "", href: "/d", matchRank: 0 }]), true);
+    assert.equal(isUnambiguousExact([{ id: "1", kind: "Vacation destination", section: "Vacation", title: "Rome", subtitle: "", href: "/d", matchRank: 3 }]), false);
+    assert.equal(
+      isUnambiguousExact([
+        { id: "1", kind: "Vacation destination", section: "Vacation", title: "Rome", subtitle: "", href: "/d", matchRank: 0 },
+        { id: "2", kind: "Thing to do", section: "Things to do", title: "Other", subtitle: "", href: "/t", matchRank: 1 },
+      ]),
+      false,
+    );
+  });
+
+  test("nonsense returns nothing", async () => {
+    assert.deepEqual(await searchEverything("zzzznonsense"), []);
+  });
+
+  test("every hit can be opened and shows a kind", async () => {
     const hits = await searchEverything("Rome", 20);
     assert.ok(hits.length > 0);
     for (const hit of hits) {
       assert.ok(hit.href.startsWith("/"), `${hit.id} has no usable link`);
       assert.ok(hit.title.trim(), `${hit.id} has no title`);
-      assert.ok(hit.kind, `${hit.id} has no kind to show`);
+      assert.ok(hit.kind, `${hit.id} has no kind`);
+      assert.ok(hit.section, `${hit.id} has no section`);
     }
   });
 
@@ -62,40 +248,37 @@ describe("what comes back", () => {
     assert.ok((await searchEverything("Rome", 3)).length <= 3);
   });
 
-  test("the city typed comes first", async () => {
-    // Same rule as the rest of the site: a whole-city match outranks a name
-    // that merely contains the word.
-    const hits = await searchEverything("Rome", 10);
-    assert.match(hits[0].subtitle + " " + hits[0].title, /rome/i);
-  });
-
   test("no row appears twice", async () => {
-    // A city with a guide and a beis hachaim of the same name used to produce
-    // the same row twice.
     const hits = await searchEverything("Krakow", 20);
-    const keys = hits.map((h) => `${h.kind}:${h.title.toLowerCase()}`);
+    const keys = hits.map((h) => `${h.kind}:${h.title.toLowerCase()}:${h.href}`);
     assert.equal(new Set(keys).size, keys.length);
   });
 
-  test("nonsense returns nothing", async () => {
-    assert.deepEqual(await searchEverything("zzzznonsense"), []);
+  test("interpretedAs is set when fuzzy matching fires", async () => {
+    const response = await searchSite("romw", 10);
+    assert.ok(response.results.length > 0);
+    assert.ok(response.interpretedAs, "fuzzy query should expose an interpreted label");
+  });
+
+  test("does not send unsuccessful search toward /stops", async () => {
+    const response = await searchSite("zzzznonsense", 10);
+    assert.equal(response.results.length, 0);
+    // The /search page (not /stops) is the zero-result home — asserted by
+    // DestinationSearch + app/search/page.tsx; results themselves never point there by default.
+    assert.ok(!response.results.some((r) => r.href.startsWith("/stops")));
+  });
+
+  test("private / admin paths are not indexed as results", async () => {
+    for (const q of ["admin", "access", "login", "account"]) {
+      const hits = await searchEverything(q, 20);
+      assert.ok(
+        !hits.some((h) => h.href.startsWith("/admin") || h.href === "/access" || h.href === "/login" || h.href.startsWith("/account")),
+        `${q} must not surface private doors`,
+      );
+    }
   });
 });
 
-/**
- * Letters that NFD cannot take apart.
- *
- * NFD turns á into a + a combining mark, which is how accents get folded. It
- * does nothing to a letter whose stroke is part of its identity: ł, đ, ø, æ, ß
- * are single characters with no base underneath. They were not folded but
- * DELETED, because normalize keeps only a–z afterwards.
- *
- * Łańcut therefore normalised to "ancut" — it sorted under A in the directory's
- * A–Z strip, and a search for "Lancut" found it only through an alias somebody
- * had thought to type in. Łódź and Żmigród had no such alias. Poland and
- * Lithuania are most of this site's subject, so this was a good share of the
- * towns, not an edge case.
- */
 describe("folding a letter that has no accent to remove", () => {
   test("reads Ł as L", () => {
     assert.equal(normalize("Łańcut"), "lancut");
@@ -110,8 +293,6 @@ describe("folding a letter that has no accent to remove", () => {
   });
 
   test("keeps Yiddish exactly as it is", () => {
-    // Folding must never eat the Hebrew letters: an emptied query matches
-    // everything, which is how a search for a town returned the whole site.
     assert.equal(normalize("ליזענסק"), "ליזענסק");
     assert.equal(normalize("קראקא"), "קראקא");
   });

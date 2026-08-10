@@ -72,6 +72,22 @@
   isolation: isolate;
 }
 
+/* The public map box (Google or Leaflet). Isolation keeps engine chrome from
+ * competing with the site header; a little inset on Google's controls stops the
+ * compass / zoom / map-type buttons sitting flush against the border and being
+ * clipped. */
+.wg-map-box {
+  position: relative;
+  z-index: var(--wg-z-map);
+  isolation: isolate;
+  overflow: hidden;
+}
+.wg-map-box .gm-bundled-control,
+.wg-map-box .gmnoprint,
+.wg-map-box .gm-fullscreen-control {
+  margin: 10px !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

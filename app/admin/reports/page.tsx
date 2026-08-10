@@ -27,6 +27,11 @@ export default async function AdminReportsPage() {
           Counted since the private store was connected, not this month. Nothing here identifies anybody — it is page
           addresses and search words, with no visitor attached.
         </p>
+        <p className="mt-3">
+          <Link href="/admin/growth" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+            Search, booking clicks and alert signups →
+          </Link>
+        </p>
       </header>
 
       {!report.counting ? (

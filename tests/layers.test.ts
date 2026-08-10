@@ -25,6 +25,9 @@ describe("what is in front of what", () => {
     assert.match(body, /isolation:\s*isolate/, "the map must isolate its stacking context");
     assert.match(body, /z-index:\s*var\(--wg-z-map\)/, "the map must sit at the map layer");
     assert.match(body, /position:\s*relative/, "isolation only contains z-index on a positioned element");
+    // Google draws into the same box; it needs the same containment so its
+    // chrome cannot climb over the advertisement either.
+    assert.match(css, /\.wg-map-box\s*\{[^}]*z-index:\s*var\(--wg-z-map\)/s, "the public map box is boxed the same way");
   });
 
   it("puts the advertisement in front of the page and the header", () => {

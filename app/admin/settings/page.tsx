@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { teamStorageAvailable } from "@/lib/admin-roles";
+import { membershipPublicLabel } from "@/lib/growth-settings";
+import { readCollaborationSettings, readMembershipSettings } from "@/lib/growth-settings-store";
+import { publicReferralStatus } from "@/lib/referral";
+import { readReferralSettings } from "@/lib/referral-store";
 import { getDashboardStats } from "@/lib/site-analytics";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +27,13 @@ function Card({ href, title, detail, state }: { href: string; title: string; det
 }
 
 export default async function AdminSettingsPage() {
-  const stats = await getDashboardStats();
+  const [stats, referral, collaboration, membership] = await Promise.all([
+    getDashboardStats(),
+    readReferralSettings(),
+    readCollaborationSettings(),
+    readMembershipSettings(),
+  ]);
+  const referralStatus = publicReferralStatus(referral);
 
   return (
     <>
@@ -64,8 +74,57 @@ export default async function AdminSettingsPage() {
           <Card
             href="/admin/settings/earnings"
             title="What the searches earn"
-            detail="Route the flight, hotel and car searches through Travelpayouts so a booking made afterwards is credited to you."
+            detail="Partners for flights, hotels and cars, travel extras, and which booking options show on destination pages."
             state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
+            href="/admin/settings/travel-essentials"
+            title="Travel Essentials"
+            detail="Enable insurance, eSIM, transfers, tours, cars, flights and stays — with URLs, placements and order."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Growth programmes</h2>
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-stone-600">
+          Customer updates and programmes that stay off until you approve them. Demand numbers live under Pages.
+        </p>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Card
+            href="/admin/alerts"
+            title="Email alerts"
+            detail="Who asked for destination, seasonal and listing updates — consent and unsubscribe."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
+            href="/admin/growth"
+            title="Search and bookings"
+            detail="Common searches, empty results, affiliate clicks and alert signup counts."
+            state={stats.configured ? "Open the dashboard" : "Needs the private store"}
+          />
+          <Card
+            href="/admin/settings/referral"
+            title="Referral programme"
+            detail="Unique links and attribution. Disabled until reward rules are final — no invented amounts."
+            state={referralStatus.open ? "On for visitors" : "Disabled by default"}
+          />
+          <Card
+            href="/admin/settings/collaboration"
+            title="Group planning tools"
+            detail="Voting, shared favorites and room groupings on shared itineraries."
+            state={
+              collaboration.votingEnabled || collaboration.sharedFavoritesEnabled || collaboration.roomGroupsEnabled
+                ? "Tools available"
+                : "All tools off"
+            }
+          />
+          <Card
+            href="/admin/settings/membership"
+            title="White Glove Plus"
+            detail="Planned membership foundation only. Not priced, advertised or sold."
+            state={membershipPublicLabel(membership)}
           />
         </div>
       </section>

@@ -1,7 +1,11 @@
 import Link from "next/link";
+import AdminPlacementsForm from "@/components/AdminPlacementsForm";
 import EarningsForm from "@/components/EarningsForm";
 import Stay22Form from "@/components/Stay22Form";
 import TravelExtrasForm from "@/components/TravelExtrasForm";
+import { readAffiliateConfig } from "@/lib/affiliate/config";
+import { routeFor } from "@/lib/affiliate/partners";
+import { growthSettingsStoreAvailable, readDestinationPlacements } from "@/lib/growth-settings-store";
 import { readStay22Fresh } from "@/lib/stay22-store";
 import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
@@ -16,6 +20,17 @@ export default async function EarningsSettings() {
   const current = await readTravelpayoutsFresh();
   const extras = await readExtrasFresh();
   const stay22 = await readStay22Fresh();
+  const placements = await readDestinationPlacements();
+  const affiliate = await readAffiliateConfig();
+  const routeNotes = (["hotel", "flight", "car"] as const).map((product) => {
+    const route = routeFor(product, affiliate);
+    return {
+      product,
+      label: product,
+      earns: route.earns,
+      note: route.note,
+    };
+  });
 
   return (
     <>
@@ -91,18 +106,45 @@ export default async function EarningsSettings() {
       />
 
       <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Everything else worth offering</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">On destination pages</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          An eSIM, travel insurance, an airport transfer — anything a traveller buys that is not a flight, a room or a
-          car. These are simpler than the searches above: there is no search to carry across, so the link you paste is
-          the link that opens, and it earns from the moment you save it.
+          The “Book the practical pieces” block on each vacation destination. Categories with no real partner link stay
+          hidden even when ticked. Commission wording is edited under{" "}
+          <Link href="/admin/settings/words" className="underline decoration-[var(--gold)] underline-offset-2">
+            The website&apos;s words
+          </Link>
+          .
         </p>
+        <AdminPlacementsForm
+          current={placements}
+          storeReady={growthSettingsStoreAvailable()}
+          routeNotes={routeNotes}
+        />
+      </section>
+
+      <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Travel Essentials</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          They show under the search on{" "}
+          Structured cards for insurance, eSIM, transfers, tours and related hand-offs live on their own screen — enable
+          each service, paste approved links, set placements and order without editing code.
+        </p>
+        <Link
+          href="/admin/settings/travel-essentials"
+          className="mt-4 inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white"
+        >
+          Open Travel Essentials
+        </Link>
+      </section>
+
+      <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Custom free-form offers</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Anything that does not fit the Travel Essentials catalogue — a one-off partner link with its own name and
+          blurb. These still show under the search on{" "}
           <Link href="/book" target="_blank" className="underline decoration-[var(--gold)] underline-offset-2">
             the booking page
-          </Link>
-          , where somebody has just picked their dates.
+          </Link>{" "}
+          when finished.
         </p>
         <TravelExtrasForm current={extras} storeReady={travelpayoutsStoreAvailable()} />
       </section>

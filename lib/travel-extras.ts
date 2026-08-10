@@ -56,6 +56,7 @@ const TRACKED = [
   "tp.st",
   "c.travelpayouts.com",
   "travelpayouts.com",
+  "stay22.com",
   "go.skimresources.com",
   "shareasale.com",
   "awin1.com",

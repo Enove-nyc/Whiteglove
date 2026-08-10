@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { AIRPORT_MINIMUM_RADIUS_KM, areaLabel, boundsOf, countByKind, kmBetween, pointFrom, withinArea, type MapMarker } from "@/lib/map-markers";
-import { COMPASS_ROSE, compassSvg, compassUrl, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { compassFor, GLOVE_PIN_INTRINSIC, glovePinSrc, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 
 const KRAKOW = { lat: 50.0619, lng: 19.9369 };
 
@@ -136,40 +136,41 @@ describe("saying where you are looking", () => {
   });
 });
 
-describe("the compass marker", () => {
+describe("the glove marker", () => {
   it("is one picture used by both the map and its legend", () => {
-    // A data URI rather than a file, so the two provably cannot drift apart.
-    const url = compassUrl(MAP_STYLE.kever.color);
-    assert.ok(url.startsWith("data:image/svg+xml,"));
-    assert.ok(decodeURIComponent(url).includes(MAP_STYLE.kever.color));
+    // A public PNG per kind, so the legend <img> and the map icon share a URL.
+    const pin = compassFor("kever");
+    assert.equal(pin.url, glovePinSrc("kever"));
+    assert.equal(pin.url, "/map-pins/kever.png");
   });
 
-  it("draws the logo's eight-point rose inside its two rings", () => {
-    const svg = compassSvg("#aa8b52");
-    assert.equal((svg.match(/<circle/g) ?? []).length, 2, "the gold ring and the navy hairline inside it");
-    assert.ok(svg.includes("<path"), "the rose");
-    assert.equal((svg.match(/#aa8b52/g) ?? []).length, 2, "outer ring and rose share the kind's colour");
-    assert.ok(svg.includes("#172d52"), "the hairline stays navy, as in the logo");
+  it("anchors at the cuff, not the centre of the disc", () => {
+    const pin = compassFor("stay", 11);
+    assert.ok(pin.anchorY > pin.height * 0.8, "the tip that touches the map is near the bottom");
+    assert.equal(pin.anchorX, pin.width / 2);
   });
 
-  it("has eight points, four long and four short", () => {
-    // The logo's rose, not a generic star: cardinals reach further than the
-    // ordinals between them.
-    const coords = [...COMPASS_ROSE.matchAll(/(-?\d+\.\d+) (-?\d+\.\d+)/g)].map(([, x, y]) => ({ x: Number(x), y: Number(y) }));
-    assert.equal(coords.length, 16, "eight tips and eight waist points");
-    const from = (p: { x: number; y: number }) => Math.hypot(p.x - 12, p.y - 12);
-    const tips = coords.filter((_, i) => i % 2 === 0).map(from);
-    const waists = coords.filter((_, i) => i % 2 === 1).map(from);
-    const cardinals = tips.filter((_, i) => i % 2 === 0);
-    const ordinals = tips.filter((_, i) => i % 2 === 1);
-    assert.ok(Math.min(...cardinals) > Math.max(...ordinals), "the cardinal points are the long ones");
-    assert.ok(Math.max(...waists) < Math.min(...ordinals), "the waist is inside every point");
+  it("keeps the baked pin's proportions when it scales with zoom", () => {
+    const pin = compassFor("kever", 11);
+    const ratio = pin.width / pin.height;
+    const intrinsic = GLOVE_PIN_INTRINSIC.width / GLOVE_PIN_INTRINSIC.height;
+    assert.ok(Math.abs(ratio - intrinsic) < 0.02);
+    const far = compassFor("kever", 4);
+    assert.ok(far.height < pin.height, "continent zoom shrinks the pins so they do not become texture");
   });
 
-  it("gives every kind on the map its own colour and name", () => {
+  it("tells kinds apart by the mark colour carried on each pin", () => {
+    // Kind identity is the tint of the hand+compass artwork itself (baked into
+    // /map-pins/{kind}.png), not a coloured ring around a shared gold mark.
     const colours = new Set(Object.values(MAP_STYLE).map((s) => s.color));
     assert.equal(colours.size, Object.keys(MAP_STYLE).length, "two kinds sharing a colour would be unreadable");
-    for (const style of Object.values(MAP_STYLE)) assert.ok(style.label.trim().length > 0);
+    for (const kind of Object.keys(MAP_STYLE) as (keyof typeof MAP_STYLE)[]) {
+      const pin = compassFor(kind);
+      assert.ok(MAP_STYLE[kind].label.trim().length > 0);
+      assert.equal(pin.color, MAP_STYLE[kind].color);
+      assert.equal(pin.url, `/map-pins/${kind}.png`);
+      assert.equal(glovePinSrc(kind), pin.url);
+    }
   });
 
   it("offers every kind but the searched-for place as a filter", () => {

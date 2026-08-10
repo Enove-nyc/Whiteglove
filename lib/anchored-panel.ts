@@ -25,16 +25,38 @@
  */
 
 import { useEffect } from "react";
+import type { CSSProperties } from "react";
+
+/** Shortest panel that is still worth opening — below this, flip instead. */
+const MIN_USABLE = 160;
 
 export type AnchorBox = {
-  /** Viewport coordinates, for `position: fixed`. */
-  top: number;
+  /**
+   * Viewport `top` when the panel opens below the field. Omitted when it
+   * opens above — those panels pin with `bottom` so a short list stays
+   * against the field instead of floating in a tall empty slot.
+   */
+  top?: number;
+  /**
+   * Viewport `bottom` (CSS: distance from the viewport's bottom edge) when
+   * the panel opens above the field.
+   */
+  bottom?: number;
   left: number;
   /** The field's own width, so the panel lines up under it. */
   width: number;
   /** How tall the panel may be before it needs to scroll. */
   maxHeight: number;
   placement: "above" | "below";
+};
+
+export type MeasureAnchorOptions = {
+  /**
+   * Suggestion lists: stay below whenever there is a usable strip of room,
+   * and scroll inside it. Calendars leave this off so a month that almost
+   * fits below still flips up rather than hiding its last row.
+   */
+  preferBelow?: boolean;
 };
 
 /**
@@ -45,29 +67,56 @@ export type AnchorBox = {
  * there anyway and ran off the viewport. When the room below is too small and
  * there is more above, it opens upwards instead, and either way it is given a
  * maximum height so the last row is reachable by scrolling rather than lost.
+ *
+ * OPENING ABOVE PINS THE BOTTOM EDGE. A suggestions list is often shorter
+ * than the reserved slot. Pinning with `top` and a tall max-height left a
+ * short list at the top of that slot — on the book page, tens or hundreds of
+ * pixels above the Destination field, easy to miss. `bottom` keeps even a
+ * two-line list against the field.
  */
-export function measureAnchor(element: HTMLElement | null, preferredHeight = 320): AnchorBox | null {
+export function measureAnchor(
+  element: HTMLElement | null,
+  preferredHeight = 320,
+  options?: MeasureAnchorOptions,
+): AnchorBox | null {
   if (!element || typeof window === "undefined") return null;
   const rect = element.getBoundingClientRect();
   const GAP = 4;
   const EDGE = 8;
   const below = window.innerHeight - rect.bottom - GAP - EDGE;
   const above = rect.top - GAP - EDGE;
-  // Flip when the panel does not FIT below, not merely when it is cramped.
-  // Measured: a check-out field two thirds down a phone screen left 330px
-  // below and 508px above, and a 360px calendar took the 330 and scrolled its
-  // last row out of reach. It belongs above.
-  const flip = below < preferredHeight && above > below;
-  const height = Math.max(160, Math.min(preferredHeight, flip ? above : below));
+  // Calendars: flip when the full month does not FIT below, not merely when
+  // it is cramped. Measured: a check-out field two thirds down a phone
+  // screen left 330px below and 508px above, and a 360px calendar took the
+  // 330 and scrolled its last row out of reach. It belongs above.
+  //
+  // Suggestion lists (`preferBelow`): flip only when the strip below is too
+  // short to use. Otherwise stay under the field and scroll — flipping a
+  // city list into a 288px slot parked a short Photon answer near the top of
+  // the screen on /book.
+  const flip = options?.preferBelow
+    ? below < MIN_USABLE && above > below
+    : below < preferredHeight && above > below;
+  const height = Math.max(MIN_USABLE, Math.min(preferredHeight, flip ? above : below));
+  const left = Math.max(EDGE, Math.min(rect.left, window.innerWidth - rect.width - EDGE));
+
+  if (flip) {
+    return {
+      // Pin the panel's bottom edge just above the field.
+      bottom: window.innerHeight - (rect.top - GAP),
+      left,
+      width: rect.width,
+      maxHeight: height,
+      placement: "above",
+    };
+  }
 
   return {
-    top: flip ? Math.max(EDGE, rect.top - GAP - height) : rect.bottom + GAP,
-    // Never off the left or right edge: a panel wider than its field on a
-    // narrow screen would otherwise hang off the side of the phone.
-    left: Math.max(EDGE, Math.min(rect.left, window.innerWidth - rect.width - EDGE)),
+    top: rect.bottom + GAP,
+    left,
     width: rect.width,
     maxHeight: height,
-    placement: flip ? "above" : "below",
+    placement: "below",
   };
 }
 
@@ -95,8 +144,18 @@ export function useAnchorTracking(open: boolean, remeasure: () => void): void {
 }
 
 /** The inline style a panel needs. Kept here so all three agree. */
-export function anchoredStyle(box: AnchorBox | null): React.CSSProperties | undefined {
+export function anchoredStyle(box: AnchorBox | null): CSSProperties | undefined {
   if (!box) return undefined;
+  if (box.placement === "above") {
+    return {
+      position: "fixed",
+      top: "auto",
+      bottom: box.bottom,
+      left: box.left,
+      maxHeight: box.maxHeight,
+      overflowY: "auto",
+    };
+  }
   return {
     position: "fixed",
     top: box.top,

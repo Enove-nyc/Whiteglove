@@ -62,8 +62,17 @@ export default function AddressAutocomplete({
   // booking card hides its overflow and clipped this list. See
   // lib/anchored-panel.ts.
   const [anchor, setAnchor] = useState<AnchorBox | null>(null);
-  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 288)), []);
+  // preferBelow: a short Photon list must stay under the field. The calendar
+  // flips when its full height will not fit; doing that here parked six city
+  // rows near the top of /book instead of under Destination.
+  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 288, { preferBelow: true })), []);
   useAnchorTracking(open, remeasure);
+
+  // Results arrive after a debounce. Remeasure once they land so the panel
+  // tracks the field after any scroll-into-view the focus caused.
+  useEffect(() => {
+    if (open && results.length > 0) remeasure();
+  }, [open, results.length, remeasure]);
 
   // Sync when the value is set from outside (e.g. prefilled by the kever picker).
   useEffect(() => { setQuery(value); }, [value]);

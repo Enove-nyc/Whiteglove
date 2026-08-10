@@ -10,6 +10,7 @@ import AssistantAnswer from "@/components/AssistantAnswer";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import SendPlaceIn from "@/components/SendPlaceIn";
+import RoomGroupsPanel from "@/components/RoomGroupsPanel";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
@@ -449,6 +450,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
           <div className="border-t border-[var(--gold-light)] p-3"><ShareItineraryPanel /></div>
+        </details>
+        <details className="group rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none">
+            <span className="text-sm font-semibold text-[var(--navy)]">Rooms for this trip</span>
+            <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
+          </summary>
+          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel /></div>
         </details>
       </div>
 

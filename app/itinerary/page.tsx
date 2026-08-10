@@ -7,6 +7,7 @@ import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
+import TravelEssentials from "@/components/TravelEssentials";
 import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
 import { readAssumptions } from "@/lib/planner-settings-store";
@@ -72,6 +73,14 @@ export default async function ItineraryPage() {
 
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />
       </section>
+
+      {/* After the planner — not above it — so essentials sit beside a real trip. */}
+      <TravelEssentials
+        pageType="itinerary"
+        heading="Travel essentials for this trip"
+        intro="Flights, places to stay, car hire and pre-departure add-ons when a partner hand-off is configured. Nothing appears here until it can actually open."
+        placement="itinerary-essentials"
+      />
 
       <Footer />
     </main>

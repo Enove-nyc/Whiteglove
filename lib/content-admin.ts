@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
 import { remember } from "@/lib/recycle-store";
 import { recordChange } from "@/lib/changes-store";
+import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -362,6 +363,7 @@ export async function upsertPage(slug: string, fields: PageFields) {
     create: { slug, ...fields },
   });
   await recordChange({ kind: "page", rowId: slug, title: fields.title || slug, before, after: fields as unknown as Record<string, unknown> });
+  invalidateSiteSearchIndex();
   return row;
 }
 
@@ -775,7 +777,7 @@ export type NewPageFields = {
 /** Create a new standalone info page (rendered at /info/[slug]). */
 export async function createInfoPage(fields: NewPageFields) {
   const prisma = await db();
-  return prisma.page.create({
+  const row = await prisma.page.create({
     data: {
       slug: newSlug(fields.title, "page"),
       title: fields.title,
@@ -783,6 +785,8 @@ export async function createInfoPage(fields: NewPageFields) {
       status: fields.status,
     },
   });
+  invalidateSiteSearchIndex();
+  return row;
 }
 
 // ---- The rest of the trip ---------------------------------------------
@@ -812,7 +816,7 @@ export type NewAttractionFields = {
 
 export async function createAttraction(fields: NewAttractionFields) {
   const prisma = await db();
-  return prisma.attraction.create({
+  const row = await prisma.attraction.create({
     data: {
       slug: newSlug(`${fields.city}-${fields.name}`, "attraction"),
       name: fields.name,
@@ -830,6 +834,8 @@ export async function createAttraction(fields: NewAttractionFields) {
     },
     select: { slug: true, name: true },
   });
+  invalidateSiteSearchIndex();
+  return row;
 }
 
 export type NewStayFields = {
@@ -849,7 +855,7 @@ export type NewStayFields = {
 
 export async function createKosherStay(fields: NewStayFields) {
   const prisma = await db();
-  return prisma.kosherStay.create({
+  const row = await prisma.kosherStay.create({
     data: {
       slug: newSlug(`${fields.city}-${fields.name}`, "stay"),
       name: fields.name,
@@ -870,4 +876,6 @@ export async function createKosherStay(fields: NewStayFields) {
     },
     select: { slug: true, name: true },
   });
+  invalidateSiteSearchIndex();
+  return row;
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { measureAnchor } from "@/lib/anchored-panel";
+import { measureAnchor, type MeasureAnchorOptions } from "@/lib/anchored-panel";
 
 /**
  * The calendar that was cut in half by the box it opened in.
@@ -33,13 +33,13 @@ const POPOVERS = [
 ];
 
 /** A field 40px tall, `top` from the top of an 844px phone screen. */
-function field(top: number, height = 844) {
+function field(top: number, preferredHeight = 360, options?: MeasureAnchorOptions, height = 844) {
   const rect = { top, bottom: top + 40, left: 20, width: 300, height: 40, right: 320, x: 20, y: top };
   const element = { getBoundingClientRect: () => rect } as unknown as HTMLElement;
   const previous = globalThis.window;
   (globalThis as { window?: unknown }).window = { innerHeight: height, innerWidth: 390 };
   try {
-    return measureAnchor(element, 360);
+    return measureAnchor(element, preferredHeight, options);
   } finally {
     (globalThis as { window?: unknown }).window = previous;
   }
@@ -58,8 +58,10 @@ describe("where the panel opens", () => {
     // last row of the month out of reach.
     const box = field(560);
     assert.equal(box?.placement, "above");
-    assert.ok(box!.top < 560, "it opened downwards off the bottom of the screen");
-    assert.ok(box!.top >= 8, "it opened off the top of the screen");
+    // Pinned by `bottom` so a short panel stays against the field, not at the
+    // top of a tall reserved slot.
+    assert.equal(box?.bottom, 844 - (560 - 4), "bottom edge sits just above the field");
+    assert.equal(box?.top, undefined);
   });
 
   it("NEVER RUNS OFF EITHER EDGE", () => {
@@ -74,9 +76,33 @@ describe("where the panel opens", () => {
       const box = field(top);
       assert.ok(box, `no box at ${top}`);
       assert.ok(box.maxHeight >= 160, `${top}: ${box.maxHeight}px is not usable`);
-      assert.ok(box.top >= 8, `${top}: opens off the top`);
-      assert.ok(box.top + box.maxHeight <= 844, `${top}: runs off the bottom`);
+      if (box.placement === "below") {
+        assert.ok(box.top! >= 8, `${top}: opens off the top`);
+        assert.ok(box.top! + box.maxHeight <= 844, `${top}: runs off the bottom`);
+      } else {
+        const panelBottom = 844 - box.bottom!;
+        const panelTop = panelBottom - box.maxHeight;
+        assert.ok(panelTop >= 8 - 0.5, `${top}: opens off the top`);
+        assert.ok(panelBottom <= top, `${top}: overlaps the field`);
+      }
     }
+  });
+
+  it("keeps a city list under Destination when there is still a usable strip below", () => {
+    // Measured on /book at 390×844: Destination sat near y=609 with ~179px
+    // below. preferredHeight 288 flipped the Photon list into the upper half
+    // of the screen. With preferBelow it stays under the field and scrolls.
+    const box = field(609, 288, { preferBelow: true });
+    assert.equal(box?.placement, "below");
+    assert.equal(box?.top, 609 + 40 + 4);
+    assert.ok(box!.maxHeight >= 160);
+    assert.ok(box!.maxHeight < 288, "it uses the room below rather than flipping");
+  });
+
+  it("still flips a city list when the strip below is unusable", () => {
+    const box = field(780, 288, { preferBelow: true });
+    assert.equal(box?.placement, "above");
+    assert.equal(box?.bottom, 844 - (780 - 4));
   });
 
   it("measures nothing without an element or a window", () => {
@@ -91,6 +117,14 @@ describe("every popover uses it", () => {
       assert.match(source, /anchoredStyle\(anchor\)/, `${file} is not anchored to the viewport`);
       assert.match(source, /useAnchorTracking\(open, remeasure\)/, `${file} does not follow a scroll`);
     }
+  });
+
+  it("suggestion lists prefer sitting below the field", () => {
+    for (const file of ["components/AddressAutocomplete.tsx", "components/AirportAutocomplete.tsx"]) {
+      assert.match(readFileSync(file, "utf8"), /preferBelow:\s*true/, `${file} still flips like a calendar`);
+    }
+    // The calendar keeps the full-height flip — that is what the month needs.
+    assert.doesNotMatch(readFileSync("components/DateField.tsx", "utf8"), /preferBelow/);
   });
 
   it("HAS NO ABSOLUTE PANEL LEFT, which is the shape of the bug", () => {
