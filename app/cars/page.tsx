@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import PartnerSearchForm from "@/components/PartnerSearchForm";
+import CarSearchForm from "@/components/CarSearchForm";
 import SearchMemory from "@/components/SearchMemory";
 import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
+import { readAffiliateConfig } from "@/lib/affiliate/config";
+import { routeFor } from "@/lib/affiliate/partners";
+import { partnerFor } from "@/lib/travel-partners";
 
 export const metadata = pageMetadata({
   title: "Cars and transfers for a kosher trip | White Glove Itineraries",
@@ -42,6 +45,15 @@ export default async function CarsPage({
   // as though the visitor had typed it, and a link is not a trustworthy author.
   const first = Array.isArray(raw) ? raw[0] : raw;
   const pickUp = (first ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+
+  // The form is only rendered when a car programme is connected — the same
+  // rule PartnerSearchForm applied, kept when this page moved off it. A search
+  // box for something the site cannot search takes somebody's dates and gives
+  // them nothing back.
+  const config = await readAffiliateConfig();
+  const carRoute = routeFor("car", config);
+  const carPartner = partnerFor("cars", config.partners);
+
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <SearchMemory />
@@ -58,16 +70,16 @@ export default async function CarsPage({
             is a parking problem you paid for. Each destination page says which of the two it is.
           </p>
           <div className="mt-8 max-w-4xl">
-            <PartnerSearchForm
-              id="cars"
-              product="car"
-              fields="stay"
-              destinationLabel="Picking up in"
-              destinationValue={pickUp}
-              page="/cars"
-              placement="cars-page"
-              submitLabel="Search car hire"
-            />
+            {carRoute.destinationLabel && (
+              <CarSearchForm
+                id="cars"
+                destinationValue={pickUp}
+                page="/cars"
+                placement="cars-page"
+                submitLabel="Search car hire"
+                datesReach={carPartner.key === "kayak"}
+              />
+            )}
           </div>
         </div>
       </section>

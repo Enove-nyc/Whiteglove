@@ -98,11 +98,12 @@ describe("hotels first", () => {
 });
 
 describe("the commission disclosure", () => {
-  it("IS BESIDE THE SEARCH, not in the page footer", () => {
-    // Technically present and practically unread is the failure mode. It sits
-    // inside the search panel, under the tabs the visitor is looking at.
-    assert.match(PANEL, /\{disclosure\}/);
-    assert.match(PAGE, /disclosure=\{words\.affiliateDisclosure\}/);
+  it("HAS MOVED TO THE TERMS, on the owner's decision", () => {
+    // It used to sit inside the search panel, under the tabs. The owner asked
+    // for it off the booking page; see components/BookPartners.tsx, where the
+    // ground being given up is written down rather than quietly dropped.
+    assert.doesNotMatch(PANEL, /\{disclosure\}/);
+    assert.match(readFileSync("app/terms/page.tsx", "utf8"), /<AffiliateDisclosure/);
   });
 
   it("says what it has to say", () => {

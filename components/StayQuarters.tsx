@@ -1,4 +1,3 @@
-import { AffiliateDisclosure } from "@/components/BookingLink";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { goHref } from "@/lib/affiliate/request";
 import { routeFor } from "@/lib/affiliate/partners";
@@ -83,8 +82,7 @@ export default async function StayQuarters({
         ))}
       </ul>
 
-      {/* Adjacent to the commercial action, not only in the footer. */}
-      {searchable && <AffiliateDisclosure className="mt-6 text-xs leading-5 text-stone-500" />}
+      {/* The commission line moved to the terms — see app/terms. */}
     </div>
   );
 }

@@ -135,7 +135,7 @@ export default async function BookPage({
             Flights, hotels and cars
           </h1>
           <div className="mt-6">
-            <BookPartners affiliate={affiliate} prefill={prefill} disclosure={words.affiliateDisclosure} />
+            <BookPartners affiliate={affiliate} prefill={prefill} />
           </div>
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}

@@ -2,6 +2,7 @@ import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/features";
 import Footer from "@/components/Footer";
+import { AffiliateDisclosure } from "@/components/BookingLink";
 import Navbar from "@/components/Navbar";
 
 export const metadata = pageMetadata({
@@ -70,6 +71,12 @@ export default async function TermsOfUsePage() {
 
         <Section title="Bookings and third-party services">
           <p>Flight and hotel searches and any bookings are provided through third-party travel partners and are subject to those partners&rsquo; own terms, pricing, and cancellation policies. White Glove is not the seller of those travel services and is not a party to your booking.</p>
+          {/* THE COMMISSION DISCLOSURE LIVES HERE NOW. It used to sit beside
+              every search box; the owner moved it, and this is where it landed
+              rather than being deleted. Rendered through the same component
+              the search pages used, so it is still one editable line from
+              /admin/settings/words and cannot drift into two versions. */}
+          <AffiliateDisclosure className="text-[15px] leading-7 text-stone-600" />
         </Section>
 
         <Section title="Intellectual property">

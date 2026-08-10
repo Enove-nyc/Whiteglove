@@ -1,4 +1,3 @@
-import { AffiliateDisclosure } from "@/components/BookingLink";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { routeFor, type TravelProduct } from "@/lib/affiliate/partners";
 
@@ -212,7 +211,9 @@ export default async function PartnerSearchForm({
         <p className="text-xs leading-5 text-stone-500">Opens in a new tab.</p>
       </div>
 
-      <AffiliateDisclosure className="mt-4 text-xs leading-5 text-stone-500" />
+      {/* THE COMMISSION LINE IS NOT HERE ANY MORE. The owner's decision: it
+          belongs in the terms rather than beside every search box. See
+          app/terms — the statement itself did not go, it moved. */}
     </form>
   );
 }

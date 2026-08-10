@@ -145,13 +145,26 @@ describe("a reader can always tell what is paid for", () => {
     assert.match(featuredDisclosure(), /featured/i);
   });
 
-  it("PUTS THE COMMISSION DISCLOSURE BESIDE THE ACTION, not only in the footer", () => {
+  it("STILL SAYS THE SITE IS PAID, on the terms page", () => {
+    // THIS REVERSES AN EARLIER RULE. The disclosure used to be rendered beside
+    // every search, on the reasoning that the FTC endorsement guides, the UK
+    // CAP code and the EU unfair-practices directive all ask for it where the
+    // person is when they decide. The owner moved it to the terms. That is his
+    // call and it is recorded in components/BookingLink.tsx.
+    //
+    // What this test now guards is that it did not simply disappear: the
+    // sentence still exists, still says the two things that make it a
+    // disclosure, and is still rendered somewhere a reader can reach.
     assert.match(BUILT_IN_WORDS.affiliateDisclosure, /commission/i);
     assert.match(BUILT_IN_WORDS.affiliateDisclosure, /no additional cost/i);
-    // Rendered where the search is, which is what "not hidden in the footer"
-    // has to mean in practice.
-    assert.match(readFileSync("components/PartnerSearchForm.tsx", "utf8"), /<AffiliateDisclosure/);
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /disclosure=\{words\.affiliateDisclosure\}/);
+    assert.match(readFileSync("app/terms/page.tsx", "utf8"), /<AffiliateDisclosure/);
+  });
+
+  it("keeps marking paid links as paid, which is a separate obligation", () => {
+    // rel="sponsored" is what search engines are told, and it did not move
+    // with the sentence the reader sees.
+    assert.match(readFileSync("components/BookingLink.tsx", "utf8"), /rel="sponsored noopener noreferrer"/);
+    assert.match(readFileSync("components/PartnerSearchForm.tsx", "utf8"), /rel="sponsored noopener noreferrer"/);
   });
 });
 

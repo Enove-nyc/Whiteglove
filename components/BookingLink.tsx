@@ -19,13 +19,13 @@ import { readWords } from "@/lib/site-words-store";
  *    which network settles the commission is the site's own business, so it is
  *    "Check availability" and "opens in a new tab". The warning itself is not
  *    optional — a link that opens a window unannounced is an accessibility
- *    failure whoever it points at — and neither is the commission disclosure
- *    below it. Dropping the brand is positioning; dropping those would not be.
- *    See `hotelButtonLabel` in lib/stay22.ts.
+ *    failure whoever it points at. See `hotelButtonLabel` in lib/stay22.ts.
  *
- * 3. IT CARRIES THE DISCLOSURE. Beside the action, from one editable line, on
- *    every instance. A disclosure that is right in eight places and missing in
- *    the ninth is worse than none: it proves the site knows it owes one.
+ * 3. IT NO LONGER CARRIES THE DISCLOSURE. It used to, on every instance, from
+ *    one editable line. The owner moved that sentence to /terms; see
+ *    AffiliateDisclosure below, which now renders there instead. Nothing else
+ *    about the hand-off changed — rel="sponsored" still marks the link as paid
+ *    for search engines, which is a separate thing from telling the reader.
  *
  * The href is always /go — never the partner. See lib/affiliate/request.ts for
  * why that matters more than it looks.
@@ -36,7 +36,6 @@ export default async function BookingLink({
   label,
   className,
   variant = "primary",
-  showDisclosure = true,
   fallback = null,
 }: {
   request: AffiliateRequest;
@@ -44,19 +43,12 @@ export default async function BookingLink({
   label: string;
   className?: string;
   variant?: "primary" | "secondary" | "quiet";
-  /**
-   * Off only where a disclosure already sits within a line or two of this
-   * link — a results grid says it once above the grid rather than on all
-   * twenty cards. It is never off because the link is small.
-   */
-  showDisclosure?: boolean;
   fallback?: React.ReactNode;
 }) {
   const config = await readAffiliateConfig();
   const resolved = resolveLink(request, config);
   if (!resolved) return <>{fallback}</>;
 
-  const words = await readWords();
   const where = resolved.route.destinationLabel;
 
   const styles: Record<string, string> = {
@@ -90,20 +82,18 @@ export default async function BookingLink({
           Opens in a new tab
         </span>
       )}
-      {showDisclosure && (
-        <span className="max-w-[34ch] text-[11px] leading-4 text-stone-500">{words.affiliateDisclosure}</span>
-      )}
+      {/* The commission line moved to /terms — the owner's decision. */}
     </span>
   );
 }
 
 /**
- * The disclosure on its own, for a grid of booking links.
+ * The disclosure on its own.
  *
- * Twenty cards each repeating the same sentence is noise, and noise is how a
- * disclosure stops being read. One statement above the results, and the cards
- * turn theirs off — never because the link is small, only because the sentence
- * is already within a line or two of it.
+ * Now rendered on /terms rather than beside each search — the owner's
+ * decision. It stays a component reading the one editable line from
+ * /admin/settings/words so the sentence has a single source, wherever it is
+ * shown from.
  */
 export async function AffiliateDisclosure({ className }: { className?: string }) {
   const words = await readWords();
