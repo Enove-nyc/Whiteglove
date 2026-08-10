@@ -105,6 +105,17 @@ export type AffiliateRequest = {
   /** Airport codes, for flights and cars. */
   from?: string;
   to?: string;
+  /**
+   * A multi-city flight, in the order it is flown.
+   *
+   * Present INSTEAD of from/to/checkIn, not as well: a request carrying both a
+   * single leg and a list of them has two answers to "where is this person
+   * going", and the one that got used would be whichever the builder happened
+   * to read first. When this is set it is the whole journey.
+   */
+  legs?: Array<{ from: string; to: string; date: string }>;
+  /** Nonstop only. Carried because the booking page asks for it. */
+  nonstop?: boolean;
   /** Where on the site this link was pressed. Reporting only. */
   page?: string;
   placement?: string;
@@ -197,6 +208,24 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
   return NOT_CONNECTED(product, TRAVEL_PRODUCTS.find((entry) => entry.value === product)?.label.toLowerCase() ?? product);
 }
 
+/**
+ * Whether the configured flight partner can open a multi-city search at all.
+ *
+ * A PLAIN BOOLEAN, and deliberately nothing more. The booking page needs to
+ * know this before it opens a tab — otherwise a five-leg search hands off to a
+ * partner that cannot express one, /go declines to build a wrong link, and the
+ * traveller gets a new tab that bounces back to the page they were already on
+ * with no explanation. That is what happened when this page first moved onto
+ * /go.
+ *
+ * It answers the question without naming the partner, which is both the
+ * privacy line — nothing commercial goes into the page source — and the
+ * copy rule: visitors are not told which partner a search opens.
+ */
+export function flightPartnerDoesMultiCity(config: AffiliateConfig): boolean {
+  return partnerFor("flights", config.partners).key === "kayak";
+}
+
 /** Every product's current state, for the admin. */
 export function allRoutes(config: AffiliateConfig): ProductRoute[] {
   return TRAVEL_PRODUCTS.map((entry) => routeFor(entry.value, config));
@@ -241,9 +270,24 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
   }
 
   if (request.product === "flight") {
-    const from = (request.from ?? "").trim();
-    const to = (request.to ?? "").trim();
-    const out = isoDate(request.checkIn);
+    // A multi-city journey is the whole request when it is there. Built before
+    // the single-leg read so a five-leg trip can never come out as its first
+    // leg — the traveller would get a working search for the wrong journey and
+    // nothing would look broken.
+    const many = (request.legs ?? []).filter((l) => l.from && l.to && isoDate(l.date));
+    if (many.length > 1) {
+      const partner = partnerFor("flights", config.partners);
+      const shape: SearchShape = { trip: "multi-city", legs: many };
+      if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
+      // Everything else returns null for a shape it cannot express, rather
+      // than quietly sending one leg of the journey.
+      return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+    }
+
+    const only = many[0];
+    const from = (only?.from ?? request.from ?? "").trim();
+    const to = (only?.to ?? request.to ?? "").trim();
+    const out = isoDate(only?.date ?? request.checkIn);
     if (!from || !to || !out) return null;
     const back = isoDate(request.checkOut);
     // The affiliate key goes on inside kayakUrl. Kayak takes no passenger
@@ -258,7 +302,7 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     // keeps its own builder because it handles multi-city and carries the
     // legacy affiliate params; everything else comes from the registry.
     const partner = partnerFor("flights", config.partners);
-    if (partner.key === "kayak") return kayakUrl(shape, { affiliate: config.kayakParams });
+    if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
     return flightUrl(partner, { shape, adults: request.adults, children: request.children });
   }
 

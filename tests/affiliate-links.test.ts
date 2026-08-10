@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { resolveLink } from "@/lib/affiliate/partners";
+import { goHref, readAffiliateRequest } from "@/lib/affiliate/request";
+import { NO_STAY22 } from "@/lib/stay22";
 
 /**
- * Every link that leaves this site for a booking partner carries the affiliate
- * marker.
+ * Every link that leaves this site for a booking partner is built on the
+ * server, from one registry, and carries whatever the owner has configured.
  *
  * THIS EXISTS BECAUSE CAR HIRE NEVER DID. Flights and hotels each tagged their
  * outgoing link; the cars form was not even passed the keys, so every car
@@ -15,72 +18,132 @@ import { describe, it } from "node:test";
  *
  * An untagged partner link is the one kind of bug that costs money on every
  * single use and can never be seen.
+ *
+ * WHAT THESE ASSERTIONS NOW GUARD, AND WHY IT CHANGED. They used to check that
+ * each openPartner() call in the booking page was handed the marker. That was
+ * the right check for a page that built partner URLs in the browser — and
+ * building them in the browser was itself the problem: the page had to be
+ * given the Stay22 ID, the Travelpayouts marker and the Booking.com affiliate
+ * ID in order to do it, and a client component's props are serialised into the
+ * page. All of it was readable in view-source.
+ *
+ * So the booking page no longer knows any of it. It sends what the traveller
+ * typed to /go, which resolves the partner on the server. The guarantee is
+ * stronger than the one it replaces — there is no longer a way to write an
+ * untagged link here, because there is no longer a way to write a partner link
+ * here at all — and these hold it in place.
  */
 
 const SOURCE = readFileSync("components/BookPartners.tsx", "utf8");
+const PAGE = readFileSync("app/book/page.tsx", "utf8");
 
-describe("no partner link goes out untagged", () => {
-  it("tags every outgoing partner link", () => {
-    // THE ONE THAT MATTERS. Each openPartner() call either carries the marker
-    // itself or is handed a URL that was built with it.
-    const untagged: string[] = [];
-    for (const match of SOURCE.matchAll(/(\w*\s*)openPartner\(([\s\S]{0,200}?)\);/g)) {
-      // The helper's own definition is not a call.
-      if (match[1].trim() === "function") continue;
-      const call = match[2];
-      // allezUrl cannot be built without a Stay22 ID — the ID is a required
-      // field on the settings it takes, and stay22IsOn refuses a malformed one
-      // before it is ever called. So a call to it always carries the money.
-      if (/withAffiliate|kayakUrl|allezUrl|affiliate\?\./.test(call)) continue;
-      // A URL built on the line above and tagged there is fine; check back a
-      // little for the marker being applied to it.
-      const before = SOURCE.slice(Math.max(0, (match.index ?? 0) - 400), match.index);
-      if (/affiliate\?\.(bookingAid|kayakParams|travelpayoutsMarker)/.test(before)) continue;
-      untagged.push(call.replace(/\s+/g, " ").slice(0, 70));
+/**
+ * The component without its imports or its comments.
+ *
+ * `import { hotelButtonLabel } from "@/lib/stay22"` is a piece of wording, not
+ * an account number, and the comments below explain at length what used to be
+ * here — both would trip a search for the names of the things that leaked.
+ * What matters is whether the VALUES are in the component's own code.
+ */
+const CODE = SOURCE.replace(/^import .*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+
+describe("the booking page cannot leak an account number", () => {
+  it("is not handed one", () => {
+    // THE ONE THAT MATTERS NOW. Each of these was measured in the built page's
+    // source before this changed — the marker, the Booking.com ID and the
+    // Kayak params were all there in plain text.
+    for (const secret of ["bookingAid", "kayakParams", "travelpayoutsMarker", "stay22Settings", "travelpayouts"]) {
+      assert.doesNotMatch(CODE, new RegExp(`\\b${secret}\\b`),
+        `${secret} is back in the booking component, and so back in the page source`);
     }
-    assert.deepEqual(untagged, [], `a partner link with no affiliate marker: ${untagged.join(" | ")}`);
   });
 
-  it("gives the cars form the keys at all", () => {
-    // It was not even a parameter. Nothing downstream could have tagged it.
-    assert.match(SOURCE, /function CarsForm\(\{ affiliate,/);
-    assert.match(SOURCE, /<CarsForm affiliate=\{affiliate\}/);
+  it("the page does not read the stores in order to pass them down", () => {
+    assert.doesNotMatch(PAGE, /readStay22|readTravelpayouts/, "the booking page is reading affiliate config again");
+    assert.doesNotMatch(PAGE, /BOOKING_AFFILIATE_ID|KAYAK_AFFILIATE_PARAMS|TRAVELPAYOUTS_MARKER/);
+    assert.doesNotMatch(PAGE, /<BookPartners[^>]*affiliate=/);
   });
 
-  it("names which search every hand-off is, so it can be routed", () => {
-    // A call with no slot goes out direct however the earnings screen is set
-    // up — the same silence as the untagged car link, one layer along.
-    const unrouted: string[] = [];
-    for (const match of SOURCE.matchAll(/(\w*\s*)openPartner\(([\s\S]{0,300}?)\);/g)) {
-      if (match[1].trim() === "function") continue;
-      const call = match[2];
-      if (/"(flights|hotels|cars)"/.test(call)) continue;
-      // A hand-off built for a network of its own must NOT be routed through
-      // Travelpayouts as well: Stay22 owns its own redirect, and wrapping one
-      // in the other would hand the booking to whichever got there first.
-      if (/allezUrl/.test(call)) continue;
-      unrouted.push(call.replace(/\s+/g, " ").slice(0, 70));
+  it("names no partner address at all", () => {
+    // The searches used to be typed into this component as kayak.com and
+    // booking.com URLs, which is what made the partner unchangeable AND what
+    // required the keys to be here.
+    for (const host of ["kayak.com", "booking.com", "stay22.com", "aviasales", "tp.media"]) {
+      assert.doesNotMatch(CODE, new RegExp(host.replace(".", "\\.")), `${host} is being built by hand again`);
     }
-    assert.deepEqual(unrouted, [], `a hand-off that can never be routed through Travelpayouts: ${unrouted.join(" | ")}`);
   });
 });
 
-describe("hotels reach Stay22 when it is on", () => {
-  it("builds the hotel search for Stay22 rather than sending Booking.com's URL through it", () => {
-    // Wrapping a Booking.com search inside an Allez link would work and would
-    // throw away the traveller's dates. The form's own fields are what Allez
-    // wants, so the search is built.
-    assert.match(SOURCE, /if \(stay22IsOn\(affiliate\?\.stay22\)\)/);
-    assert.match(SOURCE, /allezUrl\(/);
+describe("no hand-off goes out unnamed", () => {
+  it("every one says which product it is, so /go can route it", () => {
+    // A hand-off with no product is one /go refuses outright — the same
+    // silence as the untagged car link, one layer along.
+    const unnamed: string[] = [];
+    for (const match of SOURCE.matchAll(/(\w*\s*)openPartner\(([\s\S]{0,400}?)\);/g)) {
+      // The helper's own definition is not a call.
+      if (match[1].trim() === "function") continue;
+      const call = match[2];
+      if (/product: "(flight|hotel|car)"/.test(call)) continue;
+      unnamed.push(call.replace(/\s+/g, " ").slice(0, 70));
+    }
+    assert.deepEqual(unnamed, [], `a hand-off /go cannot route: ${unnamed.join(" | ")}`);
   });
 
-  it("never sends a Stay22 search through Travelpayouts as well", () => {
-    // Two redirects racing for the same booking credits whichever wins, which
-    // is not a thing anybody should be guessing about.
-    const call = SOURCE.slice(SOURCE.indexOf("allezUrl("), SOURCE.indexOf("allezUrl(") + 300);
-    assert.doesNotMatch(call, /travelpayouts/);
+  it("all three searches still hand off", () => {
+    // The cars form was once not even wired up. Absence is the failure mode.
+    for (const product of ["flight", "hotel", "car"]) {
+      assert.match(SOURCE, new RegExp(`product: "${product}"`), `the ${product} search no longer hands off`);
+    }
   });
 
+  it("goes out through /go and nowhere else", () => {
+    assert.match(SOURCE, /goHref\(/);
+    for (const call of SOURCE.match(/window\.open\([^;]*?\);/g) ?? []) {
+      assert.match(call, /goHref/, `a window opened on something other than /go: ${call}`);
+    }
+  });
+});
+
+describe("the whole journey survives the hand-off", () => {
+  const config = { travelpayouts: {}, stay22: NO_STAY22, partners: { flights: "kayak" } as never };
+
+  it("carries every leg of a multi-city trip, not just the first", () => {
+    // MOVING THIS PAGE ONTO /go WOULD OTHERWISE HAVE DROPPED THEM. A five-leg
+    // trip arriving as one leg opens a working search for the wrong journey,
+    // and nobody reports that as a bug — they just book somewhere else.
+    const legs = [
+      { from: "JFK", to: "FCO", date: "2026-09-01" },
+      { from: "FCO", to: "ATH", date: "2026-09-05" },
+      { from: "ATH", to: "JFK", date: "2026-09-12" },
+    ];
+    const href = goHref({ product: "flight", legs });
+    const parsed = readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)));
+    assert.deepEqual(parsed?.legs, legs, "the legs did not survive the round trip through the URL");
+
+    const url = resolveLink(parsed!, config)?.url ?? "";
+    for (const leg of legs) {
+      assert.ok(url.includes(leg.from) && url.includes(leg.to), `${leg.from}-${leg.to} is missing from ${url}`);
+      assert.ok(url.includes(leg.date.slice(2).replace(/-/g, "")) || url.includes(leg.date), `${leg.date} is missing`);
+    }
+  });
+
+  it("refuses a leg that is not three whole fields", () => {
+    // This is an outside input even though the site wrote the link: anybody
+    // can edit a query string, and /go must never be talked into forwarding
+    // somewhere of the sender's choosing.
+    const parsed = readAffiliateRequest(new URLSearchParams("product=flight&legs=JFK-FCO-nonsense_-_-"));
+    assert.deepEqual(parsed?.legs, []);
+  });
+
+  it("takes no destination URL, however it is dressed up", () => {
+    const parsed = readAffiliateRequest(new URLSearchParams("product=flight&legs=https://evil.example.com"));
+    assert.deepEqual(parsed?.legs, []);
+    const href = goHref({ product: "hotel", destination: "https://evil.example.com" });
+    assert.doesNotMatch(resolveLink(readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)))!, config)?.url ?? "", /^https:\/\/evil/);
+  });
+});
+
+describe("what the visitor is told", () => {
   it("takes the hotel button's wording from the one function that owns it", () => {
     // It no longer varies by provider — the owner's decision, see
     // hotelButtonLabel in lib/stay22.ts — but it is still read from there
@@ -91,29 +154,6 @@ describe("hotels reach Stay22 when it is on", () => {
   it("names no partner on any search button the visitor presses", () => {
     for (const label of SOURCE.match(/searchLabel="[^"]*"/g) ?? []) {
       assert.doesNotMatch(label, /Kayak|Booking\.com|Stay22|Expedia/i, label);
-    }
-  });
-});
-
-describe("the routing checks the partner the search really opens", () => {
-  it("does not build a partner address by hand any more", () => {
-    // The searches used to be typed into this component as kayak.com URLs,
-    // which is what made the partner unchangeable. They come from
-    // lib/travel-partners.ts now, so a new programme is a dropdown rather than
-    // an edit here. The one exception is Kayak's own builder, which handles
-    // multi-city and is called by name.
-    assert.match(SOURCE, /flightUrl\(partner,/);
-    assert.match(SOURCE, /carUrl\(carPartner,/);
-    assert.doesNotMatch(SOURCE, /https:\/\/www\.kayak\.com\/cars\/\$\{encodeURIComponent/);
-  });
-
-  it("passes the partner choice into the routing, or the link check judges the wrong one", () => {
-    // throughTravelpayouts validates the pasted link against the chosen
-    // partner. Called without the choices it falls back to the defaults, and a
-    // correctly configured Kayak link would be silently dropped.
-    for (const call of SOURCE.match(/openPartner\([^;]*?\);/g) ?? []) {
-      if (!call.includes("affiliate?.travelpayouts")) continue;
-      assert.match(call, /affiliate\?\.partners/, call);
     }
   });
 });

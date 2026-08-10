@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { readWords } from "@/lib/site-words-store";
-import { readStay22 } from "@/lib/stay22-store";
-import { readTravelpayouts } from "@/lib/travelpayouts-store";
+import { readAffiliateConfig } from "@/lib/affiliate/config";
+import { flightPartnerDoesMultiCity } from "@/lib/affiliate/partners";
 import { readExtras } from "@/lib/travel-extras-store";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
@@ -98,28 +98,22 @@ export default async function BookPage({
     depart: clean(q.depart),
     ret: clean(q.return),
   };
-  // Affiliate slots — set these env vars once you join the partner programs and
-  // the Book links start carrying your tracking IDs (no code change needed).
-  const travelpayouts = await readTravelpayouts();
-  const affiliate = {
-    bookingAid: process.env.BOOKING_AFFILIATE_ID?.trim() || "",
-    kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
-    // Travelpayouts: one account covering flights, hotels and cars. The marker
-    // alone earns nothing — the searches have to be sent THROUGH Travelpayouts,
-    // which is what these links do. /admin/settings/earnings.
-    travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
-    travelpayouts: travelpayouts.links,
-    // Which partner each search opens, chosen on /admin/settings/earnings.
-    partners: travelpayouts.partners,
-    // Hotels: the only route to earning on them, since Booking.com turned the
-    // site down directly and the Travelpayouts account has no hotel programme.
-    stay22: await readStay22(),
-  };
-  // Which partner flights and cars open IS now configurable — the owner picks
-  // it per search on /admin/settings/earnings, because the account is approved
-  // for Aviasales and EconomyBookings rather than Kayak. Duffel — the one integration that takes a
-  // card and issues a ticket — is off the public site and lives at
-  // /admin/duffel; see lib/booking-partners.ts for why.
+  // Whether a multi-city flight search can be opened at all. A boolean, and
+  // nothing else commercial — see flightPartnerDoesMultiCity. Without it the
+  // form would hand off a five-leg search, /go would rightly decline to build
+  // a wrong link, and the traveller would watch a new tab bounce back with no
+  // explanation.
+  const multiCity = flightPartnerDoesMultiCity(await readAffiliateConfig());
+
+  // THE ACCOUNT NUMBERS ARE NOT READ HERE ANY MORE, and that is the point.
+  //
+  // This page used to gather the Stay22 ID, the Travelpayouts marker, the
+  // Booking.com affiliate ID and the pasted redirect links, and hand them to
+  // BookPartners so it could build partner URLs in the browser. BookPartners
+  // is a client component, so all of it was serialised into the page and
+  // readable in view-source. The searches now post to /go, which resolves the
+  // partner on the server — so there is nothing commercial left to pass down,
+  // and nothing to leak.
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -135,7 +129,7 @@ export default async function BookPage({
             Flights, hotels and cars
           </h1>
           <div className="mt-6">
-            <BookPartners affiliate={affiliate} prefill={prefill} disclosure={words.affiliateDisclosure} />
+            <BookPartners prefill={prefill} disclosure={words.affiliateDisclosure} multiCity={multiCity} />
           </div>
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}

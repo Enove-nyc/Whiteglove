@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
-import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
-import { allezUrl, hotelButtonLabel, type Stay22Settings, stay22IsOn } from "@/lib/stay22";
-import { type SearchSlot, throughTravelpayouts, type TravelpayoutsLinks } from "@/lib/travelpayouts";
-import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
+import { type Leg, type SearchShape, airportCode, describeSearch, searchProblem } from "@/lib/kayak-search";
+import { hotelButtonLabel } from "@/lib/stay22";
 import DateField from "@/components/DateField";
+import type { AffiliateRequest } from "@/lib/affiliate/partners";
+import { goHref } from "@/lib/affiliate/request";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
@@ -25,30 +25,6 @@ import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date
 type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
 type TripKind = "round-trip" | "one-way" | "multi-city";
-
-export type Affiliate = {
-  bookingAid?: string;
-  kayakParams?: string;
-  travelpayoutsMarker?: string;
-  /**
-   * The redirect link each search is routed through, from /admin/settings/earnings.
-   * Absent means that search opens the partner directly and earns nothing.
-   */
-  travelpayouts?: TravelpayoutsLinks;
-  /**
-   * Which partner each search opens, from /admin/settings/earnings. Absent
-   * means the defaults in lib/travel-partners.ts — not Kayak, which this
-   * account is not approved for.
-   */
-  partners?: PartnerChoices;
-  /**
-   * Stay22, which sits in front of Booking.com, Expedia and the rest under one
-   * ID. Set means the hotel search is built for Stay22 rather than sent to
-   * Booking.com — the only route to earning on hotels, since Booking.com turned
-   * the site down directly and Travelpayouts has no hotel programme here.
-   */
-  stay22?: Stay22Settings;
-};
 
 // The search panel is laid out the way booking sites lay one out: fields sit
 // shoulder to shoulder inside a single bordered block, divided by hairlines,
@@ -78,15 +54,29 @@ const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 /**
- * Hand the traveller off to the partner, through Travelpayouts when it is set up.
+ * Hand the traveller off, by asking /go for the partner rather than knowing one.
  *
- * THE ROUTING LIVES HERE rather than at each call site, because the last time it
- * did not, the car search went out untagged for months while the settings screen
- * said the key covered it. One door out means one place to check.
+ * THIS PAGE USED TO BUILD THE PARTNER URL ITSELF, which meant the page had to
+ * be handed the money to build it with: the Stay22 ID, the Travelpayouts
+ * marker, the Booking.com affiliate ID and the pasted redirect links. A client
+ * component's props are serialised into the page, so every one of those was
+ * readable in view-source by anybody who pressed Ctrl-U. Measured on the built
+ * page before this changed, not assumed.
+ *
+ * Now it sends what the traveller typed to /go, which resolves the partner on
+ * the server, records the click and redirects. Same door out as the rest of
+ * the site — the reason for one door is still the months of car hire that went
+ * out untagged while the settings screen said otherwise — and the account
+ * numbers stay on the server where they belong.
+ *
+ * The new tab is opened synchronously with the press. Building the address
+ * first and opening after an await would be the same thing to read and a popup
+ * blocker to the browser, because the window would no longer be opening in
+ * response to a click.
  */
-function openPartner(url: string, slot?: SearchSlot, links?: TravelpayoutsLinks, choices?: PartnerChoices) {
-  const final = slot ? throughTravelpayouts(url, links?.[slot], slot, choices) : url;
-  if (typeof window !== "undefined") window.open(final, "_blank", "noopener,noreferrer");
+function openPartner(request: AffiliateRequest) {
+  if (typeof window === "undefined") return;
+  window.open(goHref({ ...request, page: "/book" }), "_blank", "noopener,noreferrer");
 }
 
 /** What a form would put on the trip, once we know it was actually booked. */
@@ -108,7 +98,7 @@ export type PendingBooking = {
  * off the public site entirely. lib/booking-partners.ts cannot route the
  * public site to it at all.
  */
-export default function BookPartners({ affiliate, prefill, disclosure }: { affiliate?: Affiliate; prefill?: Prefill; disclosure: string }) {
+export default function BookPartners({ prefill, disclosure, multiCity = true }: { prefill?: Prefill; disclosure: string; multiCity?: boolean }) {
   const [pay, setPay] = useState<Pay>("cash");
   // HOTELS OPENS, not flights. Accommodation is the one product this site
   // knows something a comparison site does not — which quarter makes Shabbos
@@ -197,10 +187,10 @@ export default function BookPartners({ affiliate, prefill, disclosure }: { affil
           a partner. Duffel is at /admin/duffel now and the public page has one
           path per product. See lib/booking-partners.ts. */}
       {pay === "cash" && kind === "flights" && (
-        <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
+        <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} multiCity={multiCity} />
       )}
-      {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
-      {pay === "cash" && kind === "cars" && <CarsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "hotels" && <HotelsForm onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "hotels" && <MilesHotelsForm onAdd={addToTrip} />}
@@ -251,7 +241,7 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 
 // ---- Cash --------------------------------------------------------------
 
-function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
+function FlightsForm({ onAdd, onOpened, prefill, multiCity = true }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill; multiCity?: boolean }) {
   const [trip, setTrip] = useState<TripKind>("round-trip");
   const [legs, setLegs] = useState<Leg[]>([{ from: prefill?.from ?? "", to: prefill?.to ?? "", date: prefill?.depart ?? "" }]);
   const [ret, setRet] = useState(prefill?.ret ?? "");
@@ -295,23 +285,29 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
   function search() {
     const wanted = checked();
     if (!wanted) return;
-    // Whichever flight programme is configured. Kayak keeps its own builder
-    // (it carries nonstop and multi-city); the rest come from the registry,
-    // which returns null for a shape they cannot express rather than sending
-    // somebody the first leg of a five-leg trip.
-    const partner = partnerFor("flights", affiliate?.partners);
-    const url =
-      partner.key === "kayak"
-        ? kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams })
-        : // No passenger count is asked for on this form — Kayak never took one
-          // in its URL, so the field was never added. flightUrl defaults to one
-          // adult rather than inventing a number the traveller did not give.
-          flightUrl(partner, { shape: wanted });
-    if (!url) {
-      setError(`${partner.label} cannot open a multi-city search. Search one journey at a time, or change the flight partner in settings.`);
+    // WHICH PARTNER THIS OPENS IS NO LONGER DECIDED HERE. /go picks it from the
+    // owner's settings and builds the address, so a programme that changes is
+    // a setting rather than a redeploy — and, more to the point, this page no
+    // longer has to be handed the account numbers in order to guess.
+    //
+    // The whole journey goes, not the first leg of it: a multi-city trip that
+    // arrived as a single leg would open a working search for the wrong
+    // journey, which nobody would report as a bug.
+    // Said BEFORE a tab is opened. /go would decline to build a link it
+    // cannot build, which is right, but the traveller would see a new tab
+    // bounce straight back and be told nothing. The partner is not named —
+    // visitors are not told which one a search opens.
+    if (wanted.trip === "multi-city" && !multiCity) {
+      setError("Multi-city searches are not available at the moment. Search one journey at a time, and each one can be saved to the trip.");
       return;
     }
-    openPartner(url, "flights", affiliate?.travelpayouts, affiliate?.partners);
+    openPartner({
+      product: "flight",
+      legs: wanted.legs.map((l) => ({ from: l.from, to: l.to, date: l.date })),
+      checkOut: wanted.trip === "round-trip" ? wanted.ret : "",
+      nonstop,
+      placement: "book-flights",
+    });
     // The booking itself happens on the other site, where we cannot see it.
     // So ask for it back, with the reference, rather than letting the trip
     // quietly not know about the flight they just paid for.
@@ -408,7 +404,7 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
   );
 }
 
-function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
+function HotelsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
   const [dest, setDest] = useState("");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
@@ -425,22 +421,17 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
 
   function search() {
     if (!validate()) return;
-    // Stay22 is built rather than wrapped: it publishes its search format, and
-    // it wants exactly what this form already holds. So the traveller's own
-    // place and dates carry across properly instead of being smuggled inside
-    // somebody else's URL.
-    if (stay22IsOn(affiliate?.stay22)) {
-      openPartner(
-        allezUrl(
-          { address: dest.trim(), checkin, checkout, adults: Math.max(1, Number(guests) || 1) },
-          affiliate!.stay22!,
-        ),
-      );
-    } else {
-      let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
-      if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
-      openPartner(url, "hotels", affiliate?.travelpayouts, affiliate?.partners);
-    }
+    // Stay22 or Booking.com, and which one is /go's decision now. The choice
+    // needed the Stay22 ID to make, and having the ID here is what put it in
+    // the page source.
+    openPartner({
+      product: "hotel",
+      destination: dest.trim(),
+      checkIn: checkin,
+      checkOut: checkout,
+      adults: Math.max(1, Number(guests) || 1),
+      placement: "book-hotels",
+    });
     onOpened({
       kind: "hotel",
       summary: `${dest.trim()}, ${checkin} → ${checkout}`,
@@ -480,7 +471,7 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
  * key for the flight AND CAR searches that open on Kayak", which was a promise
  * the code did not keep.
  */
-function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
+function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
   const [loc, setLoc] = useState("");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
@@ -496,18 +487,13 @@ function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd
 
   function search() {
     if (!validate()) return;
-    const carPartner = partnerFor("cars", affiliate?.partners);
-    const carSearch = carUrl(carPartner, { where: loc.trim(), pickup, dropoff });
-    if (!carSearch) {
-      setError(`${carPartner.label} could not be opened for that pick-up. Check the location and dates.`);
-      return;
-    }
-    openPartner(
-      carPartner.key === "kayak" ? withAffiliate(carSearch, affiliate?.kayakParams) : carSearch,
-      "cars",
-      affiliate?.travelpayouts,
-      affiliate?.partners,
-    );
+    openPartner({
+      product: "car",
+      destination: loc.trim(),
+      checkIn: pickup,
+      checkOut: dropoff,
+      placement: "book-cars",
+    });
     onOpened({
       kind: "car",
       summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
@@ -920,7 +906,23 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
         {selected
           ? <a href={selected.award} target="_blank" rel="noreferrer" className={linkPrimary}>Open {program} →</a>
           : <span className="text-sm text-stone-500">Choose a program above and its booking page opens here.</span>}
-        <a href={`https://www.kayak.com/cars${loc.trim() && pickup && dropoff ? `/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}` : ""}`} target="_blank" rel="noreferrer" className={linkGhost}>Check the cash price →</a>
+        {/* "Check the cash price" is a partner search like any other, and it
+            was going straight out to a hand-written kayak.com address —
+            untracked, unchangeable, and earning nothing whatever the earnings
+            screen said. Exactly the car-hire failure this file's test exists
+            for, hiding one tab along in the points section. */}
+        {loc.trim() && pickup && dropoff ? (
+          <a
+            href={goHref({ product: "car", destination: loc.trim(), checkIn: pickup, checkOut: dropoff, page: "/book", placement: "book-cars-miles" })}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+            className={linkGhost}
+          >
+            Check the cash price →
+          </a>
+        ) : (
+          <span className="text-sm text-stone-500">Fill in the pick-up and dates to compare the cash price.</span>
+        )}
       </div>
 
       <StepLabel n={2}>Whether the points are worth it</StepLabel>
