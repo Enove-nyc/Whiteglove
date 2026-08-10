@@ -320,8 +320,14 @@ export default function LoginForm({
         </label>
       )}
 
-      {mode === "login" && (
-        <button type="button" onClick={() => { setMode("forgot"); setMessage(""); }} className="text-xs font-bold uppercase tracking-[0.13em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+      {/* OFFERED ON THE SIGN-UP FORM TOO, which is the one this page opens on.
+          Somebody who already has an account and cannot remember the password
+          arrives here, meets "Create account", and has to work out that
+          recovery lives behind a mode switch they have not pressed yet — so
+          the one control they came for was the only one not on the screen.
+          Thumb-sized, like every other control on the site. */}
+      {(mode === "login" || mode === "signup") && (
+        <button type="button" onClick={() => { setMode("forgot"); setMessage(""); }} className="inline-flex min-h-11 items-center self-start text-xs font-bold uppercase tracking-[0.13em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
           Forgot password?
         </button>
       )}

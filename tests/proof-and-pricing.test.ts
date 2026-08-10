@@ -33,7 +33,7 @@ const SAMPLE_PAGE = readFileSync("app/sample-itinerary/page.tsx", "utf8");
 const SAMPLE_DATA = readFileSync("data/sample-itinerary.ts", "utf8");
 
 describe("what to expect about price", () => {
-  it("ANSWERS ALL SIX QUESTIONS, or says which it cannot", () => {
+  it("ANSWERS ALL NINE QUESTIONS, or says which it cannot", () => {
     for (const key of [
       "pricingStartsAt",
       "pricingWhatAffects",
@@ -41,6 +41,12 @@ describe("what to expect about price", () => {
       "pricingRevisions",
       "pricingBookingSupport",
       "pricingFeeCredit",
+      // The three added after launch: how long the planning takes, what
+      // happens if the trip is called off, and whether anybody is there once
+      // the itinerary has been sent.
+      "pricingTimeline",
+      "pricingCancellation",
+      "pricingSupportAfter",
     ] as const) {
       assert.ok(BUILT_IN_WORDS[key].trim().length > 20, `${key} is blank`);
       assert.ok(
@@ -56,7 +62,13 @@ describe("what to expect about price", () => {
     assert.equal(BUILT_IN_WORDS.pricingStartsAt, PRICE_NOT_PUBLISHED);
     assert.equal(BUILT_IN_WORDS.pricingTurnaround, PRICE_NOT_PUBLISHED);
     assert.equal(BUILT_IN_WORDS.pricingFeeCredit, PRICE_NOT_PUBLISHED);
-    for (const key of ["pricingStartsAt", "pricingWhatAffects", "pricingTurnaround", "pricingRevisions", "pricingBookingSupport", "pricingFeeCredit"] as const) {
+    // And the three added after launch, for the same reason: there is nothing
+    // on this site to stand behind a timeline, a refund policy or a support
+    // window, and inventing one would be a promise made on the owner's behalf.
+    assert.equal(BUILT_IN_WORDS.pricingTimeline, PRICE_NOT_PUBLISHED);
+    assert.equal(BUILT_IN_WORDS.pricingCancellation, PRICE_NOT_PUBLISHED);
+    assert.equal(BUILT_IN_WORDS.pricingSupportAfter, PRICE_NOT_PUBLISHED);
+    for (const key of ["pricingStartsAt", "pricingWhatAffects", "pricingTurnaround", "pricingRevisions", "pricingBookingSupport", "pricingFeeCredit", "pricingTimeline", "pricingCancellation", "pricingSupportAfter"] as const) {
       assert.doesNotMatch(BUILT_IN_WORDS[key], /[€$£]\s?\d/, `${key} quotes a price`);
       assert.doesNotMatch(BUILT_IN_WORDS[key], /\b\d+\s*(hours?|days?|business days?)\b/i, `${key} promises a turnaround`);
     }
@@ -87,6 +99,59 @@ describe("what to expect about price", () => {
     assert.match(planning.pricing, /before any work starts/i);
     assert.match(planning.pricing, /what to expect about price/i);
     for (const service of services) assert.doesNotMatch(service.pricing, /[€$£]\s?\d/, service.id);
+  });
+});
+
+describe("exactly what you receive", () => {
+  const CATALOG = readFileSync("components/ServiceCatalog.tsx", "utf8");
+
+  it("ANSWERS THE SAME FOUR QUESTIONS FOR EVERY SERVICE", () => {
+    // "What you end up with" is a list of things, and a list of things does
+    // not say whether anything is BOOKED, how changes work, or whether the
+    // kosher side is confirmed or merely looked up.
+    for (const service of services) {
+      for (const key of ["format", "revisions", "booking", "confirmations"] as const) {
+        assert.ok(service.deliverables[key].trim().length > 30, `${service.id}: ${key}`);
+      }
+    }
+  });
+
+  it("SAYS PLAINLY WHETHER ANYTHING IS BOOKED, on the service that books least", () => {
+    // The partner searches book nothing on this site, and that is the single
+    // sentence a page about "flights, hotels and transportation" must not
+    // leave to inference.
+    const travel = services.find((service) => service.id === "flights-hotels-transport");
+    assert.ok(travel);
+    assert.match(travel.deliverables.booking, /nothing is booked on this site/i);
+    const planning = services.find((service) => service.id === "vacation-planning");
+    assert.match(planning!.deliverables.booking, /nothing is booked/i);
+  });
+
+  it("promises no revision count it would have to keep", () => {
+    // words.pricingRevisions says changes are part of the planning rather
+    // than an allowance. A number here would contradict the panel below.
+    for (const service of services) {
+      assert.doesNotMatch(service.deliverables.revisions, /\b(one|two|three|\d+)\s+(revisions?|rounds?)\b/i, service.id);
+    }
+  });
+
+  it("is rendered, rather than being data nobody reads", () => {
+    // The failure this file exists to prevent, in its other form: a field on
+    // a record that no page shows.
+    assert.match(CATALOG, /DELIVERABLE_QUESTIONS/);
+    assert.match(CATALOG, /service\.deliverables\[key\]/);
+    assert.match(CATALOG, /Exactly what you receive/);
+  });
+
+  it("leaves the support window to the one place it can be answered", () => {
+    // How long anybody is there afterwards is one answer for the business,
+    // not six, and the site cannot stand behind it yet — so it sits with the
+    // other outstanding commercial terms where it is marked as such.
+    assert.match(PRICING, /pricingSupportAfter/);
+    assert.match(PRICING, /After the itinerary is sent/);
+    for (const service of services) {
+      assert.doesNotMatch(JSON.stringify(service.deliverables), /\b\d+\s*(days?|weeks?|months?)\b/i, service.id);
+    }
   });
 });
 

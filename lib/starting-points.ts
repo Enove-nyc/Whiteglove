@@ -49,8 +49,8 @@ export const STARTING_POINTS: readonly StartingPoint[] = [
   {
     href: "/itinerary",
     label: "Build the trip yourself",
-    body: "The trip planner: days, stops, driving times between them, where Shabbos falls, and a printable copy for the car. No account needed until you want it on your phone.",
-    cta: "Open the trip planner",
+    body: "The itinerary planner: days, stops, driving times between them, where Shabbos falls, and a printable copy for the car. No account needed until you want it on your phone.",
+    cta: "Open the itinerary planner",
     cost: "Free",
   },
   {

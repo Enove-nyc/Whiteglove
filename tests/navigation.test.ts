@@ -33,7 +33,7 @@ describe("what the bar leads with", () => {
   it("is the products a person books, in order", () => {
     assert.deepEqual(
       PRIMARY_NAV.map((item) => item.label),
-      ["Destinations", "Hotels & Stays", "Flights", "Things to Do", "Kosher Travel", "Heritage Travel", "My Trips"],
+      ["Destinations", "Where to stay", "Flights", "Things to Do", "Kosher Travel", "Heritage Travel", "Itinerary planner"],
     );
   });
 
@@ -58,7 +58,7 @@ describe("what the bar leads with", () => {
     // at the first thing that sounds like what they came for.
     const labels = PRIMARY_NAV.map((item) => item.label);
     assert.ok(labels.indexOf("Destinations") < labels.indexOf("Heritage Travel"));
-    assert.ok(labels.indexOf("Hotels & Stays") < labels.indexOf("Heritage Travel"));
+    assert.ok(labels.indexOf("Where to stay") < labels.indexOf("Heritage Travel"));
   });
 
   it("has one primary action, and it is a search", () => {

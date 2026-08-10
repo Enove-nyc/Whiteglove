@@ -69,7 +69,7 @@ export default function TravelAssistantBox() {
           answered and this site keeps no copy and no history — reload the page
           and it is gone. */}
       <details className="mt-3 rounded-md border border-[var(--gold-light)] bg-white/70 px-4 py-3">
-        <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
+        <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
           What this assistant can and cannot do
         </summary>
         <ul className="mt-3 grid gap-2 text-sm leading-6 text-stone-600">

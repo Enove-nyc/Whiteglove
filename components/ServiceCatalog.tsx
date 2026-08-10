@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
-import { services } from "@/data/services";
+import { DELIVERABLE_QUESTIONS, services } from "@/data/services";
 import { bookingCallToAction } from "@/lib/booking-access";
 import { readBookingLink } from "@/lib/booking-access-store";
 
@@ -90,6 +90,30 @@ export default async function ServiceCatalog() {
                 ))}
               </ul>
             </Detail>
+
+            {/* THE FOUR AWKWARD QUESTIONS, ANSWERED IN THE SAME PLACE ON
+                EVERY SERVICE. "What you end up with" above is a list of
+                things, and a list of things does not tell somebody whether
+                anything is actually BOOKED, how many times they may change
+                their mind, or whether the kosher side is confirmed or merely
+                looked up. Rendered from data so no service can skip one — and
+                the one every service page in the world skips is the second
+                column here. */}
+            <div className="border-t border-[var(--gold-light)] pt-4 lg:col-span-2">
+              <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
+                Exactly what you receive
+              </dt>
+              <dd className="mt-3">
+                <dl className="grid gap-x-10 gap-y-5 sm:grid-cols-2">
+                  {DELIVERABLE_QUESTIONS.map(({ key, label }) => (
+                    <div key={key}>
+                      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">{label}</dt>
+                      <dd className="mt-1 leading-7 text-stone-600">{service.deliverables[key]}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </dd>
+            </div>
 
             <div className="border-t border-[var(--gold-light)] pt-4 lg:col-span-2">
               <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">What it costs</dt>

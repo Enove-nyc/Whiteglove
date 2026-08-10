@@ -5,6 +5,7 @@ import { PhotoCredit, type GalleryPhoto } from "@/components/PhotoGallery";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
 import { trustLabel, type TrustLabel } from "@/lib/verification";
+import { checkedOn } from "@/lib/trust-status";
 import { DESTINATION_SECTIONS, LEGACY_RECORD_SECTIONS } from "@/lib/destination-sections";
 import type { PracticalPlace } from "@prisma/client";
 
@@ -61,11 +62,26 @@ const TONE: Record<TrustLabel["tone"], string> = {
  */
 function Status({ section }: { section: PracticalSection }) {
   const label = trustLabel(section);
+  // The date, as its own line rather than folded into the pill.
+  //
+  // The pill's wording for anything not yet verified is an INSTRUCTION —
+  // "Confirm before travel", "Confirm directly" — and a date inside those
+  // words reads as the day the instruction stopped applying, which is why
+  // lib/trust-status.ts refuses to put one there. Said separately it means
+  // what it says: this is when somebody last looked. A minyan time, a
+  // seasonal programme and a phone number all age, and the age of the answer
+  // is what tells a traveller how hard to lean on it.
+  const on = section.lastChecked ? checkedOn(section.lastChecked) : null;
   return (
-    <p className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${TONE[label.tone]}`}>
-      <span aria-hidden="true">{label.glyph}</span>
-      {label.text}
-    </p>
+    <>
+      <p className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${TONE[label.tone]}`}>
+        <span aria-hidden="true">{label.glyph}</span>
+        {label.text}
+      </p>
+      {on && label.level !== "verified" && (
+        <p className="mt-2 text-xs leading-5 text-stone-500">Last checked {on}.</p>
+      )}
+    </>
   );
 }
 

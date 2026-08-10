@@ -95,6 +95,7 @@ const COMPONENTS = walk("components", (path) => path.endsWith(".tsx")).filter(
  */
 const COPY_DATA = ["lib/beta-notice.ts", "data/site-words.ts", "data/services.ts", "lib/trust-status.ts"];
 const FILES = [...PAGES, ...COMPONENTS, ...COPY_DATA];
+const AGENTS_MD = readFileSync("AGENTS.md", "utf8");
 
 /** A file's rendered words: comments out, Tailwind out. */
 function prose(path: string): string {
@@ -161,6 +162,40 @@ describe("the rules are written down where the next person reads them", () => {
   it("KEEPS PERSONAL ASSISTANCE INSIDE CONTACT, which the rules also say", () => {
     assert.match(AGENTS, /discoverable only from the Contact area/);
     assert.match(readFileSync("app/contact/page.tsx", "utf8"), /<PlanningRequestForm/);
+  });
+});
+
+describe("one name per thing", () => {
+  // Comments out: both files record the old names in order to say what
+  // changed, which is exactly what the checks below look for.
+  const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const NAV = strip(readFileSync("lib/navigation.ts", "utf8"));
+  const POINTS = strip(readFileSync("lib/starting-points.ts", "utf8"));
+
+  it("KEEPS THE VOCABULARY WHERE THE NEXT PERSON READS IT", () => {
+    assert.match(AGENTS_MD, /## One name per thing/);
+    assert.match(AGENTS_MD, /lib\/starting-points\.ts/);
+  });
+
+  it("CALLS ONE PAGE ONE THING IN THE NAVIGATION", () => {
+    // The bar said "My Trips" and the menu said "Itinerary planner", both
+    // pointing at /itinerary — one page offered twice under two names, which
+    // reads as two features, one of which cannot be found.
+    const labels = [...NAV.matchAll(/label: "([^"]+)", href: "\/itinerary"/g)].map((m) => m[1]);
+    const barLabel = /label: "Itinerary planner",\n\s*href: "\/itinerary"/.test(NAV);
+    assert.ok(barLabel, "the navigation bar no longer calls /itinerary the itinerary planner");
+    assert.deepEqual([...new Set(labels)].filter((l) => l !== "Itinerary planner"), [], `/itinerary is also called: ${labels}`);
+    assert.doesNotMatch(NAV, /"My Trips"/);
+    assert.doesNotMatch(NAV, /"Hotels & Stays"/);
+  });
+
+  it("NAMES THE FOUR FRONT DOORS IN ONE PLACE", () => {
+    for (const href of ["/plan", "/itinerary", "/book", "/services"]) {
+      assert.ok(POINTS.includes(`href: "${href}"`), href);
+    }
+    // And uses the site's own word for the planner rather than a fifth one.
+    assert.match(POINTS, /itinerary planner/);
+    assert.doesNotMatch(POINTS, /trip planner/);
   });
 });
 

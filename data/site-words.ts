@@ -78,6 +78,28 @@ export type SiteWords = {
   /** Whether a planning fee comes off anything else. */
   pricingFeeCredit: string;
 
+  /* ---- three more the panel could not answer ---------------------------
+   *
+   * The six above answer what it costs and how the money works. A person
+   * about to hand over a family holiday asks three more before they commit,
+   * and the page had no room for any of them: how long the planning itself
+   * takes once it starts (which is not the same as how long a quote takes to
+   * come back), what happens if they change their mind, and whether anybody
+   * is there once the itinerary has been sent. The third is the one that
+   * decides whether this reads as a document or as a service.
+   *
+   * All three ship unanswered, for the same reason three of the six do:
+   * there is nothing on this site to stand behind a timeline, a refund policy
+   * or a support window, and inventing one would be a promise made on the
+   * owner's behalf. Answer them at /admin/settings/words. */
+
+  /** How long the planning takes once it starts. */
+  pricingTimeline: string;
+  /** What happens if the trip or the arrangement is called off. */
+  pricingCancellation: string;
+  /** Whether anybody is there after the itinerary has been sent, and for how long. */
+  pricingSupportAfter: string;
+
   /**
    * What is said beside a link that earns a commission.
    *
@@ -161,6 +183,9 @@ export const BUILT_IN_WORDS: SiteWords = {
   pricingBookingSupport:
     "Booking your own travel through the search on this site costs you nothing extra — the site may earn a commission from the travel provider, which does not change your price. Booking on your behalf is a separate service, quoted before any work starts.",
   pricingFeeCredit: PRICE_NOT_PUBLISHED,
+  pricingTimeline: PRICE_NOT_PUBLISHED,
+  pricingCancellation: PRICE_NOT_PUBLISHED,
+  pricingSupportAfter: PRICE_NOT_PUBLISHED,
   affiliateDisclosure:
     "White Glove may earn a commission if you book through a partner link, at no additional cost to you.",
 };
