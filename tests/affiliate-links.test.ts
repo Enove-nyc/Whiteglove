@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { SLOTS, slotInfo } from "@/lib/travelpayouts";
 
 /**
  * Every link that leaves this site for a booking partner carries the affiliate
@@ -97,18 +96,24 @@ describe("hotels reach Stay22 when it is on", () => {
 });
 
 describe("the routing checks the partner the search really opens", () => {
-  it("builds each search on the host lib/travelpayouts.ts says it does", () => {
-    // linkProblem refuses a pasted link whose destination does not match
-    // slotInfo(slot).host. If the component ever moves a search to a different
-    // partner, that guard silently starts refusing correct links instead —
-    // so the two have to be checked against each other.
-    for (const { slot, host } of SLOTS) {
-      assert.ok(
-        SOURCE.includes(`https://${host}/`) || SOURCE.includes(`https://${host}`),
-        `${slot} is checked against ${host}, which the component never builds`,
-      );
+  it("does not build a partner address by hand any more", () => {
+    // The searches used to be typed into this component as kayak.com URLs,
+    // which is what made the partner unchangeable. They come from
+    // lib/travel-partners.ts now, so a new programme is a dropdown rather than
+    // an edit here. The one exception is Kayak's own builder, which handles
+    // multi-city and is called by name.
+    assert.match(SOURCE, /flightUrl\(partner,/);
+    assert.match(SOURCE, /carUrl\(carPartner,/);
+    assert.doesNotMatch(SOURCE, /https:\/\/www\.kayak\.com\/cars\/\$\{encodeURIComponent/);
+  });
+
+  it("passes the partner choice into the routing, or the link check judges the wrong one", () => {
+    // throughTravelpayouts validates the pasted link against the chosen
+    // partner. Called without the choices it falls back to the defaults, and a
+    // correctly configured Kayak link would be silently dropped.
+    for (const call of SOURCE.match(/openPartner\([^;]*?\);/g) ?? []) {
+      if (!call.includes("affiliate?.travelpayouts")) continue;
+      assert.match(call, /affiliate\?\.partners/, call);
     }
-    // Flights are built in lib/kayak-search.ts rather than the component.
-    assert.match(readFileSync("lib/kayak-search.ts", "utf8"), new RegExp(`https://${slotInfo("flights").host}/flights/`));
   });
 });

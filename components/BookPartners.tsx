@@ -6,6 +6,7 @@ import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
 import { allezUrl, hotelButtonLabel, type Stay22Settings, stay22IsOn } from "@/lib/stay22";
 import { type SearchSlot, throughTravelpayouts, type TravelpayoutsLinks } from "@/lib/travelpayouts";
+import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
@@ -34,6 +35,12 @@ export type Affiliate = {
    * Absent means that search opens the partner directly and earns nothing.
    */
   travelpayouts?: TravelpayoutsLinks;
+  /**
+   * Which partner each search opens, from /admin/settings/earnings. Absent
+   * means the defaults in lib/travel-partners.ts — not Kayak, which this
+   * account is not approved for.
+   */
+  partners?: PartnerChoices;
   /**
    * Stay22, which sits in front of Booking.com, Expedia and the rest under one
    * ID. Set means the hotel search is built for Stay22 rather than sent to
@@ -77,8 +84,8 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
  * did not, the car search went out untagged for months while the settings screen
  * said the key covered it. One door out means one place to check.
  */
-function openPartner(url: string, slot?: SearchSlot, links?: TravelpayoutsLinks) {
-  const final = slot ? throughTravelpayouts(url, links?.[slot], slot) : url;
+function openPartner(url: string, slot?: SearchSlot, links?: TravelpayoutsLinks, choices?: PartnerChoices) {
+  const final = slot ? throughTravelpayouts(url, links?.[slot], slot, choices) : url;
   if (typeof window !== "undefined") window.open(final, "_blank", "noopener,noreferrer");
 }
 
@@ -288,7 +295,23 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
   function search() {
     const wanted = checked();
     if (!wanted) return;
-    openPartner(kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams }), "flights", affiliate?.travelpayouts);
+    // Whichever flight programme is configured. Kayak keeps its own builder
+    // (it carries nonstop and multi-city); the rest come from the registry,
+    // which returns null for a shape they cannot express rather than sending
+    // somebody the first leg of a five-leg trip.
+    const partner = partnerFor("flights", affiliate?.partners);
+    const url =
+      partner.key === "kayak"
+        ? kayakUrl(wanted, { nonstop, affiliate: affiliate?.kayakParams })
+        : // No passenger count is asked for on this form — Kayak never took one
+          // in its URL, so the field was never added. flightUrl defaults to one
+          // adult rather than inventing a number the traveller did not give.
+          flightUrl(partner, { shape: wanted });
+    if (!url) {
+      setError(`${partner.label} cannot open a multi-city search. Search one journey at a time, or change the flight partner in settings.`);
+      return;
+    }
+    openPartner(url, "flights", affiliate?.travelpayouts, affiliate?.partners);
     // The booking itself happens on the other site, where we cannot see it.
     // So ask for it back, with the reference, rather than letting the trip
     // quietly not know about the flight they just paid for.
@@ -412,7 +435,7 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
     } else {
       let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(dest.trim())}&checkin=${checkin}&checkout=${checkout}&group_adults=${Math.max(1, Number(guests) || 1)}`;
       if (affiliate?.bookingAid) url += `&aid=${encodeURIComponent(affiliate.bookingAid)}&label=whiteglove`;
-      openPartner(url, "hotels", affiliate?.travelpayouts);
+      openPartner(url, "hotels", affiliate?.travelpayouts, affiliate?.partners);
     }
     onOpened({
       kind: "hotel",
@@ -467,10 +490,17 @@ function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd
 
   function search() {
     if (!validate()) return;
+    const carPartner = partnerFor("cars", affiliate?.partners);
+    const carSearch = carUrl(carPartner, { where: loc.trim(), pickup, dropoff });
+    if (!carSearch) {
+      setError(`${carPartner.label} could not be opened for that pick-up. Check the location and dates.`);
+      return;
+    }
     openPartner(
-      withAffiliate(`https://www.kayak.com/cars/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}`, affiliate?.kayakParams),
+      carPartner.key === "kayak" ? withAffiliate(carSearch, affiliate?.kayakParams) : carSearch,
       "cars",
       affiliate?.travelpayouts,
+      affiliate?.partners,
     );
     onOpened({
       kind: "car",

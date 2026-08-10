@@ -33,6 +33,7 @@
 
 import { allezUrl, stay22IsOn, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
+import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 
 /** What a visitor is trying to book. */
@@ -79,6 +80,8 @@ export type ProductRoute = {
 /** Everything the site needs in order to build any booking link. */
 export type AffiliateConfig = {
   travelpayouts: TravelpayoutsLinks;
+  /** Which partner each search opens. See lib/travel-partners.ts. */
+  partners?: PartnerChoices;
   stay22: Stay22Settings;
   /** KAYAK_AFFILIATE_PARAMS. Legacy, and only additive — Travelpayouts is the earner. */
   kayakParams?: string;
@@ -118,9 +121,9 @@ export type AffiliateRequest = {
  * search and earns nothing. Reporting `earns: true` for it would be the exact
  * blindness this module exists to end.
  */
-function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot): boolean {
+function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot, choices?: PartnerChoices): boolean {
   const pasted = links[slot]?.trim();
-  return Boolean(pasted) && linkProblem(pasted!, slot) === null;
+  return Boolean(pasted) && linkProblem(pasted!, slot, choices) === null;
 }
 
 const NOT_CONNECTED = (product: TravelProduct, what: string): ProductRoute => ({
@@ -153,7 +156,7 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
         note: `Hotel searches go through Stay22 under ID ${config.stay22.aid.trim()}.`,
       };
     }
-    const wrapped = travelpayoutsEarns(config.travelpayouts, "hotels");
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "hotels", config.partners);
     return {
       product,
       destinationLabel: "Booking.com",
@@ -167,15 +170,17 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
 
   if (product === "flight" || product === "car") {
     const slot: SearchSlot = product === "flight" ? "flights" : "cars";
-    const wrapped = travelpayoutsEarns(config.travelpayouts, slot);
+    const partner = partnerFor(slot, config.partners);
+    const wrapped = travelpayoutsEarns(config.travelpayouts, slot, config.partners);
+    const what = product === "flight" ? "Flight" : "Car";
     return {
       product,
-      destinationLabel: "Kayak",
+      destinationLabel: partner.label,
       network: wrapped ? "travelpayouts" : "none",
       earns: wrapped,
       note: wrapped
-        ? `${product === "flight" ? "Flight" : "Car"} searches go through Travelpayouts, then on to Kayak.`
-        : `${product === "flight" ? "Flight" : "Car"} searches open Kayak directly. They work, and they earn nothing.`,
+        ? `${what} searches go through Travelpayouts, then on to ${partner.label}.`
+        : `${what} searches open ${partner.label} directly. They work, and they earn nothing.`,
     };
   }
 
@@ -241,15 +246,20 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     const shape: SearchShape = back
       ? { trip: "round-trip", legs: [{ from, to, date: out }], ret: back }
       : { trip: "one-way", legs: [{ from, to, date: out }] };
-    return kayakUrl(shape, { affiliate: config.kayakParams });
+
+    // Whichever flight programme the owner is actually approved for. Kayak
+    // keeps its own builder because it handles multi-city and carries the
+    // legacy affiliate params; everything else comes from the registry.
+    const partner = partnerFor("flights", config.partners);
+    if (partner.key === "kayak") return kayakUrl(shape, { affiliate: config.kayakParams });
+    return flightUrl(partner, { shape, adults: request.adults, children: request.children });
   }
 
   if (request.product === "car") {
-    if (!where || !isoDate(request.checkIn) || !isoDate(request.checkOut)) return null;
-    return withAffiliate(
-      `https://www.kayak.com/cars/${encodeURIComponent(where)}/${isoDate(request.checkIn)}/${isoDate(request.checkOut)}`,
-      config.kayakParams,
-    );
+    const partner = partnerFor("cars", config.partners);
+    const built = carUrl(partner, { where, pickup: isoDate(request.checkIn), dropoff: isoDate(request.checkOut) });
+    if (!built) return null;
+    return partner.key === "kayak" ? withAffiliate(built, config.kayakParams) : built;
   }
 
   return null;
@@ -278,7 +288,7 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
 
   if (route.network === "travelpayouts") {
     const slot: SearchSlot = request.product === "hotel" ? "hotels" : request.product === "flight" ? "flights" : "cars";
-    return { url: throughTravelpayouts(url, config.travelpayouts[slot], slot), route };
+    return { url: throughTravelpayouts(url, config.travelpayouts[slot], slot, config.partners), route };
   }
   // Stay22's own URL already carries the aid; nothing wraps it.
   return { url, route };

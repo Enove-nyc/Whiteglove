@@ -8,9 +8,9 @@ import {
   markerIn,
   markerProblem,
   SLOTS,
-  slotInfo,
   throughTravelpayouts,
 } from "@/lib/travelpayouts";
+import { carUrl, flightUrl, hostBelongsTo, partnerFor, TRAVEL_PARTNERS } from "@/lib/travel-partners";
 
 /**
  * Routing the searches so they earn.
@@ -27,6 +27,13 @@ const booking = (u = "https://www.booking.com/searchresults.html?ss=Krakow") =>
   `https://tp.media/r?marker=${MARKER}&trs=123&p=4115&campaign_id=101&u=${encodeURIComponent(u)}`;
 const kayak = (u = "https://www.kayak.com/flights/JFK-KRK/2026-09-01") =>
   `https://tp.media/r?marker=${MARKER}&trs=123&p=4114&campaign_id=100&u=${encodeURIComponent(u)}`;
+/** A link for the flight programme this account is actually approved for. */
+const aviasales = (u = "https://search.aviasales.com/flights/?origin_iata=JFK&destination_iata=KRK") =>
+  `https://tp.media/r?marker=${MARKER}&trs=123&p=4114&campaign_id=100&u=${encodeURIComponent(u)}`;
+const economy = (u = "https://www.economybookings.com/en?idpick=Krakow") =>
+  `https://tp.media/r?marker=${MARKER}&trs=123&p=4114&campaign_id=100&u=${encodeURIComponent(u)}`;
+/** Both searches pinned to Kayak, for the tests that are about Kayak. */
+const onKayak = { flights: "kayak", cars: "kayak" } as const;
 
 describe("the marker itself", () => {
   it("takes a plain number", () => {
@@ -53,7 +60,9 @@ describe("the marker itself", () => {
 describe("a pasted link has to be able to earn", () => {
   it("accepts a redirect link for the partner that search opens", () => {
     assert.equal(linkProblem(booking(), "hotels"), null);
-    assert.equal(linkProblem(kayak(), "flights"), null);
+    // The default flight programme, and Kayak once it is chosen.
+    assert.equal(linkProblem(aviasales(), "flights"), null);
+    assert.equal(linkProblem(kayak(), "flights", onKayak), null);
   });
 
   it("REFUSES A LINK FOR THE WRONG PARTNER", () => {
@@ -61,8 +70,19 @@ describe("a pasted link has to be able to earn", () => {
     // produces a working search that credits nobody.
     const said = linkProblem(booking(), "flights");
     assert.match(said!, /www\.booking\.com/);
-    assert.match(said!, /www\.kayak\.com/);
+    assert.match(said!, /Aviasales/);
     assert.match(said!, /does not track another/);
+  });
+
+  it("REFUSES A LINK FOR A PARTNER THAT IS NO LONGER THE ONE CHOSEN", () => {
+    // The new way to get this wrong: a perfectly good Kayak link, pasted while
+    // the search is set to Aviasales. Both are real programmes and the link is
+    // not malformed — it simply does not track the search this site builds.
+    const said = linkProblem(kayak(), "flights");
+    assert.match(said!, /www\.kayak\.com/);
+    assert.match(said!, /Aviasales/);
+    // And it says which knob to turn, because either fix is legitimate.
+    assert.match(said!, /change the partner/i);
   });
 
   it("refuses a link that never goes through Travelpayouts", () => {
@@ -124,10 +144,12 @@ describe("what the traveller's browser actually opens", () => {
 });
 
 describe("what the screen says is happening", () => {
-  it("says plainly that an unrouted search earns nothing", () => {
+  it("says plainly that an unrouted search earns nothing, and names who it opens", () => {
     const said = describeSlot("cars", "");
     assert.match(said, /earns nothing/);
-    assert.match(said, new RegExp(slotInfo("cars").host.replace(/\./g, "\\.")));
+    // The partner it would open, which is now a choice rather than a fact.
+    assert.match(said, /EconomyBookings/);
+    assert.match(describeSlot("cars", "", onKayak), /Kayak/);
   });
 
   it("names the marker once a search is routed", () => {
@@ -143,7 +165,13 @@ describe("what the screen says is happening", () => {
     assert.match(describeLinks({ hotels: booking() }), /Hotels go through Travelpayouts/);
     assert.match(describeLinks({ hotels: booking() }), /earn nothing/);
     assert.match(
-      describeLinks({ hotels: booking(), flights: kayak(), cars: kayak("https://www.kayak.com/cars/Krakow/2026-09-01/2026-09-05") }),
+      describeLinks({ hotels: booking(), flights: aviasales(), cars: economy() }),
+      /All three/,
+    );
+    // The same three links, judged against Kayak, are the wrong partner and
+    // stop counting — which is the guard doing its job, not a regression.
+    assert.doesNotMatch(
+      describeLinks({ hotels: booking(), flights: aviasales(), cars: economy() }, onKayak),
       /All three/,
     );
   });
@@ -158,11 +186,29 @@ describe("the slots match the searches the site really builds", () => {
     assert.deepEqual(SLOTS.map((s) => s.slot), ["flights", "hotels", "cars"]);
   });
 
-  it("names the host each search opens, so a wrong link can be caught", () => {
-    // If one of these ever stops matching the URL the component builds, the
-    // check above turns from a guard into a nuisance that refuses good links.
-    assert.equal(slotInfo("flights").host, "www.kayak.com");
-    assert.equal(slotInfo("hotels").host, "www.booking.com");
-    assert.equal(slotInfo("cars").host, "www.kayak.com");
+  it("defaults to programmes this account is approved for, not Kayak", () => {
+    // The whole reason the partner became a setting: defaulting to Kayak
+    // defaults to earning nothing, because the account is not approved for it.
+    assert.equal(partnerFor("flights", {}).key, "aviasales");
+    assert.equal(partnerFor("cars", {}).key, "economybookings");
+    assert.equal(partnerFor("hotels", {}).key, "booking");
+  });
+
+  it("THE ADDRESS BUILT IS ON THE DOMAIN THE LINK IS CHECKED AGAINST", () => {
+    // The invariant this file has always guarded, now per partner. If a
+    // builder and its domain drift apart, the paste-a-link check stops being a
+    // guard and starts refusing correct links.
+    for (const partner of TRAVEL_PARTNERS) {
+      const built =
+        partner.slot === "flights"
+          ? flightUrl(partner, { shape: { trip: "one-way", legs: [{ from: "JFK", to: "KRK", date: "2026-09-01" }] } })
+          : partner.slot === "cars"
+            ? carUrl(partner, { where: "Krakow", pickup: "2026-09-01", dropoff: "2026-09-05" })
+            : null;
+      // Hotels are built in lib/affiliate/partners.ts, and Kayak flights keep
+      // their own builder in lib/kayak-search.ts — both covered elsewhere.
+      if (!built) continue;
+      assert.ok(hostBelongsTo(new URL(built).host, partner.domain), `${partner.key}: ${built}`);
+    }
   });
 });

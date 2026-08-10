@@ -23,25 +23,34 @@
  * programme, and a wrong one is invisible. The link already contains them.
  */
 
-/** The three searches on /book that hand off to somebody else. */
-export type SearchSlot = "flights" | "hotels" | "cars";
+import {
+  hostBelongsTo,
+  partnerFor,
+  type PartnerChoices,
+  type SearchSlot,
+  type TravelPartner,
+} from "@/lib/travel-partners";
+
+export type { SearchSlot };
 
 export type SlotInfo = {
   slot: SearchSlot;
   label: string;
-  /**
-   * The host this site builds its own search address on. A pasted link has to
-   * forward to the same place, or it is a link for a different programme.
-   */
-  host: string;
   /** Where that address is built, for anybody going to look. */
   builtIn: string;
 };
 
+/**
+ * THE HOST USED TO LIVE HERE and no longer does. It said every flight and car
+ * search opens www.kayak.com, which made the paste-a-link check below refuse
+ * every programme this account is actually approved for. Where a search lands
+ * is now the owner's choice — see lib/travel-partners.ts — and this list is
+ * only the names of the three slots.
+ */
 export const SLOTS: readonly SlotInfo[] = [
-  { slot: "flights", label: "Flights", host: "www.kayak.com", builtIn: "lib/kayak-search.ts" },
-  { slot: "hotels", label: "Hotels", host: "www.booking.com", builtIn: "components/BookPartners.tsx" },
-  { slot: "cars", label: "Car hire", host: "www.kayak.com", builtIn: "components/BookPartners.tsx" },
+  { slot: "flights", label: "Flights", builtIn: "lib/travel-partners.ts" },
+  { slot: "hotels", label: "Hotels", builtIn: "lib/affiliate/partners.ts" },
+  { slot: "cars", label: "Car hire", builtIn: "lib/travel-partners.ts" },
 ] as const;
 
 export function slotInfo(slot: SearchSlot): SlotInfo {
@@ -111,10 +120,11 @@ export function forwardsTo(pasted: string): string {
  * opens a working search page, and the only symptom is that no money ever
  * arrives.
  */
-export function linkProblem(pasted: string, slot: SearchSlot): string | null {
+export function linkProblem(pasted: string, slot: SearchSlot, choices?: PartnerChoices): string | null {
   const value = pasted.trim();
   if (!value) return null;
   const info = slotInfo(slot);
+  const partner: TravelPartner = partnerFor(slot, choices);
 
   const url = parse(value);
   if (!url) {
@@ -138,11 +148,14 @@ export function linkProblem(pasted: string, slot: SearchSlot): string | null {
     );
   }
   // The one that catches a genuine mistake: a Booking.com link cannot earn on
-  // a Kayak search, however valid it is in itself.
-  if (target.replace(/^www\./, "") !== info.host.replace(/^www\./, "")) {
+  // an Aviasales search, however valid it is in itself. Checked against the
+  // partner the owner CHOSE for this search rather than a hard-coded host —
+  // the whole reason the choice exists.
+  if (!hostBelongsTo(target, partner.domain)) {
     return (
-      `That link forwards to ${target}, but the ${info.label.toLowerCase()} search on this site opens ${info.host}. ` +
-      `A link made for one partner does not track another. Generate it from the ${info.host} programme, or leave this empty.`
+      `That link forwards to ${target}, but the ${info.label.toLowerCase()} search on this site is set to ${partner.label}. ` +
+      `A link made for one partner does not track another. Generate it from the ${partner.label} programme, ` +
+      `or change the partner above to match the link you have.`
     );
   }
   return null;
@@ -157,9 +170,14 @@ export function linkProblem(pasted: string, slot: SearchSlot): string | null {
  * where the site already was. The alternative, a search that fails because a
  * setting is wrong, costs a customer to save a commission.
  */
-export function throughTravelpayouts(searchUrl: string, pasted: string | undefined, slot: SearchSlot): string {
+export function throughTravelpayouts(
+  searchUrl: string,
+  pasted: string | undefined,
+  slot: SearchSlot,
+  choices?: PartnerChoices,
+): string {
   if (!pasted?.trim()) return searchUrl;
-  if (linkProblem(pasted, slot)) return searchUrl;
+  if (linkProblem(pasted, slot, choices)) return searchUrl;
   const url = parse(pasted);
   if (!url) return searchUrl;
   url.searchParams.set("u", searchUrl);
@@ -167,20 +185,20 @@ export function throughTravelpayouts(searchUrl: string, pasted: string | undefin
 }
 
 /** What this search is doing right now, in one sentence. Never null. */
-export function describeSlot(slot: SearchSlot, pasted: string | undefined): string {
-  const info = slotInfo(slot);
+export function describeSlot(slot: SearchSlot, pasted: string | undefined, choices?: PartnerChoices): string {
+  const partner = partnerFor(slot, choices);
   const value = pasted?.trim() ?? "";
   if (!value) {
-    return `Opens ${info.host} directly. It works, and it earns nothing.`;
+    return `Opens ${partner.label} directly. It works, and it earns nothing.`;
   }
-  const problem = linkProblem(value, slot);
+  const problem = linkProblem(value, slot, choices);
   if (problem) return `Not in use — ${problem}`;
-  return `Goes through Travelpayouts under marker ${markerIn(value)}, then on to ${info.host}.`;
+  return `Goes through Travelpayouts under marker ${markerIn(value)}, then on to ${partner.label}.`;
 }
 
 /** How many of the three are earning, for the top of the screen. */
-export function describeLinks(links: TravelpayoutsLinks): string {
-  const live = SLOTS.filter((s) => !linkProblem(links[s.slot] ?? "", s.slot) && (links[s.slot] ?? "").trim());
+export function describeLinks(links: TravelpayoutsLinks, choices?: PartnerChoices): string {
+  const live = SLOTS.filter((s) => !linkProblem(links[s.slot] ?? "", s.slot, choices) && (links[s.slot] ?? "").trim());
   if (live.length === 0) {
     return "None of the three searches is going through Travelpayouts yet, so none of them earns anything. Paste a link below to change that.";
   }
