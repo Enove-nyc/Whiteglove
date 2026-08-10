@@ -88,6 +88,7 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/destinations", priority: 0.9, changeFrequency: "weekly" },
   // How the four labels on every practical detail are decided. Indexed
   // deliberately: it is the page that makes the rest of the site checkable.
+  { path: "/hechsherim", priority: 0.6, changeFrequency: "monthly" },
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
   { path: "/sample-itinerary", priority: 0.7, changeFrequency: "yearly" },
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },

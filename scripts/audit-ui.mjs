@@ -94,6 +94,7 @@ const PAGES = [
   // nothing wrong with it.
   ["/heritage/towns/warsaw", "heritage town"],
   ["/uman", "city guide"],
+  ["/hechsherim", "certification marks"],
   ["/book", "book"],
   ["/login", "login"],
   ["/itinerary", "route planner"],

@@ -83,8 +83,8 @@ const questions: Array<{
   },
   {
     title: "The hechsher on a listing",
-    href: "/kosher",
-    cta: "See how hechsherim are shown on a listing",
+    href: "/hechsherim",
+    cta: "See the certification marks",
     body: `The ${HECHSHERIM.length} certifying bodies the site knows by name, so a mark on a listing means something specific.`,
     detail:
       "Nothing researched from a directory is ever published as certified. That word is reserved for the owner having confirmed it with the certifying body itself.",

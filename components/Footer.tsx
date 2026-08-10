@@ -55,6 +55,7 @@ const columnsFor = (
       { label: "Kosher food finder", href: "/kosher" },
       { label: "Where to stay", href: "/hotels" },
       { label: "Things to do", href: "/things-to-do" },
+      { label: "Certification marks", href: "/hechsherim" },
       { label: "Provider directory", href: "/directory" },
     ],
   },
