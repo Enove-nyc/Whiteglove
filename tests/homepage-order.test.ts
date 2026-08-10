@@ -85,27 +85,42 @@ describe("the first five seconds", () => {
 });
 
 describe("the order of the page", () => {
+  it("OFFERS ONE WAY TO PICK A KIND OF TRIP, not two", () => {
+    // "What kind of trip are you planning?" sent you to /plan?kind= and
+    // "Browse by the kind of holiday" sent you to /destinations?kind=, one
+    // above the other, each a grid of the same sort of card. Two ways to say
+    // "what sort of trip" on one page is a page that has not decided. The
+    // destination categories stayed — they are the ones with places behind
+    // them — and the planner is still one press from the hero.
+    assert.doesNotMatch(PROSE, /What kind of trip are you planning\?/);
+    assert.doesNotMatch(HOME, /TRIP_KINDS/, "the second trip-type grid is back");
+    // `/plan?kind=heritage` stays: that is the heritage section's own button,
+    // not a grid of trip types competing with the categories.
+    assert.match(HOME, /Browse by holiday type/);
+    // The hero's search carries the way out for somebody who has not chosen
+    // a destination, which is what the trip-type grid was really for.
+    assert.match(FORM, /helpHref = "\/plan"/);
+    assert.match(FORM, /Not sure where/);
+  });
+
   it("puts vacation content before heritage content", () => {
     // ACCEPTANCE CRITERION, restated as a test. The heritage section is a
     // section; it is not the page.
-    const selector = at("What kind of trip are you planning?");
-    const categories = at("Browse by the kind of holiday.");
+    const categories = at("Browse by holiday type");
     const destinations = at('id="destinations"');
     const heritage = at("Travelling to kevarim?");
-    assert.ok(selector < heritage, "the heritage section comes before the trip-type selector");
     assert.ok(categories < heritage, "the heritage section comes before the vacation categories");
     assert.ok(destinations < heritage, "the heritage section comes before the vacation destinations");
   });
 
   it("runs in the order somebody decides in", () => {
     const order = [
-      "What kind of trip are you planning?",
-      "Three steps, and you can stop after any of them.",
-      "Browse by the kind of holiday.",
+      "How it works",
+      "Browse by holiday type",
       'id="destinations"',
-      "Places that make a kosher vacation easier.",
-      "Some places only work in one half of the year.",
-      "The half of a trip nobody else plans for you.",
+      "Kosher hotels and programmes",
+      "When to go",
+      "Food, Shabbos and the rest of it",
       "Travelling to kevarim?",
       "VERIFICATION_LINE}",
       "Where do you want to go?",
@@ -141,7 +156,7 @@ describe("the order of the page", () => {
   });
 
   it("OFFERS NO SEASON WITH NOTHING BEHIND IT", () => {
-    const seasons = HOME.slice(at("Some places only work in one half of the year."), at("The half of a trip nobody else plans for you."));
+    const seasons = HOME.slice(at("When to go"), at("Food, Shabbos and the rest of it"));
     assert.match(seasons, /if \(count === 0\) return null/);
     assert.match(seasons, /href=\{`\/destinations\?season=\$\{season\.value\}`\}/);
   });
@@ -181,7 +196,7 @@ describe("the order of the page", () => {
     // "1" beside Beach and resort says something about how far this section
     // has got rather than about the holiday. The counts stay on
     // /vacation-ideas, where somebody is choosing between filters.
-    const categories = HOME.slice(at("Browse by the kind of holiday."), at('id="destinations"'));
+    const categories = HOME.slice(at("Browse by holiday type"), at('id="destinations"'));
     assert.doesNotMatch(categories, /\{count\}/);
     // …but a category with nothing behind it is still not offered at all.
     assert.match(categories, /if \(count === 0\) return null/);

@@ -16,7 +16,6 @@ import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { website } from "@/lib/structured-data";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
-import { TRIP_KINDS } from "@/lib/trip-plan";
 import { getStayList } from "@/lib/attractions-view";
 import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
@@ -224,42 +223,16 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 2. What kind of trip are you planning? ----------------------- */}
-      <section className="border-b border-[var(--gold-light)] bg-[var(--surface)] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading
-            eyebrow="Start here"
-            title="What kind of trip are you planning?"
-            description="Press one and we will take it from there — “not sure yet” is on the list, because it is where most people start."
-          />
-          <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {TRIP_KINDS.map((kind) => (
-              <li key={kind.value}>
-                <Link
-                  href={`/plan?kind=${kind.value}`}
-                  className="wg-card flex h-full flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5"
-                >
-                  <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                    {kind.label}
-                  </span>
-                  <span className="mt-2 text-sm leading-6 text-stone-600">{kind.blurb}</span>
-                  <span className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                    Plan this →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
+      {/* THERE WERE TWO OF THESE. "What kind of trip are you planning?"
+          sent you to /plan?kind=, and "Browse by the kind of holiday" sent you
+          to /destinations?kind=, one above the other, each a grid of the same
+          sort of card. Two ways to say "what sort of trip" on one page is a
+          page that has not decided. The destination categories stayed — they
+          are the ones with places behind them — and the planner is still one
+          press from the hero for somebody who has not chosen. */}
       {/* ---- 3. How White Glove helps ------------------------------------- */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
-        <SectionHeading
-          eyebrow="How it works"
-          title="Three steps, and you can stop after any of them."
-          description="You can stop after any of them, and nothing has to be decided in advance."
-        />
+        <SectionHeading eyebrow="Planning a trip" title="How it works" />
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {HOW_IT_WORKS.map(([title, body], index) => (
             <li key={title} className="border-t border-[var(--gold-light)] pt-6">
@@ -277,9 +250,9 @@ export default async function Home() {
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
-            eyebrow="Vacation categories"
-            title="Browse by the kind of holiday."
-            description="Each one is a filter on the same list of destinations."
+            eyebrow="Where to go"
+            title="Browse by holiday type"
+            description="Each one filters the same list of destinations."
           />
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TRIP_THEMES.map((theme) => {
@@ -319,9 +292,9 @@ export default async function Home() {
       {/* ---- 5. Featured vacation destinations ---------------------------- */}
       <section id="destinations" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
-          eyebrow="Vacation destinations"
-          title="Somewhere to start."
-          description="Each one answers the two questions that decide whether a holiday is workable: what there is to eat, and what happens on Shabbos."
+          eyebrow="Destinations"
+          title="Where to go"
+          description="Kosher food and Shabbos are answered for every one of these before you book anything."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((card) => (
@@ -350,9 +323,9 @@ export default async function Home() {
         <section className="border-y border-[var(--gold-light)] bg-[var(--surface)] px-5 py-16 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
-              eyebrow="Where to sleep"
-              title="Places that make a kosher vacation easier."
-              description="Kosher hotels, kosher B&Bs and the seasonal programmes — with the season written on the ones that are a fortnight rather than a hotel."
+              eyebrow="Where to stay"
+              title="Kosher hotels and programmes"
+              description="Some of these run for a few weeks a year rather than all year. The season is on the card."
             />
             <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {featuredStays.map((stay) => (
@@ -401,9 +374,9 @@ export default async function Home() {
           same rule as the categories above, and for the same reason. */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
-          eyebrow="When you are going"
-          title="Some places only work in one half of the year."
-          description="An alpine kosher programme runs for a fortnight; a Roman August is thirty-eight degrees and half the city shut. Pick the time of year and see what suits it."
+          eyebrow="Season"
+          title="When to go"
+          description="Alpine kosher programmes run for weeks, not months. Rome in August is thirty-eight degrees and half shut."
         />
         <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {SEASONS.map((season) => {
@@ -432,8 +405,8 @@ export default async function Home() {
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow="Kosher travel"
-          title="The half of a trip nobody else plans for you."
-          description="Free to use, whether or not you ever ask us for anything."
+          title="Food, Shabbos and the rest of it"
+          description="Free to use, whether or not you book anything here."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {RESOURCES.map((resource) => (
