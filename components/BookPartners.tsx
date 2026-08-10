@@ -55,7 +55,9 @@ const fieldLabel = "text-[10px] font-bold uppercase tracking-[0.14em] text-stone
 const bareInput = "mt-1.5 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-normal normal-case tracking-normal text-[var(--navy)] outline-none placeholder:text-stone-400";
 
 function SearchGrid({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`grid gap-px overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_8px_24px_rgba(23,45,82,.06)] ${className}`}>{children}</div>;
+  // overflow-visible so airport, address and date pickers can open below the
+  // grid — overflow-hidden was clipping them and made every dropdown look dead.
+  return <div className={`grid gap-px overflow-visible rounded-2xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_8px_24px_rgba(23,45,82,.06)] ${className}`}>{children}</div>;
 }
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
@@ -150,7 +152,7 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
   const inSite = pay === "cash" && ((kind === "flights" && flightsVia === "duffel") || (kind === "hotels" && hotelsVia === "duffel"));
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
+    <div className="overflow-visible rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
       {/* ---- How are you paying? A segmented control, so the choice reads as
            one control with two settings rather than two competing panels. ---- */}
       <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 sm:px-8 sm:py-6">
