@@ -8,10 +8,10 @@
  * Trip and Travel Services, which described a personal planning service.
  *
  * The business is neither. It helps somebody choose a kosher-friendly holiday
- * and earns when they book it, so the bar is the products a person books —
- * where to go, where to stay, how to get there, what to do — with the kosher
- * research beside them because that is the reason to book here rather than on
- * a comparison site.
+ * and earns when they book it, so the bar is where to go and what matters
+ * about travelling kosher — with one filled Search & Book button for hotels,
+ * flights and cars. Putting Hotels and Flights in the bar next to that button
+ * said the same thing three times and crowded Destinations onto the logo.
  *
  * THE RULES, each with the mistake it exists to prevent:
  *
@@ -42,7 +42,8 @@
  *      is away from.
  *
  *   5. **One primary action, and it is a search.** The thing this business
- *      does is help somebody find and book a trip.
+ *      does is help somebody find and book a trip. Hotels and Flights stay on
+ *      their own pages and in the menu — not beside the Search & Book button.
  */
 
 import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
@@ -60,31 +61,37 @@ export type NavItem = {
   description: string;
 };
 
+/** Dedicated hotel search — menu and destination pages, not the bar. */
+export const HOTELS_NAV: NavItem = {
+  // "Where to stay" — the same words the footer, the front page and the
+  // section heading use. AGENTS.md, "One name per thing".
+  label: "Where to stay",
+  href: "/hotels",
+  description: "Kosher hotels, seasonal programmes, and which quarter makes Shabbos walkable.",
+};
+
+/** Dedicated flight search — menu and destination pages, not the bar. */
+export const FLIGHTS_NAV: NavItem = {
+  label: "Flights",
+  href: "/flights",
+  description: "Search flights for your dates, then build the trip around them.",
+};
+
 /**
  * The bar, in order, at the widths that have room for it.
  *
- * SEVEN, NOT NINE. The brief named nine items; seven is what fits at 1280px
- * beside the site search and the sign-in link without the bar wrapping or the
- * search being squeezed to nothing. Cars & Transfers is the one that moved
- * into the menu — it is what somebody looks for AFTER they have chosen a hotel,
- * not before — and it keeps its own page at /cars, linked from every
- * destination. Swapping it back is one line here.
+ * FIVE, NOT SEVEN. Hotels & Stays and Flights used to sit here next to the
+ * Search & Book button, which searches the same three things. That tripled the
+ * booking pitch, crowded the first item onto the logo at 1280px, and left
+ * Cars & Transfers in the menu where it still belongs — somebody looks for a
+ * car AFTER they have chosen a hotel. The hotel and flight pages keep their
+ * own addresses and stay in the menu below.
  */
 export const PRIMARY_NAV: readonly NavItem[] = [
   {
     label: "Destinations",
     href: "/destinations",
     description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher and Shabbos answer on each one.",
-  },
-  {
-    label: "Where to stay",
-    href: "/hotels",
-    description: "Kosher hotels, seasonal programmes, and which quarter makes Shabbos walkable.",
-  },
-  {
-    label: "Flights",
-    href: "/flights",
-    description: "Search flights for your dates, then build the trip around them.",
   },
   {
     label: "Things to Do",
@@ -155,28 +162,28 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     ],
   },
   {
-    title: "Getting there",
+    title: "Book the trip",
     links: [
-      PRIMARY_NAV[2],
-      // Not in the bar — seven items is what fits — and it has a full page of
-      // its own, linked from every destination.
+      // Hotels and flights live here rather than beside Search & Book in the
+      // bar — same products, one primary action up top.
+      HOTELS_NAV,
+      FLIGHTS_NAV,
       { label: "Cars & transfers", href: "/cars", description: "Hire a car, or find out whether the destination is better without one." },
-      { label: "Flights, hotels & cars", href: BOOKING_SEARCH_PATH, description: "Search and book your own travel, with cash or with points." },
+      { label: "Search hotels, flights & cars", href: BOOKING_SEARCH_PATH, description: "Search and book your own travel, with cash or with points." },
       { label: "Before you go", href: "/travel-guide", description: "Documents, entry rules, insurance and connectivity." },
     ],
   },
   {
-    title: "Where to stay",
+    title: "While you are there",
     links: [
       PRIMARY_NAV[1],
-      PRIMARY_NAV[3],
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
     ],
   },
   {
     title: "Heritage travel",
     links: [
-      PRIMARY_NAV[5],
+      PRIMARY_NAV[3],
       { label: "Towns and guides", href: "/stops", description: "Every town and kever on the site, searchable in English or יידיש." },
       { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records with kevarim, access notes and shomer contacts." },
       { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by the name he is known by." },
@@ -205,10 +212,10 @@ export const PRIMARY_HREFS: ReadonlySet<string> = new Set(PRIMARY_NAV.map((item)
  *
  * Rule 3 above kept `/book` out of the BAR because it can be behind an access
  * code. The menu panel kept it, and the same objection applied there — a
- * visitor opening the menu and pressing "Flights, hotels & cars" met the
- * password box just as squarely. The entry stays (removing it would hide a
- * working feature from everybody to protect against a setting most deployments
- * do not have) and its target is resolved instead. See lib/booking-access.ts.
+ * visitor opening the menu and pressing the combined search met the password
+ * box just as squarely. The entry stays (removing it would hide a working
+ * feature from everybody to protect against a setting most deployments do not
+ * have) and its target is resolved instead. See lib/booking-access.ts.
  */
 export function menuGroupsFor(booking: BookingLink): typeof MENU_GROUPS {
   return MENU_GROUPS.map((group) => ({

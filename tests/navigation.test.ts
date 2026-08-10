@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { isCurrent, MENU_GROUPS, primaryCtaFor, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
+import { FLIGHTS_NAV, HOTELS_NAV, isCurrent, MENU_GROUPS, primaryCtaFor, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
 import { bookingLink } from "@/lib/booking-access";
 
 /**
@@ -30,10 +30,10 @@ describe("what the bar leads with", () => {
     assert.equal(PRIMARY_NAV[0].href, "/destinations");
   });
 
-  it("is the products a person books, in order", () => {
+  it("is where to go and what matters about travelling kosher, in order", () => {
     assert.deepEqual(
       PRIMARY_NAV.map((item) => item.label),
-      ["Destinations", "Where to stay", "Flights", "Things to Do", "Kosher Travel", "Heritage Travel", "Itinerary planner"],
+      ["Destinations", "Things to Do", "Kosher Travel", "Heritage Travel", "Itinerary planner"],
     );
   });
 
@@ -58,7 +58,7 @@ describe("what the bar leads with", () => {
     // at the first thing that sounds like what they came for.
     const labels = PRIMARY_NAV.map((item) => item.label);
     assert.ok(labels.indexOf("Destinations") < labels.indexOf("Heritage Travel"));
-    assert.ok(labels.indexOf("Where to stay") < labels.indexOf("Heritage Travel"));
+    assert.ok(labels.indexOf("Things to Do") < labels.indexOf("Heritage Travel"));
   });
 
   it("has one primary action, and it is a search", () => {
@@ -67,11 +67,22 @@ describe("what the bar leads with", () => {
     assert.equal(SIGN_IN.href, "/login");
   });
 
-  it("fits: seven items and one button", () => {
-    // Nine was asked for; seven is what fits at 1280px beside the site search
-    // and the sign-in link. Cars & Transfers is the one that moved into the
-    // menu, and it keeps a page of its own.
-    assert.equal(PRIMARY_NAV.length, 7);
+  it("DOES NOT TRIPLE THE BOOKING PITCH IN THE BAR", () => {
+    // Hotels & Stays and Flights sat next to Search & Book and said the same
+    // thing three times — and crowded Destinations onto the logo. They stay
+    // reachable from the menu and keep their own pages.
+    for (const item of PRIMARY_NAV) {
+      assert.notEqual(item.href, "/hotels", `${item.label} duplicates Search & Book`);
+      assert.notEqual(item.href, "/flights", `${item.label} duplicates Search & Book`);
+    }
+    assert.ok(ALL_ITEMS.some((item) => item.href === HOTELS_NAV.href), "hotels has no way in at all");
+    assert.ok(ALL_ITEMS.some((item) => item.href === FLIGHTS_NAV.href), "flights has no way in at all");
+  });
+
+  it("fits: five items and one button", () => {
+    // Seven crowded the logo at 1280px once Hotels and Flights sat beside
+    // Search & Book. Five is what fits; cars stay in the menu.
+    assert.equal(PRIMARY_NAV.length, 5);
     assert.ok(ALL_ITEMS.some((item) => item.href === "/cars"), "cars and transfers has no way in at all");
   });
 });
