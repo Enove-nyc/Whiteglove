@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { resolveLink } from "@/lib/affiliate/partners";
 import { goHref, readAffiliateRequest } from "@/lib/affiliate/request";
+import { airportCode } from "@/lib/kayak-search";
 import { NO_STAY22 } from "@/lib/stay22";
 
 /**
@@ -125,6 +126,31 @@ describe("the whole journey survives the hand-off", () => {
       assert.ok(url.includes(leg.from) && url.includes(leg.to), `${leg.from}-${leg.to} is missing from ${url}`);
       assert.ok(url.includes(leg.date.slice(2).replace(/-/g, "")) || url.includes(leg.date), `${leg.date} is missing`);
     }
+  });
+
+  it("hands off airport codes rather than what the box says", () => {
+    // A LEG IS THREE HYPHEN-SEPARATED FIELDS, and the airport box holds a
+    // label after a pick — "New York (JFK)". The booking page was sending the
+    // label, so a city with a hyphen in its name split into four fields and
+    // the leg was dropped on arrival: /go could build nothing, the new tab
+    // bounced back to the site, and the referral went with it. Measured on
+    // production with Cluj-Napoca before this was changed.
+    assert.match(SOURCE, /legs: wanted\.legs\.map\(\(l\) => \(\{ from: airportCode\(l\.from\), to: airportCode\(l\.to\)/,
+      "the flights hand-off is sending airport labels again");
+
+    const legs = [{ from: airportCode("Cluj-Napoca (CLJ)"), to: airportCode("Rome (FCO)"), date: "2026-09-01" }];
+    const href = goHref({ product: "flight", legs, checkOut: "2026-09-08" });
+    const parsed = readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)));
+    assert.deepEqual(parsed?.legs, [{ from: "CLJ", to: "FCO", date: "2026-09-01" }]);
+    assert.match(resolveLink(parsed!, config)?.url ?? "", /CLJ-FCO\/2026-09-01\/2026-09-08/);
+  });
+
+  it("still reads a leg from a page that has not been reloaded since the fix", () => {
+    // A browser holding the previous version of the booking page sends
+    // labels. Refusing them would break the search for exactly as long as
+    // somebody's tab stayed open, which is not a trade worth making.
+    const parsed = readAffiliateRequest(new URLSearchParams("product=flight&legs=New York (JFK)-Rome (FCO)-2026-09-01"));
+    assert.deepEqual(parsed?.legs, [{ from: "JFK", to: "FCO", date: "2026-09-01" }]);
   });
 
   it("refuses a leg that is not three whole fields", () => {

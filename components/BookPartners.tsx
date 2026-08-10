@@ -302,9 +302,16 @@ function FlightsForm({ onAdd, onOpened, prefill, multiCity = true }: { onAdd: Ad
       setError("Multi-city searches are not available at the moment. Search one journey at a time, and each one can be saved to the trip.");
       return;
     }
+    // CODES, NOT WHAT THE BOX SAYS. The airport field holds a label after a
+    // pick — "New York (JFK)" — and this used to hand that straight to /go,
+    // which encodes a leg as three hyphen-separated fields. A city with a
+    // hyphen in its name split into four and the leg was dropped on arrival,
+    // so the whole search resolved to nothing: the tab opened, bounced back to
+    // the site, and the referral was gone. Cluj-Napoca did it on production.
+    // The leg type has always been a code; only the caller disagreed.
     openPartner({
       product: "flight",
-      legs: wanted.legs.map((l) => ({ from: l.from, to: l.to, date: l.date })),
+      legs: wanted.legs.map((l) => ({ from: airportCode(l.from), to: airportCode(l.to), date: l.date })),
       checkOut: wanted.trip === "round-trip" ? wanted.ret : "",
       nonstop,
       placement: "book-flights",

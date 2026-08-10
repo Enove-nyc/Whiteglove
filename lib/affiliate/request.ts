@@ -35,6 +35,22 @@ function count(value: string | null, max = 30): number | undefined {
   return Number.isFinite(n) && n > 0 ? Math.min(n, max) : undefined;
 }
 
+/**
+ * An airport or metro code, or "". Three letters is the whole alphabet of it.
+ *
+ * A label the airport box left behind — "New York (JFK)" — gives up its code
+ * rather than being refused, so a browser still holding the previous version
+ * of the page keeps working across a deploy. It is the hyphenated ones that
+ * cannot be rescued here, because they have already split into too many
+ * pieces by the time this is reached; those are fixed at the sender.
+ */
+function code(value: string | undefined): string {
+  const v = (value ?? "").trim().toUpperCase();
+  const labelled = v.match(/\(([A-Z]{3})\)$/);
+  if (labelled) return labelled[1];
+  return /^[A-Z]{3}$/.test(v) ? v : "";
+}
+
 /** A slug, for reporting only. Letters, digits and hyphens. */
 function slug(value: string | null): string {
   return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60);
@@ -63,8 +79,12 @@ function legs(value: string | null): Array<{ from: string; to: string; date: str
     const bits = part.split("-");
     // A date contributes three of its own, so a leg is exactly five pieces.
     if (bits.length !== 5) continue;
-    const from = text(bits[0], 40);
-    const to = text(bits[1], 40);
+    // Codes rather than free text, which is what makes the hyphen safe to
+    // split on at all. It also stops a label reaching a partner builder that
+    // takes its airports verbatim — origin_iata=NEW YORK (JFK) is a search
+    // that opens and finds nothing.
+    const from = code(bits[0]);
+    const to = code(bits[1]);
     const when = date(`${bits[2]}-${bits[3]}-${bits[4]}`);
     if (!from || !to || !when) continue;
     out.push({ from, to, date: when });
