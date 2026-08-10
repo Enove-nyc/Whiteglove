@@ -22,6 +22,15 @@
 //   exclusive — the end must be at least the next day. A hotel stay is a
 //               number of nights, and a stay of no nights is nothing.
 
+// There is a third half-rule, added later, and it belongs here for the same
+// reason the first two do: a booking cannot start in the past. Nobody flies
+// last Tuesday. It is separate from the pair rule above because it applies to
+// the START of a range as well as the end, and because it applies only to
+// dates that are being BOOKED — an admin recording the day they last checked a
+// listing is writing down the past on purpose, and a floor there would be a
+// bug rather than a guard. So it is applied at the booking call sites and not
+// inside DateField.
+
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** The day after, as YYYY-MM-DD. Returns "" for anything unreadable. */
@@ -31,6 +40,38 @@ export function nextDay(date: string): string {
   // Noon UTC, so a daylight-saving shift cannot move it to the wrong day.
   const t = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
   return new Date(t + 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Today, as a date input spells it.
+ *
+ * Read off the LOCAL clock rather than `toISOString()`, which is UTC: at nine
+ * in the evening in New York the UTC date is already tomorrow, and a floor of
+ * tomorrow would refuse a flight leaving today. The date the person can see on
+ * their own calendar is the one their booking is against.
+ */
+export function today(now: Date = new Date()): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * The tightest of several floors, for a `min`.
+ *
+ * A return date has two: it cannot be before the outbound, and it cannot be in
+ * the past. The later of the two is the real one. Undefined entries are floors
+ * that do not apply yet — an outbound date nobody has chosen — and are
+ * ignored rather than treated as "no restriction at all".
+ */
+export function notBefore(...floors: Array<string | undefined>): string | undefined {
+  let latest: string | undefined;
+  for (const floor of floors) {
+    if (!floor) continue;
+    if (!latest || floor > latest) latest = floor;
+  }
+  return latest;
 }
 
 export type RangeKind = "inclusive" | "exclusive";

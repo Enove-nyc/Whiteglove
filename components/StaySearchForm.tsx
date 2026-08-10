@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { nextDay, today } from "@/lib/date-range";
 import type { StaySearch } from "@/lib/stay-search";
 
 /**
@@ -69,11 +70,15 @@ export default function StaySearchForm({
 
         <label className="block" htmlFor={`${id}-in`}>
           <span className={label}>Check in</span>
-          <input id={`${id}-in`} name="in" type="date" defaultValue={search?.checkIn ?? ""} className={field} />
+          {/* Rendered on the server, so on a page that is prerendered this floor
+              can be a few days stale. It is still worth having: it never
+              refuses a date that is genuinely available, and SearchMemory
+              re-stamps both fields with the browser's own today on arrival. */}
+          <input id={`${id}-in`} name="in" type="date" min={today()} defaultValue={search?.checkIn ?? ""} className={field} />
         </label>
         <label className="block" htmlFor={`${id}-out`}>
           <span className={label}>Check out</span>
-          <input id={`${id}-out`} name="out" type="date" defaultValue={search?.checkOut ?? ""} className={field} />
+          <input id={`${id}-out`} name="out" type="date" min={nextDay(today())} defaultValue={search?.checkOut ?? ""} className={field} />
         </label>
 
         <label className="block" htmlFor={`${id}-adults`}>

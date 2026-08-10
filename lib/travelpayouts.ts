@@ -1,5 +1,11 @@
 /**
- * Routing the three searches through Travelpayouts, so they earn.
+ * Routing the three searches through a network, so they earn.
+ *
+ * TWO NETWORKS NOW, not one, and the file keeps its name because the store key
+ * does. Travelpayouts wraps a search in `u=`; Stay22 wraps it in `link=`. The
+ * owner pastes whichever link he has and this works out which it is — he
+ * should not have to know that the two dashboards produce different shapes,
+ * and the failure when he guesses wrong is silent.
  *
  * WHY THIS IS NOT "APPEND THE MARKER". A marker is not a key you sprinkle on a
  * link. Travelpayouts earns by owning the redirect: the visitor goes to
@@ -30,6 +36,7 @@ import {
   type SearchSlot,
   type TravelPartner,
 } from "@/lib/travel-partners";
+import { readStay22Link, stay22SearchUrl } from "@/lib/stay22";
 
 export type { SearchSlot };
 
@@ -64,6 +71,32 @@ export type TravelpayoutsLinks = Partial<Record<SearchSlot, string>>;
 /** The hosts Travelpayouts redirects through. */
 const REDIRECT_HOSTS = ["tp.media", "tp.st", "c.travelpayouts.com", "travelpayouts.com"];
 
+/**
+ * Travelpayouts' link SHORTENER, which is a different thing from its redirect.
+ *
+ * The link builder offers both, and the short one is the one it puts in front
+ * of you — `https://kiwi.tpx.lv/QdvmP1KC`. It is a real, correctly-marked
+ * affiliate link and it is useless here, for the reason every refusal in this
+ * file is about: the whole address is eight opaque characters, so there is
+ * nowhere to put the traveller's route and dates. It would open the partner's
+ * front page and the traveller would search again by hand, which is the exact
+ * failure this site is live with today.
+ *
+ * Named separately from the "that is not a Travelpayouts link at all" case
+ * because the two need opposite advice. Telling somebody who has just used the
+ * link builder to go and use the link builder is how they conclude the admin
+ * is broken — which is what happened.
+ */
+const SHORTENER_HOSTS = ["tpx.lv", "tpx.li"];
+
+/** Stay22's hosts, which are a different programme with its own setting. */
+const STAY22_HOSTS = ["stay22.com"];
+
+function hostIsOneOf(host: string, hosts: readonly string[]): boolean {
+  const lower = host.toLowerCase();
+  return hosts.some((h) => lower === h || lower.endsWith(`.${h}`));
+}
+
 function parse(value: string): URL | null {
   try {
     const url = new URL(value.trim());
@@ -74,8 +107,7 @@ function parse(value: string): URL | null {
 }
 
 function isRedirectHost(host: string): boolean {
-  const lower = host.toLowerCase();
-  return REDIRECT_HOSTS.some((h) => lower === h || lower.endsWith(`.${h}`));
+  return hostIsOneOf(host, REDIRECT_HOSTS);
 }
 
 /**
@@ -130,6 +162,43 @@ export function linkProblem(pasted: string, slot: SearchSlot, choices?: PartnerC
   if (!url) {
     return "That is not a link. Paste the whole address the Travelpayouts link builder gives you, starting with https://.";
   }
+  // Both of these are real affiliate links that the owner really does have.
+  // They are refused for what they cannot carry, not for being wrong, so they
+  // are answered before the blunter "that is not a Travelpayouts link".
+  if (hostIsOneOf(url.host, SHORTENER_HOSTS)) {
+    return (
+      "That is the shortened link. It works, but the whole address is a code, so there is nowhere to put the " +
+      "traveller's route and dates — everyone would land on the partner's front page and have to search again. " +
+      "In the link builder, take the full link instead of the short one: it is longer and ends with u= followed by an address."
+    );
+  }
+  if (hostIsOneOf(url.host, STAY22_HOSTS)) {
+    // A Stay22 link is a real second way for this search to earn, not a
+    // mistake — see lib/stay22.ts for the redirect chain, traced end to end.
+    // Hotels are the exception: there Stay22 is configured by ID a few boxes
+    // up, and two places to set the same thing is how they disagree.
+    if (slot === "hotels") {
+      return (
+        "Hotels already go through Stay22, set by ID higher up this screen rather than by a link. " +
+        "Nothing to paste here for hotels."
+      );
+    }
+    const link = readStay22Link(value);
+    if (!link) {
+      return (
+        "That is a Stay22 link, but the account ID is not in it, so a booking through it could not be credited. " +
+        "Take the link from your own Stay22 dashboard."
+      );
+    }
+    if (link.desk !== partner.key) {
+      return (
+        `That is a Stay22 link for ${link.desk}, but the ${info.label.toLowerCase()} search on this site is set to ` +
+        `${partner.label}. A link made for one partner does not track another. Change the partner above to match, ` +
+        "or take the link for that partner from Stay22."
+      );
+    }
+    return null;
+  }
   if (!isRedirectHost(url.host)) {
     return (
       `That link goes straight to ${url.host}, so nothing passes through Travelpayouts and nothing is credited. ` +
@@ -178,6 +247,12 @@ export function throughTravelpayouts(
 ): string {
   if (!pasted?.trim()) return searchUrl;
   if (linkProblem(pasted, slot, choices)) return searchUrl;
+  // A Stay22 link takes the search in `link=` rather than `u=`, and is built
+  // fresh from the aid and desk rather than having a parameter bolted on: the
+  // short link from the dashboard already carries a `link` of its own, and
+  // appending a second one leaves Stay22 to pick. See lib/stay22.ts.
+  const stay22 = readStay22Link(pasted);
+  if (stay22) return stay22SearchUrl(searchUrl, stay22);
   const url = parse(pasted);
   if (!url) return searchUrl;
   url.searchParams.set("u", searchUrl);
@@ -193,6 +268,8 @@ export function describeSlot(slot: SearchSlot, pasted: string | undefined, choic
   }
   const problem = linkProblem(value, slot, choices);
   if (problem) return `Not in use — ${problem}`;
+  const stay22 = readStay22Link(value);
+  if (stay22) return `Goes through Stay22 under ID ${stay22.aid}, then on to ${partner.label}.`;
   return `Goes through Travelpayouts under marker ${markerIn(value)}, then on to ${partner.label}.`;
 }
 
@@ -200,12 +277,18 @@ export function describeSlot(slot: SearchSlot, pasted: string | undefined, choic
 export function describeLinks(links: TravelpayoutsLinks, choices?: PartnerChoices): string {
   const live = SLOTS.filter((s) => !linkProblem(links[s.slot] ?? "", s.slot, choices) && (links[s.slot] ?? "").trim());
   if (live.length === 0) {
-    return "None of the three searches is going through Travelpayouts yet, so none of them earns anything. Paste a link below to change that.";
+    return "None of the three searches is going through a network yet, so none of them earns anything. Paste a link below to change that.";
   }
+  // Named when they agree, because "check your dashboard" is no use if it does
+  // not say whose. Two networks can be live at once — Stay22 carrying flights
+  // while Travelpayouts carries hotels — and naming one of them then would be
+  // worse than naming neither.
+  const networks = new Set(live.map((s) => (readStay22Link(links[s.slot] ?? "") ? "Stay22" : "Travelpayouts")));
+  const network = networks.size === 1 ? [...networks][0] : "a network";
   if (live.length === SLOTS.length) {
-    return "All three searches go through Travelpayouts. A booking made after one of them should show up in your dashboard.";
+    return `All three searches go through ${network}. A booking made after one of them should show up in that dashboard.`;
   }
   const names = live.map((s) => s.label.toLowerCase()).join(" and ");
   const rest = SLOTS.filter((s) => !live.includes(s)).map((s) => s.label.toLowerCase()).join(" and ");
-  return `${names[0].toUpperCase()}${names.slice(1)} go through Travelpayouts and earn. ${rest[0].toUpperCase()}${rest.slice(1)} still open direct and earn nothing.`;
+  return `${names[0].toUpperCase()}${names.slice(1)} go through ${network} and earn. ${rest[0].toUpperCase()}${rest.slice(1)} still open direct and earn nothing.`;
 }

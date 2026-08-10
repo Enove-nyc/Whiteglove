@@ -40,6 +40,38 @@ function slug(value: string | null): string {
   return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60);
 }
 
+/**
+ * The extra legs of a multi-city flight: "JFK-FCO-2026-09-01_FCO-ATH-2026-09-05".
+ *
+ * A COMPACT ENCODING RATHER THAN A URL, for the reason at the top of this
+ * file: /go takes a product and a place, never an address, so nothing anybody
+ * types into a query string can make this site forward somewhere of their
+ * choosing. Three fixed fields per leg, all of them clamped.
+ *
+ * This exists because moving the booking page onto /go would otherwise have
+ * silently dropped every leg after the first — a five-leg trip opening a
+ * one-leg search, which is precisely the quiet wrong-link failure the whole
+ * module is built to prevent.
+ */
+const MAX_LEGS = 6;
+
+function legs(value: string | null): Array<{ from: string; to: string; date: string }> {
+  const raw = (value ?? "").trim();
+  if (!raw) return [];
+  const out: Array<{ from: string; to: string; date: string }> = [];
+  for (const part of raw.split("_").slice(0, MAX_LEGS)) {
+    const bits = part.split("-");
+    // A date contributes three of its own, so a leg is exactly five pieces.
+    if (bits.length !== 5) continue;
+    const from = text(bits[0], 40);
+    const to = text(bits[1], 40);
+    const when = date(`${bits[2]}-${bits[3]}-${bits[4]}`);
+    if (!from || !to || !when) continue;
+    out.push({ from, to, date: when });
+  }
+  return out;
+}
+
 export function readAffiliateRequest(params: URLSearchParams): AffiliateRequest | null {
   const product = text(params.get("product"), 20) as TravelProduct;
   if (!TRAVEL_PRODUCTS.some((entry) => entry.value === product)) return null;
@@ -54,6 +86,8 @@ export function readAffiliateRequest(params: URLSearchParams): AffiliateRequest 
     rooms: count(params.get("rooms"), 10),
     from: text(params.get("from"), 40),
     to: text(params.get("to"), 40),
+    legs: legs(params.get("legs")),
+    nonstop: params.get("nonstop") === "1",
     page: text(params.get("page"), 120),
     placement: slug(params.get("placement")),
     campaignId: slug(params.get("campaign")),
@@ -76,6 +110,8 @@ export function goHref(request: AffiliateRequest): string {
   put("rooms", request.rooms);
   put("from", request.from);
   put("to", request.to);
+  if (request.legs?.length) put("legs", request.legs.map((l) => `${l.from}-${l.to}-${l.date}`).join("_"));
+  if (request.nonstop) put("nonstop", "1");
   put("page", request.page);
   put("placement", request.placement);
   put("campaign", request.campaignId);
