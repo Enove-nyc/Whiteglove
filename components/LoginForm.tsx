@@ -195,12 +195,17 @@ export default function LoginForm({
             <GoogleG />
             Continue with Google
           </a>
-          <p className="mt-2 text-xs leading-5 text-stone-500">
-            {/* Said plainly, because it is the question somebody with an
-                account already will actually have. */}
-            If you already have an account with this email, this signs you into
-            it — the same account, without the password.
-          </p>
+          {/* NOTHING IS EXPLAINED HERE, deliberately. This used to read "the
+              same account, without the password" — true, and the answer to a
+              question a customer does not have. That one account backs both
+              ways in is how the site is built, not something the person
+              signing in has to hold in their head: they press Continue with
+              Google and they are in. Whether a password also exists is the
+              owner's business, and it is on the admin's own sign-in log.
+
+              The behaviour is unchanged and is covered by lib/google-signin.ts
+              and lib/account-store.ts — the copy went, the guarantee did
+              not. */}
           <div className="my-5 flex items-center gap-4">
             <span className="h-px flex-1 bg-[var(--gold-light)]" />
             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-400">or</span>
