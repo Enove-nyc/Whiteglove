@@ -73,19 +73,22 @@ export type BetaNotice = {
  */
 export const DEFAULT_NOTICE: BetaNotice = {
   on: true,
-  heading: "How we check what is here",
+  heading: "Before you travel",
   body:
-    "Travel information changes. We label how each practical detail was checked and flag anything you should reconfirm before traveling.",
+    "Travel details change. Confirm kosher certification, opening hours and Shabbos arrangements directly before you rely on them for your own dates.",
   caution:
-    "Where a detail carries Reconfirm before travel, that is an instruction rather than a weaker Verified: confirm it for your own dates before you rely on it.",
-  feedback: "If something is wrong, missing or out of date, we would be glad to hear it — it is quicker than you think.",
+    "Whether somewhere is kosher is the certifying body's statement rather than ours, so ask to see the current teudah before you eat.",
+  feedback: "If something here is wrong, missing or out of date, we would be glad to hear it — it is quicker than you think.",
   feedbackHref: "/submit",
   feedbackLabel: "Report an update",
   dismissLabel: "Hide this notice",
-  // BUMPED. Somebody who dismissed "White Glove is new" has not been shown
-  // this, and this is the one they should see: it says something about how to
-  // read every page on the site rather than apologising for it.
-  version: "2",
+  // BUMPED AGAIN, and a dismissal is per version, so everybody meets this one.
+  // Version 2 explained the four checking labels — Verified, Reported, Being
+  // checked, Reconfirm before travel — on every page of the site. AGENTS.md:
+  // do not expose internal workflows or content status to customers. The same
+  // banner now says the thing a traveler can act on, which was always the
+  // useful half of it.
+  version: "3",
 };
 
 /** Where a dismissal is remembered, per version. */

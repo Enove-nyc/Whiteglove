@@ -27,7 +27,7 @@ export async function generateMetadata() {
     title: page?.seoTitle ?? "Kosher vacation ideas — where to go | White Glove Itineraries",
     description:
       page?.seoDescription ??
-      "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
+      "Beaches, cities, mountains and family trips, with practical kosher and Shabbos guidance for each destination.",
     path: "/destinations",
   });
 }
@@ -52,7 +52,7 @@ export default async function VacationIdeasPage({
         data={[
           collectionPage({
             name: "Kosher vacation ideas",
-            description: "Vacation destinations with what is on record about kosher food and Shabbos in each.",
+            description: "Vacation destinations with practical kosher food and Shabbos guidance.",
             path: "/destinations",
             count: vacationDestinations.length,
           }),

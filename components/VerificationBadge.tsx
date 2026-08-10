@@ -96,26 +96,10 @@ export default function VerificationBadge({
  * to do instead, which is what somebody standing in front of an empty section
  * actually needs.
  */
-export function NothingPublishedYet({
-  what,
-  askHref = "/contact",
-  className = "",
-}: {
-  /** The subject, lower case: "kosher food in Merano". */
-  what: string;
-  askHref?: string;
-  className?: string;
-}) {
-  return (
-    <p className={`rounded-lg border border-dashed border-stone-400 bg-stone-50 px-4 py-3 text-sm leading-6 text-stone-700 ${className}`}>
-      <span className="font-semibold text-[var(--navy)]">Not checked yet.</span> We have not finished checking {what}.{" "}
-      <Link
-        href={askHref}
-        className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-      >
-        Ask us about {what}
-      </Link>{" "}
-      and we will tell you what we know.
-    </p>
-  );
+export function NothingPublishedYet({ what }: { what: string }) {
+  // Renders nothing, deliberately, and the sections that used it are hidden
+  // by their own callers instead. Keeping the export means a page that still
+  // asks for the old panel gets an empty section rather than a build error.
+  void what;
+  return null;
 }

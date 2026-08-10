@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
-import VerificationBadge, { NothingPublishedYet } from "@/components/VerificationBadge";
+import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
 import { getVacationDestination } from "@/data/vacation-destinations";
@@ -82,7 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
   }
   return pageMetadata({
     title: `Kosher travel in ${destination.name} — what to know before you book | White Glove`,
-    description: `${destination.whyGo} What we hold on record about kosher food, Shabbos, where to stay and what to do in ${destination.name}.`,
+    description: `${destination.whyGo} Kosher food, Shabbos, where to stay and what to do in ${destination.name}.`,
     path: `/destinations/${destination.slug}`,
   });
 }
@@ -149,10 +149,10 @@ function heritageGuideFor(destination: VacationDestination) {
   return heritageDestinations.find((entry) => names.has(entry.city.toLowerCase()) && entry.guide);
 }
 
-function StaysSection({ destination, facts }: { destination: VacationDestination; facts: VacationFacts }) {
-  if (facts.stays.length === 0 && facts.areas.length === 0) {
-    return <NothingPublishedYet what={`where to stay in ${destination.name}`} />;
-  }
+function StaysSection({ facts }: { facts: VacationFacts }) {
+  // Nothing to show, so nothing is shown. A panel announcing that this part
+  // is unfinished is a page about us; an absent section is a page about Rome.
+  if (facts.stays.length === 0 && facts.areas.length === 0) return null;
   return (
     <div className="space-y-6">
       {facts.areas.length > 0 && (
@@ -173,7 +173,7 @@ function StaysSection({ destination, facts }: { destination: VacationDestination
 
       {facts.stays.length > 0 && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Places on record</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Places to stay</h3>
           <ul className="mt-3 grid gap-4 md:grid-cols-2">
             {facts.stays.map((stay) => {
               const claim = fromKosherClaim(stay.kosherClaim);
@@ -243,7 +243,7 @@ function SignalFallback({ label }: { label: string }) {
   return (
     <div className="rounded-xl border border-stone-300 bg-stone-50 p-5" aria-busy="true">
       <p role="status" className="text-sm font-bold text-stone-600">
-        {label} — checking what is on record…
+        {label} — loading…
       </p>
     </div>
   );
@@ -258,12 +258,12 @@ async function ShabbosSignal({ destination }: { destination: VacationDestination
 }
 
 async function WhereToStay({ destination }: { destination: VacationDestination }) {
-  return <StaysSection destination={destination} facts={await factsOf(destination)} />;
+  return <StaysSection facts={await factsOf(destination)} />;
 }
 
 async function ThingsToDo({ destination }: { destination: VacationDestination }) {
   const facts = await factsOf(destination);
-  if (facts.attractions.length === 0) return <NothingPublishedYet what={`things to do in ${destination.name}`} />;
+  if (facts.attractions.length === 0) return null;
   return (
     <>
       <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -540,7 +540,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <Section
           id="kosher-food"
           title="Kosher food"
-          lead="What is on record here, and a live lookup for whatever has opened since."
+          lead="Kosher food here, and a live lookup for whatever has opened since."
         >
           <Suspense fallback={<Skeleton what={`kosher food in ${destination.name}`} />}>
             <KosherFood destination={destination} />
@@ -584,10 +584,10 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             </div>
           ) : (
             <>
-              <NothingPublishedYet what={`minyanim and mikvaos in ${destination.name}`} />
-              <p className="mt-4 text-sm leading-6 text-stone-600">
-                The provider directory holds local contacts across the site, and the community in the quarter named
-                above is usually the fastest answer.{" "}
+              <p className="text-sm leading-6 text-stone-600">
+                Minyan times, mikvah access and Shabbos arrangements are best confirmed locally. The provider directory
+                holds contacts across the site, and the community in the quarter named above is usually the fastest
+                answer.{" "}
                 <Link
                   href="/directory"
                   className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

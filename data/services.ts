@@ -133,7 +133,7 @@ export const services: readonly Service[] = [
     action: { label: "Ask us about flights and hotels", href: "/flight-booking-assistance" },
     secondary: { label: "Ask a person to look instead", href: "/flight-booking-assistance" },
     pricing:
-      "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is not open yet — the page says so rather than taking a request nobody is there to answer.",
+      "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is currently unavailable, and the page says so rather than taking a request nobody is there to answer.",
   },
   {
     id: "kosher-and-shabbos",

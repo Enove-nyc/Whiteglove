@@ -181,7 +181,7 @@ export default function VacationIdeasHub({
 
         <p className="mt-6 text-xs leading-6 text-stone-500">
           The kosher and Shabbos labels describe{" "}
-          <span className="font-semibold text-[var(--navy)]">what this site holds on record</span> for a place — not a
+          <span className="font-semibold text-[var(--navy)]">what our guides cover</span> for a place — not a
           judgement about the town itself.{" "}
           <Link
             href="/verification"

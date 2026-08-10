@@ -84,7 +84,7 @@ export default function CarsPage() {
             </h2>
             <p className="mt-3 leading-7 text-stone-600">
               A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider
-              directory, with what we hold on record about each.
+              directory, with what we know about each.
             </p>
             <Link
               href="/directory"

@@ -121,8 +121,7 @@ export default function VacationCard({ card, compact = false }: { card: Vacation
               places > 0 ? `${places} place${places === 1 ? "" : "s"} to stay` : null,
             ]
               .filter(Boolean)
-              .join(" · ")}{" "}
-            on record
+              .join(" · ")}
           </p>
         )}
 

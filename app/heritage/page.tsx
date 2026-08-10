@@ -264,7 +264,7 @@ export default async function HeritagePage() {
             />
             <ul className="mt-8 grid gap-3 sm:grid-cols-2">
               {[
-                ["Kosher food", "/kosher", "Live, anywhere — plus what we hold on record."],
+                ["Kosher food", "/kosher", "Live, anywhere — plus the places we have written up."],
                 ["Where to stay", "/hotels", "Which quarter, and what is near it."],
                 ["Drivers and contacts", "/directory", "People who know these roads."],
                 ["Documents and borders", "/travel-guide", "Entry rules, and what catches people out."],

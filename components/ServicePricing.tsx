@@ -64,7 +64,7 @@ export default function ServicePricing({ words }: { words: SiteWords }) {
         </h2>
       </div>
       <p className="mt-4 max-w-3xl leading-7 text-stone-600">
-        Nothing is charged for asking, and you will be told what a piece of work costs before any of it starts.
+        You will be told what a piece of work costs before any of it starts.
         {outstanding > 0 && " Some of it depends on the trip, and we will answer those once we know what it is."}
       </p>
 

@@ -101,7 +101,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
             {record?.lastChecked && <p className="mt-4 text-xs uppercase tracking-[0.12em] text-stone-500">Last checked: {record.lastChecked}</p>}
             <div className="mt-5 space-y-3 text-sm leading-6 text-stone-600">
               <p>Destination record: {record ? "Available" : "Not available yet"}</p>
-              <p>Research queue: {record?.cemeteries.length ?? 0} cemetery record(s).</p>
+              <p>Batei hachaim: {record?.cemeteries.length ?? 0}</p>
               <p>Practical sections are shown only when they exist in the destination database.</p>
             </div>
           </div>

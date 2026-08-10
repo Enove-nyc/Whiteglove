@@ -201,7 +201,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
         <div className="mt-10 rounded-2xl border border-dashed border-[var(--gold-light)] p-10 text-center">
           <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Nothing matches all of that.</p>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            Try removing a filter — the practical details are still being checked for many of these places, so asking for
+            Try removing a filter — asking for
             kosher food and a mikvah together narrows it quickly.
           </p>
         </div>

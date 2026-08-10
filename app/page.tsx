@@ -7,7 +7,6 @@ import SectionHeading from "@/components/SectionHeading";
 import StaySearchForm from "@/components/StaySearchForm";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import VacationCard from "@/components/VacationCard";
-import VerificationBadge from "@/components/VerificationBadge";
 import { getActivePromotions } from "@/lib/admin-content";
 import { getTopVisitedPaths } from "@/lib/site-analytics";
 import { headers } from "next/headers";
@@ -21,7 +20,6 @@ import { getStayList } from "@/lib/attractions-view";
 import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
-import { TRUST_LEVELS, TRUST_ORDER } from "@/lib/trust-status";
 import { SUB_BRAND_HEBREW } from "@/components/SubBrand";
 import { guidedDestinations } from "@/data/destinations";
 import { allTzaddikim } from "@/lib/tzaddikim";
@@ -120,7 +118,7 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
  * deciding whether to rely on something.
  */
 const VERIFICATION_LINE =
-  "Every practical detail is labeled Verified, Reported, Being Checked, or Reconfirm Before Travel.";
+  "The kosher food, the Shabbos arrangements and the quarter to stay in are checked against the place itself, and each detail names where it came from.";
 
 export default async function Home() {
   const requestHeaders = await headers();
@@ -258,7 +256,7 @@ export default async function Home() {
         <SectionHeading
           eyebrow="How it works"
           title="Three steps, and you can stop after any of them."
-          description="No account, no card, and no decision you have not made yet."
+          description="You can stop after any of them, and nothing has to be decided in advance."
         />
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {HOW_IT_WORKS.map(([title, body], index) => (
@@ -388,7 +386,7 @@ export default async function Home() {
                 href="/hotels"
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
               >
-                Every place we hold a record for →
+                Browse every place to stay →
               </Link>
             </div>
           </div>
@@ -513,30 +511,26 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 10. Verification, in one line --------------------------------- */}
-      {/* A four-bullet promise, a two-paragraph panel and a heading about
-          driving four hours: all of it true, all of it explaining the checking
-          to somebody who had not yet asked whether there was any. The labels
-          are named — which is the fact — and the page that explains them is one
-          press away, at the moment a person is actually deciding whether to
-          rely on something. */}
+      {/* ---- 10. Why the practical detail can be relied on ----------------
+          ONE SENTENCE, AND NOT A ROW OF STATUS LABELS. This carried the four
+          badges — Verified, Reported, Being checked, Reconfirm before travel —
+          which is the site's own editorial grading shown to somebody who had
+          not asked whether there was any. AGENTS.md: do not expose internal
+          workflow or content status to customers. The grading is unchanged
+          underneath; what a stranger meets on the front page is the claim
+          itself, and the page that explains what to confirm before travelling. */}
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-14">
         <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
             <GloveMark size="lg" />
             <p className="max-w-3xl text-lg leading-8 text-[var(--navy)]">{VERIFICATION_LINE}</p>
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {TRUST_ORDER.map((level) => (
-              <VerificationBadge key={level} descriptor={TRUST_LEVELS[level]} size="sm" />
-            ))}
-          </div>
           <p className="mt-6">
             <Link
               href="/verification"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
-              How we check what goes on this site →
+              What to confirm before you travel →
             </Link>
           </p>
         </div>

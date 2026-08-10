@@ -29,11 +29,9 @@ import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow } from "@/lib/b
  *
  * So it is a strip at the top of the page instead. Same words, same settings,
  * same once-per-visitor rule — and the caution, which is the part that does
- * the work, now also lives beside the individual facts it is about: every
- * practical detail on the site carries its own Verified / Reported / Being
- * checked / Reconfirm-before-travel label, and /verification explains them.
- * That is a better answer than one sentence at the door, because it arrives at
- * the moment somebody is actually deciding whether to rely on something.
+ * the work, now also lives beside the individual facts it is about, arriving
+ * at the moment somebody is actually deciding whether to rely on something
+ * rather than as one sentence at the door.
  *
  * WHAT IS KEPT FROM THE MODAL. It is still read from the owner's settings, so
  * the day the site stops being new he can turn it off without a deploy. It is

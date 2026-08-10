@@ -10,20 +10,26 @@
  * to work out for themselves whether "reported" was better or worse than
  * "partially verified".
  *
- * So this is the presentation layer over all of them: four labels, in plain
- * words, that mean the same thing everywhere they appear.
+ * So this is the presentation layer over all of them: four levels, which mean
+ * the same thing everywhere they appear.
  *
- *   Verified               — somebody here checked it, and when.
- *   Reported               — a source says so; nobody here has confirmed it.
- *   Being checked          — we are working on it. Do not lean on it yet.
- *   Reconfirm before travel — true when it was written and the kind of thing
- *                             that changes: a phone number, a season, an
- *                             arrangement to be let in.
+ *   verified      — somebody here checked it against the place, and when.
+ *   reported      — it came from a directory, a list or a traveler.
+ *   being-checked — some of the detail may be incomplete.
+ *   reconfirm     — true when written, and the kind of thing that changes: a
+ *                   phone number, a season, an arrangement to be let in.
  *
- * THE FOURTH IS NOT A WEAKER "VERIFIED". It is an instruction, and it is the
- * one that stops somebody standing at a gate at four in the afternoon holding
- * a number that was right last year. It is used for facts that go stale on
- * their own, whatever their state when they were written down.
+ * THE LEVELS ARE INTERNAL; THE LABELS ARE NOT. The level names above are the
+ * editorial model and they have not changed. What a customer reads has: the
+ * labels used to be "Reported", "Being checked" and "Reconfirm before travel",
+ * which narrate how far our own work has got. AGENTS.md forbids that, and it
+ * is right to — a traveler cannot act on our queue position. Three of the four
+ * labels are now the instruction that the level implies, and only "Verified"
+ * is still a statement about us, because it is a claim a customer can use.
+ *
+ * NONE OF THIS IS A WEAKER "VERIFIED". Each is an instruction, and they are
+ * what stops somebody standing at a gate at four in the afternoon holding a
+ * number that was right last year.
  *
  * WHAT IS DELIBERATELY NOT HERE: a percentage, a star, or a score. "62%
  * complete" tells a traveler nothing about whether the mikvah is open, and a
@@ -73,23 +79,23 @@ export const TRUST_LEVELS: Record<TrustLevel, TrustDescriptor> = {
   },
   reported: {
     level: "reported",
-    label: "Reported",
+    label: "Confirm before you rely on it",
     glyph: "◇",
     tone: "reported",
-    meaning: "A source says so — a directory, a community list, or a traveler — and nobody here has confirmed it.",
+    meaning: "This comes from a directory, a community list or a traveler rather than from the place itself.",
     action: "Treat it as a lead rather than a fact, and confirm it before you rely on it.",
   },
   "being-checked": {
     level: "being-checked",
-    label: "Being checked",
+    label: "Confirm directly",
     glyph: "…",
     tone: "pending",
-    meaning: "This is on our list and the checking is not finished. What is shown may be incomplete.",
-    action: "Do not plan around it yet. Ask us and we will tell you where it has got to.",
+    meaning: "Some of the detail here may be incomplete.",
+    action: "Confirm it with the place itself before you plan around it.",
   },
   reconfirm: {
     level: "reconfirm",
-    label: "Reconfirm before travel",
+    label: "Confirm before travel",
     glyph: "!",
     tone: "caution",
     meaning: "This was right when it was written and it is the kind of thing that changes without notice.",

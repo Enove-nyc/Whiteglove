@@ -121,7 +121,7 @@ export default function KosherTravelPage() {
           <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               [`${quarters}`, "Jewish quarters mapped", "Each with the shul or street it is measured from."],
-              [`${stays}`, "places to stay on record", `${seasonal} of them seasonal programmes.`],
+              [`${stays}`, "places to stay", `${seasonal} of them seasonal programmes.`],
               [`${eateries}`, "kosher food listings", "Plus a live lookup anywhere in the world."],
               [`${CANDLE_LIGHTING_MINUTES} min`, "before sunset", "What the planner allows for candle-lighting."],
             ].map(([figure, label, note]) => (

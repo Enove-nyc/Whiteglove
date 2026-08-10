@@ -140,13 +140,21 @@ describe("what we can say about kosher food", () => {
     assert.match(jungfrau.kosher.detail, /Zurich/);
   });
 
-  it("SAYS SO PLAINLY WHEN WE HOLD NOTHING", () => {
+  it("TELLS THE TRAVELER WHAT TO DO WHEN WE HOLD NOTHING", () => {
     // The failure this prevents is a page that looks researched because the
-    // template filled every section with something.
+    // template filled every section with something. The level still fires and
+    // still reads "unknown" to every filter — what changed is that the
+    // sentence is an instruction rather than a report on our own coverage.
+    // AGENTS.md: do not expose internal workflows or content status.
     const invented: VacationDestination = { ...destination("rome"), slug: "nowhere", name: "Nowhere", cities: ["Nowhere"] };
     const signal = kosherAvailability(invented, factsFor(invented, NO_SOURCES));
     assert.equal(signal.level, "not-checked");
-    assert.match(signal.detail, /do not yet hold/i);
+    assert.equal(signal.tone, "unknown");
+    assert.match(signal.detail, /Nowhere/, "it does not say which place it is about");
+    assert.match(signal.detail, /plan|arrange|confirm/i, "it does not say what to do");
+    for (const leak of [/do not yet hold/i, /not checked/i, /on record/i, /we have not/i]) {
+      assert.doesNotMatch(signal.detail, leak, "the signal reports on our own coverage");
+    }
   });
 
   it("describes the site's records rather than judging the town", () => {
@@ -189,8 +197,11 @@ describe("what we can say about Shabbos", () => {
     };
     const signal = shabbosPracticality(seasonalOnly, factsFor(seasonalOnly, sources));
     assert.equal(signal.level, "seasonal");
+    // The season itself and the instruction to check it. This is the one that
+    // costs somebody a Shabbos, so the warning survives the rewording — what
+    // went is the graphic half of the sentence, not the caution.
     assert.match(signal.detail, /July and August only/);
-    assert.match(signal.detail, /nothing to eat/i);
+    assert.match(signal.detail, /confirm/i);
   });
 
   it("says to arrange it where there is no walkable quarter", () => {

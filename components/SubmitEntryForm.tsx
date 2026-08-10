@@ -115,7 +115,7 @@ export default function SubmitEntryForm() {
         </button>
         {error && <span className="text-sm font-semibold text-red-700">{error}</span>}
       </div>
-      <p className="mt-4 text-[11px] leading-4 text-stone-400">Submissions are reviewed by White Glove before being published. Please don&apos;t submit unverified phone numbers as fact.</p>
+      <p className="mt-4 text-[11px] leading-4 text-stone-400">Submissions are reviewed by White Glove before being published. Please don&apos;t submit a phone number you have not confirmed yourself.</p>
     </form>
   );
 }

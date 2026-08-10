@@ -25,14 +25,12 @@ export default function ComingSoonNotice({
       className={`rounded-2xl border border-[var(--gold)] bg-[var(--cream)] p-5 sm:p-6 ${className}`}
       role="status"
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Coming soon</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Availability</p>
       <p className="mt-2 text-base font-semibold leading-7 text-[var(--navy)]">
-        {what} is not open yet.
+        {what} is currently unavailable.
       </p>
       <p className="mt-2 text-sm leading-7 text-stone-600">
-        The form below shows what we&apos;ll ask for, but it isn&apos;t taking requests yet. In the meantime, everything
-        on the site is yours to use — search and book your own flights, hotels and cars, and build the route yourself.
-        For anything urgent, email{" "}
+        You can still compare flights, hotels and transportation through our booking tools. For assistance, email{" "}
         <a
           href={`mailto:${contactEmail}`}
           className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

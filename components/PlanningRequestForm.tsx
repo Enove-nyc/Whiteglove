@@ -251,7 +251,7 @@ export default function PlanningRequestForm({
           Thank you — that is with us.
         </p>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-stone-600">
-          {words.replyPromise} Nothing has been booked and nothing has been charged; this is the start of a
+          {words.replyPromise} Nothing has been booked; this is the start of a
           conversation. For anything urgent, email {words.contactEmail}.
         </p>
         <p className="mt-6">

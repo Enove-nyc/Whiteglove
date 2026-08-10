@@ -181,32 +181,32 @@ export function kosherAvailability(destination: VacationDestination, facts: Vaca
   if (listings > 0 || quarters > 0) {
     const parts: string[] = [];
     if (listings) parts.push(`${count(listings, "kosher food listing")}`);
-    if (quarters) parts.push(`${count(quarters, "Jewish quarter", "Jewish quarters")} on record`);
+    if (quarters) parts.push(`${count(quarters, "Jewish quarter", "Jewish quarters")}`);
     return {
       level: "in-town",
       label: "Kosher food in town",
       glyph: "●",
       tone: "good",
-      detail: `${parts.join(" and ")} in ${destination.name}. Check each listing's own source close to your dates — restaurants change hands and hechsherim lapse.`,
+      detail: `${parts.join(" and ")} in ${destination.name}. Confirm current certification and opening details before visiting.`,
     };
   }
 
   if (facts.base && (facts.base.eateries.length > 0 || facts.base.areas.length > 0)) {
     return {
       level: "from-a-base",
-      label: "Bring it in from a base",
+      label: "Plan supplies ahead",
       glyph: "◐",
       tone: "workable",
-      detail: `Nothing on record in ${destination.name} itself. ${facts.base.note}`,
+      detail: facts.base.note,
     };
   }
 
   return {
     level: "not-checked",
-    label: "Not checked yet",
+    label: "Plan ahead",
     glyph: "○",
     tone: "unknown",
-    detail: `We do not yet hold kosher food listings for ${destination.name}. Ask us and we will find out what is there before you book.`,
+    detail: `Plan kosher meals and supplies before traveling to ${destination.name}.`,
   };
 }
 
@@ -226,7 +226,7 @@ export function shabbosPracticality(destination: VacationDestination, facts: Vac
       label: "Walkable quarter",
       glyph: "●",
       tone: "good",
-      detail: `${named.name} — a quarter with the shul and the kosher provision in it, so Shabbos does not need a car. Staying inside it is the whole trick.`,
+      detail: `${named.name} places synagogues and kosher options within walking distance for Shabbos.`,
     };
   }
 
@@ -237,7 +237,7 @@ export function shabbosPracticality(destination: VacationDestination, facts: Vac
       label: "Seasonal kosher programme",
       glyph: "◐",
       tone: "workable",
-      detail: `The kosher provision here runs in season only (${seasonal[0].season}). Turning up outside it gets you a room and nothing to eat — confirm the dates before booking anything else.`,
+      detail: `Kosher options operate seasonally (${seasonal[0].season}). Confirm program dates before booking.`,
     };
   }
 
@@ -247,16 +247,16 @@ export function shabbosPracticality(destination: VacationDestination, facts: Vac
       label: "Arrange Shabbos ahead",
       glyph: "◐",
       tone: "plan",
-      detail: `No walkable Jewish quarter on record in ${destination.name}. Food and davening are arrangeable here, and they have to be arranged before you travel rather than found when you arrive.`,
+      detail: `Arrange food, davening, and Shabbos logistics in ${destination.name} before you travel.`,
     };
   }
 
   return {
     level: "not-checked",
-    label: "Not checked yet",
+    label: "Plan ahead",
     glyph: "○",
     tone: "unknown",
-    detail: `We have not yet checked what Shabbos looks like in ${destination.name}. Ask us before you plan a Friday around it.`,
+    detail: `Confirm Shabbos arrangements in ${destination.name} before you plan a Friday around it.`,
   };
 }
 

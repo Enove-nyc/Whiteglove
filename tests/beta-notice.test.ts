@@ -37,18 +37,31 @@ describe("what it says when nobody has set anything", () => {
 
   it("names what to do rather than saying to be careful", () => {
     // "Use with caution" on its own warns nobody of anything. This one names
-    // the label that is an instruction, and says what the instruction is.
-    assert.match(DEFAULT_NOTICE.caution, /reconfirm/i);
-    assert.match(DEFAULT_NOTICE.caution, /confirm it|your own dates/i);
+    // the single thing a kosher traveler has to do for themselves, and who
+    // the claim actually belongs to.
+    assert.match(DEFAULT_NOTICE.caution, /teudah/i);
+    assert.match(DEFAULT_NOTICE.caution, /certifying body/i);
   });
 
-  it("SAYS WHAT WE DO, NOT THAT WE ARE UNFINISHED", () => {
-    // The old body opened "We are still building this" — an apology, at the
-    // top of every page, in front of somebody who had not decided to care yet.
+  it("SAYS WHAT TO DO, NOT WHAT WE HAVE AND HAVE NOT CHECKED", () => {
+    // Two failures, a version apart. Version 1 opened "We are still building
+    // this" — an apology at the top of every page. Version 2 explained the
+    // four checking labels — Verified, Reported, Being checked, Reconfirm
+    // before travel — which is the site's own editorial grading, shown to
+    // everybody on every page. AGENTS.md: do not expose internal workflows or
+    // content status to customers.
     assert.doesNotMatch(DEFAULT_NOTICE.body, /still building|unfinished|beta|coming soon/i);
-    assert.match(DEFAULT_NOTICE.body, /travel information changes/i);
-    assert.match(DEFAULT_NOTICE.body, /label/i);
-    assert.match(DEFAULT_NOTICE.body, /reconfirm/i);
+    assert.doesNotMatch(DEFAULT_NOTICE.body, /\blabel\b|being checked|reconfirm before travel/i);
+    // What survives is the actionable half, which was always the useful half.
+    assert.match(DEFAULT_NOTICE.body, /travel details change/i);
+    assert.match(DEFAULT_NOTICE.body, /confirm/i);
+    assert.match(DEFAULT_NOTICE.body, /kosher certification/i);
+  });
+
+  it("BRINGS THE NOTICE BACK when the wording changes", () => {
+    // A dismissal is per version. Somebody who dismissed the old wording has
+    // not been shown this one, and this one says something different.
+    assert.equal(DEFAULT_NOTICE.version, "3");
   });
 
   it("DOES NOT DESCRIBE THIS SITE AS A KEVARIM DATABASE", () => {

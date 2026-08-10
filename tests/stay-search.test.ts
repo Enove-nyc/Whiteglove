@@ -180,8 +180,16 @@ describe("the page and the form agree", () => {
     assert.match(PAGE, /inDestination\(allStays, search\.destination\)/);
   });
 
-  it("SAYS SO WHEN IT HAS NOTHING, rather than showing the whole directory", () => {
-    assert.match(PAGE, /Nothing on record for \{heading\}/);
+  it("HAS ITS OWN EMPTY STATE, rather than showing the whole directory", () => {
+    // Still a distinct branch — the directory under a heading naming a town
+    // that is not in it would have somebody booking in the wrong country. What
+    // changed is what it says: an instruction for the trip rather than a
+    // report on how far our own writing has got. AGENTS.md.
+    assert.match(PAGE, /Planning a kosher stay in \{heading\}/);
+    assert.match(PAGE, /Arrange food and Shabbos locally before you/);
+    for (const leak of [/nothing on record/i, /nobody here has written/i, /not published yet/i]) {
+      assert.doesNotMatch(PAGE, leak, "the empty state reports on our own coverage");
+    }
   });
 
   it("carries the dates into the partner hand-off", () => {

@@ -473,8 +473,8 @@ export default function TripStartFlow({
                   I want White Glove to help
                 </span>
                 <span className="mt-3 leading-7 text-slate-200">
-                  Sends everything you have just answered to us, so you do not type it again. The rest of the questions
-                  are on that form, where they are the brief — nothing is charged and nothing is booked by sending it.
+                  Sends everything you have just answered to us, so you do not type it again. The rest of the
+                  questions are on that form, where they are the brief.
                 </span>
                 <span className="mt-5 text-sm font-semibold text-[var(--gold-light)]">Send my answers →</span>
               </button>

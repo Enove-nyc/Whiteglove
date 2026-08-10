@@ -56,8 +56,7 @@ export default async function PlanPage({
             destination at all.
           </p>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-            Nothing is booked and nothing is charged anywhere in this. Your answers stay in this browser until you
-            choose to send them.
+            Your answers stay in this browser until you choose to send them.
           </p>
         </div>
       </section>

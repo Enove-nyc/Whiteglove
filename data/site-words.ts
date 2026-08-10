@@ -103,7 +103,7 @@ export type SiteWords = {
  * one, it stops matching and renders as an ordinary answer.
  */
 export const PRICE_NOT_PUBLISHED =
-  "Not published yet. Ask when you write in and we will tell you before any work starts.";
+  "Ask when you write in, and we will tell you before any work starts.";
 
 /**
  * What the site says today.
@@ -149,12 +149,12 @@ export const BUILT_IN_WORDS: SiteWords = {
   // elsewhere on it, and three it cannot. The three it cannot say so.
   pricingStartsAt: PRICE_NOT_PUBLISHED,
   pricingWhatAffects:
-    "The work scales with how many places are involved, how long the trip is, how much has to be arranged rather than only recommended, and how much of the kosher side has to be checked from scratch rather than being on record already.",
+    "The work scales with how many places are involved, how long the trip is, how much has to be arranged rather than only recommended, and how much of the kosher side has to be checked from scratch.",
   pricingTurnaround: PRICE_NOT_PUBLISHED,
   pricingRevisions:
     "Changing the plan is part of the planning, not an extra: you say what you want different and we adjust until the itinerary is right.",
   pricingBookingSupport:
-    "Booking your own travel through the search on this site costs you nothing extra — the site may earn a commission from the travel provider, which does not change your price. Booking on your behalf is a separate service and is not open yet.",
+    "Booking your own travel through the search on this site costs you nothing extra — the site may earn a commission from the travel provider, which does not change your price. Booking on your behalf is a separate service, quoted before any work starts.",
   pricingFeeCredit: PRICE_NOT_PUBLISHED,
   affiliateDisclosure:
     "White Glove may earn a commission if you book through a partner link, at no additional cost to you.",

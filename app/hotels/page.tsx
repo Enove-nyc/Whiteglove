@@ -36,7 +36,7 @@ export const metadata = pageMetadata({
  *
  * TWO PAGES IN ONE, and which one you get depends on whether a destination was
  * typed. With nothing typed it is the directory it has always been. With a
- * destination it becomes a result: the quarter to be in, the places on record
+ * destination it becomes a result: the quarter to be in, the places to stay
  * there, and then the partner search with everything already filled in.
  *
  * THE ORDER IS THE ARGUMENT. The commission is earned at the bottom of this
@@ -45,11 +45,12 @@ export const metadata = pageMetadata({
  * site, and burying them under a booking widget would leave nothing but a worse
  * comparison site.
  *
- * A DESTINATION WE HOLD NOTHING FOR IS SAID OUT LOUD. It would be easy to show
- * the whole directory under a heading naming a town that is not in it, and
- * somebody would book a hotel in the wrong country. The empty state says the
- * site has no record of the place, and the partner search below still works,
- * because it works for anywhere.
+ * A DESTINATION THE GUIDES DO NOT COVER STILL GETS AN ANSWER. It would be easy
+ * to show the whole directory under a heading naming a town that is not in it,
+ * and somebody would book a hotel in the wrong country. So the list is empty
+ * and the page says what to do instead — arrange food and Shabbos locally —
+ * rather than reporting on how far our own writing has got. The partner search
+ * below works for anywhere and is unaffected.
  */
 export default async function KosherStaysPage({
   searchParams,
@@ -113,19 +114,18 @@ export default async function KosherStaysPage({
         {searching && kosherAreas.length === 0 && kosherStays.length === 0 ? (
           <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
             <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
-              Nothing on record for {heading}
+              Planning a kosher stay in {heading}
             </h2>
             <p className="mt-3 max-w-2xl leading-7 text-stone-600">
-              Nobody here has written up the kosher side of {heading} yet, so there is no quarter to point you at and no
-              stay to stand behind. The search below covers everywhere, and it is the same search — it just arrives
-              without the part of this that is ours.
+              Our guides do not yet cover the kosher side of {heading}. Arrange food and Shabbos locally before you
+              travel, and use the search below to compare places to stay.
             </p>
             <p className="mt-4 max-w-2xl leading-7 text-stone-600">
               <a
                 href="#everywhere"
                 className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
-                Browse everywhere we do hold records for
+                Browse the destinations our guides cover
               </a>
             </p>
           </div>
@@ -170,7 +170,7 @@ export default async function KosherStaysPage({
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
             {searching
-              ? `Rooms, dates and prices come from our booking partner — this site holds no prices of its own.`
+              ? `Rooms, dates and prices come from our booking partner.`
               : `Rooms, dates and prices come from our booking partner. Type where and when, and it opens on your search.`}
           </p>
           <div className="mt-6">

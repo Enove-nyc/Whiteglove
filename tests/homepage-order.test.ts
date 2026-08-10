@@ -155,14 +155,23 @@ describe("the order of the page", () => {
     assert.match(HOME, /Browse all \{cards\.length\} destinations/);
   });
 
-  it("STATES THE FOUR LABELS AND LINKS TO THE PAGE THAT EXPLAINS THEM", () => {
-    // Exactly the sentence that was asked for. The four-bullet promise and the
-    // two-paragraph panel that were here belong on /verification, which is
-    // read at the moment somebody is deciding whether to rely on something.
-    assert.match(
-      HOME,
-      /Every practical detail is labeled Verified, Reported, Being Checked, or Reconfirm Before Travel\./,
-    );
+  it("SHOWS NO ROW OF EDITORIAL STATUS LABELS", () => {
+    // The four badges — Verified, Reported, Being checked, Reconfirm before
+    // travel — sat here as a row: the site's own grading, shown to a stranger
+    // who had not asked whether there was any. AGENTS.md: do not expose
+    // internal workflows or content status to customers. The grading itself is
+    // unchanged underneath.
+    assert.doesNotMatch(PROSE, /TRUST_ORDER/);
+    assert.doesNotMatch(PROSE, /Being Checked|Reconfirm Before Travel/i);
+    assert.doesNotMatch(HOME, /<VerificationBadge/);
+  });
+
+  it("STILL MAKES THE CLAIM, AND STILL LINKS TO WHAT TO CONFIRM", () => {
+    // Dropping the labels must not drop the reason to trust the page. The
+    // sentence says what has been checked and that each detail names a source;
+    // the link goes to the five things a traveler should confirm themselves.
+    assert.match(HOME, /checked against the place itself/);
+    assert.match(HOME, /names where it came from/);
     assert.match(HOME, /href="\/verification"/);
     assert.doesNotMatch(PROSE, /straight-line distance|road routing/);
     assert.doesNotMatch(PROSE, /Somebody drives four hours/);
