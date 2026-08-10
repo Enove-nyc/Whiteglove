@@ -4,7 +4,7 @@ import { useState } from "react";
 import { adConcerns, adState, performance, stateWord } from "@/lib/ad-performance";
 import AdWizard from "@/components/AdWizard";
 import { adStatus, describeAd } from "@/lib/ad-types";
-import type { Promotion } from "@/lib/admin-content";
+import { blankPromotion, type Promotion } from "@/lib/admin-content";
 
 // Every advertisement as a card that answers the four questions an owner has:
 // is it running, where does it show, when, and is anybody clicking it.
@@ -19,34 +19,6 @@ const TONE: Record<string, string> = {
 const buttonClass =
   "min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]";
 
-function emptyAd(): Promotion {
-  const now = new Date().toISOString();
-  return {
-    id: "",
-    title: "",
-    description: "",
-    buttonText: "Learn more",
-    targetHref: "/",
-    imageUrl: "",
-    pdfUrl: "",
-  videoUrl: "",
-  advertiserName: "",
-  advertiserPhone: "",
-  advertiserEmail: "",
-    placements: ["fixed-top-banner"],
-    targetPaths: "",
-    device: "all",
-    startDate: "",
-    endDate: "",
-    priority: 0,
-    maxViewsPerVisitor: 0,
-    enabled: false,
-    impressions: 0,
-    clicks: 0,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
 
 /** What a failed save actually means, in the words the owner needs. */
 function explainFailure(status: number, serverSaid?: string): string {
@@ -142,7 +114,7 @@ export default function AdManager({ initial, configured, today }: { initial: Pro
         </p>
         <button
           type="button"
-          onClick={() => setEditing(emptyAd())}
+          onClick={() => setEditing(blankPromotion())}
           className="min-h-[44px] border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
         >
           Create an advertisement

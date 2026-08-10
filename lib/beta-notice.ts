@@ -1,11 +1,28 @@
 /**
- * "This is new. Please check anything you are going to rely on."
+ * "Travel information changes. Here is how we label what we have checked."
  *
- * The site is going live before it is finished — which is the right way to
- * launch, and it means the first visitors will meet a phone number nobody has
- * rung in a year and a town with three lines on it. Saying so once, plainly, is
- * the difference between somebody forgiving a gap and somebody deciding the
- * site cannot be trusted.
+ * WHAT IT USED TO SAY, AND WHY THAT WAS THE PROBLEM. "We are still building
+ * this. Towns, kevarim, phone numbers and opening times are being added and
+ * checked all the time." Two things were wrong with it at once, and they
+ * compounded.
+ *
+ * It led with the site being unfinished. The first sentence a visitor read,
+ * before anything about kosher vacations, was an apology — which is a strange
+ * thing to hand somebody who has not yet decided to care, and which invites
+ * them to discount everything that follows.
+ *
+ * And the examples were towns, kevarim, phone numbers and opening times. Three
+ * of those four are the heritage database. A family asking about a week in the
+ * Dolomites read a strip at the top of every page listing the things this site
+ * is uncertain about, and every one of them belonged to a different business
+ * than the one they came for. The whole redesign was about not doing that.
+ *
+ * WHAT IT SAYS NOW is the true and useful half of the old notice without the
+ * apology: travel information changes, every practical detail on this site
+ * carries a label saying how far it has been checked, and anything you should
+ * reconfirm before travelling is flagged as such. That is a statement about
+ * method rather than about how finished the site is — it stays true on the day
+ * the site is finished, which is the test a good notice passes.
  *
  * WHY IT IS WORTH BEING CAREFUL WITH THE WORDS. On most sites a beta notice is
  * a formality. Here it is not: people plan real journeys on this, to places
@@ -56,17 +73,22 @@ export type BetaNotice = {
  */
 export const DEFAULT_NOTICE: BetaNotice = {
   on: true,
-  heading: "White Glove is new",
+  heading: "Before you travel",
   body:
-    "We are still building this. Towns, kevarim, phone numbers and opening times are being added and checked all the time, and some of it is further along than the rest.",
+    "Travel details change. Confirm kosher certification, opening hours and Shabbos arrangements directly before you rely on them for your own dates.",
   caution:
-    "Before you travel, please check anything you are going to rely on — a shomer's number, an address, a time to be somewhere. Ring ahead where you can. What is here is offered in good faith and is not a substitute for confirming it yourself.",
-  feedback:
-    "If something is wrong, missing, or out of date, we would be glad to hear it. That is how this gets better, and it is quicker than you think.",
-  feedbackHref: "/contact",
-  feedbackLabel: "Tell us something",
-  dismissLabel: "I understand",
-  version: "1",
+    "Whether somewhere is kosher is the certifying body's statement rather than ours, so ask to see the current teudah before you eat.",
+  feedback: "If something here is wrong, missing or out of date, we would be glad to hear it — it is quicker than you think.",
+  feedbackHref: "/contact?reason=correction",
+  feedbackLabel: "Report an update",
+  dismissLabel: "Hide this notice",
+  // BUMPED AGAIN, and a dismissal is per version, so everybody meets this one.
+  // Version 2 explained the four checking labels — Verified, Reported, Being
+  // checked, Reconfirm before travel — on every page of the site. AGENTS.md:
+  // do not expose internal workflows or content status to customers. The same
+  // banner now says the thing a traveler can act on, which was always the
+  // useful half of it.
+  version: "3",
 };
 
 /** Where a dismissal is remembered, per version. */

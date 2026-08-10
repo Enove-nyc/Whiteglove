@@ -145,6 +145,31 @@ describe("Hebrew and Yiddish", () => {
     }
     assert.deepEqual(missing, [], `Hebrew script with no language declared:\n${missing.join("\n")}`);
   });
+
+  it("declares the DIRECTION as well, wherever it declares the language", () => {
+    // lang= is for the voice and dir= is for the order; a right-to-left run
+    // inside a left-to-right paragraph needs both, and one without the other
+    // is half an answer. dir="auto" counts — components/MixedText.tsx uses it
+    // deliberately, because a yahrzeit is Hebrew and digits on one line and
+    // each segment has to resolve on its own.
+    const missing: string[] = [];
+    for (const { path, source } of FILES) {
+      if (/Admin/.test(path)) continue;
+      const markup = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      for (const line of markup.split("\n")) {
+        // The <html lang="en"> in the layout is the document language, not an
+        // inline run, and has no direction to declare.
+        if (!/lang=\{?["']?(he|yi)\b|lang=\{lang/.test(line)) continue;
+        if (/\bdir=/.test(line)) continue;
+        // A lang PROP handed to one of the two bilingual components, which
+        // apply the direction themselves — MixedText with dir="auto" per
+        // segment, BilingualLabel with the direction of each half.
+        if (/<(MixedText|BilingualLabel)\b/.test(line)) continue;
+        missing.push(`${path}: ${line.trim().slice(0, 70)}`);
+      }
+    }
+    assert.deepEqual(missing, [], `a language with no direction beside it:\n${missing.join("\n")}`);
+  });
 });
 
 describe("nothing is carried by colour alone", () => {
@@ -231,5 +256,131 @@ describe("dialogs", () => {
     const notice = readFileSync("components/NewSiteNotice.tsx", "utf8");
     assert.doesNotMatch(notice, /role="dialog"/);
     assert.doesNotMatch(LAYOUT, /Modal/);
+  });
+});
+
+/**
+ * The three flows a visitor actually uses, checked one rule at a time.
+ *
+ * These are the WCAG 2.2 AA points that live in the markup rather than in the
+ * rendered pixels — the pixel half (contrast, reflow at 200% and 400%, touch
+ * targets, tab order, heading order) is `npm run audit:ui`, which measures the
+ * real pages in a real browser and currently reports nothing.
+ */
+
+const HUB = readFileSync("components/VacationIdeasHub.tsx", "utf8");
+const FLOW = readFileSync("components/TripStartFlow.tsx", "utf8");
+const REQUEST = readFileSync("components/PlanningRequestForm.tsx", "utf8");
+
+describe("the vacation-ideas filters", () => {
+  it("GIVES THE SEARCH FIELD A VISIBLE LABEL, not only a placeholder", () => {
+    // A placeholder disappears at the first keystroke: somebody who tabs back
+    // to a filled field has nothing left telling them what it is, and voice
+    // control has no name to speak.
+    assert.match(HUB, /<label htmlFor="vacation-search"/);
+    assert.match(HUB, /id="vacation-search"/);
+    assert.match(HUB, /aria-describedby="vacation-search-hint"/);
+    assert.match(HUB, /id="vacation-search-hint"/);
+  });
+
+  it("exposes which filter is chosen as a real state", () => {
+    assert.match(HUB, /aria-pressed=\{value === ""\}/);
+    assert.match(HUB, /aria-pressed=\{value === option\.value\}/);
+  });
+
+  it("ANNOUNCES THE NEW COUNT, AND ONLY THE COUNT", () => {
+    // The live region used to contain the "Clear all filters" button, so every
+    // press announced the button's label with the number — and the button
+    // appearing or disappearing changed the region's structure rather than its
+    // text, which some screen readers read whole and others not at all.
+    const region = HUB.slice(HUB.indexOf('<p role="status"'), HUB.indexOf("</p>", HUB.indexOf('<p role="status"')));
+    assert.match(region, /aria-live="polite"/);
+    assert.match(region, /destinations/);
+    assert.doesNotMatch(region, /<button/);
+    assert.match(region, /filters applied|filter"/);
+  });
+
+  it("names each filter group rather than leaving thirty loose buttons", () => {
+    assert.match(HUB, /<fieldset/);
+    assert.match(HUB, /<legend/);
+  });
+});
+
+describe("the planning flow", () => {
+  it("announces which option is selected, once", () => {
+    assert.match(FLOW, /aria-pressed=\{on\}/);
+    assert.match(FLOW, /aria-pressed=\{answers\.dateMode === value\}/);
+    assert.match(FLOW, /aria-pressed=\{answers\.pace === pace\.value\}/);
+    // aria-pressed and a visually-hidden "Selected" together read as
+    // "Rome, selected, pressed".
+    assert.doesNotMatch(FLOW, /sr-only">Selected</);
+  });
+
+  it("marks the current step programmatically", () => {
+    assert.match(FLOW, /aria-current=\{state === "current" \? "step" : undefined\}/);
+    assert.match(FLOW, /aria-label="Progress through planning"/);
+    // And the step numbers are not carried by the coloured circle alone.
+    assert.match(FLOW, /<span className="sr-only">Step \{entry\.number\}: <\/span>/);
+  });
+
+  it("MOVES THE FOCUS TO THE NEW STEP'S HEADING", () => {
+    // Pressing Continue and leaving the focus on a button that no longer
+    // exists strands a keyboard user at the top of the document.
+    assert.match(FLOW, /requestAnimationFrame\(\(\) => headingRef\.current\?\.focus\(\)\)/);
+    assert.match(FLOW, /ref=\{headingRef\}/);
+    assert.match(FLOW, /tabIndex=\{-1\}/);
+    // Every step change goes through goToStep — Continue, Back, and the three
+    // numbered links in the progress bar — so none of them can be the one that
+    // forgets to move the focus. setStep is called from nowhere else.
+    assert.ok((FLOW.match(/goToStep\(/g) ?? []).length >= 5);
+    assert.equal((FLOW.match(/setStep\(/g) ?? []).length, 1, "setStep is called from outside goToStep");
+  });
+
+  it("keeps the optional section operable from the keyboard", () => {
+    // <details>/<summary> rather than a div with an onClick: it is focusable,
+    // it toggles on Enter and Space, and it announces itself as expandable
+    // without a line of aria.
+    assert.match(FLOW, /<details/);
+    assert.match(FLOW, /<summary/);
+  });
+});
+
+describe("the planning request", () => {
+  it("ties every error to the field it is about", () => {
+    assert.match(REQUEST, /aria-invalid=/);
+    assert.match(REQUEST, /aria-describedby=/);
+    assert.match(REQUEST, /id="request-name-error"/);
+    assert.match(REQUEST, /id="request-email-error"/);
+  });
+
+  it("puts a focusable error summary above the form", () => {
+    // Marking fields red and leaving somebody to find them is what this
+    // replaces; and the summary is focused rather than the first field, so a
+    // screen reader hears how many things are wrong before being dropped in.
+    assert.match(REQUEST, /role="alert"/);
+    assert.match(REQUEST, /summaryRef\.current\?\.focus\(\)/);
+    assert.match(REQUEST, /href=\{`#\$\{problem\.field\}`\}/);
+  });
+
+  it("ANNOUNCES SENDING, SENT AND FAILED", () => {
+    // A button that changes its own label to "Sending…" tells a sighted
+    // person what is happening and a screen reader nothing: the name of the
+    // control that already has focus is not re-read when it changes.
+    assert.match(REQUEST, /aria-busy=\{busy \|\| undefined\}/);
+    assert.match(REQUEST, /Sending your planning request/);
+    assert.match(REQUEST, /role="status"/);
+    assert.match(REQUEST, /role="alert"/);
+  });
+});
+
+describe("waiting is said out loud", () => {
+  it("gives every skeleton a status line, and hides the grey boxes", () => {
+    // A screen reader gets nothing at all from an animated rectangle.
+    for (const path of ["app/destinations/[destination]/page.tsx", "app/destinations/(hub)/loading.tsx"]) {
+      const source = readFileSync(path, "utf8");
+      assert.match(source, /role="status"/, path);
+      assert.match(source, /aria-busy="true"/, path);
+      assert.match(source, /aria-hidden="true"/, path);
+    }
   });
 });

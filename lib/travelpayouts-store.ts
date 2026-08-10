@@ -19,6 +19,7 @@
  */
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
+import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
 import { linkProblem, SLOTS, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 
 const KEY = "white-glove:travelpayouts";
@@ -98,6 +99,9 @@ export async function saveTravelpayoutsLinks(next: TravelpayoutsLinks): Promise<
   // /book is the only page that reads these, but it is prerendered along with
   // everything else, so the rendered copy has to go too.
   revalidatePath("/book");
+  // Every booking link on the site resolves through lib/affiliate/config.ts.
+  updateTag(AFFILIATE_CONFIG_TAG);
+  revalidatePath("/", "layout");
 
   const count = Object.keys(keep).length;
   return {

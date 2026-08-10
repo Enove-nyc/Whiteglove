@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { BUILT_IN_WORDS, type SiteWords } from "@/data/site-words";
 import {
+  ACCESSIBILITY_NEEDS,
+  INTERESTS,
   KOSHER_REQUIREMENTS,
+  PACES,
   readAnswers,
   requestMessage,
   requestSubject,
@@ -137,13 +140,22 @@ export default function PlanningRequestForm({
       set("children", answers.children);
       set("childAges", answers.childAges);
       set("kevarim", answers.kevarim);
+      set("kosherNotes", answers.kosherNotes);
       set("notes", answers.notes);
+      if (answers.pace !== "unknown") set("pace", answers.pace);
       if (answers.kind) setKind(answers.kind);
-      for (const box of form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="kosher"]')) {
-        box.checked = answers.kosher.includes(box.value);
-      }
-      for (const box of form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="shabbos"]')) {
-        box.checked = answers.shabbos.includes(box.value);
+      // The four multi-select lists, ticked from what they chose in the flow.
+      // Named rather than looped over every checkbox on the form, so a new
+      // checkbox somewhere else cannot quietly join this.
+      for (const [name, chosen] of [
+        ["kosher", answers.kosher],
+        ["shabbos", answers.shabbos],
+        ["interests", answers.interests],
+        ["accessibility", answers.accessibility],
+      ] as const) {
+        for (const box of form.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${name}"]`)) {
+          box.checked = chosen.includes(box.value);
+        }
       }
     },
     [],
@@ -187,8 +199,12 @@ export default function PlanningRequestForm({
       adults: text("adults"),
       children: text("children"),
       childAges: text("childAges"),
+      pace: (["slow", "balanced", "full"] as const).find((p) => p === text("pace")) ?? "unknown",
+      interests: many("interests"),
       kosher: many("kosher"),
+      kosherNotes: text("kosherNotes"),
       shabbos: many("shabbos"),
+      accessibility: many("accessibility"),
       // Only ever present when the heritage block was on screen, because that
       // is the only time the field exists to be read.
       kevarim: kind === "heritage" ? text("kevarim") : "",
@@ -235,7 +251,7 @@ export default function PlanningRequestForm({
           Thank you — that is with us.
         </p>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-stone-600">
-          {words.replyPromise} Nothing has been booked and nothing has been charged; this is the start of a
+          {words.replyPromise} Nothing has been booked; this is the start of a
           conversation. For anything urgent, email {words.contactEmail}.
         </p>
         <p className="mt-6">
@@ -302,7 +318,7 @@ export default function PlanningRequestForm({
       )}
 
       <fieldset className="mt-8">
-        <legend className={label}>What kind of trip is it?</legend>
+        <legend className={label}>Kind of trip</legend>
         <div className="mt-2.5 flex flex-wrap gap-2">
           {TRIP_KINDS.map((entry) => (
             <button
@@ -365,29 +381,93 @@ export default function PlanningRequestForm({
         </label>
       </div>
 
-      <fieldset className="mt-7">
-        <legend className={label}>Kosher requirements</legend>
-        <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
-          {KOSHER_REQUIREMENTS.map((requirement) => (
-            <label key={requirement} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
-              <input type="checkbox" name="kosher" value={requirement} className="h-4 w-4" />
-              {requirement}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {/* ---- the detail, asked HERE rather than in front of the planner -----
+          These five used to be step two of /plan, in front of everybody,
+          including the visitor who only wanted to open the planner. They belong
+          on this form: somebody asking us to plan a trip is writing a brief,
+          and pace, interests, kashrus, Shabbos and access needs are the brief.
+          Still optional, still ticked in for anybody who answered them at
+          /plan. */}
+      <div className="mt-9 border-t border-[var(--gold-light)] pt-7">
+        <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+          What would make it fit
+        </h3>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          None of this is required. Every answer here is one fewer question we have to come back and ask you.
+        </p>
 
-      <fieldset className="mt-7">
-        <legend className={label}>Shabbos</legend>
-        <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
-          {SHABBOS_REQUIREMENTS.map((requirement) => (
-            <label key={requirement} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
-              <input type="checkbox" name="shabbos" value={requirement} className="h-4 w-4" />
-              {requirement}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+        <fieldset className="mt-6">
+          <legend className={label}>Pace</legend>
+          <div className="mt-2.5 flex flex-wrap gap-x-6 gap-y-1">
+            {PACES.filter((pace) => pace.value !== "unknown").map((pace) => (
+              <label key={pace.value} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
+                <input type="radio" name="pace" value={pace.value} className="h-4 w-4" />
+                {pace.label}
+                <span className="text-stone-500">— {pace.blurb}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-7">
+          <legend className={label}>Interests</legend>
+          <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+            {INTERESTS.map((interest) => (
+              <label key={interest} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
+                <input type="checkbox" name="interests" value={interest} className="h-4 w-4" />
+                {interest}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-7">
+          <legend className={label}>Kosher standards</legend>
+          <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+            {KOSHER_REQUIREMENTS.map((requirement) => (
+              <label key={requirement} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
+                <input type="checkbox" name="kosher" value={requirement} className="h-4 w-4" />
+                {requirement}
+              </label>
+            ))}
+          </div>
+          <label className="mt-4 block">
+            <span className={label}>Anything else about food</span>
+            <input
+              name="kosherNotes"
+              className={field}
+              placeholder="Allergies, a hechsher you rely on, a child who eats nothing but pasta…"
+            />
+          </label>
+        </fieldset>
+
+        <fieldset className="mt-7">
+          <legend className={label}>Shabbos requirements</legend>
+          <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+            {SHABBOS_REQUIREMENTS.map((requirement) => (
+              <label key={requirement} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
+                <input type="checkbox" name="shabbos" value={requirement} className="h-4 w-4" />
+                {requirement}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-7">
+          <legend className={label}>Accessibility needs</legend>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            What the trip has to be able to do. This changes which hotel and which quarter we would suggest at all.
+          </p>
+          <div className="mt-2.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+            {ACCESSIBILITY_NEEDS.map((need) => (
+              <label key={need} className="flex min-h-11 items-center gap-2.5 text-sm text-stone-700">
+                <input type="checkbox" name="accessibility" value={need} className="h-4 w-4" />
+                {need}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
 
       {/* ONLY FOR A HERITAGE JOURNEY. See the note at the top of this file:
           asking a family planning a week on a beach which kevarim they want to
@@ -414,7 +494,7 @@ export default function PlanningRequestForm({
       )}
 
       <label className="mt-7 block">
-        <span className={label}>Anything else we should know</span>
+        <span className={label}>Additional notes</span>
         <textarea
           name="notes"
           rows={4}
@@ -475,6 +555,11 @@ export default function PlanningRequestForm({
         <button
           type="submit"
           disabled={busy}
+          // Announced as well as disabled. A button that changes its own label
+          // to "Sending…" tells a sighted person what is happening and tells a
+          // screen reader nothing, because the name of the control that
+          // currently has focus is not re-read when it changes.
+          aria-busy={busy || undefined}
           className="inline-flex min-h-12 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
         >
           {busy ? "Sending…" : "Send this to White Glove"}
@@ -483,6 +568,13 @@ export default function PlanningRequestForm({
           Nothing is booked or charged by sending this. {words.replyPromise}
         </p>
       </div>
+
+      {/* The three states of a submission, in one polite region: sending,
+          and then either the thank-you (which replaces this whole form) or
+          the failure below. Without it, pressing Send and waiting is silent. */}
+      <p role="status" aria-live="polite" className="sr-only">
+        {busy ? "Sending your planning request…" : ""}
+      </p>
 
       {failed && (
         <p role="alert" className="mt-4 rounded-lg border-2 border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900">

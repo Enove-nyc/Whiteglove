@@ -35,6 +35,15 @@ export type Service = {
   /** A second way in, where one makes sense. */
   secondary?: { label: string; href: string };
   /**
+   * This service's next action is the self-service booking search.
+   *
+   * The search can be locked from the admin, so the catalogue resolves the
+   * button and the first process step through lib/booking-access.ts instead of
+   * printing what is written above. `action` here is the fallback, and it must
+   * be a page that is not the search.
+   */
+  usesBookingSearch?: boolean;
+  /**
    * What to expect about price. Never a number this site cannot stand behind.
    */
   pricing: string;
@@ -48,7 +57,7 @@ export const services: readonly Service[] = [
     who: "You want a holiday rather than a project, and you would rather not spend six evenings working out whether a town has anything to eat.",
     included: [
       "A conversation about what you want from the trip, not a form",
-      "Destination options that suit the dates, the ages and what you keep",
+      "Destination options that suit the dates, the ages and your kosher standards and religious needs",
       "The kosher side worked out before anything is booked — food, Shabbos, minyanim, mikvaos",
       "A day-by-day outline you can change",
       "Somewhere to stay that suits the walk you are willing to do",
@@ -66,7 +75,8 @@ export const services: readonly Service[] = [
     ],
     action: { label: "Tell us about the trip", href: "/plan" },
     secondary: { label: "Or plan it yourself, free", href: "/itinerary" },
-    pricing: "Quoted once we understand the trip. Nothing is charged for asking, and we will say what it costs before any work starts.",
+    pricing:
+      "Quoted once we understand the trip, and told to you before any work starts. What moves the number, how long a quote takes and whether changes cost extra are answered under “What to expect about price” below.",
   },
   {
     id: "itinerary-design",
@@ -92,7 +102,8 @@ export const services: readonly Service[] = [
     ],
     action: { label: "Ask us to design the route", href: "/contact" },
     secondary: { label: "The planner does this for free", href: "/itinerary" },
-    pricing: "The planner does the routing and the timing at no cost. A designed route by us is quoted with the planning.",
+    pricing:
+      "The planner does the routing and the timing at no cost, for anybody, without an account. A route designed by us is quoted with the planning.",
   },
   {
     id: "flights-hotels-transport",
@@ -105,16 +116,24 @@ export const services: readonly Service[] = [
       "Hotels chosen for where they stand, not only for their price",
       "Airport transfers and drivers where the destination needs them",
     ],
+    // The first step and the button are NOT written here. This service's next
+    // action is the self-service search, and the owner can close that path from
+    // the admin — so the catalogue resolves both through lib/booking-access.ts.
+    // What used to be written here was "Search here and book it yourself —
+    // everything on the booking page is yours to use now", printed on a public
+    // page while the booking page was behind an access code. Both halves of
+    // that sentence were false at once, which is what a hardcoded claim about
+    // a setting somebody else controls eventually becomes.
+    usesBookingSearch: true,
     process: [
-      "Search here and book it yourself — everything on the booking page is yours to use now.",
-      "Or tell us the route and we will look, and say what we would do.",
+      "Tell us the route and we will look, and say what we would do.",
       "Whatever is booked goes into the trip alongside everything else, with the confirmation numbers.",
     ],
     receive: ["Bookings in your own name", "The confirmations kept with the rest of the itinerary"],
-    action: { label: "Search flights, hotels and cars", href: "/book" },
+    action: { label: "Ask us about flights and hotels", href: "/flight-booking-assistance" },
     secondary: { label: "Ask a person to look instead", href: "/flight-booking-assistance" },
     pricing:
-      "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is not open yet — the page says so rather than taking a request nobody is there to answer.",
+      "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is currently unavailable, and the page says so rather than taking a request nobody is there to answer.",
   },
   {
     id: "kosher-and-shabbos",
@@ -129,7 +148,7 @@ export const services: readonly Service[] = [
       "Provisioning — what to bring, and the last town with a shop that has it",
     ],
     process: [
-      "Tell us what you keep. There is a list on the planning form and none of it is a test.",
+      "Tell us your kosher standards and religious needs. There is a list on the planning form and none of it is a test.",
       "We check what is available, and say plainly where the answer is 'not much'.",
       "We arrange what can be arranged and tell you what you will need to bring.",
     ],

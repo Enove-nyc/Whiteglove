@@ -105,19 +105,19 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 href={placeDirectionsUrl(undefined, s.anchor.coordinates)}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]"
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
               >
                 Navigate to {s.anchor.name} →
               </a>
               {s.website && (
-                <a href={s.website} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">
+                <a href={s.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]">
                   Their site →
                 </a>
               )}
               <button
                 type="button"
                 onClick={() => setOpenNearby(openNearby === s.slug ? null : s.slug)}
-                className="rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 py-1.5 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
               >
                 {openNearby === s.slug ? "Hide what's nearby" : "What's within walking distance"}
               </button>

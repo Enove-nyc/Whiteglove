@@ -120,9 +120,10 @@ export default function KosherNearby({
       )}
       {places !== null && places.length > 0 && (
         <p className="mt-3 text-[11px] leading-5 text-stone-400">
-          Live from OpenStreetMap — community data. The circle is the hechsher: gold means we checked it against a teudah,
-          the rov or the agency&apos;s own list. <strong>Unverified</strong> means nobody here has checked, whether or not a
-          name is shown — ask to see the teudah before you eat. Hours and supervision change; confirm directly.
+          Live from OpenStreetMap — community data. The circle is the hechsher: gold means it was confirmed against a
+          teudah, the rov, or the agency&apos;s own list. <strong>Unverified</strong> means no such confirmation exists
+          here, whether or not a name is shown — ask to see the teudah before you eat. Hours and supervision change;
+          confirm directly.
         </p>
       )}
     </div>

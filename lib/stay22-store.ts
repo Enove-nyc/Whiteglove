@@ -7,6 +7,7 @@
  */
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
+import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
 import { aidProblem, mergeStay22, NO_STAY22, type Stay22Settings } from "@/lib/stay22";
 
 const KEY = "white-glove:stay22";
@@ -72,6 +73,8 @@ export async function saveStay22(next: Stay22Settings): Promise<{ ok: boolean; m
   }
   updateTag(STAY22_TAG);
   revalidatePath("/book");
+  updateTag(AFFILIATE_CONFIG_TAG);
+  revalidatePath("/", "layout");
 
   return {
     ok: true,

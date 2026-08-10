@@ -14,7 +14,13 @@ describe("the old booking addresses", () => {
     // Permanent, so a search engine carries the old page's ranking across
     // instead of treating /book as a stranger competing with /booking.
     assert.deepEqual(find("/booking"), { source: "/booking", destination: "/book", permanent: true });
-    assert.deepEqual(find("/booking/review"), { source: "/booking/review", destination: "/book/review", permanent: true });
+    // /book/review was the Duffel checkout. Duffel takes a card and issues a
+    // ticket, which is a different business from sending somebody to a
+    // partner, so it moved to /admin/duffel and off the public site. Both old
+    // public addresses land on the booking page rather than a 404: somebody
+    // following a stale link wanted to book travel, and that is still here.
+    assert.deepEqual(find("/booking/review"), { source: "/booking/review", destination: "/book", permanent: true });
+    assert.deepEqual(find("/book/review"), { source: "/book/review", destination: "/book", permanent: true });
   });
 
   it("do not redirect to somewhere that redirects again", async () => {

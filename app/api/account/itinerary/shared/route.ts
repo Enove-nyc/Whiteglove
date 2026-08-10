@@ -31,7 +31,7 @@ import { withoutAttachments } from "@/lib/attachments";
 
 async function whoAndWhat(request: NextRequest) {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
-  if (!shareId) return { error: NextResponse.json({ error: "Which trip?" }, { status: 400 }) };
+  if (!shareId) return { error: NextResponse.json({ error: "Name the trip." }, { status: 400 }) };
 
   const cookieStore = await cookies();
   const asker = readSessionEmail(cookieStore.get(accountCookieName())?.value);

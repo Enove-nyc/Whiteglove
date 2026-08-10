@@ -114,8 +114,8 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
       <div className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-10">
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">We have your flight details.</p>
         <p className="mt-3 text-sm leading-7 text-stone-600">
-          A person reads this — nothing is booked automatically, and nothing is charged until you have seen what is
-          proposed and said yes. For anything urgent, email {words.contactEmail}.
+          A person reads this and comes back to you with what is available and what it costs. For anything urgent,
+          email {words.contactEmail}.
         </p>
         <button
           type="button"
@@ -132,8 +132,7 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
     <form onSubmit={submit} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-8 lg:p-10">
       <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Send us the flight</h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-        Fill in what you know. Nothing is booked from this form and nothing is charged — a person reads it and comes
-        back to you with what is available.
+        Fill in what you know. A person reads it and comes back to you with the options and what they cost.
       </p>
 
       {!open && <ComingSoonNotice what="Personal flight booking" className="mt-6" contactEmail={words.contactEmail} />}
@@ -176,7 +175,7 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
         disabled={busy || !open}
         className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(23,45,82,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {!open ? "Coming soon" : busy ? "Sending…" : "Send the request"}
+        {!open ? "Currently unavailable" : busy ? "Sending…" : "Send the request"}
       </button>
     </form>
   );

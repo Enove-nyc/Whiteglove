@@ -35,6 +35,30 @@ function opt(value: string | null): string | undefined {
 }
 
 /**
+ * Narrowing a read to a handful of towns.
+ *
+ * ONE DESTINATION PAGE NEEDS ONE DESTINATION'S TOWNS. It used to read every
+ * attraction, every stay and every quarter on the site and then filter the
+ * result in memory — so opening /vacation-ideas/rome waited on three
+ * unfiltered table scans in order to show a page about Rome. Passing the cities
+ * down means the database returns the rows the page will actually render, and
+ * the built-in lists are filtered before they are mapped.
+ *
+ * `undefined` means everything, which is what the hub and the front page want.
+ */
+type CityFilter = readonly string[] | undefined;
+
+function onlyIn<T extends { city: string }>(items: readonly T[], cities: CityFilter): readonly T[] {
+  if (!cities) return items;
+  const wanted = new Set(cities);
+  return items.filter((item) => wanted.has(item.city));
+}
+
+function cityWhere(cities: CityFilter) {
+  return cities ? { city: { in: [...cities] } } : {};
+}
+
+/**
  * Owner-added rows only.
  *
  * Built-in entries are read from the data files rather than the database even
@@ -42,13 +66,13 @@ function opt(value: string | null): string | undefined {
  * the row from it. Asking the database for rows whose slug ships in the file
  * would just return a stale duplicate of what we already have.
  */
-export async function getAttractionList(): Promise<AttractionItem[]> {
-  const base: AttractionItem[] = staticAttractions.map((a) => ({ ...a, ownerAdded: false }));
+export async function getAttractionList(cities?: CityFilter): Promise<AttractionItem[]> {
+  const base: AttractionItem[] = onlyIn(staticAttractions, cities).map((a) => ({ ...a, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.attraction.findMany({
-      where: { slug: { notIn: staticAttractionSlugs }, status: "PUBLISHED" },
+      where: { slug: { notIn: staticAttractionSlugs }, status: "PUBLISHED", ...cityWhere(cities) },
       orderBy: [{ country: "asc" }, { city: "asc" }],
     });
     return [
@@ -76,13 +100,13 @@ export async function getAttractionList(): Promise<AttractionItem[]> {
   }
 }
 
-export async function getStayList(): Promise<KosherStayItem[]> {
-  const base: KosherStayItem[] = staticStays.map((s) => ({ ...s, ownerAdded: false }));
+export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]> {
+  const base: KosherStayItem[] = onlyIn(staticStays, cities).map((s) => ({ ...s, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.kosherStay.findMany({
-      where: { slug: { notIn: staticStaySlugs }, status: "PUBLISHED" },
+      where: { slug: { notIn: staticStaySlugs }, status: "PUBLISHED", ...cityWhere(cities) },
       orderBy: [{ country: "asc" }, { city: "asc" }],
     });
     return [
@@ -110,13 +134,13 @@ export async function getStayList(): Promise<KosherStayItem[]> {
   }
 }
 
-export async function getAreaList(): Promise<KosherAreaItem[]> {
-  const base: KosherAreaItem[] = staticAreas.map((a) => ({ ...a, ownerAdded: false }));
+export async function getAreaList(cities?: CityFilter): Promise<KosherAreaItem[]> {
+  const base: KosherAreaItem[] = onlyIn(staticAreas, cities).map((a) => ({ ...a, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.kosherArea.findMany({
-      where: { slug: { notIn: staticAreaSlugs }, status: "PUBLISHED" },
+      where: { slug: { notIn: staticAreaSlugs }, status: "PUBLISHED", ...cityWhere(cities) },
       orderBy: [{ country: "asc" }, { city: "asc" }],
     });
     return [...base, ...rows.map((r) => ({

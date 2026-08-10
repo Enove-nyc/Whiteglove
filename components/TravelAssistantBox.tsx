@@ -14,9 +14,9 @@ import AssistantAnswer from "@/components/AssistantAnswer";
  * this site is best at.
  */
 const EXAMPLES = [
-  "Where can my family take a kosher summer vacation?",
+  "Find a kosher summer vacation for a family.",
   "Plan four days in Rome for a couple.",
-  "Which Alpine destinations are practical for kosher travelers?",
+  "Compare Alpine destinations for kosher travelers.",
   "Help me plan Shabbos in Paris.",
   "Plan a three-day heritage journey in Poland.",
 ];
@@ -54,8 +54,8 @@ export default function TravelAssistantBox() {
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Ask the White Glove assistant</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Kosher travel questions, answered.</h2>
-      <p className="mt-2 text-sm leading-6 text-stone-600">Ask about where to go, how long to give it, kosher food, Shabbos, or a kever. (Travel questions only.)</p>
+      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Kosher travel, answered</h2>
+      <p className="mt-2 text-sm leading-6 text-stone-600">Where to go, how long to give it, kosher food, Shabbos, or a kever. Travel only.</p>
 
       <form
         onSubmit={(e) => { e.preventDefault(); ask(question); }}
@@ -65,7 +65,7 @@ export default function TravelAssistantBox() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           aria-label="Ask the travel assistant a question"
-          placeholder="e.g. Where should we take the children for a week in July?"
+          placeholder="e.g. A week in July with the children"
           className="w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
         />
         <button

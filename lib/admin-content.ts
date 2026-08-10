@@ -3,6 +3,7 @@ import { guidedDestinations, unguidedDestinations } from "@/data/destinations";
 import type { DirectoryDraft } from "@/lib/directory-fields";
 import { applyReview, type ReviewInput } from "@/lib/suggestions";
 import { remember } from "@/lib/recycle-store";
+import { heritageTownHref } from "@/lib/route-migration";
 
 type RedisResult<T> = { result?: T };
 
@@ -250,7 +251,7 @@ function defaultLocations(): EditableLocation[] {
   // missing-shomer figure read far lower than the real one.
   const destinationLocations = unguidedDestinations().map((destination) => ({
     id: `destination-${destination.slug}`,
-    route: `/destinations/${destination.slug}`,
+    route: heritageTownHref(destination.slug),
     title: destination.city,
     yiddishTitle: destination.yiddishCity,
     category: "destination" as const,
@@ -286,7 +287,7 @@ function defaultPromotions(): Promotion[] {
   return [
     {
       id: "homepage-planning-help",
-      title: "Need help planning the rest of the trip?",
+      title: "Plan the rest of the trip",
       description: "Ask White Glove for flights, hotels, drivers, and itinerary help in one place.",
       buttonText: "Start planning",
       targetHref: "/services",
@@ -310,6 +311,47 @@ function defaultPromotions(): Promotion[] {
       updatedAt: now,
     },
   ];
+}
+
+/**
+ * A new advertisement, before anybody has typed anything into it.
+ *
+ * IT LIVES HERE RATHER THAN IN THE SCREEN THAT USES IT, and that is the whole
+ * point. `enabled: false` is the commitment that nothing goes live the moment
+ * it is created — Draft, Preview, Publish — and a rule that lives inside one
+ * component is a rule the second creation path will not have. It is asserted
+ * in tests/advertising-boundary.test.ts against this function, so any screen
+ * that builds its own blank has to answer for the difference.
+ *
+ * The counters start at zero for the same reason a duplicate resets them: an
+ * inherited impression count is a number nobody measured.
+ */
+export function blankPromotion(now = new Date().toISOString()): Promotion {
+  return {
+    id: "",
+    title: "",
+    description: "",
+    buttonText: "Learn more",
+    targetHref: "/",
+    imageUrl: "",
+    pdfUrl: "",
+    videoUrl: "",
+    advertiserName: "",
+    advertiserPhone: "",
+    advertiserEmail: "",
+    placements: ["fixed-top-banner"],
+    targetPaths: "",
+    device: "all",
+    startDate: "",
+    endDate: "",
+    priority: 0,
+    maxViewsPerVisitor: 0,
+    enabled: false,
+    impressions: 0,
+    clicks: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 const defaultBundle = (): AdminContentBundle => ({

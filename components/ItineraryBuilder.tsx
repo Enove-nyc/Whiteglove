@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useBookingLink } from "@/components/BookingLinkProvider";
+import { bookingHref } from "@/lib/booking-access";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
@@ -1110,7 +1112,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, onRecordAdjustment, o
           <span className={`text-[11px] font-bold uppercase tracking-[0.1em] ${hasFreeTime ? "text-[var(--gold-ink)]" : "text-stone-400"}`}>
             {hasFreeTime ? `Free time — about ${day.freeHours} h` : "Free time"}
           </span>
-          {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">What&apos;s nearby?</button>}
+          {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
           <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
         </div>
       )}
@@ -1632,7 +1634,7 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
       )}
       <Field label="Type"><select className={inputClass} value={l.type ?? "hotel"} onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
       {!overnight && <Field label="Name *"><input required className={inputClass} value={l.name ?? ""} onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
-      {overnight && <Field label="Bus or flight?"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
+      {overnight && <Field label="Bus or flight"><input className={inputClass} value={l.name ?? ""} placeholder="e.g. overnight bus to Uman" onChange={(e) => setL({ ...l, name: e.target.value })} /></Field>}
       {!overnight && <Field label="Address"><AddressAutocomplete value={l.address ?? ""} onChange={(address, coords) => setL({ ...l, address, coordinates: coords || l.coordinates })} className={inputClass} placeholder="Start typing the hotel address…" /></Field>}
       {!overnight && <Field label="Phone"><input type="tel" className={inputClass} value={l.phone ?? ""} onChange={(e) => setL({ ...l, phone: e.target.value })} placeholder="Front desk / host" /></Field>}
       <Field label={overnight ? "Night of *" : "Check-in *"}><DateField ariaLabel="Check-in date" required className={inputClass} value={checkIn} onChange={(nextIn) => {
@@ -2009,7 +2011,7 @@ function TravelersPanel({
           away rather than making them type a name we already know. */}
       {viewer?.signedIn && !bookingFor && (
         <div className="mt-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-4 py-3">
-          <p className="font-semibold text-[var(--navy)]">Are you travelling on this trip, or arranging it for somebody else?</p>
+          <p className="font-semibold text-[var(--navy)]">Travelling on this trip, or arranging it for somebody else</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
@@ -2111,6 +2113,7 @@ function TravelersPanel({
 function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   const people = travelersOf(itin);
   const flights = itin.flights.length;
+  const booking = useBookingLink();
 
   const params = new URLSearchParams();
   if (itin.startDate) params.set("depart", itin.startDate);
@@ -2119,7 +2122,10 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   const first = itin.flights[0];
   if (first?.from) params.set("from", first.from);
   if (first?.to) params.set("to", first.to);
-  const href = params.toString() ? `/book?${params.toString()}` : "/book";
+  // Never a bare `/book`: the owner can have that path behind an access code,
+  // and a planner button that opens a password box is the same broken journey
+  // as the one in the footer. See lib/booking-access.ts.
+  const href = bookingHref(booking, Object.fromEntries(params));
 
   return (
     <section className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">

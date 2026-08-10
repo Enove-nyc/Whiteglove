@@ -22,7 +22,6 @@ const PAGE_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Batei hachaim", value: "/cemeteries" },
   { label: "Directory", value: "/directory" },
   { label: "Services", value: "/services" },
-  { label: "Honeymoon", value: "/honeymoon" },
   { label: "Book flights, hotels & cars", value: "/book" },
   { label: "Phone & SIM rentals", value: "/phone-rentals" },
   { label: "Travel insurance", value: "/travel-insurance" },
@@ -414,7 +413,7 @@ export default function AdWizard({
                   </label>
                   <label className="block sm:col-span-2">
                     <span className={captionClass}>Show only on these addresses</span>
-                    <input value={ad.targetPaths} onChange={(e) => set({ targetPaths: e.target.value })} className={inputClass} placeholder="/getaways, /honeymoon" />
+                    <input value={ad.targetPaths} onChange={(e) => set({ targetPaths: e.target.value })} className={inputClass} placeholder="/destinations, /hotels" />
                   </label>
                 </div>
               )}

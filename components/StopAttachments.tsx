@@ -149,7 +149,7 @@ export default function StopAttachments({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <label className="sr-only" htmlFor="attachment-kind">
-              What kind of thing is it?
+              Kind of file
             </label>
             <select
               id="attachment-kind"

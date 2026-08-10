@@ -128,9 +128,12 @@ describe("the date", () => {
     // A date next to "being checked" reads as the day the checking finished,
     // which is the opposite of what it means.
     assert.equal(trustText(TRUST_LEVELS.verified, "2026-03-03"), "Verified on 3 March 2026");
-    assert.equal(trustText(TRUST_LEVELS["being-checked"], "2026-03-03"), "Being checked");
-    assert.equal(trustText(TRUST_LEVELS.reported, "2026-03-03"), "Reported");
-    assert.equal(trustText(TRUST_LEVELS.reconfirm, "2026-03-03"), "Reconfirm before travel");
+    // The three non-verified labels are now the instruction the level implies
+    // rather than our queue position — AGENTS.md, and see lib/trust-status.ts.
+    // A date beside any of them would read as the day the work finished.
+    assert.equal(trustText(TRUST_LEVELS["being-checked"], "2026-03-03"), "Confirm directly");
+    assert.equal(trustText(TRUST_LEVELS.reported, "2026-03-03"), "Confirm before you rely on it");
+    assert.equal(trustText(TRUST_LEVELS.reconfirm, "2026-03-03"), "Confirm before travel");
   });
 });
 
@@ -160,10 +163,25 @@ describe("reconfirm is an instruction, not a weaker verified", () => {
 /* ---- the one that keeps the scale from splitting again -------------------- */
 
 describe("nothing invents a fifth vocabulary", () => {
-  it("EXPLAINS EVERY LABEL ON THE METHODOLOGY PAGE", () => {
-    // A badge that says "Reported" and is explained nowhere is decoration.
+  it("DEFINES THE ONE LABEL A CUSTOMER MEETS, AND WALKS THROUGH NO QUEUE", () => {
+    // The page used to set out all four labels and how the checking is done.
+    // AGENTS.md: do not expose internal workflows or content status to
+    // customers, so the three in-progress ones are no longer explained to
+    // anybody — they are not shown to anybody either.
+    //
+    // "Verified" stays defined, and that is not an oversight. A badge is a
+    // claim, and an unexplained claim is marketing; the site is about to carry
+    // advertising, and "no advertiser can buy this label" means nothing if the
+    // word is defined nowhere a customer can read it.
     const page = readFileSync("app/verification/page.tsx", "utf8");
-    assert.match(page, /TRUST_ORDER/, "the page hand-writes the labels instead of reading them");
+    // Comments stripped: the file records what it used to say, and why, which
+    // is worth keeping and is shown to nobody.
+    const prose = page.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.match(prose, /What &ldquo;Verified&rdquo; means here/);
+    assert.match(prose, /cannot buy the label/);
+    for (const status of [/being checked/i, /reconfirm before travel/i, /\bunverified\b/i, /research queue/i]) {
+      assert.doesNotMatch(prose, status, "the page still walks a customer through the editorial queue");
+    }
     assert.equal(TRUST_METHODOLOGY_PATH, "/verification");
   });
 

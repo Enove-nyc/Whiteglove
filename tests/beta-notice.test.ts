@@ -11,13 +11,18 @@ import {
 } from "@/lib/beta-notice";
 
 /**
- * "This is new. Please check anything you are going to rely on."
+ * "Travel information changes. Here is how we label what we have checked."
  *
  * The thing these tests are really protecting: people plan real journeys on
  * this site, to places where the difference between a shomer's old number and
  * his current one is standing outside a locked gate. A caution that does not
  * say what to be cautious about is decoration, and the site would be no more
  * honest for having shown it.
+ *
+ * AND WHAT THE NOTICE MUST NOT DO, which is what the second describe block
+ * below is about. It used to lead with the site being unfinished and name
+ * towns, kevarim, phone numbers and opening times — three of the four being
+ * the heritage database — on every page, including the ones about beaches.
  */
 
 const notice = (over: Partial<BetaNotice> = {}): BetaNotice => ({ ...DEFAULT_NOTICE, ...over });
@@ -30,8 +35,54 @@ describe("what it says when nobody has set anything", () => {
     assert.equal(DEFAULT_NOTICE.on, true);
   });
 
-  it("names what to check rather than saying to be careful", () => {
-    assert.match(DEFAULT_NOTICE.caution, /number|address|time/i);
+  it("names what to do rather than saying to be careful", () => {
+    // "Use with caution" on its own warns nobody of anything. This one names
+    // the single thing a kosher traveler has to do for themselves, and who
+    // the claim actually belongs to.
+    assert.match(DEFAULT_NOTICE.caution, /teudah/i);
+    assert.match(DEFAULT_NOTICE.caution, /certifying body/i);
+  });
+
+  it("SAYS WHAT TO DO, NOT WHAT WE HAVE AND HAVE NOT CHECKED", () => {
+    // Two failures, a version apart. Version 1 opened "We are still building
+    // this" — an apology at the top of every page. Version 2 explained the
+    // four checking labels — Verified, Reported, Being checked, Reconfirm
+    // before travel — which is the site's own editorial grading, shown to
+    // everybody on every page. AGENTS.md: do not expose internal workflows or
+    // content status to customers.
+    assert.doesNotMatch(DEFAULT_NOTICE.body, /still building|unfinished|beta|coming soon/i);
+    assert.doesNotMatch(DEFAULT_NOTICE.body, /\blabel\b|being checked|reconfirm before travel/i);
+    // What survives is the actionable half, which was always the useful half.
+    assert.match(DEFAULT_NOTICE.body, /travel details change/i);
+    assert.match(DEFAULT_NOTICE.body, /confirm/i);
+    assert.match(DEFAULT_NOTICE.body, /kosher certification/i);
+  });
+
+  it("BRINGS THE NOTICE BACK when the wording changes", () => {
+    // A dismissal is per version. Somebody who dismissed the old wording has
+    // not been shown this one, and this one says something different.
+    assert.equal(DEFAULT_NOTICE.version, "3");
+  });
+
+  it("DOES NOT DESCRIBE THIS SITE AS A KEVARIM DATABASE", () => {
+    // The examples were "towns, kevarim, phone numbers and opening times".
+    // Three of the four belong to the heritage section, and this strip is on
+    // every page of a kosher vacation planner.
+    const words = `${DEFAULT_NOTICE.heading} ${DEFAULT_NOTICE.body} ${DEFAULT_NOTICE.caution}`;
+    for (const heritageOnly of ["kevarim", "kever", "shomer", "cemeter", "beis hachaim"]) {
+      assert.doesNotMatch(words, new RegExp(heritageOnly, "i"), `the notice on every page mentions ${heritageOnly}`);
+    }
+  });
+
+  it("offers the three actions, and the dismiss one says what it does", () => {
+    assert.match(DEFAULT_NOTICE.feedbackLabel, /report an update/i);
+    assert.match(DEFAULT_NOTICE.dismissLabel, /hide/i);
+    // "I understand" is not an action and does not say what pressing it does.
+    assert.doesNotMatch(DEFAULT_NOTICE.dismissLabel, /^i understand$/i);
+  });
+
+  it("brings itself back for somebody who dismissed the old wording", () => {
+    assert.notEqual(DEFAULT_NOTICE.version, "1");
   });
 
   it("asks for feedback and gives somewhere to send it", () => {

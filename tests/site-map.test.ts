@@ -50,10 +50,10 @@ describe("every page on the site is accounted for", () => {
     // The counts come from the same lists generateStaticParams reads, so a town
     // that exists has a line by construction.
     for (const guide of cityGuides) assert.ok(pathSet.has(`/${guide.slug}`), `missing city guide ${guide.slug}`);
-    for (const place of bulkDestinations) assert.ok(pathSet.has(`/destinations/${place.slug}`), place.slug);
+    for (const place of bulkDestinations) assert.ok(pathSet.has(`/heritage/towns/${place.slug}`), place.slug);
     for (const cemetery of cemeteries) assert.ok(pathSet.has(`/cemeteries/${cemetery.slug}`), cemetery.slug);
     for (const t of allTzaddikim()) assert.ok(pathSet.has(`/tzaddikim/${t.slug}`), t.slug);
-    for (const d of vacationDestinations) assert.ok(pathSet.has(`/vacation-ideas/${d.slug}`), d.slug);
+    for (const d of vacationDestinations) assert.ok(pathSet.has(`/destinations/${d.slug}`), d.slug);
   });
 
   it("is actually a big list, not an empty one that looks fine", () => {
@@ -132,12 +132,13 @@ describe("the sitemap and the pages agree about indexing", () => {
     const missing = paths
       .filter(
         (entry) =>
-          !entry.path.startsWith("/destinations/") &&
+          // Each of these is served by one dynamic route, which the walk below
+          // sees as a single entry with a bracket in it rather than as the
+          // hundred-odd addresses it answers.
+          !entry.path.startsWith("/heritage/towns/") &&
           !entry.path.startsWith("/cemeteries/") &&
           !entry.path.startsWith("/tzaddikim/") &&
-          // Served by /vacation-ideas/[destination], which the walk below sees
-          // as one route with a bracket in it rather than eighteen addresses.
-          !(entry.path.startsWith("/vacation-ideas/") && entry.path !== "/vacation-ideas"),
+          !(entry.path.startsWith("/destinations/") && entry.path !== "/destinations"),
       )
       // A city guide is served by the [city] route rather than a folder.
       .filter((entry) => !cityGuides.some((g) => `/${g.slug}` === entry.path))

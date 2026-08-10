@@ -1,5 +1,5 @@
 export default function SectionPlaceholder({
-  title = "Information coming soon",
+  title = "Information not available",
   description = "We are still gathering and verifying the details for this section.",
 }: {
   title?: string;

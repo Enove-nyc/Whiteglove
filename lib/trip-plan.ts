@@ -10,9 +10,19 @@
  * within ten seconds.
  *
  * So: three steps, in the order a person actually decides. What kind of trip.
- * Then the shape of it — where, when, who, how fast. Then the only question
- * that changes what happens next: do you want to plan this yourself, or would
- * you like us to.
+ * Then where, when, from where, and who is coming. Then the only question that
+ * changes what happens next: do you want to plan this yourself, or would you
+ * like us to.
+ *
+ * THREE SHORT STEPS, NOT THREE QUESTIONS, and the difference cost the flow its
+ * credibility for a while. Step two used to carry nine questions — pace,
+ * interests, kashrus, Shabbos, notes — under a heading that had just promised
+ * three, with a counter underneath reading "1 of 10 questions answered". Every
+ * one of those questions is worth asking and none of them is worth asking
+ * BEFORE somebody can reach the planner, so they moved into a "Personalize my
+ * recommendations" section that opens after step three. Somebody planning it
+ * themselves never has to open it; somebody asking us to plan it answers the
+ * same questions on the request form, where they are the actual brief.
  *
  * EVERY QUESTION IS SKIPPABLE AND EVERY ONE HAS "I DON'T KNOW YET". That is
  * not politeness; it is the point. The visitor this flow exists for is
@@ -118,6 +128,28 @@ export const SHABBOS_REQUIREMENTS: readonly string[] = [
   "I don’t know yet",
 ] as const;
 
+/**
+ * Access needs, asked once rather than discovered on the third day.
+ *
+ * WHY THIS IS A LIST AND NOT LEFT TO "anything else we should know". It was
+ * left to that, and the free-text box is where a real constraint goes to be
+ * skimmed past. Every item here changes which hotel, which quarter and which
+ * day plan is even possible — a walk-up apartment in a Jewish quarter is a
+ * lovely recommendation and the wrong one for somebody with a wheelchair.
+ *
+ * Phrased as the practical thing rather than as a category of person: nobody
+ * is asked to declare a condition, they are asked what the trip has to do.
+ */
+export const ACCESSIBILITY_NEEDS: readonly string[] = [
+  "Step-free access where we stay",
+  "A lift rather than stairs",
+  "Short walking distances",
+  "Room for a wheelchair or a pushchair",
+  "A car rather than public transport",
+  "Somewhere quiet",
+  "None of these",
+] as const;
+
 export type TripPlanAnswers = {
   kind: TripKind | "";
   /** A place, or empty. Free text: somebody may type "somewhere warm". */
@@ -144,11 +176,21 @@ export type TripPlanAnswers = {
   children: string;
   /** Free text — "4, 7 and 11". Ages decide more than the number does. */
   childAges: string;
+  /* ---- the optional half ------------------------------------------------
+   *
+   * Everything below is asked AFTER the three steps, in a "Personalize my
+   * recommendations" section that is closed by default. It used to be the
+   * whole of step two: nine questions in one screen, in front of somebody who
+   * had just been promised "three questions". Pace, interests, kashrus and
+   * Shabbos genuinely change what we would suggest — and none of them is worth
+   * making a person answer before they can reach the planner. */
   pace: Pace;
   interests: string[];
   kosher: string[];
   kosherNotes: string;
   shabbos: string[];
+  /** What the trip has to be able to do. See ACCESSIBILITY_NEEDS. */
+  accessibility: string[];
   method: PlanningMethod | "";
   /** Only asked when the trip kind is a heritage journey. */
   kevarim: string;
@@ -173,6 +215,7 @@ export function emptyAnswers(): TripPlanAnswers {
     kosher: [],
     kosherNotes: "",
     shabbos: [],
+    accessibility: [],
     method: "",
     kevarim: "",
     notes: "",
@@ -216,6 +259,7 @@ export function readAnswers(raw: string | null | undefined): TripPlanAnswers | n
       kosher: list(parsed.kosher),
       kosherNotes: text(parsed.kosherNotes),
       shabbos: list(parsed.shabbos),
+      accessibility: list(parsed.accessibility),
       method: (["myself", "white-glove", "unsure"] as const).find((m) => m === parsed.method) ?? "",
       kevarim: text(parsed.kevarim),
       notes: text(parsed.notes),
@@ -247,33 +291,84 @@ export function hasAnswers(answers: TripPlanAnswers | null): boolean {
 export type StepId = "kind" | "shape" | "how";
 
 export const STEPS: ReadonlyArray<{ id: StepId; number: number; title: string; blurb: string }> = [
-  { id: "kind", number: 1, title: "What are you planning?", blurb: "One press. It only shapes what we suggest." },
-  { id: "shape", number: 2, title: "The shape of the trip", blurb: "Answer what you know. Skip the rest — nothing here is required." },
-  { id: "how", number: 3, title: "How would you like to plan it?", blurb: "This is the only answer that changes what happens next." },
+  { id: "kind", number: 1, title: "The trip", blurb: "One press. It only shapes what we suggest." },
+  {
+    id: "shape",
+    number: 2,
+    title: "Where, when, and who is coming",
+    blurb: "Four short answers, none of them required — “I don’t know yet” is on every one.",
+  },
+  { id: "how", number: 3, title: "How to plan it", blurb: "This is the only answer that changes what happens next." },
 ] as const;
 
 /**
- * How far through they are, for the progress indicator.
+ * How far through they are.
  *
- * Counts ANSWERED QUESTIONS rather than completed steps, because step two is
- * nine questions long and a bar that sits at "1 of 3" while somebody fills in
- * eight fields tells them nothing about how much is left.
+ * COUNTED IN STEPS, and this is a correction. It used to count the ten
+ * individual questions, so a page that promised "three questions" showed
+ * "1 of 10 questions answered" under it — and step two really did hold nine of
+ * them, which is what the counter was honestly reporting. The fix is not a
+ * better counter: it is that steps two's pace, interests, kashrus, Shabbos and
+ * access questions are no longer in the way of getting to the planner. They
+ * are offered afterwards, and counted separately below, so the number under a
+ * three-step flow is out of three.
+ *
+ * A step counts as answered when ANY of its fields has been touched, because
+ * every one of them is optional and a step nobody needed to answer is still a
+ * step they got past.
  */
-export function progressOf(answers: TripPlanAnswers): { answered: number; total: number; percent: number } {
-  const questions: boolean[] = [
+export type TripPlanProgress = {
+  answered: number;
+  total: number;
+  percent: number;
+  /** How many of the optional personalisation questions have been answered. */
+  personalized: number;
+  personalizeTotal: number;
+};
+
+/** Whether each of the three steps has anything in it. Order matches STEPS. */
+export function stepsAnswered(answers: TripPlanAnswers): [boolean, boolean, boolean] {
+  return [
     answers.kind !== "",
-    answers.destination.trim() !== "" || answers.helpMeChoose,
-    answers.dateMode === "unknown" || Boolean(answers.startDate || answers.approximateWhen.trim()),
-    answers.from.trim() !== "",
-    answers.adults.trim() !== "" || answers.children.trim() !== "",
-    answers.pace !== "unknown",
-    answers.interests.length > 0,
-    answers.kosher.length > 0,
-    answers.shabbos.length > 0,
+    answers.destination.trim() !== "" ||
+      answers.helpMeChoose ||
+      answers.dateMode !== "" ||
+      answers.from.trim() !== "" ||
+      answers.adults.trim() !== "" ||
+      answers.children.trim() !== "",
     answers.method !== "",
   ];
-  const answered = questions.filter(Boolean).length;
-  return { answered, total: questions.length, percent: Math.round((answered / questions.length) * 100) };
+}
+
+/**
+ * The optional questions, and whether each has been answered.
+ *
+ * `kevarim` is not here: it is only ever shown for a heritage journey, so
+ * counting it would make the same flow read "0 of 7" for one visitor and
+ * "0 of 6" for the next, for a question most of them will never see.
+ */
+export function personalizeAnswered(answers: TripPlanAnswers): boolean[] {
+  return [
+    answers.pace !== "unknown",
+    answers.interests.length > 0,
+    answers.kosher.length > 0 || answers.kosherNotes.trim() !== "",
+    answers.shabbos.length > 0,
+    answers.accessibility.length > 0,
+    answers.notes.trim() !== "",
+  ];
+}
+
+export function progressOf(answers: TripPlanAnswers): TripPlanProgress {
+  const steps = stepsAnswered(answers);
+  const answered = steps.filter(Boolean).length;
+  const optional = personalizeAnswered(answers);
+  return {
+    answered,
+    total: steps.length,
+    percent: Math.round((answered / steps.length) * 100),
+    personalized: optional.filter(Boolean).length,
+    personalizeTotal: optional.length,
+  };
 }
 
 /* ---- what the answers turn into ------------------------------------------ */
@@ -326,6 +421,7 @@ export function summarize(answers: TripPlanAnswers): Array<[string, string]> {
   if (answers.kosher.length) lines.push(["Kosher requirements", answers.kosher.join(", ")]);
   if (answers.kosherNotes.trim()) lines.push(["Kosher notes", answers.kosherNotes.trim()]);
   if (answers.shabbos.length) lines.push(["Shabbos", answers.shabbos.join(", ")]);
+  if (answers.accessibility.length) lines.push(["Access needs", answers.accessibility.join(", ")]);
   // Asked only for a heritage journey, and therefore only ever present for one.
   if (answers.kevarim.trim()) lines.push(["Kevarim or towns", answers.kevarim.trim()]);
   if (answers.notes.trim()) lines.push(["Anything else", answers.notes.trim()]);
@@ -415,5 +511,5 @@ export function suggestedTheme(answers: TripPlanAnswers): TripTheme | null {
 export function nextStepHref(answers: TripPlanAnswers): string {
   if (answers.method === "white-glove") return "/contact?from=plan";
   if (answers.method === "myself") return "/itinerary?from=plan";
-  return "/vacation-ideas";
+  return "/destinations";
 }

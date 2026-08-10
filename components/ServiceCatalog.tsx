@@ -1,6 +1,8 @@
 import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
 import { services } from "@/data/services";
+import { bookingCallToAction } from "@/lib/booking-access";
+import { readBookingLink } from "@/lib/booking-access-store";
 
 /**
  * The six services, each answering the same six questions.
@@ -26,10 +28,22 @@ function Detail({ term, children }: { term: string; children: React.ReactNode })
   );
 }
 
-export default function ServiceCatalog() {
+export default async function ServiceCatalog() {
+  // Resolved once for the page. A service whose action is the self-service
+  // search gets the button and the opening step from here, so neither can
+  // promise a search that is currently behind an access code.
+  const booking = await readBookingLink();
+  const selfService = bookingCallToAction(booking);
   return (
     <div className="space-y-8">
-      {services.map((service, index) => (
+      {services.map((service, index) => {
+        const action = service.usesBookingSearch ? { label: selfService.label, href: booking.href } : service.action;
+        const process = service.usesBookingSearch ? [selfService.blurb, ...service.process] : service.process;
+        // Two buttons to the same page read as a mistake, and that is exactly
+        // what happens to "Search flights" / "Ask a person to look instead"
+        // when the search is closed and both resolve to the assistance page.
+        const secondary = service.secondary?.href === action.href ? undefined : service.secondary;
+        return (
         <article
           key={service.id}
           id={service.id}
@@ -58,7 +72,7 @@ export default function ServiceCatalog() {
 
             <Detail term="How it works">
               <ol className="space-y-3">
-                {service.process.map((step, stepIndex) => (
+                {process.map((step, stepIndex) => (
                   <li key={step} className="flex gap-3">
                     <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold-ink)]">
                       {stepIndex + 1}
@@ -88,22 +102,23 @@ export default function ServiceCatalog() {
 
           <div className="mt-8 flex flex-wrap gap-3 border-t border-[var(--gold-light)] pt-6">
             <Link
-              href={service.action.href}
+              href={action.href}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              {service.action.label}
+              {action.label}
             </Link>
-            {service.secondary && (
+            {secondary && (
               <Link
-                href={service.secondary.href}
+                href={secondary.href}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                {service.secondary.label}
+                {secondary.label}
               </Link>
             )}
           </div>
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }

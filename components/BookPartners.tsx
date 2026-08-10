@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
-import BookingSearch from "@/components/BookingSearch";
 import { type Leg, type SearchShape, airportCode, describeSearch, kayakUrl, searchProblem, withAffiliate } from "@/lib/kayak-search";
 import { allezUrl, hotelButtonLabel, type Stay22Settings, stay22IsOn } from "@/lib/stay22";
 import { type SearchSlot, throughTravelpayouts, type TravelpayoutsLinks } from "@/lib/travelpayouts";
@@ -93,18 +92,22 @@ export type PendingBooking = {
 };
 
 /**
- * `flightsVia` and `hotelsVia` decide who runs the search.
+ * EVERY SEARCH ON THIS PAGE HANDS OFF TO A PARTNER. Nothing is booked here.
  *
- * "duffel" searches and books here, in the site, through the Duffel account —
- * this is what the old /booking page did, and it is the same component doing
- * it. The partner options hand the search to Kayak or Booking.com with the
- * affiliate tag on it; those links work without a tag but earn nothing, so
- * until the key exists the search is better served — and better tracked —
- * in-site. /book/page.tsx picks, and explains why.
+ * There used to be a third option: Duffel, searching and booking in the site,
+ * taking a card and issuing a ticket. That is a different business from being
+ * paid to send somebody to a partner — it creates an obligation to the
+ * traveler that a referral link does not — and it now lives at /admin/duffel,
+ * off the public site entirely. lib/booking-partners.ts cannot route the
+ * public site to it at all.
  */
-export default function BookPartners({ affiliate, prefill, flightsVia = "kayak", hotelsVia = "booking" }: { affiliate?: Affiliate; prefill?: Prefill; flightsVia?: "duffel" | "kayak"; hotelsVia?: "duffel" | "booking" }) {
+export default function BookPartners({ affiliate, prefill, disclosure }: { affiliate?: Affiliate; prefill?: Prefill; disclosure: string }) {
   const [pay, setPay] = useState<Pay>("cash");
-  const [kind, setKind] = useState<Kind>("flights");
+  // HOTELS OPENS, not flights. Accommodation is the one product this site
+  // knows something a comparison site does not — which quarter makes Shabbos
+  // walkable, what is within a walk of it — so it is the tab that earns the
+  // visit. Flights and cars are the same search anybody can run anywhere.
+  const [kind, setKind] = useState<Kind>("hotels");
   const [added, setAdded] = useState(false);
   const [pending, setPending] = useState<PendingBooking | null>(null);
 
@@ -149,7 +152,6 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
   // Whether the tab you are looking at searches here or hands off to a
   // partner. Both the note beside the toggle and the one under the panel say
   // what actually happens next, so neither can promise the wrong thing.
-  const inSite = pay === "cash" && ((kind === "flights" && flightsVia === "duffel") || (kind === "hotels" && hotelsVia === "duffel"));
 
   return (
     <div className="overflow-visible rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
@@ -162,14 +164,14 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
           <PayToggle active={pay === "miles"} onClick={() => setPay("miles")}>Miles &amp; points</PayToggle>
         </div>
         <p className="min-w-0 text-xs leading-5 text-stone-500">
-          {pay === "miles" ? "Find the award, check the value, book it in your own program." : inSite ? "Search and pay by card, right here." : "Compare and pay by card with a trusted partner."}
+          {pay === "miles" ? "Find the award, check the value, book it in your own program." : "Compare and pay by card with a trusted partner."}
         </p>
       </div>
 
       {/* ---- What are you booking? ---- */}
       <div className="grid grid-cols-3 gap-1.5 border-b border-[var(--gold-light)] bg-white px-5 py-4 sm:px-8">
-        <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "hotels"} onClick={() => setKind("hotels")}>Hotels</TabButton>
+        <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
         <TabButton active={kind === "cars"} onClick={() => setKind("cars")}>Cars</TabButton>
       </div>
 
@@ -182,31 +184,15 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
         </div>
       )}
 
+      {/* NO IN-SITE SEARCH ANY MORE. Both of these used to have a Duffel
+          branch that searched and booked on this page — a card taken and a
+          ticket issued, which is a different business from sending somebody to
+          a partner. Duffel is at /admin/duffel now and the public page has one
+          path per product. See lib/booking-partners.ts. */}
       {pay === "cash" && kind === "flights" && (
-        flightsVia === "duffel" ? (
-          <div>
-            <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
-              Search and book right here — fares and seats come from our own airline connection, and what you book goes
-              straight onto your itinerary.
-            </p>
-            <BookingSearch only="flights" />
-          </div>
-        ) : (
-          <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
-        )
+        <FlightsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
       )}
-      {pay === "cash" && kind === "hotels" && (
-        hotelsVia === "duffel" ? (
-          <div>
-            <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-stone-700">
-              Live availability for the White Glove destinations, searched here through our own accommodation connection.
-            </p>
-            <BookingSearch only="hotels" />
-          </div>
-        ) : (
-          <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />
-        )
-      )}
+      {pay === "cash" && kind === "hotels" && <HotelsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
       {pay === "cash" && kind === "cars" && <CarsForm affiliate={affiliate} onAdd={addToTrip} onOpened={setPending} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
@@ -228,9 +214,18 @@ export default function BookPartners({ affiliate, prefill, flightsVia = "kayak",
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
-          : inSite
-            ? "This search runs here, through our own travel connection, and what you book goes straight onto your itinerary."
-            : "Cash searches open with a trusted partner (Kayak, Booking.com) where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
+          : "Cash searches open with a trusted partner — Kayak or Booking.com — where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
+      </p>
+
+      {/* THE COMMISSION DISCLOSURE, BESIDE THE SEARCH. Not in the page footer,
+          where it is technically present and practically unread: the FTC's
+          endorsement guides, the UK CAP code and the EU unfair-practices
+          directive all ask for it where the person is when they decide. One
+          editable line, from /admin/settings/words, shown by every commercial
+          surface on the site. */}
+      <p className="border-t border-[var(--gold-light)] bg-white px-5 py-4 text-xs leading-5 text-stone-600 sm:px-8">
+        <span className="font-semibold text-[var(--navy)]">How this site is paid: </span>
+        {disclosure}
       </p>
     </div>
   );
@@ -776,7 +771,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
       </div>
       <p className="mt-2 text-xs text-stone-500">Independent award-search sites, free to use. We don&apos;t see your balances or your account.</p>
 
-      <StepLabel n={2}>Is it worth using your miles?</StepLabel>
+      <StepLabel n={2}>Whether the miles are worth it</StepLabel>
       <ValueCalculator unit="Miles" cashLabel="Cash price of the same ticket" feesLabel="Taxes/fees you still pay" pointsPlaceholder="45000" cashPlaceholder="900" />
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -834,7 +829,7 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
         Award Mapper is a free independent tool for seeing which loyalty programs have properties in a city — useful before you commit points.
       </p>
 
-      <StepLabel n={2}>Is it worth using your points?</StepLabel>
+      <StepLabel n={2}>Whether the points are worth it</StepLabel>
       <ValueCalculator unit="Points" cashLabel="Cash price of the same stay" feesLabel="Resort/other fees still charged" pointsPlaceholder="60000" cashPlaceholder="750" />
       <p className="mt-3 text-xs leading-5 text-stone-500">
         Compare the whole stay, not one night — many programs discount longer award stays. Check the kosher-food situation separately;
@@ -890,7 +885,7 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
         <a href={`https://www.kayak.com/cars${loc.trim() && pickup && dropoff ? `/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}` : ""}`} target="_blank" rel="noreferrer" className={linkGhost}>Check the cash price on Kayak →</a>
       </div>
 
-      <StepLabel n={2}>Is it worth using your points?</StepLabel>
+      <StepLabel n={2}>Whether the points are worth it</StepLabel>
       <ValueCalculator unit="Points" cashLabel="Cash price of the same rental" feesLabel="Anything still charged at the counter" pointsPlaceholder="30000" cashPlaceholder="300" />
 
       <div className="mt-6 flex flex-wrap gap-3">

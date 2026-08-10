@@ -20,18 +20,32 @@ import { ctaFor, shownToVisitors, type TravelExtra } from "@/lib/travel-extras";
  * advice about. The links open in a new tab so the search they were in the
  * middle of is still there behind them.
  */
-export default function TravelExtras({ extras }: { extras: TravelExtra[] }) {
+export default function TravelExtras({
+  extras,
+  heading = "Once the flights are booked",
+  intro = "The rest of what a trip needs. Each one opens with the provider, who handles the purchase and anything you need to ask about it.",
+}: {
+  extras: TravelExtra[];
+  /**
+   * The words over the row, which depend on where it is.
+   *
+   * On /book the reader has just searched a flight. On a destination page they
+   * have been reading about a place and have not booked anything, so "once the
+   * flights are booked" would be talking about something that has not
+   * happened. Same links, same rule about recommending nothing — only the
+   * sentence that introduces them moves.
+   */
+  heading?: string;
+  intro?: string;
+}) {
   const shown = shownToVisitors(extras);
   if (shown.length === 0) return null;
 
   return (
     <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-14 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-6xl">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Once the flights are booked</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          The rest of what a trip needs. Each one opens with the provider, who handles the purchase and anything you
-          need to ask about it.
-        </p>
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{heading}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{intro}</p>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((extra) => (

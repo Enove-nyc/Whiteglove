@@ -96,7 +96,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   href={placeDirectionsUrl(a.address, a.coordinates)}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
                 >
                   Navigate →
                 </a>
@@ -106,7 +106,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   href={a.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
                 >
                   Official site →
                 </a>
@@ -115,7 +115,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                 <button
                   type="button"
                   onClick={() => setOpenNearby(openNearby === a.slug ? null : a.slug)}
-                  className="rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 py-1.5 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
                 >
                   {openNearby === a.slug ? "Hide what's nearby" : "Kosher food near here"}
                 </button>

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const email = await whoIsAsking();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const id = request.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "Which file?" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Name the file." }, { status: 400 });
 
   const file = await getAttachmentFor(id, email);
   // The same answer for "not there" and "not yours", so asking tells nobody
@@ -96,7 +96,7 @@ export async function DELETE(request: NextRequest) {
   const email = await whoIsAsking();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const id = request.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "Which file?" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Name the file." }, { status: 400 });
   const gone = await deleteAttachmentFor(id, email);
   return gone
     ? NextResponse.json({ ok: true })

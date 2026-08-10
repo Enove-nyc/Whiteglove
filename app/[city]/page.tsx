@@ -4,8 +4,6 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
 import { airportsFor } from "@/lib/destination-actions";
-import SendPictureButton from "@/components/SendPictureButton";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
 import PhotoGallery from "@/components/PhotoGallery";
@@ -13,7 +11,6 @@ import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
-import { townPictureTargets } from "@/lib/photo-submissions";
 import { getPublishedDestinationContent } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -118,8 +115,8 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
             <p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-stone-500 sm:text-3xl">{guide.tzaddik}</p>
 
             <div className="mt-7 flex flex-wrap gap-3">
-              {graveMapUrl && <a href={graveMapUrl} target="_blank" rel="noreferrer" className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to the kever →</a>}
-              {cemetery && <a href={`/cemeteries/${cemetery.slug}`} className="inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">View this <span lang="he">בית החיים</span> →</a>}
+              {graveMapUrl && <a href={graveMapUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to the kever →</a>}
+              {cemetery && <a href={`/cemeteries/${cemetery.slug}`} className="inline-flex min-h-11 items-center bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">View this <span lang="he" dir="rtl">בית החיים</span> →</a>}
             </div>
             <DestinationActions place={{ id: guide.slug, name: guide.city, yiddishName: guide.yiddishCity, address: guide.graveAddress ?? `${guide.city}, ${guide.country}`, coordinates: guide.graveCoordinates, href: `/${guide.slug}` }} airports={airportsFor(guide.country, guide.graveAddress, guide.graveCoordinates)} />
 
@@ -129,10 +126,10 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
                 {guide.findingNotes.map((note, index) => <li key={note} className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold-ink)]">{index + 1}.</span><span>{note}</span></li>)}
               </ol>
             </div>}
-            <SuggestEditButton targetType="location" targetId={guide.slug} title={guide.city} currentInfo={`${guide.yiddishCity}\n${guide.tzaddik}\n${guide.graveAddress ?? ""}`} />
+            
             {/* A picture of the town, or of one of its listings. Nothing sent
                 here appears until the owner has looked at it. */}
-            <SendPictureButton targets={townPictureTargets({ slug: guide.slug, city: guide.city }, dbContent?.places ?? [])} />
+            
           </div>
 
           <div className="border-l border-[var(--gold)] pl-5 sm:pl-7">
@@ -161,7 +158,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
           <SectionHeading eyebrow="Practical guide" title="Everything around the visit." description="Accommodations, food, minyanim, mikvaos, and transport are kept together here. A detail appears only when it has been checked for this exact destination." />
           <PhotoGallery photos={dbContent?.photos ?? []} />
           {destinationRecord && <PracticalInformation record={destinationRecord} places={dbContent?.places ?? []} />}
-          <a href={guide.sourceUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block border border-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Read source information</a>
+          <a href={guide.sourceUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex min-h-11 items-center border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Read source information</a>
         </div>
       </section>
       <Footer />

@@ -1,0 +1,63 @@
+import Link from "next/link";
+import { staySearchHref } from "@/lib/stay-search";
+
+/**
+ * The one action that follows a destination page, kept in reach.
+ *
+ * FLIGHTS IS NOT PREFILLED, and that is on purpose. The flight form asks for
+ * an airport code, and this site holds no airport code for a vacation
+ * destination — several of them are regions with three airports. Passing a
+ * city name into a field labelled "Airport code, e.g. FCO" would open the
+ * partner on a search they may not understand, which is worse than opening
+ * them on an empty one.
+ *
+ * A DESTINATION PAGE IS LONG — eleven sections, and the practical ones are at
+ * the bottom because that is the order somebody decides in. By the time a
+ * person has read what Shabbos looks like in Rome and decided they can do it,
+ * the button is two thousand pixels above them, and the next thing they do is
+ * go back to a comparison site.
+ *
+ * STICKY, NOT FIXED, and the difference is the whole reason this component is
+ * written rather than a class on a div. A fixed bar sits on top of the page for
+ * ever: at 200% text it eats a third of a phone screen, it covers the last line
+ * of whatever you are reading, and there is no scroll position that gets rid of
+ * it. This one is in the flow at the bottom of the article, so it rides the
+ * bottom of the viewport while there is article left and then lets go — the
+ * footer, the last section and the small print are never underneath it.
+ *
+ * ONE PRIMARY, TWO QUIET. Flights and cars are real pages with real searches
+ * and they belong here, but a bar with three equal buttons has no primary
+ * action at all. Places to stay is the one this site can answer better than a
+ * comparison site — which quarter, and what is walkable — so it is the one in
+ * navy.
+ *
+ * NO PERSONAL ASSISTANCE. This is the most commercial surface on the site and
+ * "have us plan it" here would turn every section above into a sales funnel.
+ * It is offered inside Contact. See lib/contact-reasons.ts.
+ */
+export default function DestinationStickyCta({ destination }: { destination: string }) {
+  return (
+    <div className="sticky bottom-0 z-30 -mx-5 mt-6 border-t border-[var(--gold-light)] bg-[var(--surface)]/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/85 sm:-mx-8 sm:px-8">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2">
+        <Link
+          href={staySearchHref({ destination })}
+          className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+        >
+          See places to stay
+        </Link>
+        <Link
+          href="/flights"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+        >
+          Flights
+        </Link>
+        <Link
+          href={`/cars?destination=${encodeURIComponent(destination)}`}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+        >
+          Cars and transfers
+        </Link>
+      </div>
+    </div>
+  );
+}

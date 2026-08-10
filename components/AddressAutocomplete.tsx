@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { anchoredStyle, measureAnchor, useAnchorTracking, type AnchorBox } from "@/lib/anchored-panel";
 
 // Real-address autocomplete backed by Photon (OpenStreetMap) — free, no API
 // key. As the user types, a dropdown of real addresses appears; picking one
@@ -57,6 +58,12 @@ export default function AddressAutocomplete({
   const [results, setResults] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  // Drawn against the viewport rather than inside the field, because the
+  // booking card hides its overflow and clipped this list. See
+  // lib/anchored-panel.ts.
+  const [anchor, setAnchor] = useState<AnchorBox | null>(null);
+  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 288)), []);
+  useAnchorTracking(open, remeasure);
 
   // Sync when the value is set from outside (e.g. prefilled by the kever picker).
   useEffect(() => { setQuery(value); }, [value]);
@@ -93,15 +100,15 @@ export default function AddressAutocomplete({
       <input
         name={name}
         value={query}
-        onChange={(e) => { setQuery(e.target.value); onChange?.(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        onChange={(e) => { setQuery(e.target.value); onChange?.(e.target.value); remeasure(); setOpen(true); }}
+        onFocus={() => { remeasure(); setOpen(true); }}
         placeholder={placeholder || "Start typing an address…"}
         autoComplete="off"
         required={required}
         className={className}
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-64 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+        <ul style={{ ...anchoredStyle(anchor), width: anchor?.width }} className="z-[var(--wg-z-popover)] border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {results.map((s, i) => (
             <li key={`${s.label}-${i}`}>
               <button

@@ -225,7 +225,7 @@ export async function saveAgency(agency: StoredAgency): Promise<{ ok: boolean; m
   const ok = await writeAgencies(all);
   return ok
     ? { ok: true, message: `Saved ${agency.name ?? id}.` }
-    : { ok: false, message: "Could not save it. Is the private store connected?" };
+    : { ok: false, message: "Could not save it. The private store may not be connected." };
 }
 
 /**

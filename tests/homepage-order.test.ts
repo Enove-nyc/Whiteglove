@@ -22,6 +22,7 @@ import { services } from "@/data/services";
 const HOME = readFileSync("app/page.tsx", "utf8");
 const NOTICE = readFileSync("components/NewSiteNotice.tsx", "utf8");
 const LAYOUT = readFileSync("app/layout.tsx", "utf8");
+const FORM = readFileSync("components/StaySearchForm.tsx", "utf8");
 
 /**
  * The page with the comments and the Tailwind stripped out.
@@ -55,56 +56,173 @@ describe("the first five seconds", () => {
     assert.doesNotMatch(PROSE, /two kinds of journeys/i);
   });
 
-  it("carries the three hero actions, in order of importance", () => {
-    const primary = at("Start planning my trip");
-    const secondary = at("Explore vacation ideas");
-    const tertiary = at("Planning a heritage journey? Start here");
-    assert.ok(primary < secondary, "the secondary button comes first");
-    assert.ok(secondary < tertiary, "the heritage link comes before the vacation one");
+  it("OPENS ON A SEARCH BOX, not on two invitations to read", () => {
+    // Somebody arriving with a month in mind and a family to house had
+    // nowhere to type it: the page led with "Start planning my trip" and
+    // "Explore vacation ideas", and the question they came with went
+    // unanswered until they had found their own way three pages in.
+    const hero = HOME.slice(at('<section className="relative border-b'), at("What kind of trip are you planning?"));
+    assert.match(hero, /<StaySearchForm id="hero" \/>/);
+    assert.doesNotMatch(hero, /Start planning my trip/);
   });
 
-  it("MAKES THE MOST PROMINENT ACTION A TRIP-PLANNING ONE", () => {
-    // The first CTA on the page, and it starts the flow rather than opening a
-    // booking search or a contact form.
-    const firstLink = HOME.slice(at('<section className="relative border-b')).match(/href="([^"]+)"/);
-    assert.equal(firstLink?.[1], "/plan");
+  it("SENDS THE SEARCH TO OUR OWN PAGE, NOT STRAIGHT TO A PARTNER", () => {
+    // The one decision on this page worth defending. Handing off a press
+    // sooner earns the commission sooner and throws away the only reason to
+    // search here: the quarter, the walk, and which alpine hotels are a
+    // fortnight rather than a hotel.
+    assert.match(FORM, /action="\/hotels"/);
+    assert.doesNotMatch(FORM, /action="\/go"/);
+  });
+
+  it("carries the two hero links after it, in order", () => {
+    const search = at("<StaySearchForm id=\"hero\" />");
+    const secondary = at("Browse every destination");
+    const tertiary = at("Planning a heritage journey? Start here");
+    assert.ok(search < secondary, "a link comes before the search box");
+    assert.ok(secondary < tertiary, "the heritage link comes before the vacation one");
   });
 });
 
 describe("the order of the page", () => {
+  it("OFFERS ONE WAY TO PICK A KIND OF TRIP, not two", () => {
+    // "What kind of trip are you planning?" sent you to /plan?kind= and
+    // "Browse by the kind of holiday" sent you to /destinations?kind=, one
+    // above the other, each a grid of the same sort of card. Two ways to say
+    // "what sort of trip" on one page is a page that has not decided. The
+    // destination categories stayed — they are the ones with places behind
+    // them — and the planner is still one press from the hero.
+    assert.doesNotMatch(PROSE, /What kind of trip are you planning\?/);
+    assert.doesNotMatch(HOME, /TRIP_KINDS/, "the second trip-type grid is back");
+    // `/plan?kind=heritage` stays: that is the heritage section's own button,
+    // not a grid of trip types competing with the categories.
+    assert.match(HOME, /Browse by holiday type/);
+    // The hero's search carries the way out for somebody who has not chosen
+    // a destination, which is what the trip-type grid was really for.
+    assert.match(FORM, /helpHref = "\/plan"/);
+    assert.match(FORM, /Not sure where/);
+  });
+
   it("puts vacation content before heritage content", () => {
     // ACCEPTANCE CRITERION, restated as a test. The heritage section is a
     // section; it is not the page.
-    const selector = at("What kind of trip are you planning?");
-    const categories = at("Browse by the kind of holiday.");
+    const categories = at("Browse by holiday type");
     const destinations = at('id="destinations"');
-    const heritage = at("Heritage travel, in its own section.");
-    assert.ok(selector < heritage, "the heritage section comes before the trip-type selector");
+    const heritage = at("Kevarim and the towns around them");
     assert.ok(categories < heritage, "the heritage section comes before the vacation categories");
     assert.ok(destinations < heritage, "the heritage section comes before the vacation destinations");
   });
 
   it("runs in the order somebody decides in", () => {
     const order = [
-      "What kind of trip are you planning?",
-      "Three steps, and you can stop after any of them.",
-      "Browse by the kind of holiday.",
+      "How it works",
+      "Browse by holiday type",
       'id="destinations"',
-      "As much or as little of it as you want.",
-      "The half of a trip nobody else plans for you.",
-      "Heritage travel, in its own section.",
-      "Somebody drives four hours on the strength of a line on a page.",
-      "Where do you want to go?",
+      "Kosher hotels and programmes",
+      "When to go",
+      "Food, Shabbos and the rest of it",
+      "Kevarim and the towns around them",
+      "VERIFICATION_LINE}",
+      "Start with a destination and a date",
     ].map(at);
     for (let i = 1; i < order.length; i += 1) {
       assert.ok(order[i] > order[i - 1], `section ${i + 1} of the front page has moved above section ${i}`);
     }
   });
 
-  it("offers both paths, and says which is free", () => {
-    assert.ok(HOME.includes("Plan it yourself"));
-    assert.ok(HOME.includes("Have us plan it"));
-    assert.match(HOME, /Free, and yours/);
+  it("MAKES SEEING THE HOTELS THE DOMINANT ACTION ON A DESTINATION CARD", () => {
+    // "Explore Rome" was the navy button, and it is the right first press for
+    // somebody reading. A person looking at a row of destinations with dates
+    // in mind is asking where they would sleep, and that question was two
+    // pages away.
+    const card = readFileSync("components/VacationCard.tsx", "utf8");
+    const hotels = card.indexOf("See hotels in {destination.name}");
+    const explore = card.indexOf("Explore {destination.name}");
+    assert.ok(hotels > 0 && explore > 0);
+    assert.ok(hotels < explore, "the hotels action is no longer first on the card");
+    // First means the navy one, not merely the one written first.
+    assert.match(card.slice(hotels - 400, hotels), /bg-\[var\(--navy\)\]/);
+    // And it lands on our own page, which answers the quarter before it
+    // offers a partner anything.
+    assert.match(card, /staySearchHref\(\{ destination: destination\.name \}\)/);
+  });
+
+  it("BUILDS THE FEATURED STAYS FROM THE KASHRUS CLAIM, NOT BY HAND", () => {
+    // An ordinary hotel chosen for the street it is on carries "none" and
+    // cannot reach a section headed "places that make a kosher vacation
+    // easier", however well placed it is.
+    assert.match(HOME, /stay\.kosherClaim !== "none"/);
+    assert.match(HOME, /featuredStays\.length > 0 &&/, "the section renders even with nothing in it");
+  });
+
+  it("OFFERS NO SEASON WITH NOTHING BEHIND IT", () => {
+    const seasons = HOME.slice(at("When to go"), at("Food, Shabbos and the rest of it"));
+    assert.match(seasons, /if \(count === 0\) return null/);
+    assert.match(seasons, /href=\{`\/destinations\?season=\$\{season\.value\}`\}/);
+  });
+
+  it("SHOWS THREE DESTINATIONS, ON THE SHORT CARD", () => {
+    // Six full cards were most of the scroll between the categories and the
+    // two ways to plan, and each repeated the kosher and Shabbos answers that
+    // its own page gives properly.
+    assert.match(HOME, /\.slice\(0, 3\)/);
+    assert.match(HOME, /<VacationCard key=\{card\.destination\.slug\} card=\{card\} compact \/>/);
+    assert.match(HOME, /Browse all \{cards\.length\} destinations/);
+  });
+
+  it("SHOWS NO ROW OF EDITORIAL STATUS LABELS", () => {
+    // The four badges — Verified, Reported, Being checked, Reconfirm before
+    // travel — sat here as a row: the site's own grading, shown to a stranger
+    // who had not asked whether there was any. AGENTS.md: do not expose
+    // internal workflows or content status to customers. The grading itself is
+    // unchanged underneath.
+    assert.doesNotMatch(PROSE, /TRUST_ORDER/);
+    assert.doesNotMatch(PROSE, /Being Checked|Reconfirm Before Travel/i);
+    assert.doesNotMatch(HOME, /<VerificationBadge/);
+  });
+
+  it("STILL MAKES THE CLAIM, AND STILL LINKS TO WHAT TO CONFIRM", () => {
+    // Dropping the labels must not drop the reason to trust the page. The
+    // sentence says what has been checked and that each detail names a source;
+    // the link goes to the five things a traveler should confirm themselves.
+    assert.match(HOME, /checked against the place itself/);
+    assert.match(HOME, /names where it came from/);
+    assert.match(HOME, /href="\/verification"/);
+    assert.doesNotMatch(PROSE, /straight-line distance|road routing/);
+    assert.doesNotMatch(PROSE, /Somebody drives four hours/);
+  });
+
+  it("HIDES THE CATEGORY COUNTS", () => {
+    // "1" beside Beach and resort says something about how far this section
+    // has got rather than about the holiday. The counts stay on
+    // /vacation-ideas, where somebody is choosing between filters.
+    const categories = HOME.slice(at("Browse by holiday type"), at('id="destinations"'));
+    assert.doesNotMatch(categories, /\{count\}/);
+    // …but a category with nothing behind it is still not offered at all.
+    assert.match(categories, /if \(count === 0\) return null/);
+  });
+
+  it("does not explain kosher food and Shabbos twice on one page", () => {
+    // The long-form answers live on the destination pages. The front page
+    // names the two questions; it does not answer them per destination.
+    assert.doesNotMatch(PROSE, /never a guess to fill a gap/);
+    assert.doesNotMatch(PROSE, /opening hours/i);
+  });
+
+  it("KEEPS PERSONAL BOOKING ASSISTANCE OFF THE FRONT PAGE", () => {
+    // It exists, and it is offered inside Contact. A front page that offers to
+    // arrange the trip for you is a page about an agency, and every commercial
+    // section below it reads as a funnel into a phone call rather than as
+    // something usable on its own.
+    assert.doesNotMatch(PROSE, /Have us plan it/);
+    assert.doesNotMatch(PROSE, /Tell us about the trip/);
+    assert.doesNotMatch(PROSE, /href="\/contact"/);
+    assert.doesNotMatch(PROSE, /href="\/services"/);
+  });
+
+  it("still offers the planner, which is a free tool rather than an offer to help", () => {
+    assert.match(PROSE, /href="\/itinerary"/);
+    assert.match(PROSE, /It is free/);
   });
 
   it("INVENTS NO TESTIMONIAL", () => {
@@ -136,6 +254,15 @@ describe("the new-site notice", () => {
   it("is dismissible, once per wording", () => {
     assert.match(NOTICE, /DISMISS_KEY/);
     assert.match(NOTICE, /notice\.version/);
+  });
+
+  it("OFFERS THE THREE ACTIONS THE NOTICE HAS TO CARRY", () => {
+    // How verification works, report an update, hide this notice. The third
+    // used to read "I understand", which is not an action.
+    assert.match(NOTICE, /How verification works/);
+    assert.match(NOTICE, /href="\/verification"/);
+    assert.match(NOTICE, /notice\.feedbackLabel/);
+    assert.match(NOTICE, /onClick=\{close\}/);
   });
 
   it("SHOWS EVERY LINE THE OWNER CAN EDIT", () => {

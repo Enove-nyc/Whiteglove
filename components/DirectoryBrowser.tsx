@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import DirectoryCorrectionButton from "@/components/DirectoryCorrectionButton";
 import { responseNote, verifiedLabel } from "@/lib/provider-contact";
 // From the data file, not the read layer: this runs in the browser, and
 // lib/directory.ts reaches for Prisma and Redis.
@@ -229,7 +228,6 @@ export default function DirectoryBrowser({
                 the same one the owner has in the admin and opens on what is
                 published, so a correction arrives as fields and accepting it
                 is one press. */}
-            <DirectoryCorrectionButton provider={p} />
           </article>
         ))}
       </div>

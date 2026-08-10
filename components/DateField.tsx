@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { anchoredStyle, measureAnchor, useAnchorTracking, type AnchorBox } from "@/lib/anchored-panel";
 
 // A date field that looks like the rest of the site.
 //
@@ -96,6 +97,13 @@ export default function DateField({
   // carried along by the start, a flight lookup filling the form in).
   const openAt = () => setCursor(parts(value) ?? parts(min ?? "") ?? parts(todayIso())!);
 
+  // Where the calendar goes. Measured against the viewport and drawn with
+  // `position: fixed`, because the booking panel hides its overflow and used
+  // to cut 181px off the bottom of the month. See lib/anchored-panel.ts.
+  const [anchor, setAnchor] = useState<AnchorBox | null>(null);
+  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 360)), []);
+  useAnchorTracking(open, remeasure);
+
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -156,7 +164,10 @@ export default function DateField({
         type="button"
         disabled={disabled}
         onClick={() => {
-          if (!open) openAt();
+          if (!open) {
+            openAt();
+            remeasure();
+          }
           setOpen((v) => !v);
         }}
         aria-haspopup="dialog"
@@ -175,7 +186,8 @@ export default function DateField({
         <div
           role="dialog"
           aria-label="Choose a date"
-          className="absolute left-0 top-full z-40 mt-1 w-[19rem] max-w-[92vw] border border-[var(--gold)] bg-[#fcfaf6] p-3 shadow-[0_16px_36px_rgba(23,45,82,.18)]"
+          style={anchoredStyle(anchor)}
+          className="z-[var(--wg-z-popover)] w-[19rem] max-w-[92vw] border border-[var(--gold)] bg-[#fcfaf6] p-3 shadow-[0_16px_36px_rgba(23,45,82,.18)]"
         >
           <div className="flex items-center justify-between gap-2">
             <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="min-h-11 min-w-11 px-2 text-[var(--navy)] transition hover:text-[var(--gold-ink)]">

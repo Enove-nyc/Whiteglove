@@ -1,3 +1,4 @@
+import { heritageTownHref } from "@/lib/route-migration";
 /**
  * The rules a picture has to satisfy, away from the screen and the database.
  *
@@ -60,5 +61,5 @@ export function photoDecision(requested: string, credit: string | null, isNew: b
  */
 export function pathsToRefresh(kind: string, slug: string): string[] {
   if (kind === "cemetery") return [`/cemeteries/${slug}`, "/cemeteries", "/admin/kevarim"];
-  return [`/${slug}`, `/destinations/${slug}`, "/admin/destinations"];
+  return [`/${slug}`, heritageTownHref(slug), "/admin/destinations"];
 }

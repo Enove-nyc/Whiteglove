@@ -197,6 +197,6 @@ export function borderStopId(fromCountry: string, toCountry: string): string {
  * only person who will ever know what it really was.
  */
 export function borderAsk(minutesAllowed: number, measured: boolean): string {
-  if (measured) return "How long did it actually take?";
+  if (measured) return "How long it actually took";
   return `The plan allows ${formatSpan(minutesAllowed)} here, which is a guess. How long did it really take?`;
 }

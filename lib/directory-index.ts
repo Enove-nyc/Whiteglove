@@ -9,6 +9,7 @@
 
 import { cemeteries } from "@/data/cemeteries";
 import { destinations } from "@/data/destinations";
+import { heritageTownHref } from "@/lib/route-migration";
 
 export type DirectoryKind = "kever" | "town" | "business";
 
@@ -85,7 +86,7 @@ export function builtInDirectory(): DirectoryEntry[] {
       city: d.city,
       country: d.country,
       editHref: `/admin/destinations?slug=${d.slug}`,
-      viewHref: `/destinations/${d.slug}`,
+      viewHref: heritageTownHref(d.slug),
       published: true,
       missing: [],
       haystack: `${d.city} ${d.yiddishCity ?? ""} ${d.country}`.toLowerCase(),

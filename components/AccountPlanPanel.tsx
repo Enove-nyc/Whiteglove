@@ -75,7 +75,7 @@ export default function AccountPlanPanel({
     setAsking(null);
     setBusinessName("");
     setNote("");
-    setMessage({ ok: true, text: "Noted — we have it, and we will be in touch. Nothing has been charged." });
+    setMessage({ ok: true, text: "Thanks — your request has been sent. We will be in touch." });
     router.refresh();
   }
 
@@ -111,17 +111,13 @@ export default function AccountPlanPanel({
         <div className="mt-6 border-l-4 border-[var(--gold)] bg-white px-4 py-3">
           <p className="text-sm leading-7 text-stone-700">
             You asked about <strong>{PLAN_LABELS[openRequest.wanted]}</strong>
-            {openRequest.businessName ? ` for ${openRequest.businessName}` : ""}. We have it, and we will be in touch.
-            Nothing has been charged.
+            {openRequest.businessName ? ` for ${openRequest.businessName}` : ""}. We will be in touch with the next steps.
           </p>
         </div>
       ) : choices.length > 0 ? (
         <div className="mt-6">
           <p className="text-sm leading-7 text-stone-600">
-            If you would like a different kind of account, say so and the owner will get in touch.
-            {" "}
-            <strong className="text-[var(--navy)]">There is nothing to pay</strong> — no card is taken and no
-            subscription starts.
+            Interested in a different account? Send a request and we will follow up with the available options.
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {choices.map((choice) => (
@@ -179,7 +175,7 @@ export default function AccountPlanPanel({
                 >
                   {sending ? "Sending…" : "Send it"}
                 </button>
-                <span className="text-xs text-stone-400">Nothing is charged.</span>
+                <span className="text-xs text-stone-400">We will reply with the next steps.</span>
               </div>
             </form>
           )}

@@ -1,3 +1,4 @@
+import { heritageTownHref } from "@/lib/route-migration";
 // The destination database.
 //
 // One list, one type, one place to look — the same arrangement as the cemetery
@@ -76,7 +77,7 @@ export function unguidedDestinations(): Destination[] {
  * shape of the URL follows the record rather than the other way round.
  */
 export function destinationHref(destination: Destination): string {
-  return destination.guide ? `/${destination.slug}` : `/destinations/${destination.slug}`;
+  return destination.guide ? `/${destination.slug}` : heritageTownHref(destination.slug);
 }
 
 /**

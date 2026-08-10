@@ -4,7 +4,9 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import ServiceCatalog, { ServiceContents } from "@/components/ServiceCatalog";
+import ServicePricing from "@/components/ServicePricing";
 import { resolvePage } from "@/lib/pages";
+import { readWords } from "@/lib/site-words-store";
 
 export async function generateMetadata() {
   const page = await resolvePage("services");
@@ -28,29 +30,58 @@ export async function generateMetadata() {
  * those six things about any of them.
  */
 export default async function ServicesPage() {
-  const page = (await resolvePage("services"))!;
+  const [page, words] = await Promise.all([resolvePage("services"), readWords()]);
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <PageBlocks blocks={page.blocks} />
+      <PageBlocks blocks={page!.blocks} />
 
       <section className="mx-auto max-w-7xl px-5 pb-4 sm:px-8">
         <ServiceContents />
+      </section>
+
+      {/* THE DELIVERABLE, BEFORE THE LIST OF SERVICES. Somebody deciding
+          whether to write in is deciding about the thing at the end, and the
+          page below describes it six times without showing it once. */}
+      <section className="mx-auto max-w-7xl px-5 pt-6 sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-[var(--navy)] bg-[var(--navy)] p-6 text-white sm:p-8">
+          <div className="min-w-0">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight sm:text-3xl">
+              See what you actually receive.
+            </h2>
+            <p className="mt-2 max-w-2xl leading-7 text-slate-200">
+              A whole week in Rome, as the itinerary is delivered — rendered by the same planner that builds a real one.
+            </p>
+          </div>
+          <Link
+            href="/sample-itinerary"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]"
+          >
+            Read the sample itinerary
+          </Link>
+        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
         <ServiceCatalog />
       </section>
 
+      {/* The six questions every one of the services above used to answer with
+          "quoted once we understand the trip". Three of them are still
+          unanswered and say so; see components/ServicePricing.tsx. */}
+      <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
+        <ServicePricing words={words} />
+      </section>
+
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Not sure which of these you need?
+              Choosing between them
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              That is the normal position. Answer the planning questions — a couple of minutes, nothing required — and
-              we will tell you which of these the trip actually calls for.
+              Most trips need one or two of these rather than all of them. Tell us the shape of the trip and we will
+              say which.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

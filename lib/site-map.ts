@@ -26,6 +26,7 @@ import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { vacationDestinations } from "@/data/vacation-destinations";
+import { heritageTownHref, vacationDestinationHref } from "@/lib/route-migration";
 import { allTzaddikim } from "@/lib/tzaddikim";
 
 /**
@@ -77,24 +78,24 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/directory", priority: 0.8, changeFrequency: "weekly" },
   { path: "/map", priority: 0.7, changeFrequency: "weekly" },
   { path: "/kosher", priority: 0.8, changeFrequency: "weekly" },
-  { path: "/kosher-stays", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/attractions", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/hotels", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/things-to-do", priority: 0.7, changeFrequency: "weekly" },
   { path: "/travel-guide", priority: 0.8, changeFrequency: "monthly" },
   { path: "/services", priority: 0.7, changeFrequency: "monthly" },
   // /getaways is gone and redirects here (next.config.ts). A redirecting
   // address must not be in the sitemap — Google reports that as an error
   // against the site, the same way a noindexed one is.
-  { path: "/vacation-ideas", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/honeymoon", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/destinations", priority: 0.9, changeFrequency: "weekly" },
   // How the four labels on every practical detail are decided. Indexed
   // deliberately: it is the page that makes the rest of the site checkable.
+  { path: "/hechsherim", priority: 0.6, changeFrequency: "monthly" },
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
+  { path: "/sample-itinerary", priority: 0.7, changeFrequency: "yearly" },
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },
   { path: "/flight-booking-assistance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/phone-rentals", priority: 0.5, changeFrequency: "monthly" },
   { path: "/lizensk", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/submit", priority: 0.4, changeFrequency: "yearly" },
   { path: "/contact", priority: 0.6, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.2, changeFrequency: "yearly" },
@@ -125,13 +126,13 @@ export function publicPaths(): SitemapEntry[] {
     entries.push({ path: `/${guide.slug}`, priority: 0.8, changeFrequency: "monthly" });
   }
   for (const place of bulkDestinations) {
-    entries.push({ path: `/destinations/${place.slug}`, priority: 0.6, changeFrequency: "monthly" });
+    entries.push({ path: heritageTownHref(place.slug), priority: 0.6, changeFrequency: "monthly" });
   }
   for (const cemetery of cemeteries) {
     entries.push({ path: `/cemeteries/${cemetery.slug}`, priority: 0.7, changeFrequency: "monthly" });
   }
   for (const destination of vacationDestinations) {
-    entries.push({ path: `/vacation-ideas/${destination.slug}`, priority: 0.8, changeFrequency: "monthly" });
+    entries.push({ path: vacationDestinationHref(destination.slug), priority: 0.8, changeFrequency: "monthly" });
   }
   for (const tzaddik of allTzaddikim()) {
     entries.push({ path: `/tzaddikim/${tzaddik.slug}`, priority: 0.7, changeFrequency: "monthly" });

@@ -70,7 +70,7 @@ export function wordProblem(words: SiteWords): string | null {
 
 /* ---- what each word is, and where it shows ------------------------------ */
 
-export type WordGroup = "front" | "contact" | "footer" | "booking";
+export type WordGroup = "front" | "contact" | "footer" | "booking" | "pricing" | "affiliate";
 
 export type WordField = {
   key: keyof SiteWords;
@@ -92,6 +92,16 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
   },
   { id: "footer", title: "The footer", note: "On the bottom of every page." },
   { id: "booking", title: "The booking page", note: "Under the heading on /book." },
+  {
+    id: "affiliate",
+    title: "The commission disclosure",
+    note: "Shown beside every booking button on the site — hotels, flights, cars, and anything else that goes out to a partner. It is a legal requirement in the US, the UK and the EU, and it has to be next to the action rather than only in the footer. Change it here and it changes in every one of those places at once.",
+  },
+  {
+    id: "pricing",
+    title: "What to expect about price",
+    note: "Six lines on the Services page. Three of them ship saying “Not published yet” — a starting figure, how long a quote takes, and whether a planning fee comes off anything else — because there is no price list on this site to stand behind and the site does not invent one. Answer them here the day you decide, and they stop being marked as outstanding. Never put a figure here you are not willing to be held to.",
+  },
 ];
 
 export const FIELDS: WordField[] = [
@@ -112,6 +122,13 @@ export const FIELDS: WordField[] = [
   { key: "footerBlurb", group: "footer", label: "The paragraph under the logo", where: "in the footer of every page", href: "/", long: true },
   { key: "footerStrapline", group: "footer", label: "The line under that", where: "in the footer of every page, in gold capitals", href: "/" },
   { key: "bookingNotice", group: "booking", label: "The paragraph under the heading", where: "on the booking page", href: "/book", long: true },
+  { key: "pricingStartsAt", group: "pricing", label: "Where prices start, or a typical range", where: "on the Services page, first", href: "/services", long: true },
+  { key: "pricingWhatAffects", group: "pricing", label: "What moves the number", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingTurnaround", group: "pricing", label: "How long a quote takes to come back", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingRevisions", group: "pricing", label: "Whether changes cost extra", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingBookingSupport", group: "pricing", label: "Whether booking is a separate charge", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingFeeCredit", group: "pricing", label: "Whether a planning fee comes off anything else", where: "on the Services page", href: "/services", long: true },
+  { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
 ];
 
 /** Which words are no longer the ones the site ships with. */

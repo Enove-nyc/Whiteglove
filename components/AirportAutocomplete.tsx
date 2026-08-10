@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { anchoredStyle, measureAnchor, useAnchorTracking, type AnchorBox } from "@/lib/anchored-panel";
 import { AIRPORTS, type Airport } from "@/data/airports";
 import { metroMatches } from "@/lib/flight-endpoint";
 import { searchTermFor } from "@/lib/kayak-search";
@@ -53,6 +54,12 @@ export default function AirportAutocomplete({
   const [open, setOpen] = useState(false);
   const [extras, setExtras] = useState<{ airports: AddedAirport[]; metros: AddedMetro[] }>({ airports: [], metros: [] });
   const boxRef = useRef<HTMLDivElement>(null);
+  // Drawn against the viewport rather than inside the field, because the
+  // booking card hides its overflow and clipped this list. See
+  // lib/anchored-panel.ts.
+  const [anchor, setAnchor] = useState<AnchorBox | null>(null);
+  const remeasure = useCallback(() => setAnchor(measureAnchor(boxRef.current, 320)), []);
+  useAnchorTracking(open, remeasure);
 
   // Written from the promise's own callback, not from the effect body.
   useEffect(() => {
@@ -93,6 +100,7 @@ export default function AirportAutocomplete({
    * pick got "New York — all ai|krak|rports (NYC)".
    */
   function openAndSelect(el: HTMLInputElement) {
+    remeasure();
     setOpen(true);
     requestAnimationFrame(() => el.select());
   }
@@ -101,7 +109,7 @@ export default function AirportAutocomplete({
     <div ref={boxRef} className="relative">
       <input
         value={query}
-        onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+        onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); remeasure(); setOpen(true); }}
         // ON CLICK AS WELL AS ON FOCUS. Picking from the list keeps the focus
         // in this input — the option's onMouseDown prevents default so the box
         // never blurs — so clicking back into it fires NO focus event at all.
@@ -116,7 +124,7 @@ export default function AirportAutocomplete({
         className={className}
       />
       {open && (cities.length > 0 || matches.length > 0) && (
-        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+        <ul style={{ ...anchoredStyle(anchor), width: anchor?.width }} className="z-[var(--wg-z-popover)] border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
           {cities.map((c) => (
             <li key={c.code}>
               <button

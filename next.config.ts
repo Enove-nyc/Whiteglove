@@ -19,17 +19,46 @@ const nextConfig: NextConfig = {
       // addresses redirect permanently so links in the wild carry across
       // rather than looking like a second, competing page.
       { source: "/booking", destination: "/book", permanent: true },
-      { source: "/booking/review", destination: "/book/review", permanent: true },
+      // /book/review was the Duffel checkout. Duffel takes a card and issues a
+      // ticket, which is a different business from sending somebody to a
+      // partner, so it moved to /admin/duffel and off the public site
+      // entirely. The two old public addresses land on the booking page rather
+      // than on a 404: somebody following a stale link wanted to book travel,
+      // and that is still here.
+      { source: "/booking/review", destination: "/book", permanent: true },
+      { source: "/book/review", destination: "/book", permanent: true },
       // "Getaways" was one editable hero block and nothing under it, on a
-      // page whose name told a vacation customer very little. It is
-      // /vacation-ideas now — a real hub over the destinations the site holds
-      // data for — and the old address carries its links and its ranking
-      // across rather than competing with the new one.
+      // page whose name told a vacation customer very little. It became
+      // /vacation-ideas and is /destinations now — a real hub over the
+      // destinations the site holds data for — and both old addresses carry
+      // their links and their ranking across rather than competing with it.
       //
       // The CMS still knows the page by the slug "getaways", deliberately:
       // renaming the key would have thrown away whatever the owner has
-      // already written there, for a cosmetic tidy. See app/vacation-ideas.
-      { source: "/getaways", destination: "/vacation-ideas", permanent: true },
+      // already written there, for a cosmetic tidy. See app/destinations.
+      { source: "/getaways", destination: "/destinations", permanent: true },
+      // The vacation hub took the word "Destinations" in the navigation, so it
+      // took the address to match. A visitor pressing an item called
+      // Destinations and landing on /vacation-ideas is a small lie about what
+      // the site is, and the two names would have to be explained for ever.
+      //
+      // These two are safe as wildcards because nothing else lives under
+      // /vacation-ideas. The heritage half of the same rename is NOT a
+      // wildcard and cannot be — see lib/route-migration.ts and middleware.ts.
+      { source: "/vacation-ideas", destination: "/destinations", permanent: true },
+      { source: "/vacation-ideas/:slug", destination: "/destinations/:slug", permanent: true },
+      // Two pages renamed to what the navigation calls them. "Kosher stays"
+      // described the record; "Hotels & Stays" is what somebody is looking
+      // for, and the page is about to become a search rather than a list.
+      // "Attractions" is a word from a guidebook.
+      // A page that said, in its own words, that it was being built. It
+      // promised a premium honeymoon service, listed six things that service
+      // would include, and offered a quote — none of which existed. "Couples
+      // and honeymoon" is a real filter over destinations this site holds
+      // records for, so that is where the address goes.
+      { source: "/honeymoon", destination: "/destinations?kind=couples", permanent: true },
+      { source: "/kosher-stays", destination: "/hotels", permanent: true },
+      { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];
   },
 };

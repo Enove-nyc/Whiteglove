@@ -50,6 +50,14 @@
   --wg-z-map: 0;      /* the map, boxed in — see .leaflet-container below */
   --wg-z-header: 40;  /* the sticky site header */
   --wg-z-ad: 50;      /* sponsored banners — in front of the page and the header */
+  /* A panel hanging off a field: the calendar, the city list, the airport
+   * list. Above the advertisement, because somebody mid-way through typing a
+   * search should not have a banner land on top of the month they are
+   * choosing; below a dialog, which is modal and owns the screen.
+   *
+   * These panels are `position: fixed` (lib/anchored-panel.ts) — the booking
+   * card hides its overflow and used to clip 181px off the calendar. */
+  --wg-z-popover: 55;
   --wg-z-modal: 60;   /* dialogs, including the sponsored popup */
 }
 

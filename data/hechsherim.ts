@@ -38,14 +38,25 @@ export type Hechsher = {
    * uploaded SVG is refused.
    */
   logo?: string;
+  /**
+   * The agency's own website, where it is known.
+   *
+   * OPTIONAL AND OFTEN ABSENT, deliberately. A kashrus question belongs to the
+   * certifying body, so the useful thing this site can do is point at them
+   * rather than answer for them — and a wrong address does that worse than no
+   * address. It is filled in only where it is certain; the rest are for the
+   * owner to add in the admin as he confirms them, which is a minute's work
+   * per agency and not a guess.
+   */
+  website?: string;
 };
 
 export const HECHSHERIM: Hechsher[] = [
-  { id: "ou", name: "Orthodox Union", mark: "OU", region: "United States, international", aliases: ["ou", "orthodox union"] },
-  { id: "ok", name: "OK Kosher Certification", mark: "OK", region: "United States, international", aliases: ["ok kosher", "ok labs"] },
-  { id: "star-k", name: "Star-K Kosher Certification", mark: "★K", region: "United States, international", aliases: ["star-k", "star k"] },
-  { id: "kof-k", name: "Kof-K Kosher Supervision", mark: "KK", region: "United States, international", aliases: ["kof-k", "kof k"] },
-  { id: "crc", name: "Chicago Rabbinical Council", mark: "cRc", region: "Chicago and the Midwest", aliases: ["crc", "chicago rabbinical"] },
+  { id: "ou", name: "Orthodox Union", mark: "OU", region: "United States, international", aliases: ["ou", "orthodox union"] , website: "https://oukosher.org" },
+  { id: "ok", name: "OK Kosher Certification", mark: "OK", region: "United States, international", aliases: ["ok kosher", "ok labs"] , website: "https://www.ok.org" },
+  { id: "star-k", name: "Star-K Kosher Certification", mark: "★K", region: "United States, international", aliases: ["star-k", "star k"] , website: "https://www.star-k.org" },
+  { id: "kof-k", name: "Kof-K Kosher Supervision", mark: "KK", region: "United States, international", aliases: ["kof-k", "kof k"] , website: "https://www.kof-k.org" },
+  { id: "crc", name: "Chicago Rabbinical Council", mark: "cRc", region: "Chicago and the Midwest", aliases: ["crc", "chicago rabbinical"] , website: "https://www.crcweb.org" },
   { id: "kehillah-la", name: "Kehillah Kosher", mark: "KH", region: "Los Angeles", aliases: ["kehillah kosher", "kehilla kosher"] },
   { id: "rcc", name: "Rabbinical Council of California", mark: "RCC", region: "California", aliases: ["rcc", "rabbinical council of california"] },
   { id: "vaad-nj", name: "Vaad Harabonim of Greater New Jersey", mark: "VH", region: "New Jersey", aliases: ["vaad harabonim", "mk of new jersey"] },
@@ -53,14 +64,48 @@ export const HECHSHERIM: Hechsher[] = [
   { id: "badatz-belz", name: "Badatz Machzikei Hadass — Belz", mark: "בד״ץ", region: "Eretz Yisrael", aliases: ["machzikei hadass", "belz badatz"] },
   { id: "rabbanut", name: "Rabbanut", mark: "רבנות", region: "Eretz Yisrael", aliases: ["rabbanut", "rabbinate", "rabbinut"] },
   { id: "kedassia", name: "Kedassia", mark: "KD", region: "United Kingdom", aliases: ["kedassia", "kedasia"] },
-  { id: "klbd", name: "London Beth Din — KLBD", mark: "KLBD", region: "United Kingdom", aliases: ["klbd", "london beth din"] },
-  { id: "mk", name: "MK Kosher", mark: "MK", region: "Canada", aliases: ["mk kosher", "montreal kosher"] },
-  { id: "cor", name: "COR — Kashruth Council of Canada", mark: "COR", region: "Canada", aliases: ["cor", "kashruth council of canada"] },
+  { id: "klbd", name: "London Beth Din — KLBD", mark: "KLBD", region: "United Kingdom", aliases: ["klbd", "london beth din"] , website: "https://www.klbdkosher.org" },
+  { id: "mk", name: "MK Kosher", mark: "MK", region: "Canada", aliases: ["mk kosher", "montreal kosher"] , website: "https://www.mk.ca" },
+  { id: "cor", name: "COR — Kashruth Council of Canada", mark: "COR", region: "Canada", aliases: ["cor", "kashruth council of canada"] , website: "https://www.cor.ca" },
   { id: "beth-din-paris", name: "Beth Din de Paris", mark: "BDP", region: "France", aliases: ["beth din de paris", "consistoire"] },
   { id: "kosher-poland", name: "Kosher Poland — Chief Rabbi of Poland", mark: "KP", region: "Poland", aliases: ["kosher poland", "chief rabbi of poland"] },
   { id: "kashrus-ukraine", name: "Kashrus Ukraine", mark: "KU", region: "Ukraine", aliases: ["kashrus ukraine", "kosher ukraine"] },
   { id: "ort-hungary", name: "Orthodox Rabbinate of Hungary", mark: "OH", region: "Hungary", aliases: ["orthodox rabbinate of hungary", "kosher hungary"] },
   { id: "local-rov", name: "The local rov", mark: "רב", region: "Wherever the town's rov gives the hechsher", aliases: ["local rabbi", "local rov", "town rabbi"] },
+
+  /* ---- United States ---------------------------------------------------- */
+  { id: "triangle-k", name: "Triangle K", mark: "K", region: "United States", aliases: ["triangle k", "triangle-k"], website: "https://www.trianglek.org" },
+  { id: "ksa", name: "Kosher Supervision of America", mark: "KSA", region: "Los Angeles and the west coast", aliases: ["ksa", "kosher supervision of america"], website: "https://www.ksakosher.com" },
+  { id: "scroll-k", name: "Scroll K — Vaad Hakashrus of Denver", mark: "K", region: "Denver and the Mountain West", aliases: ["scroll k", "vaad hakashrus of denver"], website: "https://www.scrollk.org" },
+  { id: "akc", name: "Atlanta Kashruth Commission", mark: "AK", region: "Atlanta", aliases: ["atlanta kashruth", "akc"] },
+  { id: "dallas-kosher", name: "Dallas Kosher", mark: "DK", region: "Dallas", aliases: ["dallas kosher"] },
+  { id: "kvh", name: "KVH Kosher — Rabbinical Council of New England", mark: "KVH", region: "New England", aliases: ["kvh", "rabbinical council of new england"] },
+  { id: "vaad-detroit", name: "Council of Orthodox Rabbis of Greater Detroit", mark: "Council K", region: "Detroit", aliases: ["council k", "vaad of detroit"] },
+  { id: "keystone-k", name: "Keystone K — Orthodox Vaad of Philadelphia", mark: "K", region: "Philadelphia", aliases: ["keystone k", "orthodox vaad of philadelphia"] },
+  { id: "vaad-hoeir", name: "Vaad Hoeir of St. Louis", mark: "OV", region: "St. Louis", aliases: ["vaad hoeir", "ov kosher"] },
+  { id: "earth-kosher", name: "EarthKosher", mark: "EK", region: "United States, international", aliases: ["earthkosher", "earth kosher"] },
+  { id: "upper-midwest", name: "Upper Midwest Kashruth", mark: "MSP", region: "Minneapolis and St. Paul", aliases: ["upper midwest kashruth", "msp kosher"] },
+
+  /* ---- Eretz Yisrael ---------------------------------------------------- */
+  { id: "badatz-beit-yosef", name: "Badatz Beit Yosef", mark: "בד״ץ", region: "Eretz Yisrael — Sephardic", aliases: ["beit yosef", "bet yosef"] },
+  { id: "badatz-agudas", name: "Badatz Agudas Yisroel", mark: "בד״ץ", region: "Eretz Yisrael", aliases: ["agudas yisroel badatz", "agudat yisrael badatz"] },
+  { id: "rav-landau", name: "Badatz Harav Landau", mark: "לנדא", region: "Bnei Brak", aliases: ["rav landau", "harav landau"] },
+  { id: "sheiris", name: "Sheiris Yisroel", mark: "שארית", region: "Eretz Yisrael", aliases: ["sheiris yisroel", "shearis yisroel"] },
+  { id: "rav-rubin", name: "Badatz Harav Rubin", mark: "רובין", region: "Eretz Yisrael", aliases: ["rav rubin", "harav rubin"] },
+  { id: "chug-chasam-sofer", name: "Chug Chasam Sofer", mark: "חת״ס", region: "Bnei Brak", aliases: ["chug chasam sofer", "chasam sofer bnei brak"] },
+
+  /* ---- United Kingdom --------------------------------------------------- */
+  { id: "kf", name: "Federation of Synagogues Kashrus Board", mark: "KF", region: "United Kingdom", aliases: ["kf kosher", "federation kashrus"] },
+  { id: "mbd", name: "Manchester Beth Din", mark: "MBD", region: "Manchester", aliases: ["manchester beth din", "mbd"] },
+  { id: "ska", name: "Sephardi Kashrut Authority", mark: "SKA", region: "United Kingdom — Sephardic", aliases: ["sephardi kashrut authority", "ska"] },
+
+  /* ---- Europe ----------------------------------------------------------- */
+  { id: "machsike-hadass-antwerp", name: "Machsike Hadass — Antwerp", mark: "MH", region: "Belgium", aliases: ["machsike hadass", "antwerp kashrus"] },
+
+  /* ---- Rest of the world ------------------------------------------------ */
+  { id: "kosher-australia", name: "Kosher Australia", mark: "KA", region: "Melbourne and Victoria", aliases: ["kosher australia"], website: "https://www.kosher.org.au" },
+  { id: "ka-nsw", name: "The Kashrut Authority", mark: "KA", region: "Sydney and New South Wales", aliases: ["kashrut authority", "ka nsw"], website: "https://www.ka.org.au" },
+  { id: "beth-din-johannesburg", name: "Beth Din of Johannesburg", mark: "BD", region: "South Africa", aliases: ["johannesburg beth din", "sa kosher"] },
 ];
 
 /**

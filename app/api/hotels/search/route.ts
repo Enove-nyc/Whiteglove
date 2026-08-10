@@ -1,8 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { duffelRefusal } from "@/lib/duffel-guard";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { getDestinationRecord } from "@/data/destination-database";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // ADMIN ONLY. Taking the buttons off the public page is not the same as
+  // closing the door: anybody who saw the site last month can still post here,
+  // and this endpoint reaches the White Glove Duffel account. See
+  // lib/duffel-guard.ts.
+  const refused = duffelRefusal(request);
+  if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
+
+
   const token = process.env.DUFFEL_ACCESS_TOKEN;
   if (!token) return NextResponse.json({ message: "Hotel search will be available once the White Glove Duffel Stays account is connected.", detail: "Duffel Stays access must be enabled for the account before live hotel results can be shown." });
 

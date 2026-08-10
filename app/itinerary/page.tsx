@@ -51,9 +51,9 @@ export default async function ItineraryPage() {
             warning when a Friday runs late, and a printable copy for the car. Free to use, and yours to change.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            Not sure where to begin?{" "}
+            To start from a few answers instead of a blank page,{" "}
             <Link href="/plan" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-              Answer three questions first
+              Answer three short steps first
             </Link>{" "}
             and this page opens with your answers already in it.
           </p>

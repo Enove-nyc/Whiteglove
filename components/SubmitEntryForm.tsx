@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 
-const TYPES = ["A kever / tzadik", "A cemetery (beis hachaim)", "A tour operator / planner / agency", "A guide or driver", "Something else / a correction"];
+// The vacation side is on this list because "Report an update" now sits in the
+// notice at the top of every page, including a page about a week on a beach.
+// A form whose only choices were kevarim, cemeteries and drivers told that
+// visitor the same thing the old front page did: this is not for you.
+const TYPES = [
+  "A kosher restaurant, hotel or shop",
+  "A destination detail — kosher food, Shabbos, getting around",
+  "A kever / tzadik",
+  "A cemetery (beis hachaim)",
+  "A tour operator / planner / agency",
+  "A guide or driver",
+  "Something else / a correction",
+];
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -71,7 +83,7 @@ export default function SubmitEntryForm() {
     <form onSubmit={handleSubmit} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className={captionClass}>What are you sending in?</span>
+          <span className={captionClass}>Kind of entry</span>
           <select name="type" className={inputClass} defaultValue={TYPES[0]}>
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -103,7 +115,7 @@ export default function SubmitEntryForm() {
         </button>
         {error && <span className="text-sm font-semibold text-red-700">{error}</span>}
       </div>
-      <p className="mt-4 text-[11px] leading-4 text-stone-400">Submissions are reviewed by White Glove before being published. Please don&apos;t submit unverified phone numbers as fact.</p>
+      <p className="mt-4 text-[11px] leading-4 text-stone-400">Submissions are reviewed by White Glove before being published. Please don&apos;t submit a phone number you have not confirmed yourself.</p>
     </form>
   );
 }

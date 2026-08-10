@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import DirectoryBrowser from "@/components/DirectoryBrowser";
 import { featuredDisclosure } from "@/lib/features";
 import Footer from "@/components/Footer";
-import ListBusinessForm from "@/components/ListBusinessForm";
 import Navbar from "@/components/Navbar";
 import { getPublicProviders } from "@/lib/directory";
 
@@ -49,9 +49,21 @@ export default async function DirectoryPage() {
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
         <DirectoryBrowser providers={providers} featuredNote={featuredDisclosure()} />
 
-        <div className="mt-12">
-          <ListBusinessForm />
-        </div>
+        {/* "Are you one of these businesses? Add your business" was a form
+            on a page a traveler reads to find a driver. A business enquiry is
+            a real thing and it has a home — the advertising reason inside
+            Contact, which asks for the business, the website and where it
+            operates. One line here, no form. */}
+        <p className="mt-12 text-sm leading-6 text-stone-500">
+          Businesses can ask to be listed.{" "}
+          <Link
+            href="/contact?reason=advertise"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Ask about being listed
+          </Link>
+          .
+        </p>
 
         <p className="mt-8 max-w-3xl text-xs leading-5 text-stone-400">
           Listings are gathered from public sources and provider submissions. White Glove does not endorse or guarantee any provider — please confirm details and kashrus arrangements directly before booking.

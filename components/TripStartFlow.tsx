@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import {
+  ACCESSIBILITY_NEEDS,
   emptyAnswers,
   INTERESTS,
   KOSHER_REQUIREMENTS,
@@ -20,33 +21,48 @@ import {
 } from "@/lib/trip-plan";
 
 /**
- * The three questions before the planner.
+ * The three short steps before the planner.
  *
- * WHAT MAKES THIS DIFFERENT FROM A LEAD-CAPTURE WIZARD, which is what most
- * "plan your trip" flows are:
+ * WHAT CHANGED, AND WHY. The flow promised "three questions" and then asked
+ * about ten: step two held the destination, the dates, where you were flying
+ * from, who was coming, the pace, the interests, the kashrus standards, the
+ * Shabbos requirements and a notes box, all on one screen, with a counter under
+ * the heading reading "1 of 10 questions answered". The counter was accurate,
+ * which is what made it damning. Somebody who has decided they might like to go
+ * away in July met a page-long form before anything happened.
  *
- *   • NOTHING IS REQUIRED. There is no field that blocks the next step, no
- *     asterisk, and no email box in front of the answers. The visitor this
- *     exists for is the one who does not know where they are going; a form
- *     that demands a destination turns them away, and they were the customer.
+ * SO STEP TWO IS NOW FOUR SHORT ANSWERS — where, when, from where, who — and
+ * everything else moved into a "Personalize my recommendations" section that
+ * opens after the choice in step three. A self-service visitor can reach the
+ * planner having pressed two buttons and typed nothing. Somebody asking us to
+ * plan it answers the detailed questions on the request form, where they are
+ * the actual brief rather than a toll gate.
+ *
+ * WHAT DID NOT CHANGE, and must not:
+ *
+ *   • NOTHING IS REQUIRED. No field blocks the next step, there is no asterisk,
+ *     and no email box in front of the answers. The visitor this exists for is
+ *     the one who does not know where they are going.
  *
  *   • Every question offers "I don't know yet" as a real answer rather than
  *     leaving it blank, because the two are different: one is a decision to
  *     tell us, the other is a question they did not see.
  *
- *   • The answers are theirs. They are kept in this browser as they are typed,
- *     and they are used at the end to fill in whichever of the two paths gets
- *     chosen — the planner, or the request form. Nobody types their dates
- *     twice.
+ *   • The answers are theirs, kept in this browser as they are typed, and used
+ *     to fill in whichever of the two paths gets chosen. Nobody types their
+ *     dates twice.
+ *
+ *   • The kevarim question is asked for a heritage journey and at no other
+ *     time.
  *
  * WRITTEN FROM THE EVENT, NOT FROM AN EFFECT. Typing is what makes an answer
  * worth keeping, so the handler that hears the typing is what stores it. Same
  * rule, and the same reason, as components/useFormDraft.ts.
  *
- * FOCUS MOVES WITH THE STEP. Pressing "Next" and leaving the focus on a button
- * that no longer exists strands a keyboard user at the top of the document. The
- * new step's heading is focused instead, which also makes a screen reader
- * announce what step it is.
+ * FOCUS MOVES WITH THE STEP. Pressing "Continue" and leaving the focus on a
+ * button that no longer exists strands a keyboard user at the top of the
+ * document. The new step's heading is focused instead, which also makes a
+ * screen reader announce what step it is.
  */
 
 const field =
@@ -134,7 +150,7 @@ export default function TripStartFlow({
     requestAnimationFrame(() => headingRef.current?.focus());
   }
 
-  function toggle(key: "interests" | "kosher" | "shabbos", value: string) {
+  function toggle(key: "interests" | "kosher" | "shabbos" | "accessibility", value: string) {
     const current = answers[key];
     update({ [key]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value] });
   }
@@ -143,7 +159,7 @@ export default function TripStartFlow({
     update({ method });
     if (method === "myself") router.push("/itinerary?from=plan");
     else if (method === "white-glove") router.push("/contact?from=plan");
-    else router.push("/vacation-ideas");
+    else router.push("/destinations");
   }
 
   const progress = progressOf(answers);
@@ -197,12 +213,18 @@ export default function TripStartFlow({
               progress bar with no words beside it tells a screen reader
               nothing useful, and tells a sighted person only roughly. */}
           <div aria-hidden="true" className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--cream-deep)]">
-            <div className="h-full rounded-full bg-[var(--gold)] transition-all" style={{ width: `${progress.percent}%` }} />
+            <div
+              className="h-full rounded-full bg-[var(--gold)] transition-all"
+              style={{ width: `${Math.round((step / STEPS.length) * 100)}%` }}
+            />
           </div>
+          {/* OUT OF THREE, because the page above says three short steps. It
+              used to read "1 of 10 questions answered" under that promise. */}
           <p aria-live="polite" className="mt-2 text-xs text-stone-600">
-            {progress.answered} of {progress.total} questions answered.{" "}
-            <span className="font-semibold text-[var(--navy)]">Every one of them is optional</span> — skip anything you
-            have not decided.
+            Step {step} of {STEPS.length}
+            {progress.answered > 0 && ` — ${progress.answered} answered so far`}.{" "}
+            <span className="font-semibold text-[var(--navy)]">Nothing here is required</span> — skip anything you have
+            not decided.
           </p>
         </div>
       </nav>
@@ -220,7 +242,7 @@ export default function TripStartFlow({
 
         {step === 1 && (
           <fieldset className="mt-8">
-            <legend className="sr-only">What kind of trip are you planning?</legend>
+            <legend className="sr-only">The kind of trip</legend>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {TRIP_KINDS.map((kind) => {
                 const on = answers.kind === kind.value;
@@ -243,7 +265,8 @@ export default function TripStartFlow({
                       {kind.label}
                     </span>
                     <span className={`mt-2 text-sm leading-6 ${on ? "text-slate-200" : "text-stone-600"}`}>{kind.blurb}</span>
-                    {on && <span className="sr-only">Selected</span>}
+                    {/* No sr-only "Selected" here: aria-pressed already says
+                        so, and both together read as "Rome, selected, pressed". */}
                   </button>
                 );
               })}
@@ -260,6 +283,7 @@ export default function TripStartFlow({
           </fieldset>
         )}
 
+        {/* ---- step two: four short answers, and nothing else -------------- */}
         {step === 2 && (
           <div className="mt-8 space-y-8">
             <div className="grid gap-5 rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6 lg:grid-cols-2">
@@ -401,97 +425,6 @@ export default function TripStartFlow({
               </fieldset>
             </div>
 
-            <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
-              <fieldset>
-                <legend className={label}>Pace</legend>
-                <div className="mt-2.5 flex flex-wrap gap-2">
-                  {PACES.map((pace) => (
-                    <button
-                      key={pace.value}
-                      type="button"
-                      aria-pressed={answers.pace === pace.value}
-                      onClick={() => update({ pace: pace.value })}
-                      className={answers.pace === pace.value ? chipOn : chipOff}
-                      title={pace.blurb}
-                    >
-                      {pace.label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <div className="mt-6">
-                <Toggles legend="Interests" options={INTERESTS} chosen={answers.interests} onToggle={(v) => toggle("interests", v)} />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
-              <Toggles
-                legend="Kosher requirements"
-                hint="So we know which shops and which arrangements actually help. Choose as many as apply."
-                options={KOSHER_REQUIREMENTS}
-                chosen={answers.kosher}
-                onToggle={(v) => toggle("kosher", v)}
-              />
-              <label className="mt-5 block">
-                <span className={label}>Anything else about food</span>
-                <input
-                  className={field}
-                  value={answers.kosherNotes}
-                  placeholder="Allergies, a hechsher you rely on, a child who eats nothing but pasta…"
-                  onChange={(event) => update({ kosherNotes: event.target.value })}
-                />
-              </label>
-
-              <div className="mt-6">
-                <Toggles
-                  legend="Shabbos"
-                  hint="Shabbos is the part of a trip that is hardest to fix once you have booked. Worth answering even roughly."
-                  options={SHABBOS_REQUIREMENTS}
-                  chosen={answers.shabbos}
-                  onToggle={(v) => toggle("shabbos", v)}
-                />
-              </div>
-            </div>
-
-            {/* Asked ONLY for a heritage journey. Somebody planning a week on a
-                beach should never be asked which kevarim they want to visit —
-                that question was on the front of the old contact form for
-                everybody, and it told a vacation customer this site was not
-                for them. */}
-            {isHeritage && (
-              <div className="rounded-2xl border border-[var(--gold)] bg-[#fcfaf6] p-5 sm:p-6">
-                <label className="block">
-                  <span className={label}>Kevarim, towns or tzaddikim you want to reach</span>
-                  <textarea
-                    rows={3}
-                    className={`${field} min-h-24`}
-                    value={answers.kevarim}
-                    placeholder="e.g. Lizhensk, Sanz, and whatever else is on the way"
-                    onChange={(event) => update({ kevarim: event.target.value })}
-                  />
-                  <span className="mt-1.5 block text-xs leading-5 text-stone-500">
-                    You are seeing this because you chose a heritage journey.{" "}
-                    <Link href="/heritage" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-                      Browse the kevarim directory
-                    </Link>{" "}
-                    if you would rather look first.
-                  </span>
-                </label>
-              </div>
-            )}
-
-            <label className="block rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
-              <span className={label}>Anything else we should know</span>
-              <textarea
-                rows={3}
-                className={`${field} min-h-24`}
-                value={answers.notes}
-                placeholder="A simcha, an anniversary, somebody who cannot walk far, a budget you want to stay inside…"
-                onChange={(event) => update({ notes: event.target.value })}
-              />
-            </label>
-
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
@@ -540,15 +473,15 @@ export default function TripStartFlow({
                   I want White Glove to help
                 </span>
                 <span className="mt-3 leading-7 text-slate-200">
-                  Sends everything you have just answered to us, so you do not type it again. We read it and come back
-                  to you — nothing is charged and nothing is booked by sending it.
+                  Sends everything you have just answered to us, so you do not type it again. The rest of the
+                  questions are on that form, where they are the brief.
                 </span>
                 <span className="mt-5 text-sm font-semibold text-[var(--gold-light)]">Send my answers →</span>
               </button>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided?</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
               <p className="mt-2 leading-7 text-stone-600">
                 You can look around first and come back — your answers stay in this browser either way.
               </p>
@@ -560,6 +493,126 @@ export default function TripStartFlow({
                 Show me some destinations first
               </button>
             </div>
+
+            {/* ---- the optional half ------------------------------------------
+                CLOSED BY DEFAULT, AND AFTER THE CHOICE, not before it. These
+                were step two, and they were the reason a three-step flow took
+                a page and a half. Everything here genuinely improves what we
+                suggest and none of it should stand between somebody and the
+                planner — so it is offered to the person who wants to give it,
+                and skipped in one keystroke by everybody else. */}
+            <details className="group rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4">
+                <span>
+                  <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+                    Personalize my recommendations
+                  </span>
+                  <span className="mt-1 block text-sm leading-6 text-stone-600">
+                    Optional. Pace, interests, your kosher standards, Shabbos and any access needs — it makes what we suggest
+                    fit rather than being generic.
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+                  {progress.personalized > 0 ? `${progress.personalized} of ${progress.personalizeTotal}` : "Open"}
+                  <span aria-hidden="true" className="ml-2 inline-block transition group-open:rotate-90">
+                    →
+                  </span>
+                </span>
+              </summary>
+
+              <div className="mt-6 space-y-7 border-t border-[var(--gold-light)] pt-6">
+                <fieldset>
+                  <legend className={label}>Pace</legend>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {PACES.map((pace) => (
+                      <button
+                        key={pace.value}
+                        type="button"
+                        aria-pressed={answers.pace === pace.value}
+                        onClick={() => update({ pace: pace.value })}
+                        className={answers.pace === pace.value ? chipOn : chipOff}
+                        title={pace.blurb}
+                      >
+                        {pace.label}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <Toggles legend="Interests" options={INTERESTS} chosen={answers.interests} onToggle={(v) => toggle("interests", v)} />
+
+                <div>
+                  <Toggles
+                    legend="Kosher standards"
+                    hint="So we know which shops and which arrangements actually help. Choose as many as apply."
+                    options={KOSHER_REQUIREMENTS}
+                    chosen={answers.kosher}
+                    onToggle={(v) => toggle("kosher", v)}
+                  />
+                  <label className="mt-5 block">
+                    <span className={label}>Anything else about food</span>
+                    <input
+                      className={field}
+                      value={answers.kosherNotes}
+                      placeholder="Allergies, a hechsher you rely on, a child who eats nothing but pasta…"
+                      onChange={(event) => update({ kosherNotes: event.target.value })}
+                    />
+                  </label>
+                </div>
+
+                <Toggles
+                  legend="Shabbos requirements"
+                  hint="Shabbos is the part of a trip that is hardest to fix once you have booked. Worth answering even roughly."
+                  options={SHABBOS_REQUIREMENTS}
+                  chosen={answers.shabbos}
+                  onToggle={(v) => toggle("shabbos", v)}
+                />
+
+                <Toggles
+                  legend="Accessibility needs"
+                  hint="What the trip has to be able to do. This changes which hotel and which quarter we would suggest at all."
+                  options={ACCESSIBILITY_NEEDS}
+                  chosen={answers.accessibility}
+                  onToggle={(v) => toggle("accessibility", v)}
+                />
+
+                {/* Asked ONLY for a heritage journey. Somebody planning a week
+                    on a beach should never be asked which kevarim they want to
+                    visit — that question was on the front of the old contact
+                    form for everybody, and it told a vacation customer this
+                    site was not for them. */}
+                {isHeritage && (
+                  <label className="block rounded-xl border border-[var(--gold)] bg-[#fcfaf6] p-5">
+                    <span className={label}>Kevarim, towns or tzaddikim you want to reach</span>
+                    <textarea
+                      rows={3}
+                      className={`${field} min-h-24`}
+                      value={answers.kevarim}
+                      placeholder="e.g. Lizhensk, Sanz, and whatever else is on the way"
+                      onChange={(event) => update({ kevarim: event.target.value })}
+                    />
+                    <span className="mt-1.5 block text-xs leading-5 text-stone-500">
+                      You are seeing this because you chose a heritage journey.{" "}
+                      <Link href="/heritage" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+                        Browse the kevarim directory
+                      </Link>{" "}
+                      if you would rather look first.
+                    </span>
+                  </label>
+                )}
+
+                <label className="block">
+                  <span className={label}>Additional notes</span>
+                  <textarea
+                    rows={3}
+                    className={`${field} min-h-24`}
+                    value={answers.notes}
+                    placeholder="A simcha, an anniversary, a budget you want to stay inside…"
+                    onChange={(event) => update({ notes: event.target.value })}
+                  />
+                </label>
+              </div>
+            </details>
 
             {/* What we have, in their own words, before either button is
                 pressed. A wizard that sends a summary you were never shown is
