@@ -41,7 +41,7 @@ describe("what the page is about", () => {
   it("SAYS SO ONCE, AND POINTS AT THE SECTION", () => {
     // Removing it entirely would be the opposite mistake: somebody planning a
     // heritage journey needs to know these tools work for them.
-    assert.match(PROSE, /These tools work for a heritage journey too\./);
+    assert.match(PROSE, /Planning a heritage journey\?/);
     assert.match(PROSE, /These booking tools work for that too/);
     assert.match(PROSE, /href="\/heritage"/);
     // ONCE, as a sentence and its link. A theme rather than a line is how it
@@ -66,7 +66,7 @@ describe("getting to the fields", () => {
     // the panel: three blocks of reading before anybody could type a city.
     const panel = PAGE.indexOf("<BookPartners");
     const notice = PAGE.indexOf("{words.bookingNotice}");
-    const heritage = PAGE.indexOf("These tools work for a heritage journey too.");
+    const heritage = PAGE.indexOf("Planning a heritage journey?");
     assert.ok(panel > 0 && notice > 0 && heritage > 0);
     assert.ok(panel < notice, "the owner's notice is still above the search");
     assert.ok(panel < heritage, "the heritage line is still above the search");

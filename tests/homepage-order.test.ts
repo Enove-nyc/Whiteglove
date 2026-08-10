@@ -78,7 +78,7 @@ describe("the first five seconds", () => {
   it("carries the two hero links after it, in order", () => {
     const search = at("<StaySearchForm id=\"hero\" />");
     const secondary = at("Browse every destination");
-    const tertiary = at("Heritage journeys and kevarim");
+    const tertiary = at("Planning a heritage journey? Start here");
     assert.ok(search < secondary, "a link comes before the search box");
     assert.ok(secondary < tertiary, "the heritage link comes before the vacation one");
   });

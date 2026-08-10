@@ -4,35 +4,82 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 
 /**
- * The site states things. It does not ask them.
+ * The site answers rather than interrogates. It is allowed a question mark.
  *
- * THE INSTRUCTION, in the owner's words: answer every question a visitor would
- * have had, without the question being on the site. Just the information.
+ * THE INSTRUCTION, and I got it wrong the first time. The owner asked for the
+ * site to answer what a visitor would have wondered, without the wondering
+ * printed on the page. I turned that into a ban on question marks and swept
+ * every one off the site, including "Ready to book Rome?" — which he then had
+ * to point out sounds like a normal travel website, because it does.
  *
- * WHY IT MATTERS MORE THAN IT SOUNDS. A question printed on a page does two
- * things, and both are bad. It puts words in the reader's mouth — "What will
- * we eat?" tells somebody what they are supposed to be worrying about before
- * they were worrying about it. And it postpones the answer by one line, on a
- * page whose whole job is the answer. "Kosher food, wherever you go" is the
- * same section with the wondering taken out of it.
+ * SO THE RULE IS ABOUT WHICH QUESTION, NOT ABOUT PUNCTUATION.
  *
- * There were thirty-eight of them. Six were the kosher-travel cards, six were
- * the pricing panel, and the rest were scattered across headings, form labels
- * and even API error strings that surface in the browser.
+ * BANNED — a question that is not the visitor's:
+ *   "What will we eat?" over a section about kosher food. It puts words in
+ *   somebody's mouth and postpones the answer by a line, on a page whose whole
+ *   job is the answer. "Kosher food, wherever you go" is the same section with
+ *   the wondering taken out.
  *
- * FORM LABELS COUNT TOO, and that surprised me until I read them side by side.
- * "What kind of trip is it?" against "Kind of trip": the second is shorter,
- * reads like every other booking site, and asks nothing. A question mark in a
- * field label is a tell that the form was written as a conversation rather
- * than as a form.
+ *   "See something to fix?", "Are you one of these businesses?" — a customer
+ *   being asked to do our work, on a page they came to read.
  *
- * WHAT IS NOT COVERED. The admin is exempt — that IS a conversation with the
- * person maintaining the site, and a dropdown reading "reported — not checked
- * by us" is exactly right there.
+ *   "Not sure where to begin?", "Would rather not do this part?" — the site
+ *   telling a visitor they are struggling.
+ *
+ * ALLOWED — a question the visitor is already asking, at the moment they are
+ * asking it:
+ *   "Ready to book Rome?" at the foot of a destination page.
+ *   "Planning a heritage journey?" beside the link for somebody who is.
+ *
+ * Both of those name the reader's own next move. Neither can be rewritten as a
+ * statement without sounding like a brochure. The banned list below is
+ * explicit and small, and each entry earned its place by being wrong on a real
+ * page; the allowed ones are asserted PRESENT, so nobody flattens them again —
+ * which is what I did.
  */
 
 const OWNER_FACING =
   /Admin|Editor|Manager|Panel|Queue|Control|Wizard|Log|Test|Setup|Settings|Completeness|Drafts|Trail|Export|Review|Suggestion|Sms|DbSetup|AiConnection|Duffel|KeyTest/;
+
+/** Questions that belong to us, or to nobody, rather than to the reader. */
+const NOT_THE_VISITORS: Array<[RegExp, string]> = [
+  // Wondering put into the reader's mouth above the answer.
+  [/What will we eat\?/i, "asks the reader what they are worrying about"],
+  [/Which part of town do we stay in\?/i, "same"],
+  [/What happens on Shabbos\?/i, "same"],
+  [/Who do we ask locally\?/i, "same"],
+  [/What do we need at the border\?/i, "same"],
+  [/Whose hechsher is that\?/i, "same"],
+  [/What people actually ask/i, "a page about what people ask, instead of the answers"],
+  // A customer asked to do our work.
+  [/See something to fix\?/i, "asks the visitor to proofread"],
+  [/Something wrong here\?/i, "asks the visitor to proofread"],
+  [/Been here\?/i, "asks the visitor for photographs"],
+  [/Are you one of these businesses\?/i, "a business question on a page a traveller reads"],
+  [/Know something we do not/i, "asks the visitor to do our research"],
+  [/Have a trusted driver/i, "asks the visitor to do our research"],
+  // The site telling somebody they are lost.
+  [/Not sure where to begin\?/i, "tells the reader they are struggling"],
+  [/Not sure which of these you need\?/i, "same"],
+  [/Would rather not do this part\?/i, "same"],
+  [/Would rather look at somewhere/i, "same"],
+  // Our own machinery, asked out loud.
+  [/Is the private store connected\?/i, "an internal state, asked of a customer"],
+  [/What kind of trip are you planning\?/i, "a grid of trip types the page already shows"],
+];
+
+/**
+ * Questions that must stay. Named by the owner, or of the same kind.
+ *
+ * Asserted PRESENT rather than merely allowed, because the failure this file
+ * has actually seen is not one of these creeping in — it is all of them being
+ * swept out by a rule that was too blunt.
+ */
+const THE_VISITORS_OWN: Array<[string, string]> = [
+  ["app/destinations/[destination]/page.tsx", "Ready to book {destination.name}?"],
+  ["app/book/page.tsx", "Planning a heritage journey?"],
+  ["app/page.tsx", "Planning a heritage journey? Start here"],
+];
 
 function walk(dir: string): string[] {
   const found: string[] = [];
@@ -52,12 +99,7 @@ const FILES = ["app", "components", "data", "lib"]
   .flatMap((dir) => walk(dir))
   .filter((path) => !OWNER_FACING.test(path.split("/").pop()!.replace(/\.tsx?$/, "")));
 
-/**
- * The words a visitor reads: comments out, Tailwind out.
- *
- * Comments are stripped because this file's own reasoning quotes the questions
- * it removed, and several source files record what they used to say.
- */
+/** The words a visitor reads: comments out, Tailwind out. */
 function prose(path: string): string {
   return readFileSync(path, "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -65,47 +107,35 @@ function prose(path: string): string {
     .replace(/className=(\{`[\s\S]*?`\}|"[^"]*")/g, "");
 }
 
-/** A sentence in a string literal, or JSX text, that ends in a question mark. */
-function questionsIn(text: string): string[] {
-  const found: string[] = [];
-  for (const match of text.matchAll(/"([^"\n]{6,120}\?)"/g)) found.push(match[1]);
-  // ACROSS LINES TOO. The first version of this matched single-line JSX text
-  // only, and four questions survived it because prettier had wrapped them —
-  // "Planning a heritage journey?" among them, on the front page. Found by
-  // reading the rendered HTML rather than the source, which is why the
-  // verification run reads pages as well as files.
-  for (const match of text.matchAll(/>\s*([A-Z][^<>{}]{6,160}\?)\s*(?:<|\{"\s"\})/g)) {
-    found.push(match[1].replace(/\s+/g, " ").trim());
-  }
-  // AND WITH AN INTERPOLATION IN THE MIDDLE. "Ready to book {destination.name}?"
-  // survived both of the patterns above, on every one of the eighteen
-  // destination pages, because the braces broke the match. Found by reading the
-  // rendered page rather than the file — which is the third time that has been
-  // the thing that found it.
-  for (const match of text.matchAll(/>\s*([A-Z][^<>]{0,120}\{[^{}]+\}[^<>{}]{0,40}\?)\s*</g)) {
-    found.push(match[1].replace(/\s+/g, " ").trim());
-  }
-  return found;
-}
-
-describe("nothing on the public site is phrased as a question", () => {
+describe("which questions the site may ask", () => {
   it("is reading the real site rather than an empty list", () => {
     assert.ok(FILES.length > 150, `only ${FILES.length} files scanned`);
     assert.ok(FILES.includes("app/kosher-travel/page.tsx"));
-    assert.ok(FILES.includes("components/ServicePricing.tsx"));
   });
 
-  it("ASKS THE VISITOR NOTHING, IN A HEADING OR A LABEL", () => {
-    const asked: string[] = [];
+  it("ASKS NOTHING THAT IS NOT THE READER'S OWN QUESTION", () => {
+    const broken: string[] = [];
     for (const path of FILES) {
-      for (const question of questionsIn(prose(path))) asked.push(`${path} — ${question}`);
+      const text = prose(path);
+      for (const [pattern, why] of NOT_THE_VISITORS) {
+        if (pattern.test(text)) broken.push(`${path} — ${why} (${pattern})`);
+      }
     }
-    assert.deepEqual(asked, [], `questions still printed at the visitor:\n${asked.join("\n")}`);
+    assert.deepEqual(broken, [], `questions that are not the reader's:\n${broken.join("\n")}`);
   });
 
-  it("KEEPS THE INFORMATION, which is the whole point of removing them", () => {
-    // The six kosher-travel cards are the test case: the questions went, the
-    // subjects stayed, and each still leads somewhere that answers it.
+  it("KEEPS THE ONES THAT SOUND LIKE A TRAVEL WEBSITE", () => {
+    // "Ready to book Rome?" was swept out by a blanket ban on question marks
+    // and had to be put back. It names the reader's own next move at the
+    // moment they are making it, and there is no statement that does the job.
+    for (const [path, phrase] of THE_VISITORS_OWN) {
+      assert.ok(prose(path).includes(phrase), `${path} lost "${phrase}"`);
+    }
+  });
+
+  it("KEEPS THE INFORMATION where the wondering came out", () => {
+    // The six kosher-travel cards: the questions went, the subjects stayed,
+    // and each still leads somewhere that answers it.
     const page = prose("app/kosher-travel/page.tsx");
     for (const subject of [
       "Kosher food, wherever you go",
@@ -134,7 +164,6 @@ describe("nothing on the public site is phrased as a question", () => {
   it("LEAVES THE ADMIN ALONE, because that is a conversation with the owner", () => {
     // A kashrus dropdown reading "reported — not checked by us" is exactly
     // right on the screen of the person doing the checking.
-    const admin = readFileSync("components/AddEntryForms.tsx", "utf8");
-    assert.match(admin, /not checked by us/);
+    assert.match(readFileSync("components/AddEntryForms.tsx", "utf8"), /not checked by us/);
   });
 });

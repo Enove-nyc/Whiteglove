@@ -56,7 +56,7 @@ describe("the action that follows the page", () => {
     // If it sat after the closing </div> of the article column it would ride
     // the viewport past the last section and the small print.
     const bar = PAGE.indexOf("<DestinationStickyCta");
-    const closingCta = PAGE.indexOf("Booking {destination.name}");
+    const closingCta = PAGE.indexOf("Ready to book {destination.name}?");
     assert.ok(bar > 0 && closingCta > 0 && bar < closingCta);
   });
 
@@ -126,7 +126,7 @@ describe("personal assistance is not on this page", () => {
   });
 
   it("closes on booking rather than on a choice between us and you", () => {
-    assert.match(PROSE, /Booking \{destination\.name\}/);
+    assert.match(PROSE, /Ready to book \{destination\.name\}\?/);
     assert.match(PROSE, /come from our booking partners/);
   });
 });

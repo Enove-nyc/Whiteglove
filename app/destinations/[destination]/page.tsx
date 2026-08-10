@@ -693,7 +693,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Booking {destination.name}
+              Ready to book {destination.name}?
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
               Rooms and prices come from our booking partners. The planner holds the trip day by day — the route, the
