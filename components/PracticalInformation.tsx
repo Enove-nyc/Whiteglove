@@ -193,7 +193,6 @@ export default async function PracticalInformation({
                 <>
                   <Status section={record[key]} />
                   <Detail section={record[key]} />
-                  {record[key].lastChecked && <p className="mt-4 text-xs uppercase tracking-[0.12em] text-stone-500">Last checked: {record[key].lastChecked}</p>}
                 </>
               ) : null}
             </article>
@@ -204,7 +203,7 @@ export default async function PracticalInformation({
               hoteln", English in Hebrew letters rather than a translation. */}
           <h3 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">Flights &amp; hotels</h3>
           <p className="mt-4 text-sm leading-6 text-stone-600">{booking.description}</p>
-          <Link href={booking.href} className="mt-5 inline-block border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">{booking.label} →</Link>
+          <Link href={booking.href} className="mt-5 inline-flex min-h-11 items-center border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">{booking.label} →</Link>
         </article>
       </div>
     </div>

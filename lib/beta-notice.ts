@@ -79,7 +79,7 @@ export const DEFAULT_NOTICE: BetaNotice = {
   caution:
     "Whether somewhere is kosher is the certifying body's statement rather than ours, so ask to see the current teudah before you eat.",
   feedback: "If something here is wrong, missing or out of date, we would be glad to hear it — it is quicker than you think.",
-  feedbackHref: "/submit",
+  feedbackHref: "/contact?reason=correction",
   feedbackLabel: "Report an update",
   dismissLabel: "Hide this notice",
   // BUMPED AGAIN, and a dismissal is per version, so everybody meets this one.

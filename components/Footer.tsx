@@ -86,7 +86,6 @@ const columnsFor = (
 const utilityLinks = [
   { label: "Contact", href: "/contact" },
   { label: "How we verify", href: "/verification" },
-  { label: "Submit an entry", href: "/submit" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },
   { label: "Privacy", href: "/privacy" },

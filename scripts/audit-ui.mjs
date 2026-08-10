@@ -89,7 +89,11 @@ const PAGES = [
   ["/verification", "verification method"],
   ["/stops", "destination directory"],
   ["/cemeteries", "cemetery directory"],
-  ["/heritage/towns/uman", "heritage town"],
+  // warsaw, not uman: uman is a city GUIDE at /uman and has never had a
+  // /heritage/towns page, so this entry was auditing a 404 and reporting
+  // nothing wrong with it.
+  ["/heritage/towns/warsaw", "heritage town"],
+  ["/uman", "city guide"],
   ["/book", "book"],
   ["/login", "login"],
   ["/itinerary", "route planner"],

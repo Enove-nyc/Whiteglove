@@ -95,7 +95,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/phone-rentals", priority: 0.5, changeFrequency: "monthly" },
   { path: "/lizensk", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/submit", priority: 0.4, changeFrequency: "yearly" },
   { path: "/contact", priority: 0.6, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.2, changeFrequency: "yearly" },

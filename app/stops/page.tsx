@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SectionHeading from "@/components/SectionHeading";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { destinations } from "@/data/destinations";
 import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
 import { getCemeteryList } from "@/lib/cemeteries-view";
@@ -147,12 +146,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
         )}
 
         <div className="mt-10">
-          <SuggestEditButton
-            targetType="site"
-            targetId="stops-directory"
-            title="Destination directory"
-            currentInfo="Use this directory to report missing shomer numbers, access notes, or practical information for any city or cemetery."
-          />
+          
         </div>
       </section>
       <Footer />

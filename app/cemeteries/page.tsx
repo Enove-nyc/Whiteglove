@@ -2,7 +2,6 @@ import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -56,12 +55,7 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
         <CemeteryDirectory cemeteries={cemeteries} initialCountry={initialCountry} />
 
         <div className="mt-10">
-          <SuggestEditButton
-            targetType="site"
-            targetId="cemeteries-index"
-            title="Cemetery directory"
-            currentInfo="Use this directory to report a missing burial, shomer number, or access note for any beis hachaim."
-          />
+          
         </div>
       </section>
 

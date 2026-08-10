@@ -2,7 +2,6 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAttractionList } from "@/lib/attractions-view";
 
 // Rendered per request, not frozen at build time.
@@ -51,12 +50,7 @@ export default async function AttractionsPage() {
         <AttractionDirectory attractions={attractions} />
 
         <div className="mt-10">
-          <SuggestEditButton
-            targetType="site"
-            targetId="attractions-index"
-            title="Things to do"
-            currentInfo="Tell us about somewhere worth going, or correct something here — especially anything about kosher food nearby or Shabbos."
-          />
+          
         </div>
       </section>
 

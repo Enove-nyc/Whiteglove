@@ -6,13 +6,11 @@ import KosherNearby from "@/components/KosherNearby";
 import MixedText from "@/components/MixedText";
 import Navbar from "@/components/Navbar";
 import PhotoGallery from "@/components/PhotoGallery";
-import SendPictureButton from "@/components/SendPictureButton";
 import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import DestinationActions from "@/components/DestinationActions";
 import { airportsFor } from "@/lib/destination-actions";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { cemeteries } from "@/data/cemeteries";
 import { kmBetween } from "@/data/itinerary";
 import { placeDirectionsUrl } from "@/data/route-utils";
@@ -256,19 +254,11 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           </section>
 
           <div>
-            <SuggestEditButton
-              targetType="location"
-              targetId={cemetery.slug}
-              title={cemetery.name}
-              currentInfo={`${cemetery.yiddishName}\n${cemetery.address}\n${hasAccessContacts ? "Access contact listed" : "Access contact not verified"}`}
-            />
+            
             {/* People who have been often have the picture the next person
                 needs — the gate, the path, the ohel. Nothing sent here appears
                 until the owner has looked at it. */}
-            <SendPictureButton
-              targets={[{ kind: "cemetery", ref: cemetery.slug, label: cemetery.name }]}
-              heading="Been here? Send a picture of the beis hachaim"
-            />
+            
           </div>
         </div>
       </section>

@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
 import SearchMemory from "@/components/SearchMemory";
-import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
 
@@ -199,12 +198,7 @@ export default async function KosherStaysPage({
         </div>
 
         <div className="mt-10">
-          <SuggestEditButton
-            targetType="site"
-            targetId="kosher-stays-index"
-            title="Where to stay"
-            currentInfo="Tell us about a kosher hotel or programme we are missing, or correct a season or a hechsher here — especially if a programme's dates have changed."
-          />
+          
         </div>
       </section>
 

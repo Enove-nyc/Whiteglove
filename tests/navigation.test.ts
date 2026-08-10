@@ -235,10 +235,21 @@ describe("the footer says the vacation-neutral thing", () => {
     assert.ok(plan >= 0 && heritage > plan, "heritage travel is listed before planning a trip");
   });
 
-  it("still reaches everything the old footer did, bar one", () => {
-    for (const href of ["/stops", "/cemeteries", "/directory", "/services", "/contact", "/submit", "/login", "/privacy", "/terms"]) {
+  it("still reaches everything the old footer did, bar two", () => {
+    for (const href of ["/stops", "/cemeteries", "/directory", "/services", "/contact", "/login", "/privacy", "/terms"]) {
       assert.ok(FOOTER.includes(`"${href}"`), `${href} lost its way out of the footer`);
     }
+  });
+
+  it("OFFERS NO DATA-ENTRY PAGE TO A TRAVELLER", () => {
+    // "Submit an entry" sat between "How we verify" and "Sign in" in the
+    // small print of every page. Sending in a kever record is not something a
+    // person planning a holiday is here to do, and a correction now has a
+    // better home: the reason inside Contact, which asks which page and where
+    // you know it from.
+    assert.doesNotMatch(FOOTER_PROSE, /"\/submit"/);
+    assert.doesNotMatch(FOOTER_PROSE, /Submit an entry/);
+    assert.ok(FOOTER.includes('"/contact?reason=advertise"'));
   });
 
   it("DOES NOT POINT AT THE ADMIN DOOR FROM THREE HUNDRED PAGES", () => {
