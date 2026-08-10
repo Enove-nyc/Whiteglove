@@ -4,6 +4,7 @@ import KosherStayDirectory from "@/components/KosherStayDirectory";
 import Navbar from "@/components/Navbar";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
+import SearchMemory from "@/components/SearchMemory";
 import SuggestEditButton from "@/components/SuggestEditButton";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
@@ -79,6 +80,10 @@ export default async function KosherStaysPage({
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      {/* Writes this search down when there is one, then fills the empty
+          fields of any opted-in form from what was remembered. Renders
+          nothing, and the forms work without it. */}
+      <SearchMemory remember={searching ? search : undefined} />
       <Navbar />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">

@@ -4,6 +4,7 @@ import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SectionHeading from "@/components/SectionHeading";
+import SearchMemory from "@/components/SearchMemory";
 import StaySearchForm from "@/components/StaySearchForm";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import VacationCard from "@/components/VacationCard";
@@ -173,6 +174,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
+      <SearchMemory />
       <Navbar />
 
       {/* ---- 1. Vacation-first hero -------------------------------------- */}

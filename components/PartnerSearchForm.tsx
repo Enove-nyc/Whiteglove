@@ -79,9 +79,12 @@ export default async function PartnerSearchForm({
   if (!route.destinationLabel) return null;
 
   return (
+    // data-search-memory: see components/SearchMemory.tsx. Empty fields only,
+    // and never a date that has passed.
     <form
       action="/go"
       method="get"
+      data-search-memory=""
       target="_blank"
       rel="sponsored noopener noreferrer"
       className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6"

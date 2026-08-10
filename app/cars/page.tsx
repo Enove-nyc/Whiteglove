@@ -2,6 +2,7 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
+import SearchMemory from "@/components/SearchMemory";
 import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
 
@@ -43,6 +44,7 @@ export default async function CarsPage({
   const pickUp = (first ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
+      <SearchMemory />
       <Navbar />
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">

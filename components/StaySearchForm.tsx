@@ -45,9 +45,13 @@ export default function StaySearchForm({
   helpLabel?: string;
 }) {
   return (
+    // data-search-memory opts this form in to components/SearchMemory.tsx,
+    // which fills EMPTY fields from the last search. Opt-in rather than every
+    // form on the site, so nothing writes into a field it was not meant to.
     <form
       action="/hotels"
       method="get"
+      data-search-memory=""
       className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 shadow-[0_18px_45px_rgba(23,45,82,.09)] sm:p-6"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
