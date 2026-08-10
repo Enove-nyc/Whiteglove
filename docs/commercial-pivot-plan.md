@@ -464,7 +464,10 @@ instead — which is the failure mode the untagged-car-hire episode was.
 | Destination-page restructure + sticky CTA | **Done** — #224 · `DestinationStickyCta` |
 | Date persistence across pages | **Done** — #224 · `SearchMemory` |
 | Contextual flights, cars, activities, insurance, eSIM | **Part** — the slots render via `TravelExtras`; only hotels, flights and cars resolve to a partner. Activities, insurance and eSIM have no programme joined, so `routeFor` returns `none` and nothing is offered to visitors. |
-| "Where should I stay?" | Next — the only Phase 2 stage not started |
+| "Where should I stay?" | **Done** — `lib/quarter-search.ts` · `StayQuarters`. Each recommended quarter now searches on itself ("Le Marais, Paris") carrying the visitor's dates, instead of every quarter leading to the same whole-city search. |
+
+**Phase 2 is complete** except for the products with no programme joined, which
+is the settings state below rather than a stage.
 
 ### What earns today, on the live site
 

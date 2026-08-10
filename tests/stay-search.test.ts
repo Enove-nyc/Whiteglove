@@ -203,7 +203,11 @@ describe("the page and the form agree", () => {
     // The order is the argument. The quarter and the seasonal warnings are why
     // somebody searched here rather than on a comparison site; under a booking
     // widget, this is a worse comparison site.
-    const quarter = PAGE.indexOf("Which part of town");
+    // The quarters moved into <StayQuarters> when each one became searchable
+    // in its own right; the heading now lives in that component. What this
+    // test is guarding is the order, so it follows the block rather than the
+    // words inside it.
+    const quarter = PAGE.indexOf("<StayQuarters");
     const partner = PAGE.indexOf("Check prices and availability");
     assert.ok(quarter > 0 && partner > 0);
     assert.ok(quarter < partner, "the partner search comes before the reason to trust it");
