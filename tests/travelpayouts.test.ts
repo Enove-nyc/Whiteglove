@@ -239,10 +239,14 @@ describe("the links the owner actually has in his hand", () => {
     );
   });
 
-  it("tells him a Stay22 link belongs to the setting that is already earning", () => {
-    const said = String(linkProblem("https://kayak.stay22.com/whitegloveitinerarie/Te_B-47Q2I", "flights"));
-    assert.match(said, /Stay22/, said);
-    assert.match(said, /hotels/i, `does not say where it does belong: ${said}`);
+  it("takes his Stay22 link rather than turning it away", () => {
+    // This used to be refused outright, on the reasoning that Stay22 was the
+    // hotel network and this box was Travelpayouts'. That was wrong, and it
+    // was refusing the one link that solves the flights problem: Stay22 has a
+    // Kayak desk, and it carries a route and dates. See lib/stay22.ts for the
+    // redirect chain this was checked against.
+    const KAYAK = { flights: "kayak" } as never;
+    assert.equal(linkProblem("https://kayak.stay22.com/whitegloveitinerarie/Te_B-47Q2I", "flights", KAYAK), null);
   });
 
   it("has not started accepting anything it used to refuse", () => {
@@ -250,5 +254,59 @@ describe("the links the owner actually has in his hand", () => {
     // straight to the partner is still refused by the same rule as before.
     const direct = String(linkProblem("https://www.kiwi.com/en/search", "flights"));
     assert.match(direct, /goes straight to www\.kiwi\.com/, direct);
+  });
+});
+
+describe("a Stay22 link is a second way for a search to earn", () => {
+  const SHORT = "https://kayak.stay22.com/whitegloveitinerarie/Te_B-47Q2I";
+  const KAYAK = { flights: "kayak", cars: "kayak" } as never;
+
+  // VERIFIED AGAINST THE LIVE ENDPOINT, not inferred, because the failure mode
+  // is silent — a wrong deep link opens a front page and the referral is lost
+  // without an error anywhere:
+  //   allez/kayak?aid=…&link=<search>
+  //     → kayak.com/in?a=kan_249623&enc_cid=<aid>-<campaign>&url=/flights/JFK-FCO/2026-09-01/2026-09-08
+  //     → /flights/JFK-FCO/2026-09-01/2026-09-08
+
+  it("accepts the short link, which is the one the dashboard hands out", () => {
+    // He could not get a full link out of either dashboard. Reading the ID and
+    // the desk out of the short one is what makes that not matter.
+    assert.equal(linkProblem(SHORT, "flights", KAYAK), null);
+  });
+
+  it("puts the traveller's own route and dates into it", () => {
+    const search = "https://www.kayak.com/flights/JFK-FCO/2026-09-01/2026-09-08";
+    const out = throughTravelpayouts(search, SHORT, "flights", KAYAK);
+    const url = new URL(out);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "whitegloveitinerarie");
+    assert.equal(url.searchParams.get("link"), search, "the search did not survive");
+  });
+
+  it("builds the link fresh rather than appending to the short one", () => {
+    // The short link already carries a link= of its own. Appending a second
+    // leaves Stay22 to choose between them, and it chooses the front page.
+    const out = throughTravelpayouts("https://www.kayak.com/flights/JFK-FCO/2026-09-01", SHORT, "flights", KAYAK);
+    assert.equal([...new URL(out).searchParams.getAll("link")].length, 1, "link= appears twice");
+    assert.doesNotMatch(out, /Te_B-47Q2I/, "the short code was carried into the built link");
+  });
+
+  it("refuses a Stay22 link for a partner the search is not set to", () => {
+    const said = String(linkProblem(SHORT, "flights", { flights: "aviasales" } as never));
+    assert.match(said, /kayak/i, said);
+  });
+
+  it("does not offer a second place to configure hotels", () => {
+    // Hotels take a Stay22 ID a few boxes up. Two places to set one thing is
+    // how they end up disagreeing.
+    const said = String(linkProblem(SHORT, "hotels", KAYAK));
+    assert.match(said, /already go through Stay22|by ID/i, said);
+  });
+
+  it("says which network is carrying the search, rather than assuming", () => {
+    const said = describeSlot("flights", SHORT, KAYAK);
+    assert.match(said, /Stay22/, said);
+    assert.doesNotMatch(said, /Travelpayouts/, `named the wrong network: ${said}`);
   });
 });

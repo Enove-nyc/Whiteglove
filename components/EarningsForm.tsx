@@ -103,14 +103,14 @@ export default function EarningsForm({
 
               <label className="mt-3 block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                  Travelpayouts link
+                  Travelpayouts or Stay22 link
                 </span>
                 <input
                   name={s.slot}
                   type="text"
                   value={value}
                   onChange={(e) => setLinks({ ...links, [s.slot]: e.target.value })}
-                  placeholder={`Paste the Travelpayouts link for ${chosen.label}`}
+                  placeholder={`Paste the link for ${chosen.label}`}
                   className={input}
                 />
               </label>
@@ -119,7 +119,8 @@ export default function EarningsForm({
               ) : (
                 <span className="mt-1.5 block text-xs leading-5 text-stone-500">
                   Must be a link that forwards to <span className="text-[var(--navy)]">{chosen.domain}</span> — that is
-                  where this search opens.
+                  where this search opens. From Travelpayouts, the full link rather than the shortened one. From
+                  Stay22, either.
                   {marker && <> Marker on this link: <span className="text-[var(--navy)]">{marker}</span>.</>}
                 </span>
               )}

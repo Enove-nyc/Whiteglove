@@ -31,7 +31,7 @@
  * the redirect handler, the admin screens and the tests.
  */
 
-import { allezUrl, stay22IsOn, type Stay22Settings } from "@/lib/stay22";
+import { allezUrl, readStay22Link, stay22IsOn, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
 import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
@@ -173,13 +173,20 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
     const partner = partnerFor(slot, config.partners);
     const wrapped = travelpayoutsEarns(config.travelpayouts, slot, config.partners);
     const what = product === "flight" ? "Flight" : "Car";
+    // Either network can carry these two now: Travelpayouts by wrapping the
+    // search in `u=`, Stay22 by wrapping it in `link=`. Which one is whichever
+    // link the owner pasted, so the label is read off the link rather than
+    // assumed — an admin screen that names the wrong network is how nobody
+    // notices the right one is not being paid.
+    const viaStay22 = wrapped ? readStay22Link(config.travelpayouts[slot] ?? "") : null;
+    const network = wrapped ? (viaStay22 ? "stay22" : "travelpayouts") : "none";
     return {
       product,
       destinationLabel: partner.label,
-      network: wrapped ? "travelpayouts" : "none",
+      network,
       earns: wrapped,
       note: wrapped
-        ? `${what} searches go through Travelpayouts, then on to ${partner.label}.`
+        ? `${what} searches go through ${viaStay22 ? "Stay22" : "Travelpayouts"}, then on to ${partner.label}.`
         : `${what} searches open ${partner.label} directly. They work, and they earn nothing.`,
     };
   }
@@ -286,10 +293,16 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   const url = destinationUrl(request, config);
   if (!url) return null;
 
-  if (route.network === "travelpayouts") {
+  // The hotel search through Stay22 is BUILT with the aid already in it, so
+  // there is nothing left to wrap. Everything else is a plain partner search
+  // that a pasted link puts a network in front of — `u=` for Travelpayouts,
+  // `link=` for Stay22, both handled in throughTravelpayouts, and both a
+  // no-op when nothing usable is pasted.
+  if (request.product === "hotel" && route.network === "stay22") return { url, route };
+
+  if (route.network === "travelpayouts" || route.network === "stay22") {
     const slot: SearchSlot = request.product === "hotel" ? "hotels" : request.product === "flight" ? "flights" : "cars";
     return { url: throughTravelpayouts(url, config.travelpayouts[slot], slot, config.partners), route };
   }
-  // Stay22's own URL already carries the aid; nothing wraps it.
   return { url, route };
 }

@@ -122,6 +122,93 @@ export function allezUrl(search: HotelSearch, settings: Stay22Settings): string 
   return `https://www.stay22.com/allez/${provider}?${query.toString()}`;
 }
 
+/* ---- Stay22 in front of a search this site already builds ---------------- */
+
+/**
+ * Stay22 is not only a hotel desk, and this is the part that took a live bug
+ * to find.
+ *
+ * The flight search was going out to a partner whose deep link discards its
+ * parameters, and the owner had a Stay22 link for Kayak sitting in his
+ * dashboard that nothing here would accept. Traced end to end rather than
+ * assumed, because a wrong deep link does not throw — it opens a front page
+ * and the referral is lost in silence:
+ *
+ *   https://www.stay22.com/allez/kayak?aid=<AID>&link=<the search, encoded>
+ *     → 302 https://www.kayak.com/in?a=kan_249623&enc_cid=<AID>
+ *              &enc_pid=deeplinks&url=%2Fflights%2FJFK-FCO%2F2026-09-01%2F2026-09-08
+ *       (this is where the kanid/kanlabel affiliate cookies are set)
+ *     → 301 /flights/JFK-FCO/2026-09-01/2026-09-08
+ *
+ * The route and both dates arrive intact, in English, credited to the account.
+ * Cars behave identically with a /cars/… link.
+ *
+ * SO IT IS BUILT, NOT PASTED, for the same reason the hotel search is: `link=`
+ * is a slot the traveller's own search goes into. The SHORT link from the
+ * dashboard — kayak.stay22.com/<aid>/<code> — cannot do this. Appending
+ * `link=` to it produces a URL carrying the parameter twice, with Stay22's own
+ * `link=https://kayak.com/` first. Measured, not guessed. What the short link
+ * IS good for is telling us the aid and the desk, which is all this needs.
+ */
+export type Stay22Link = {
+  /** The account the click is credited to. */
+  aid: string;
+  /** Which Stay22 desk — "kayak" and so on. Matched against the partner. */
+  desk: string;
+};
+
+/**
+ * The aid and desk inside a pasted Stay22 link, or null if it is not one.
+ *
+ * Accepts both shapes the dashboard hands out: the short link and a full allez
+ * address. Deliberately tolerant about which — the owner should not have to
+ * know that only one of the two is any use, and once the aid and desk are out
+ * of it, neither is.
+ */
+export function readStay22Link(pasted: string): Stay22Link | null {
+  let url: URL;
+  try {
+    url = new URL(pasted.trim());
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+  const host = url.host.toLowerCase();
+  if (host !== "stay22.com" && !host.endsWith(".stay22.com")) return null;
+
+  // The full address: stay22.com/allez/<desk>?aid=…
+  const allez = /^\/allez\/([A-Za-z0-9_-]+)/.exec(url.pathname);
+  if (allez) {
+    const aid = (url.searchParams.get("aid") ?? "").trim();
+    return aid && !aidProblem(aid) ? { aid, desk: allez[1].toLowerCase() } : null;
+  }
+
+  // The short link: <desk>.stay22.com/<aid>/<code>
+  const desk = host.slice(0, -".stay22.com".length);
+  const aid = url.pathname.split("/").filter(Boolean)[0] ?? "";
+  if (!desk || desk === "www" || !aid || aidProblem(aid)) return null;
+  return { aid, desk: desk.toLowerCase() };
+}
+
+/**
+ * A search this site built, sent through Stay22 so it earns.
+ *
+ * Never throws and never mangles the search: an unusable link gives the search
+ * back untouched, which is the same rule throughTravelpayouts follows. A
+ * traveller who arrives at the right page on an untracked link has cost a
+ * commission; one who arrives nowhere has cost a customer.
+ */
+export function stay22SearchUrl(searchUrl: string, link: Stay22Link | null): string {
+  if (!link?.aid || aidProblem(link.aid) || !/^[a-z0-9_-]+$/.test(link.desk)) return searchUrl;
+  const query = new URLSearchParams();
+  // aid first, as Stay22 advises — it is how a malformed link is still
+  // attributed rather than dropped.
+  query.set("aid", link.aid);
+  query.set("link", searchUrl);
+  query.set("campaign", CAMPAIGN);
+  return `https://www.stay22.com/allez/${link.desk}?${query.toString()}`;
+}
+
 /**
  * What the search button should say.
  *
