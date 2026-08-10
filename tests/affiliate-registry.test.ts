@@ -224,10 +224,23 @@ describe("the disclosure", () => {
     assert.doesNotMatch(component, /may earn a commission/i);
   });
 
-  it("names where the visitor is going", () => {
+  it("warns that the link leaves, without naming who it leaves to", () => {
+    // The name came out on the owner's decision; the warning did not go with
+    // it. A link that opens a window unannounced is an accessibility failure
+    // whoever it points at. See hotelButtonLabel in lib/stay22.ts.
     const component = readFileSync("components/BookingLink.tsx", "utf8");
-    assert.match(component, /Opens \{where\} in a new tab/);
+    assert.match(component, /Opens in a new tab/);
     assert.match(component, /rel="sponsored noopener noreferrer"/);
+  });
+
+  it("keeps the partner's name out of what the visitor reads", () => {
+    for (const file of ["components/BookingLink.tsx", "components/PartnerSearchForm.tsx"]) {
+      const component = readFileSync(file, "utf8");
+      // The rendered warning is the risk: `{where}` / `{route.destinationLabel}`
+      // is how the brand used to reach the page.
+      assert.doesNotMatch(component, /Opens \{where\}/, file);
+      assert.doesNotMatch(component, /Opens \{route\.destinationLabel\}/, file);
+    }
   });
 
   it("never renders the partner URL into the page", () => {

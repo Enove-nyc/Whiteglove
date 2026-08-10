@@ -122,15 +122,33 @@ export function allezUrl(search: HotelSearch, settings: Stay22Settings): string 
   return `https://www.stay22.com/allez/${provider}?${query.toString()}`;
 }
 
-/** What the search button should say. */
-export function hotelButtonLabel(settings: Stay22Settings | undefined): string {
-  if (!stay22IsOn(settings)) return "Search hotels on Booking.com";
-  // Named rather than "search hotels", because a traveller is about to land on
-  // a site whose name they did not choose, and being told first is the
-  // difference between a hand-off and a surprise.
-  const provider = PROVIDERS.find((p) => p.key === settings?.provider);
-  if (!provider || provider.key === "roam") return "Search hotels on Stay22";
-  return `Search hotels on ${provider.label}`;
+/**
+ * What the search button should say.
+ *
+ * THE PARTNER IS NOT NAMED, and that is the owner's decision rather than an
+ * oversight. This used to read "Search hotels on Stay22", on the argument that
+ * a traveller about to land on a site they did not choose should be told which
+ * one first. The owner's position is that which network the referral runs
+ * through is the site's own business, and the visitor's question is whether
+ * they can search hotels — not who settles the commission. That is the normal
+ * arrangement across travel sites.
+ *
+ * WHAT DID NOT GO WITH THE NAME. The new-tab warning stays, because a link
+ * that silently takes over or opens a window is an accessibility failure
+ * whoever it points at, and the commission disclosure stays, because that is
+ * the thing that keeps the arrangement above board. Neither needs a brand:
+ * "opens in a new tab" and "we may earn a commission" are true and complete
+ * without one. Removing the name is a positioning choice; removing those would
+ * be a different thing entirely.
+ *
+ * Constant now, and it no longer takes the settings — the label does not vary
+ * by provider any more, and a parameter kept "in case" is one every caller has
+ * to look up to discover it changes nothing. It stays a function because the
+ * admin preview in Stay22Form renders it to show the owner the live button
+ * text, and because one name is still the single place this wording changes.
+ */
+export function hotelButtonLabel(): string {
+  return "Search hotels";
 }
 
 /** What is happening with hotels right now, in one sentence. Never null. */

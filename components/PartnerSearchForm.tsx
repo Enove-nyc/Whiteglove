@@ -205,12 +205,11 @@ export default async function PartnerSearchForm({
         >
           {submitLabel}
         </button>
-        {/* Named, because somebody is about to land on a site whose name they
-            did not choose, and being told first is the difference between a
-            hand-off and a surprise. */}
-        <p className="text-xs leading-5 text-stone-500">
-          Opens {route.destinationLabel} in a new tab.
-        </p>
+        {/* The warning stays, the name does not — see hotelButtonLabel in
+            lib/stay22.ts for why. A new tab opening unannounced is a problem
+            whoever it belongs to; which network settles the commission is the
+            site's own business. */}
+        <p className="text-xs leading-5 text-stone-500">Opens in a new tab.</p>
       </div>
 
       <AffiliateDisclosure className="mt-4 text-xs leading-5 text-stone-500" />

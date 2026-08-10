@@ -139,21 +139,33 @@ describe("the address Allez is actually sent", () => {
   });
 });
 
-describe("the traveller is told where they are going", () => {
-  it("says Booking.com while Stay22 is off — which is where they go", () => {
-    assert.equal(hotelButtonLabel(undefined), "Search hotels on Booking.com");
-    assert.equal(hotelButtonLabel(NO_STAY22), "Search hotels on Booking.com");
+describe("the traveller is told they are leaving, not who to", () => {
+  // THIS REVERSES AN EARLIER RULE, deliberately. The button used to read
+  // "Search hotels on Stay22", so that nobody landed on a site they had not
+  // chosen without warning. The owner's decision is that which network settles
+  // the commission is the site's own business — the normal arrangement across
+  // travel sites — and the visitor's question is whether they can search
+  // hotels. The new-tab warning and the commission disclosure did NOT go with
+  // the name; those live in BookingLink and PartnerSearchForm and are asserted
+  // in tests/affiliate-registry.test.ts.
+
+  it("asks the question the visitor has, and nothing else", () => {
+    assert.equal(hotelButtonLabel(), "Search hotels");
   });
 
-  it("stops saying Booking.com the moment it is not Booking.com", () => {
-    // The button is the only warning a traveller gets before a new tab opens
-    // on a site they did not choose.
-    assert.doesNotMatch(hotelButtonLabel(on()), /Booking\.com/);
-    assert.match(hotelButtonLabel(on()), /Stay22/);
+  it("names no partner", () => {
+    const label = hotelButtonLabel();
+    for (const brand of [/Booking\.com/i, /Stay22/i, /Expedia/i, /Kayak/i, /Vrbo/i]) {
+      assert.doesNotMatch(label, brand, label);
+    }
   });
 
-  it("names the pinned desk when one is pinned", () => {
-    assert.match(hotelButtonLabel(on({ provider: "expedia" })), /Expedia/);
+  it("TAKES NO SETTINGS, so no provider can leak into it by a later edit", () => {
+    // The label used to be built from `settings.provider`, which is how the
+    // pinned desk reached the button. The parameter is gone rather than
+    // ignored: there is now no argument a caller could pass that would put a
+    // brand back on the button without changing this function's signature.
+    assert.equal(hotelButtonLabel.length, 0);
   });
 });
 

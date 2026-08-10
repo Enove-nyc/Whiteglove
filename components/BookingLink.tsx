@@ -14,11 +14,14 @@ import { readWords } from "@/lib/site-words-store";
  *    renders `fallback` — usually nothing at all. A site that offers to book
  *    activities and cannot is worse than one that does not offer.
  *
- * 2. IT NAMES WHERE THE VISITOR IS GOING. "Check availability on Booking.com",
- *    not "Check availability". Somebody about to land on a site whose name
- *    they did not choose should be told first; that is the difference between
- *    a hand-off and a surprise, and it is the accessibility rule about a link
- *    identifying its destination.
+ * 2. IT WARNS THAT THE LINK LEAVES, WITHOUT NAMING WHO IT LEAVES TO. It used
+ *    to read "Check availability on Booking.com"; the owner's decision is that
+ *    which network settles the commission is the site's own business, so it is
+ *    "Check availability" and "opens in a new tab". The warning itself is not
+ *    optional — a link that opens a window unannounced is an accessibility
+ *    failure whoever it points at — and neither is the commission disclosure
+ *    below it. Dropping the brand is positioning; dropping those would not be.
+ *    See `hotelButtonLabel` in lib/stay22.ts.
  *
  * 3. IT CARRIES THE DISCLOSURE. Beside the action, from one editable line, on
  *    every instance. A disclosure that is right in eight places and missing in
@@ -77,11 +80,14 @@ export default async function BookingLink({
         className={className ?? styles[variant]}
       >
         {label}
-        {where && <span className="sr-only"> — opens {where} in a new tab</span>}
+        {/* The name is gone, the warning is not — see hotelButtonLabel in
+            lib/stay22.ts. `where` still gates it: no route, no hand-off, so
+            nothing to warn about. */}
+        {where && <span className="sr-only"> — opens in a new tab</span>}
       </a>
       {where && (
         <span aria-hidden="true" className="text-[11px] leading-4 text-stone-500">
-          Opens {where} in a new tab
+          Opens in a new tab
         </span>
       )}
       {showDisclosure && (
