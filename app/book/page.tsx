@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { readWords } from "@/lib/site-words-store";
 import { readStay22 } from "@/lib/stay22-store";
-import { readTravelpayoutsLinks } from "@/lib/travelpayouts-store";
+import { readTravelpayouts } from "@/lib/travelpayouts-store";
 import { readExtras } from "@/lib/travel-extras-store";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
@@ -100,6 +100,7 @@ export default async function BookPage({
   };
   // Affiliate slots — set these env vars once you join the partner programs and
   // the Book links start carrying your tracking IDs (no code change needed).
+  const travelpayouts = await readTravelpayouts();
   const affiliate = {
     bookingAid: process.env.BOOKING_AFFILIATE_ID?.trim() || "",
     kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
@@ -107,13 +108,16 @@ export default async function BookPage({
     // alone earns nothing — the searches have to be sent THROUGH Travelpayouts,
     // which is what these links do. /admin/settings/earnings.
     travelpayoutsMarker: process.env.TRAVELPAYOUTS_MARKER?.trim() || "",
-    travelpayouts: await readTravelpayoutsLinks(),
+    travelpayouts: travelpayouts.links,
+    // Which partner each search opens, chosen on /admin/settings/earnings.
+    partners: travelpayouts.partners,
     // Hotels: the only route to earning on them, since Booking.com turned the
     // site down directly and the Travelpayouts account has no hotel programme.
     stay22: await readStay22(),
   };
-  // Flights go to Kayak and hotels to Booking.com, and there is no longer a
-  // configuration that changes it. Duffel — the one integration that takes a
+  // Which partner flights and cars open IS now configurable — the owner picks
+  // it per search on /admin/settings/earnings, because the account is approved
+  // for Aviasales and EconomyBookings rather than Kayak. Duffel — the one integration that takes a
   // card and issues a ticket — is off the public site and lives at
   // /admin/duffel; see lib/booking-partners.ts for why.
 

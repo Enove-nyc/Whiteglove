@@ -31,13 +31,25 @@ const NOTHING: AffiliateConfig = { travelpayouts: {}, stay22: NO_STAY22 };
 const CONNECTED: AffiliateConfig = {
   // A real Travelpayouts link carries the marker AND a u= target, and the
   // target has to be the partner this site's search actually opens — the
-  // library refuses a hotels link pointed at Kayak, and so does the registry.
+  // library refuses a hotels link pointed at Aviasales, and so does the
+  // registry. These are the DEFAULT partners: the programmes this account is
+  // approved for, which is not Kayak.
   travelpayouts: {
     hotels: "https://tp.media/r?marker=123456&trs=1&p=4115&u=https%3A%2F%2Fwww.booking.com",
+    flights: "https://tp.media/r?marker=123456&trs=1&p=4114&u=https%3A%2F%2Fsearch.aviasales.com",
+    cars: "https://tp.media/r?marker=123456&trs=1&p=4113&u=https%3A%2F%2Fwww.economybookings.com",
+  },
+  stay22: { aid: "whiteglove", provider: "roam" },
+};
+
+/** The same account, but with both searches pinned to Kayak instead. */
+const ON_KAYAK: AffiliateConfig = {
+  partners: { flights: "kayak", cars: "kayak" },
+  travelpayouts: {
     flights: "https://tp.media/r?marker=123456&trs=1&p=4114&u=https%3A%2F%2Fwww.kayak.com",
     cars: "https://tp.media/r?marker=123456&trs=1&p=4113&u=https%3A%2F%2Fwww.kayak.com",
   },
-  stay22: { aid: "whiteglove", provider: "roam" },
+  stay22: NO_STAY22,
 };
 
 const HOTEL = { product: "hotel" as const, destination: "Rome", checkIn: "2026-07-05", checkOut: "2026-07-12", adults: 2 };
@@ -50,21 +62,29 @@ describe("who pays and where the traveler lands", () => {
     // by wrapping the Kayak URL. Removing Kayak would remove the thing
     // Travelpayouts is paid to forward to.
     const flights = routeFor("flight", CONNECTED);
-    assert.equal(flights.destinationLabel, "Kayak");
+    assert.equal(flights.destinationLabel, "Aviasales");
     assert.equal(flights.network, "travelpayouts");
     assert.equal(flights.earns, true);
+
+    // WHERE THEY LAND IS A SETTING; who pays is not. Same network, same
+    // marker, different destination — which is the distinction this type
+    // exists to hold, and the reason a programme can be swapped at all.
+    const onKayak = routeFor("flight", ON_KAYAK);
+    assert.equal(onKayak.destinationLabel, "Kayak");
+    assert.equal(onKayak.network, "travelpayouts");
+    assert.equal(onKayak.earns, true);
   });
 
   it("treats “works but earns nothing” as a state, not a failure", () => {
     // A link that stops working because the money is not configured costs a
     // customer to save a commission. It keeps working and says so instead.
     const flights = routeFor("flight", NOTHING);
-    assert.equal(flights.destinationLabel, "Kayak");
+    assert.equal(flights.destinationLabel, "Aviasales");
     assert.equal(flights.earns, false);
     assert.match(flights.note, /earn nothing/i);
     const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-07-05" }, NOTHING);
     assert.ok(link, "an unconfigured flight search stopped working entirely");
-    assert.match(link.url, /^https:\/\/www\.kayak\.com\/flights\//);
+    assert.match(link.url, /^https:\/\/search\.aviasales\.com\/flights\//);
   });
 
   it("prefers Stay22 for hotels when it is on, and Booking.com when it is not", () => {
@@ -105,7 +125,20 @@ describe("a link that cannot be built is not offered", () => {
   it("refuses a search that is missing what it needs", () => {
     assert.equal(resolveLink({ product: "hotel" }, CONNECTED), null, "a hotel search with nowhere to search");
     assert.equal(resolveLink({ product: "flight", from: "JFK", to: "FCO" }, CONNECTED), null, "a flight with no date");
-    assert.equal(resolveLink({ product: "car", destination: "Rome" }, CONNECTED), null, "car hire with no dates");
+    assert.equal(resolveLink({ product: "car" }, CONNECTED), null, "car hire with nowhere to collect from");
+  });
+
+  it("asks for exactly what the chosen car partner can carry, and no more", () => {
+    // WHAT "MISSING" MEANS DEPENDS ON THE PARTNER. Kayak puts both dates in
+    // the path, so a dateless search cannot be built for it and is refused.
+    // EconomyBookings' documented link format has no date fields at all — the
+    // traveller picks them on arrival — so the same search is complete.
+    // Refusing it to match Kayak's rule would drop a referral that works.
+    const dateless = { product: "car" as const, destination: "Rome" };
+    assert.equal(resolveLink(dateless, ON_KAYAK), null, "Kayak needs both dates");
+    const viaEconomy = resolveLink(dateless, CONNECTED);
+    assert.ok(viaEconomy, "EconomyBookings does not take dates, so this search is not missing anything");
+    assert.match(viaEconomy.url, /economybookings\.com/);
   });
 
   it("honours a product the owner has paused", () => {

@@ -5,15 +5,15 @@ import TravelExtrasForm from "@/components/TravelExtrasForm";
 import { readStay22Fresh } from "@/lib/stay22-store";
 import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
-import { describeLinks, SLOTS } from "@/lib/travelpayouts";
-import { readTravelpayoutsLinksFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
+import { describeLinks } from "@/lib/travelpayouts";
+import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function EarningsSettings() {
   // Uncached, unlike /book: this screen has to show what was saved a second
   // ago, not what the site is serving.
-  const current = await readTravelpayoutsLinksFresh();
+  const current = await readTravelpayoutsFresh();
   const extras = await readExtrasFresh();
   const stay22 = await readStay22Fresh();
 
@@ -31,7 +31,7 @@ export default async function EarningsSettings() {
               Travelpayouts, a booking made afterwards is credited to you. Left alone, the search works exactly the
               same and earns nothing.
             </p>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current)}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners)}</p>
           </div>
           <Link
             href="/admin/settings"
@@ -47,8 +47,8 @@ export default async function EarningsSettings() {
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-stone-600">
           <li>Sign in to Travelpayouts and open the link builder for the programme you want.</li>
           <li>
-            Paste in the partner&rsquo;s own address — {SLOTS.map((s) => s.host).filter((h, i, a) => a.indexOf(h) === i).join(" or ")} —
-            and let it generate the link.
+            Paste in the partner&rsquo;s own address — whichever one you picked in the matching box below — and let it
+            generate the link.
           </li>
           <li>Copy the whole thing it gives you back and paste it into the matching box below.</li>
         </ol>
@@ -80,7 +80,8 @@ export default async function EarningsSettings() {
       </section>
 
       <EarningsForm
-        current={current}
+        current={current.links}
+        currentPartners={current.partners}
         storeReady={travelpayoutsStoreAvailable()}
         hotelsElsewhere={
           stay22IsOn(stay22)

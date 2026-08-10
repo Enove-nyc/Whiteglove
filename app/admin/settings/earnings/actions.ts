@@ -8,7 +8,8 @@ import { saveStay22 } from "@/lib/stay22-store";
 import { listProblem, type TravelExtra } from "@/lib/travel-extras";
 import { saveExtras } from "@/lib/travel-extras-store";
 import { SLOTS, type TravelpayoutsLinks } from "@/lib/travelpayouts";
-import { saveTravelpayoutsLinks, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
+import { saveTravelpayouts, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
+import { isPartnerKey, type PartnerChoices } from "@/lib/travel-partners";
 
 export type ActionResult = { ok: boolean; message: string };
 
@@ -29,16 +30,22 @@ export async function saveLinksAction(_prev: ActionResult | null, form: FormData
   const refused = await allowed();
   if (refused) return refused;
 
-  const next: TravelpayoutsLinks = {};
+  const links: TravelpayoutsLinks = {};
+  const partners: PartnerChoices = {};
   for (const { slot } of SLOTS) {
     const value = String(form.get(slot) ?? "").trim();
-    if (value) next[slot] = value;
+    if (value) links[slot] = value;
+    const partner = String(form.get(`partner-${slot}`) ?? "");
+    // An unrecognised key is dropped rather than stored: partnerFor falls back
+    // to the default, which is a working search, where a bad key persisted
+    // would be a setting nobody can see or correct.
+    if (isPartnerKey(partner)) partners[slot] = partner;
   }
 
-  // saveTravelpayoutsLinks checks each link against the partner that search
-  // actually opens, and refuses the save rather than storing one that cannot
+  // saveTravelpayouts checks each link against the partner being saved
+  // alongside it, and refuses the save rather than storing one that cannot
   // earn.
-  const saved = await saveTravelpayoutsLinks(next);
+  const saved = await saveTravelpayouts({ links, partners });
   if (saved.ok) {
     revalidatePath("/admin/settings/earnings");
     revalidatePath("/book");

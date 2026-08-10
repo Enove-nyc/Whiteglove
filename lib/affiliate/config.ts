@@ -9,18 +9,22 @@
 
 import { unstable_cache } from "next/cache";
 import { readStay22 } from "@/lib/stay22-store";
-import { readTravelpayoutsLinks } from "@/lib/travelpayouts-store";
+import { readTravelpayouts } from "@/lib/travelpayouts-store";
 import { NO_STAY22 } from "@/lib/stay22";
 import type { AffiliateConfig } from "@/lib/affiliate/partners";
 
 export const AFFILIATE_CONFIG_TAG = "affiliate-config";
 
 const cached = unstable_cache(
-  async (): Promise<AffiliateConfig> => ({
-    travelpayouts: await readTravelpayoutsLinks(),
-    stay22: await readStay22(),
-    kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
-  }),
+  async (): Promise<AffiliateConfig> => {
+    const travelpayouts = await readTravelpayouts();
+    return {
+      travelpayouts: travelpayouts.links,
+      partners: travelpayouts.partners,
+      stay22: await readStay22(),
+      kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
+    };
+  },
   ["affiliate-config"],
   { tags: [AFFILIATE_CONFIG_TAG], revalidate: 3600 },
 );

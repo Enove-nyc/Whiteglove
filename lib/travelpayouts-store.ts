@@ -21,8 +21,51 @@
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
 import { linkProblem, SLOTS, type TravelpayoutsLinks } from "@/lib/travelpayouts";
+import { isPartnerKey, type PartnerChoices, TRAVEL_PARTNERS } from "@/lib/travel-partners";
 
 const KEY = "white-glove:travelpayouts";
+
+/**
+ * What is stored: the pasted links, and which partner each search opens.
+ *
+ * THE SHAPE CHANGED and the old one still reads. Before the partner was a
+ * choice, this key held the links alone — `{"flights":"https://tp.media/..."}`
+ * — so a stored value with slot names at the top level is that older shape and
+ * is read as links with no choices. Migrating on read costs three lines and
+ * means nobody has to remember to run anything; getting it wrong would empty
+ * the earnings settings on deploy.
+ */
+export type TravelpayoutsSettings = {
+  links: TravelpayoutsLinks;
+  partners: PartnerChoices;
+};
+
+export const NO_TRAVELPAYOUTS: TravelpayoutsSettings = { links: {}, partners: {} };
+
+function readShape(raw: unknown): TravelpayoutsSettings {
+  if (!raw || typeof raw !== "object") return NO_TRAVELPAYOUTS;
+  const value = raw as Record<string, unknown>;
+
+  const links: TravelpayoutsLinks = {};
+  const partners: PartnerChoices = {};
+
+  // The current shape.
+  const storedLinks = (value.links && typeof value.links === "object" ? value.links : value) as Record<string, unknown>;
+  for (const { slot } of SLOTS) {
+    const link = storedLinks[slot];
+    if (typeof link === "string" && link.trim()) links[slot] = link.trim();
+  }
+
+  const storedPartners = (value.partners && typeof value.partners === "object" ? value.partners : {}) as Record<string, unknown>;
+  for (const { slot } of SLOTS) {
+    const key = storedPartners[slot];
+    // Only a key that really serves this slot — a stale one falls through to
+    // the default rather than pinning a search to a partner that cannot serve it.
+    if (isPartnerKey(key) && TRAVEL_PARTNERS.some((p) => p.slot === slot && p.key === key)) partners[slot] = key;
+  }
+
+  return { links, partners };
+}
 export const TRAVELPAYOUTS_TAG = "travelpayouts";
 
 export function travelpayoutsStoreAvailable() {
@@ -48,32 +91,31 @@ async function redis<T>(path: string, body?: string): Promise<T | null> {
   }
 }
 
-async function readStored(): Promise<TravelpayoutsLinks> {
+async function readStored(): Promise<TravelpayoutsSettings> {
   const raw = await redis<string>(`get/${KEY}`);
-  if (!raw) return {};
+  if (!raw) return NO_TRAVELPAYOUTS;
   try {
-    const parsed = JSON.parse(raw) as TravelpayoutsLinks;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    return readShape(JSON.parse(raw));
   } catch {
-    return {};
+    return NO_TRAVELPAYOUTS;
   }
 }
 
 const cached = unstable_cache(readStored, ["travelpayouts-links"], { tags: [TRAVELPAYOUTS_TAG], revalidate: 3600 });
 
-/** The links to route this visitor's searches through. Never throws. */
-export async function readTravelpayoutsLinks(): Promise<TravelpayoutsLinks> {
-  if (!travelpayoutsStoreAvailable()) return {};
+/** The links and partner choices for this visitor's searches. Never throws. */
+export async function readTravelpayouts(): Promise<TravelpayoutsSettings> {
+  if (!travelpayoutsStoreAvailable()) return NO_TRAVELPAYOUTS;
   return cached();
 }
 
 /** Uncached, for the admin screen — it must show what was just saved. */
-export async function readTravelpayoutsLinksFresh(): Promise<TravelpayoutsLinks> {
-  if (!travelpayoutsStoreAvailable()) return {};
+export async function readTravelpayoutsFresh(): Promise<TravelpayoutsSettings> {
+  if (!travelpayoutsStoreAvailable()) return NO_TRAVELPAYOUTS;
   return readStored();
 }
 
-export async function saveTravelpayoutsLinks(next: TravelpayoutsLinks): Promise<{ ok: boolean; message: string }> {
+export async function saveTravelpayouts(next: TravelpayoutsSettings): Promise<{ ok: boolean; message: string }> {
   if (!travelpayoutsStoreAvailable()) {
     return { ok: false, message: "This needs the private store connected. Ask for UPSTASH_REDIS_REST_URL and _TOKEN to be set." };
   }
@@ -81,16 +123,15 @@ export async function saveTravelpayoutsLinks(next: TravelpayoutsLinks): Promise<
   // Refuse the whole save rather than storing a link that cannot earn. A link
   // for the wrong partner is the one mistake with no symptom — the search still
   // opens, and the money just never arrives.
+  // Checked against the partner being saved alongside it, not the stored one:
+  // changing partner and pasting that partner's link is one action, and
+  // validating against the old choice would refuse the correct pair.
   for (const { slot, label } of SLOTS) {
-    const problem = linkProblem(next[slot] ?? "", slot);
+    const problem = linkProblem(next.links[slot] ?? "", slot, next.partners);
     if (problem) return { ok: false, message: `${label}: ${problem}` };
   }
 
-  const keep: TravelpayoutsLinks = {};
-  for (const { slot } of SLOTS) {
-    const value = next[slot]?.trim();
-    if (value) keep[slot] = value;
-  }
+  const keep = readShape(next);
 
   if ((await redis(`set/${KEY}`, JSON.stringify(keep))) === null) {
     return { ok: false, message: "The private store could not be reached. Nothing was changed — try again." };
@@ -103,7 +144,10 @@ export async function saveTravelpayoutsLinks(next: TravelpayoutsLinks): Promise<
   updateTag(AFFILIATE_CONFIG_TAG);
   revalidatePath("/", "layout");
 
-  const count = Object.keys(keep).length;
+  // The links, not the partner choices — a chosen partner with no link pasted
+  // against it is a search that still earns nothing, and counting it would
+  // report money that is not coming.
+  const count = Object.keys(keep.links).length;
   return {
     ok: true,
     message:
