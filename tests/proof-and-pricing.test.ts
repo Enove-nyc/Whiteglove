@@ -7,9 +7,30 @@ import { buildPrintTimeline } from "@/data/itinerary-print";
 import { kosherAreas } from "@/data/kosher-stays";
 import { SAMPLE_ITINERARY, SAMPLE_NOTICE, WHAT_IS_IN_IT } from "@/data/sample-itinerary";
 import { services } from "@/data/services";
-import { BUILT_IN_WORDS, PRICE_NOT_PUBLISHED } from "@/data/site-words";
+import {
+  BUILT_IN_WORDS,
+  PRICE_NOT_PUBLISHED,
+  PRICING_OUTSTANDING_NOTE,
+  publicPricingView,
+  type PricingQuestion,
+  type SiteWords,
+} from "@/data/site-words";
 import { FIELDS } from "@/lib/site-words";
 import { publicPaths } from "@/lib/site-map";
+
+function questionsFor(words: SiteWords): PricingQuestion[] {
+  return [
+    { id: "starts-at", question: "The fee", answer: words.pricingStartsAt },
+    { id: "what-affects", question: "What the fee depends on", answer: words.pricingWhatAffects },
+    { id: "turnaround", question: "Time to a first reply", answer: words.pricingTurnaround },
+    { id: "revisions", question: "Changes to a plan", answer: words.pricingRevisions },
+    { id: "booking", question: "Booking", answer: words.pricingBookingSupport },
+    { id: "fee-credit", question: "The fee against a booking", answer: words.pricingFeeCredit },
+    { id: "timeline", question: "How long the planning takes", answer: words.pricingTimeline },
+    { id: "cancellation", question: "If the trip is called off", answer: words.pricingCancellation },
+    { id: "support", question: "After the itinerary is sent", answer: words.pricingSupportAfter },
+  ];
+}
 
 /**
  * Two gaps a visitor could feel and not name.
@@ -85,12 +106,44 @@ describe("what to expect about price", () => {
     assert.notEqual(BUILT_IN_WORDS.pricingWhatAffects, PRICE_NOT_PUBLISHED);
   });
 
-  it("MARKS AN UNANSWERED LINE, so it cannot be read as an answer", () => {
-    assert.match(PRICING, /PRICE_NOT_PUBLISHED/);
-    assert.match(PRICING, /Ask when you write in/);
-    // A word rather than a colour, since this is the one distinction on the
-    // panel that changes what the sentence means.
-    assert.match(PRICING, /const unanswered = answer === PRICE_NOT_PUBLISHED/);
+  it("does not print a row of placeholders for unfinished commercial terms", () => {
+    assert.match(PRICING, /publicPricingView/);
+    assert.match(PRICING, /PRICING_OUTSTANDING_NOTE/);
+    assert.doesNotMatch(PRICING, /Ask when you write in/);
+    assert.doesNotMatch(PRICING, /Needs your answer|not a published fee/i);
+  });
+
+  it("shows only real answers — empty, partial, and full policy states", () => {
+    const emptyWords = {
+      ...BUILT_IN_WORDS,
+      pricingWhatAffects: PRICE_NOT_PUBLISHED,
+      pricingRevisions: PRICE_NOT_PUBLISHED,
+      pricingBookingSupport: PRICE_NOT_PUBLISHED,
+    };
+    const empty = publicPricingView(questionsFor(emptyWords));
+    assert.equal(empty.answered.length, 0);
+    assert.equal(empty.showOutstandingNote, true);
+    assert.match(PRICING_OUTSTANDING_NOTE, /Every trip is different/);
+
+    const partial = publicPricingView(questionsFor(BUILT_IN_WORDS));
+    assert.equal(partial.answered.length, 3);
+    assert.equal(partial.outstandingCount, 6);
+    assert.equal(partial.showOutstandingNote, true);
+    assert.ok(partial.answered.every((row) => row.answer !== PRICE_NOT_PUBLISHED));
+
+    const fullWords: SiteWords = {
+      ...BUILT_IN_WORDS,
+      pricingStartsAt: "Planning is quoted after we understand the brief — typically a flat fee for the itinerary.",
+      pricingTurnaround: "A first quote usually comes back within a few working days once dates and places are clear.",
+      pricingFeeCredit: "The planning fee is for the itinerary; whether any of it is credited toward booking help is stated in the quote.",
+      pricingTimeline: "A straightforward city break is often ready within about two weeks of kickoff.",
+      pricingCancellation: "If you cancel before planning starts, you owe nothing; work already done is billed as agreed in the quote.",
+      pricingSupportAfter: "Questions about the written plan are welcome for a set window after delivery.",
+    };
+    const full = publicPricingView(questionsFor(fullWords));
+    assert.equal(full.answered.length, 9);
+    assert.equal(full.outstandingCount, 0);
+    assert.equal(full.showOutstandingNote, false);
   });
 
   it("no longer leaves a service's price line as “quoted” and nothing else", () => {

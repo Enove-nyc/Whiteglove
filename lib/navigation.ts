@@ -200,6 +200,9 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       // offers commercially has moved into the journeys; what it offers
       // personally is inside Contact.
       { label: "Travel services", href: "/services", description: "What we do, and what to expect about price." },
+      // Case studies are linked from homepage/About when content exists; the
+      // dedicated page 404s until enough approved studies are published, so it
+      // is not hard-wired into this static menu.
       { label: "Contact", href: "/contact", description: "Ask a question, report a correction, or talk about advertising." },
     ],
   },

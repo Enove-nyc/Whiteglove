@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { caseStudiesPageShouldExist } from "@/data/case-studies";
+import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { siteOrigin } from "@/lib/seo";
 import { publicPaths } from "@/lib/site-map";
 
@@ -19,16 +21,31 @@ import { publicPaths } from "@/lib/site-map";
  * With no site address configured this returns nothing rather than a list of
  * relative URLs. A sitemap of paths without a host is not a sitemap — every
  * line would be rejected — and an empty one at least fails visibly.
+ *
+ * /case-studies is added only when enough approved studies exist — an empty
+ * public page must not be advertised to crawlers.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = siteOrigin();
   if (!origin) return [];
   const lastModified = new Date();
 
-  return publicPaths().map(({ path, priority, changeFrequency }) => ({
+  const entries: MetadataRoute.Sitemap = publicPaths().map(({ path, priority, changeFrequency }) => ({
     url: new URL(path, origin).toString(),
     lastModified,
     changeFrequency,
     priority,
   }));
+
+  const studies = await readPublicCaseStudies();
+  if (caseStudiesPageShouldExist(studies)) {
+    entries.push({
+      url: new URL("/case-studies", origin).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    });
+  }
+
+  return entries;
 }

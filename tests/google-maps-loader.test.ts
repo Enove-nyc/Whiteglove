@@ -7,15 +7,16 @@ const STATUS = readFileSync("components/MapKeyStatus.tsx", "utf8");
 const AREA = readFileSync("components/AreaMap.tsx", "utf8");
 
 describe("Google Maps loader", () => {
-  it("uses the classic callback, not loading=async with Map constructor", () => {
-    assert.match(LOADER, /callback=\$\{cbName\}/);
-    // Comments may mention the old loading=async mistake; the script URL must not.
+  it("uses loading=async with importLibrary, not a classic callback race", () => {
     const scriptSrc = LOADER.match(/script\.src = `([^`]+)`/)?.[1] ?? "";
-    assert.match(scriptSrc, /callback=/);
-    assert.doesNotMatch(scriptSrc, /loading=async/);
+    assert.match(scriptSrc, /loading=async/);
+    assert.doesNotMatch(scriptSrc, /callback=/);
+    assert.match(LOADER, /importLibrary/);
     assert.match(LOADER, /gm_authFailure/);
     assert.match(LOADER, /probeGoogleMaps/);
     assert.match(LOADER, /GOOGLE_MAPS_LOAD_MS/);
+    // A false from a bootstrap race must not poison every later caller.
+    assert.match(LOADER, /pending = null/);
   });
 
   it("admin test constructs a map and names the common Google errors", () => {
@@ -30,8 +31,12 @@ describe("Google Maps loader", () => {
     assert.doesNotMatch(STATUS, /googleMapsBrowserKey\(\)\s*\n\s*[^;]*<\/code>/);
   });
 
-  it("public map falls back to OSM on auth failure", () => {
+  it("public map prefers Google when Map exists and falls back on auth failure", () => {
     assert.match(AREA, /onGoogleMapsAuthFailure/);
     assert.match(AREA, /drawOsm/);
+    assert.match(AREA, /drawGoogle/);
+    assert.match(AREA, /useGoogle \|\| googleMaps\(\)\?\.Map/);
+    // Deciding must not claim the OpenStreetMap scroll-zoom wording.
+    assert.match(AREA, /Loading the map/);
   });
 });

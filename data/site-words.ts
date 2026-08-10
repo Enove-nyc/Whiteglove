@@ -117,15 +117,48 @@ export type SiteWords = {
 };
 
 /**
- * What an unanswered pricing line says.
+ * What an unanswered pricing line says in Admin → Words.
  *
  * ONE STRING, so the services page can tell the difference between a line the
- * owner has answered and one he has not, and mark the second as outstanding
- * rather than printing it as though it were the answer. The moment he edits
- * one, it stops matching and renders as an ordinary answer.
+ * owner has answered and one he has not. The public page never prints this
+ * sentinel as a row — unfinished answers collapse into PRICING_OUTSTANDING_NOTE.
  */
 export const PRICE_NOT_PUBLISHED =
   "Ask when you write in, and we will tell you before any work starts.";
+
+/**
+ * One polished note covering every pricing line the owner has not yet decided.
+ * Shown once on the public services page — never repeated per empty row.
+ */
+export const PRICING_OUTSTANDING_NOTE =
+  "Every trip is different. Your quote will set out the planning fee, expected timeline, revisions, cancellation terms, and support after delivery before any work begins.";
+
+/** A priced Q&A row on the services page. */
+export type PricingQuestion = { id: string; question: string; answer: string };
+
+/**
+ * What the public services page should show for price.
+ *
+ * - No completed answers → only the outstanding note (never six placeholders).
+ * - Some completed → those answers, plus one short note for what remains.
+ * - All completed → the answers only.
+ *
+ * The questions themselves are built in components/ServicePricing.tsx with
+ * named `words.pricing…` reads so settings ↔ page stay linked in tests.
+ */
+export function publicPricingView(questions: PricingQuestion[]): {
+  answered: PricingQuestion[];
+  outstandingCount: number;
+  showOutstandingNote: boolean;
+} {
+  const answered = questions.filter((entry) => entry.answer !== PRICE_NOT_PUBLISHED);
+  const outstandingCount = questions.length - answered.length;
+  return {
+    answered,
+    outstandingCount,
+    showOutstandingNote: outstandingCount > 0,
+  };
+}
 
 /**
  * What the site says today.

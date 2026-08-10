@@ -2,31 +2,67 @@
 
 import { useActionState, useState } from "react";
 import type { CaseStudy } from "@/data/case-studies";
-import { caseStudyCompleteness } from "@/data/case-studies";
-import { deleteCaseStudyAction, saveCaseStudyAction } from "@/app/admin/settings/proof/actions";
+import { caseStudyCompleteness, caseStudyIsPublic } from "@/data/case-studies";
+import {
+  deleteCaseStudyAction,
+  publishCaseStudyAction,
+  reorderCaseStudyAction,
+  saveCaseStudyAction,
+  unpublishCaseStudyAction,
+} from "@/app/admin/settings/proof/actions";
 
 const input =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 
-function emptyDraft(): {
+type Draft = {
   id: string;
   attribution: string;
   anonymised: boolean;
+  location: string;
+  tripType: string;
+  quote: string;
   tripRequest: string;
   whatSolved: string;
   outcome: string;
+  itineraryHref: string;
   permissionRecorded: boolean;
   approved: boolean;
-} {
+  sortOrder: number;
+};
+
+function emptyDraft(): Draft {
   return {
     id: "",
     attribution: "",
     anonymised: false,
+    location: "",
+    tripType: "",
+    quote: "",
     tripRequest: "",
     whatSolved: "",
     outcome: "",
+    itineraryHref: "",
     permissionRecorded: false,
     approved: false,
+    sortOrder: 0,
+  };
+}
+
+function fromStudy(study: CaseStudy): Draft {
+  return {
+    id: study.id,
+    attribution: study.attribution,
+    anonymised: study.anonymised,
+    location: study.location,
+    tripType: study.tripType,
+    quote: study.quote,
+    tripRequest: study.tripRequest,
+    whatSolved: study.whatSolved,
+    outcome: study.outcome,
+    itineraryHref: study.itineraryHref,
+    permissionRecorded: study.permissionRecorded,
+    approved: study.approved,
+    sortOrder: study.sortOrder,
   };
 }
 
@@ -43,9 +79,13 @@ export default function CaseStudiesForm({
 }) {
   const [saveState, save, saving] = useActionState(saveCaseStudyAction, null);
   const [deleteState, del, deleting] = useActionState(deleteCaseStudyAction, null);
+  const [publishState, publish, publishing] = useActionState(publishCaseStudyAction, null);
+  const [unpublishState, unpublish, unpublishing] = useActionState(unpublishCaseStudyAction, null);
+  const [reorderState, reorder, reordering] = useActionState(reorderCaseStudyAction, null);
   const [draft, setDraft] = useState(emptyDraft());
 
   const completeness = caseStudyCompleteness(draft);
+  const listBusy = deleting || publishing || unpublishing || reordering;
 
   if (!storeReady) {
     return (
@@ -62,18 +102,14 @@ export default function CaseStudiesForm({
           {draft.id ? "Edit case study" : "Add a case study"}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          Only publish what a real client permitted. This is not the sample itinerary. Approval is refused until trip
-          request, what you solved, outcome, and permission are all filled in.
+          Only publish what a real client permitted. This is not the sample itinerary — that page is an illustrative
+          deliverable; these are genuine trip outcomes. Approval is refused until request, what you solved, outcome, and
+          permission are all filled in.
         </p>
 
-        <form
-          action={save}
-          className="mt-6 space-y-4"
-          onSubmit={() => {
-            /* values come from controlled inputs via name= */
-          }}
-        >
+        <form action={save} className="mt-6 space-y-4">
           <input type="hidden" name="id" value={draft.id} />
+          <input type="hidden" name="sortOrder" value={String(draft.sortOrder)} />
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Attribution</span>
             <input
@@ -93,8 +129,41 @@ export default function CaseStudiesForm({
             />
             Anonymised (name withheld on the public page)
           </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Location (optional)</span>
+              <input
+                name="location"
+                className={input}
+                value={draft.location}
+                onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value }))}
+                placeholder="Rome · Italy"
+              />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Trip type (optional)</span>
+              <input
+                name="tripType"
+                className={input}
+                value={draft.tripType}
+                onChange={(e) => setDraft((d) => ({ ...d, tripType: e.target.value }))}
+                placeholder="Family city break"
+              />
+            </label>
+          </div>
           <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Trip request</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Quote (optional)</span>
+            <textarea
+              name="quote"
+              rows={2}
+              className={input}
+              value={draft.quote}
+              onChange={(e) => setDraft((d) => ({ ...d, quote: e.target.value }))}
+              placeholder="A short line in their words, only if they agreed"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Original request</span>
             <textarea
               name="tripRequest"
               rows={3}
@@ -114,7 +183,7 @@ export default function CaseStudiesForm({
             />
           </label>
           <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Outcome</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Result / outcome</span>
             <textarea
               name="outcome"
               rows={3}
@@ -123,12 +192,30 @@ export default function CaseStudiesForm({
               onChange={(e) => setDraft((d) => ({ ...d, outcome: e.target.value }))}
             />
           </label>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
+              Itinerary link (optional)
+            </span>
+            <input
+              name="itineraryHref"
+              className={input}
+              value={draft.itineraryHref}
+              onChange={(e) => setDraft((d) => ({ ...d, itineraryHref: e.target.value }))}
+              placeholder="/destinations/rome — path on this site only"
+            />
+          </label>
           <label className="flex items-center gap-2 text-sm text-stone-700">
             <input
               type="checkbox"
               name="permissionRecorded"
               checked={draft.permissionRecorded}
-              onChange={(e) => setDraft((d) => ({ ...d, permissionRecorded: e.target.checked }))}
+              onChange={(e) =>
+                setDraft((d) => ({
+                  ...d,
+                  permissionRecorded: e.target.checked,
+                  approved: e.target.checked ? d.approved : false,
+                }))
+              }
             />
             I have permission to publish this
           </label>
@@ -176,48 +263,96 @@ export default function CaseStudiesForm({
           <p className="mt-3 text-sm text-stone-600">None yet — and that is correct. Do not invent any.</p>
         ) : (
           <ul className="mt-4 space-y-4">
-            {studies.map((study) => (
-              <li key={study.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-semibold text-[var(--navy)]">{study.attribution}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                    {study.approved && !caseStudyCompleteness(study) ? "Public" : "Draft — not public"}
-                  </p>
-                </div>
-                <p className="mt-2 text-sm text-stone-600 line-clamp-2">{study.tripRequest}</p>
-                <div className="mt-3 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-[var(--navy)] underline"
-                    onClick={() =>
-                      setDraft({
-                        id: study.id,
-                        attribution: study.attribution,
-                        anonymised: study.anonymised,
-                        tripRequest: study.tripRequest,
-                        whatSolved: study.whatSolved,
-                        outcome: study.outcome,
-                        permissionRecorded: study.permissionRecorded,
-                        approved: study.approved,
-                      })
-                    }
-                  >
-                    Edit
-                  </button>
-                  <form action={del}>
-                    <input type="hidden" name="id" value={study.id} />
-                    <button type="submit" disabled={deleting} className="text-xs font-semibold text-red-700 underline disabled:opacity-50">
-                      Delete
+            {studies.map((study, index) => {
+              const publicReady = caseStudyIsPublic(study);
+              return (
+                <li key={study.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-semibold text-[var(--navy)]">{study.attribution}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
+                      {publicReady ? "Public" : "Draft — not public"}
+                    </p>
+                  </div>
+                  <p className="mt-2 text-sm text-stone-600 line-clamp-2">{study.tripRequest}</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-[var(--navy)] underline"
+                      onClick={() => setDraft(fromStudy(study))}
+                    >
+                      Edit
                     </button>
-                  </form>
-                </div>
-              </li>
-            ))}
+                    <form action={reorder}>
+                      <input type="hidden" name="id" value={study.id} />
+                      <input type="hidden" name="direction" value="up" />
+                      <button
+                        type="submit"
+                        disabled={listBusy || index === 0}
+                        className="text-xs font-semibold text-stone-600 underline disabled:opacity-40"
+                      >
+                        Move up
+                      </button>
+                    </form>
+                    <form action={reorder}>
+                      <input type="hidden" name="id" value={study.id} />
+                      <input type="hidden" name="direction" value="down" />
+                      <button
+                        type="submit"
+                        disabled={listBusy || index === studies.length - 1}
+                        className="text-xs font-semibold text-stone-600 underline disabled:opacity-40"
+                      >
+                        Move down
+                      </button>
+                    </form>
+                    {publicReady ? (
+                      <form action={unpublish}>
+                        <input type="hidden" name="id" value={study.id} />
+                        <button
+                          type="submit"
+                          disabled={listBusy}
+                          className="text-xs font-semibold text-amber-800 underline disabled:opacity-50"
+                        >
+                          Unpublish
+                        </button>
+                      </form>
+                    ) : (
+                      <form action={publish}>
+                        <input type="hidden" name="id" value={study.id} />
+                        <button
+                          type="submit"
+                          disabled={listBusy || Boolean(caseStudyCompleteness(study))}
+                          className="text-xs font-semibold text-emerald-800 underline disabled:opacity-50"
+                          title={caseStudyCompleteness(study) ?? undefined}
+                        >
+                          Publish
+                        </button>
+                      </form>
+                    )}
+                    <form action={del}>
+                      <input type="hidden" name="id" value={study.id} />
+                      <button
+                        type="submit"
+                        disabled={listBusy}
+                        className="text-xs font-semibold text-red-700 underline disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
-        {deleteState && (
-          <p className={`mt-3 text-sm font-semibold ${deleteState.ok ? "text-emerald-700" : "text-red-700"}`}>
-            {deleteState.message}
+        {(deleteState || publishState || unpublishState || reorderState) && (
+          <p
+            className={`mt-3 text-sm font-semibold ${
+              (deleteState ?? publishState ?? unpublishState ?? reorderState)?.ok
+                ? "text-emerald-700"
+                : "text-red-700"
+            }`}
+          >
+            {(deleteState ?? publishState ?? unpublishState ?? reorderState)?.message}
           </p>
         )}
       </section>

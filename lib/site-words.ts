@@ -130,7 +130,7 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
   {
     id: "pricing",
     title: "What to expect about price",
-    note: "Nine lines on the Services page. Six of them still need your decision (starting fee or range, time to a quote, whether a planning fee is credited toward a booking, how long planning takes, cancellation/refund, and support after delivery) — they ship marked “Needs your answer” until you write something you will stand behind. Three already have real answers. Never invent a figure or a policy here.",
+    note: "Nine lines for the Services page. Each field you fill appears there as a real answer; anything still on the built-in “ask when you write in” line stays off the public page and is covered by one short note instead of a row of placeholders. Never invent a figure or a policy here.",
   },
 ];
 

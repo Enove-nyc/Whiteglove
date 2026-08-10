@@ -79,6 +79,17 @@ describe("getting to the fields", () => {
   });
 });
 
+describe("saving to the trip", () => {
+  it("does not offer Add to my trip before a partner search", () => {
+    // At search time the traveller has not chosen a hotel, flight or car yet.
+    // The itinerary save belongs on the after-partner BookedPrompt, not on the
+    // cash search action row.
+    assert.doesNotMatch(PANEL_PROSE, /\+ Add to my trip/);
+    assert.match(PANEL, /function BookedPrompt/);
+    assert.match(PANEL_PROSE, /I booked it — add it to my trip/);
+  });
+});
+
 describe("hotels first", () => {
   it("OPENS ON HOTELS, not on flights", () => {
     // Accommodation is the one product this site knows something a comparison

@@ -26,6 +26,8 @@ import { LIVE_FINDER_SHORT } from "@/lib/kosher-live";
 import { readinessOf } from "@/lib/destination-readiness";
 import { guidedDestinations } from "@/data/destinations";
 import { allTzaddikim } from "@/lib/tzaddikim";
+import CaseStudiesSection from "@/components/CaseStudiesSection";
+import { readPublicCaseStudies } from "@/lib/case-studies-store";
 
 export const metadata = pageMetadata({
   title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Itineraries",
@@ -127,19 +129,19 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string;
 /**
  * The one sentence about verification that belongs on a front page.
  *
- * There were four bullets and a two-paragraph panel here, explaining how the
- * checking is done to somebody who had not yet asked whether it was. All of it
- * is on /verification, which is written for the moment a person is actually
- * deciding whether to rely on something.
+ * Qualified on purpose: not every displayed detail is verified against the
+ * place. Where one has been checked, the page names source and date; anything
+ * still needing confirmation is labelled. Live OSM food results stay a separate
+ * lead. Full definitions live on /verification.
  */
 const VERIFICATION_LINE =
-  "On published destinations, the kosher food, Shabbos arrangements and the quarter to stay in are checked against the place itself where we hold them, and each of those details names where it came from. Live food-finder results are a separate lead from OpenStreetMap — confirm the hechsher yourself.";
+  "Where a practical detail has been checked, the page names its source and when it was confirmed. Anything still needing confirmation is labelled plainly. Live food-finder results are a separate lead from OpenStreetMap — confirm the hechsher yourself.";
 
 export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, topVisitedPaths, words, sources, stays] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, topVisitedPaths, words, sources, stays, caseStudies] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
     getTopVisitedPaths(60),
@@ -149,6 +151,8 @@ export default async function Home() {
     // Read through the view, so a stay the owner adds today is on the front
     // page today rather than at the next deploy.
     getStayList(),
+    // Genuine, permitted, approved only — section renders nothing when empty.
+    readPublicCaseStudies(),
   ]);
 
   const cards = cardModels(vacationDestinations, sources);
@@ -528,7 +532,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 10. Why the practical detail can be relied on ----------------
+      {/* ---- 10. Case studies (only when ≥1 approved entry exists) --------
+          No invented quotes. The section component returns null when empty. */}
+      <CaseStudiesSection studies={caseStudies} />
+
+      {/* ---- 11. Why the practical detail can be relied on ----------------
           ONE SENTENCE, AND NOT A ROW OF STATUS LABELS. This carried the four
           badges — Verified, Reported, Being checked, Reconfirm before travel —
           which is the site's own editorial grading shown to somebody who had
@@ -553,7 +561,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 11. Ask a question, and the final call to action ------------- */}
+      {/* ---- 12. Ask a question, and the final call to action ------------- */}
       <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
         <TravelAssistantBox />
       </section>
@@ -564,7 +572,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* ---- 12. Which door do I want? ------------------------------------
+      {/* ---- 13. Which door do I want? ------------------------------------
           THIS WAS THE SEARCH BOX A SECOND TIME. The page carried the same
           StaySearchForm in the hero and again at the bottom, and the argument
           for the second one — that sending a reader back up to the hero is a

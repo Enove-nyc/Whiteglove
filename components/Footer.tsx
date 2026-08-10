@@ -127,12 +127,13 @@ export default async function Footer() {
                   Shabbos side worked out". That was a promise about the whole
                   list made in the footer of all three hundred pages, and the
                   list does not keep it evenly — see
-                  lib/destination-readiness.ts, which is what decides. What is
-                  true of all of them is that the destination page answers
-                  those questions and names where each answer came from. */}
+                  lib/destination-readiness.ts, which is what decides. Verified
+                  details name a source and date; anything still needing
+                  confirmation is labelled. */}
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Vacations, family trips and heritage journeys. Each destination page answers what there is to eat and
-                how Shabbos works there, and names where each answer came from.
+                Vacations, family trips and heritage journeys. Destination pages answer what there is to eat and how
+                Shabbos works there. Where a detail has been checked, the page names its source and when it was
+                confirmed.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/destinations" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">

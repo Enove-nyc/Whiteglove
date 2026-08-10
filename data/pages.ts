@@ -70,7 +70,7 @@ export const editablePages: PageDef[] = [
         eyebrow: "Vacation ideas",
         heading: "Where to go, with the kosher side answered first.",
         intro:
-          "Beaches, cities, mountains and family trips. Each destination page answers the two questions that decide whether a holiday is workable — what there is to eat, and how Shabbos works there — and names where each answer came from.",
+          "Beaches, cities, mountains and family trips. Each destination page answers the two questions that decide whether a holiday is workable — what there is to eat, and how Shabbos works there. Where a detail has been checked, the page names its source and when it was confirmed.",
       },
     ],
   },

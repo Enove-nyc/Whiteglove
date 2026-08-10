@@ -20,7 +20,7 @@ import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date
 // out of the traveler's own loyalty account, so nobody but them can complete
 // the booking. There we help them find the award and check it's worth the
 // points, then send them to their own program.
-// Either way an item can be saved to their itinerary before they book.
+// After a cash partner handoff, a prompt asks them to save what they booked.
 
 type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
@@ -223,7 +223,7 @@ export default function BookPartners({ prefill, multiCity = true }: { prefill?: 
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
-          : "Cash searches open with a trusted booking partner, where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
+          : "Cash searches open with a trusted booking partner, where you compare and pay securely. After you book, you can add the details to your White Glove itinerary."}
       </p>
     </div>
   );
@@ -407,7 +407,7 @@ function FlightsForm({ onAdd, onOpened, prefill, multiCity = true }: { onAdd: Ad
       )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search flights" />
+      <ActionRow onSearch={search} searchLabel="Search flights" />
     </div>
   );
 }
@@ -464,7 +464,7 @@ function HotelsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBo
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel={hotelButtonLabel()} />
+      <ActionRow onSearch={search} searchLabel={hotelButtonLabel()} />
     </div>
   );
 }
@@ -529,7 +529,7 @@ function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBook
         <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={notBefore(today(), earliestEnd(pickup))} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search cars" />
+      <ActionRow onSearch={search} searchLabel="Search cars" />
     </div>
   );
 }
@@ -598,18 +598,17 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
           </button>
         </div>
         <p className="mt-3 text-xs leading-5 text-stone-500">
-          Still looking? Close this, book in the other tab, then use <strong>+ Add to my trip</strong> when you get back.
+          Still looking? Close this and finish booking in the other tab. Search again here afterwards if you need this prompt back.
         </p>
       </div>
     </div>
   );
 }
 
-function ActionRow({ onSearch, onAdd, searchLabel }: { onSearch: () => void; onAdd: () => void; searchLabel: string }) {
+function ActionRow({ onSearch, searchLabel }: { onSearch: () => void; searchLabel: string }) {
   return (
     <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <button type="button" onClick={onSearch} className="min-h-[52px] min-w-0 flex-1 rounded-full bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-[0_8px_20px_rgba(23,45,82,.14)] transition hover:bg-[var(--gold)]">{searchLabel} →</button>
-      <button type="button" onClick={onAdd} className="min-h-[52px] min-w-0 rounded-full border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:border-[var(--navy)] hover:bg-[var(--navy)] hover:text-white">+ Add to my trip</button>
     </div>
   );
 }

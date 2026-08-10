@@ -17,12 +17,13 @@
 // With no browser key set, this reports so and the map falls back to
 // OpenStreetMap tiles, which need no key at all.
 //
-// WHY THE CALLBACK, NOT loading=async. The URL used to carry loading=async and
-// resolve on the script element's load event. That parameter is for the newer
-// importLibrary() loading path; with the classic google.maps.Map constructor
-// the load event can fire before Map exists, so the site fell through to
-// OpenStreetMap even while Google's script kept finishing in the network tab.
-// The documented callback is the moment the classic API is actually usable.
+// WHY importLibrary, NOT the classic callback alone. The bootstrap script can
+// finish (and even invoke callback=) before google.maps.Map is constructible.
+// On a heavy public page that race is common: the admin probe constructs a map
+// (key works) while /map has already fallen through to Leaflet with the script
+// tag sitting in <head> and Map still undefined. Google's supported dynamic
+// path is loading=async plus importLibrary("maps"), which resolves only when
+// Map is actually usable.
 
 import { cleanKey } from "@/lib/api-key";
 
@@ -69,6 +70,7 @@ export type GoogleMapsApi = {
   Size: new (width: number, height: number) => object;
   Point: new (x: number, y: number) => object;
   LatLngBounds: new () => GLatLngBounds;
+  importLibrary?: (name: string) => Promise<unknown>;
 };
 
 type MapsGlobal = { maps?: GoogleMapsApi };
@@ -100,7 +102,7 @@ export function googleMapsAvailable(): boolean {
  * The variable is set, but what is in it is not a key.
  *
  * Worth distinguishing from "not set at all": cleanKey refuses a value with a
- * character that cannot be in a key, and without this the diagnostic would tell
+ * character that cannot appear in a key, and without this the diagnostic would tell
  * the owner to add a variable they can plainly see is already there.
  */
 export function googleMapsBrowserKeyMalformed(): boolean {
@@ -110,7 +112,6 @@ export function googleMapsBrowserKeyMalformed(): boolean {
 
 type WindowWithMapsHooks = Window & {
   gm_authFailure?: () => void;
-  __wgMapsReady?: () => void;
   __wgMapsAuthFailed?: boolean;
 };
 
@@ -119,14 +120,16 @@ export function onGoogleMapsAuthFailure(handler: () => void): () => void {
   if (typeof window === "undefined") return () => undefined;
   const w = window as WindowWithMapsHooks;
   const previous = w.gm_authFailure;
-  w.gm_authFailure = () => {
+  const ours = () => {
     w.__wgMapsAuthFailed = true;
     previous?.();
     handler();
   };
+  w.gm_authFailure = ours;
   return () => {
-    if (w.gm_authFailure) {
-      // Restore only if nobody else replaced us.
+    // Only restore when we still own the hook — loadGoogleMaps may have wrapped
+    // us, and wiping that wrapper would drop auth handling mid-load.
+    if (w.gm_authFailure === ours) {
       if (previous) w.gm_authFailure = previous;
       else delete w.gm_authFailure;
     }
@@ -136,6 +139,70 @@ export function onGoogleMapsAuthFailure(handler: () => void): () => void {
 export function googleMapsAuthFailed(): boolean {
   if (typeof window === "undefined") return false;
   return Boolean((window as WindowWithMapsHooks).__wgMapsAuthFailed);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+/** Inject the bootstrap script once; resolves when the file has loaded. */
+function ensureMapsScript(key: string): Promise<void> {
+  const id = "google-maps-js";
+  const already = document.getElementById(id) as HTMLScriptElement | null;
+  if (already) {
+    // Bootstrap already there — importLibrary or Map may still be arriving.
+    if (googleMaps()?.importLibrary || googleMaps()?.Map) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      already.addEventListener("load", () => resolve(), { once: true });
+      already.addEventListener("error", () => reject(new Error("maps script failed")), { once: true });
+      // Cached/completed script will not fire load again.
+      window.setTimeout(() => resolve(), 0);
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = id;
+    script.async = true;
+    // Official dynamic path. Do not use callback= here — that can fire before
+    // Map exists. importLibrary("maps") is the ready signal.
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&loading=async&v=weekly`;
+    script.addEventListener("load", () => resolve(), { once: true });
+    script.addEventListener("error", () => reject(new Error("maps script failed")), { once: true });
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Wait until google.maps.Map can be constructed, via importLibrary when the
+ * bootstrap exposes it, otherwise by polling the classic global.
+ */
+async function waitForMapApi(deadline: number): Promise<boolean> {
+  const w = window as WindowWithMapsHooks;
+
+  while (Date.now() < deadline) {
+    if (w.__wgMapsAuthFailed) return false;
+    const maps = googleMaps();
+    if (maps?.Map) return true;
+
+    if (typeof maps?.importLibrary === "function") {
+      try {
+        await Promise.race([
+          maps.importLibrary("maps"),
+          sleep(Math.max(0, deadline - Date.now())),
+        ]);
+      } catch {
+        // Keep polling until the deadline — a transient import error is not
+        // the same as a refused key.
+      }
+      if (w.__wgMapsAuthFailed) return false;
+      if (googleMaps()?.Map) return true;
+    }
+
+    await sleep(50);
+  }
+
+  return Boolean(googleMaps()?.Map) && !w.__wgMapsAuthFailed;
 }
 
 /**
@@ -154,59 +221,35 @@ export function loadGoogleMaps(): Promise<boolean> {
   const key = googleMapsBrowserKey();
   if (!key) return Promise.resolve(false);
 
-  // One load per page, however many maps ask for it.
-  pending ??= new Promise<boolean>((resolve) => {
+  // One load per page, however many maps ask for it. If a prior attempt ended
+  // false but Map has since appeared, the early return above already won.
+  pending ??= (async () => {
     const w = window as WindowWithMapsHooks;
-    let settled = false;
-    const finish = (ok: boolean) => {
-      if (settled) return;
-      settled = true;
-      window.clearTimeout(timer);
-      resolve(ok && !w.__wgMapsAuthFailed && Boolean(googleMaps()?.Map));
-    };
-
-    const timer = window.setTimeout(() => finish(Boolean(googleMaps()?.Map)), GOOGLE_MAPS_LOAD_MS);
-
-    // Google calls this when the key is refused after the script has loaded.
-    // Without it the script looks fine and the map draws blank / watermarked.
     const previousAuth = w.gm_authFailure;
     w.gm_authFailure = () => {
       w.__wgMapsAuthFailed = true;
       previousAuth?.();
-      finish(false);
     };
 
-    const id = "google-maps-js";
-    const cbName = "__wgMapsReady";
-    w[cbName] = () => finish(Boolean(googleMaps()?.Map));
+    const deadline = Date.now() + GOOGLE_MAPS_LOAD_MS;
 
-    const already = document.getElementById(id) as HTMLScriptElement | null;
-    if (already) {
-      if (googleMaps()?.Map) {
-        finish(true);
-        return;
-      }
-      already.addEventListener("error", () => finish(false), { once: true });
-      // Script tag is there but the API may still be finishing — poll briefly.
-      const poll = window.setInterval(() => {
-        if (googleMaps()?.Map || w.__wgMapsAuthFailed) {
-          window.clearInterval(poll);
-          finish(Boolean(googleMaps()?.Map) && !w.__wgMapsAuthFailed);
-        }
-      }, 100);
-      window.setTimeout(() => window.clearInterval(poll), GOOGLE_MAPS_LOAD_MS);
-      return;
+    try {
+      await Promise.race([ensureMapsScript(key), sleep(Math.max(0, deadline - Date.now()))]);
+    } catch {
+      pending = null;
+      return false;
     }
 
-    const script = document.createElement("script");
-    script.id = id;
-    script.async = true;
-    // Classic callback — the moment google.maps.Map is actually constructible.
-    // Do not add loading=async here; that path needs importLibrary(), not Map.
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=marker&callback=${cbName}&v=weekly`;
-    script.addEventListener("error", () => finish(false), { once: true });
-    document.head.appendChild(script);
-  });
+    if (w.__wgMapsAuthFailed) return false;
+
+    const ready = await waitForMapApi(deadline);
+    if (!ready) {
+      // Allow a later caller (or remount) to try again rather than poisoning
+      // the page with a permanent false from a bootstrap race.
+      pending = null;
+    }
+    return ready && !w.__wgMapsAuthFailed && Boolean(googleMaps()?.Map);
+  })();
 
   return pending;
 }

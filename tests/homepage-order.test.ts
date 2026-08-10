@@ -182,11 +182,13 @@ describe("the order of the page", () => {
   });
 
   it("STILL MAKES THE CLAIM, AND STILL LINKS TO WHAT TO CONFIRM", () => {
-    // Dropping the labels must not drop the reason to trust the page. The
-    // sentence says what has been checked and that each detail names a source;
-    // the link goes to the five things a traveler should confirm themselves.
-    assert.match(HOME, /checked against the place itself/);
-    assert.match(HOME, /names where it came from/);
+    // Qualified: not every detail is asserted as checked against the place.
+    // Where one has been checked, source and date are named; anything still
+    // needing confirmation is labelled. Link still goes to /verification.
+    assert.match(HOME, /Where a practical detail has been checked/);
+    assert.match(HOME, /names its source and when it was confirmed/);
+    assert.match(HOME, /still needing confirmation is labelled plainly/);
+    assert.doesNotMatch(HOME, /checked against the place itself/);
     assert.match(HOME, /href="\/verification"/);
     assert.doesNotMatch(PROSE, /straight-line distance|road routing/);
     assert.doesNotMatch(PROSE, /Somebody drives four hours/);
@@ -247,10 +249,11 @@ describe("the order of the page", () => {
   });
 
   it("INVENTS NO TESTIMONIAL", () => {
-    // The brief asked for testimonials "if real data is available". There is
-    // none on this site and nowhere to read one from, so the section is absent
-    // rather than filled with something plausible.
+    // Real case studies may appear when approved in admin — the homepage only
+    // mounts CaseStudiesSection, which returns null with an empty list. No
+    // seeded quote lives in the page source.
     assert.doesNotMatch(PROSE, /testimonial/i);
+    assert.match(HOME, /CaseStudiesSection/);
     assert.doesNotMatch(PROSE, /“[^”]{20,}”\s*—\s*[A-Z]/, "something on the front page reads like an attributed quote");
   });
 

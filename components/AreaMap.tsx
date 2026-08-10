@@ -173,6 +173,33 @@ export default function AreaMap({
       setEngine("osm");
     }
 
+    async function drawGoogle(): Promise<boolean> {
+      const maps = googleMaps();
+      if (cancelled || !boxRef.current || !maps?.Map) return false;
+      try {
+        gmapRef.current = new maps.Map(boxRef.current, {
+          // Somewhere over Europe until the framing effect below runs, which
+          // it does on the first paint. Never shown as a resting position.
+          center: { lat: 48, lng: 14 },
+          zoom: 4,
+          // Off so the page still scrolls past the map on a phone; holding
+          // ctrl (or two fingers) zooms, which is Google's own convention.
+          gestureHandling: "cooperative",
+          mapTypeControl: true,
+          streetViewControl: false,
+          fullscreenControl: true,
+        });
+        ginfoRef.current = new maps.InfoWindow();
+        gmapRef.current.addListener?.("zoom_changed", () => setZoom(gmapRef.current?.getZoom?.() ?? 11));
+        setEngine("google");
+        return true;
+      } catch {
+        gmapRef.current = null;
+        ginfoRef.current = null;
+        return false;
+      }
+    }
+
     (async () => {
       authOff = onGoogleMapsAuthFailure(() => {
         if (!cancelled) void drawOsm();
@@ -181,27 +208,9 @@ export default function AreaMap({
       const useGoogle = await loadGoogleMaps();
       if (cancelled || !boxRef.current) return;
 
-      if (useGoogle) {
-        const maps = googleMaps();
-        if (maps) {
-          gmapRef.current = new maps.Map(boxRef.current, {
-            // Somewhere over Europe until the framing effect below runs, which
-            // it does on the first paint. Never shown as a resting position.
-            center: { lat: 48, lng: 14 },
-            zoom: 4,
-            // Off so the page still scrolls past the map on a phone; holding
-            // ctrl (or two fingers) zooms, which is Google's own convention.
-            gestureHandling: "cooperative",
-            mapTypeControl: true,
-            streetViewControl: false,
-            fullscreenControl: true,
-          });
-          ginfoRef.current = new maps.InfoWindow();
-          gmapRef.current.addListener?.("zoom_changed", () => setZoom(gmapRef.current?.getZoom?.() ?? 11));
-          setEngine("google");
-          return;
-        }
-      }
+      // loadGoogleMaps can briefly report false while Map is already on the
+      // window after a bootstrap race — prefer Google whenever Map exists.
+      if ((useGoogle || googleMaps()?.Map) && (await drawGoogle())) return;
 
       await drawOsm();
     })();
@@ -387,9 +396,11 @@ export default function AreaMap({
       />
 
       <p className="mt-2 text-xs leading-5 text-stone-500">
-        {engine === "google"
-          ? "Hold ctrl (or use two fingers) to zoom, so the page still scrolls past the map on a phone. "
-          : "Scroll-zoom turns on once you click the map, so the page still scrolls past it on a phone. "}
+        {engine === "deciding"
+          ? "Loading the map… "
+          : engine === "google"
+            ? "Hold ctrl (or use two fingers) to zoom, so the page still scrolls past the map on a phone. "
+            : "Scroll-zoom turns on once you click the map, so the page still scrolls past it on a phone. "}
         {center
           ? "Kevarim, things to do and places to stay are ours; kosher places come live from OpenStreetMap and its coverage varies by region — an empty map means OSM has nothing listed there, not that there is nothing there."
           : "Kosher food is looked up around a place, so search a town above to see it. Everything else is ours and is shown here."}
