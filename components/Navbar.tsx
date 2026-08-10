@@ -40,9 +40,9 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const navRef = useRef<HTMLElement>(null);
-  // "Flights, hotels & cars" goes to the search, or to the assistance page
-  // when the owner has the search locked. Resolved in the root layout; never
-  // a bare `/book` typed in here. See lib/booking-access.ts.
+  // Search & Book (and the matching menu entry) go to the search, or to the
+  // assistance page when the owner has the search locked. Resolved in the
+  // root layout; never a bare `/book` typed in here. See lib/booking-access.ts.
   const booking = useBookingLink();
   const menuGroups = menuGroupsFor(booking);
   // The one filled button on the site. Resolved, so it cannot become a
@@ -116,12 +116,24 @@ export default function Navbar() {
         aria-label="Main"
         className="sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md"
       >
-        <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-4 px-5 sm:px-8">
-          <Link href="/" className="mr-4 flex shrink-0 items-center xl:mr-6" aria-label="White Glove Itineraries home">
-            <Image src="/logo.png" alt="White Glove Itineraries" width={500} height={300} className="h-[4.5rem] w-auto object-contain" priority />
+        <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-3 px-5 sm:gap-4 sm:px-8">
+          {/* z-10 + max-w-none: global img{max-width:100%} and centered overflow
+              used to let Destinations paint across the mark after fonts/images
+              finished loading — the brief jump-clear-then-overlap. */}
+          <Link href="/" className="relative z-10 mr-4 flex shrink-0 items-center sm:mr-5 xl:mr-6" aria-label="White Glove Itineraries home">
+            <Image
+              src="/logo.png"
+              alt="White Glove Itineraries"
+              width={500}
+              height={300}
+              className="h-14 w-auto max-w-none object-contain sm:h-[4.5rem]"
+              priority
+            />
           </Link>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex">
+          {/* Start after the logo. justify-center spilled left over the mark
+              whenever the labels were wider than the remaining slot. */}
+          <div className="hidden min-w-0 flex-1 items-center justify-start gap-0.5 overflow-hidden xl:flex">
             {PRIMARY_NAV.map((item) => {
               const current = isCurrent(item.href, pathname);
               return (
@@ -133,9 +145,9 @@ export default function Navbar() {
                   // pill, a gold underline, and aria-current. Colour alone
                   // leaves anyone who cannot separate cream from cream-deep
                   // with no idea where they are.
-                  className={`relative inline-flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-semibold transition ${
+                  className={`relative inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-2 text-sm font-semibold transition 2xl:px-3 ${
                     current
-                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
+                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-2.5 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-[''] 2xl:after:inset-x-3"
                       : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                   }`}
                 >
@@ -145,11 +157,10 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* On every page, including the front one. The front page used to
-              carry its own search box in the hero and hide the header's; the
-              hero is the proposition and two buttons now, so there is one
-              search box on the site and it is always in the same place. */}
-          <div className="ml-6 mr-2 hidden w-full max-w-xs min-w-0 md:block xl:ml-8 xl:mr-4 xl:max-w-[15rem]">
+          {/* Inline only once the bar, logo, and actions all fit on one row.
+              Below 2xl the search sits on its own row so it does not crowd
+              Destinations back onto the logo. */}
+          <div className="mr-2 hidden w-full max-w-xs min-w-0 2xl:block 2xl:ml-6 2xl:mr-4 2xl:max-w-[15rem]">
             <DestinationSearch compact />
           </div>
 
@@ -171,10 +182,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* The one filled control in the header, and it starts a trip.
-                Not "contact us" and not "book" — the thing this business does
-                is plan the trip, and a header with two equal buttons has no
-                primary action at all. */}
+            {/* The one filled control in the header — Search & Book. Hotels
+                and Flights live in the menu, not beside this button. */}
             <Link
               href={primaryCta.href}
               className="hidden min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] sm:inline-flex"
@@ -212,7 +221,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 md:hidden sm:px-8">
+        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 sm:px-8 2xl:hidden">
           <DestinationSearch compact />
         </div>
 
