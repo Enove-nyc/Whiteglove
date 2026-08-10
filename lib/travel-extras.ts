@@ -104,6 +104,36 @@ export function idIn(url: string): string {
   return "";
 }
 
+/**
+ * Names that are a note to self rather than a partner.
+ *
+ * "Option 1" and "Option 2" sat on the live booking page for weeks, beside an
+ * "eSIM data" card with no description under it, and the section read exactly
+ * like what it was: a screen somebody had started filling in. A traveller
+ * cannot tell a placeholder from a partner they have not heard of, so the page
+ * has to.
+ */
+const PLACEHOLDER_NAME = /^(option|choice|partner|provider|link|item|thing|row|test|sample|example|placeholder|tbd|todo|untitled|new)\b[\s\-–—]*\d*$/i;
+
+/**
+ * Whether this row is still somebody's rough draft.
+ *
+ * TWO SIGNALS, AND EITHER IS ENOUGH. A name that numbers itself rather than
+ * naming a company, or a card with nothing under the heading — the description
+ * is the only thing on the card that tells a traveller what they would be
+ * buying, and a card without one is a link with a mystery on it.
+ *
+ * This decides what a VISITOR sees. It never blocks a save: the owner may want
+ * to park a row half-written, and describeExtra tells him plainly that it is
+ * not on the page yet and what is missing.
+ */
+export function looksUnfinished(extra: TravelExtra): string | null {
+  const name = extra.name.trim();
+  if (PLACEHOLDER_NAME.test(name)) return "the name is still a placeholder — put the partner's real name here";
+  if (!extra.blurb.trim()) return "there is no line under the name saying what it is";
+  return null;
+}
+
 /** Why this row cannot be saved, or null. */
 export function extraProblem(extra: TravelExtra): string | null {
   const name = extra.name.trim();
@@ -141,6 +171,8 @@ export function ctaFor(extra: TravelExtra): string {
 export function describeExtra(extra: TravelExtra): string {
   const problem = extraProblem(extra);
   if (problem) return `Not shown — ${problem}`;
+  const unfinished = looksUnfinished(extra);
+  if (unfinished) return `Saved, but not shown to travellers — ${unfinished}.`;
   const id = idIn(extra.url);
   if (looksTracked(extra.url)) {
     return id
@@ -152,18 +184,33 @@ export function describeExtra(extra: TravelExtra): string {
 
 /** What the list as a whole is doing. Never null. */
 export function describeExtras(extras: TravelExtra[]): string {
-  const live = extras.filter((e) => !extraProblem(e));
+  const saved = extras.filter((e) => !extraProblem(e));
+  const live = saved.filter((e) => !looksUnfinished(e));
   if (live.length === 0) {
+    const waiting = saved.length - live.length;
+    if (waiting > 0) {
+      return `Nothing is being offered on the booking page. ${waiting === 1 ? "One row is" : `${waiting} rows are`} saved but still unfinished — a row shows to travellers once it has a real partner name and a line saying what it is.`;
+    }
     return "Nothing extra is being offered yet. An eSIM or travel insurance is the usual first one — a traveller who has just booked a flight is the person most likely to want it.";
   }
   const earning = live.filter((e) => looksTracked(e.url)).length;
   const noun = live.length === 1 ? "One thing is" : `${live.length} things are`;
-  if (earning === live.length) return `${noun} offered on the booking page, and every link is tracked.`;
-  if (earning === 0) return `${noun} offered on the booking page. None of the links is tracked, so none of them earns.`;
-  return `${noun} offered on the booking page. ${earning} of the links ${earning === 1 ? "is" : "are"} tracked; the rest earn nothing.`;
+  const waiting = saved.length - live.length;
+  const held = waiting > 0 ? ` ${waiting === 1 ? "One more row is" : `${waiting} more rows are`} saved but still unfinished, so travellers do not see ${waiting === 1 ? "it" : "them"}.` : "";
+  if (earning === live.length) return `${noun} offered on the booking page, and every link is tracked.${held}`;
+  if (earning === 0) return `${noun} offered on the booking page. None of the links is tracked, so none of them earns.${held}`;
+  return `${noun} offered on the booking page. ${earning} of the links ${earning === 1 ? "is" : "are"} tracked; the rest earn nothing.${held}`;
 }
 
-/** Only the rows a visitor should see, in order. */
+/**
+ * Only the rows a visitor should see, in order.
+ *
+ * Unfinished rows are dropped here rather than at save time, so nothing the
+ * owner has typed is lost and the booking page still cannot show it. With
+ * every row unfinished the list comes back empty and TravelExtras renders
+ * nothing at all — AGENTS.md: hide a section until it has customer-ready
+ * content in it.
+ */
 export function shownToVisitors(extras: TravelExtra[]): TravelExtra[] {
-  return extras.filter((e) => !extraProblem(e)).slice(0, MAX_EXTRAS);
+  return extras.filter((e) => !extraProblem(e) && !looksUnfinished(e)).slice(0, MAX_EXTRAS);
 }

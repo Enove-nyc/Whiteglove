@@ -53,6 +53,15 @@ function questionsFrom(words: SiteWords): Array<{ id: string; question: string; 
     { id: "revisions", question: "Changes to a plan", answer: words.pricingRevisions },
     { id: "booking", question: "Booking", answer: words.pricingBookingSupport },
     { id: "fee-credit", question: "The fee against a booking", answer: words.pricingFeeCredit },
+    // THREE MORE, ADDED AFTER LAUNCH. The six above answer what it costs and
+    // how the money moves. These are what a person asks last, once they have
+    // decided the price is fair: how long this takes, what happens if the trip
+    // is called off, and whether anybody is there after the document arrives.
+    // The third is the one that decides whether the service reads as a service
+    // or as a PDF.
+    { id: "timeline", question: "How long the planning takes", answer: words.pricingTimeline },
+    { id: "cancellation", question: "If the trip is called off", answer: words.pricingCancellation },
+    { id: "support", question: "After the itinerary is sent", answer: words.pricingSupportAfter },
   ];
 }
 

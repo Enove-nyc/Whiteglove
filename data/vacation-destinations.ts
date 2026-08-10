@@ -339,7 +339,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     bestFor: ["Shabbos", "Alpine base", "Short break"],
     suggestedLength: "2–3 days, or as a base",
     overview:
-      "Wiedikon is where Zurich's shuls, kosher shops and eruv are, and for Shabbos it is the only sensible part of the city to be in. It is about two kilometres from the old town and the lake. Most people meet Zurich as the place they provision before going up into the mountains, and it is worth a day or two of its own.",
+      "Wiedikon is where Zurich's shuls, kosher shops and eruv are, which is what makes it the part of the city to be in for Shabbos. It is about two kilometres from the old town and the lake. Most people meet Zurich as the place they provision before going up into the mountains, and it is worth a day or two of its own.",
     whyVisit: [
       "A working kehilla with an eruv, which is rare in this part of Europe and changes what Shabbos looks like.",
       "The old town and the lake, small enough to see in a day.",

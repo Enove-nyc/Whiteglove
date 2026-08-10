@@ -39,13 +39,13 @@ export default function SaveTripItemButton({ item, label = "Add to My Route" }: 
   }
 
   // Still asking — hold the space rather than flash the wrong button.
-  if (signedIn === null) return <span className="inline-block h-[42px] w-[170px]" aria-hidden="true" />;
+  if (signedIn === null) return <span className="inline-block h-11 w-[170px]" aria-hidden="true" />;
 
   if (!signedIn) {
     return (
       <Link
         href={signInHref()}
-        className="inline-block border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+        className="inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
       >
         Sign in to add
       </Link>
@@ -56,7 +56,7 @@ export default function SaveTripItemButton({ item, label = "Add to My Route" }: 
     <button
       type="button"
       onClick={save}
-      className={`border px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] transition ${saved ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}
+      className={`inline-flex min-h-11 items-center border px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] transition ${saved ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}
     >
       {saved ? "Added to My Route" : label}
     </button>

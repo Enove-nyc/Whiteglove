@@ -128,6 +128,9 @@ export const FIELDS: WordField[] = [
   { key: "pricingRevisions", group: "pricing", label: "Whether changes cost extra", where: "on the Services page", href: "/services", long: true },
   { key: "pricingBookingSupport", group: "pricing", label: "Whether booking is a separate charge", where: "on the Services page", href: "/services", long: true },
   { key: "pricingFeeCredit", group: "pricing", label: "Whether a planning fee comes off anything else", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingTimeline", group: "pricing", label: "How long the planning itself takes", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingCancellation", group: "pricing", label: "What happens if a trip is called off", where: "on the Services page", href: "/services", long: true },
+  { key: "pricingSupportAfter", group: "pricing", label: "Whether we are there after the itinerary is sent", where: "on the Services page", href: "/services", long: true },
   { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
 ];
 

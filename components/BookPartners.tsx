@@ -34,7 +34,19 @@ type TripKind = "round-trip" | "one-way" | "multi-city";
 const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(23,45,82,.04)] outline-none transition focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
 const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
 const fieldLabel = "text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500";
-const bareInput = "mt-1.5 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-normal normal-case tracking-normal text-[var(--navy)] outline-none placeholder:text-stone-400";
+/**
+ * The field inside the panel, and why it has a height of its own.
+ *
+ * IT WAS 24 PIXELS TALL ON A PHONE — the height of one line of 15px text, with
+ * the padding belonging to the label around it rather than to the control. The
+ * label is what a tap lands on, so the form worked; what it cost was the thumb
+ * accuracy every other control on this site is built for (min-h-11 is 44px, the
+ * number in both the WCAG target-size rule and Apple's guidance), and a date or
+ * a number input is exactly where a miss is expensive. The cell's own padding
+ * comes down by the same amount the control goes up, so the panel is barely
+ * taller than it was.
+ */
+const bareInput = "mt-1 min-h-11 w-full min-w-0 border-0 bg-transparent p-0 text-[15px] font-normal normal-case tracking-normal text-[var(--navy)] outline-none placeholder:text-stone-400";
 
 function SearchGrid({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   // overflow-visible so airport, address and date pickers can open below the
@@ -44,7 +56,7 @@ function SearchGrid({ children, className = "" }: { children: React.ReactNode; c
 
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <label className={`flex min-w-0 flex-col justify-center bg-[#fcfaf6] px-4 py-4 transition focus-within:bg-white ${className}`}>
+    <label className={`flex min-w-0 flex-col justify-center bg-[#fcfaf6] px-4 py-2.5 transition focus-within:bg-white sm:py-3 ${className}`}>
       <span className={fieldLabel}>{label}</span>
       {children}
     </label>

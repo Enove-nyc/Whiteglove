@@ -105,7 +105,7 @@ export default async function VacationIdeasPage({
         <SectionHeading
           eyebrow="Every destination"
           title="All destinations"
-          description="Each one has somewhere to stay, things to do, and the kosher and Shabbos side worked out."
+          description="Filter by the kosher and Shabbos answer as well as by the kind of holiday — each card says what the destination page can tell you before you open it."
         />
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />

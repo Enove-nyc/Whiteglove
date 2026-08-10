@@ -33,7 +33,7 @@ describe("what the bar leads with", () => {
   it("is where to go and what matters about travelling kosher, in order", () => {
     assert.deepEqual(
       PRIMARY_NAV.map((item) => item.label),
-      ["Destinations", "Things to Do", "Kosher Travel", "Heritage Travel", "My Trips"],
+      ["Destinations", "Things to Do", "Kosher Travel", "Heritage Travel", "Itinerary planner"],
     );
   });
 

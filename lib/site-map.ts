@@ -96,6 +96,9 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/phone-rentals", priority: 0.5, changeFrequency: "monthly" },
   { path: "/lizensk", priority: 0.6, changeFrequency: "monthly" },
+  // Who is behind the site. Indexed for the same reason /verification is: it
+  // is one of the two pages a cautious person reads before trusting the rest.
+  { path: "/about", priority: 0.6, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.6, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.2, changeFrequency: "yearly" },

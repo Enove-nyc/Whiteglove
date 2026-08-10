@@ -47,7 +47,41 @@ export type Service = {
    * What to expect about price. Never a number this site cannot stand behind.
    */
   pricing: string;
+  /**
+   * WHAT ARRIVES, ANSWERED THE SAME FOUR WAYS FOR EVERY SERVICE.
+   *
+   * `receive` above is a list of things, and a list of things does not answer
+   * the questions somebody actually has before they commit: what format is it
+   * in, how many times can I change my mind, is anything actually BOOKED or is
+   * this research, and does somebody confirm the kosher and Shabbos side or
+   * merely look it up. Four fields rather than free prose so no service can
+   * quietly skip the awkward one — which is `booking`, every time.
+   *
+   * The fifth question — how long anybody is there afterwards — is deliberately
+   * NOT here. It is one answer for the whole business rather than six, the site
+   * cannot yet stand behind it, and it belongs beside the other unanswered
+   * commercial terms where it is marked as outstanding: words.pricingSupportAfter
+   * on the "What to expect about price" panel.
+   */
+  deliverables: {
+    /** The thing itself: a document, a page in the account, both. */
+    format: string;
+    /** How changes work after it has been sent. */
+    revisions: string;
+    /** Whether anything is BOOKED, or researched and handed to you to book. */
+    booking: string;
+    /** Whether the kosher and Shabbos side is confirmed with a source, or looked up. */
+    confirmations: string;
+  };
 };
+
+/** The four questions, in the order somebody asks them. */
+export const DELIVERABLE_QUESTIONS: ReadonlyArray<{ key: keyof Service["deliverables"]; label: string }> = [
+  { key: "format", label: "What arrives" },
+  { key: "revisions", label: "Changes" },
+  { key: "booking", label: "Booked, or researched" },
+  { key: "confirmations", label: "Kosher and Shabbos" },
+];
 
 export const services: readonly Service[] = [
   {
@@ -77,6 +111,16 @@ export const services: readonly Service[] = [
     secondary: { label: "Or plan it yourself, free", href: "/itinerary" },
     pricing:
       "Quoted once we understand the trip, and told to you before any work starts. What moves the number, how long a quote takes and whether changes cost extra are answered under “What to expect about price” below.",
+    deliverables: {
+      format:
+        "A written day-by-day itinerary, and the same trip loaded into your account here — which you can open on a phone, edit yourself and print for the car.",
+      revisions:
+        "Not a numbered allowance. You say what you want different and we adjust until the itinerary is right; that is part of the planning rather than an extra.",
+      booking:
+        "Nothing is booked for you under this service. You get the plan and the places; booking the travel is either yours to do through the search here, or a separate arrangement.",
+      confirmations:
+        "Yes. Kosher food, Shabbos, minyanim and mikvaos are answered for your destination and dates, and the itinerary names where each answer came from so you can reconfirm close to travel.",
+    },
   },
   {
     id: "itinerary-design",
@@ -104,6 +148,14 @@ export const services: readonly Service[] = [
     secondary: { label: "The planner does this for free", href: "/itinerary" },
     pricing:
       "The planner does the routing and the timing at no cost, for anybody, without an account. A route designed by us is quoted with the planning.",
+    deliverables: {
+      format:
+        "A route with real road times in the order you will drive it, in the planner and as a printable page for the car.",
+      revisions: "Move a stop or a date and we retime the route around it, as part of the same piece of work.",
+      booking: "Nothing is booked. This is the shape of the trip — the driving, the order and the timing.",
+      confirmations:
+        "Where Shabbos falls on the route is worked out and flagged, including whether the plan reaches somewhere in time for it. Food and minyanim at each stop come with the personal planning above.",
+    },
   },
   {
     id: "flights-hotels-transport",
@@ -134,6 +186,16 @@ export const services: readonly Service[] = [
     secondary: { label: "Ask a person to look instead", href: "/flight-booking-assistance" },
     pricing:
       "Booking through the search costs you nothing extra; the site may earn a commission from the travel provider, which does not change your price. Personal flight booking is currently unavailable, and the page says so rather than taking a request nobody is there to answer.",
+    deliverables: {
+      format:
+        "The booking itself, in your own name with the partner, and the confirmation saved onto your trip beside everything else.",
+      revisions:
+        "Changes, cancellations and refunds are the airline's, the hotel's or the partner's — under their terms, not ours. Search again here whenever the plan moves.",
+      booking:
+        "You book. Every search on this site hands off to a partner who takes the payment and issues the ticket or the reservation; nothing is booked on this site.",
+      confirmations:
+        "The search does not know about kashrus. Which quarter makes Shabbos walkable is answered on the destination and hotel pages before the search opens.",
+    },
   },
   {
     id: "kosher-and-shabbos",
@@ -159,6 +221,15 @@ export const services: readonly Service[] = [
     action: { label: "Ask about a destination", href: "/contact" },
     secondary: { label: "Look it up yourself first", href: "/kosher-travel" },
     pricing: "Included in personal planning. Asked on its own, it is usually a question we will simply answer.",
+    deliverables: {
+      format:
+        "A written answer for each of food, Shabbos, minyanim and mikvaos at your destination, with the contacts we used listed under it.",
+      revisions: "Ask again as the dates get closer — these are the details most likely to have moved.",
+      booking:
+        "Shabbos meals and a caterer are arranged where a community or a caterer can do it. Everything else is answered rather than booked.",
+      confirmations:
+        "This service is the confirmation: what exists is checked against the certifying body rather than copied from a directory, and where the honest answer is “not much”, that is what you are told.",
+    },
   },
   {
     id: "travel-essentials",
@@ -180,6 +251,13 @@ export const services: readonly Service[] = [
     secondary: { label: "Phones and connectivity", href: "/phone-rentals" },
     pricing:
       "The guides are free. Phones and insurance are bought from the provider, not from us; where we link to one we may earn a commission, and it does not change your price.",
+    deliverables: {
+      format: "A checklist for your own route, with a link to the official source behind every rule on it.",
+      revisions: "Ask again whenever the route or the paperwork changes.",
+      booking:
+        "Nothing is bought for you. A phone, a policy or an eSIM is bought from the provider directly, under their terms.",
+      confirmations: "Not part of this one. The kosher and Shabbos side is the service above.",
+    },
   },
   {
     id: "heritage-journeys",
@@ -206,5 +284,14 @@ export const services: readonly Service[] = [
     action: { label: "Start a heritage journey", href: "/plan?kind=heritage" },
     secondary: { label: "Browse the kevarim directory", href: "/heritage" },
     pricing: "Quoted with the planning. Drivers and local contacts are paid to them directly, at their own rates.",
+    deliverables: {
+      format:
+        "A route with the kevarim in order and the driving between them, the access notes and contacts for each site, and a printable copy — signal is not guaranteed where you are going.",
+      revisions: "Add or drop a kever and we rework the order and the timing around it.",
+      booking:
+        "A driver and local contacts are arranged where one is needed, and paid to them directly. Flights and hotels are yours to book, or a separate arrangement.",
+      confirmations:
+        "Access, the shomer and the local contact are given with a note on how recently each was checked — these change, and a number that worked last year is the most common thing to go wrong on this kind of trip. Kosher food and a minyan are answered for towns that often have neither.",
+    },
   },
 ] as const;
