@@ -83,11 +83,9 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         {/* First thing in the tab order, on every page. */}
         <a href="#main-content" className="wg-skip-link">Skip to content</a>
-        {/* "This is new — check anything you are going to rely on." Once per
-            visitor, never over the admin or a sign-in box, and above the page
-            rather than across it: this used to be a modal in front of the
-            front page, which is a box to dismiss before finding out what the
-            site sells. */}
+        {/* "Check anything you are going to rely on." Once per visitor, never
+            over the admin or a sign-in box. A dismissible popup rather than a
+            strip that pushes the brand and the proposition down the page. */}
         <NewSiteNotice notice={betaNotice} />
         <SiteTracker />
         <RequiredFields />

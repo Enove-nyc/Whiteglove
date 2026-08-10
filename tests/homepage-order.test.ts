@@ -261,15 +261,14 @@ describe("the order of the page", () => {
 });
 
 describe("the new-site notice", () => {
-  it("IS NOT A MODAL ANY MORE", () => {
-    // It was the first thing every visitor met: a dialog over the front page,
-    // before a word about what the site does.
-    assert.doesNotMatch(NOTICE, /aria-modal/);
-    assert.doesNotMatch(NOTICE, /role="dialog"/);
-    // And it does not pretend to be one — a strip that traps focus or locks
-    // the scroll is worse than a modal, not better.
-    assert.doesNotMatch(NOTICE, /body\.style\.overflow/);
-    assert.match(NOTICE, /<aside/);
+  it("IS A DISMISSIBLE POPUP, not a page strip", () => {
+    // A strip under the top of every page pushed the brand down and read as
+    // chrome. The caution is a dialog: labelled, modal, escapable, and gone
+    // once per wording.
+    assert.match(NOTICE, /role="dialog"/);
+    assert.match(NOTICE, /aria-modal="true"/);
+    assert.match(NOTICE, /useFocusTrap/);
+    assert.match(NOTICE, /body\.style\.overflow/);
   });
 
   it("is dismissible, once per wording", () => {
@@ -294,9 +293,8 @@ describe("the new-site notice", () => {
     }
   });
 
-  it("is wired into the layout in place of the modal", () => {
+  it("is wired into the layout", () => {
     assert.match(LAYOUT, /NewSiteNotice/);
-    assert.doesNotMatch(LAYOUT, /BetaNoticeModal/);
   });
 });
 

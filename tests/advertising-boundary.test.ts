@@ -145,13 +145,14 @@ describe("a reader can always tell what is paid for", () => {
     assert.match(featuredDisclosure(), /featured/i);
   });
 
-  it("PUTS THE COMMISSION DISCLOSURE BESIDE THE ACTION, not only in the footer", () => {
+  it("DISCLOSES THE COMMISSION where partner searches and the terms do", () => {
     assert.match(BUILT_IN_WORDS.affiliateDisclosure, /commission/i);
     assert.match(BUILT_IN_WORDS.affiliateDisclosure, /no additional cost/i);
-    // Rendered where the search is, which is what "not hidden in the footer"
-    // has to mean in practice.
+    // Beside dedicated partner search forms, and once in the Terms — not
+    // repeated under the unified book panel.
     assert.match(readFileSync("components/PartnerSearchForm.tsx", "utf8"), /<AffiliateDisclosure/);
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /disclosure=\{words\.affiliateDisclosure\}/);
+    assert.match(readFileSync("app/terms/page.tsx", "utf8"), /affiliateDisclosure/);
+    assert.doesNotMatch(readFileSync("app/book/page.tsx", "utf8"), /disclosure=\{words\.affiliateDisclosure\}/);
   });
 });
 

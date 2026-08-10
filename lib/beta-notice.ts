@@ -83,12 +83,10 @@ export const DEFAULT_NOTICE: BetaNotice = {
   feedbackLabel: "Report an update",
   dismissLabel: "Hide this notice",
   // BUMPED AGAIN, and a dismissal is per version, so everybody meets this one.
-  // Version 2 explained the four checking labels — Verified, Reported, Being
-  // checked, Reconfirm before travel — on every page of the site. AGENTS.md:
-  // do not expose internal workflows or content status to customers. The same
-  // banner now says the thing a traveler can act on, which was always the
-  // useful half of it.
-  version: "3",
+  // Version 3 said the traveler-facing caution as a page strip. Version 4 is
+  // the same words as a dismissible popup — people who hid the strip have not
+  // agreed to the new placement.
+  version: "4",
 };
 
 /** Where a dismissal is remembered, per version. */

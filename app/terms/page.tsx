@@ -10,7 +10,7 @@ export const metadata = pageMetadata({
   path: "/terms",
 });
 
-const UPDATED = "July 26, 2026";
+const UPDATED = "August 10, 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -22,7 +22,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function TermsOfUsePage() {
-  const { contactEmail } = await readWords();
+  const { contactEmail, affiliateDisclosure } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -70,6 +70,9 @@ export default async function TermsOfUsePage() {
 
         <Section title="Bookings and third-party services">
           <p>Flight and hotel searches and any bookings are provided through third-party travel partners and are subject to those partners&rsquo; own terms, pricing, and cancellation policies. White Glove is not the seller of those travel services and is not a party to your booking.</p>
+          <p>
+            <strong className="text-[var(--navy)]">How this site is paid.</strong> {affiliateDisclosure}
+          </p>
         </Section>
 
         <Section title="Intellectual property">

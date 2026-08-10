@@ -98,11 +98,15 @@ describe("hotels first", () => {
 });
 
 describe("the commission disclosure", () => {
-  it("IS BESIDE THE SEARCH, not in the page footer", () => {
-    // Technically present and practically unread is the failure mode. It sits
-    // inside the search panel, under the tabs the visitor is looking at.
-    assert.match(PANEL, /\{disclosure\}/);
-    assert.match(PAGE, /disclosure=\{words\.affiliateDisclosure\}/);
+  it("LIVES IN THE TERMS, not under the book search", () => {
+    // The book panel used to repeat it under every search; it belongs with the
+    // booking terms instead. Partner search forms still disclose beside their
+    // own actions — see PartnerSearchForm and BookingLink.
+    assert.doesNotMatch(PANEL, /\{disclosure\}/);
+    assert.doesNotMatch(PAGE, /disclosure=\{words\.affiliateDisclosure\}/);
+    const terms = readFileSync("app/terms/page.tsx", "utf8");
+    assert.match(terms, /affiliateDisclosure/);
+    assert.match(terms, /How this site is paid/);
   });
 
   it("says what it has to say", () => {

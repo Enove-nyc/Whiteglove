@@ -61,7 +61,7 @@ describe("what it says when nobody has set anything", () => {
   it("BRINGS THE NOTICE BACK when the wording changes", () => {
     // A dismissal is per version. Somebody who dismissed the old wording has
     // not been shown this one, and this one says something different.
-    assert.equal(DEFAULT_NOTICE.version, "3");
+    assert.equal(DEFAULT_NOTICE.version, "4");
   });
 
   it("DOES NOT DESCRIBE THIS SITE AS A KEVARIM DATABASE", () => {

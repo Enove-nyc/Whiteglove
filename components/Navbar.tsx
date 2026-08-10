@@ -114,7 +114,7 @@ export default function Navbar() {
       <nav
         ref={navRef}
         aria-label="Main"
-        className="sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md"
+        className="relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md"
       >
         <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-3 px-5 sm:gap-4 sm:px-8">
           {/* z-10 + max-w-none: global img{max-width:100%} and centered overflow
@@ -132,36 +132,35 @@ export default function Navbar() {
           </Link>
 
           {/* Start after the logo. justify-center spilled left over the mark
-              whenever the labels were wider than the remaining slot. */}
-          <div className="hidden min-w-0 flex-1 items-center justify-start gap-0.5 overflow-hidden xl:flex">
+              whenever the labels were wider than the remaining slot. No
+              overflow-hidden here: that was clipping Heritage Travel to
+              "Heritage Trav" once Search sat on this row. Search stays on the
+              row below so the full labels can breathe. */}
+          <div className="hidden min-w-0 flex-1 items-center justify-start gap-0.5 xl:flex">
             {PRIMARY_NAV.map((item) => {
               const current = isCurrent(item.href, pathname);
+              const barLabel = item.shortLabel ?? item.label;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   aria-current={current ? "page" : undefined}
+                  aria-label={item.shortLabel ? item.label : undefined}
                   // The current section is marked three ways, not one: a filled
                   // pill, a gold underline, and aria-current. Colour alone
                   // leaves anyone who cannot separate cream from cream-deep
                   // with no idea where they are.
-                  className={`relative inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-2 text-sm font-semibold transition 2xl:px-3 ${
+                  className={`relative inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold transition 2xl:px-3 ${
                     current
-                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-2.5 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-[''] 2xl:after:inset-x-3"
+                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-2 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-[''] 2xl:after:inset-x-3"
                       : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                   }`}
                 >
-                  {item.label}
+                  <span className="2xl:hidden">{barLabel}</span>
+                  <span className="hidden 2xl:inline">{item.label}</span>
                 </Link>
               );
             })}
-          </div>
-
-          {/* Inline only once the bar, logo, and actions all fit on one row.
-              Below 2xl the search sits on its own row so it does not crowd
-              Destinations back onto the logo. */}
-          <div className="mr-2 hidden w-full max-w-xs min-w-0 2xl:block 2xl:ml-6 2xl:mr-4 2xl:max-w-[15rem]">
-            <DestinationSearch compact />
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -182,8 +181,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* The one filled control in the header — Search & Book. Hotels
-                and Flights live in the menu, not beside this button. */}
+            {/* The one filled control in the header — Search & Book. */}
             <Link
               href={primaryCta.href}
               className="hidden min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] sm:inline-flex"
@@ -221,13 +219,16 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 sm:px-8 2xl:hidden">
+        {/* Always its own row at desktop: putting this beside the bar at 2xl
+            squeezed Heritage Travel off the end and left the suggestions panel
+            only as wide as a 15rem field. */}
+        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 sm:px-8">
           <DestinationSearch compact />
         </div>
 
         {menuOpen && (
-          <div id="site-menu" className="absolute inset-x-0 top-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
-            <div className="mx-auto grid max-h-[calc(100vh-5rem)] max-w-7xl gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-3 md:py-9">
+          <div id="site-menu" className="absolute left-0 right-0 top-full z-[1] w-full min-w-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
+            <div className="mx-auto grid w-full max-h-[calc(100vh-5rem)] max-w-7xl grid-cols-1 gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-2 md:py-9 lg:grid-cols-3">
               {menuGroups.map((group) => (
                 <section key={group.title}>
                   <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</h2>

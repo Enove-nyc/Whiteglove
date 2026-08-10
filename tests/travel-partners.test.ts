@@ -40,20 +40,20 @@ const roundTrip = {
   },
 };
 
-describe("the default partner is one this account can earn from", () => {
-  it("is not Kayak, which is the programme that is not approved", () => {
-    assert.equal(DEFAULT_PARTNERS.flights, "aviasales");
-    assert.equal(DEFAULT_PARTNERS.cars, "economybookings");
-    assert.notEqual(DEFAULT_PARTNERS.flights, "kayak");
-    assert.notEqual(DEFAULT_PARTNERS.cars, "kayak");
+describe("the default partner is Kayak, which works and can earn via Stay22", () => {
+  it("defaults flights and cars to Kayak", () => {
+    // Aviasales deep links discard the search; EconomyBookings carries no
+    // dates. Kayak via Stay22 was traced live with route and dates intact.
+    assert.equal(DEFAULT_PARTNERS.flights, "kayak");
+    assert.equal(DEFAULT_PARTNERS.cars, "kayak");
   });
 
   it("falls back rather than throwing on a choice that makes no sense", () => {
     // A stale key from an older release, or hotels somehow set to a flight
     // partner. A settings screen must not be able to take the searches down.
-    assert.equal(partnerFor("flights", { flights: "economybookings" }).key, "aviasales");
-    assert.equal(partnerFor("flights", undefined).key, "aviasales");
-    assert.equal(partnerFor("cars", {}).key, "economybookings");
+    assert.equal(partnerFor("flights", { flights: "economybookings" }).key, "kayak");
+    assert.equal(partnerFor("flights", undefined).key, "kayak");
+    assert.equal(partnerFor("cars", {}).key, "kayak");
   });
 
   it("honours a choice that does make sense", () => {
@@ -62,7 +62,7 @@ describe("the default partner is one this account can earn from", () => {
     assert.equal(partnerFor("cars", { cars: "kayak" }).key, "kayak");
   });
 
-  it("offers Kayak in the list, so the day it is approved is a dropdown", () => {
+  it("offers Kayak in the list, so switching is a dropdown rather than a deploy", () => {
     assert.ok(partnersFor("flights").some((p) => p.key === "kayak"));
     assert.ok(partnersFor("cars").some((p) => p.key === "kayak"));
   });

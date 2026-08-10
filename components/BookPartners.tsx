@@ -110,7 +110,7 @@ export type PendingBooking = {
  * off the public site entirely. lib/booking-partners.ts cannot route the
  * public site to it at all.
  */
-export default function BookPartners({ prefill, disclosure, multiCity = true }: { prefill?: Prefill; disclosure: string; multiCity?: boolean }) {
+export default function BookPartners({ prefill, multiCity = true }: { prefill?: Prefill; multiCity?: boolean }) {
   const [pay, setPay] = useState<Pay>("cash");
   // HOTELS OPENS, not flights. Accommodation is the one product this site
   // knows something a comparison site does not — which quarter makes Shabbos
@@ -224,17 +224,6 @@ export default function BookPartners({ prefill, disclosure, multiCity = true }: 
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
           : "Cash searches open with a trusted booking partner, where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
-      </p>
-
-      {/* THE COMMISSION DISCLOSURE, BESIDE THE SEARCH. Not in the page footer,
-          where it is technically present and practically unread: the FTC's
-          endorsement guides, the UK CAP code and the EU unfair-practices
-          directive all ask for it where the person is when they decide. One
-          editable line, from /admin/settings/words, shown by every commercial
-          surface on the site. */}
-      <p className="border-t border-[var(--gold-light)] bg-white px-5 py-4 text-xs leading-5 text-stone-600 sm:px-8">
-        <span className="font-semibold text-[var(--navy)]">How this site is paid: </span>
-        {disclosure}
       </p>
     </div>
   );

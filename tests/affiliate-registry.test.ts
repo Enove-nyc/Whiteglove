@@ -32,8 +32,9 @@ const CONNECTED: AffiliateConfig = {
   // A real Travelpayouts link carries the marker AND a u= target, and the
   // target has to be the partner this site's search actually opens — the
   // library refuses a hotels link pointed at Aviasales, and so does the
-  // registry. These are the DEFAULT partners: the programmes this account is
-  // approved for, which is not Kayak.
+  // registry. Code defaults are Kayak now; this fixture pins Aviasales /
+  // EconomyBookings so the Travelpayouts wrap path stays covered.
+  partners: { flights: "aviasales", cars: "economybookings" },
   travelpayouts: {
     hotels: "https://tp.media/r?marker=123456&trs=1&p=4115&u=https%3A%2F%2Fwww.booking.com",
     flights: "https://tp.media/r?marker=123456&trs=1&p=4114&u=https%3A%2F%2Fsearch.aviasales.com",
@@ -79,12 +80,12 @@ describe("who pays and where the traveler lands", () => {
     // A link that stops working because the money is not configured costs a
     // customer to save a commission. It keeps working and says so instead.
     const flights = routeFor("flight", NOTHING);
-    assert.equal(flights.destinationLabel, "Aviasales");
+    assert.equal(flights.destinationLabel, "Kayak");
     assert.equal(flights.earns, false);
     assert.match(flights.note, /earn nothing/i);
     const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-07-05" }, NOTHING);
     assert.ok(link, "an unconfigured flight search stopped working entirely");
-    assert.match(link.url, /^https:\/\/search\.aviasales\.com\/flights\//);
+    assert.match(link.url, /kayak\.com\/flights\//i);
   });
 
   it("prefers Stay22 for hotels when it is on, and Booking.com when it is not", () => {

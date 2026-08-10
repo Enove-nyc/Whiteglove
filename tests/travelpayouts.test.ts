@@ -34,6 +34,8 @@ const economy = (u = "https://www.economybookings.com/en?idpick=Krakow") =>
   `https://tp.media/r?marker=${MARKER}&trs=123&p=4114&campaign_id=100&u=${encodeURIComponent(u)}`;
 /** Both searches pinned to Kayak, for the tests that are about Kayak. */
 const onKayak = { flights: "kayak", cars: "kayak" } as const;
+/** Explicit pin for fixtures that still exercise Aviasales / EconomyBookings. */
+const onTravelpayoutsDefaults = { flights: "aviasales", cars: "economybookings" } as const;
 
 describe("the marker itself", () => {
   it("takes a plain number", () => {
@@ -60,15 +62,15 @@ describe("the marker itself", () => {
 describe("a pasted link has to be able to earn", () => {
   it("accepts a redirect link for the partner that search opens", () => {
     assert.equal(linkProblem(booking(), "hotels"), null);
-    // The default flight programme, and Kayak once it is chosen.
-    assert.equal(linkProblem(aviasales(), "flights"), null);
+    // Aviasales when that partner is chosen; Kayak is the code default.
+    assert.equal(linkProblem(aviasales(), "flights", onTravelpayoutsDefaults), null);
     assert.equal(linkProblem(kayak(), "flights", onKayak), null);
   });
 
   it("REFUSES A LINK FOR THE WRONG PARTNER", () => {
     // The one mistake with no symptom. A Booking.com link in the flights row
     // produces a working search that credits nobody.
-    const said = linkProblem(booking(), "flights");
+    const said = linkProblem(booking(), "flights", onTravelpayoutsDefaults);
     assert.match(said!, /www\.booking\.com/);
     assert.match(said!, /Aviasales/);
     assert.match(said!, /does not track another/);
@@ -78,7 +80,7 @@ describe("a pasted link has to be able to earn", () => {
     // The new way to get this wrong: a perfectly good Kayak link, pasted while
     // the search is set to Aviasales. Both are real programmes and the link is
     // not malformed — it simply does not track the search this site builds.
-    const said = linkProblem(kayak(), "flights");
+    const said = linkProblem(kayak(), "flights", { flights: "aviasales" } as never);
     assert.match(said!, /www\.kayak\.com/);
     assert.match(said!, /Aviasales/);
     // And it says which knob to turn, because either fix is legitimate.
@@ -147,9 +149,9 @@ describe("what the screen says is happening", () => {
   it("says plainly that an unrouted search earns nothing, and names who it opens", () => {
     const said = describeSlot("cars", "");
     assert.match(said, /earns nothing/);
-    // The partner it would open, which is now a choice rather than a fact.
-    assert.match(said, /EconomyBookings/);
-    assert.match(describeSlot("cars", "", onKayak), /Kayak/);
+    // Code default is Kayak; EconomyBookings remains available when chosen.
+    assert.match(said, /Kayak/);
+    assert.match(describeSlot("cars", "", onTravelpayoutsDefaults), /EconomyBookings/);
   });
 
   it("names the marker once a search is routed", () => {
@@ -165,7 +167,7 @@ describe("what the screen says is happening", () => {
     assert.match(describeLinks({ hotels: booking() }), /Hotels go through Travelpayouts/);
     assert.match(describeLinks({ hotels: booking() }), /earn nothing/);
     assert.match(
-      describeLinks({ hotels: booking(), flights: aviasales(), cars: economy() }),
+      describeLinks({ hotels: booking(), flights: aviasales(), cars: economy() }, onTravelpayoutsDefaults),
       /All three/,
     );
     // The same three links, judged against Kayak, are the wrong partner and
@@ -186,11 +188,9 @@ describe("the slots match the searches the site really builds", () => {
     assert.deepEqual(SLOTS.map((s) => s.slot), ["flights", "hotels", "cars"]);
   });
 
-  it("defaults to programmes this account is approved for, not Kayak", () => {
-    // The whole reason the partner became a setting: defaulting to Kayak
-    // defaults to earning nothing, because the account is not approved for it.
-    assert.equal(partnerFor("flights", {}).key, "aviasales");
-    assert.equal(partnerFor("cars", {}).key, "economybookings");
+  it("defaults flights and cars to Kayak, hotels to Booking.com", () => {
+    assert.equal(partnerFor("flights", {}).key, "kayak");
+    assert.equal(partnerFor("cars", {}).key, "kayak");
     assert.equal(partnerFor("hotels", {}).key, "booking");
   });
 

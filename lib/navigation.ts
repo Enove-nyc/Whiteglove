@@ -42,14 +42,20 @@
  *      is away from.
  *
  *   5. **One primary action, and it is a search.** The thing this business
- *      does is help somebody find and book a trip. Hotels and Flights stay on
- *      their own pages and in the menu — not beside the Search & Book button.
+ *      does is help somebody find and book a trip. Hotels, flights and cars
+ *      are one search on /book — not four near-duplicate menu links beside
+ *      the Search & Book button.
  */
 
 import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
 
 export type NavItem = {
   label: string;
+  /**
+   * Shorter bar wording when the full label will not fit beside the logo and
+   * actions. The menu panel and the accessible name keep `label`.
+   */
+  shortLabel?: string;
   href: string;
   /**
    * What is actually behind it, in the words a traveler would use.
@@ -61,20 +67,14 @@ export type NavItem = {
   description: string;
 };
 
-/** Dedicated hotel search — menu and destination pages, not the bar. */
-export const HOTELS_NAV: NavItem = {
-  // "Where to stay" — the same words the footer, the front page and the
-  // section heading use. AGENTS.md, "One name per thing".
-  label: "Where to stay",
-  href: "/hotels",
-  description: "Kosher hotels, seasonal programmes, and which quarter makes Shabbos walkable.",
-};
-
-/** Dedicated flight search — menu and destination pages, not the bar. */
-export const FLIGHTS_NAV: NavItem = {
-  label: "Flights",
-  href: "/flights",
-  description: "Search flights for your dates, then build the trip around them.",
+/**
+ * The one menu entry for booking. Same destination as Search & Book; the bar
+ * keeps the short label, the panel says what you can search.
+ */
+export const BOOKING_NAV: NavItem = {
+  label: "Search hotels, flights & cars",
+  href: BOOKING_SEARCH_PATH,
+  description: "Search and book your own travel, with cash or with points.",
 };
 
 /**
@@ -82,10 +82,10 @@ export const FLIGHTS_NAV: NavItem = {
  *
  * FIVE, NOT SEVEN. Hotels & Stays and Flights used to sit here next to the
  * Search & Book button, which searches the same three things. That tripled the
- * booking pitch, crowded the first item onto the logo at 1280px, and left
- * Cars & Transfers in the menu where it still belongs — somebody looks for a
- * car AFTER they have chosen a hotel. The hotel and flight pages keep their
- * own addresses and stay in the menu below.
+ * booking pitch and crowded the first item onto the logo at 1280px. The menu
+ * used to list Hotels, Flights, Cars and the combined search as four separate
+ * links to the same job — they are one entry now. Dedicated /hotels, /flights
+ * and /cars addresses stay for deep links and stay-search content.
  */
 export const PRIMARY_NAV: readonly NavItem[] = [
   {
@@ -100,11 +100,13 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   },
   {
     label: "Kosher Travel",
+    shortLabel: "Kosher",
     href: "/kosher-travel",
     description: "Food, Shabbos, minyanim, mikvaos, hechsherim and the practical side of travelling kosher.",
   },
   {
     label: "Heritage Travel",
+    shortLabel: "Heritage",
     href: "/heritage",
     description: "שתוליכנו לשלום — kevarim, batei hachaim and Jewish heritage journeys.",
   },
@@ -114,6 +116,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
     // same navigation offered one page under two names — which reads as two
     // features, one of which cannot be found.
     label: "Itinerary planner",
+    shortLabel: "Itinerary",
     href: "/itinerary",
     description: "Build the trip day by day, and keep the ones you have saved.",
   },
@@ -164,12 +167,9 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
   {
     title: "Book the trip",
     links: [
-      // Hotels and flights live here rather than beside Search & Book in the
-      // bar — same products, one primary action up top.
-      HOTELS_NAV,
-      FLIGHTS_NAV,
-      { label: "Cars & transfers", href: "/cars", description: "Hire a car, or find out whether the destination is better without one." },
-      { label: "Search hotels, flights & cars", href: BOOKING_SEARCH_PATH, description: "Search and book your own travel, with cash or with points." },
+      // One entry for the unified search — not Hotels, Flights, Cars and
+      // "Search hotels…" as four near-duplicates of Search & Book.
+      BOOKING_NAV,
       { label: "Before you go", href: "/travel-guide", description: "Documents, entry rules, insurance and connectivity." },
     ],
   },
@@ -178,6 +178,8 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     links: [
       PRIMARY_NAV[1],
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
+      // Discoverable here rather than buried under White Glove; not in the bar.
+      { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
     ],
   },
   {
@@ -198,7 +200,6 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       // offers commercially has moved into the journeys; what it offers
       // personally is inside Contact.
       { label: "Travel services", href: "/services", description: "What we do, and what to expect about price." },
-      { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
       { label: "Contact", href: "/contact", description: "Ask a question, report a correction, or talk about advertising." },
     ],
   },

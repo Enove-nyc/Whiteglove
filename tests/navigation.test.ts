@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { FLIGHTS_NAV, HOTELS_NAV, isCurrent, MENU_GROUPS, primaryCtaFor, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
+import { BOOKING_NAV, isCurrent, MENU_GROUPS, primaryCtaFor, PRIMARY_CTA, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
 import { bookingLink } from "@/lib/booking-access";
 
 /**
@@ -69,21 +69,63 @@ describe("what the bar leads with", () => {
 
   it("DOES NOT TRIPLE THE BOOKING PITCH IN THE BAR", () => {
     // Hotels & Stays and Flights sat next to Search & Book and said the same
-    // thing three times — and crowded Destinations onto the logo. They stay
-    // reachable from the menu and keep their own pages.
+    // thing three times — and crowded Destinations onto the logo. Booking is
+    // one filled button up top, not product links beside it.
     for (const item of PRIMARY_NAV) {
       assert.notEqual(item.href, "/hotels", `${item.label} duplicates Search & Book`);
       assert.notEqual(item.href, "/flights", `${item.label} duplicates Search & Book`);
+      assert.notEqual(item.href, "/cars", `${item.label} duplicates Search & Book`);
+      assert.notEqual(item.href, "/book", `${item.label} duplicates Search & Book`);
     }
-    assert.ok(ALL_ITEMS.some((item) => item.href === HOTELS_NAV.href), "hotels has no way in at all");
-    assert.ok(ALL_ITEMS.some((item) => item.href === FLIGHTS_NAV.href), "flights has no way in at all");
   });
 
   it("fits: five items and one button", () => {
     // Seven crowded the logo at 1280px once Hotels and Flights sat beside
-    // Search & Book. Five is what fits; cars stay in the menu.
+    // Search & Book. Five is what fits; the unified search is the button.
     assert.equal(PRIMARY_NAV.length, 5);
-    assert.ok(ALL_ITEMS.some((item) => item.href === "/cars"), "cars and transfers has no way in at all");
+  });
+
+  it("gives the long bar labels a shorter form so they are not clipped", () => {
+    // overflow-hidden on the bar used to cut "Heritage Travel" to "Heritage Trav"
+    // once Search sat on the same row. Short labels are the fit at xl; the full
+    // name stays the accessible name and the 2xl wording.
+    for (const item of PRIMARY_NAV) {
+      if (!item.shortLabel) continue;
+      assert.ok(item.shortLabel.length < item.label.length, item.label);
+    }
+    assert.equal(PRIMARY_NAV.find((item) => item.href === "/heritage")?.shortLabel, "Heritage");
+    assert.equal(PRIMARY_NAV.find((item) => item.href === "/itinerary")?.shortLabel, "Itinerary");
+  });
+
+  it("OFFERS ONE BOOKING ENTRY IN THE MENU, not four near-duplicates", () => {
+    // Hotels, Flights, Cars and "Search hotels…" all said the same job under
+    // "Book the trip". One link to /book is enough; Search & Book is the CTA.
+    const bookGroup = MENU_GROUPS.find((group) => group.title === "Book the trip");
+    assert.ok(bookGroup);
+    const bookingHrefs = bookGroup.links.filter((link) =>
+      ["/book", "/hotels", "/flights", "/cars"].includes(link.href),
+    );
+    assert.deepEqual(
+      bookingHrefs.map((link) => link.href),
+      [BOOKING_NAV.href],
+    );
+    assert.equal(bookingHrefs[0].label, BOOKING_NAV.label);
+    assert.equal(BOOKING_NAV.href, PRIMARY_CTA.href);
+  });
+
+  it("puts the provider directory under While you are there, not the bar", () => {
+    const there = MENU_GROUPS.find((group) => group.title === "While you are there");
+    assert.ok(there);
+    assert.ok(there.links.some((link) => link.href === "/directory"), "directory missing from While you are there");
+    for (const item of PRIMARY_NAV) {
+      assert.notEqual(item.href, "/directory", `${item.label} puts the directory in the bar`);
+    }
+    const whiteGlove = MENU_GROUPS.find((group) => group.title === "White Glove");
+    assert.ok(whiteGlove);
+    assert.ok(
+      !whiteGlove.links.some((link) => link.href === "/directory"),
+      "directory should not stay buried only under White Glove",
+    );
   });
 });
 
@@ -216,6 +258,18 @@ describe("the header renders the list rather than its own copy", () => {
   it("keeps the site search and the promotions strip", () => {
     assert.match(NAVBAR, /DestinationSearch/);
     assert.match(NAVBAR, /SitePromotions/);
+  });
+
+  it("does not clip the bar labels or squeeze the More panel into a skinny column", () => {
+    // The primary-links slot used overflow-hidden, which cut Heritage Travel
+    // mid-word. Search on the same row at 2xl made the suggestions panel only
+    // as wide as a 15rem field. The More panel must stay full-bleed under the
+    // header, not a narrow absolute column.
+    assert.doesNotMatch(NAVBAR, /overflow-hidden xl:flex/);
+    assert.doesNotMatch(NAVBAR, /2xl:max-w-\[15rem\]/);
+    assert.match(NAVBAR, /id="site-menu"/);
+    assert.match(NAVBAR, /min-w-full/);
+    assert.match(NAVBAR, /shortLabel/);
   });
 
   it("has exactly one filled button in the header, and resolves it", () => {

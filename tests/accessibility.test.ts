@@ -249,13 +249,15 @@ describe("dialogs", () => {
     }
   });
 
-  it("HAS NO DIALOG IN FRONT OF THE FRONT PAGE", () => {
-    // The site opened with one. A visitor who has just arrived has not yet
-    // decided to care, and the first thing you hand them should not be a box
-    // they must dismiss to find out what you sell.
+  it("makes the travel notice a real dialog when it is a popup", () => {
+    // Same bar as every other modal on the site: labelled, modal, Escape,
+    // focus trap. A fixed overlay that skips any of those is worse than the
+    // old strip.
     const notice = readFileSync("components/NewSiteNotice.tsx", "utf8");
-    assert.doesNotMatch(notice, /role="dialog"/);
-    assert.doesNotMatch(LAYOUT, /Modal/);
+    assert.match(notice, /role="dialog"/);
+    assert.match(notice, /aria-modal="true"/);
+    assert.match(notice, /useFocusTrap/);
+    assert.match(notice, /aria-labelledby/);
   });
 });
 

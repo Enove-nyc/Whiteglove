@@ -76,7 +76,7 @@ export const TRAVEL_PARTNERS: readonly TravelPartner[] = [
     label: "Kayak",
     slot: "flights",
     domain: "kayak.com",
-    note: "Needs the Kayak programme, which this account is not approved for yet. Here so it can be switched on the day it is.",
+    note: "Opens Kayak with the route and both dates. Earns when a Stay22 (or Travelpayouts) wrap for Kayak is pasted on this row — the account is approved via Stay22.",
   },
   {
     key: "economybookings",
@@ -90,7 +90,7 @@ export const TRAVEL_PARTNERS: readonly TravelPartner[] = [
     label: "Kayak",
     slot: "cars",
     domain: "kayak.com",
-    note: "Needs the Kayak programme. Carries the city and both dates.",
+    note: "Opens Kayak with the city and both dates. Earns when a Stay22 (or Travelpayouts) wrap for Kayak is pasted on this row.",
   },
   {
     key: "booking",
@@ -108,10 +108,11 @@ export function partnersFor(slot: SearchSlot): TravelPartner[] {
 
 /** Which partner is used when the owner has not chosen one. */
 export const DEFAULT_PARTNERS: Record<SearchSlot, PartnerKey> = {
-  // Not Kayak, for either. The account is not approved for it, so defaulting
-  // there is defaulting to earning nothing.
-  flights: "aviasales",
-  cars: "economybookings",
+  // Kayak via Stay22 is the programme that works and can earn. Aviasales deep
+  // links 302 to aviasales.ru and discard the search; EconomyBookings carries
+  // no dates. The owner can still override at /admin/settings/earnings.
+  flights: "kayak",
+  cars: "kayak",
   hotels: "booking",
 };
 

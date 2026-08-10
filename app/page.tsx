@@ -201,7 +201,7 @@ export default async function Home() {
   const kevarim = allTzaddikim();
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[var(--cream)] text-[var(--ink)]">
+    <main className="min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
       <SearchMemory />
       <Navbar />

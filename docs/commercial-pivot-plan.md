@@ -471,19 +471,29 @@ is the settings state below rather than a stage.
 
 ### What earns today, on the live site
 
-Verified against production after #224 merged. This is a settings state, not a
-code gap: `routeFor` reports it honestly and the admin shows it.
+Re-checked against live endpoints after the Stay22 → Kayak flight chain was
+traced end to end. This is a **settings and deploy** state, not “Kayak is
+unapproved”.
 
 | Product | Lands on | Network | Earns |
 |---|---|---|---|
 | Hotels | Stay22 | Stay22 (`aid` set) | **Yes** |
-| Flights | Kayak | none | **No** — no Travelpayouts marker set |
-| Cars | Kayak | none | **No** — no Travelpayouts marker set |
+| Flights | Kayak (code default) | Stay22 once the Kayak link is pasted at `/admin/settings/earnings` | **Can earn** after that paste |
+| Cars | Kayak (code default) | same | **Can earn** after the same paste on the Cars row |
 | Transfers, activities, insurance, eSIM, programmes | — | none | Not offered |
 
-The flights and cars markers are pasted at `/admin/settings/earnings`. Until
-they are, those searches work and earn nothing — which is the state the
-registry was built to make visible rather than to hide.
+**Kayak is approved via Stay22** (`aid=whitegloveitinerarie`). The live chain
+`stay22.com/allez/kayak?aid=…&link=<search>` lands on English Kayak with the
+route and both dates intact and credited. Aviasales deep links are broken —
+`search.aviasales.com` 302s to `aviasales.ru` and discards every query
+parameter — and are not fixable by tuning the URL. Code defaults are Kayak for
+flights and cars; pasting
+`https://kayak.stay22.com/whitegloveitinerarie/Te_B-47Q2I` into each earnings
+row (accepted after #228) is what makes the click earn.
+
+Until that paste is done, `routeFor` correctly reports the search as working
+and earning nothing — which is the state the registry was built to make visible
+rather than to hide.
 
 **Nothing in this plan publishes an invented price, availability, review,
 partner, advertiser or traffic figure.** Where inventory does not exist, the
