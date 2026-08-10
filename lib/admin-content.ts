@@ -313,6 +313,47 @@ function defaultPromotions(): Promotion[] {
   ];
 }
 
+/**
+ * A new advertisement, before anybody has typed anything into it.
+ *
+ * IT LIVES HERE RATHER THAN IN THE SCREEN THAT USES IT, and that is the whole
+ * point. `enabled: false` is the commitment that nothing goes live the moment
+ * it is created — Draft, Preview, Publish — and a rule that lives inside one
+ * component is a rule the second creation path will not have. It is asserted
+ * in tests/advertising-boundary.test.ts against this function, so any screen
+ * that builds its own blank has to answer for the difference.
+ *
+ * The counters start at zero for the same reason a duplicate resets them: an
+ * inherited impression count is a number nobody measured.
+ */
+export function blankPromotion(now = new Date().toISOString()): Promotion {
+  return {
+    id: "",
+    title: "",
+    description: "",
+    buttonText: "Learn more",
+    targetHref: "/",
+    imageUrl: "",
+    pdfUrl: "",
+    videoUrl: "",
+    advertiserName: "",
+    advertiserPhone: "",
+    advertiserEmail: "",
+    placements: ["fixed-top-banner"],
+    targetPaths: "",
+    device: "all",
+    startDate: "",
+    endDate: "",
+    priority: 0,
+    maxViewsPerVisitor: 0,
+    enabled: false,
+    impressions: 0,
+    clicks: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const defaultBundle = (): AdminContentBundle => ({
   settings: defaultSettings(),
   locations: defaultLocations(),
