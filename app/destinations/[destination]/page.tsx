@@ -6,6 +6,7 @@ import GloveMark from "@/components/GloveMark";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
+import TravelExtras from "@/components/TravelExtras";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
@@ -25,6 +26,7 @@ import {
 import { staySearchHref } from "@/lib/stay-search";
 import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
+import { readExtras } from "@/lib/travel-extras-store";
 import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 
 /**
@@ -395,7 +397,9 @@ export default async function VacationDestinationPage({ params }: { params: Prom
   // The only await the SHELL does. Everything below the heading that needs a
   // read is behind a Suspense boundary, so the H1, the summary and the
   // editorial sections are in the first byte of HTML either way.
-  const booking = await readBookingLink();
+  // Both are cached reads of the owner's own settings, so they cost one round
+  // trip between them rather than two — and neither depends on the other.
+  const [booking, extras] = await Promise.all([readBookingLink(), readExtras()]);
   const heritage = heritageGuideFor(destination);
 
   const contents: Array<[string, string]> = [
@@ -688,6 +692,18 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             See components/DestinationStickyCta.tsx. */}
         <DestinationStickyCta destination={destination.name} />
       </div>
+
+      {/* The eSIM, the policy, the transfer — the owner's own list, and the
+          same one /book carries. Here rather than there because somebody who
+          has read what Shabbos looks like in this town has a trip in mind and
+          nothing arranged; that is when a data plan is worth a thought. It
+          renders nothing at all until he has added one, and it recommends
+          none of them — see components/TravelExtras.tsx. */}
+      <TravelExtras
+        extras={extras}
+        heading={`Before you go to ${destination.name}`}
+        intro="Connectivity, cover and transfers. Each one opens with the provider, who handles the purchase and anything you need to ask about it."
+      />
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
