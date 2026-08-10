@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import KosherNearby from "@/components/KosherNearby";
+import { LIVE_FINDER_LONG } from "@/lib/kosher-live";
 
 const RADII = [3, 8, 15, 30];
 
@@ -15,6 +16,14 @@ export default function KosherFinder({ showAddToTrip = true }: { showAddToTrip?:
 
   return (
     <div>
+      {/* WHERE THE RESULTS COME FROM, ABOVE THE BOX RATHER THAN UNDER THE
+          LIST. Somebody who has already found the bakery they wanted has
+          stopped reading; the sentence has to be there before they search.
+          One wording, from lib/kosher-live.ts, so the same caveat travels with
+          every place this tool is offered. */}
+      <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--surface)] px-4 py-3 text-sm leading-6 text-stone-600">
+        {LIVE_FINDER_LONG}
+      </p>
       <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <label className="block">
           <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">City or place</span>

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SectionHeading from "@/components/SectionHeading";
 import SearchMemory from "@/components/SearchMemory";
+import StartingPoints from "@/components/StartingPoints";
 import StaySearchForm from "@/components/StaySearchForm";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import VacationCard from "@/components/VacationCard";
@@ -21,13 +22,15 @@ import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import { SUB_BRAND_HEBREW } from "@/components/SubBrand";
+import { LIVE_FINDER_SHORT } from "@/lib/kosher-live";
+import { readinessOf } from "@/lib/destination-readiness";
 import { guidedDestinations } from "@/data/destinations";
 import { allTzaddikim } from "@/lib/tzaddikim";
 
 export const metadata = pageMetadata({
   title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Itineraries",
   description:
-    "Plan a kosher vacation with every detail in place: where to go, what to do, kosher food, Shabbos, minyanim and mikvaos — build the itinerary yourself or have White Glove arrange it.",
+    "Plan a kosher vacation with the kosher side answered first: where to go, what to do, kosher food, Shabbos, minyanim and mikvaos — build the itinerary yourself or have White Glove arrange it.",
   path: "/",
 });
 
@@ -76,17 +79,29 @@ const HOW_IT_WORKS: Array<[string, string]> = [
     "See what is actually there",
     "The quarter to be in, what is walkable for Shabbos, and where the food comes from — before any price is quoted.",
   ],
+  // NOT "book it where it is cheapest", which is what this said. The site
+  // opens a search with the partners it is signed up to; it does not read the
+  // whole market and it cannot show that the rate in front of you is the
+  // lowest one anywhere. A promise a page cannot keep is the one thing that
+  // costs a traveller their trust in everything else on it.
   [
-    "Book it where it is cheapest",
-    "Rooms and prices come from our booking partners. The planner keeps the whole trip in one place, and it is free.",
+    "Compare your options and book with a trusted partner",
+    "Rooms and prices come from our booking partners, and you pay them directly. The planner keeps the whole trip in one place, and it is free.",
   ],
 ];
 
-const RESOURCES: Array<{ title: string; href: string; body: string; cta: string }> = [
+// `note` is the small print a card cannot go out without. Only one of these
+// needs one today: the food finder is live worldwide because it reads
+// OpenStreetMap, and a promise of "restaurants, bakeries and groceries,
+// anywhere in the world" with nothing beside it is read as a promise that they
+// have been checked. /kosher-travel explains it properly; this is the short
+// version, standing next to the claim itself. lib/kosher-live.ts.
+const RESOURCES: Array<{ title: string; href: string; body: string; cta: string; note?: string }> = [
   {
     title: "Kosher food, anywhere",
     href: "/kosher",
     body: "Restaurants, bakeries and groceries, live, anywhere in the world.",
+    note: LIVE_FINDER_SHORT,
     cta: "Open the food finder",
   },
   {
@@ -141,11 +156,26 @@ export default async function Home() {
   // the tie-break — so this stays honest as the site is used rather than being
   // six destinations somebody picked once.
   const visits = new Map(topVisitedPaths.map((path) => [path.path, path.count]));
+  /**
+   * THE THREE ON THE FRONT PAGE PASS THE COMPLETENESS BAR.
+   *
+   * The sentence over them says kosher food, Shabbos and somewhere to stay are
+   * answered before you book, and it was written when the list was smaller than
+   * the claim. lib/destination-readiness.ts already decides that question — five
+   * checks, run against what the site actually holds — so the claim is now made
+   * true by the query rather than by hope: a destination missing one of the five
+   * cannot reach this row however often it is opened. Today one of eighteen is
+   * short a place to sleep, and it is the one that no longer appears here.
+   *
+   * The fallback keeps the front page from emptying if the bar is ever raised
+   * faster than the records catch up.
+   */
+  const complete = cards.filter((card) => readinessOf(card.destination, sources).publishable);
   // THREE. Six full cards were most of the scroll between the categories and
   // the two paths, and each one repeated the kosher and Shabbos answers that
   // its own page gives properly. Three, on the short card, with the way to all
   // of them underneath.
-  const featured = [...cards]
+  const featured = [...(complete.length >= 3 ? complete : cards)]
     .sort((a, b) => (visits.get(destinationHref(b.destination)) ?? 0) - (visits.get(destinationHref(a.destination)) ?? 0))
     .slice(0, 3);
 
@@ -289,12 +319,18 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 5. Featured vacation destinations ---------------------------- */}
+      {/* ---- 5. Featured vacation destinations ----------------------------
+          THE CLAIM UNDER THE HEADING IS ABOUT THESE THREE, and it is enforced
+          above rather than asserted here: each has passed the five
+          completeness checks in lib/destination-readiness.ts. "Kosher food and
+          Shabbos are answered for every one of these" was the old wording and
+          it was a sentence about the whole list, which is not something a row
+          of three cards can stand behind. */}
       <section id="destinations" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow="Destinations"
           title="Where to go"
-          description="Kosher food and Shabbos are answered for every one of these before you book anything."
+          description="Each of these answers the same three questions before you book: where the kosher food is, how Shabbos works, and where to sleep so it is walkable."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((card) => (
@@ -418,7 +454,13 @@ export default async function Home() {
               <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {resource.title}
               </p>
-              <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{resource.body}</p>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{resource.body}</p>
+              {resource.note && (
+                <p className="mt-3 border-l-2 border-[var(--gold-light)] pl-3 text-xs leading-5 text-stone-500">
+                  {resource.note}
+                </p>
+              )}
+              <span className="flex-1" />
               {/* Named after where it goes. Four cards all saying "Learn more"
                   is four identical links in a screen reader's list. */}
               <span className="mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
@@ -522,32 +564,28 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* The search again, at the bottom, for somebody who has read the whole
-          page and is now ready to type. Sending them back up to the hero is a
-          small rudeness that costs the press. */}
+      {/* ---- 12. Which door do I want? ------------------------------------
+          THIS WAS THE SEARCH BOX A SECOND TIME. The page carried the same
+          StaySearchForm in the hero and again at the bottom, and the argument
+          for the second one — that sending a reader back up to the hero is a
+          rudeness that costs the press — turned out to be answering the wrong
+          question. Somebody who has read the whole page has usually stopped
+          wondering where to go and started wondering how this site works: it
+          has three free tools and a paid service, all reachable from the
+          navigation, and no page said which was which. One search box, near
+          the top, where a person who arrives knowing their dates finds it; and
+          a finish that orients rather than repeats.
+
+          /services IS DELIBERATELY NOT ONE OF THE CARDS HERE. A front page
+          that offers to arrange the trip for you is a page about an agency,
+          and every free tool above would then read as a funnel into a phone
+          call. It is offered inside Contact and on its own page. AGENTS.md. */}
       <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-        <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--cream-deep)] p-8 sm:p-12">
-          <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Start with a destination and a date
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-            Somewhere warm, in July, with the children is enough to start with. Leave the rest blank.
-          </p>
-          <div className="mt-8">
-            <StaySearchForm id="footer-search" />
-          </div>
-          <p className="mt-6 text-sm leading-6 text-stone-600">
-            Keeping the whole trip in one place — flights, hotels, every stop, the driving time between them, and a
-            printable copy for the car — is what{" "}
-            <Link
-              href="/itinerary"
-              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              the planner
-            </Link>{" "}
-            is for. It is free, and it does not need an account until you want it on your phone.
-          </p>
-        </div>
+        <StartingPoints
+          omit={["/services"]}
+          heading="Three ways to start"
+          intro="Most people end up using two of them. This is what each one is for, and all three are free."
+        />
       </section>
 
       <Footer />

@@ -128,7 +128,12 @@ export const PRICE_NOT_PUBLISHED =
  */
 export const BUILT_IN_WORDS: SiteWords = {
   heroEyebrow: "Kosher vacations, thoughtfully planned",
-  heroTitle: "Plan your next vacation with every kosher detail in place.",
+  // NOT "with every kosher detail in place". A headline is the one sentence a
+  // stranger takes away, and that one promised completeness across the whole
+  // site — which lib/destination-readiness.ts, the thing that actually
+  // decides, does not grant to every destination. This says what the site does
+  // do, which is answer the kosher and Shabbos questions first.
+  heroTitle: "Plan your next vacation with the kosher side answered first.",
   heroSubtitle:
     "Discover where to go, build your itinerary, find kosher food and religious essentials, or let White Glove arrange the trip for you.",
   // No longer "a city, tzaddik, kever" — the same search still finds all three,

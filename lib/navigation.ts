@@ -74,7 +74,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   {
     label: "Destinations",
     href: "/destinations",
-    description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher side worked out.",
+    description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher and Shabbos answer on each one.",
   },
   {
     label: "Hotels & Stays",

@@ -85,6 +85,10 @@ const columnsFor = (
  * account holds their own trips.
  */
 const utilityLinks = [
+  // FIRST, and before "how we verify". The site explained its method at
+  // length and never said who was behind it, which is the question somebody
+  // asks before they read the method.
+  { label: "About us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "How we verify", href: "/verification" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
@@ -119,9 +123,16 @@ export default async function Footer() {
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-white">
                 Tell us where you want to go—or let us help you choose.
               </h2>
+              {/* NOT "every destination here has the kosher food and the
+                  Shabbos side worked out". That was a promise about the whole
+                  list made in the footer of all three hundred pages, and the
+                  list does not keep it evenly — see
+                  lib/destination-readiness.ts, which is what decides. What is
+                  true of all of them is that the destination page answers
+                  those questions and names where each answer came from. */}
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Vacations, family trips and heritage journeys. Every destination here has the kosher food and the
-                Shabbos side worked out before a single price is quoted.
+                Vacations, family trips and heritage journeys. Each destination page answers what there is to eat and
+                how Shabbos works there, and names where each answer came from.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/destinations" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">

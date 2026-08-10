@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import ServiceCatalog, { ServiceContents } from "@/components/ServiceCatalog";
 import ServicePricing from "@/components/ServicePricing";
+import StartingPoints from "@/components/StartingPoints";
 import { resolvePage } from "@/lib/pages";
 import { readWords } from "@/lib/site-words-store";
 
@@ -71,6 +72,13 @@ export default async function ServicesPage() {
           unanswered and say so; see components/ServicePricing.tsx. */}
       <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
         <ServicePricing words={words} />
+      </section>
+
+      {/* Hiring us is one of four ways to use this site, and three of them are
+          free. Saying so on the page that sells the fourth is the difference
+          between a services page and a wall. lib/starting-points.ts. */}
+      <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
+        <StartingPoints omit={["/services"]} heading="Or do it yourself, free" />
       </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
