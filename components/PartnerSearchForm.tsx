@@ -1,5 +1,6 @@
 import { AffiliateDisclosure } from "@/components/BookingLink";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
+import { nextDay, today } from "@/lib/date-range";
 import { routeFor, type TravelProduct } from "@/lib/affiliate/partners";
 
 /**
@@ -130,11 +131,16 @@ export default async function PartnerSearchForm({
 
         <label className="block" htmlFor={`${id}-in`}>
           <span className={label}>{fields === "stay" ? "Check in" : "Leaving"}</span>
+          {/* Not a date that has passed. Rendered on the server, so on a
+              prerendered page this floor can be a few days stale — it never
+              refuses a date that is genuinely available, and SearchMemory
+              re-stamps it with the browser's own today on arrival. */}
           <input
             id={`${id}-in`}
             name="in"
             type="date"
             required
+            min={today()}
             defaultValue={prefill?.checkIn ?? ""}
             className={field}
           />
@@ -148,6 +154,13 @@ export default async function PartnerSearchForm({
             name="out"
             type="date"
             required={fields === "stay"}
+            // A hotel stay of no nights is nothing, so a check-out cannot be
+            // today. Everything else here can end on the day it starts: a
+            // flight out and back, and a car picked up in the morning and
+            // dropped off that evening. Keyed off the PRODUCT and not the
+            // field set — cars use the "stay" fields, and reading the rule off
+            // those refused a one-day hire.
+            min={product === "hotel" ? nextDay(today()) : today()}
             defaultValue={prefill?.checkOut ?? ""}
             className={field}
           />

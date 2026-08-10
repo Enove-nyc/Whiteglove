@@ -82,7 +82,23 @@ describe("nothing falls back in silence", () => {
 
   it("the real answer is the only one called database", () => {
     const source = readFileSync("lib/directory.ts", "utf8");
-    assert.match(source, /providers: sortProviders\(\[\.\.\.store, \.\.\.dbProviders\]\), source: "database"/);
+    assert.match(source, /\.\.\.store, \.\.\.dbProviders, \.\.\.builtIn\]\), source: "database"/);
+  });
+
+  it("the database branch keeps the built-in businesses rather than replacing them", () => {
+    // THE ONE THIS FILE WAS SHORT OF, and the bug it missed. This assertion
+    // used to require the database branch to return `[...store,
+    // ...dbProviders]` and nothing else — it held the defect in place and
+    // called it the correct answer. Publishing one business emptied the
+    // directory down to that business, which is issues #210 and #212.
+    const source = readFileSync("lib/directory.ts", "utf8");
+    const reader = source.slice(
+      source.indexOf("export async function readProviders"),
+      source.indexOf("export async function getPublicProviders"),
+    );
+    const branch = reader.slice(reader.indexOf("const dbProviders"));
+    assert.match(branch, /fromStatic\(\)/, "the database branch drops the built-in businesses again");
+    assert.match(branch, /\.filter\(\(p\) => !mine\.has\(p\.slug\)\)/, "the built-ins are merged without de-duplicating against his own");
   });
 
   it("the admin screen shows the reason", () => {

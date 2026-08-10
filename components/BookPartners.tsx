@@ -10,7 +10,7 @@ import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel
 import DateField from "@/components/DateField";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
-import { correctedEnd, earliestEnd } from "@/lib/date-range";
+import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 
 // Unified "Book" experience. The traveler makes two choices, in order:
 //   1. how they're paying — cash or miles/points;
@@ -370,6 +370,10 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
             <DateField
               ariaLabel={`Departure date${multi ? ` for flight ${index + 1}` : ""}`}
               value={leg.date}
+              // Not in the past, and — on a multi-city trip — not before the
+              // flight before it, since the legs are flown in the order they
+              // are listed.
+              min={notBefore(today(), index > 0 ? legs[index - 1]?.date : undefined)}
               onChange={(v) => { setLeg(index, { date: v }); if (index === 0 && !multi) setRet((r) => correctedEnd(v, r)); }}
               className={bareInput}
             />
@@ -386,7 +390,7 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
             )
           ) : (
             <Field label="Return" className={trip === "one-way" ? "opacity-45" : ""}>
-              <DateField ariaLabel="Return date" value={ret} disabled={trip === "one-way"} min={earliestEnd(legs[0]?.date ?? "")} onChange={(v) => setRet(correctedEnd(legs[0]?.date ?? "", v))} className={bareInput} />
+              <DateField ariaLabel="Return date" value={ret} disabled={trip === "one-way"} min={notBefore(today(), earliestEnd(legs[0]?.date ?? ""))} onChange={(v) => setRet(correctedEnd(legs[0]?.date ?? "", v))} className={bareInput} />
             </Field>
           )}
         </SearchGrid>
@@ -454,8 +458,10 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
-        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
+        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} min={today()} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        {/* A stay is a number of nights, so the earliest check-out is the night
+            after the earliest check-in — tomorrow when nothing is chosen yet. */}
+        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={notBefore(nextDay(today()), earliestEnd(checkin, "exclusive"))} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
@@ -525,8 +531,8 @@ function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd
     <div>
       <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
-        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={earliestEnd(pickup)} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
+        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} min={today()} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={notBefore(today(), earliestEnd(pickup))} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search cars" />
@@ -790,7 +796,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
         <ProgramSelect programs={FLIGHT_PROGRAMS} value={program} onChange={setProgram} label="Your miles" />
         <Field label="From"><AirportAutocomplete value={from} onChange={setFrom} placeholder="City or airport" className={bareInput} /></Field>
         <Field label="To"><AirportAutocomplete value={to} onChange={setTo} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="When"><DateField ariaLabel="Date" value={when} onChange={setWhen} className={bareInput} /></Field>
+        <Field label="When"><DateField ariaLabel="Date" value={when} min={today()} onChange={setWhen} className={bareInput} /></Field>
       </SearchGrid>
 
       <StepLabel n={1}>Find award seats (free tools)</StepLabel>
@@ -843,8 +849,10 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={HOTEL_PROGRAMS} value={program} onChange={setProgram} label="Your points" />
         <Field label="Destination"><AddressAutocomplete mode="city" value={dest} onChange={(city) => setDest(city)} placeholder="City or town" className={bareInput} /></Field>
-        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
-        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={earliestEnd(checkin, "exclusive")} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
+        <Field label="Check in"><DateField ariaLabel="Check-in date" value={checkin} min={today()} onChange={(v) => { setCheckin(v); setCheckout((c) => correctedEnd(v, c, "exclusive")); }} className={bareInput} /></Field>
+        {/* A stay is a number of nights, so the earliest check-out is the night
+            after the earliest check-in — tomorrow when nothing is chosen yet. */}
+        <Field label="Check out"><DateField ariaLabel="Check-out date" value={checkout} min={notBefore(nextDay(today()), earliestEnd(checkin, "exclusive"))} onChange={(v) => setCheckout(correctedEnd(checkin, v, "exclusive"))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 
@@ -902,8 +910,8 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <ProgramSelect programs={CAR_PROGRAMS} value={program} onChange={setProgram} label="Your program" />
         <Field label="Pick-up location"><AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} /></Field>
-        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
-        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={earliestEnd(pickup)} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
+        <Field label="Pick-up date"><DateField ariaLabel="Pick-up date" value={pickup} min={today()} onChange={(v) => { setPickup(v); setDropoff((d) => correctedEnd(v, d)); }} className={bareInput} /></Field>
+        <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={notBefore(today(), earliestEnd(pickup))} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
 

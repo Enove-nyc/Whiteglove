@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
-import { correctedEnd, earliestEnd, nextDay, rangeIsBackwards } from "../lib/date-range";
+import { correctedEnd, earliestEnd, nextDay, notBefore, rangeIsBackwards, today } from "../lib/date-range";
 
 // A trip that ends before it begins builds zero days and says nothing about
 // why. These hold the rule that stops it.
@@ -78,5 +78,40 @@ describe("spotting a backwards range", () => {
   test("half-filled is not backwards", () => {
     assert.equal(rangeIsBackwards("", "2026-08-04"), false);
     assert.equal(rangeIsBackwards("2026-08-11", ""), false);
+  });
+});
+
+describe("today", () => {
+  test("is the date on the visitor's own calendar, not UTC's", () => {
+    // Nine in the evening in New York is already tomorrow in UTC. A floor
+    // built from `toISOString()` would refuse a flight leaving today.
+    const evening = new Date(2026, 7, 10, 21, 30);
+    assert.equal(today(evening), "2026-08-10");
+  });
+
+  test("pads a single-figure month and day", () => {
+    assert.equal(today(new Date(2027, 0, 5, 12)), "2027-01-05");
+  });
+});
+
+describe("the tightest floor", () => {
+  test("takes the latest of the ones that apply", () => {
+    assert.equal(notBefore("2026-08-10", "2026-09-01"), "2026-09-01");
+    assert.equal(notBefore("2026-09-01", "2026-08-10"), "2026-09-01");
+  });
+
+  test("ignores the floors that do not apply yet", () => {
+    // No outbound chosen, so only today bounds the return.
+    assert.equal(notBefore("2026-08-10", undefined), "2026-08-10");
+    assert.equal(notBefore(undefined, "2026-08-10"), "2026-08-10");
+    assert.equal(notBefore(undefined, undefined), undefined);
+  });
+
+  test("a return cannot be before the outbound or in the past, whichever binds", () => {
+    const now = "2026-08-10";
+    // Outbound in the future: the outbound is the binding floor.
+    assert.equal(notBefore(now, earliestEnd("2026-09-01")), "2026-09-01");
+    // Outbound left over from a past search: today is what binds.
+    assert.equal(notBefore(now, earliestEnd("2026-01-01")), "2026-08-10");
   });
 });

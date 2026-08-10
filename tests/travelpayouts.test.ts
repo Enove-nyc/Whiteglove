@@ -212,3 +212,43 @@ describe("the slots match the searches the site really builds", () => {
     }
   });
 });
+
+describe("the links the owner actually has in his hand", () => {
+  // BOTH OF THESE ARE REAL LINKS FROM HIS OWN DASHBOARDS, and both were
+  // refused with advice that did not fit — "use the link builder" to somebody
+  // who had just used the link builder. He concluded the admin was broken and
+  // left flights pointing at a partner that sends travellers to a Russian
+  // page. A refusal that does not say what to do next costs more than the
+  // paste it prevented.
+
+  it("names the shortened link for what it is, and says where the long one is", () => {
+    const said = String(linkProblem("https://kiwi.tpx.lv/QdvmP1KC", "flights"));
+    assert.match(said, /short/i, `does not say it is the short link: ${said}`);
+    assert.match(said, /u=/, `does not say what the full link looks like: ${said}`);
+    // The old message sent him back to the builder he had already used.
+    assert.doesNotMatch(said, /goes straight to/i, said);
+  });
+
+  it("still refuses it, because a code cannot carry a route or a date", () => {
+    // The point of the better message is not to start accepting these.
+    assert.ok(linkProblem("https://kiwi.tpx.lv/QdvmP1KC", "flights"));
+    assert.equal(
+      throughTravelpayouts("https://example.com/search", "https://kiwi.tpx.lv/QdvmP1KC", "flights"),
+      "https://example.com/search",
+      "a short link was used and the traveller's search was thrown away",
+    );
+  });
+
+  it("tells him a Stay22 link belongs to the setting that is already earning", () => {
+    const said = String(linkProblem("https://kayak.stay22.com/whitegloveitinerarie/Te_B-47Q2I", "flights"));
+    assert.match(said, /Stay22/, said);
+    assert.match(said, /hotels/i, `does not say where it does belong: ${said}`);
+  });
+
+  it("has not started accepting anything it used to refuse", () => {
+    // The full link is still the only shape that works, and a link that goes
+    // straight to the partner is still refused by the same rule as before.
+    const direct = String(linkProblem("https://www.kiwi.com/en/search", "flights"));
+    assert.match(direct, /goes straight to www\.kiwi\.com/, direct);
+  });
+});

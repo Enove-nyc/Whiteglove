@@ -22,7 +22,9 @@ export default async function AdminDirectoryPage() {
   try {
     const reading = await readProviders();
     source = reading.source;
-    builtInCount = reading.providers.length;
+    // The ones that ship with the site, not the whole list. It counted the
+    // whole list before, so the notice named a number that included his own.
+    builtInCount = reading.builtIn;
     for (const p of reading.providers) {
       entries.push({
         id: `business:${p.slug}`,
@@ -57,6 +59,16 @@ export default async function AdminDirectoryPage() {
         {describeDirectorySource(source, builtInCount) && (
           <p className="mt-4 max-w-3xl border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             <strong>These are not your businesses.</strong> {describeDirectorySource(source, builtInCount)}
+          </p>
+        )}
+        {/* Not a warning: the list IS his, and some of the site's own
+            businesses are keeping it company. Said out loud all the same,
+            because thirty listings nobody remembers adding is the kind of
+            thing that gets read as an import having gone wrong. */}
+        {source === "database" && builtInCount > 0 && (
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-stone-600">
+            {builtInCount} of the businesses below are the ones that ship with the site, shown alongside your own so
+            the directory is not close to empty while you build it up. Editing one makes it yours.
           </p>
         )}
         <div className="mt-5 flex flex-wrap gap-3">

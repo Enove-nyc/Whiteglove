@@ -112,7 +112,19 @@ export type DirectorySource =
   /** The read failed. His entries are almost certainly still there. */
   | "database-failed";
 
-export type ProviderReading = { providers: PublicProvider[]; source: DirectorySource };
+export type ProviderReading = {
+  providers: PublicProvider[];
+  source: DirectorySource;
+  /**
+   * How many of them ship with the site rather than being his.
+   *
+   * Every branch below mixes the two now, so "where did this list come from"
+   * stopped being a single answer. Counting them is what lets the admin say
+   * so plainly instead of leaving him to work out which thirty of his
+   * businesses he does not remember adding.
+   */
+  builtIn: number;
+};
 
 /**
  * The businesses, and where they came from.
@@ -122,14 +134,14 @@ export type ProviderReading = { providers: PublicProvider[]; source: DirectorySo
  */
 export async function readProviders(): Promise<ProviderReading> {
   const store = await fromStore();
-  if (!DB_ENABLED) return { providers: sortProviders([...store, ...fromStatic()]), source: "no-database" };
+  if (!DB_ENABLED) return { providers: sortProviders([...store, ...fromStatic()]), source: "no-database", builtIn: fromStatic().length };
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.directoryProvider.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [{ featured: "desc" }, { name: "asc" }],
     });
-    if (!rows.length) return { providers: sortProviders([...store, ...fromStatic()]), source: "database-empty" };
+    if (!rows.length) return { providers: sortProviders([...store, ...fromStatic()]), source: "database-empty", builtIn: fromStatic().length };
     const dbProviders: PublicProvider[] = rows.map((r) => ({
       slug: r.slug,
       name: r.name,
@@ -148,10 +160,25 @@ export async function readProviders(): Promise<ProviderReading> {
       verifiedAt: r.verifiedAt ? r.verifiedAt.toISOString() : null,
       responseTime: r.responseTime,
     }));
-    return { providers: sortProviders([...store, ...dbProviders]), source: "database" };
+    // MERGED, NOT REPLACED. This branch used to return the database rows
+    // alone, so the thirty built-in businesses disappeared the moment one row
+    // was published — the directory went from thirty listings to one, and the
+    // category filters read zero planners, zero agencies, zero guides. Issues
+    // #210 and #212 were both this.
+    //
+    // The other three branches here have always merged the built-ins in. This
+    // one being the odd one out is what made the bug look like an import
+    // problem: the directory really did empty out on re-import, because
+    // importing is what first put a row in the table.
+    //
+    // His own win a collision, by slug: a built-in entry he has since edited
+    // and published is his, and showing both would list the business twice.
+    const mine = new Set([...store, ...dbProviders].map((p) => p.slug));
+    const builtIn = fromStatic().filter((p) => !mine.has(p.slug));
+    return { providers: sortProviders([...store, ...dbProviders, ...builtIn]), source: "database", builtIn: builtIn.length };
   } catch (error) {
     console.error("[directory] DB read failed — using static fallback", error);
-    return { providers: sortProviders([...store, ...fromStatic()]), source: "database-failed" };
+    return { providers: sortProviders([...store, ...fromStatic()]), source: "database-failed", builtIn: fromStatic().length };
   }
 }
 

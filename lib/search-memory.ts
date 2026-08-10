@@ -99,6 +99,15 @@ export function todayIso(now: Date): string {
  */
 export const FILLABLE = ["destination", "in", "out"] as const;
 
+/**
+ * The fields that hold a date, and so the ones that get a floor of today.
+ *
+ * Named separately from FILLABLE even though it is a subset of it: filling a
+ * field and bounding one are different permissions, and a field added to one
+ * list should not silently join the other.
+ */
+export const DATED = ["in", "out"] as const;
+
 export type FillableField = (typeof FILLABLE)[number];
 
 /** What to put in each field, given what is remembered. Empty means leave it. */

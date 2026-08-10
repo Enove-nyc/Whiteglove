@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import {
+  DATED,
   decodeMemory,
   encodeMemory,
   FILLABLE,
@@ -38,6 +39,27 @@ import type { StaySearch } from "@/lib/stay-search";
 export default function SearchMemory({ remember }: { remember?: StaySearch }) {
   useEffect(() => {
     const today = todayIso(new Date());
+
+    // THE FLOOR ON THE DATE FIELDS, before anything else and whether or not
+    // there is a search to restore.
+    //
+    // The opted-in forms are plain HTML rendered on the server, so the `min`
+    // they carry is the day the page was rendered — which on a prerendered
+    // page is the day it was built. Nobody flies last Tuesday, and a partner
+    // opened on a date that has gone is the same lost referral as one opened
+    // on no date at all. This is the only place on those forms that knows what
+    // day it is in the visitor's own browser, so it is the place that says so.
+    //
+    // Only ever tightened, never loosened: a form that already asks for a
+    // later date than today — a check-out that must follow a check-in — keeps
+    // its own, because that one is the more specific rule.
+    for (const form of document.querySelectorAll<HTMLFormElement>("form[data-search-memory]")) {
+      for (const field of DATED) {
+        const input = form.elements.namedItem(field);
+        if (!(input instanceof HTMLInputElement) || input.type !== "date") continue;
+        if (!input.min || input.min < today) input.min = today;
+      }
+    }
 
     if (remember && (remember.destination || remember.checkIn)) {
       try {

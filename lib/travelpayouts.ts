@@ -64,6 +64,32 @@ export type TravelpayoutsLinks = Partial<Record<SearchSlot, string>>;
 /** The hosts Travelpayouts redirects through. */
 const REDIRECT_HOSTS = ["tp.media", "tp.st", "c.travelpayouts.com", "travelpayouts.com"];
 
+/**
+ * Travelpayouts' link SHORTENER, which is a different thing from its redirect.
+ *
+ * The link builder offers both, and the short one is the one it puts in front
+ * of you — `https://kiwi.tpx.lv/QdvmP1KC`. It is a real, correctly-marked
+ * affiliate link and it is useless here, for the reason every refusal in this
+ * file is about: the whole address is eight opaque characters, so there is
+ * nowhere to put the traveller's route and dates. It would open the partner's
+ * front page and the traveller would search again by hand, which is the exact
+ * failure this site is live with today.
+ *
+ * Named separately from the "that is not a Travelpayouts link at all" case
+ * because the two need opposite advice. Telling somebody who has just used the
+ * link builder to go and use the link builder is how they conclude the admin
+ * is broken — which is what happened.
+ */
+const SHORTENER_HOSTS = ["tpx.lv", "tpx.li"];
+
+/** Stay22's hosts, which are a different programme with its own setting. */
+const STAY22_HOSTS = ["stay22.com"];
+
+function hostIsOneOf(host: string, hosts: readonly string[]): boolean {
+  const lower = host.toLowerCase();
+  return hosts.some((h) => lower === h || lower.endsWith(`.${h}`));
+}
+
 function parse(value: string): URL | null {
   try {
     const url = new URL(value.trim());
@@ -74,8 +100,7 @@ function parse(value: string): URL | null {
 }
 
 function isRedirectHost(host: string): boolean {
-  const lower = host.toLowerCase();
-  return REDIRECT_HOSTS.some((h) => lower === h || lower.endsWith(`.${h}`));
+  return hostIsOneOf(host, REDIRECT_HOSTS);
 }
 
 /**
@@ -129,6 +154,23 @@ export function linkProblem(pasted: string, slot: SearchSlot, choices?: PartnerC
   const url = parse(value);
   if (!url) {
     return "That is not a link. Paste the whole address the Travelpayouts link builder gives you, starting with https://.";
+  }
+  // Both of these are real affiliate links that the owner really does have.
+  // They are refused for what they cannot carry, not for being wrong, so they
+  // are answered before the blunter "that is not a Travelpayouts link".
+  if (hostIsOneOf(url.host, SHORTENER_HOSTS)) {
+    return (
+      "That is the shortened link. It works, but the whole address is a code, so there is nowhere to put the " +
+      "traveller's route and dates — everyone would land on the partner's front page and have to search again. " +
+      "In the link builder, take the full link instead of the short one: it is longer and ends with u= followed by an address."
+    );
+  }
+  if (hostIsOneOf(url.host, STAY22_HOSTS)) {
+    return (
+      `That is a Stay22 link rather than a Travelpayouts one. Stay22 is set up separately, under the hotels ` +
+      `settings, and it is already earning there. This box takes the ${info.label.toLowerCase()} link from your ` +
+      "Travelpayouts dashboard."
+    );
   }
   if (!isRedirectHost(url.host)) {
     return (
