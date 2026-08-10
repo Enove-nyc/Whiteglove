@@ -192,8 +192,8 @@ export default function KosherTravelPage() {
           <div>
             <SectionHeading
               eyebrow="How far it has been checked"
-              title="Every kosher detail carries a label."
-              description="A restaurant changes hands and a hechsher can lapse between the day it was written down and the day you eat there. So nothing here is stated flatly."
+              title="Listings on this guide carry a label."
+              description="A restaurant changes hands and a hechsher can lapse between the day it was written down and the day you eat there. So nothing here is stated flatly — and live OpenStreetMap results are a separate lead, not the same labelled standard."
             />
             <div className="mt-8 flex flex-wrap gap-3">
               <VerificationBadge descriptor={TRUST_LEVELS.verified} />

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import AboutProfileSection from "@/components/AboutProfileSection";
+import CaseStudiesSection from "@/components/CaseStudiesSection";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
@@ -6,6 +8,8 @@ import PageBlocks from "@/components/PageBlocks";
 import StartingPoints from "@/components/StartingPoints";
 import { pageMetadata } from "@/lib/seo";
 import { resolvePage } from "@/lib/pages";
+import { readAboutProfile } from "@/lib/about-profile-store";
+import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { readWords } from "@/lib/site-words-store";
 
 export async function generateMetadata() {
@@ -22,31 +26,29 @@ export async function generateMetadata() {
 /**
  * Who is behind this.
  *
- * THE GAP THIS FILLS. The site explained what it does on nine pages and never
- * said who was doing it, where they were, or why somebody should hand them the
- * kosher side of a family holiday. A visitor asks that question quietly and
- * leaves quietly when it is not answered.
- *
- * THE PROSE IS EDITABLE (data/pages.ts, /admin/pages) so the owner can write
- * the personal half — his name, his background, where the business is based —
- * without a deploy. What ships is true of the site as it stands and nothing
- * more: no invented founder, no years in business, no client count.
- *
- * WHAT IS IN CODE RATHER THAN IN BLOCKS is the part that must not drift: the
- * way to reach a person. An about page that ends without an address is a page
- * about a company that does not want to be written to.
+ * Personal facts come from /admin/settings/about (never invented). Case studies
+ * from /admin/settings/proof appear only when complete, permitted and approved.
+ * The process blocks below stay editable via /admin/pages.
  */
 export default async function AboutPage() {
-  const [page, words] = await Promise.all([resolvePage("about"), readWords()]);
+  const [page, words, profile, studies] = await Promise.all([
+    resolvePage("about"),
+    readWords(),
+    readAboutProfile(),
+    readPublicCaseStudies(),
+  ]);
+
+  // Hero is rendered by AboutProfileSection so empty personal fields can hide
+  // cleanly; skip a duplicate hero block from the page editor.
+  const blocks = (page?.blocks ?? []).filter((block) => !(block.kind === "hero" && block.id === "about-hero"));
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
-      <PageBlocks blocks={page!.blocks} />
+      <AboutProfileSection profile={profile} />
+      <PageBlocks blocks={blocks} />
+      <CaseStudiesSection studies={studies} />
 
-      {/* The direct contact method the brief asked for, in code so that no
-          edit to the page above can leave it without one. Two ways, because
-          some people write and some people would rather fill in a form. */}
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <div className="rounded-2xl border border-[var(--navy)] bg-[var(--navy)] p-6 text-white sm:p-9">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
@@ -76,8 +78,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Where to go next, in the site's own words for the four doors rather
-          than in four more of this page's own. lib/starting-points.ts. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
         <StartingPoints heading="Where to start" />
       </section>

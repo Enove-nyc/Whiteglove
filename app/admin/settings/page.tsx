@@ -40,7 +40,19 @@ export default async function AdminSettingsPage() {
           <Card
             href="/admin/settings/words"
             title="The website’s words"
-            detail="The headline on the front page, the address people write to, the line in the footer."
+            detail="The headline on the front page, the address people write to, pricing answers, the line in the footer."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
+            href="/admin/settings/about"
+            title="About — who you are"
+            detail="Name, photograph, location, experience, languages, and why White Glove exists. Blank fields stay hidden."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
+            href="/admin/settings/proof"
+            title="Case studies"
+            detail="Genuine trip outcomes with permission. Nothing public until complete and approved. No invented reviews."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card

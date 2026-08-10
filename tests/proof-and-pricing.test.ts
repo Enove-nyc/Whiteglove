@@ -87,7 +87,7 @@ describe("what to expect about price", () => {
 
   it("MARKS AN UNANSWERED LINE, so it cannot be read as an answer", () => {
     assert.match(PRICING, /PRICE_NOT_PUBLISHED/);
-    assert.match(PRICING, /Depends on the trip/);
+    assert.match(PRICING, /Ask when you write in/);
     // A word rather than a colour, since this is the one distinction on the
     // panel that changes what the sentence means.
     assert.match(PRICING, /const unanswered = answer === PRICE_NOT_PUBLISHED/);

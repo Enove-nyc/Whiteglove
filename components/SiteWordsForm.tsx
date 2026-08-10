@@ -34,9 +34,15 @@ function ResetButton() {
 function Field({ field, value, onChange }: { field: WordField; value: string; onChange: (next: string) => void }) {
   const builtIn = BUILT_IN_WORDS[field.key];
   const changed = value !== builtIn;
+  const stillNeedsDecision = field.needsOwnerDecision && value === builtIn;
   return (
     <label className="block">
       <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">{field.label}</span>
+      {stillNeedsDecision && (
+        <span className="ml-2 inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-amber-900">
+          Needs your decision
+        </span>
+      )}
       {field.long ? (
         <textarea name={field.key} rows={3} value={value} onChange={(e) => onChange(e.target.value)} className={input} />
       ) : (
@@ -48,6 +54,12 @@ function Field({ field, value, onChange }: { field: WordField; value: string; on
           look at it
         </Link>
       </span>
+      {field.guidance && <span className="mt-1 block text-xs leading-5 text-stone-600">{field.guidance}</span>}
+      {field.example && stillNeedsDecision && (
+        <span className="mt-1 block text-xs leading-5 text-stone-500">
+          Example shape (do not copy unless it is true for you): <span className="text-[var(--navy)]">“{field.example}”</span>
+        </span>
+      )}
       {changed && (
         <span className="mt-1 block text-xs leading-5 text-stone-500">
           Was: <span className="text-[var(--navy)]">“{builtIn}”</span>

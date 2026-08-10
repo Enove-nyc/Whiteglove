@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { googleMapsAvailable, googleMapsBrowserKey, googleMapsBrowserKeyMalformed, loadGoogleMaps } from "@/lib/google-maps-loader";
+import {
+  googleMapsBrowserKey,
+  googleMapsBrowserKeyMalformed,
+  googleMapsAvailable,
+  probeGoogleMaps,
+  type GoogleMapsProbeResult,
+} from "@/lib/google-maps-loader";
 
 // Is the map drawing with Google, or with the free fallback?
 //
@@ -12,9 +18,11 @@ import { googleMapsAvailable, googleMapsBrowserKey, googleMapsBrowserKeyMalforme
 // notices the roads are not the ones they navigate by.
 //
 // So this does the real thing: it asks the browser to load Google's map script
-// exactly as the map pages do, and reports what happened.
+// exactly as the map pages do, constructs a tiny map (many refusals only fire
+// then), and reports what happened — including which named Google error, when
+// Google logged one.
 
-type State = "checking" | "no-key" | "bad-key" | "working" | "refused";
+type State = GoogleMapsProbeResult["state"] | "checking";
 
 export default function MapKeyStatus() {
   // Whether a key exists is a build-time constant, the same on the server and
@@ -36,24 +44,14 @@ export default function MapKeyStatus() {
     if (!hasKey) return;
     let live = true;
 
-    // Google logs the specific error rather than throwing it, so the only way
-    // to read it is to listen to the console while the script loads. Restored
-    // afterwards so nothing else on the page loses its logging.
-    const realError = console.error;
-    console.error = (...args: unknown[]) => {
-      const text = args.map((a) => String(a)).join(" ");
-      const named = /\b([A-Za-z]+MapError)\b/.exec(text);
-      if (named && live) setReason(named[1]);
-      realError(...(args as []));
-    };
-
-    loadGoogleMaps()
-      .then((ok) => live && setState(ok ? "working" : "refused"))
-      .catch(() => live && setState("refused"));
+    probeGoogleMaps().then((result) => {
+      if (!live) return;
+      setState(result.state);
+      if (result.state === "refused") setReason(result.reason);
+    });
 
     return () => {
       live = false;
-      console.error = realError;
     };
   }, [hasKey]);
 
@@ -62,23 +60,23 @@ export default function MapKeyStatus() {
   const EXPLAINED: Record<string, { what: string; fix: string }> = {
     RefererNotAllowedMapError: {
       what: "Google refused the address this page is being served from.",
-      fix: "Open the key in Google's console and add this exact hostname under Website restrictions — including the admin hostname, and https://*.vercel.app/* so preview deploys work too.",
-    },
-    ApiNotActivatedMapError: {
-      what: "Maps JavaScript API is not switched on for the project this key belongs to.",
-      fix: "Enable Maps JavaScript API on the key's OWN project. The key that works out driving times is a different key and may well be on a different project, so enabling it there changes nothing here.",
-    },
-    BillingNotEnabledMapError: {
-      what: "The project this key belongs to has no billing account.",
-      fix: "Attach a billing account to that project. Google serves no map at all without one, even inside the free allowance.",
-    },
-    InvalidKeyMapError: {
-      what: "Google does not recognise this key at all.",
-      fix: "Copy the browser key again from the console. Check it is the browser key and not the server one.",
+      fix: "Open Google Cloud Console → APIs & Services → Credentials → the browser map key → Application restrictions → Websites, and add these exact entries: https://whitegloveitineraries.com/* , https://www.whitegloveitineraries.com/* , https://*.vercel.app/* , and your admin hostname if you have one. Wait a few minutes, then reload this page — no redeploy needed for a restriction change.",
     },
     RefererDeniedMapError: {
       what: "Google refused the address this page is being served from.",
-      fix: "Add this hostname under the key's Website restrictions.",
+      fix: "Add this hostname under the key's Website restrictions (same list as RefererNotAllowed).",
+    },
+    ApiNotActivatedMapError: {
+      what: "Maps JavaScript API is not switched on for the project this key belongs to.",
+      fix: "In that key's Google Cloud project, open https://console.cloud.google.com/apis/library/maps-backend.googleapis.com and Enable Maps JavaScript API. The Routes API key used for driving times is a different key and may be on a different project — enabling it there changes nothing here.",
+    },
+    BillingNotEnabledMapError: {
+      what: "The project this key belongs to has no billing account.",
+      fix: "In Google Cloud → Billing, link a billing account to that project. Google serves no map at all without one, even inside the free allowance.",
+    },
+    InvalidKeyMapError: {
+      what: "Google does not recognise this key at all.",
+      fix: "Copy the browser key again from Credentials (Maps JavaScript key only — not the Routes / driving-times key), put it in Vercel as NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY, and Redeploy. NEXT_PUBLIC_ values are baked in at build time.",
     },
   };
   const explained = reason ? EXPLAINED[reason] : undefined;
@@ -92,7 +90,7 @@ export default function MapKeyStatus() {
   const tone =
     state === "working"
       ? "border-green-600 bg-green-50"
-      : state === "refused" || state === "bad-key"
+      : state === "refused" || state === "bad-key" || state === "timeout"
         ? "border-red-400 bg-red-50"
         : "border-[var(--gold)] bg-[#fcfaf6]";
 
@@ -100,7 +98,7 @@ export default function MapKeyStatus() {
     <section className={`border-l-4 ${tone} border-y border-r border-[var(--gold-light)] p-6`}>
       <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The map</h2>
 
-      {state === "checking" && <p className="mt-3 text-sm leading-6 text-stone-600">Checking…</p>}
+      {state === "checking" && <p className="mt-3 text-sm leading-6 text-stone-600">Checking… loading the script and drawing a tiny map the way visitors do.</p>}
 
       {state === "no-key" && (
         <>
@@ -110,7 +108,7 @@ export default function MapKeyStatus() {
           </p>
           <p className="mt-3 text-sm leading-6 text-stone-600">
             To use Google&apos;s map, add <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code>{" "}
-            in Vercel and redeploy. It must be a <em>different</em> key from the one that works out driving times.
+            in Vercel for Production, then Redeploy. It must be a <em>different</em> key from the one that works out driving times.
           </p>
         </>
       )}
@@ -138,9 +136,22 @@ export default function MapKeyStatus() {
 
       {state === "working" && (
         <p className="mt-3 text-sm leading-6 text-stone-700">
-          <strong>Drawing with Google.</strong> The key is set, Google accepted it from this address, and the map
-          script loaded.
+          <strong>Drawing with Google.</strong> The key is set, Google accepted it from this address, and a map could
+          be constructed here — the same check the public map uses.
         </p>
+      )}
+
+      {state === "timeout" && (
+        <>
+          <p className="mt-3 text-sm leading-6 text-stone-700">
+            <strong>Google&apos;s script never became ready in time.</strong> Visitors are seeing OpenStreetMap.
+            Usually a blocked script, a slow network, or an ad blocker — less often a key that never answers.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            Reload this page on a clean browser profile. If it still times out, confirm the browser key exists in
+            the built page (fingerprint above) and that Maps JavaScript API is enabled with billing on that project.
+          </p>
+        </>
       )}
 
       {state === "refused" && explained && (
@@ -153,7 +164,7 @@ export default function MapKeyStatus() {
           <p className="mt-3 text-xs leading-5 text-stone-500">
             Google&apos;s own words for it: <code className="rounded bg-white px-1">{reason}</code>. Restriction
             changes can take a few minutes to reach Google&apos;s edge — reload this page to check again. No redeploy
-            is needed; the key is already in the build and only Google&apos;s answer changes.
+            is needed for a restriction change; a new or changed key value in Vercel does need a Redeploy.
           </p>
         </>
       )}
@@ -162,18 +173,24 @@ export default function MapKeyStatus() {
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
             <strong>A key is set, but Google would not load the map here.</strong> Visitors are seeing the
-            OpenStreetMap map instead. Almost always one of three things:
+            OpenStreetMap map instead. Almost always one of these — check them in this order on the key&apos;s own
+            Google Cloud project:
           </p>
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-6 text-stone-600">
+          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-6 text-stone-600">
             <li>
-              The key&apos;s <em>website restrictions</em> do not include this address. Add the site&apos;s domain and
-              the Vercel preview domain, and remember the admin hostname if you have one.
+              <em>Website restrictions</em> include <code className="rounded bg-white px-1">https://whitegloveitineraries.com/*</code>{" "}
+              and <code className="rounded bg-white px-1">https://www.whitegloveitineraries.com/*</code> (and{" "}
+              <code className="rounded bg-white px-1">https://*.vercel.app/*</code> for previews).
             </li>
             <li>
-              <em>Maps JavaScript API</em> is not enabled on the Google Cloud project the key belongs to.
+              <em>Maps JavaScript API</em> is enabled on that project (
+              <code className="rounded bg-white px-1">maps-backend.googleapis.com</code>).
             </li>
-            <li>That project has no billing account. Google will not serve the map without one, even inside the free allowance.</li>
-          </ul>
+            <li>That project has a billing account linked.</li>
+            <li>
+              The value in Vercel is this browser key, then Redeployed — not the Routes / driving-times key.
+            </li>
+          </ol>
         </>
       )}
 

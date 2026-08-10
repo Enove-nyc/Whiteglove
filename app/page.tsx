@@ -133,7 +133,7 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string;
  * deciding whether to rely on something.
  */
 const VERIFICATION_LINE =
-  "The kosher food, the Shabbos arrangements and the quarter to stay in are checked against the place itself, and each detail names where it came from.";
+  "On published destinations, the kosher food, Shabbos arrangements and the quarter to stay in are checked against the place itself where we hold them, and each of those details names where it came from. Live food-finder results are a separate lead from OpenStreetMap — confirm the hechsher yourself.";
 
 export default async function Home() {
   const requestHeaders = await headers();

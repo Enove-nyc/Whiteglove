@@ -170,28 +170,32 @@ export const editablePages: PageDef[] = [
       {
         id: "about-hero",
         kind: "hero",
+        // Kept for /admin/pages continuity; the public About page renders the
+        // structured profile instead and skips this block so empty personal
+        // fields can hide cleanly.
         eyebrow: "About White Glove",
         heading: "Who you are dealing with.",
         intro:
           "White Glove Itineraries is a small independent travel outfit that plans kosher holidays and Jewish heritage journeys. The person who answers your message is the person who does the planning — there is no call centre behind this.",
+        hidden: true,
       },
       {
         id: "about-why",
         kind: "text",
         heading: "Why it exists",
         body:
-          "Every travel site can tell you what a hotel costs. None of them can tell you whether you can walk to a minyan from it on Shabbos, what there is to eat in the town on a Tuesday night, or which quarter to book in so the two are the same walk. That gap is what this site is for: the practical religious side answered first, and the ordinary holiday planning built on top of it.",
+          "Most travel sites can tell you what a hotel costs. Few can tell you whether you can walk to a minyan from it on Shabbos, what there is to eat in the town on a Tuesday night, or which quarter to book in so the two are the same walk. That gap is what this site is for: the practical religious side answered first, and the ordinary holiday planning built on top of it.",
       },
       {
         id: "about-how",
         kind: "list",
         heading: "How the detail on this site is put together",
         items: [
-          "Every practical claim comes from a record with a named source behind it, and the page says which. Where the source is a person — a shomer, a rov, a kehilla office — the page says so.",
-          "A destination reaches the published list only once it can answer five questions: kosher food, Shabbos, somewhere to stay, something to do, and how you get there and around. A destination that cannot answer all five is not offered as one.",
+          "Practical claims on destination, stay and heritage pages are meant to come from a record with a named source, and the page says which when we have one. Where the source is a person — a shomer, a rov, a kehilla office — the page says so. Live OpenStreetMap results are a separate lead to check, not the same standard.",
+          "A destination reaches the published vacation list only once it can answer five questions: kosher food, Shabbos, somewhere to stay, something to do, and how you get there and around. A destination that cannot answer all five is not offered as one on that list.",
           "The live kosher food finder reads OpenStreetMap, which anyone can add to. It is the fastest way to find what exists in a town you do not know, and it says nothing about supervision — confirm the hechsher yourself.",
-          "Distances and driving times are real road times, not straight lines, because a plan built on straight lines falls apart on the second day.",
-          "Where something changes — a seasonal programme, a border, access to a bais hachaim — the page says when the detail was last checked and where it came from.",
+          "Where we show driving times from our routing, they are road times rather than straight lines, because a plan built on straight lines falls apart on the second day.",
+          "Where something changes — a seasonal programme, a border, access to a bais hachaim — we aim to say when the detail was last checked and where it came from.",
         ],
       },
       {
@@ -209,7 +213,7 @@ export const editablePages: PageDef[] = [
           "Give a hechsher. We tell you what is listed, who certifies it where that is known, and what to ask for. The decision is yours and your rov's.",
           "Claim a rate is the lowest anywhere. We open a search with partners we work with; we do not read the whole market.",
           "Print a detail we cannot attribute. A gap that names itself is worth more than a plausible sentence.",
-          "Invent a review. There are no testimonials on this site because there is nothing real to quote yet.",
+          "Invent a review. Case studies appear only when a real trip outcome is complete, permitted and approved — never as filler.",
         ],
       },
     ],

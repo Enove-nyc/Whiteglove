@@ -110,9 +110,10 @@ describe("what the customer-facing pages may say", () => {
     // The failure mode of every walk like this: it stops finding files and
     // passes for ever.
     assert.ok(FILES.length > 40, `only ${FILES.length} files scanned`);
-    assert.ok(PAGES.some((path) => path === "app/page.tsx"));
-    assert.ok(COMPONENTS.some((path) => path === "components/Footer.tsx"));
-    assert.ok(FILES.includes("lib/beta-notice.ts"));
+    const norm = (path: string) => path.replace(/\\/g, "/");
+    assert.ok(PAGES.some((path) => norm(path) === "app/page.tsx"));
+    assert.ok(COMPONENTS.some((path) => norm(path) === "components/Footer.tsx"));
+    assert.ok(FILES.some((path) => norm(path) === "lib/beta-notice.ts"));
   });
 
   it("EXPOSES NO INTERNAL WORKFLOW OR CONTENT STATUS", () => {
@@ -181,9 +182,10 @@ describe("one name per thing", () => {
     // The bar said "My Trips" and the menu said "Itinerary planner", both
     // pointing at /itinerary — one page offered twice under two names, which
     // reads as two features, one of which cannot be found.
-    const labels = [...NAV.matchAll(/label: "([^"]+)", href: "\/itinerary"/g)].map((m) => m[1]);
-    const barLabel = /label: "Itinerary planner",\n\s*href: "\/itinerary"/.test(NAV);
-    assert.ok(barLabel, "the navigation bar no longer calls /itinerary the itinerary planner");
+    // Each nav item is a small object; pull the label that sits with /itinerary.
+    const itineraryBlocks = [...NAV.matchAll(/\{[^{}]*href: "\/itinerary"[^{}]*\}/g)].map((m) => m[0]);
+    const labels = itineraryBlocks.map((block) => /label: "([^"]+)"/.exec(block)?.[1]).filter(Boolean);
+    assert.ok(labels.includes("Itinerary planner"), "the navigation bar no longer calls /itinerary the itinerary planner");
     assert.deepEqual([...new Set(labels)].filter((l) => l !== "Itinerary planner"), [], `/itinerary is also called: ${labels}`);
     assert.doesNotMatch(NAV, /"My Trips"/);
     assert.doesNotMatch(NAV, /"Hotels & Stays"/);

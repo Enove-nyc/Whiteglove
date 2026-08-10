@@ -91,12 +91,13 @@ export default function ServicePricing({ words }: { words: SiteWords }) {
               <dd className={`mt-2 leading-7 ${unanswered ? "text-stone-500" : "text-stone-600"}`}>
                 {unanswered && (
                   // A word, not only a colour: this is the one distinction on
-                  // the panel that changes what the sentence means.
+                  // the panel that changes what the sentence means. Not an
+                  // invented policy — an invitation to ask before work starts.
                   <span className="mr-2 inline-flex items-center rounded-md border border-stone-400 bg-stone-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-stone-700">
-                    Depends on the trip
+                    Ask when you write in
                   </span>
                 )}
-                {unanswered ? "Ask when you write in, and we will tell you before any work starts." : answer}
+                {unanswered ? "We will tell you before any work starts — this line is not a published fee or policy yet." : answer}
               </dd>
             </div>
           );

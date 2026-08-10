@@ -203,7 +203,7 @@ export const services: readonly Service[] = [
     summary: "The half of the trip no ordinary travel agent will do for you.",
     who: "You keep kosher, you are going somewhere that does not make that easy, and you would like it settled before you fly.",
     included: [
-      "What kosher food genuinely exists at the destination, checked against the certifying body rather than a directory",
+      "What kosher food we can confirm at the destination, checked against the certifying body where we have one rather than copied from a directory",
       "Which quarter to stay in so Shabbos works on foot",
       "Shabbos meals arranged where a community or a caterer can do it",
       "Minyanim and mikvaos, with the caveat that these are the details most likely to have changed",

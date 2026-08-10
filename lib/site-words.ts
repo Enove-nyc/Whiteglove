@@ -16,17 +16,53 @@ export type StoredWords = Partial<SiteWords>;
 export const WORD_KEYS = Object.keys(BUILT_IN_WORDS) as (keyof SiteWords)[];
 
 /**
+ * Exact obsolete strings that must not win over a corrected built-in.
+ *
+ * ONLY these exact lines — never a fuzzy match. An owner who deliberately
+ * wrote something else keeps it. The one headline that promised site-wide
+ * completeness (which destination-readiness does not grant) is dropped so a
+ * Redis override saved before the rewrite cannot silently undo the fix.
+ */
+export const OBSOLETE_WORDINGS: Partial<Record<keyof SiteWords, readonly string[]>> = {
+  heroTitle: ["Plan your next vacation with every kosher detail in place."],
+};
+
+/** True when a stored value is a known-obsolete string we must not republish. */
+export function isObsoleteWording(key: keyof SiteWords, value: string): boolean {
+  const list = OBSOLETE_WORDINGS[key];
+  if (!list) return false;
+  const trimmed = value.trim();
+  return list.some((entry) => entry === trimmed);
+}
+
+/**
+ * Drop only obsolete keys from a stored partial, leaving every other edit.
+ *
+ * Safe to run on read and on save: it never clears a real owner decision.
+ */
+export function scrubObsoleteWords(stored: StoredWords | null | undefined): StoredWords {
+  if (!stored || typeof stored !== "object") return {};
+  const out: StoredWords = { ...stored };
+  for (const key of WORD_KEYS) {
+    const value = out[key];
+    if (typeof value === "string" && isObsoleteWording(key, value)) delete out[key];
+  }
+  return out;
+}
+
+/**
  * The built-in words with the owner's on top.
  *
  * A stored value that is empty or not a string is DROPPED rather than used.
  * An empty headline is not a decision anybody makes on purpose, and a front
  * page with no words on it is worse than one with the wrong words.
+ * A known-obsolete headline is also dropped — see OBSOLETE_WORDINGS.
  */
 export function mergeWords(stored: StoredWords | null | undefined): SiteWords {
   const merged: SiteWords = { ...BUILT_IN_WORDS };
-  if (!stored || typeof stored !== "object") return merged;
+  const cleaned = scrubObsoleteWords(stored);
   for (const key of WORD_KEYS) {
-    const value = stored[key];
+    const value = cleaned[key];
     if (typeof value === "string" && value.trim()) merged[key] = value.trim();
   }
   return merged;
@@ -50,10 +86,9 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  *
  * Deliberately few. These are words, not arithmetic — the owner is allowed to
  * write whatever he likes on his own front page, and a screen that argued with
- * him about a headline would be an insult. Only two things are refused: an
- * empty one, because it puts a blank where a sentence has to be, and an
- * address that is not an address, because it is the one field where a typo
- * means mail silently going nowhere.
+ * him about a headline would be an insult. Refused: an empty field, an address
+ * that is not an address, and the one obsolete completeness headline that the
+ * site already corrected in code (so it cannot be put back through this form).
  */
 export function wordProblem(words: SiteWords): string | null {
   for (const key of WORD_KEYS) {
@@ -65,23 +100,18 @@ export function wordProblem(words: SiteWords): string | null {
   if (!EMAIL.test(words.contactEmail.trim())) {
     return "That is not an email address. Every form on the site tells people to write to it, so a typo here means mail going nowhere.";
   }
+  for (const key of WORD_KEYS) {
+    if (isObsoleteWording(key, words[key])) {
+      const field = FIELDS.find((f) => f.key === key);
+      return `${field?.label ?? key} uses wording the site no longer stands behind — it promised every kosher detail site-wide, which the destination checklist does not grant. Use the built-in headline, or write something you can defend.`;
+    }
+  }
   return null;
 }
 
 /* ---- what each word is, and where it shows ------------------------------ */
 
 export type WordGroup = "front" | "contact" | "footer" | "booking" | "pricing" | "affiliate";
-
-export type WordField = {
-  key: keyof SiteWords;
-  group: WordGroup;
-  label: string;
-  /** The place on the site this appears. Named, so it can be gone and looked at. */
-  where: string;
-  /** The page it is on, so the screen can link straight to it. */
-  href: string;
-  long?: boolean;
-};
 
 export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> = [
   { id: "front", title: "The front page", note: "The first three lines anybody reads, and what the search box invites them to type." },
@@ -100,13 +130,40 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
   {
     id: "pricing",
     title: "What to expect about price",
-    note: "Six lines on the Services page. Three of them ship saying “Not published yet” — a starting figure, how long a quote takes, and whether a planning fee comes off anything else — because there is no price list on this site to stand behind and the site does not invent one. Answer them here the day you decide, and they stop being marked as outstanding. Never put a figure here you are not willing to be held to.",
+    note: "Nine lines on the Services page. Six of them still need your decision (starting fee or range, time to a quote, whether a planning fee is credited toward a booking, how long planning takes, cancellation/refund, and support after delivery) — they ship marked “Needs your answer” until you write something you will stand behind. Three already have real answers. Never invent a figure or a policy here.",
   },
 ];
 
+export type WordField = {
+  key: keyof SiteWords;
+  group: WordGroup;
+  label: string;
+  /** The place on the site this appears. Named, so it can be gone and looked at. */
+  where: string;
+  /** The page it is on, so the screen can link straight to it. */
+  href: string;
+  long?: boolean;
+  /**
+   * Owner must decide before this can be a real public answer.
+   * Shown in Admin → Words; public page already marks PRICE_NOT_PUBLISHED.
+   */
+  needsOwnerDecision?: boolean;
+  /** Short example of a defendable answer — guidance, never published as fact. */
+  example?: string;
+  /** One-line guidance under the field. */
+  guidance?: string;
+};
+
 export const FIELDS: WordField[] = [
   { key: "heroEyebrow", group: "front", label: "The line above the headline", where: "on the front page, in small gold capitals", href: "/" },
-  { key: "heroTitle", group: "front", label: "The headline", where: "on the front page, the largest words on the site", href: "/" },
+  {
+    key: "heroTitle",
+    group: "front",
+    label: "The headline",
+    where: "on the front page, the largest words on the site",
+    href: "/",
+    guidance: "Do not promise every kosher detail site-wide. Prefer what the site actually does — answer the kosher side first.",
+  },
   { key: "heroSubtitle", group: "front", label: "The paragraph under it", where: "on the front page, under the headline", href: "/", long: true },
   { key: "searchPlaceholder", group: "front", label: "What the search box says", where: "inside the search box until somebody types", href: "/" },
   {
@@ -122,15 +179,75 @@ export const FIELDS: WordField[] = [
   { key: "footerBlurb", group: "footer", label: "The paragraph under the logo", where: "in the footer of every page", href: "/", long: true },
   { key: "footerStrapline", group: "footer", label: "The line under that", where: "in the footer of every page, in gold capitals", href: "/" },
   { key: "bookingNotice", group: "booking", label: "The paragraph under the heading", where: "on the booking page", href: "/book", long: true },
-  { key: "pricingStartsAt", group: "pricing", label: "Where prices start, or a typical range", where: "on the Services page, first", href: "/services", long: true },
+  {
+    key: "pricingStartsAt",
+    group: "pricing",
+    label: "Where prices start, or a typical range",
+    where: "on the Services page, first",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. A starting fee or typical range you will honour — or leave the built-in “ask when you write in” line.",
+    example: "Planning usually starts from £X for a short city break; longer or multi-city trips are quoted after we understand the brief.",
+  },
   { key: "pricingWhatAffects", group: "pricing", label: "What moves the number", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingTurnaround", group: "pricing", label: "How long a quote takes to come back", where: "on the Services page", href: "/services", long: true },
+  {
+    key: "pricingTurnaround",
+    group: "pricing",
+    label: "How long a quote takes to come back",
+    where: "on the Services page",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. How long until they hear a price — not how long planning takes once hired.",
+    example: "A first quote usually comes back within a few working days once we have the dates and places.",
+  },
   { key: "pricingRevisions", group: "pricing", label: "Whether changes cost extra", where: "on the Services page", href: "/services", long: true },
   { key: "pricingBookingSupport", group: "pricing", label: "Whether booking is a separate charge", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingFeeCredit", group: "pricing", label: "Whether a planning fee comes off anything else", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingTimeline", group: "pricing", label: "How long the planning itself takes", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingCancellation", group: "pricing", label: "What happens if a trip is called off", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingSupportAfter", group: "pricing", label: "Whether we are there after the itinerary is sent", where: "on the Services page", href: "/services", long: true },
+  {
+    key: "pricingFeeCredit",
+    group: "pricing",
+    label: "Whether a planning fee comes off anything else",
+    where: "on the Services page",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. Is any planning fee credited toward booking assistance, or is it separate?",
+    example: "The planning fee is for the itinerary. If you later hire us to book, we will say whether any of it is credited before that work starts.",
+  },
+  {
+    key: "pricingTimeline",
+    group: "pricing",
+    label: "How long the planning itself takes",
+    where: "on the Services page",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. Typical duration once planning has started — distinct from quote turnaround.",
+    example: "A straightforward city break is often ready within about two weeks of kickoff; heritage or multi-country trips take longer.",
+  },
+  {
+    key: "pricingCancellation",
+    group: "pricing",
+    label: "What happens if a trip is called off",
+    where: "on the Services page",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. Cancellation / refund for planning work — only what you will actually do.",
+    example: "If you cancel before planning starts, you owe nothing. Once work has begun, the fee for work already done is not refundable; unused paid time is discussed case by case.",
+  },
+  {
+    key: "pricingSupportAfter",
+    group: "pricing",
+    label: "Whether we are there after the itinerary is sent",
+    where: "on the Services page",
+    href: "/services",
+    long: true,
+    needsOwnerDecision: true,
+    guidance: "Owner decision required. What support exists after delivery, and for how long.",
+    example: "Questions about the written plan are welcome for a set window after delivery; changes that need new research are a new piece of work.",
+  },
   { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
 ];
 

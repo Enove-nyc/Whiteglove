@@ -7,7 +7,14 @@ import { placeDirectionsUrl } from "@/data/route-utils";
 import CompassMark from "@/components/CompassMark";
 import { compassFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
-import { googleMaps, loadGoogleMaps, type GInfoWindow, type GMap, type GMarker } from "@/lib/google-maps-loader";
+import {
+  googleMaps,
+  loadGoogleMaps,
+  onGoogleMapsAuthFailure,
+  type GInfoWindow,
+  type GMap,
+  type GMarker,
+} from "@/lib/google-maps-loader";
 
 // What is around a place, on a map.
 //
@@ -130,12 +137,47 @@ export default function AreaMap({
 
   // Which map to draw.
   //
-  // Google's if there is a browser key and its script loads; OpenStreetMap
-  // otherwise. Decided once, on mount, and never swapped underneath a visitor
-  // mid-look.
+  // Google's if there is a browser key and its script becomes usable;
+  // OpenStreetMap otherwise. Auth failures after the script loads (wrong
+  // referrer, billing off, API not enabled) also fall through to OSM rather
+  // than leaving a blank Google box. Decided once on mount — a late auth
+  // refusal is the one exception that may swap Google → OSM.
   useEffect(() => {
     let cancelled = false;
+    let authOff: (() => void) | undefined;
+
+    async function drawOsm() {
+      if (cancelled || !boxRef.current || mapRef.current) return;
+      // Clear a Google attempt that was refused after construct.
+      for (const marker of gmarkersRef.current) marker.setMap(null);
+      gmarkersRef.current = [];
+      gmapRef.current = null;
+      ginfoRef.current = null;
+      if (boxRef.current) boxRef.current.innerHTML = "";
+
+      // Leaflet touches window on import, so it can only be loaded in the browser.
+      const leaflet = (await import("leaflet")).default;
+      if (cancelled || !boxRef.current || mapRef.current) return;
+      const map = leaflet.map(boxRef.current, { scrollWheelZoom: false, attributionControl: true }).setView([48, 14], 4);
+      leaflet
+        .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        })
+        .addTo(map);
+      // Scroll-zoom is off so the page still scrolls on a phone; a click enables it.
+      map.on("click", () => map.scrollWheelZoom.enable());
+      map.on("zoomend", () => setZoom(map.getZoom()));
+      mapRef.current = map;
+      for (const kind of Object.keys(MAP_STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
+      setEngine("osm");
+    }
+
     (async () => {
+      authOff = onGoogleMapsAuthFailure(() => {
+        if (!cancelled) void drawOsm();
+      });
+
       const useGoogle = await loadGoogleMaps();
       if (cancelled || !boxRef.current) return;
 
@@ -161,25 +203,11 @@ export default function AreaMap({
         }
       }
 
-      // Leaflet touches window on import, so it can only be loaded in the browser.
-      const leaflet = (await import("leaflet")).default;
-      if (cancelled || !boxRef.current || mapRef.current) return;
-      const map = leaflet.map(boxRef.current, { scrollWheelZoom: false, attributionControl: true }).setView([48, 14], 4);
-      leaflet
-        .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 18,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        })
-        .addTo(map);
-      // Scroll-zoom is off so the page still scrolls on a phone; a click enables it.
-      map.on("click", () => map.scrollWheelZoom.enable());
-      map.on("zoomend", () => setZoom(map.getZoom()));
-      mapRef.current = map;
-      for (const kind of Object.keys(MAP_STYLE)) layersRef.current[kind] = leaflet.layerGroup().addTo(map);
-      setEngine("osm");
+      await drawOsm();
     })();
     return () => {
       cancelled = true;
+      authOff?.();
       mapRef.current?.remove();
       mapRef.current = null;
       layersRef.current = {};
@@ -188,7 +216,7 @@ export default function AreaMap({
       gmapRef.current = null;
     };
     // Once, on mount. The engine must not be swapped underneath somebody
-    // mid-look, so nothing here re-runs.
+    // mid-look for ordinary reasons; auth refusal is handled above.
   }, []);
 
   // Where the map looks.

@@ -110,7 +110,7 @@ function prose(path: string): string {
 describe("which questions the site may ask", () => {
   it("is reading the real site rather than an empty list", () => {
     assert.ok(FILES.length > 150, `only ${FILES.length} files scanned`);
-    assert.ok(FILES.includes("app/kosher-travel/page.tsx"));
+    assert.ok(FILES.some((path) => path.replace(/\\/g, "/") === "app/kosher-travel/page.tsx"));
   });
 
   it("ASKS NOTHING THAT IS NOT THE READER'S OWN QUESTION", () => {

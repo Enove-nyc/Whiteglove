@@ -19,7 +19,7 @@
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { type SiteWords } from "@/data/site-words";
-import { mergeWords, onlyChangedWords, type StoredWords } from "@/lib/site-words";
+import { mergeWords, onlyChangedWords, scrubObsoleteWords, type StoredWords } from "@/lib/site-words";
 
 const KEY = "white-glove:site-words";
 export const WORDS_TAG = "site-words";
@@ -52,7 +52,10 @@ async function readStored(): Promise<StoredWords> {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as StoredWords;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    if (!parsed || typeof parsed !== "object") return {};
+    // Drop only the obsolete completeness headline if it is still stored —
+    // every other owner edit is left alone.
+    return scrubObsoleteWords(parsed);
   } catch {
     return {};
   }
