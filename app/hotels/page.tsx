@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
 import SearchMemory from "@/components/SearchMemory";
+import StayQuarters from "@/components/StayQuarters";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
 
@@ -135,27 +136,9 @@ export default async function KosherStaysPage({
           </div>
         ) : (
           <>
-            {/* Answered before the hotels, because it is the earlier question. */}
-            {kosherAreas.length > 0 && (
-              <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-                <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Which part of town</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-                  Before a hotel is chosen, the question is really which neighbourhood. These are where the shuls, the
-                  kosher food and the eruv are.
-                </p>
-                <ul className="mt-6 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
-                  {kosherAreas.map((area) => (
-                    <li key={area.slug} id={area.slug} className="scroll-mt-24 py-4">
-                      <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
-                        {area.city}, {area.country}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-[var(--gold-ink)]">{area.name}</p>
-                      <p className="mt-1 text-sm leading-6 text-stone-600">{area.note}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Answered before the hotels, because it is the earlier question.
+                Each quarter searches on itself — see components/StayQuarters. */}
+            <StayQuarters areas={kosherAreas} search={search} />
 
             {kosherStays.length > 0 && (
               <div id="everywhere" className="mt-10 scroll-mt-24">
@@ -197,9 +180,6 @@ export default async function KosherStaysPage({
           </div>
         </div>
 
-        <div className="mt-10">
-          
-        </div>
       </section>
 
       <Footer />
