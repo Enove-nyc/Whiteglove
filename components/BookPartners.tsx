@@ -214,7 +214,7 @@ export default function BookPartners({ affiliate, prefill, disclosure }: { affil
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
-          : "Cash searches open with a trusted partner — Kayak or Booking.com — where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
+          : "Cash searches open with a trusted booking partner, where you compare and pay securely. Save an item to your trip to keep it in your White Glove itinerary."}
       </p>
 
       {/* THE COMMISSION DISCLOSURE, BESIDE THE SEARCH. Not in the page footer,
@@ -376,7 +376,7 @@ function FlightsForm({ affiliate, onAdd, onOpened, prefill }: { affiliate?: Affi
       )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search flights on Kayak" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search flights" />
     </div>
   );
 }
@@ -436,7 +436,7 @@ function HotelsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onA
         <Field label="Guests"><input type="number" min={1} value={guests} onChange={(e) => setGuests(e.target.value)} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel={hotelButtonLabel(affiliate?.stay22)} />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel={hotelButtonLabel()} />
     </div>
   );
 }
@@ -499,7 +499,7 @@ function CarsForm({ affiliate, onAdd, onOpened }: { affiliate?: Affiliate; onAdd
         <Field label="Drop-off date"><DateField ariaLabel="Drop-off date" value={dropoff} min={earliestEnd(pickup)} onChange={(v) => setDropoff(correctedEnd(pickup, v))} className={bareInput} /></Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search cars on Kayak" />
+      <ActionRow onSearch={search} onAdd={() => addToTrip()} searchLabel="Search cars" />
     </div>
   );
 }
@@ -882,7 +882,7 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
         {selected
           ? <a href={selected.award} target="_blank" rel="noreferrer" className={linkPrimary}>Open {program} →</a>
           : <span className="text-sm text-stone-500">Choose a program above and its booking page opens here.</span>}
-        <a href={`https://www.kayak.com/cars${loc.trim() && pickup && dropoff ? `/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}` : ""}`} target="_blank" rel="noreferrer" className={linkGhost}>Check the cash price on Kayak →</a>
+        <a href={`https://www.kayak.com/cars${loc.trim() && pickup && dropoff ? `/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}` : ""}`} target="_blank" rel="noreferrer" className={linkGhost}>Check the cash price →</a>
       </div>
 
       <StepLabel n={2}>Whether the points are worth it</StepLabel>

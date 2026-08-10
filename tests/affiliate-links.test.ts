@@ -82,9 +82,17 @@ describe("hotels reach Stay22 when it is on", () => {
     assert.doesNotMatch(call, /travelpayouts/);
   });
 
-  it("stops the button saying Booking.com when it is no longer Booking.com", () => {
-    // The button is the only warning before a new tab opens somewhere else.
-    assert.match(SOURCE, /searchLabel=\{hotelButtonLabel\(affiliate\?\.stay22\)\}/);
+  it("takes the hotel button's wording from the one function that owns it", () => {
+    // It no longer varies by provider — the owner's decision, see
+    // hotelButtonLabel in lib/stay22.ts — but it is still read from there
+    // rather than typed into the component, so the wording stays in one place.
+    assert.match(SOURCE, /searchLabel=\{hotelButtonLabel\(\)\}/);
+  });
+
+  it("names no partner on any search button the visitor presses", () => {
+    for (const label of SOURCE.match(/searchLabel="[^"]*"/g) ?? []) {
+      assert.doesNotMatch(label, /Kayak|Booking\.com|Stay22|Expedia/i, label);
+    }
   });
 });
 

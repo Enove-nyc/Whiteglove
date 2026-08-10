@@ -72,7 +72,7 @@ export default function Stay22Form({ current, storeReady }: { current: Stay22Set
       </div>
 
       <p className="rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
-        The search button will read “<span className="text-[var(--navy)]">{hotelButtonLabel(settings)}</span>”, so
+        The search button will read “<span className="text-[var(--navy)]">{hotelButtonLabel()}</span>”, so
         nobody is sent somewhere without being told first.
       </p>
 
