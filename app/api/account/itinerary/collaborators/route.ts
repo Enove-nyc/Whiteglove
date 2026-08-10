@@ -65,7 +65,7 @@ export async function DELETE(request: NextRequest) {
   const account = await requireAccount();
   if (!account) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const email = request.nextUrl.searchParams.get("email")?.trim();
-  if (!email) return NextResponse.json({ error: "Which person?" }, { status: 400 });
+  if (!email) return NextResponse.json({ error: "Name the person." }, { status: 400 });
   const result = await removeItineraryCollaborator(account.email, email);
   return NextResponse.json({ ok: true, collaborators: result.ok ? result.collaborators : [] });
 }

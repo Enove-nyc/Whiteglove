@@ -74,8 +74,8 @@ export default function SampleItineraryPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeading
-          eyebrow="What is in it"
-          title="Six things an ordinary itinerary leaves you to work out."
+          eyebrow="Contents"
+          title="What is in it"
           description="You will find each of them in the document below."
         />
         <dl className="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">

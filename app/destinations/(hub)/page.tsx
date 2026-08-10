@@ -69,9 +69,9 @@ export default async function VacationIdeasPage({
 
       <section className="mx-auto max-w-7xl px-5 pt-4 sm:px-8">
         <SectionHeading
-          eyebrow="Start with the kind of trip"
-          title="What sort of holiday is this?"
-          description="Every category below is a filter on the same list — press one to narrow it, or scroll past and browse everything."
+          eyebrow="Holiday type"
+          title="Browse by holiday type"
+          description="Each one filters the same list. Scroll past to see everything."
         />
         <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {TRIP_THEMES.map((theme) => {
@@ -104,8 +104,8 @@ export default async function VacationIdeasPage({
       <section id="browse" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="Every destination"
-          title="Browse the list."
-          description="Every one of these has the practical side answered: somewhere to stay, things to do, and what happens about food and Shabbos."
+          title="All destinations"
+          description="Each one has somewhere to stay, things to do, and the kosher and Shabbos side worked out."
         />
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
@@ -116,11 +116,11 @@ export default async function VacationIdeasPage({
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Somewhere else in mind?
+              Somewhere else in mind
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Tell us where you are thinking of, and we will find out what the kosher side of it looks like before you
-              commit to anything.
+              These {vacationDestinations.length} are the ones written up so far. Tell us where else you are thinking
+              of and we will look into the kosher side of it.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

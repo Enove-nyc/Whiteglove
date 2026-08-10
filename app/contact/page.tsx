@@ -65,9 +65,9 @@ export default async function ContactPage({
 
       <section className="mx-auto max-w-5xl px-5 pb-16 sm:px-8">
         <SectionHeading
-          eyebrow="What is this about?"
-          title="Pick one, and we will only ask what that needs."
-          description="It decides which questions you get and which inbox it lands in — nothing else."
+          eyebrow="Reason for writing"
+          title="Reason for writing"
+          description="Pick one and the form asks only what that needs."
         />
         <ul className="mt-8 grid gap-3 sm:grid-cols-2">
           {CONTACT_REASONS.map((entry) => {

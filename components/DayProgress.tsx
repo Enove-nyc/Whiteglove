@@ -73,7 +73,7 @@ export default function DayProgress({
           onClick={() => setOpen((was) => !was)}
           className="text-xs font-bold uppercase tracking-[0.1em] underline decoration-[var(--gold)] underline-offset-4"
         >
-          {open ? "Close" : standing.answered === 0 ? "How is it going?" : "Change"}
+          {open ? "Close" : standing.answered === 0 ? "How the day went" : "Change"}
         </button>
       </div>
 
@@ -82,7 +82,7 @@ export default function DayProgress({
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">The border</p>
             <p className="mt-1 text-sm leading-6 text-stone-600">
-              The plan allows a fixed time here, and it is the biggest guess in the day. What did it really take?
+              The plan allows a fixed time here, and it is the biggest guess in the day. Put in what it really took.
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {[10, 30, 60].map((mins) => (

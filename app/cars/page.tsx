@@ -51,7 +51,7 @@ export default async function CarsPage({
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cars and transfers</p>
           <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
-            First, whether you need one at all.
+            Cars and transfers
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
             A car is the difference between an alpine week working and not working. In a city with a walkable quarter it
@@ -75,8 +75,7 @@ export default async function CarsPage({
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="Getting around"
-          title="What we can and cannot arrange."
-          description="Named plainly, including the ones that are not open — a button that cannot do anything is worse than a sentence saying so."
+          title="What we can arrange"
         />
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">

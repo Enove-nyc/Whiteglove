@@ -242,7 +242,7 @@ export default function TripStartFlow({
 
         {step === 1 && (
           <fieldset className="mt-8">
-            <legend className="sr-only">What kind of trip are you planning?</legend>
+            <legend className="sr-only">The kind of trip</legend>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {TRIP_KINDS.map((kind) => {
                 const on = answers.kind === kind.value;
@@ -481,7 +481,7 @@ export default function TripStartFlow({
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided?</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
               <p className="mt-2 leading-7 text-stone-600">
                 You can look around first and come back — your answers stay in this browser either way.
               </p>

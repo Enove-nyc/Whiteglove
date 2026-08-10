@@ -41,13 +41,18 @@ import { PRICE_NOT_PUBLISHED, type SiteWords } from "@/data/site-words";
  * keys would have hidden six of them from the check that catches it.
  */
 function questionsFrom(words: SiteWords): Array<{ id: string; question: string; answer: string }> {
+  // NAMED, NOT ASKED. These were "What does it cost?", "What moves the
+  // number?", "How long until I hear back?" — a page of questions put into the
+  // reader's mouth before it answered them. A price page states what it
+  // charges and on what; the reader did not need to be told what they were
+  // wondering first.
   return [
-    { id: "starts-at", question: "What does it cost?", answer: words.pricingStartsAt },
-    { id: "what-affects", question: "What moves the number?", answer: words.pricingWhatAffects },
-    { id: "turnaround", question: "How long until I hear back?", answer: words.pricingTurnaround },
-    { id: "revisions", question: "Do changes cost extra?", answer: words.pricingRevisions },
-    { id: "booking", question: "Is booking a separate charge?", answer: words.pricingBookingSupport },
-    { id: "fee-credit", question: "Does a planning fee come off anything?", answer: words.pricingFeeCredit },
+    { id: "starts-at", question: "The fee", answer: words.pricingStartsAt },
+    { id: "what-affects", question: "What the fee depends on", answer: words.pricingWhatAffects },
+    { id: "turnaround", question: "Time to a first reply", answer: words.pricingTurnaround },
+    { id: "revisions", question: "Changes to a plan", answer: words.pricingRevisions },
+    { id: "booking", question: "Booking", answer: words.pricingBookingSupport },
+    { id: "fee-credit", question: "The fee against a booking", answer: words.pricingFeeCredit },
   ];
 }
 
@@ -90,7 +95,7 @@ export default function ServicePricing({ words }: { words: SiteWords }) {
       </dl>
 
       <p className="mt-8 text-sm leading-6 text-stone-600">
-        Want to see what the planning actually produces before asking what it costs?{" "}
+        The sample itinerary shows what the planning actually produces.{" "}
         <Link
           href="/sample-itinerary"
           className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

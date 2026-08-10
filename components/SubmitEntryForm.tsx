@@ -83,7 +83,7 @@ export default function SubmitEntryForm() {
     <form onSubmit={handleSubmit} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className={captionClass}>What are you sending in?</span>
+          <span className={captionClass}>Kind of entry</span>
           <select name="type" className={inputClass} defaultValue={TYPES[0]}>
             {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>

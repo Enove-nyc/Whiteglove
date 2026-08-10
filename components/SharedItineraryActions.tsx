@@ -59,7 +59,7 @@ export default function SharedItineraryActions({ itinerary, shareId }: { itinera
         const parsed = JSON.parse(existing) as Partial<Itinerary>;
         hasTrip = Boolean(parsed.flights?.length || parsed.lodging?.length || parsed.activities?.length);
       }
-      if (hasTrip && !window.confirm("You are not signed in, so this browser holds one trip and this will replace it. Sign in instead to keep both. Replace it?")) return;
+      if (hasTrip && !window.confirm("You are not signed in, so this browser holds one trip and this will replace it. Sign in instead to keep both.")) return;
       localStorage.setItem(LS_KEY, JSON.stringify({ ...itinerary, title: itinerary.title ? `${itinerary.title} (copy)` : "My trip" }));
       router.push("/itinerary");
     } catch {

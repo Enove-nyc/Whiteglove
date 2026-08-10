@@ -147,7 +147,7 @@ export default function VacationIdeasHub({
               className="mt-2 w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
             />
             <p id="vacation-search-hint" className="mt-1.5 text-xs leading-5 text-stone-500">
-              Looking for a kever or a town rather than a holiday?{" "}
+              For a kever or a town rather than a holiday,{" "}
               <Link
                 href="/heritage"
                 className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"

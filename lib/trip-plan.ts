@@ -291,14 +291,14 @@ export function hasAnswers(answers: TripPlanAnswers | null): boolean {
 export type StepId = "kind" | "shape" | "how";
 
 export const STEPS: ReadonlyArray<{ id: StepId; number: number; title: string; blurb: string }> = [
-  { id: "kind", number: 1, title: "What are you planning?", blurb: "One press. It only shapes what we suggest." },
+  { id: "kind", number: 1, title: "The trip", blurb: "One press. It only shapes what we suggest." },
   {
     id: "shape",
     number: 2,
     title: "Where, when, and who is coming",
     blurb: "Four short answers, none of them required — “I don’t know yet” is on every one.",
   },
-  { id: "how", number: 3, title: "How would you like to plan it?", blurb: "This is the only answer that changes what happens next." },
+  { id: "how", number: 3, title: "How to plan it", blurb: "This is the only answer that changes what happens next." },
 ] as const;
 
 /**

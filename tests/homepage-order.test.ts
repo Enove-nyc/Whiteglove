@@ -78,7 +78,7 @@ describe("the first five seconds", () => {
   it("carries the two hero links after it, in order", () => {
     const search = at("<StaySearchForm id=\"hero\" />");
     const secondary = at("Browse every destination");
-    const tertiary = at("Planning a heritage journey? Start here");
+    const tertiary = at("Heritage journeys and kevarim");
     assert.ok(search < secondary, "a link comes before the search box");
     assert.ok(secondary < tertiary, "the heritage link comes before the vacation one");
   });
@@ -108,7 +108,7 @@ describe("the order of the page", () => {
     // section; it is not the page.
     const categories = at("Browse by holiday type");
     const destinations = at('id="destinations"');
-    const heritage = at("Travelling to kevarim?");
+    const heritage = at("Kevarim and the towns around them");
     assert.ok(categories < heritage, "the heritage section comes before the vacation categories");
     assert.ok(destinations < heritage, "the heritage section comes before the vacation destinations");
   });
@@ -121,9 +121,9 @@ describe("the order of the page", () => {
       "Kosher hotels and programmes",
       "When to go",
       "Food, Shabbos and the rest of it",
-      "Travelling to kevarim?",
+      "Kevarim and the towns around them",
       "VERIFICATION_LINE}",
-      "Where do you want to go?",
+      "Start with a destination and a date",
     ].map(at);
     for (let i = 1; i < order.length; i += 1) {
       assert.ok(order[i] > order[i - 1], `section ${i + 1} of the front page has moved above section ${i}`);

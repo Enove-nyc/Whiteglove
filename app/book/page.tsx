@@ -137,7 +137,7 @@ export default async function BookPage({
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            Planning a heritage journey?{" "}
+            These tools work for a heritage journey too.{" "}
             <Link
               href="/heritage"
               className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"

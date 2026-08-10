@@ -112,7 +112,7 @@ export default function VerificationPage() {
               href="/contact?reason=correction"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
-              Found something out of date? Tell us →
+              Tell us if something here is out of date →
             </Link>
           </p>
         </div>

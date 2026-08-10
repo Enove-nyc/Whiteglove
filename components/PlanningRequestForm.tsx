@@ -318,7 +318,7 @@ export default function PlanningRequestForm({
       )}
 
       <fieldset className="mt-8">
-        <legend className={label}>What kind of trip is it?</legend>
+        <legend className={label}>Kind of trip</legend>
         <div className="mt-2.5 flex flex-wrap gap-2">
           {TRIP_KINDS.map((entry) => (
             <button

@@ -55,7 +55,7 @@ export default async function DirectoryPage() {
             Contact, which asks for the business, the website and where it
             operates. One line here, no form. */}
         <p className="mt-12 text-sm leading-6 text-stone-500">
-          Run one of these businesses?{" "}
+          Businesses can ask to be listed.{" "}
           <Link
             href="/contact?reason=advertise"
             className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

@@ -85,7 +85,7 @@ describe("what is asked", () => {
   it("has three steps and the third is the one that changes what happens", () => {
     assert.equal(STEPS.length, 3);
     assert.deepEqual(STEPS.map((s) => s.id), ["kind", "shape", "how"]);
-    assert.match(STEPS[2].title, /how would you like to plan it/i);
+    assert.match(STEPS[2].title, /how to plan it/i);
   });
 
   it("KEEPS STEP TWO TO WHERE, WHEN, FROM WHERE AND WHO", () => {

@@ -120,7 +120,7 @@ export default async function HeritagePage() {
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="What is in here"
-          title="The whole database, four ways in."
+          title="Four ways in"
           description="The same records, indexed by the question you are actually asking."
         />
         <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -175,7 +175,7 @@ export default async function HeritagePage() {
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Browse by country"
-            title="Where the records are."
+            title="By country"
             description="Counted from the cemetery records themselves, so a country cannot appear here with nothing behind it."
           />
           <ul className="mt-8 flex flex-wrap gap-2">
@@ -197,7 +197,7 @@ export default async function HeritagePage() {
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="Complete guides"
-          title="The towns we have finished researching."
+          title="Town guides"
           description="A guide means the tzaddik, the kever's location, how to get in, and the practical side of the town around it — not a stub."
         />
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -237,7 +237,7 @@ export default async function HeritagePage() {
           <div>
             <SectionHeading
               eyebrow="Build a route"
-              title="Several kevarim, in the order you will drive them."
+              title="Build a route"
               description="Save what you want to reach, and the planner works out the order, the driving time between each one, and where the border crossings fall."
             />
             <div className="mt-8 flex flex-wrap gap-3">
@@ -259,7 +259,7 @@ export default async function HeritagePage() {
           <div>
             <SectionHeading
               eyebrow="The practical side"
-              title="Food, davening and getting there."
+              title="Food, davening and getting there"
               description="A heritage journey needs the same things a holiday does, usually in places with much less of them."
             />
             <ul className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -286,7 +286,7 @@ export default async function HeritagePage() {
           <div>
             <SectionHeading
               eyebrow="How we verify"
-              title="An address we guessed at is worse than no address."
+              title="Before you travel"
               description="Somebody drives four hours on the strength of a line on one of these pages. So every practical detail carries a label saying how far it has been checked, and nothing is published to fill a gap."
             />
             <div className="mt-8 flex flex-wrap gap-3">
@@ -333,12 +333,14 @@ export default async function HeritagePage() {
               </Link>
             </div>
             <p className="mt-6 border-t border-[var(--gold-light)] pt-5 text-sm leading-6 text-stone-600">
-              Know something we do not — a shomer&apos;s new number, a gate that has been locked, a kever we are
-              missing?{" "}
-              <Link href="/submit" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-                Send it in
+              A shomer&apos;s number changes, a gate gets locked, a kever is missing from a list.{" "}
+              <Link
+                href="/contact?reason=correction"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                Tell us and we will check it
               </Link>
-              . Every submission is read before anything changes.
+              .
             </p>
           </div>
         </div>

@@ -211,7 +211,7 @@ export default async function Home() {
               href="/heritage"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
             >
-              Planning a heritage journey? Start here →
+              Heritage journeys and kevarim →
             </Link>
           </div>
 
@@ -442,7 +442,7 @@ export default async function Home() {
               by White Glove
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">
-              Travelling to kevarim?
+              Kevarim and the towns around them
             </h2>
             <p className="mt-4 max-w-xl leading-7 text-slate-200">
               {kevarim.length} kevarim and {guides.length} researched town guides, with the addresses, the access notes,
@@ -528,11 +528,10 @@ export default async function Home() {
       <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
         <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--cream-deep)] p-8 sm:p-12">
           <h2 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Where do you want to go?
+            Start with a destination and a date
           </h2>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-            And if the honest answer is &ldquo;somewhere warm, in July, with the children&rdquo; — that is enough to
-            start with.
+            Somewhere warm, in July, with the children is enough to start with. Leave the rest blank.
           </p>
           <div className="mt-8">
             <StaySearchForm id="footer-search" />

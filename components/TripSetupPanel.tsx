@@ -257,19 +257,10 @@ export default function TripSetupPanel({
             )}
           </div>
 
-          {/* ---- the offer, without interrupting ---------------------------- */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--navy)] bg-[var(--navy)] p-5 text-white">
-            <p className="min-w-0 flex-1 text-sm leading-6 text-slate-200">
-              <span className="font-semibold text-white">Would rather not do this part?</span> Send us what you have and
-              we will take it from here — the dates, the kosher side, the order of the days.
-            </p>
-            <Link
-              href="/contact"
-              className="inline-flex min-h-11 shrink-0 items-center rounded-md bg-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]"
-            >
-              Have us plan it
-            </Link>
-          </div>
+          {/* "Would rather not do this part? … Have us plan it" sat here, in
+              the middle of the planner. It is a real service and it is offered
+              inside Contact; here it read as the tool giving up on the person
+              using it. See lib/contact-reasons.ts. */}
         </div>
       )}
     </section>

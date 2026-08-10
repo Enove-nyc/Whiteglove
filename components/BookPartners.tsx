@@ -769,7 +769,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
       </div>
       <p className="mt-2 text-xs text-stone-500">Independent award-search sites, free to use. We don&apos;t see your balances or your account.</p>
 
-      <StepLabel n={2}>Is it worth using your miles?</StepLabel>
+      <StepLabel n={2}>Whether the miles are worth it</StepLabel>
       <ValueCalculator unit="Miles" cashLabel="Cash price of the same ticket" feesLabel="Taxes/fees you still pay" pointsPlaceholder="45000" cashPlaceholder="900" />
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -827,7 +827,7 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
         Award Mapper is a free independent tool for seeing which loyalty programs have properties in a city — useful before you commit points.
       </p>
 
-      <StepLabel n={2}>Is it worth using your points?</StepLabel>
+      <StepLabel n={2}>Whether the points are worth it</StepLabel>
       <ValueCalculator unit="Points" cashLabel="Cash price of the same stay" feesLabel="Resort/other fees still charged" pointsPlaceholder="60000" cashPlaceholder="750" />
       <p className="mt-3 text-xs leading-5 text-stone-500">
         Compare the whole stay, not one night — many programs discount longer award stays. Check the kosher-food situation separately;
@@ -883,7 +883,7 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
         <a href={`https://www.kayak.com/cars${loc.trim() && pickup && dropoff ? `/${encodeURIComponent(loc.trim())}/${pickup}/${dropoff}` : ""}`} target="_blank" rel="noreferrer" className={linkGhost}>Check the cash price on Kayak →</a>
       </div>
 
-      <StepLabel n={2}>Is it worth using your points?</StepLabel>
+      <StepLabel n={2}>Whether the points are worth it</StepLabel>
       <ValueCalculator unit="Points" cashLabel="Cash price of the same rental" feesLabel="Anything still charged at the counter" pointsPlaceholder="30000" cashPlaceholder="300" />
 
       <div className="mt-6 flex flex-wrap gap-3">

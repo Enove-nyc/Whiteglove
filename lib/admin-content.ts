@@ -287,7 +287,7 @@ function defaultPromotions(): Promotion[] {
   return [
     {
       id: "homepage-planning-help",
-      title: "Need help planning the rest of the trip?",
+      title: "Plan the rest of the trip",
       description: "Ask White Glove for flights, hotels, drivers, and itinerary help in one place.",
       buttonText: "Start planning",
       targetHref: "/services",

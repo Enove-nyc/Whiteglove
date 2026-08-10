@@ -23,7 +23,7 @@ type Ok = { owner: string; asker: string; canComment: boolean };
 
 async function whoAndWhat(request: NextRequest): Promise<Ok | { error: NextResponse }> {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
-  if (!shareId) return { error: NextResponse.json({ error: "Which trip?" }, { status: 400 }) };
+  if (!shareId) return { error: NextResponse.json({ error: "Name the trip." }, { status: 400 }) };
   if (!commentStoreAvailable()) return { error: NextResponse.json({ error: "Notes are not connected yet." }, { status: 503 }) };
 
   const jar = await cookies();
@@ -115,7 +115,7 @@ export async function PATCH(request: NextRequest) {
   const found = await whoAndWhat(request);
   if ("error" in found) return found.error;
   const body = (await request.json().catch(() => null)) as { id?: string; done?: boolean } | null;
-  if (!body?.id) return NextResponse.json({ error: "Which note?" }, { status: 400 });
+  if (!body?.id) return NextResponse.json({ error: "Name the note." }, { status: 400 });
 
   const comment = await findComment(found.owner, body.id);
   if (!comment) return NextResponse.json({ error: "That note is not here." }, { status: 404 });
@@ -134,7 +134,7 @@ export async function DELETE(request: NextRequest) {
   const found = await whoAndWhat(request);
   if ("error" in found) return found.error;
   const id = request.nextUrl.searchParams.get("id")?.trim();
-  if (!id) return NextResponse.json({ error: "Which note?" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Name the note." }, { status: 400 });
 
   const comment = await findComment(found.owner, id);
   if (!comment) return NextResponse.json({ error: "That note is not here." }, { status: 404 });

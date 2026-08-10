@@ -36,7 +36,7 @@ export default function FlightsPage() {
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Flights</p>
           <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
-            Find the flight, then build the trip around it.
+            Flights
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
             Dates first. Once you have them, every destination page on this site can tell you what there is to eat, which
@@ -57,9 +57,9 @@ export default function FlightsPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
-          eyebrow="Before you book the seat"
-          title="Two things worth checking first."
-          description="Both are answered per destination on this site, and both are easier to change now than after the ticket is issued."
+          eyebrow="Before you book"
+          title="Two things to check first"
+          description="Both are easier to change now than after the ticket is issued."
         />
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">

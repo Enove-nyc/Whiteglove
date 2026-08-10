@@ -77,11 +77,11 @@ export default async function ServicesPage() {
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Not sure which of these you need?
+              Choosing between them
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              That is the normal position. Answer the planning questions — a couple of minutes, nothing required — and
-              we will tell you which of these the trip actually calls for.
+              Most trips need one or two of these rather than all of them. Tell us the shape of the trip and we will
+              say which.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

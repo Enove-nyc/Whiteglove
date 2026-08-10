@@ -42,7 +42,7 @@ const questions: Array<{
   detail: string;
 }> = [
   {
-    title: "What will we eat?",
+    title: "Kosher food, wherever you go",
     href: "/kosher",
     cta: "Open the kosher food finder",
     body: "A live lookup of kosher restaurants, bakeries and groceries anywhere in the world, and the places we hold our own record for.",
@@ -50,7 +50,7 @@ const questions: Array<{
       "The live results come from OpenStreetMap, which anybody can add to — so they are a lead, not a hechsher. Where we hold a record of our own it says who certifies the place and how far that has been checked.",
   },
   {
-    title: "Which part of town do we stay in?",
+    title: "Which part of town to stay in",
     href: "/hotels",
     cta: "Compare places to stay",
     body: "Kosher hotels, seasonal programmes, and the Jewish quarters themselves — measured from the shul, not from the middle of the city.",
@@ -58,7 +58,7 @@ const questions: Array<{
       "The quarter usually matters more than the hotel. Distances here are measured from a quarter's own published position, which is something we can stand behind, rather than from a hotel coordinate we would have had to guess at.",
   },
   {
-    title: "What happens on Shabbos?",
+    title: "Shabbos away from home",
     href: "/destinations",
     cta: "See Shabbos practicality by destination",
     body: "Every vacation destination on the site says whether Shabbos works on foot there, and what has to be arranged if it does not.",
@@ -66,7 +66,7 @@ const questions: Array<{
       "The planner also warns when a day's driving runs into candle-lighting — computed from the sun rather than fetched, and never a substitute for the town's own zman.",
   },
   {
-    title: "Who do we ask locally?",
+    title: "Local drivers, guides and contacts",
     href: "/directory",
     cta: "Open the provider directory",
     body: "Drivers who know the roads, guides, agencies and local contacts, with what each is said to do and who says so.",
@@ -74,7 +74,7 @@ const questions: Array<{
       "Some listings are featured because we have found their service consistently good and some because the placement is sponsored. The directory says so plainly rather than leaving you to guess.",
   },
   {
-    title: "What do we need at the border?",
+    title: "Documents and border crossings",
     href: "/travel-guide",
     cta: "Read the travel guide",
     body: "Entry documents, passport validity, and paying for the trip — with each country's own official page rather than rules restated second-hand.",
@@ -82,7 +82,7 @@ const questions: Array<{
       "Entry rules change constantly and depend on the passport you hold, so this site does not state them. It gives you the official source and the questions to ask it.",
   },
   {
-    title: "Whose hechsher is that?",
+    title: "The hechsher on a listing",
     href: "/kosher",
     cta: "See how hechsherim are shown on a listing",
     body: `The ${HECHSHERIM.length} certifying bodies the site knows by name, so a mark on a listing means something specific.`,
@@ -141,9 +141,8 @@ export default function KosherTravelPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
-          eyebrow="Six questions"
-          title="What people actually ask before booking."
-          description="Each one goes to the tool that answers it. Nothing here is a summary of something you have to find elsewhere."
+          eyebrow="The practical side"
+          title="Six things to have settled before you book"
         />
         <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {questions.map((question) => (
@@ -170,9 +169,8 @@ export default function KosherTravelPage() {
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.1fr_.9fr]">
           <div>
             <SectionHeading
-              eyebrow="Plain words"
-              title="If a term here is new to you."
-              description="This site uses the words its travelers use. None of them is a test — here is what each one means where it appears."
+              eyebrow="Glossary"
+              title="What these words mean"
             />
             <dl className="mt-8 space-y-4">
               {[

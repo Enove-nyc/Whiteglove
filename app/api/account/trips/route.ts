@@ -53,22 +53,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "rename": {
-      if (!body.id) return NextResponse.json({ ok: false, error: "Which trip?" }, { status: 400 });
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       const result = await renameTrip(email, body.id, body.name ?? "");
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "switch": {
-      if (!body.id) return NextResponse.json({ ok: false, error: "Which trip?" }, { status: 400 });
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       const result = await switchTrip(email, body.id);
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "duplicate": {
-      if (!body.id) return NextResponse.json({ ok: false, error: "Which trip?" }, { status: 400 });
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       const result = await duplicateTrip(email, body.id);
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "delete": {
-      if (!body.id) return NextResponse.json({ ok: false, error: "Which trip?" }, { status: 400 });
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       const result = await deleteTrip(email, body.id);
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }

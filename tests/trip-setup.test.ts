@@ -239,9 +239,9 @@ describe("the assistant asks about holidays first", () => {
     const first = examples.split("\n").find((line) => line.trim().startsWith('"'));
     assert.match(String(first), /vacation/i);
     for (const prompt of [
-      "Where can my family take a kosher summer vacation?",
+      "Find a kosher summer vacation for a family.",
       "Plan four days in Rome for a couple.",
-      "Which Alpine destinations are practical for kosher travelers?",
+      "Compare Alpine destinations for kosher travelers.",
       "Help me plan Shabbos in Paris.",
       "Plan a three-day heritage journey in Poland.",
     ]) {

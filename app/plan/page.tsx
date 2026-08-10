@@ -68,7 +68,7 @@ export default async function PlanPage({
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-5">
           <p className="max-w-xl leading-7 text-stone-600">
-            Would rather look at somewhere before answering anything? That is a reasonable way round.
+            You can look at somewhere first and answer these afterwards.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -81,7 +81,7 @@ export default async function PlanPage({
               href="/heritage"
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
             >
-              Planning a heritage journey?
+              Planning a heritage journey
             </Link>
           </div>
         </div>
