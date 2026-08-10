@@ -57,6 +57,41 @@ export default function TravelAssistantBox() {
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Kosher travel, answered</h2>
       <p className="mt-2 text-sm leading-6 text-stone-600">Where to go, how long to give it, kosher food, Shabbos, or a kever. Travel only.</p>
 
+      {/* WHAT IT IS, BEFORE THE BOX RATHER THAN UNDER THE ANSWER.
+          There was one line of small print and it only appeared once an answer
+          had already been given — by which point somebody has read the answer
+          and formed a view of where it came from. The three things they are
+          entitled to know before they type are: this is a language model and
+          not a search of our own pages, so it can be wrong about a specific
+          place; kashrus and anything time-sensitive still has to be confirmed;
+          and what happens to what they type. The last one is a fact about this
+          code, not a policy: the question goes to the model provider to be
+          answered and this site keeps no copy and no history — reload the page
+          and it is gone. */}
+      <details className="mt-3 rounded-md border border-[var(--gold-light)] bg-white/70 px-4 py-3">
+        <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
+          What this assistant can and cannot do
+        </summary>
+        <ul className="mt-3 grid gap-2 text-sm leading-6 text-stone-600">
+          <li>
+            It is an AI model answering in its own words, not a search of the destination, hotel and kosher pages on
+            this site. Those pages name a source for each detail; the assistant does not, and it can be wrong or out of
+            date about a particular place.
+          </li>
+          <li>
+            Treat anything it says about a hechsher, a minyan, opening hours, prices or border and travel conditions as
+            a starting point to confirm — with the place itself, with the local kehilla, or with us.
+          </li>
+          <li>
+            It answers kosher-travel questions only, and it declines the rest.
+          </li>
+          <li>
+            Your question is sent to the AI provider to be answered. We keep no copy of it and no conversation history:
+            leaving this page ends it.
+          </li>
+        </ul>
+      </details>
+
       <form
         onSubmit={(e) => { e.preventDefault(); ask(question); }}
         className="mt-5 flex flex-col gap-3 sm:flex-row"

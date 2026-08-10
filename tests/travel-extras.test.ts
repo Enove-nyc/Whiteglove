@@ -9,6 +9,7 @@ import {
   IDEAS,
   listProblem,
   looksTracked,
+  looksUnfinished,
   MAX_EXTRAS,
   shownToVisitors,
   type TravelExtra,
@@ -159,8 +160,50 @@ describe("what a visitor is shown", () => {
   });
 
   it("never shows more than the cap, whatever is stored", () => {
-    const many = Array.from({ length: 20 }, (_, i) => row({ id: `x${i}`, name: `Thing ${i}` }));
+    const many = Array.from({ length: 20 }, (_, i) => row({ id: `x${i}`, name: `Partner ${String.fromCharCode(65 + i)}` }));
     assert.equal(shownToVisitors(many).length, MAX_EXTRAS);
+  });
+
+  it("LEAVES OUT A PLACEHOLDER NAME", () => {
+    // What was live on /book: an eSIM card with nothing under it, then
+    // "Option 1" and "Option 2". A traveller cannot tell a placeholder from a
+    // partner they have not heard of, so the page has to.
+    for (const name of ["Option 1", "Option 2", "TBD", "Untitled", "Partner"]) {
+      assert.equal(shownToVisitors([row({ name })]).length, 0, name);
+      assert.ok(looksUnfinished(row({ name })), name);
+    }
+  });
+
+  it("LEAVES OUT A CARD WITH NOTHING UNDER THE NAME", () => {
+    // The description is the only thing on the card that says what is being
+    // bought. Without it the card is a link with a mystery on it.
+    assert.equal(shownToVisitors([row({ blurb: "  " })]).length, 0);
+  });
+
+  it("renders nothing at all when every row is unfinished", () => {
+    // AGENTS.md: hide an unfinished section rather than show it empty.
+    const shown = shownToVisitors([
+      row({ id: "a", name: "eSIM data", blurb: "" }),
+      row({ id: "b", name: "Option 1", blurb: "" }),
+      row({ id: "c", name: "Option 2", blurb: "" }),
+    ]);
+    assert.deepEqual(shown, []);
+  });
+
+  it("still shows a finished row beside an unfinished one", () => {
+    const shown = shownToVisitors([row(), row({ id: "b", name: "Option 1", blurb: "" })]);
+    assert.deepEqual(shown.map((e) => e.id), ["x1"]);
+  });
+
+  it("SAVES THE UNFINISHED ROW ANYWAY, and says why it is not on the page", () => {
+    // Nothing the owner typed is thrown away — it simply does not go live.
+    assert.equal(extraProblem(row({ name: "Option 1", blurb: "" })), null);
+    assert.match(describeExtra(row({ name: "Option 1" })), /not shown to travellers/i);
+    assert.match(describeExtra(row({ blurb: "" })), /no line under the name/i);
+    assert.match(
+      describeExtras([row({ name: "Option 1", blurb: "" }), row({ id: "b", name: "Option 2", blurb: "" })]),
+      /Nothing is being offered[\s\S]*2 rows are saved but still unfinished/,
+    );
   });
 
   it("always has words on the button", () => {

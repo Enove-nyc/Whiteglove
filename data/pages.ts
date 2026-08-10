@@ -68,9 +68,9 @@ export const editablePages: PageDef[] = [
         id: "getaways-hero",
         kind: "hero",
         eyebrow: "Vacation ideas",
-        heading: "Where to go, with the kosher side already worked out.",
+        heading: "Where to go, with the kosher side answered first.",
         intro:
-          "Beaches, cities, mountains and family trips. Every destination here says what we hold on record about kosher food and about Shabbos — because those are the two questions that decide whether a holiday is workable, and no other travel site answers them.",
+          "Beaches, cities, mountains and family trips. Each destination page answers the two questions that decide whether a holiday is workable — what there is to eat, and how Shabbos works there — and names where each answer came from.",
       },
     ],
   },
@@ -137,6 +137,81 @@ export const editablePages: PageDef[] = [
         "Budget",
       ],
     },
+    ],
+  },
+  {
+    /**
+     * WHO IS BEHIND THIS, which the site could not answer.
+     *
+     * It said what White Glove does on nine pages and never once said who was
+     * doing it, where they were, or why a stranger should trust them with the
+     * kosher side of a family holiday. That is a fair question and the absence
+     * of an answer is its own answer.
+     *
+     * WHAT THIS PAGE SHIPS WITH, and the line it does not cross. Everything in
+     * these blocks is true of the site as it stands and can be checked against
+     * it: how the practical detail is produced, what the completeness bar is,
+     * how the business is paid, what it will not do. What it does NOT do is
+     * invent a founder, a city, a number of years or a client count — an
+     * about page whose credentials are made up is worse than no about page on
+     * a site whose whole argument is that what it prints has been checked.
+     *
+     * The personal half — names, background, where the business is based — is
+     * the owner's to write, and this is an editable page so he can write it
+     * without a deploy: /admin/pages, "About".
+     */
+    slug: "about",
+    href: "/about",
+    label: "About",
+    seoTitle: "About White Glove Itineraries — who we are and how we work",
+    seoDescription:
+      "Who is behind White Glove Itineraries, how the kosher, Shabbos and practical detail on this site is put together, how the business is paid, and how to reach a person.",
+    blocks: [
+      {
+        id: "about-hero",
+        kind: "hero",
+        eyebrow: "About White Glove",
+        heading: "Who you are dealing with.",
+        intro:
+          "White Glove Itineraries is a small independent travel outfit that plans kosher holidays and Jewish heritage journeys. The person who answers your message is the person who does the planning — there is no call centre behind this.",
+      },
+      {
+        id: "about-why",
+        kind: "text",
+        heading: "Why it exists",
+        body:
+          "Every travel site can tell you what a hotel costs. None of them can tell you whether you can walk to a minyan from it on Shabbos, what there is to eat in the town on a Tuesday night, or which quarter to book in so the two are the same walk. That gap is what this site is for: the practical religious side answered first, and the ordinary holiday planning built on top of it.",
+      },
+      {
+        id: "about-how",
+        kind: "list",
+        heading: "How the detail on this site is put together",
+        items: [
+          "Every practical claim comes from a record with a named source behind it, and the page says which. Where the source is a person — a shomer, a rov, a kehilla office — the page says so.",
+          "A destination reaches the published list only once it can answer five questions: kosher food, Shabbos, somewhere to stay, something to do, and how you get there and around. A destination that cannot answer all five is not offered as one.",
+          "The live kosher food finder reads OpenStreetMap, which anyone can add to. It is the fastest way to find what exists in a town you do not know, and it says nothing about supervision — confirm the hechsher yourself.",
+          "Distances and driving times are real road times, not straight lines, because a plan built on straight lines falls apart on the second day.",
+          "Where something changes — a seasonal programme, a border, access to a bais hachaim — the page says when the detail was last checked and where it came from.",
+        ],
+      },
+      {
+        id: "about-paid",
+        kind: "text",
+        heading: "How the business is paid",
+        body:
+          "Two ways, and both are stated where they apply. Booking searches on this site hand off to travel partners who may pay a commission on a booking; that never changes what you pay, and the disclosure sits beside every search rather than only in the footer. Separately, we are paid to plan trips — that work is quoted before any of it starts, and the planner, the routing, the kosher lookups and the heritage database stay free whether or not you ever hire us.",
+      },
+      {
+        id: "about-not",
+        kind: "list",
+        heading: "What we will not do",
+        items: [
+          "Give a hechsher. We tell you what is listed, who certifies it where that is known, and what to ask for. The decision is yours and your rov's.",
+          "Claim a rate is the lowest anywhere. We open a search with partners we work with; we do not read the whole market.",
+          "Print a detail we cannot attribute. A gap that names itself is worth more than a plausible sentence.",
+          "Invent a review. There are no testimonials on this site because there is nothing real to quote yet.",
+        ],
+      },
     ],
   },
   {

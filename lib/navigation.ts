@@ -63,7 +63,9 @@ export type NavItem = {
 
 /** Dedicated hotel search — menu and destination pages, not the bar. */
 export const HOTELS_NAV: NavItem = {
-  label: "Hotels & Stays",
+  // "Where to stay" — the same words the footer, the front page and the
+  // section heading use. AGENTS.md, "One name per thing".
+  label: "Where to stay",
   href: "/hotels",
   description: "Kosher hotels, seasonal programmes, and which quarter makes Shabbos walkable.",
 };
@@ -89,7 +91,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   {
     label: "Destinations",
     href: "/destinations",
-    description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher side worked out.",
+    description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher and Shabbos answer on each one.",
   },
   {
     label: "Things to Do",
@@ -107,9 +109,13 @@ export const PRIMARY_NAV: readonly NavItem[] = [
     description: "שתוליכנו לשלום — kevarim, batei hachaim and Jewish heritage journeys.",
   },
   {
-    label: "My Trips",
+    // ONE NAME FOR ONE PAGE. The bar called /itinerary "My Trips" while the
+    // menu two lines below called the same address "Itinerary planner", so the
+    // same navigation offered one page under two names — which reads as two
+    // features, one of which cannot be found.
+    label: "Itinerary planner",
     href: "/itinerary",
-    description: "The trips you have saved, day by day, with everything you have booked in them.",
+    description: "Build the trip day by day, and keep the ones you have saved.",
   },
 ] as const;
 
@@ -172,7 +178,6 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     links: [
       PRIMARY_NAV[1],
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
-      { label: "Itinerary planner", href: "/itinerary", description: "Build the trip day by day." },
     ],
   },
   {

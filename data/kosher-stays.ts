@@ -115,7 +115,7 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     country: "Switzerland",
     name: "Wiedikon",
     coordinates: "47.3690, 8.5170",
-    note: "The shuls, the kosher shops and the eruv are here, about 2 km from the old town. For Shabbos this is the only sensible part of Zurich to be in.",
+    note: "The shuls, the kosher shops and the eruv are here, about 2 km from the old town — which is what makes it the part of Zurich to be in for Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Z%C3%BCrich-Wiedikon",
   },
   {
@@ -945,7 +945,7 @@ export const kosherStays: KosherStay[] = [
       "One of the largest kehillos in France, with kosher shops and restaurants out in Villeurbanne — and Annecy, Grenoble and Chamonix all close enough to drive out and back in a day.",
     anchor: { name: "Grande Synagogue de Lyon, 13 quai Tilsitt", coordinates: "45.7571, 4.8277" },
     notes: [
-      "This solves the French Alps the way Zurich solves the Swiss ones. The alpine resorts have no kosher food at all; Lyon has it every week of the year, and the mountains are a drive rather than a move.",
+      "This solves the French Alps the way Zurich solves the Swiss ones. The alpine resorts themselves have no kosher food of their own outside a seasonal programme; Lyon has it every week of the year, and the mountains are a drive rather than a move.",
       "The distances are the point: Grenoble is about an hour and a quarter, Annecy about an hour and twenty, Chamonix about two and a half. Those are day trips from a fixed base, not a touring itinerary.",
       "The split to know before booking. The Grande Synagogue is central, on the quai Tilsitt by the Saône, but the everyday kosher provision is out east in Villeurbanne and the 8th. Staying by the sights means travelling to every meal — the same trade as the Marais against the 19th in Paris.",
       "Geneva, already listed on this site, is the other base for the same mountains and is closer to Chamonix. Lyon has more kosher food; Geneva has less distance. That is the whole choice.",

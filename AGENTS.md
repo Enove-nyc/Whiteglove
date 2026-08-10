@@ -13,3 +13,16 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Do not make blanket payment promises such as “no card taken” or “nothing charged.” State a price or payment step only when it is accurate and needed.
 - Keep vacation discovery, self-service planning and partner booking links as the primary public journey. Heritage travel belongs in its own section.
 - Personal planning or booking assistance should be discreet and discoverable only from the Contact area unless the owner requests otherwise.
+
+## One name per thing
+
+The site had several names for each of its own features, so four front doors looked like seven. Use the first column; the alternatives are fine inside a sentence where the context genuinely calls for one, and are not names.
+
+| Use | Not |
+| --- | --- |
+| Where to stay (the section), places to stay (the things) | Hotels & Stays, stays, where to sleep |
+| Itinerary planner | trip planner, My Trips, the planner |
+| Kosher food finder (the live tool) | food finder, kosher lookup, live search |
+| Listing (ours, with a source) / live result (from OpenStreetMap) | record, entry, our data |
+
+The four ways into the site are named once in `lib/starting-points.ts` — get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`), have White Glove plan it (`/services`). Link to one of them through that list rather than inventing a label at the call site.

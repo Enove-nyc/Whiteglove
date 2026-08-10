@@ -123,7 +123,7 @@ describe("the order of the page", () => {
       "Food, Shabbos and the rest of it",
       "Kevarim and the towns around them",
       "VERIFICATION_LINE}",
-      "Start with a destination and a date",
+      "<StartingPoints",
     ].map(at);
     for (let i = 1; i < order.length; i += 1) {
       assert.ok(order[i] > order[i - 1], `section ${i + 1} of the front page has moved above section ${i}`);
@@ -220,9 +220,30 @@ describe("the order of the page", () => {
     assert.doesNotMatch(PROSE, /href="\/services"/);
   });
 
+  it("CARRIES ONE SEARCH BOX, not two", () => {
+    // The same StaySearchForm was in the hero and again at the bottom of the
+    // page. A visitor who has read the whole thing has usually stopped
+    // wondering where to go and started wondering how the site works.
+    assert.equal(HOME.match(/<StaySearchForm/g)?.length, 1, "the front page has more than one search form");
+    assert.doesNotMatch(PROSE, /Start with a destination and a date/);
+  });
+
+  it("FINISHES ON THE THREE FREE WAYS IN, and names them from one place", () => {
+    // /plan, /itinerary and /book, described once in lib/starting-points.ts so
+    // the same four doors are not called seven different things across the
+    // site.
+    assert.match(HOME, /<StartingPoints/);
+    assert.match(HOME, /omit=\{\["\/services"\]\}/, "the front page offers the paid service after all");
+    const points = readFileSync("lib/starting-points.ts", "utf8");
+    for (const href of ["/plan", "/itinerary", "/book", "/services"]) {
+      assert.ok(points.includes(`href: "${href}"`), `${href} is not one of the starting points`);
+    }
+  });
+
   it("still offers the planner, which is a free tool rather than an offer to help", () => {
-    assert.match(PROSE, /href="\/itinerary"/);
-    assert.match(PROSE, /It is free/);
+    const points = readFileSync("lib/starting-points.ts", "utf8");
+    assert.match(points, /href: "\/itinerary"/);
+    assert.match(points, /Free/);
   });
 
   it("INVENTS NO TESTIMONIAL", () => {

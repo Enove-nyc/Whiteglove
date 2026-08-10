@@ -34,6 +34,7 @@ export default function ListToolbar({
   showing,
   total,
   noun,
+  onReset,
 }: {
   query: string;
   onQuery: (value: string) => void;
@@ -44,8 +45,20 @@ export default function ListToolbar({
   total: number;
   /** What the things are called, e.g. "batei hachaim". Plural. */
   noun: string;
+  /**
+   * Put every control back to "everything", in one press.
+   *
+   * WHY A PAGE NEEDS THIS. Three selects and a search box is four places a
+   * list can be narrowed from, and the way somebody ends up with an empty
+   * page is by setting two of them and forgetting the first. Clearing the
+   * search — which was the only recovery offered — fixed the one filter they
+   * could see. Optional, so a list with a search box and nothing else does not
+   * grow a button that undoes typing.
+   */
+  onReset?: () => void;
 }) {
   const narrowed = showing !== total;
+  const active = Boolean(query.trim()) || filters.some((filter) => filter.value);
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
@@ -76,17 +89,43 @@ export default function ListToolbar({
         ))}
       </div>
 
-      <p className="mt-3 text-sm text-stone-600" role="status">
-        {showing === 0 ? (
-          <>
-            Nothing here matches that. <button type="button" onClick={() => onQuery("")} className="underline decoration-[var(--gold)] underline-offset-2">Clear the search</button>.
-          </>
-        ) : narrowed ? (
-          `${showing} of ${total} ${noun}.`
-        ) : (
-          `${total} ${noun}.`
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+        <p className="text-sm text-stone-600" role="status">
+          {showing === 0 ? (
+            <>
+              Nothing here matches that.{" "}
+              <button
+                type="button"
+                onClick={() => (onReset ? onReset() : onQuery(""))}
+                className="underline decoration-[var(--gold)] underline-offset-2"
+              >
+                {onReset ? "Start again" : "Clear the search"}
+              </button>
+              .
+            </>
+          ) : narrowed ? (
+            `${showing} of ${total} ${noun}.`
+          ) : (
+            `${total} ${noun}.`
+          )}
+        </p>
+        {/* The address bar is carrying the filters (components/useListUrl.ts),
+            so a narrowed list is a link somebody can send. Said out loud,
+            because a URL that changes without a page load is a thing nobody
+            looks for. */}
+        {onReset && active && showing > 0 && (
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <span className="text-stone-500">This view is in the address bar — copy the link to share it.</span>
+            <button
+              type="button"
+              onClick={onReset}
+              className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              Reset filters
+            </button>
+          </p>
         )}
-      </p>
+      </div>
     </div>
   );
 }

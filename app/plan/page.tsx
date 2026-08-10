@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import StartingPoints from "@/components/StartingPoints";
 import TripStartFlow from "@/components/TripStartFlow";
 import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
@@ -63,6 +64,13 @@ export default async function PlanPage({
 
       <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">
         <TripStartFlow initialDestination={destination?.name ?? ""} initialKind={initialKind} />
+      </section>
+
+      {/* The other three doors, for somebody who opened this one and would
+          rather browse, build it themselves, or hand it over.
+          lib/starting-points.ts. */}
+      <section className="mx-auto max-w-5xl px-5 pb-12 sm:px-8">
+        <StartingPoints omit={["/plan"]} heading="Or start somewhere else" />
       </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">

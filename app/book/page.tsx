@@ -5,6 +5,7 @@ import { readTravelpayouts } from "@/lib/travelpayouts-store";
 import { readExtras } from "@/lib/travel-extras-store";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
+import StartingPoints from "@/components/StartingPoints";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
@@ -248,6 +249,13 @@ export default async function BookPage({
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* Which of the four doors this one is, for somebody who arrived here
+          from the navigation and is not sure a partner search is what they
+          wanted. lib/starting-points.ts. */}
+      <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+        <StartingPoints omit={["/book"]} heading="If a search is not what you came for" />
       </section>
 
       <Footer />
