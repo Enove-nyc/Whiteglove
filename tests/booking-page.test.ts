@@ -60,6 +60,25 @@ describe("what the page is about", () => {
   });
 });
 
+describe("getting to the fields", () => {
+  it("PUTS THE SEARCH ABOVE THE PROSE", () => {
+    // A headline, the owner's notice and a heritage aside used to sit above
+    // the panel: three blocks of reading before anybody could type a city.
+    const panel = PAGE.indexOf("<BookPartners");
+    const notice = PAGE.indexOf("{words.bookingNotice}");
+    const heritage = PAGE.indexOf("Planning a heritage journey?");
+    assert.ok(panel > 0 && notice > 0 && heritage > 0);
+    assert.ok(panel < notice, "the owner's notice is still above the search");
+    assert.ok(panel < heritage, "the heritage line is still above the search");
+  });
+
+  it("keeps one short line of heading over it", () => {
+    const beforePanel = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf("<BookPartners"));
+    const paragraphs = beforePanel.match(/<p[\s>]/g) ?? [];
+    assert.equal(paragraphs.length, 0, `${paragraphs.length} paragraphs still sit between the heading and the fields`);
+  });
+});
+
 describe("hotels first", () => {
   it("OPENS ON HOTELS, not on flights", () => {
     // Accommodation is the one product this site knows something a comparison

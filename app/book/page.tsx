@@ -120,35 +120,32 @@ export default async function BookPage({
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
-      {/* The search panel is the page. Putting it beside the copy left a
-          column of dead space under the paragraph and squeezed the fields;
-          the heading now sits above it and the panel runs the full width. */}
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
+      {/* THE FIELDS COME FIRST. A headline, the owner's notice and a
+          heritage aside used to sit above the panel: three blocks of reading
+          before anybody could type a city. Somebody arriving here has already
+          decided to search — the page's job is to let them, and everything
+          worth saying still gets said underneath. */}
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-10 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
-            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4rem)] leading-[1.08] text-[var(--navy)]">
-              Search the travel that fits your trip
-            </h1>
-            {/* The owner's line. /admin/settings/words — it ships saying what
-                the page is for, and he can change it without a deploy. */}
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">{words.bookingNotice}</p>
-            {/* ONE LINE, not a page of it. The heritage side has its own
-                section; what it needs here is to know these tools serve it
-                too, which is a sentence rather than a theme. */}
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-              Planning a heritage journey?{" "}
-              <Link
-                href="/heritage"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
-              >
-                These booking tools work for that too
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="mt-10">
+          <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.1] text-[var(--navy)]">
+            Flights, hotels and cars
+          </h1>
+          <div className="mt-6">
             <BookPartners affiliate={affiliate} prefill={prefill} disclosure={words.affiliateDisclosure} />
           </div>
+          {/* Under the search, where it is read by somebody who has finished
+              typing. The owner's line: /admin/settings/words. */}
+          <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
+            Planning a heritage journey?{" "}
+            <Link
+              href="/heritage"
+              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+            >
+              These booking tools work for that too
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
