@@ -194,6 +194,7 @@ describe("personal booking assistance is offered here and nowhere else", () => {
   const PUBLIC_FILES = [
     "app/page.tsx",
     "app/destinations/(hub)/page.tsx",
+    "app/destinations/[destination]/page.tsx",
     "app/hotels/page.tsx",
     "app/flights/page.tsx",
     "app/cars/page.tsx",
@@ -208,7 +209,17 @@ describe("personal booking assistance is offered here and nowhere else", () => {
     // On a hotel result, "we can arrange this for you" turns a usable tool
     // into a sales funnel — the visitor stops reading the kosher notes and
     // starts working out what the catch is.
-    const offers = [/have us (plan|book) it/i, /we (can )?arrange (it|this|the trip)/i, /let us plan/i, /nothing is charged for asking/i];
+    const offers = [
+      /have us (plan|book)\b/i,
+      /we (can )?arrange (it|this|the trip)/i,
+      /let us plan/i,
+      /nothing is charged for asking/i,
+      /hand it over/i,
+      /somebody else did the arranging/i,
+      // The link, not only the words. A destination page carried
+      // "/contact?trip=vacation&destination=Rome" twice.
+      /href=\{?`?\/contact\?trip=/,
+    ];
     for (const file of PUBLIC_FILES) {
       const source = readFileSync(file, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
+import DestinationStickyCta from "@/components/DestinationStickyCta";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
@@ -21,6 +22,7 @@ import {
   type Signal,
   type VacationFacts,
 } from "@/lib/vacation-ideas";
+import { staySearchHref } from "@/lib/stay-search";
 import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
@@ -454,18 +456,24 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             </Suspense>
           </div>
 
+          {/* THE OFFER THAT WENT: "Have us plan Rome", beside the first
+              button, at the top of the most commercial page on the site. It
+              made every section below it read as a sales funnel — the visitor
+              stops reading the kosher notes and starts working out what the
+              catch is. It is offered inside Contact, which is the only place
+              it belongs. See lib/contact-reasons.ts. */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={addToTripHref(destination)}
+              href={staySearchHref({ destination: destination.name })}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              Add {destination.name} to a trip
+              See places to stay in {destination.name}
             </Link>
             <Link
-              href={`/contact?trip=vacation&destination=${encodeURIComponent(destination.name)}`}
+              href={addToTripHref(destination)}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
             >
-              Have us plan {destination.name}
+              Add {destination.name} to a trip
             </Link>
           </div>
         </div>
@@ -602,20 +610,36 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
         <Section id="getting-around" title="Getting there and around">
           <p className="max-w-3xl text-lg leading-8 text-stone-600">{destination.transport}</p>
-          {/* Resolved, never a typed `/book`: the owner can have that path
-              behind an access code, and this is a public page. When the search
-              is closed the same link offers the thing that is actually
-              available — us looking — rather than a password box. */}
-          <p className="mt-5 text-sm">
+          {/* The two searches this section is actually about, each on the
+              page that runs it. The car link carries the destination, because
+              a link that says the site knows where you are going and then
+              asks again is worse than one that never claimed to. */}
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href={booking.href}
-              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              href={`/cars?destination=${encodeURIComponent(destination.name)}`}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
             >
-              {booking.searchIsPublic
-                ? "Search flights, hotels and cars for these dates"
-                : `Ask us about flights and hotels to ${destination.name}`}
+              Car hire in {destination.name}
             </Link>
-          </p>
+            <Link
+              href="/flights"
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+            >
+              Search flights
+            </Link>
+          </div>
+          {/* Resolved, never a typed `/book`: the owner can have that path
+              behind an access code, and this is a public page. */}
+          {booking.searchIsPublic && (
+            <p className="mt-5 text-sm">
+              <Link
+                href={booking.href}
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                Everything in one search
+              </Link>
+            </p>
+          )}
         </Section>
 
         {destination.outline && (
@@ -658,31 +682,36 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             ))}
           </ul>
         </Section>
+
+        {/* Rides the bottom of the viewport while there is page left, then
+            lets go — the last section and the footer are never underneath it.
+            See components/DestinationStickyCta.tsx. */}
+        <DestinationStickyCta destination={destination.name} />
       </div>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Plan {destination.name} yourself, or hand it over.
+              Ready to book {destination.name}?
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Everything on this page is yours to use for free, and the planner will hold the trip day by day. If you
-              would rather somebody else did the arranging, tell us the dates and we will take it from there.
+              Rooms and prices come from our booking partners. The planner holds the trip day by day — the route, the
+              driving times, and a printable copy for the car — and it is free.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href={addToTripHref(destination)}
+              href={staySearchHref({ destination: destination.name })}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              Plan {destination.name} myself
+              See places to stay
             </Link>
             <Link
-              href={`/contact?trip=vacation&destination=${encodeURIComponent(destination.name)}`}
+              href={addToTripHref(destination)}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
             >
-              Have us plan {destination.name}
+              Plan {destination.name} myself
             </Link>
           </div>
         </div>

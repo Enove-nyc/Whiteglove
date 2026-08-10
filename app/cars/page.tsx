@@ -25,8 +25,22 @@ export const metadata = pageMetadata({
  * no transfer programme is joined, and the driver side is the provider
  * directory rather than an affiliate. Saying so is better than a button that
  * cannot do anything.
+ *
+ * ARRIVING FROM A DESTINATION PAGE, the place is already filled in. A link
+ * that carries a destination to a page which ignores it is worse than a link
+ * with no destination on it: the visitor has been told the site knows where
+ * they are going, and then asked again.
  */
-export default function CarsPage() {
+export default async function CarsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ destination?: string | string[] }>;
+}) {
+  const raw = (await searchParams).destination;
+  // Trimmed and capped rather than printed as given: it lands in a text field
+  // as though the visitor had typed it, and a link is not a trustworthy author.
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  const pickUp = (first ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
@@ -47,6 +61,7 @@ export default function CarsPage() {
               product="car"
               fields="stay"
               destinationLabel="Picking up in"
+              destinationValue={pickUp}
               page="/cars"
               placement="cars-page"
               submitLabel="Search car hire"
