@@ -444,15 +444,43 @@ instead — which is the failure mode the untagged-car-hire episode was.
 
 ### Phase 1 progress
 
+**Phase 1 is complete.** Everything below is merged and live.
+
 | Stage | State |
 |---|---|
 | Affiliate registry, `/go` redirect, click tracking, disclosure | **Done** — `db4113e` |
 | Duffel off the public site, into the admin, guarded | **Done** — `0475d9e` |
-| Route migration: `/destinations`, heritage towns, redirects | Next |
-| Navigation rewrite | Next |
-| Booking page rewrite, hotels-first | Next |
-| Homepage rebuild, booking-first | Next |
-| Personal assistance into Contact only; remove `/honeymoon`, owner login, weak counts | Next |
+| Route migration: `/destinations`, heritage towns, redirects | **Done** — #224 · `lib/route-migration.ts` |
+| Navigation rewrite | **Done** — #224 |
+| Booking page rewrite, hotels-first | **Done** — #224 · `/hotels`, `/flights`, `/cars` |
+| Homepage rebuild, booking-first | **Done** — #224 |
+| Personal assistance into Contact only; remove `/honeymoon`, owner login, weak counts | **Done** — #224 · `lib/contact-reasons.ts` |
+
+### Phase 2 progress
+
+| Stage | State |
+|---|---|
+| `/hotels` with dates and travelers | **Done** — #224 · `lib/stay-search.ts` |
+| Destination-page restructure + sticky CTA | **Done** — #224 · `DestinationStickyCta` |
+| Date persistence across pages | **Done** — #224 · `SearchMemory` |
+| Contextual flights, cars, activities, insurance, eSIM | **Part** — the slots render via `TravelExtras`; only hotels, flights and cars resolve to a partner. Activities, insurance and eSIM have no programme joined, so `routeFor` returns `none` and nothing is offered to visitors. |
+| "Where should I stay?" | Next — the only Phase 2 stage not started |
+
+### What earns today, on the live site
+
+Verified against production after #224 merged. This is a settings state, not a
+code gap: `routeFor` reports it honestly and the admin shows it.
+
+| Product | Lands on | Network | Earns |
+|---|---|---|---|
+| Hotels | Stay22 | Stay22 (`aid` set) | **Yes** |
+| Flights | Kayak | none | **No** — no Travelpayouts marker set |
+| Cars | Kayak | none | **No** — no Travelpayouts marker set |
+| Transfers, activities, insurance, eSIM, programmes | — | none | Not offered |
+
+The flights and cars markers are pasted at `/admin/settings/earnings`. Until
+they are, those searches work and earn nothing — which is the state the
+registry was built to make visible rather than to hide.
 
 **Nothing in this plan publishes an invented price, availability, review,
 partner, advertiser or traffic figure.** Where inventory does not exist, the
