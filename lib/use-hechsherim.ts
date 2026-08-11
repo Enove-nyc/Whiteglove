@@ -1,18 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { allHechsherim, matchHechsher, UNVERIFIED, type Hechsher, type HechsherStatus } from "@/data/hechsherim";
+import { allHechsherim, UNVERIFIED, type Hechsher, type HechsherStatus } from "@/data/hechsherim";
 
 /**
  * What the owner has confirmed about each of these places.
  *
- * Anything not yet confirmed — which is most of them — reads back as
- * unverified, including while this is still loading. That is deliberate: the
- * badge should never flash a hechsher it does not have, and "nobody has
- * checked" is the correct answer until somebody has.
- *
- * Returns a plain object; use `hechsherOf` to read from it so a missing entry
- * comes back as unverified rather than undefined.
+ * Results are limited to White Glove listing IDs. Until a recorded status
+ * arrives, callers get the neutral default instead of a made-up certification.
  */
 export function useHechsherim(placeIds: string[]): { statuses: Record<string, HechsherStatus>; agencies: Hechsher[] } {
   const key = useMemo(() => [...new Set(placeIds.filter(Boolean))].sort().join(","), [placeIds]);
@@ -44,30 +39,13 @@ export function useHechsherim(placeIds: string[]): { statuses: Record<string, He
 }
 
 /**
- * One place's hechsher: what the owner confirmed, else what OpenStreetMap
- * reports, else unverified.
- *
- * The order matters. A confirmation always wins over a map tag, and a map tag
- * is never presented as a confirmation — it comes back as "reported", with OSM
- * named as the source.
+ * One White Glove listing's stored hechsher, or the neutral default when no
+ * editorial status has been recorded.
  */
 export function hechsherOf(
   confirmed: Record<string, HechsherStatus>,
-  place: { id: string; reportedHechsher?: string },
-  agencies?: Hechsher[],
+  place: { id: string },
+  _agencies?: Hechsher[],
 ): HechsherStatus {
-  const own = confirmed[place.id];
-  if (own) return own;
-  if (place.reportedHechsher) {
-    // Land it on a known agency where the text names one, so the circle can
-    // carry that agency's mark instead of four arbitrary letters.
-    const matched = matchHechsher(place.reportedHechsher, agencies);
-    return {
-      state: "reported",
-      hechsherId: matched?.id,
-      note: place.reportedHechsher,
-      source: "OpenStreetMap",
-    };
-  }
-  return UNVERIFIED;
+  return confirmed[place.id] ?? UNVERIFIED;
 }

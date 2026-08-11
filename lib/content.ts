@@ -8,6 +8,7 @@
 
 import type { Contact, Photo, PracticalPlace } from "@prisma/client";
 import type { GalleryPhoto } from "@/components/PhotoGallery";
+import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { optionalRead } from "@/lib/db-optional";
 
 /**
@@ -29,6 +30,14 @@ export type DestinationContent = {
 import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
+
+function isAllowedPublicSource(sourceUrl: string | null): boolean {
+  return !isDisallowedImportSource({
+    sourceUrl: sourceUrl ?? "",
+    sourceName: "",
+    attribution: "",
+  });
+}
 
 // The order and headings come from lib/destination-sections.ts — the same
 // list the admin editor offers and the completeness tracker counts.
@@ -71,6 +80,7 @@ export async function getPublishedDestinationContent(
       },
     });
     if (!destination) return null;
+    const places = destination.places.filter((place) => isAllowedPublicSource(place.sourceUrl));
 
     // Pictures, separately, and allowed to fail. Published only: a draft is
     // one nobody has credited yet, and drafting it was the point.
@@ -80,7 +90,7 @@ export async function getPublishedDestinationContent(
         prisma.photo.findMany({
           where: {
             status: "PUBLISHED",
-            OR: [{ destinationId: destination.id }, { placeId: { in: destination.places.map((p) => p.id) } }],
+            OR: [{ destinationId: destination.id }, { placeId: { in: places.map((place) => place.id) } }],
           },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
         }),
@@ -97,7 +107,7 @@ export async function getPublishedDestinationContent(
 
     return {
       contacts: destination.contacts,
-      places: destination.places.map((place) => ({ ...place, photos: byPlace.get(place.id) ?? [] })),
+      places: places.map((place) => ({ ...place, photos: byPlace.get(place.id) ?? [] })),
       photos: pictures.filter((photo) => photo.destinationId === destination.id),
     };
   } catch (error) {
@@ -121,9 +131,10 @@ export async function publishedCategoriesBySlug(): Promise<Map<string, Set<strin
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.practicalPlace.findMany({
       where: { status: "PUBLISHED" },
-      select: { category: true, destination: { select: { slug: true } } },
+      select: { category: true, sourceUrl: true, destination: { select: { slug: true } } },
     });
     for (const row of rows) {
+      if (!isAllowedPublicSource(row.sourceUrl)) continue;
       const slug = row.destination?.slug;
       if (!slug) continue;
       const set = map.get(slug) ?? new Set<string>();

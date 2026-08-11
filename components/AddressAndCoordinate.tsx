@@ -5,12 +5,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { describeCoordinate } from "@/lib/place-coordinates";
 
 /**
- * An address that is picked, and a coordinate that is checked against it.
- *
- * The address is a real one off the map rather than a line somebody typed, so
- * it can actually be found — a hand-typed address is one nothing has resolved,
- * and half of them here are Polish and Ukrainian street names with diacritics
- * that a keyboard gets wrong in a way no page ever notices.
+ * An address and a coordinate reviewed together.
  *
  * THE COORDINATE IS NEVER FILLED IN FROM THE ADDRESS, and that is deliberate.
  * The standing rule on the kever screen: leave it blank unless you know the
@@ -20,11 +15,8 @@ import { describeCoordinate } from "@/lib/place-coordinates";
  * no button to do it either — one click is all it takes to turn a guess into a
  * fact somebody drives to.
  *
- * What the address's coordinate IS used for is the check underneath: a
- * transposed digit moves a pin a hundred kilometres and nothing about the
- * number looks wrong. That is a question rather than a refusal — the person
- * typing may know where the grave is when the map does not, which happens
- * constantly on these routes.
+ * Coordinates remain a deliberate editorial field. A typed address does not
+ * trigger any external geocoder or imply that its location has been checked.
  */
 export default function AddressAndCoordinate({
   addressName = "address",
@@ -67,11 +59,7 @@ export default function AddressAndCoordinate({
   const coordinate = coordinateProp ?? ownCoordinate;
   const setAddress = (next: string) => { if (addressProp === undefined) setOwnAddress(next); };
   const setCoordinate = (next: string) => { if (coordinateProp === undefined) setOwnCoordinate(next); };
-  // Where the map says the picked address is. Used only to check the
-  // coordinate below — never written into it.
-  const [addressCoordinate, setAddressCoordinate] = useState("");
-
-  const said = describeCoordinate(coordinate, addressCoordinate, address);
+  const said = describeCoordinate(coordinate, undefined, address);
 
   return (
     <>
@@ -82,10 +70,8 @@ export default function AddressAndCoordinate({
           value={address}
           placeholder={addressPlaceholder}
           className={inputClass}
-          onChange={(next, coords) => {
+          onChange={(next) => {
             setAddress(next);
-            // Kept, not applied.
-            if (coords) setAddressCoordinate(coords);
             onChange?.({ address: next, coordinates: coordinate });
           }}
         />
@@ -108,14 +94,6 @@ export default function AddressAndCoordinate({
             className={`mt-1.5 block text-xs leading-5 ${said.tone === "problem" ? "font-semibold text-red-700" : "text-[var(--navy)]"}`}
           >
             {said.says}
-          </span>
-        )}
-        {said.tone === "none" && addressCoordinate && (
-          <span className="mt-1.5 block text-xs leading-5 text-stone-500">
-            {/* Shown, not applied — so somebody who genuinely means the address
-                itself can copy it, and nobody gets it by accident. */}
-            The address above is at <code className="text-[var(--navy)]">{addressCoordinate}</code>. Only use that if the
-            address is the beis hachaim itself rather than the town.
           </span>
         )}
       </label>

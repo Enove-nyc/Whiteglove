@@ -191,9 +191,9 @@ export const editablePages: PageDef[] = [
         kind: "list",
         heading: "How the detail on this site is put together",
         items: [
-          "Practical claims on destination, stay and heritage pages are meant to come from a record with a named source, and the page says which when we have one. Where the source is a person — a shomer, a rov, a kehilla office — the page says so. Live OpenStreetMap results are a separate lead to check, not the same standard.",
+          "Practical claims on destination, stay and heritage pages come from a record with a named source. Where the source is a person — a shomer, a rov, a kehilla office — the page says so.",
           "A destination reaches the published vacation list only once it can answer five questions: kosher food, Shabbos, somewhere to stay, something to do, and how you get there and around. A destination that cannot answer all five is not offered as one on that list.",
-          "The live kosher food finder reads OpenStreetMap, which anyone can add to. It is the fastest way to find what exists in a town you do not know, and it says nothing about supervision — confirm the hechsher yourself.",
+          "The kosher food finder contains White Glove's curated listings. Confirm current supervision directly before you go.",
           "Where we show driving times from our routing, they are road times rather than straight lines, because a plan built on straight lines falls apart on the second day.",
           "Where something changes — a seasonal programme, a border, access to a bais hachaim — we aim to say when the detail was last checked and where it came from.",
         ],
@@ -248,9 +248,9 @@ export const editablePages: PageDef[] = [
     href: "/kosher",
     label: "Kosher food finder",
     seoTitle: "Kosher food finder — White Glove Itineraries",
-    seoDescription: "Find kosher restaurants, bakeries, and groceries anywhere in the world — live from OpenStreetMap — and add them straight to your trip.",
+    seoDescription: "Browse White Glove's curated kosher restaurants, bakeries and groceries, then add a listing to your trip.",
     blocks: [
-    { id: "kosher-hero", kind: "hero", eyebrow: "Kosher food", heading: "Find kosher food anywhere.", intro: "Live kosher restaurants, bakeries and groceries from OpenStreetMap, anywhere in the world — and you can add any of them straight to your trip." },
+    { id: "kosher-hero", kind: "hero", eyebrow: "Kosher food", heading: "Find kosher food for your trip.", intro: "Browse White Glove's curated kosher restaurants, bakeries and groceries, then add a listing to your trip." },
     ],
   },
   {

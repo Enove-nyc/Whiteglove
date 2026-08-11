@@ -25,7 +25,6 @@ import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
-import { geocodeMissing } from "@/lib/geocode";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { applyTemplate, type TripTemplate } from "@/lib/trip-setup";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
@@ -245,26 +244,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     document.getElementById(`trip-day-${date}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Look up any missing locations, then arrange the trip: stops you gave a date
-  // stay on that date, everything else is placed and ordered for the shortest
-  // driving. Without locations we cannot measure anything, so geocode first.
+  // Arrange the trip from locations the traveler supplied or selected from
+  // White Glove's own listings. We do not resolve typed stops through an
+  // external map or places service.
   async function planMyRoute() {
     if (!hasDates) { setPlanNote("Set the trip start and end dates first."); return; }
     setPlanning(true);
-    setPlanNote("Looking up locations…");
-    let working = itin;
-    const missing = itin.activities.filter((a) => !a.coordinates);
-    if (missing.length) {
-      const found = await geocodeMissing(missing.map((a) => ({ id: a.id, name: a.name, address: a.address, coordinates: a.coordinates })));
-      if (Object.keys(found).length) {
-        working = {
-          ...working,
-          activities: working.activities.map((a) =>
-            found[a.id] ? { ...a, coordinates: found[a.id].coordinates, country: a.country || found[a.id].country } : a,
-          ),
-        };
-      }
-    }
+    const working = itin;
     setPlanNote("Planning the fastest route…");
     const result = planRoute(working, assume);
     let planned = result.itinerary;
@@ -456,7 +442,9 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span className="text-sm font-semibold text-[var(--navy)]">Rooms for this trip</span>
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
-          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel /></div>
+          <div className="border-t border-[var(--gold-light)] p-3">
+            <RoomGroupsPanel itinerary={itin} onChange={persist} />
+          </div>
         </details>
       </div>
 

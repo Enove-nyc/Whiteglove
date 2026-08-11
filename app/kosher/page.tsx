@@ -26,9 +26,8 @@ export default async function KosherPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <PageBlocks blocks={page.blocks} />
-      {/* The checked list first, then the live map lookup. They answer
-          different questions: this one knows about supervision and is small,
-          the finder below is current and knows nothing about it. */}
+      {/* The directory and finder share White Glove's curated collection. The
+          directory provides the fuller card view; the finder narrows it. */}
       <section className="mx-auto max-w-7xl px-5 pb-4 sm:px-8">
         <EateryDirectory eateries={kosherEateries} />
       </section>

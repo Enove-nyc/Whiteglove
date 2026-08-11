@@ -6,12 +6,13 @@ import { currentAdmin } from "@/lib/admin-current";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { canOpen, describeAreas } from "@/lib/admin-permissions";
-import { contentTotals } from "@/lib/admin-overview";
+import { ADMIN_TOTAL_CARDS, contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
 import { listPagesForAdmin } from "@/lib/pages";
 import { listPlanRequests } from "@/lib/account-plan-store";
+import { getImportReviewQueue } from "@/lib/import-review-queue";
 import { getDashboardStats } from "@/lib/site-analytics";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,48 @@ function Metric({ label, value, detail }: { label: string; value: string | numbe
   );
 }
 
+const totalCardClass =
+  "rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
+
+function TotalCard({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: number;
+  href: string | null;
+}) {
+  const body = (
+    <>
+      <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</span>
+      <span className="mt-1 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
+    </>
+  );
+
+  if (!href) {
+    return (
+      <li>
+        <div className={totalCardClass} aria-disabled="true">
+          {body}
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <Link
+        href={href}
+        className={`${totalCardClass} block hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
+        aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
+      >
+        {body}
+      </Link>
+    </li>
+  );
+}
+
 export default async function AdminHome() {
   const { identity: signedInAs, areas } = await currentAdmin();
   // The dashboard is open to every administrator, so it is the one screen that
@@ -83,13 +126,14 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, promotions, content, pages, picturesWaiting] = await Promise.all([
+  const [stats, inventory, promotions, content, pages, picturesWaiting, importReviewQueue] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
     getPromotionsDashboard(),
     getAdminContent(),
     listPagesForAdmin(),
     countPendingSubmissions(),
+    getImportReviewQueue(),
   ]);
 
   const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
@@ -143,6 +187,14 @@ export default async function AdminHome() {
   // Counted from the database where there is one, so the averages move when
   // the owner fills something in rather than only when the code changes.
   const totals = contentTotals(await readDestinationFacts());
+  const reviewWaiting = importReviewQueue.error ? 0 : importReviewQueue.counts.awaitingVerification;
+  if (reviewWaiting > 0 && may("/admin/imports/needs-review")) {
+    alerts.push({
+      text: `${reviewWaiting} listing candidate${reviewWaiting === 1 ? "" : "s"} still need verification before they can become public White Glove listings.`,
+      href: "/admin/imports/needs-review",
+      label: "Open needs review",
+    });
+  }
   const attentionCount = alerts.length + unpublishedPages.length + pendingSuggestions.length + unfinished.length;
 
   const visibleAlerts = alerts.filter((alert) => may(alert.href));
@@ -185,21 +237,16 @@ export default async function AdminHome() {
           content, so these survive the database being away. */}
       <section aria-labelledby="totals-heading" className="mt-7">
         <h2 id="totals-heading" className="sr-only">What the site holds</h2>
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {([
-            ["Destinations", totals.destinations],
-            ["Full guides", totals.guides],
-            ["Batei hachaim", totals.cemeteries],
-            ["Kevarim listed", totals.tzaddikim],
-            ["Countries", totals.countries],
-            ["Nothing yet", totals.empty],
-          ] as const).map(([label, value]) => (
-            <div key={label} className="rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-              <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</dt>
-              <dd className="mt-1 font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</dd>
-            </div>
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {ADMIN_TOTAL_CARDS.map((card) => (
+            <TotalCard
+              key={card.key}
+              label={card.label}
+              value={totals[card.key]}
+              href={may(card.href) ? card.href : null}
+            />
           ))}
-        </dl>
+        </ul>
         <p className="mt-3 text-xs leading-5 text-stone-500">
           {totals.started} of {totals.destinations + totals.cemeteries} records have something checked on them, averaging{" "}
           {totals.averageCompleteness}% of the content standard. Visitors never see these numbers — they see what has
@@ -286,13 +333,13 @@ export default async function AdminHome() {
       {/* All three panels are content screens, so a helper given only the
           directory would otherwise get the heading "Work waiting for you" with
           nothing under it. */}
-      {(may("/admin/pages") || may("/admin/content") || may("/admin/inventory")) && (
+      {(may("/admin/pages") || may("/admin/content") || may("/admin/inventory") || may("/admin/imports/needs-review")) && (
       <section aria-labelledby="work-heading" className="mt-9">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your queue</p>
           <h2 id="work-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work waiting for you</h2>
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {may("/admin/pages") && (
           <WorkPanel title="Waiting to be published" count={unpublishedPages.length} href="/admin/pages" hrefLabel="Open pages">
             {unpublishedPages.length === 0 ? (
@@ -327,7 +374,17 @@ export default async function AdminHome() {
           </WorkPanel>
           )}
 
-          {may("/admin/inventory") && (
+                    {may("/admin/imports/needs-review") && (
+          <WorkPanel title="Listing candidates" count={reviewWaiting} href="/admin/imports/needs-review" hrefLabel="Open needs review">
+            {reviewWaiting === 0 ? (
+              <p>No listing candidates are waiting for verification.</p>
+            ) : (
+              <p>{reviewWaiting} candidate{reviewWaiting === 1 ? " is" : "s are"} still awaiting verification before becoming a public White Glove listing.</p>
+            )}
+          </WorkPanel>
+          )}
+
+{may("/admin/inventory") && (
           <WorkPanel title="Unfinished checklist" count={unfinished.length} href="/admin/inventory" hrefLabel="Open checklist">
             {unfinished.length === 0 ? (
               <p>Nothing on the checklist is outstanding.</p>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import VacationCard from "@/components/VacationCard";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
 import {
@@ -9,10 +10,10 @@ import {
   countryOptions,
   filterVacations,
   kosherOptions,
-  NO_VACATION_FILTERS,
   seasonOptions,
   shabbosOptions,
   themeOptions,
+  vacationBrowseHref,
   type FilterOption,
   type KosherLevel,
   type ShabbosLevel,
@@ -46,14 +47,25 @@ import {
  *    buttons read as thirty unrelated controls; grouped, each one is announced
  *    with what it is filtering.
  *
- * The filters are `useState` and nothing else — no URL, no server round trip.
- * Eighteen destinations filter instantly in the browser and a query string
- * would only add a navigation between every press.
+ * The holiday type and season also live in the address. Those are the two
+ * browse choices visitors make before arriving at the full filter set, so a
+ * copied link and the browser's Back button should keep them. Search and the
+ * more detailed refinements stay local, which keeps typing and narrowing
+ * immediate.
  */
 
 const chip = "inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-bold tracking-[0.04em] transition";
 const chipOff = `${chip} border-[var(--gold-light)] bg-white text-stone-700 hover:border-[var(--gold)] hover:text-[var(--navy)]`;
 const chipOn = `${chip} border-[var(--navy)] bg-[var(--navy)] text-white`;
+
+type LocalVacationFilters = Omit<VacationFilters, "theme" | "season">;
+
+const NO_LOCAL_VACATION_FILTERS: LocalVacationFilters = {
+  query: "",
+  country: "",
+  kosher: "",
+  shabbos: "",
+};
 
 function FilterGroup<V extends string>({
   legend,
@@ -106,11 +118,15 @@ export default function VacationIdeasHub({
   /** Set when the visitor arrived from a time of year on the front page. */
   initialSeason?: Season | "";
 }) {
-  const [filters, setFilters] = useState<VacationFilters>({
-    ...NO_VACATION_FILTERS,
-    theme: initialTheme,
-    season: initialSeason,
-  });
+  const router = useRouter();
+  const [localFilters, setLocalFilters] = useState<LocalVacationFilters>(NO_LOCAL_VACATION_FILTERS);
+  // The page supplies these two values again on every same-route navigation.
+  // Keeping them out of local state makes style-card links and Back/Forward
+  // immediately authoritative without discarding a search or other refinement.
+  const filters = useMemo<VacationFilters>(
+    () => ({ ...localFilters, theme: initialTheme, season: initialSeason }),
+    [initialSeason, initialTheme, localFilters],
+  );
 
   const themes = useMemo(() => themeOptions(cards, TRIP_THEMES), [cards]);
   const seasons = useMemo(() => seasonOptions(cards, SEASONS), [cards]);
@@ -120,8 +136,18 @@ export default function VacationIdeasHub({
   const results = useMemo(() => filterVacations(cards, filters), [cards, filters]);
 
   const active = activeFilterCount(filters);
-  const set = <K extends keyof VacationFilters>(key: K, value: VacationFilters[K]) =>
-    setFilters((current) => ({ ...current, [key]: value }));
+  const set = <K extends keyof LocalVacationFilters>(key: K, value: LocalVacationFilters[K]) =>
+    setLocalFilters((current) => ({ ...current, [key]: value }));
+  const setTheme = (theme: TripTheme | "") => {
+    router.push(vacationBrowseHref({ theme, season: filters.season }), { scroll: false });
+  };
+  const setSeason = (season: Season | "") => {
+    router.push(vacationBrowseHref({ theme: filters.theme, season }), { scroll: false });
+  };
+  const clearFilters = () => {
+    setLocalFilters({ ...NO_LOCAL_VACATION_FILTERS });
+    router.push(vacationBrowseHref({ theme: "", season: "" }), { scroll: false });
+  };
 
   return (
     <div>
@@ -158,8 +184,8 @@ export default function VacationIdeasHub({
             </p>
           </div>
 
-          <FilterGroup legend="Kind of trip" allLabel="Any kind" options={themes} value={filters.theme} onChange={(v) => set("theme", v as TripTheme | "")} />
-          <FilterGroup legend="Season" allLabel="Any season" options={seasons} value={filters.season} onChange={(v) => set("season", v as Season | "")} />
+          <FilterGroup legend="Kind of trip" allLabel="Any kind" options={themes} value={filters.theme} onChange={(v) => setTheme(v as TripTheme | "")} />
+          <FilterGroup legend="Season" allLabel="Any season" options={seasons} value={filters.season} onChange={(v) => setSeason(v as Season | "")} />
           <FilterGroup legend="Country" allLabel="Anywhere" options={countries} value={filters.country} onChange={(v) => set("country", v)} />
           <div className="grid gap-6">
             <FilterGroup
@@ -208,10 +234,11 @@ export default function VacationIdeasHub({
         {active > 0 && (
           <button
             type="button"
-            onClick={() => setFilters({ ...NO_VACATION_FILTERS })}
+            onClick={clearFilters}
             className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
           >
-            Clear {active === 1 ? "the filter" : `all ${active} filters`}
+            All destinations
+            <span className="sr-only"> — clear {active === 1 ? "the filter" : `all ${active} filters`}</span>
           </button>
         )}
       </div>
@@ -237,7 +264,7 @@ export default function VacationIdeasHub({
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               type="button"
-              onClick={() => setFilters({ ...NO_VACATION_FILTERS })}
+              onClick={clearFilters}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
               Show every destination

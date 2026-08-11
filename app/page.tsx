@@ -22,7 +22,6 @@ import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import { SUB_BRAND_HEBREW } from "@/components/SubBrand";
-import { LIVE_FINDER_SHORT } from "@/lib/kosher-live";
 import { readinessOf } from "@/lib/destination-readiness";
 import { guidedDestinations } from "@/data/destinations";
 import { allTzaddikim } from "@/lib/tzaddikim";
@@ -39,11 +38,10 @@ export const metadata = pageMetadata({
 /**
  * The front page.
  *
- * IT OPENS ON A SEARCH, and that is the whole decision this file records. The
- * page led with two buttons — start planning, explore ideas — and both were
- * invitations to read. Somebody arriving with a month in mind and a family to
- * house had nowhere to type it, and the question they came with went unanswered
- * until they had found their own way three pages in.
+ * IT OPENS WITH A QUESTION AND A SEARCH. The assistant is for somebody who
+ * already knows what they need answered; the search is for somebody arriving
+ * with a month in mind and a family to house. The page once led with two
+ * buttons — start planning, explore ideas — and both were invitations to read.
  *
  * WHERE THE SEARCH GOES IS THE SECOND DECISION, and it is the one worth
  * defending. It goes to /hotels, not to a partner. Sending it straight out
@@ -53,10 +51,11 @@ export const metadata = pageMetadata({
  * kosher hotel in Arosa is a fortnight in August rather than a hotel. That
  * answer comes first, and the partner hand-off sits underneath it.
  *
- * THE ORDER IS THE ORDER A VISITOR DECIDES IN. Where and when (the search),
- * what sort of trip, how this works, what kinds of holiday, which places, where
- * to sleep in them, when in the year, the kosher side, the heritage side, can
- * any of it be relied on, and then the search again.
+ * THE ORDER IS THE ORDER A VISITOR DECIDES IN. A question they need answered
+ * now (the assistant), where and when (the search), what sort of trip, how
+ * this works, what kinds of holiday, which places, where to sleep in them,
+ * when in the year, the kosher side, the heritage side, and whether any of it
+ * can be relied on.
  *
  * WHAT IS NOT HERE, AND IS NOT AN OVERSIGHT:
  *
@@ -92,19 +91,12 @@ const HOW_IT_WORKS: Array<[string, string]> = [
   ],
 ];
 
-// `note` is the small print a card cannot go out without. Only one of these
-// needs one today: the food finder is live worldwide because it reads
-// OpenStreetMap, and a promise of "restaurants, bakeries and groceries,
-// anywhere in the world" with nothing beside it is read as a promise that they
-// have been checked. /kosher-travel explains it properly; this is the short
-// version, standing next to the claim itself. lib/kosher-live.ts.
-const RESOURCES: Array<{ title: string; href: string; body: string; cta: string; note?: string }> = [
+const RESOURCES: Array<{ title: string; href: string; body: string; cta: string }> = [
   {
-    title: "Kosher food, anywhere",
+    title: "Kosher food finder",
     href: "/kosher",
-    body: "Restaurants, bakeries and groceries, live, anywhere in the world.",
-    note: LIVE_FINDER_SHORT,
-    cta: "Open the food finder",
+    body: "White Glove's curated restaurants, bakeries and groceries.",
+    cta: "Browse the kosher food finder",
   },
   {
     title: "Where to stay",
@@ -129,13 +121,11 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string;
 /**
  * The one sentence about verification that belongs on a front page.
  *
- * Qualified on purpose: not every displayed detail is verified against the
- * place. Where one has been checked, the page names source and date; anything
- * still needing confirmation is labelled. Live OSM food results stay a separate
- * lead. Full definitions live on /verification.
+ * Where a practical detail has been checked, the page names its source and
+ * date. Time-sensitive information still needs direct confirmation.
  */
 const VERIFICATION_LINE =
-  "Where a practical detail has been checked, the page names its source and when it was confirmed. Anything still needing confirmation is labelled plainly. Live food-finder results are a separate lead from OpenStreetMap — confirm the hechsher yourself.";
+  "Where a practical detail has been checked, the page names its source and when it was confirmed. Confirm time-sensitive details directly before you travel.";
 
 export default async function Home() {
   const requestHeaders = await headers();
@@ -210,23 +200,36 @@ export default async function Home() {
       <SearchMemory />
       <Navbar />
 
-      {/* ---- 1. Vacation-first hero -------------------------------------- */}
-      <section className="relative border-b border-[var(--gold-light)] px-5 py-16 sm:px-8 sm:py-24">
+      {/* ---- 1. Vacation-first answer and hero ---------------------------
+          The assistant used to be the twelfth section, after a complete
+          discovery journey. It belongs beside the first proposition: visitors
+          with a specific kosher-travel question can act before they browse,
+          while the title stays first in the document so the heading order
+          remains meaningful. The compact section padding is normal flow below
+          the shared header, not a positional offset. */}
+      <section className="relative border-b border-[var(--gold-light)] px-5 py-6 sm:px-8 sm:py-8">
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
-          <div className="max-w-4xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-ink)]">{words.heroEyebrow}</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-[1.04] text-[var(--navy)]">
-              {words.heroTitle}
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">{words.heroSubtitle}</p>
+          <div className="grid items-start gap-5 md:grid-cols-[minmax(0,7fr)_minmax(0,9fr)] md:gap-6 lg:gap-8">
+            <div className="max-w-4xl">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-ink)]">{words.heroEyebrow}</p>
+              <h1 className="mt-3 font-[family-name:var(--font-display)] text-[2rem] leading-[1.08] text-[var(--navy)] sm:text-[clamp(2.5rem,7vw,4.5rem)] sm:leading-[1.04]">
+                {words.heroTitle}
+              </h1>
+            </div>
+
+            <div className="max-w-5xl">
+              <TravelAssistantBox />
+            </div>
           </div>
+
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">{words.heroSubtitle}</p>
 
           {/* The first thing on the page you can act on. Nothing in it is
               required — the visitor who has not chosen the month is exactly
               the one this site is for, and a form that stops them at the first
               field loses them. */}
-          <div className="mt-9 max-w-5xl">
+          <div className="mt-8 max-w-5xl">
             <StaySearchForm id="hero" />
           </div>
 
@@ -459,11 +462,6 @@ export default async function Home() {
                 {resource.title}
               </p>
               <p className="mt-3 text-sm leading-7 text-stone-600">{resource.body}</p>
-              {resource.note && (
-                <p className="mt-3 border-l-2 border-[var(--gold-light)] pl-3 text-xs leading-5 text-stone-500">
-                  {resource.note}
-                </p>
-              )}
               <span className="flex-1" />
               {/* Named after where it goes. Four cards all saying "Learn more"
                   is four identical links in a screen reader's list. */}
@@ -561,18 +559,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 12. Ask a question, and the final call to action ------------- */}
-      <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
-        <TravelAssistantBox />
-      </section>
-
       {inlinePromotions.length ? (
         <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
           <PromotionBanner promotion={inlinePromotions[0] ?? null} placement="inline-content" compact />
         </section>
       ) : null}
 
-      {/* ---- 13. Which door do I want? ------------------------------------
+      {/* ---- 12. Which door do I want? ------------------------------------
           THIS WAS THE SEARCH BOX A SECOND TIME. The page carried the same
           StaySearchForm in the hero and again at the bottom, and the argument
           for the second one — that sending a reader back up to the hero is a

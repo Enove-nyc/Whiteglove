@@ -2,11 +2,11 @@
 
 ## The problem, stated properly
 
-Eighteen destinations, fifteen of them European cities. "Beach and resort" has
-one. A visitor who came looking for a week in Florida, a Pesach programme, or
-somewhere to take the children in the school holidays finds nothing, and the
-category counts on the front page were advertising it — which is why they were
-taken off (see `app/page.tsx`).
+The original list had eighteen destinations, fifteen of them European cities,
+and just one beach option. The first South Florida batch adds Miami Beach and
+Hollywood/Hallandale, bringing the beach category to three real destinations.
+The remaining gap is depth: a traveler looking for Florida, a Pesach programme,
+or a school-holiday trip still needs more than a card with a name on it.
 
 The obvious fix is to write twenty more destination records. It is the wrong
 fix, and understanding why is the whole of this plan.
@@ -57,7 +57,7 @@ queued. It exits non-zero if a published destination is below the bar.
 
 ## The queue
 
-`data/vacation-pipeline.ts`. Fifteen candidates across the ten groups that were
+`data/vacation-pipeline.ts`. Fourteen candidates across the ten groups that were
 asked for. Each one carries the towns it would join against — agreed **before**
 the research starts, because the commonest way a destination page comes out
 empty is a city spelled one way in `data/attractions.ts` and another in the
@@ -66,16 +66,27 @@ the file it lands in.
 
 Order, and why:
 
-1. **South Florida** (Miami Beach/Bal Harbour, then Hollywood/Hallandale) — the most-travelled kosher vacation route the site says nothing about, and year-round rather than seasonal, so the record does not go stale in April.
-2. **Orlando** — the family trip that is planned around the food problem. Answering the food problem is the whole value.
-3. **New York getaways** (the Catskills, the Hudson Valley) — a drive rather than a flight. Different trip, most often taken.
-4. **Los Angeles** — the west-coast counterpart, with a walkable quarter and a coast.
-5. **Israel beyond Jerusalem** (Netanya, Eilat, the Kinneret and the Galil, the Dead Sea) — the site has one Israeli destination and it is a pilgrimage rather than a holiday.
-6. **Caribbean and Mexico** — where a kosher beach holiday actually happens in winter, and almost always as a seasonal programme.
-7. **Mediterranean beaches** (the Greek islands, the Costa del Sol) — the site's Mediterranean coverage is cities.
-8. **Winter and ski** (St. Moritz and the Engadin) — the four alpine records here are written for summer walking.
-9. **Seasonal kosher programmes** — a category rather than a place; see below.
-10. **Domestic weekends** (the Berkshires and southern Vermont) — the shortest trip the site can be useful about.
+The first publishable batch is **South Florida**: Miami Beach, then Hollywood
+and Hallandale. It is deliberately only two destinations, with
+official city, attraction, community and kashrus-certifier sources recorded
+against the supporting listings.
+
+The second publishable batch is **Orlando**: one park-region destination with
+official attraction sources, a published community anchor and local food
+directory listings. The practical question is not whether there is enough to
+do; it is how to make the park districts, food and Shabbos base work as one
+trip.
+
+The remaining order is:
+
+1. **New York getaways** (the Catskills, the Hudson Valley) — a drive rather than a flight. Different trip, most often taken.
+2. **Los Angeles** — the west-coast counterpart, with a walkable quarter and a coast.
+3. **Israel beyond Jerusalem** (Netanya, Eilat, the Kinneret and the Galil, the Dead Sea) — the site has one Israeli destination and it is a pilgrimage rather than a holiday.
+4. **Caribbean and Mexico** — where a kosher beach holiday actually happens in winter, and almost always as a seasonal programme.
+5. **Mediterranean beaches** (the Greek islands, the Costa del Sol) — the site's Mediterranean coverage is cities.
+6. **Winter and ski** (St. Moritz and the Engadin) — the four alpine records here are written for summer walking.
+7. **Seasonal kosher programmes** — a category rather than a place; see below.
+8. **Domestic weekends** (the Berkshires and southern Vermont) — the shortest trip the site can be useful about.
 
 ## Two categories the site does not have yet
 

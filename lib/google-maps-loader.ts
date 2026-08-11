@@ -14,14 +14,14 @@
 // Reusing the server key here would hand out Routes API access to anyone who
 // opened the page source.
 //
-// With no browser key set, this reports so and the map falls back to
-// OpenStreetMap tiles, which need no key at all.
+// With no browser key set, the caller presents its accessible map-unavailable
+// state. It never substitutes another map or data source.
 //
 // WHY importLibrary, NOT the classic callback alone. The bootstrap script can
 // finish (and even invoke callback=) before google.maps.Map is constructible.
 // On a heavy public page that race is common: the admin probe constructs a map
-// (key works) while /map has already fallen through to Leaflet with the script
-// tag sitting in <head> and Map still undefined. Google's supported dynamic
+// (key works) while /map has already treated the script as unavailable with
+// the tag sitting in <head> and Map still undefined. Google's supported dynamic
 // path is loading=async plus importLibrary("maps"), which resolves only when
 // Map is actually usable.
 
@@ -115,7 +115,7 @@ type WindowWithMapsHooks = Window & {
   __wgMapsAuthFailed?: boolean;
 };
 
-/** Register once so a late auth failure can flip the public map to OSM. */
+/** Register once so a late auth failure can show the unavailable map state. */
 export function onGoogleMapsAuthFailure(handler: () => void): () => void {
   if (typeof window === "undefined") return () => undefined;
   const w = window as WindowWithMapsHooks;
@@ -210,8 +210,8 @@ async function waitForMapApi(deadline: number): Promise<boolean> {
  *
  * Resolves false rather than throwing when there is no key, when the script
  * cannot be reached, when Google never becomes ready in time, or when Google
- * has already refused the key — the caller then draws the OpenStreetMap map
- * instead, and the visitor still gets a map.
+ * has already refused the key. Callers can then show an unavailable state
+ * without changing renderers or data sources.
  */
 export function loadGoogleMaps(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);

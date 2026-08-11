@@ -25,6 +25,7 @@ import {
   shabbosOptions,
   shabbosPracticality,
   themeOptions,
+  vacationBrowseHref,
   type VacationSources,
 } from "@/lib/vacation-ideas";
 
@@ -268,6 +269,21 @@ describe("filtering", () => {
     for (const option of themeOptions(CARDS, TRIP_THEMES)) {
       assert.equal(filterVacations(CARDS, { ...NO_VACATION_FILTERS, theme: option.value }).length, option.count);
     }
+  });
+
+  it("gives every advertised style a canonical URL for exactly its matching destinations", () => {
+    const options = new Map(themeOptions(CARDS, TRIP_THEMES).map((option) => [option.value, option]));
+    for (const theme of TRIP_THEMES) {
+      const option = options.get(theme.value);
+      assert.ok(option, `${theme.value} is shown without a destination count`);
+      assert.equal(vacationBrowseHref({ theme: theme.value, season: "" }), `/destinations?kind=${theme.value}`);
+      assert.equal(filterVacations(CARDS, { ...NO_VACATION_FILTERS, theme: theme.value }).length, option.count);
+    }
+  });
+
+  it("keeps a selected season in a shareable style URL", () => {
+    assert.equal(vacationBrowseHref({ theme: "mountains", season: "winter" }), "/destinations?kind=mountains&season=winter");
+    assert.equal(vacationBrowseHref({ theme: "", season: "" }), "/destinations");
   });
 });
 

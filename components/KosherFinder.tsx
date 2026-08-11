@@ -1,53 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
 import KosherNearby from "@/components/KosherNearby";
-import { LIVE_FINDER_LONG } from "@/lib/kosher-live";
 
-const RADII = [3, 8, 15, 30];
-
-// Full kosher finder: pick a city (real coordinates from OpenStreetMap via
-// Photon), choose a radius, and see live kosher places from OpenStreetMap.
+// Full kosher food finder: search White Glove's curated listings by a place,
+// type of food, or listing name. It never expands the directory from an
+// external map or business database.
 export default function KosherFinder({ showAddToTrip = true }: { showAddToTrip?: boolean }) {
-  const [coords, setCoords] = useState<string>("");
-  const [label, setLabel] = useState<string>("");
-  const [radius, setRadius] = useState(8);
+  const [query, setQuery] = useState("");
 
   return (
     <div>
-      {/* WHERE THE RESULTS COME FROM, ABOVE THE BOX RATHER THAN UNDER THE
-          LIST. Somebody who has already found the bakery they wanted has
-          stopped reading; the sentence has to be there before they search.
-          One wording, from lib/kosher-live.ts, so the same caveat travels with
-          every place this tool is offered. */}
       <p className="mb-4 border-l-4 border-[var(--gold)] bg-[var(--surface)] px-4 py-3 text-sm leading-6 text-stone-600">
-        {LIVE_FINDER_LONG}
+        Search White Glove&apos;s curated kosher restaurants, bakeries and groceries by city, country or name. Confirm
+        current supervision directly before you go.
       </p>
       <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <label className="block">
-          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">City or place</span>
-          <AddressAutocomplete
-            mode="city"
-            value={label}
-            onChange={(city, c) => { setLabel(city); if (c) setCoords(c); }}
-            placeholder="Type a city — e.g. London, Antwerp, Jerusalem, Brooklyn…"
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Search White Glove listings</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="London, bakery, Miami Beach, restaurant…"
             className="mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
           />
         </label>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Within</span>
-          {RADII.map((r) => (
-            <button key={r} type="button" onClick={() => setRadius(r)} className={`border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] transition ${radius === r ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}>{r} km</button>
-          ))}
-        </div>
       </div>
 
       <div className="mt-5">
-        {coords ? (
-          <KosherNearby key={`${coords}-${radius}`} coordinates={coords} radiusKm={radius} autoLoad limit={40} showAddToTrip={showAddToTrip} heading={label ? `Kosher near ${label}` : "Kosher nearby"} />
+        {query.trim() ? (
+          <KosherNearby
+            query={query}
+            limit={40}
+            showAddToTrip={showAddToTrip}
+            heading={`Kosher food matching “${query.trim()}”`}
+          />
         ) : (
-          <p className="border border-dashed border-[var(--gold-light)] p-8 text-center text-sm text-stone-500">Pick a city above to see kosher restaurants, bakeries, and groceries listed in OpenStreetMap nearby.</p>
+          <p className="border border-dashed border-[var(--gold-light)] p-8 text-center text-sm text-stone-500">
+            Search the curated kosher food finder by city, country or listing name.
+          </p>
         )}
       </div>
     </div>

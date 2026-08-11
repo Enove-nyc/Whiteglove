@@ -173,9 +173,8 @@ export function buildSeedRows(): SeedRows {
         email: p.email ?? null,
         website: p.website ?? null,
         hours: p.hours ?? null,
-        notes: [p.notes, p.source ? `Source: ${p.source}` : null]
-          .filter(Boolean)
-          .join("\n") || null,
+        notes: p.notes ?? null,
+        sourceUrl: p.source ?? null,
         status: "PUBLISHED",
         destinationId,
       });

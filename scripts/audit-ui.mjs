@@ -203,9 +203,8 @@ for (const [path, label] of PAGES) {
             if (r.width === 0 || r.height === 0) continue;
             if (getComputedStyle(el).visibility === "hidden") continue;
             // An inline link is a link inside a run of text, wherever that run
-            // lives. Requiring a p/li/span ancestor as well missed the map's
-            // Leaflet and OpenStreetMap attribution — inline links in a line
-            // of text inside a div — and reported them as undersized targets.
+            // lives. Requiring a p/li/span ancestor as well missed inline map
+            // control links inside a div and reported them as undersized targets.
             // Enlarging one breaks the line it sits in, which is exactly why
             // the target-size rule exempts them. Same test as audit-admin.mjs.
             const inline = getComputedStyle(el).display === "inline";

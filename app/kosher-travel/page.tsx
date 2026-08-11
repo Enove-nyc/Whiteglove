@@ -23,7 +23,7 @@ export const metadata = pageMetadata({
  * The practical side of travelling kosher, in one place.
  *
  * WHY A HUB RATHER THAN SIX LINKS IN A MENU. The site had the answers —
- * a live food finder, sixty-nine places to stay measured from real quarters, a
+ * a curated kosher food finder, sixty-nine places to stay measured from real quarters, a
  * provider directory, entry documents, hechsherim — spread across six pages
  * that a visitor met one at a time and never as a whole. The one thing a
  * kosher traveler wants to know about a trip is whether the kosher side of it
@@ -45,9 +45,9 @@ const questions: Array<{
     title: "Kosher food, wherever you go",
     href: "/kosher",
     cta: "Open the kosher food finder",
-    body: "A live lookup of kosher restaurants, bakeries and groceries anywhere in the world, and the places we hold our own record for.",
+    body: "White Glove's curated kosher restaurants, bakeries and groceries, searchable by place or listing name.",
     detail:
-      "The live results come from OpenStreetMap, which anybody can add to — so they are a lead, not a hechsher. Where we hold a record of our own it says who certifies the place and how far that has been checked.",
+      "Each listing is part of White Glove&apos;s curated collection. Confirm current supervision directly before you go.",
   },
   {
     title: "Which part of town to stay in",
@@ -80,6 +80,22 @@ const questions: Array<{
     body: "Entry documents, passport validity, and paying for the trip — with each country's own official page rather than rules restated second-hand.",
     detail:
       "Entry rules change constantly and depend on the passport you hold, so this site does not state them. It gives you the official source and the questions to ask it.",
+  },
+  {
+    title: "Mikvaos",
+    href: "/mikvaos",
+    cta: "Browse mikvah listings",
+    body: "Source-backed mikvah listings White Glove holds for travel — address, contact and the source behind each one.",
+    detail:
+      "Hours and access change. Confirm with the community for your dates before you rely on a listing.",
+  },
+  {
+    title: "Zmanim for the place you are going",
+    href: "/zmanim",
+    cta: "Open zmanim",
+    body: "Halachic times calculated for a destination or coordinates: alos, sunrise, sof zman Shema, chatzos, mincha, sunset and tzeit.",
+    detail:
+      "Informational travel aid only — confirm with local kehillah custom. White Glove does not pasken.",
   },
   {
     title: "The hechsher on a listing",
@@ -122,7 +138,7 @@ export default function KosherTravelPage() {
             {[
               [`${quarters}`, "Jewish quarters mapped", "Each with the shul or street it is measured from."],
               [`${stays}`, "places to stay", `${seasonal} of them seasonal programmes.`],
-              [`${eateries}`, "kosher food listings", "Plus a live lookup anywhere in the world."],
+              [`${eateries}`, "curated kosher food listings", "Search the White Glove collection by place or name."],
               [`${CANDLE_LIGHTING_MINUTES} min`, "before sunset", "What the planner allows for candle-lighting."],
             ].map(([figure, label, note]) => (
               <div key={label} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
@@ -142,7 +158,7 @@ export default function KosherTravelPage() {
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
           eyebrow="The practical side"
-          title="Six things to have settled before you book"
+          title="Things to have settled before you book"
         />
         <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {questions.map((question) => (
@@ -174,7 +190,7 @@ export default function KosherTravelPage() {
             />
             <dl className="mt-8 space-y-4">
               {[
-                ["Hechsher", "The certification that food is kosher, and the body that gives it. A listing here names the body where we know it, and says whether anybody has confirmed it."],
+                ["Hechsher", "The certification that food is kosher, and the body that gives it. A listing names the body when White Glove has a recorded status."],
                 ["Eruv", "A boundary around a neighbourhood that allows carrying on Shabbos within it. Where a quarter has one, it changes what a Shabbos there looks like with children."],
                 ["Minyan", "A quorum for communal prayer. “Walking distance to a minyan” is the single most common request on a trip like this."],
                 ["Mikvah", "A ritual bath. Availability and hours vary a great deal outside large communities, which is why we say to confirm before travelling."],
@@ -192,13 +208,12 @@ export default function KosherTravelPage() {
           <div>
             <SectionHeading
               eyebrow="How far it has been checked"
-              title="Listings on this guide carry a label."
-              description="A restaurant changes hands and a hechsher can lapse between the day it was written down and the day you eat there. So nothing here is stated flatly — and live OpenStreetMap results are a separate lead, not the same labelled standard."
+              title="Use current details with care."
+              description="A restaurant changes hands and a hechsher can lapse between the day it was written down and the day you eat there. Confirm current details directly before you go."
             />
             <div className="mt-8 flex flex-wrap gap-3">
               <VerificationBadge descriptor={TRUST_LEVELS.verified} />
               <VerificationBadge descriptor={TRUST_LEVELS.reported} />
-              <VerificationBadge descriptor={TRUST_LEVELS["being-checked"]} />
               <VerificationBadge descriptor={TRUST_LEVELS.reconfirm} />
             </div>
             <p className="mt-6 leading-7 text-stone-600">

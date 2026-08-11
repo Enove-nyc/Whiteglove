@@ -12,7 +12,7 @@ export default function AccessForm({ scope, next }: { scope: "admin" | "site"; n
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true); setMessage("");
-    const response = await fetch("/api/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scope, password }) });
+    const response = await fetch("/api/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scope, password: password.trim() }) });
     if (!response.ok) { const data = await response.json().catch(() => null); setMessage(data?.error || "Please try again."); setSaving(false); return; }
     // A short code has to say so. Letting it lapse silently halfway through
     // what somebody came to read is the one thing worse than not letting them in.

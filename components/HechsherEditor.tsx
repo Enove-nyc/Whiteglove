@@ -1,20 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import HechsherBadge from "@/components/HechsherBadge";
 import { clearHechsherAction, deleteAgencyAction, saveAgencyAction, saveHechsherAction, type ActionResult } from "@/app/admin/hechsherim/actions";
 import { type Hechsher, type HechsherStatus } from "@/data/hechsherim";
-import { coordinatesToPoint } from "@/data/route-utils";
-import { fetchKosherPlaces, type KosherPlace } from "@/lib/kosher-osm";
+import { curatedKosherPlaces, searchCuratedKosherPlaces } from "@/lib/curated-kosher";
 import { hechsherOf } from "@/lib/use-hechsherim";
 
-// Confirming a hechsher, one place at a time.
-//
-// Pick a town, get the kosher places OpenStreetMap knows about, and say what
-// each one holds. Nothing is filled in on your behalf: where OSM records a
-// certification it is shown as reported and attributed, and everything else
-// sits at unverified until it is confirmed here against something real.
+// Confirm a hechsher for White Glove's curated kosher listings, one place at a
+// time. This editor never searches or creates listings from an external map.
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -32,15 +26,14 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
   ownAdded: string[];
   storeReady: boolean;
 }) {
-  const [town, setTown] = useState("");
-  // Finding one shop by name, without having to remember which town it is in.
+  // Find a White Glove listing by name, city, country, or address.
   const [find, setFind] = useState("");
-  const [coords, setCoords] = useState("");
-  const [places, setPlaces] = useState<KosherPlace[] | null>(null);
   const [statuses, setStatuses] = useState<Record<string, HechsherStatus>>({});
-  const [searching, setSearching] = useState(false);
-  const [note, setNote] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
+  const places = useMemo(
+    () => (find.trim() ? searchCuratedKosherPlaces(find) : curatedKosherPlaces()),
+    [find],
+  );
 
   const [saveState, saveAction, savePending] = useActionState<ActionResult | null, FormData>(saveHechsherAction, null);
   const [clearState, clearAction] = useActionState<ActionResult | null, FormData>(clearHechsherAction, null);
@@ -51,8 +44,10 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
   // stored. The form stays open on purpose — the badge changing underneath it
   // is the confirmation, and closing it would hide that.
   useEffect(() => {
-    if (!saveState?.ok && !clearState?.ok) return;
-    if (!places?.length) return;
+    if (!places.length) {
+      setStatuses({});
+      return;
+    }
     let live = true;
     void (async () => {
       const ids = places.map((p) => p.id).join(",");
@@ -64,31 +59,7 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
     };
   }, [saveState, clearState, places]);
 
-  async function search(coordinates: string, label: string) {
-    const point = coordinatesToPoint(coordinates);
-    if (!point) {
-      setNote("Pick a town from the list so we have its location.");
-      return;
-    }
-    setSearching(true);
-    setNote("");
-    try {
-      const found = await fetchKosherPlaces(point, 15);
-      setPlaces(found);
-      if (!found.length) setNote(`OpenStreetMap lists no kosher places within 15 km of ${label || "there"}.`);
-      if (found.length) {
-        const res = await fetch(`/api/kosher/hechsherim?ids=${encodeURIComponent(found.map((p) => p.id).join(","))}`);
-        if (res.ok) setStatuses((await res.json()).hechsherim ?? {});
-      }
-    } catch {
-      setNote("Could not reach OpenStreetMap just now. Try again.");
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  // One filter, used by both lists: the town results while confirming, and
-  // everything already recorded. Matching the address too means "Kraków" finds
+  // One filter, used by both lists. Matching the address means "Kraków" finds
   // a shop whose name gives nothing away.
   const needle = find.trim().toLowerCase();
   const matches = (...fields: Array<string | undefined>) =>
@@ -99,57 +70,47 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
     <div className="space-y-8">
       {!storeReady && (
         <p className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          Confirming a hechsher needs the private store connected (UPSTASH_REDIS_REST_URL and _TOKEN). Until then every
-          place reads unverified — which is the honest reading anyway, just not one you can change.
+          Confirming a hechsher needs the private store connected (UPSTASH_REDIS_REST_URL and _TOKEN). You can still
+          review the curated listings, but cannot save a supervision status yet.
         </p>
       )}
 
       <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Find places to confirm</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          Pick a town and mark what each place holds. Nothing is guessed for you. Where OpenStreetMap records a
-          certification it is shown as <strong>reported</strong> and credited to OSM; it still reads unverified to
-          travelers until you confirm it here.
+          Search White Glove&apos;s curated kosher listings and record the supervision you have checked. Nothing is
+          guessed or imported from an external map.
         </p>
 
         <div className="mt-4 max-w-sm">
           <label className="block">
-            <span className={captionClass}>Town</span>
-            <AddressAutocomplete
-              mode="city"
-              value={town}
-              onChange={(city, c) => {
-                setTown(city);
-                if (c) {
-                  setCoords(c);
-                  void search(c, city);
-                }
-              }}
-              placeholder="Kraków, Lakewood, Yerushalayim…"
+            <span className={captionClass}>Search listings</span>
+            <input
+              value={find}
+              onChange={(event) => setFind(event.target.value)}
+              placeholder="Shop, city, country or address…"
               className={inputClass}
             />
           </label>
-          {coords && (
-            <button type="button" disabled={searching} onClick={() => void search(coords, town)} className={`${smallButton} mt-3`}>
-              {searching ? "Searching…" : "Search again"}
-            </button>
-          )}
         </div>
-        {note && <p className="mt-3 text-sm text-stone-600">{note}</p>}
 
-        {places && places.length > 0 && (
+        {places.length === 0 ? (
+          <p className="mt-5 text-sm text-stone-600">No curated kosher listings match that search.</p>
+        ) : (
           <ul className="mt-5 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
-            {places.filter((p) => matches(p.name, p.address)).map((p) => {
+            {places.map((p) => {
               const status = hechsherOf(statuses, p, agencies);
               return (
                 <li key={p.id} className="py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-[var(--navy)]">{p.name}</p>
-                      <p className="text-sm text-stone-500">{[p.category, p.address].filter(Boolean).join(" · ")}</p>
-                      <div className="mt-2">
-                        <HechsherBadge status={status} size="sm" agencies={agencies} />
-                      </div>
+                      <p className="text-sm text-stone-500">{[p.category, p.city, p.country, p.address].filter(Boolean).join(" · ")}</p>
+                      {status.state !== "unverified" && (
+                        <div className="mt-2">
+                          <HechsherBadge status={status} size="sm" agencies={agencies} />
+                        </div>
+                      )}
                     </div>
                     <button type="button" onClick={() => setEditing(editing === p.id ? null : p.id)} className={smallButton}>
                       {editing === p.id ? "Close" : "Set the hechsher"}
@@ -164,11 +125,10 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
                       <div className="grid gap-4 sm:grid-cols-2">
                         <label className="block">
                           <span className={captionClass}>What did you find?</span>
-                          <select name="state" defaultValue={status.state === "reported" ? "certified" : status.state} className={inputClass}>
+                          <select name="state" defaultValue={status.state === "unverified" ? "certified" : status.state} className={inputClass}>
                             <option value="certified">I confirmed it has a hechsher</option>
                             <option value="none">I confirmed it has none</option>
                             <option value="reported">Someone says so, I have not checked</option>
-                            <option value="unverified">I do not know yet</option>
                           </select>
                         </label>
                         <label className="block">
@@ -244,7 +204,7 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
         )}
         {confirmed.length === 0 ? (
           <p className="mt-3 text-sm text-stone-600">
-            Nothing recorded yet. Every kosher place on the site reads <strong>Unverified</strong> until you mark it.
+            Nothing recorded yet. Add a supervision status when you have a source to record.
           </p>
         ) : (
           <ul className="mt-4 divide-y divide-[var(--gold-light)]">
@@ -264,7 +224,7 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
                     type="submit"
                     className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700"
                   >
-                    Back to unverified
+                    Clear saved status
                   </button>
                 </form>
               </li>

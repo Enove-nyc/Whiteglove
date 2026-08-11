@@ -37,9 +37,9 @@ test is green, and only then delete the old one.
 
 ## 2. A second Google key, for the map
 
-Until this is set the map still works — it draws with OpenStreetMap, which
-needs no key. What you gain is Google's map: the one people already navigate
-by, so a kever pinned on it sits where they expect it to.
+Until this is set, visitors see the map-unavailable state and can continue
+browsing the site's curated listings. The browser key enables the Google map
+used to display those White Glove markers.
 
 **It must not be the key from step 1.** Google's map runs in the visitor's
 browser, so its key goes out in the page — that is normal and unavoidable, and
@@ -90,9 +90,9 @@ have your driving-times quota too.
    variable is written into the pages when the site is built, so before the
    redeploy the key does not exist as far as the browser is concerned.
 8. Admin → **Settings → Connections** → **The map**. It loads Google's map
-   script exactly as the site does and tells you what happened: drawing with
-   Google, drawing with OpenStreetMap, or a key that Google refused — with the
-   three things that cause a refusal.
+   script exactly as the site does and tells you what happened: Google is
+   working, the map is unavailable, or a key was refused — with the three
+   things that cause a refusal.
 
 ### Billing, and what it costs
 

@@ -7,9 +7,9 @@ import type { MapKind } from "@/lib/map-markers";
  * The markers used to be a simplified compass rose drawn in SVG. That kept the
  * colours clear at twenty-six pixels, but it was not the site's mark — the mark
  * is the glove with the compass in its palm. The artwork is baked into small
- * PNGs under /map-pins (see scripts/build-map-pins.mjs) so Google and Leaflet
- * show the same picture the legend shows, without resampling a full-size logo
- * into mush.
+ * PNGs under /map-pins (see scripts/build-map-pins.mjs) so Google Maps shows
+ * the same picture as the legend without resampling a full-size logo into
+ * mush.
  *
  * Kind is told by the colour of the mark itself (and by the legend and popup),
  * not by a coloured ring around the pin.
@@ -42,8 +42,8 @@ export function glovePinSrc(kind: MapKind): string {
  * is what that view is for, and they come up to full size as soon as somebody
  * zooms in far enough to want to press one.
  *
- * Leaflet and Google both count zoom the same way: about 4 is a continent, 7 a
- * country, 11 a city.
+ * Google Maps uses roughly 4 for a continent, 7 for a country, and 11 for a
+ * city.
  */
 export function pinScale(zoom: number): number {
   if (zoom <= 5) return 0.5;

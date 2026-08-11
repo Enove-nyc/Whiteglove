@@ -3,62 +3,51 @@ import test, { describe } from "node:test";
 import { describeHechsher, hechsherLabel, matchHechsher, UNVERIFIED } from "../data/hechsherim";
 import { hechsherOf } from "../lib/use-hechsherim";
 
-// A hechsher is a claim about kashrus. The rule this file exists to hold is
-// that the site never makes that claim on its own: what a map tag says and
-// what somebody actually checked are different things, and a traveler must be
-// able to tell them apart at a glance.
-
 describe("what the badge says", () => {
-  test("nothing known reads unverified", () => {
-    assert.equal(hechsherLabel(UNVERIFIED), "Unverified");
+  test("a listing with no recorded status has no public hechsher label", () => {
+    assert.equal(hechsherLabel(UNVERIFIED), "");
   });
 
-  test("a reported hechsher still reads unverified", () => {
-    const label = hechsherLabel({ state: "reported", hechsherId: "ou", source: "OpenStreetMap" });
-    assert.match(label, /unverified/i);
-    // The name is still shown — the traveler is better off knowing what to
-    // look for — but never on its own, which would read as confirmation.
-    assert.match(label, /Orthodox Union/);
+  test("a source-backed hechsher is named without claiming certification", () => {
+    const label = hechsherLabel({ state: "reported", hechsherId: "ou", source: "Community directory" });
+    assert.equal(label, "Hechsher: Orthodox Union");
   });
 
-  test("a confirmed hechsher reads as itself, with no caveat", () => {
+  test("a confirmed hechsher reads as itself", () => {
     const label = hechsherLabel({ state: "certified", hechsherId: "badatz-eda", source: "Saw the teudah" });
-    assert.equal(label, "Badatz Eda HaChareidis");
+    assert.equal(label, "Hechsher: Badatz Eda HaChareidis");
   });
 
   test("confirmed-as-none is said plainly rather than left blank", () => {
     assert.equal(hechsherLabel({ state: "none", source: "Asked the manager" }), "No hechsher");
   });
 
-  test("the spoken description tells a reported one from a confirmed one", () => {
-    assert.match(describeHechsher({ state: "reported", hechsherId: "ou", source: "OpenStreetMap" }), /nobody here has confirmed/i);
+  test("the spoken description distinguishes source-backed from confirmed", () => {
+    assert.match(describeHechsher({ state: "reported", hechsherId: "ou", source: "Community directory" }), /confirm directly/i);
     assert.match(describeHechsher({ state: "certified", hechsherId: "ou" }), /^Confirmed/);
-    assert.match(describeHechsher(UNVERIFIED), /check before you eat/i);
+    assert.match(describeHechsher(UNVERIFIED), /confirm supervision directly/i);
   });
 });
 
-describe("reading one place's hechsher", () => {
-  const place = { id: "node/1", reportedHechsher: "OU" };
+describe("reading one curated listing's hechsher", () => {
+  const place = { id: "eatery:example" };
 
-  test("a place with nothing on it is unverified", () => {
-    assert.equal(hechsherOf({}, { id: "node/9" }).state, "unverified");
+  test("a listing with nothing recorded returns the neutral default", () => {
+    assert.equal(hechsherOf({}, place).state, "unverified");
   });
 
-  test("a map tag comes back as reported, credited to OpenStreetMap", () => {
-    const status = hechsherOf({}, place);
-    assert.equal(status.state, "reported");
-    assert.equal(status.source, "OpenStreetMap");
-    assert.equal(status.hechsherId, "ou");
+  test("does not derive a status from map tags or external data", () => {
+    assert.equal(hechsherOf({}, { ...place, reportedHechsher: "OU" }).state, "unverified");
   });
 
-  test("what the owner confirmed always beats the map tag", () => {
-    const confirmed = { "node/1": { state: "none" as const, source: "Spoke to the owner" } };
+  test("the owner's saved status is returned", () => {
+    const confirmed = { [place.id]: { state: "none" as const, source: "Spoke to the owner" } };
     assert.equal(hechsherOf(confirmed, place).state, "none");
   });
 });
 
 describe("naming an agency from free text", () => {
-  test("finds the agency a map tag names", () => {
+  test("finds a known agency from editorial source text", () => {
     assert.equal(matchHechsher("Badatz Eda HaChareidis")?.id, "badatz-eda");
     assert.equal(matchHechsher("star-k")?.id, "star-k");
     assert.equal(matchHechsher("Certified by the London Beth Din")?.id, "klbd");
@@ -71,8 +60,6 @@ describe("naming an agency from free text", () => {
   });
 
   test("does not match a two-letter mark inside an unrelated word", () => {
-    // "ou" appears in half the words in English; matching it loosely would
-    // put an OU on a place nobody said was OU.
     assert.equal(matchHechsher("famous soup house"), undefined);
   });
 });

@@ -180,6 +180,9 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                   Their site →
                 </a>
               )}
+              <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]">
+                Source ↗
+              </a>
               <button
                 type="button"
                 onClick={() => setOpenNearby(openNearby === s.slug ? null : s.slug)}

@@ -13,10 +13,8 @@ import type { Attraction } from "@/data/attractions";
 
 // What to do on the days that are not kevarim.
 //
-// The one thing this does that a guidebook does not: every attraction with
-// coordinates can show what kosher food is near IT, live, at the moment you
-// ask. Nothing about distance is stored, so nothing about it goes stale — the
-// list is fetched from OpenStreetMap against this attraction's own position.
+// Every attraction with coordinates can show White Glove's curated kosher
+// listings nearby. Nothing is inferred from a map-provider business index.
 
 /** How many cards before the page stops and asks. */
 const PAGE = 24;
@@ -157,9 +155,17 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   rel="noreferrer"
                   className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
                 >
-                  Official site →
+                  Website ↗
                 </a>
               )}
+              <a
+                href={a.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
+              >
+                Source ↗
+              </a>
               {a.coordinates && (
                 <button
                   type="button"
@@ -218,9 +224,9 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
         ))}
       </div>
 
-      {/* PROGRESSIVE, NOT PAGINATED. Every card here can fetch live kosher
-          places against its own coordinates, so rendering all of them at once
-          is a page that arrives slowly and holds a lot of nothing. Numbered
+      {/* PROGRESSIVE, NOT PAGINATED. Nearby curated listings are shown only
+          when a traveler opens a card, so the directory stays quick to scan.
+          Numbered
           pages would break the anchor links: /stops and the planner link
           straight to #slug on this page, and an entry on page four of a
           paginated list is a link that lands nowhere. */}

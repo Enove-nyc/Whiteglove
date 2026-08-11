@@ -77,17 +77,27 @@ export async function hasStoredPassword(scope: Scope) {
 }
 
 export async function verifyAccessPassword(scope: Scope, password: string): Promise<boolean> {
-  if (!password) return false;
+  // Trim so a short numeric code is not rejected for a trailing space or newline
+  // from paste. Settings → Passwords already stores the trimmed value.
+  const candidate = password.trim();
+  if (!candidate) return false;
+  const env = envPassword(scope)?.trim();
   const stored = await readStored(scope);
   if (stored) {
-    const candidate = hashPassword(password, stored.salt);
-    return (
-      candidate.length === stored.hash.length &&
-      timingSafeEqual(Buffer.from(candidate), Buffer.from(stored.hash))
-    );
+    const hashed = hashPassword(candidate, stored.salt);
+    const matchesStored =
+      hashed.length === stored.hash.length &&
+      timingSafeEqual(Buffer.from(hashed), Buffer.from(stored.hash));
+    if (matchesStored) return true;
+    // Local DX: `next dev` often points at the same Upstash as production, so a
+    // password changed under Settings → Passwords shadows `.env.local`. In
+    // development, still accept the env password so localhost matches what the
+    // owner put in `.env.local`. Production keeps Redis as the only source of
+    // truth once a stored password exists.
+    if (process.env.NODE_ENV !== "production" && env && candidate === env) return true;
+    return false;
   }
-  const env = envPassword(scope);
-  return Boolean(env && password === env);
+  return Boolean(env && candidate === env);
 }
 
 export function minPasswordLength(scope: Scope) {
@@ -106,6 +116,12 @@ export async function identifySiteCode(password: string): Promise<"full" | "prev
   if (!password) return null;
   if (await verifyAccessPassword("site", password)) return "full";
   if (await verifyAccessPassword("preview", password)) return "preview";
+  // Local DX: owners often type ADMIN_PASSWORD on /access. That code only
+  // opens /admin — except in development, where accepting it here saves the
+  // "password is set but doesn't work" loop when Redis/env site codes differ.
+  if (process.env.NODE_ENV !== "production" && (await verifyAccessPassword("admin", password))) {
+    return "full";
+  }
   return null;
 }
 

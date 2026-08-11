@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test, { describe } from "node:test";
 import { vacationDestinations } from "../data/vacation-destinations";
 import { normalize } from "../lib/place-search";
+import { publishedPracticalPlaceSearchDocument } from "../lib/site-search-index";
 import { damerauLevenshtein } from "../lib/site-search-match";
+import { scoreDocument } from "../lib/site-search-rank";
 import {
   groupHits,
   hasHeritageIntent,
@@ -75,6 +77,22 @@ describe("kinds are specific, not Guide", () => {
   test("things to do remain findable", async () => {
     const hits = await searchEverything("Colosseum");
     assert.ok(hits.some((h) => h.kind === "Thing to do" && /colosseum/i.test(h.title)));
+  });
+
+  test("a published practical listing builds a global-search result", () => {
+    const document = publishedPracticalPlaceSearchDocument({
+      id: "coach-station",
+      category: "TRANSPORT",
+      name: "Victoria Coach Station",
+      address: "164 Buckingham Palace Road",
+      notes: "A central coach terminal for onward travel.",
+      destination: { slug: "london", city: "London", country: "United Kingdom" },
+    });
+    const scored = scoreDocument("Victoria Coach Station", document, false);
+
+    assert.ok(scored);
+    assert.equal(scored.hit.kind, "Practical travel");
+    assert.equal(scored.hit.href, "/destinations/london");
   });
 });
 

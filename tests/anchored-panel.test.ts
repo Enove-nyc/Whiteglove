@@ -90,7 +90,7 @@ describe("where the panel opens", () => {
 
   it("keeps a city list under Destination when there is still a usable strip below", () => {
     // Measured on /book at 390×844: Destination sat near y=609 with ~179px
-    // below. preferredHeight 288 flipped the Photon list into the upper half
+    // below. preferredHeight 288 flipped the suggestion list into the upper half
     // of the screen. With preferBelow it stays under the field and scrolls.
     const box = field(609, 288, { preferBelow: true });
     assert.equal(box?.placement, "below");

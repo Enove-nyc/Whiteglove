@@ -1,10 +1,10 @@
 /**
  * What the vacation list should grow into, and the order to build it in.
  *
- * WHY A FILE AND NOT A DOCUMENT. The list today is eighteen destinations and
- * fifteen of them are European cities. "Beach and resort" has one, which is
- * why the front page stopped printing the category counts. The obvious fix is
- * to write twenty more destination records — and it is the wrong fix, because
+ * WHY A FILE AND NOT A DOCUMENT. The first South Florida batch has made the
+ * beach category broad enough to browse, but the list is still weighted toward
+ * European cities. The obvious fix is to write twenty more destination records
+ * — and it is the wrong fix, because
  * a record on its own renders as a page of honest empty states. The practical
  * sections of a destination page are DERIVED from data/kosher-eateries.ts,
  * data/kosher-stays.ts, data/attractions.ts and the quarters in kosherAreas
@@ -57,7 +57,7 @@ export const PIPELINE_GROUPS: readonly PipelineGroup[] = [
     id: "south-florida",
     label: "South Florida",
     rationale:
-      "The most-travelled kosher vacation route out of the American north-east, and the site has nothing on it. Year-round provision rather than a season.",
+      "The most-travelled kosher vacation route out of the American north-east. Miami Beach and Hollywood/Hallandale are published; deepen the region only when the next listings clear the same bar.",
     themes: ["beach", "family", "couples"],
   },
   {
@@ -154,52 +154,13 @@ export type PipelineCandidate = {
 /**
  * The queue.
  *
- * ORDERED BY HOW MANY PEOPLE ASK FOR IT, not by how easy it is: the first four
- * groups are the ones a visitor is most likely to have come looking for and
- * found nothing. Within a group, the place with the largest existing kehilla
- * comes first, because that is where the evidence is easiest to stand behind.
+ * ORDERED BY HOW MANY PEOPLE ASK FOR IT, not by how easy it is. South Florida
+ * has its first publishable pair; the remaining candidates are the next
+ * places a visitor is likely to look for. Within a group, the place with the
+ * largest existing kehilla comes first, because that is where the evidence is
+ * easiest to stand behind.
  */
 export const PIPELINE: readonly PipelineCandidate[] = [
-  {
-    slug: "miami-beach",
-    name: "Miami Beach and Bal Harbour",
-    country: "United States",
-    group: "south-florida",
-    cities: ["Miami Beach", "Bal Harbour", "Surfside"],
-    seasons: ["winter", "spring", "autumn"],
-    needs: [
-      "Quarters in data/kosher-stays.ts for the walkable strips, each with a published shul coordinate — this is what makes the Shabbos answer a fact rather than an impression.",
-      "Kosher eateries in data/kosher-eateries.ts with their certifying agency named, not a directory copy.",
-      "Stays: which hotels sit inside a quarter, and their kashrus claim state.",
-      "Attractions in data/attractions.ts with the Shabbos note filled in.",
-      "A transport note: which airport, and whether a car is needed.",
-    ],
-  },
-  {
-    slug: "hollywood-hallandale",
-    name: "Hollywood and Hallandale",
-    country: "United States",
-    group: "south-florida",
-    cities: ["Hollywood", "Hallandale Beach"],
-    seasons: ["winter", "spring", "autumn"],
-    needs: [
-      "The same five as Miami Beach. Published second because it shares an airport and a season with it, so the research overlaps.",
-    ],
-  },
-  {
-    slug: "orlando",
-    name: "Orlando",
-    country: "United States",
-    group: "orlando",
-    cities: ["Orlando"],
-    seasons: ["winter", "spring", "autumn"],
-    needs: [
-      "Kosher food: what is open year-round rather than what runs for a programme week, and which is which.",
-      "Where to stay within reach of it without a car on Shabbos — or the honest answer that there is no such place, which is itself worth publishing.",
-      "Attractions with their Shabbos note: the parks are the trip and what they do on Shabbos is the question.",
-      "A transport note covering the distances, which are the thing people underestimate here.",
-    ],
-  },
   {
     slug: "catskills",
     name: "The Catskills",

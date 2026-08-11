@@ -56,11 +56,10 @@ describe("the first five seconds", () => {
     assert.doesNotMatch(PROSE, /two kinds of journeys/i);
   });
 
-  it("OPENS ON A SEARCH BOX, not on two invitations to read", () => {
-    // Somebody arriving with a month in mind and a family to house had
-    // nowhere to type it: the page led with "Start planning my trip" and
-    // "Explore vacation ideas", and the question they came with went
-    // unanswered until they had found their own way three pages in.
+  it("KEEPS THE SELF-SERVICE SEARCH IN THE HERO, not two invitations to read", () => {
+    // The assistant now serves a specific question first, but somebody
+    // arriving with dates and a family still needs a direct self-service
+    // search rather than two invitations to browse.
     const hero = HOME.slice(at('<section className="relative border-b'), at("What kind of trip are you planning?"));
     assert.match(hero, /<StaySearchForm id="hero" \/>/);
     assert.doesNotMatch(hero, /Start planning my trip/);
@@ -128,6 +127,19 @@ describe("the order of the page", () => {
     for (let i = 1; i < order.length; i += 1) {
       assert.ok(order[i] > order[i - 1], `section ${i + 1} of the front page has moved above section ${i}`);
     }
+  });
+
+  it("offers the assistant before the longer hero journey", () => {
+    // A visitor with one specific question should not have to scan every
+    // discovery section before finding a way to ask it. The h1 stays first,
+    // then the assistant, then the supporting copy and destination search.
+    const title = at("{words.heroTitle}");
+    const assistant = at("<TravelAssistantBox />");
+    const subtitle = at("{words.heroSubtitle}");
+    const search = at('<StaySearchForm id="hero" />');
+    assert.ok(title < assistant, "the assistant has moved above the page title");
+    assert.ok(assistant < subtitle, "the supporting hero copy has moved above the assistant");
+    assert.ok(subtitle < search, "the destination search has moved above its supporting copy");
   });
 
   it("MAKES SEEING THE HOTELS THE DOMINANT ACTION ON A DESTINATION CARD", () => {

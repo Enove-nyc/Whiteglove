@@ -359,6 +359,33 @@ export const kosherAreas: Array<{ slug: string; city: string; country: string; n
     note: "The largest centre of Torah learning in Europe, in a working-class district of a north-eastern industrial town — which is exactly as unlikely as it sounds. The Gateshead Yeshiva was founded in 1929 and draws talmidim from around the world, and the streets around it hold a full set of institutions and hundreds of families. Bensham was called Little Jerusalem long before anybody outside Britain had heard of it. The kosher shops are clustered on Coatsworth Road. This is not a tourist quarter and it is not set up as one — people live and learn here, and visitors are guests.",
     sourceUrl: "https://en.wikipedia.org/wiki/Gateshead_Talmudical_College",
   },
+  {
+    slug: "miami-beach-41st-street",
+    city: "Miami Beach",
+    country: "United States",
+    name: "West 41st Street, around the Jewish Learning Center-Chabad",
+    coordinates: "25.8122, -80.1315",
+    note: "The Jewish Learning Center-Chabad is at 411 West 41st Street. Use the area as a practical stay anchor, then choose exact food from the official ORB and Kosher Miami directories rather than assuming every nearby business has the same certification.",
+    sourceUrl: "https://www.lubavitch.com/centers/118271",
+  },
+  {
+    slug: "hallandale-beach-chabad",
+    city: "Hallandale Beach",
+    country: "United States",
+    name: "East Hallandale Beach Boulevard, around Chabad of South Broward",
+    coordinates: "25.9877, -80.1388",
+    note: "Chabad of South Broward is at 1295 East Hallandale Beach Boulevard. This is the Shabbos anchor to use when comparing Hallandale hotels; Hollywood's Stirling Road food listings are a separate part of the wider South Florida trip.",
+    sourceUrl: "https://www.lubavitch.com/centers/117595",
+  },
+  {
+    slug: "orlando-sand-lake-road",
+    city: "Orlando",
+    country: "United States",
+    name: "Around Chabad of South Orlando on West Sand Lake Road",
+    coordinates: "28.450015, -81.481941",
+    note: "Chabad of South Orlando publishes its address as 7347 West Sand Lake Road. Use this as a practical Shabbos planning anchor, then check the community’s current service location and the real walking route before booking nearby.",
+    sourceUrl: "https://www.jewishorlando.com/templates/articlecco_cdo/aid/61721/jewish/Location.htm",
+  },
 ];
 
 export const kosherStays: KosherStay[] = [
@@ -1068,6 +1095,57 @@ export const kosherStays: KosherStay[] = [
     ],
     kosherClaim: "none",
     sourceUrl: "https://en.wikipedia.org/wiki/Urtij%C3%ABi",
+  },
+  {
+    slug: "miami-beach-41st-street-stays",
+    name: "Staying near 41st Street, Miami Beach",
+    city: "Miami Beach",
+    country: "United States",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Ordinary hotels near West 41st Street put the Jewish Learning Center-Chabad and the Miami Beach food corridor within the same local area.",
+    anchor: { name: "Jewish Learning Center-Chabad, 411 West 41st Street", coordinates: "25.8122, -80.1315" },
+    notes: [
+      "The anchor is a community location, not a hotel pin. Use it to compare a hotel's walking distance before booking.",
+      "This listing makes no kosher claim about any hotel. Check each property's own breakfast and kitchen arrangements if those matter to your trip.",
+      "The ORB and Kosher Miami directories are the current places to choose an exact food option for the area.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.lubavitch.com/centers/118271",
+  },
+  {
+    slug: "hallandale-beach-chabad-stays",
+    name: "Staying near Chabad of South Broward, Hallandale Beach",
+    city: "Hallandale Beach",
+    country: "United States",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Ordinary hotels near East Hallandale Beach Boulevard give a South Florida trip a defined community anchor for Shabbos planning.",
+    anchor: { name: "Chabad of South Broward, 1295 East Hallandale Beach Boulevard", coordinates: "25.9877, -80.1388" },
+    notes: [
+      "The anchor is Chabad of South Broward, not a hotel. Check the actual walking route from the property you are considering before booking.",
+      "This listing makes no kosher claim about any hotel or its kitchen.",
+      "The broader Hollywood and Hallandale trip is spread out, so decide whether the Shabbos anchor or the Stirling Road food corridor matters more for your base.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.lubavitch.com/centers/117595",
+  },
+  {
+    slug: "orlando-sand-lake-road-stays",
+    name: "Staying near Chabad of South Orlando, West Sand Lake Road",
+    city: "Orlando",
+    country: "United States",
+    kind: "Ordinary hotel, well placed",
+    summary:
+      "Ordinary hotels around West Sand Lake Road can give an Orlando stay a defined community anchor for Shabbos planning, while keeping the wider park region within reach by car.",
+    anchor: { name: "Chabad of South Orlando, 7347 West Sand Lake Road", coordinates: "28.450015, -81.481941" },
+    notes: [
+      "The anchor is a community address, not a hotel pin. Check the actual walking route from the property you are considering before booking.",
+      "This listing makes no kosher claim about any hotel or its kitchen.",
+      "Orlando’s attractions and food listings are spread across the region, so decide whether the Shabbos anchor or a particular park district matters most for your base.",
+    ],
+    kosherClaim: "none",
+    sourceUrl: "https://www.jewishorlando.com/templates/articlecco_cdo/aid/61721/jewish/Location.htm",
   },
 ];
 

@@ -2,8 +2,7 @@
 //
 // The last of the four things a trip needs. The site could tell you where the
 // kever is, what to do on the days between, and which part of town to sleep in
-// — and then said nothing at all about dinner, except a live OpenStreetMap
-// lookup that returns whatever happens to be tagged "kosher" nearby.
+// — and then said nothing at all about dinner.
 //
 // THIS IS THE HARDEST CONTENT ON THE SITE TO KEEP HONEST, and the design is
 // shaped entirely around that. A kever does not close. A mountain does not
@@ -12,12 +11,9 @@
 //
 // So four rules, and they are enforced by tests rather than by good intentions:
 //
-//   1. THE HECHSHER IS A HechsherStatus, NOT A STRING. The site already has
-//      that type — certified / reported / none / unverified — and it already
-//      means something precise. "certified" means the owner checked with the
-//      certifying body. Nothing researched from a directory may ship as
-//      certified; it ships as "reported", which prints as unverified and tells
-//      the reader to check before eating. See data/hechsherim.ts.
+//   1. THE HECHSHER IS A HechsherStatus, NOT A STRING. "Certified" means the
+//      owner checked with the certifying body. A source-backed listing may be
+//      marked "reported", but never elevated to certified by a bulk import.
 //
 //   2. NO HOURS, NO PRICES, NO MENUS. Same rule as attractions and for a
 //      stronger reason. A stale opening time sends a family across a city to a
@@ -591,6 +587,100 @@ export const kosherEateries: KosherEatery[] = [
       "For scale: the next kosher provision in any direction is Milan to the south-west, Turin beyond it, and Munich or Vienna over the mountains to the north. Merano has the only shul in South Tyrol but no kosher shop, and Innsbruck has neither. This valley is genuinely on its own.",
     ],
     sourceUrl: "https://www.mykosherhotel.it/en/",
+  },
+
+  // ---- South Florida ---------------------------------------------------
+  {
+    slug: "miami-beach-41st-street-kosher",
+    name: "Certified food near 41st Street, Miami Beach",
+    city: "Miami Beach",
+    country: "United States",
+    kind: "Restaurant",
+    diet: "Mixed premises",
+    summary:
+      "The official ORB directory identifies several certified restaurants around West 41st Street, a useful starting point for a Miami Beach food plan.",
+    address: "West 41st Street, Miami Beach, FL 33140",
+    website: "https://www.orbkosher.com/find-kosher/",
+    hechsher: {
+      state: "reported",
+      hechsherId: "orb-kosher",
+      note: "The ORB publishes individual listings and certificate links for several restaurants in this corridor.",
+      source: "ORB's official Find Kosher directory",
+    },
+    notes: [
+      "This is a corridor listing, not one restaurant. Use the ORB's live page to choose an exact establishment and read its current certificate.",
+      "Kosher Miami also provides an official establishments directory with a Miami Beach area filter.",
+      "The street is near the Jewish Learning Center-Chabad on West 41st Street, which is the practical anchor for a walkable Shabbos base.",
+    ],
+    nearQuarter: "miami-beach-41st-street",
+    sourceUrl: "https://koshermiami.org/establishments/",
+  },
+  {
+    slug: "hollywood-stirling-road-kosher",
+    name: "Certified food around Stirling Road, Hollywood",
+    city: "Hollywood",
+    country: "United States",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The official ORB directory identifies restaurants, bakeries and markets on or around Stirling Road in Hollywood.",
+    address: "Stirling Road, Hollywood, FL 33021 — use the ORB directory for individual addresses",
+    website: "https://www.orbkosher.com/find-kosher/",
+    hechsher: {
+      state: "reported",
+      hechsherId: "orb-kosher",
+      note: "The ORB publishes individual Hollywood listings and certificate links for this food corridor.",
+      source: "ORB's official Find Kosher directory",
+    },
+    notes: [
+      "This is a corridor listing, not a claim about every business on the road. Choose an individual establishment from the ORB's current directory.",
+      "The Hallandale Shabbos anchor and the Hollywood food listings are different parts of the same South Florida trip, so choose your hotel with both in mind.",
+    ],
+    sourceUrl: "https://www.orbkosher.com/find-kosher/",
+  },
+
+  // ---- Orlando and Central Florida ------------------------------------
+  {
+    slug: "kosher-grill-orlando",
+    name: "Kosher Grill",
+    city: "Orlando",
+    country: "United States",
+    kind: "Restaurant",
+    diet: "Meat",
+    summary:
+      "A meat restaurant on International Drive that Kosher Orlando lists with an RCF hechsher.",
+    address: "5615 International Drive, Orlando, FL 32819",
+    hechsher: {
+      state: "reported",
+      note: "RCF hechsher",
+      source: "Kosher Orlando’s local food directory",
+    },
+    notes: [
+      "The local directory identifies this as a meat restaurant and names the RCF hechsher.",
+      "Confirm current supervision and arrangements directly before relying on it for a meal or a Shabbos order.",
+    ],
+    sourceUrl: "https://www.kosherorlando.org/kosher-food-2/",
+  },
+  {
+    slug: "krembo-orlando",
+    name: "Krembo",
+    city: "Orlando",
+    country: "United States",
+    kind: "Cafe",
+    diet: "Dairy",
+    summary:
+      "A dairy café and bakery on Turkey Lake Road that Kosher Orlando lists with an RCF hechsher.",
+    address: "8015 Turkey Lake Road, Orlando, FL 32819",
+    hechsher: {
+      state: "reported",
+      note: "RCF hechsher; cholov Yisroel as listed",
+      source: "Kosher Orlando’s local food directory",
+    },
+    notes: [
+      "The local directory identifies Krembo as a dairy café and bakery, and records the RCF hechsher and cholov Yisroel claim.",
+      "Confirm current supervision and arrangements directly before relying on it for a meal or a Shabbos order.",
+    ],
+    sourceUrl: "https://www.kosherorlando.org/kosher-food-2/",
   },
 ];
 

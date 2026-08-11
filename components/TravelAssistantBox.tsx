@@ -52,9 +52,9 @@ export default function TravelAssistantBox() {
   }
 
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
+    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Ask the White Glove assistant</p>
-      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Kosher travel, answered</h2>
+      <h2 className="mt-2 font-[family-name:var(--font-display)] text-[1.75rem] leading-tight text-[var(--navy)] sm:text-3xl">Kosher travel, answered</h2>
       <p className="mt-2 text-sm leading-6 text-stone-600">Where to go, how long to give it, kosher food, Shabbos, or a kever. Travel only.</p>
 
       {/* WHAT IT IS, BEFORE THE BOX RATHER THAN UNDER THE ANSWER.
@@ -68,7 +68,7 @@ export default function TravelAssistantBox() {
           code, not a policy: the question goes to the model provider to be
           answered and this site keeps no copy and no history — reload the page
           and it is gone. */}
-      <details className="mt-3 rounded-md border border-[var(--gold-light)] bg-white/70 px-4 py-3">
+      <details className="mt-3 rounded-md border border-[var(--gold-light)] bg-white/70 px-4 py-2 sm:py-3">
         <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
           What this assistant can and cannot do
         </summary>

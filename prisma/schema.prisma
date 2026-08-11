@@ -41,6 +41,23 @@ enum ContentStatus {
   NEEDS_REVIEW
 }
 
+// A source package is held separately from public content until an editor has
+// checked each listing. This prevents a large import from silently becoming a
+// bulk publish.
+enum ContentImportKind {
+  ATTRACTION
+  KOSHER_FOOD
+  PLACE_TO_STAY
+  PRACTICAL
+}
+
+enum ContentImportStatus {
+  NEEDS_REVIEW
+  DUPLICATE
+  REJECTED
+  PUBLISHED
+}
+
 // How confident we are in a piece of practical info (mirrors
 // VerificationStatus in data/destination-database.ts).
 enum VerificationStatus {
@@ -304,6 +321,107 @@ model KosherArea {
   updatedAt   DateTime      @updatedAt
 
   @@index([country, city])
+}
+
+// A documented source package. The source and licence live on the batch as
+// well as on every candidate, so an editor can still trace a row after it is
+// copied into public content or its source package is refreshed.
+model ContentImportBatch {
+  id          String                   @id @default(cuid())
+  slug        String                   @unique
+  name        String
+  sourceName  String
+  sourceUrl   String
+  attribution String
+  license     String?
+  isBuiltIn   Boolean                  @default(false)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  candidates ContentImportCandidate[]
+
+  @@index([createdAt])
+}
+
+// A private, source-backed candidate. This is intentionally not related
+// directly to the public tables: a row can become an Attraction, KosherStay or
+// PracticalPlace only after the review action validates the target's stricter
+// requirements. `publishedId` and `publishedKind` leave an audit trail without
+// pretending those three models share an id space.
+model ContentImportCandidate {
+  id                 String              @id @default(cuid())
+  kind               ContentImportKind
+  category           String?
+  name               String
+  aliases            String[]            @default([])
+  city               String
+  region             String?
+  country            String
+  destinationSlug    String?
+  address            String?
+  coordinates        String?
+  website            String?
+  summary            String?
+  anchorName         String?
+  anchorCoords       String?
+  kosherClaim        String              @default("none")
+  kosherSourceUrl    String?
+  sourceUrl          String
+  sourceId           String
+  sourceName         String
+  attribution        String
+  license            String?
+  sourceEvidence     Json?
+  normalizedName     String
+  normalizedLocation String
+  dedupeKey          String              @unique
+  status             ContentImportStatus @default(NEEDS_REVIEW)
+  validationErrors   String[]            @default([])
+  duplicateOf        String?
+  publishedKind      String?
+  publishedId        String?
+  reviewedAt         DateTime?
+  publishedAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  batch   ContentImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batchId String
+
+  @@index([batchId, status])
+  @@index([kind, status])
+  @@index([country, city])
+}
+
+// Non-secret Trello scope for private bulk-candidate review. API credentials
+// remain server environment variables; no public content is related to this
+// setting or created by changing a card's Trello status.
+model TrelloCandidateReviewSettings {
+  id           String   @id
+  boardId      String
+  reviewListId String
+  doneListId   String
+  enabled      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Stable source candidate ID -> Trello card ID mapping. It has no foreign key
+// to ContentImportCandidate because source packages can be reviewed before
+// DATABASE_URL is configured and staging creates a separate transient row ID.
+model TrelloCandidateReviewCard {
+  id           String   @id @default(cuid())
+  candidateId  String   @unique
+  boardId      String
+  reviewListId String
+  status       String   @default("CREATING")
+  trelloCardId String?  @unique
+  cardUrl      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([boardId, reviewListId])
 }
 
 // A picture of a place, with where it came from.

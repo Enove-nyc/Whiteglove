@@ -9,17 +9,14 @@ import { describeHechsher, getHechsher, hechsherLabel, HECHSHERIM, type Hechsher
 // it carries the agency's own short form — OU, ★K, בד״ץ — which is how these
 // are written on a package anyway.
 //
-// Four states, and the difference between them matters far more than the
-// design does:
+// Confirmed or source-backed supervision can be shown on a public card:
 //
 //   • certified  — the owner confirmed it. Gold circle, solid.
-//   • reported   — something says so and the source is named, but nobody here
-//                  has checked. The mark is shown so the traveler knows what
-//                  to look for, in a dashed circle, labelled unverified.
+//   • reported   — an editorial source names it. The mark is shown as a
+//                  prompt to confirm directly before eating.
 //   • none       — confirmed as carrying nothing. Said plainly.
-//   • unverified — nobody has looked. A dashed circle with a question mark.
 //
-// An empty circle is not a hechsher, and this never pretends otherwise.
+// A listing with no recorded supervision does not show a placeholder badge.
 
 export default function HechsherBadge({
   status,
@@ -33,6 +30,8 @@ export default function HechsherBadge({
   /** The full list, including any the owner has added. Defaults to the built-in one. */
   agencies?: Hechsher[];
 }) {
+  if (status.state === "unverified") return null;
+
   // Most agencies have no logo file yet. The letters are shown until one
   // appears, and if a file is added but fails to load we fall back to them
   // rather than leaving a broken image in the circle.
@@ -61,9 +60,9 @@ export default function HechsherBadge({
       ? { ring: "border-dashed border-amber-400", ink: "text-amber-800", text: "text-amber-800" }
       : status.state === "none"
         ? { ring: "border-stone-300", ink: "text-stone-400", text: "text-stone-500" }
-        : { ring: "border-dashed border-amber-400", ink: "text-amber-700", text: "text-amber-800" };
+        : { ring: "border-stone-300", ink: "text-stone-400", text: "text-stone-500" };
 
-  const inside = confirmed || reported ? mark || "✓" : status.state === "none" ? "—" : "?";
+  const inside = confirmed || reported ? mark || "✓" : "—";
 
   return (
     <span className="inline-flex items-center gap-2" title={title}>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { useState } from "react";
-import { emptyItinerary, travelersOf, type Itinerary } from "@/data/itinerary";
+import { travelersOf, type Itinerary } from "@/data/itinerary";
 import {
   assignTravelerRoom,
   roomLabelProblem,
@@ -10,28 +9,6 @@ import {
   type TripRoom,
   unassignedTravelers,
 } from "@/lib/trip-collaboration";
-
-const STORAGE_KEY = "wg-itinerary";
-
-function subscribe(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener("wg-itinerary-changed", onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener("wg-itinerary-changed", onChange);
-  };
-}
-
-function readItinerary(): Itinerary {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyItinerary();
-    const parsed = JSON.parse(raw) as Itinerary;
-    return parsed && typeof parsed === "object" ? parsed : emptyItinerary();
-  } catch {
-    return emptyItinerary();
-  }
-}
 
 function newRoomId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `room-${crypto.randomUUID()}`;
@@ -41,26 +18,27 @@ function newRoomId(): string {
 /**
  * Traveler ↔ room groupings on the itinerary planner.
  *
- * Stored on the itinerary JSON with the trip, so sharing and printing carry
- * the same rooming list. Purely self-service — no quote request.
+ * Lives on the itinerary the planner already holds — not a second storage copy.
+ * A parallel store returned a new object on every snapshot read, which made
+ * React re-render forever and froze /itinerary.
  */
-export default function RoomGroupsPanel() {
-  const itin = useSyncExternalStore(subscribe, readItinerary, emptyItinerary);
+export default function RoomGroupsPanel({
+  itinerary,
+  onChange,
+}: {
+  itinerary: Itinerary;
+  onChange: (next: Itinerary) => void;
+}) {
   const [roomName, setRoomName] = useState("");
   const [error, setError] = useState("");
 
-  function persist(next: Itinerary) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, updatedAt: new Date().toISOString() }));
-      window.dispatchEvent(new Event("wg-itinerary-changed"));
-    } catch {
-      setError("Could not save rooms on this device.");
-    }
-  }
-
-  const rooms = roomsOf(itin);
-  const travelers = travelersOf(itin);
+  const rooms = roomsOf(itinerary);
+  const travelers = travelersOf(itinerary);
   const free = unassignedTravelers(travelers, rooms);
+
+  function persist(roomsNext: TripRoom[]) {
+    onChange({ ...itinerary, rooms: roomsNext });
+  }
 
   function addRoom(e: React.FormEvent) {
     e.preventDefault();
@@ -75,12 +53,12 @@ export default function RoomGroupsPanel() {
       label: roomName.trim(),
       travelerIds: [],
     };
-    persist({ ...itin, rooms: [...rooms, room] });
+    persist([...rooms, room]);
     setRoomName("");
   }
 
   function move(travelerId: string, roomId: string | null) {
-    persist({ ...itin, rooms: assignTravelerRoom(rooms, travelerId, roomId) });
+    persist(assignTravelerRoom(rooms, travelerId, roomId));
   }
 
   if (travelers.length === 0) {

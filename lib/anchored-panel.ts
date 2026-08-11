@@ -92,8 +92,8 @@ export function measureAnchor(
   //
   // Suggestion lists (`preferBelow`): flip only when the strip below is too
   // short to use. Otherwise stay under the field and scroll — flipping a
-  // city list into a 288px slot parked a short Photon answer near the top of
-  // the screen on /book.
+  // city list into a 288px slot parked a short suggestion list near the top
+  // of the screen on /book.
   const flip = options?.preferBelow
     ? below < MIN_USABLE && above > below
     : below < preferredHeight && above > below;

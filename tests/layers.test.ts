@@ -2,10 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-// The map's markers used to paint over the sponsored banner and over the
-// sticky header — Leaflet numbers its panes 200 to 1000 and, with nothing
-// containing them, those numbers competed with the whole page. Two things
-// keep that fixed, and both are easy to undo by accident.
+// Map controls must stay inside the map's stacking context rather than painting
+// over the sponsored banner or sticky header.
 
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
@@ -19,15 +17,17 @@ describe("what is in front of what", () => {
   it("keeps the map boxed into its own stacking context", () => {
     // Without all three of these, Leaflet's 600-deep marker pane is loose in
     // the page again and the balls go back over the advertisement.
-    const rule = css.match(/\.leaflet-container\s*\{([^}]*)\}/);
-    assert.ok(rule, ".leaflet-container rule is missing from globals.css");
-    const body = rule![1];
-    assert.match(body, /isolation:\s*isolate/, "the map must isolate its stacking context");
-    assert.match(body, /z-index:\s*var\(--wg-z-map\)/, "the map must sit at the map layer");
-    assert.match(body, /position:\s*relative/, "isolation only contains z-index on a positioned element");
-    // Google draws into the same box; it needs the same containment so its
-    // chrome cannot climb over the advertisement either.
-    assert.match(css, /\.wg-map-box\s*\{[^}]*z-index:\s*var\(--wg-z-map\)/s, "the public map box is boxed the same way");
+    const leafletRule = css.match(/\.leaflet-container\s*\{([^}]*)\}/);
+    assert.ok(leafletRule, ".leaflet-container rule is missing from globals.css");
+    const leafletBody = leafletRule![1];
+    assert.match(leafletBody, /isolation:\s*isolate/, "the map must isolate its stacking context");
+    assert.match(leafletBody, /z-index:\s*var\(--wg-z-map\)/, "the map must sit at the map layer");
+    assert.match(leafletBody, /position:\s*relative/, "isolation only contains z-index on a positioned element");
+
+    const boxRule = css.match(/\.wg-map-box\s*\{([^}]*)\}/);
+    assert.ok(boxRule, ".wg-map-box rule is missing from globals.css");
+    assert.match(boxRule![1], /isolation:\s*isolate/);
+    assert.match(css, /@import "leaflet\/dist\/leaflet\.css"/);
   });
 
   it("puts the advertisement in front of the page and the header", () => {

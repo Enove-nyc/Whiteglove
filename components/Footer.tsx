@@ -56,6 +56,8 @@ const columnsFor = (
       { label: "Where to stay", href: "/hotels" },
       { label: "Things to do", href: "/things-to-do" },
       { label: "Certification marks", href: "/hechsherim" },
+      { label: "Mikvaos", href: "/mikvaos" },
+      { label: "Zmanim", href: "/zmanim" },
       { label: "Provider directory", href: "/directory" },
     ],
   },

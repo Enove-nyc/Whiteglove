@@ -19,7 +19,7 @@ without it, it just does less.
 
 | Variable | What it does |
 | --- | --- |
-| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | Draws the map with Google Maps instead of OpenStreetMap tiles. Without it, or if Google's script cannot be reached, the map still appears — it falls back to OpenStreetMap, which needs no key. |
+| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | Enables Google Maps for White Glove's curated markers. Without it, or if Google's script cannot be reached, visitors see an accessible map-unavailable state with a link to continue discovery. |
 
 **This must be a different key from `GOOGLE_MAPS_API_KEY`.** The Maps
 JavaScript API runs in the browser, so its key goes out in the page and cannot
@@ -51,8 +51,8 @@ per leg, so re-planning the same trip does not re-bill it.
 
 | Variable | What it does |
 | --- | --- |
-| `SITE_ACCESS_PASSWORD` | The **full** code on the whole site: type it once and stay in. Both site codes can also be changed from **Settings → Passwords**, which takes priority over these variables. |
-| `SITE_PREVIEW_PASSWORD` | The **five-minute** code — for handing to somebody who needs to look at one thing. Access stops five minutes after they use it. The expiry is signed into the cookie and checked on every request, so it cannot be kept by copying the cookie or editing its lifetime. Must be a different word from `SITE_ACCESS_PASSWORD`. |
+| `SITE_ACCESS_PASSWORD` | The **full** code on the whole site: type it once and stay in. Both site codes can also be changed from **Settings → Passwords**, which takes priority over these variables **in production**. On `next dev`, the env value is still accepted even when Redis has a stored override, so localhost can use `.env.local` while sharing Upstash with production. Restart `next dev` after changing `.env.local`. |
+| `SITE_PREVIEW_PASSWORD` | The **five-minute** code — for handing to somebody who needs to look at one thing. Access stops five minutes after they use it. The expiry is signed into the cookie and checked on every request, so it cannot be kept by copying the cookie or editing its lifetime. Must be a different word from `SITE_ACCESS_PASSWORD`. Same production-vs-local rule as the full code. |
 | `SITE_LOCK_ENABLED` | Whether the lock is on at all. |
 | `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `preview.whitegloveitineraries.com`. Lets one hostname stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
 | `SITE_PREVIEW_TOKEN` | At least 12 characters. Anyone opening `?preview=<token>` gets in for 30 days without being told the password, and the token is stripped from the URL straight away. Change it to revoke every outstanding link at once. Never works on `/admin`. |

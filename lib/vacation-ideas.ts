@@ -310,6 +310,24 @@ export const NO_VACATION_FILTERS: VacationFilters = {
   shabbos: "",
 };
 
+/**
+ * The shareable part of the destination browse state.
+ *
+ * `kind` and `season` are deliberately built only from the canonical
+ * taxonomies above. That gives links and client-side navigation one safe URL
+ * shape, while the other filters can still refine the list immediately.
+ */
+export function vacationBrowseHref({
+  theme,
+  season,
+}: Pick<VacationFilters, "theme" | "season">): string {
+  const params = new URLSearchParams();
+  if (theme) params.set("kind", theme);
+  if (season) params.set("season", season);
+  const query = params.toString();
+  return query ? `/destinations?${query}` : "/destinations";
+}
+
 function haystack(card: VacationCardModel): string {
   const d = card.destination;
   return [d.name, d.country, d.region, ...d.cities, ...d.bestFor, d.whyGo].filter(Boolean).join(" ").toLowerCase();

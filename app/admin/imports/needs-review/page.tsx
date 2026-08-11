@@ -1,0 +1,48 @@
+import Link from "next/link";
+import ImportNeedsReviewQueue from "@/components/ImportNeedsReviewQueue";
+import { getImportReviewQueue } from "@/lib/import-review-queue";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminImportNeedsReviewPage() {
+  const queue = await getImportReviewQueue();
+
+  return (
+    <>
+      <header>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Needs review</h1>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
+              Every listing candidate that still needs verification before it can become a public White Glove listing. Nothing here is published automatically.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/imports"
+              className="inline-flex min-h-11 items-center border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+            >
+              Bulk imports
+            </Link>
+            <Link
+              href="/admin"
+              className="inline-flex min-h-11 items-center border border-[var(--gold-light)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+            >
+              Dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {queue.error && (
+        <section className="mt-8 border border-rose-200 bg-rose-50 p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-rose-800">Could not load the queue</p>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-rose-900">{queue.error}</p>
+        </section>
+      )}
+
+      {!queue.error && <ImportNeedsReviewQueue queue={queue} />}
+    </>
+  );
+}

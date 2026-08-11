@@ -165,7 +165,8 @@ describe("the queue", () => {
 
   it("puts the routes people actually ask for first", () => {
     assert.equal(PIPELINE_GROUPS[0].id, "south-florida");
-    assert.ok(candidatesIn("south-florida").length >= 2);
+    const southFlorida = vacationDestinations.filter((destination) => destination.region === "South Florida");
+    assert.ok(southFlorida.length >= 2, "South Florida should have a publishable first batch");
     assert.ok(candidatesIn("israel-regions").length >= 3, "Israel has one destination and it is a pilgrimage");
   });
 });
@@ -193,11 +194,12 @@ describe("new categories", () => {
     }
   });
 
-  it("KNOWS BEACH AND RESORT IS THE THIN ONE", () => {
-    // Stated as a fact rather than left implicit: this is why the front page
-    // hides the counts, and it is what the queue is mostly for.
+  it("GIVES BEACH AND RESORT A PUBLISHABLE FIRST BATCH", () => {
+    // The South Florida pair brings the category up to the minimum breadth
+    // that earns a filter. The queue remains deeper than one region, so the
+    // next batch can add useful variety rather than a singleton.
     const beach = vacationDestinations.filter((destination) => destination.themes.includes("beach")).length;
-    assert.ok(beach < NEW_THEME_THRESHOLD, "beach is no longer thin — the front page can show its count again");
+    assert.ok(beach >= NEW_THEME_THRESHOLD, "beach still needs a complete destination batch");
     const beachCandidates = PIPELINE.filter((candidate) =>
       PIPELINE_GROUPS.find((group) => group.id === candidate.group)?.themes.includes("beach"),
     );

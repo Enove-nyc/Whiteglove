@@ -18,6 +18,7 @@
 
 import { attractions as staticAttractions, type Attraction } from "@/data/attractions";
 import { kosherAreas as staticAreas, kosherStays as staticStays, type KosherStay } from "@/data/kosher-stays";
+import { isDisallowedImportSource } from "@/lib/bulk-content";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
@@ -58,6 +59,14 @@ function cityWhere(cities: CityFilter) {
   return cities ? { city: { in: [...cities] } } : {};
 }
 
+function isAllowedPublicSource(sourceUrl: string | null): boolean {
+  return !isDisallowedImportSource({
+    sourceUrl: sourceUrl ?? "",
+    sourceName: "",
+    attribution: "",
+  });
+}
+
 /**
  * Owner-added rows only.
  *
@@ -77,7 +86,7 @@ export async function getAttractionList(cities?: CityFilter): Promise<Attraction
     });
     return [
       ...base,
-      ...rows.map((r) => ({
+      ...rows.filter((row) => isAllowedPublicSource(row.sourceUrl)).map((r) => ({
         slug: r.slug,
         name: r.name,
         city: r.city,
@@ -111,7 +120,7 @@ export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]
     });
     return [
       ...base,
-      ...rows.map((r) => ({
+      ...rows.filter((row) => isAllowedPublicSource(row.sourceUrl)).map((r) => ({
         slug: r.slug,
         name: r.name,
         city: r.city,
@@ -143,7 +152,7 @@ export async function getAreaList(cities?: CityFilter): Promise<KosherAreaItem[]
       where: { slug: { notIn: staticAreaSlugs }, status: "PUBLISHED", ...cityWhere(cities) },
       orderBy: [{ country: "asc" }, { city: "asc" }],
     });
-    return [...base, ...rows.map((r) => ({
+    return [...base, ...rows.filter((row) => isAllowedPublicSource(row.sourceUrl)).map((r) => ({
       slug: r.slug,
       city: r.city,
       country: r.country,

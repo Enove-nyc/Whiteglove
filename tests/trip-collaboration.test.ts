@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   applyVote,
@@ -67,5 +68,13 @@ describe("rooms", () => {
   it("rejects empty room names", () => {
     assert.ok(roomLabelProblem("  "));
     assert.equal(roomLabelProblem("Parents"), null);
+  });
+
+  it("keeps room grouping on the itinerary the planner already holds", () => {
+    const panel = readFileSync("components/RoomGroupsPanel.tsx", "utf8");
+    assert.match(panel, /itinerary/);
+    assert.match(panel, /onChange/);
+    assert.doesNotMatch(panel, /import \{[^}]*useSyncExternalStore/);
+    assert.doesNotMatch(panel, /localStorage/);
   });
 });

@@ -1,15 +1,11 @@
 // What the owner has confirmed about each place's hechsher.
 //
-// Nothing is written here by the site itself. OpenStreetMap's `diet:kosher` tag
-// says a place serves kosher food; it does not say who certifies it, and the
-// two are not the same question. So the store holds only what a person has
-// checked, and anything absent reads back as unverified.
-//
-// With no Redis there is simply nothing stored, every place reads unverified,
-// and the badge says so. That is correct behaviour rather than a degradation —
-// unverified is the truth until somebody confirms it.
+// Nothing is inferred here. The store accepts statuses only for White Glove's
+// curated kosher listings, and keeps the editor's source trail separate from
+// the public card.
 
 import { UNVERIFIED, type HechsherStatus } from "@/data/hechsherim";
+import { isCuratedKosherPlaceId } from "@/lib/curated-kosher";
 
 const KEY = "white-glove:hechsherim";
 
@@ -63,10 +59,11 @@ async function readAll(): Promise<Stored> {
  */
 export async function hechsherimFor(ids: string[]): Promise<Record<string, HechsherStatus>> {
   const out: Record<string, HechsherStatus> = {};
-  for (const id of ids) out[id] = UNVERIFIED;
-  if (!hechsherStoreAvailable() || !ids.length) return out;
+  const curatedIds = ids.filter(isCuratedKosherPlaceId);
+  for (const id of curatedIds) out[id] = UNVERIFIED;
+  if (!hechsherStoreAvailable() || !curatedIds.length) return out;
   const all = await readAll();
-  for (const id of ids) {
+  for (const id of curatedIds) {
     const found = all[id];
     if (found) out[id] = found;
   }
@@ -77,6 +74,7 @@ export async function hechsherimFor(ids: string[]): Promise<Record<string, Hechs
 export async function listHechsherim(): Promise<Array<HechsherRecord & { placeId: string }>> {
   const all = await readAll();
   return Object.entries(all)
+    .filter(([placeId]) => isCuratedKosherPlaceId(placeId))
     .map(([placeId, record]) => ({ placeId, ...record }))
     .sort((a, b) => (a.placeName ?? "").localeCompare(b.placeName ?? ""));
 }
@@ -87,6 +85,9 @@ export async function saveHechsher(
   record: HechsherRecord,
 ): Promise<{ ok: boolean; message: string }> {
   if (!placeId.trim()) return { ok: false, message: "No place to save that against." };
+  if (!isCuratedKosherPlaceId(placeId)) {
+    return { ok: false, message: "That listing is not in White Glove’s curated kosher collection." };
+  }
   if (!hechsherStoreAvailable()) {
     return { ok: false, message: "This needs the private store connected before hechsherim can be saved." };
   }
@@ -111,12 +112,12 @@ export async function saveHechsher(
         : record.state === "none"
           ? `Saved. ${name} shows as having no hechsher.`
           : record.state === "reported"
-            ? `Saved as reported. ${name} still reads unverified until you confirm it.`
-            : "Set back to unverified.",
+            ? `Saved. ${name} now shows its listed supervision.`
+            : "Cleared the saved supervision.",
   };
 }
 
-/** Forget a confirmation, putting the place back to unverified. */
+/** Forget a saved supervision. */
 export async function clearHechsher(placeId: string): Promise<boolean> {
   if (!hechsherStoreAvailable()) return false;
   const all = await readAll();

@@ -1,0 +1,261 @@
+/**
+ * Published mikvah listings for the public site and admin overview.
+ *
+ * Data lives on PracticalPlace with category MIKVAH — same model as minyanim
+ * and other practical travel listings. Public surfaces only show PUBLISHED
+ * rows with an allowed source URL (or the static seed catalog that already
+ * carries a source on each entry).
+ */
+
+import { cemeteries } from "@/data/cemeteries";
+import { practicalContent } from "@/data/practical-content";
+import { destinations as heritageDestinations, destinationHref as heritageDestinationHref } from "@/data/destinations";
+import { getBulkDestination } from "@/data/destinations-bulk";
+import { isDisallowedImportSource } from "@/lib/bulk-content";
+import { heritageTownHref } from "@/lib/route-migration";
+import { vacationDestinations } from "@/data/vacation-destinations";
+import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
+
+export type MikvahListing = {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  hours: string | null;
+  notes: string | null;
+  website: string | null;
+  sourceUrl: string;
+  coordinates: string | null;
+  city: string;
+  country: string;
+  destinationSlug: string;
+  href: string;
+  /** True when the row came from the live database rather than the seed catalog. */
+  fromDatabase: boolean;
+  status?: "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW";
+};
+
+function isAllowedSource(sourceUrl: string | null | undefined): boolean {
+  if (!sourceUrl?.trim()) return false;
+  return !isDisallowedImportSource({
+    sourceUrl,
+    sourceName: "",
+    attribution: "",
+  });
+}
+
+function destinationHrefFor(slug: string, city: string): string {
+  const vacation = vacationDestinations.find((item) => item.slug === slug || item.cities.includes(city));
+  if (vacation) return vacationHref(vacation);
+  const heritage = heritageDestinations.find((item) => item.slug === slug);
+  if (heritage) return heritageDestinationHref(heritage);
+  if (getBulkDestination(slug)) return heritageTownHref(slug);
+  return heritageTownHref(slug) || `/stops`;
+}
+
+/** Static, source-backed mikvah entries shipped in the repo. */
+export function staticMikvahListings(): MikvahListing[] {
+  const out: MikvahListing[] = [];
+
+  for (const [slug, content] of Object.entries(practicalContent)) {
+    for (const [index, place] of (content.places ?? []).entries()) {
+      if (place.category !== "MIKVAH") continue;
+      const sourceUrl = place.source?.trim();
+      if (!sourceUrl || !isAllowedSource(sourceUrl)) continue;
+      const bulk = getBulkDestination(slug);
+      const heritage = heritageDestinations.find((item) => item.slug === slug);
+      const city = bulk?.city ?? heritage?.city ?? slug;
+      const country = bulk?.country ?? heritage?.country ?? "";
+      out.push({
+        id: `static-practical-${slug}-${index}`,
+        name: place.name,
+        address: place.address ?? null,
+        phone: place.phone ?? null,
+        hours: place.hours ?? null,
+        notes: place.notes ?? null,
+        website: place.website ?? null,
+        sourceUrl,
+        coordinates: place.coordinates ?? null,
+        city,
+        country,
+        destinationSlug: slug,
+        href: destinationHrefFor(slug, city),
+        fromDatabase: false,
+      });
+    }
+  }
+
+  for (const cemetery of cemeteries) {
+    for (const [index, place] of (cemetery.places ?? []).entries()) {
+      if (place.category !== "MIKVAH") continue;
+      const sourceUrl = (place.source ?? cemetery.sourceUrl)?.trim();
+      if (!sourceUrl || !isAllowedSource(sourceUrl)) continue;
+      out.push({
+        id: `static-cemetery-${cemetery.slug}-${index}`,
+        name: place.name,
+        address: place.address ?? null,
+        phone: place.phone ?? null,
+        hours: place.hours ?? null,
+        notes: place.notes ?? null,
+        website: place.website ?? null,
+        sourceUrl,
+        coordinates: place.coordinates ?? null,
+        city: cemetery.city,
+        country: cemetery.country,
+        destinationSlug: cemetery.slug,
+        href: `/cemeteries/${cemetery.slug}`,
+        fromDatabase: false,
+      });
+    }
+  }
+
+  return dedupeByNameCity(out).sort(byCountryCityName);
+}
+
+function byCountryCityName(a: MikvahListing, b: MikvahListing): number {
+  return a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || a.name.localeCompare(b.name);
+}
+
+function dedupeByNameCity(listings: MikvahListing[]): MikvahListing[] {
+  const seen = new Set<string>();
+  const out: MikvahListing[] = [];
+  for (const listing of listings) {
+    const key = `${listing.name.toLocaleLowerCase("en")}|${listing.city.toLocaleLowerCase("en")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(listing);
+  }
+  return out;
+}
+
+type DbMikvahRow = {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  hours: string | null;
+  notes: string | null;
+  website: string | null;
+  sourceUrl: string | null;
+  coordinates: string | null;
+  status: "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW";
+  destination: { slug: string; city: string; country: string };
+};
+
+/** Pure mapper — exported for tests. */
+export function mikvahListingFromDbRow(row: DbMikvahRow): MikvahListing | null {
+  if (row.status !== "PUBLISHED") return null;
+  if (!isAllowedSource(row.sourceUrl)) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    phone: row.phone,
+    hours: row.hours,
+    notes: row.notes,
+    website: row.website,
+    sourceUrl: row.sourceUrl!,
+    coordinates: row.coordinates,
+    city: row.destination.city,
+    country: row.destination.country,
+    destinationSlug: row.destination.slug,
+    href: destinationHrefFor(row.destination.slug, row.destination.city),
+    fromDatabase: true,
+    status: row.status,
+  };
+}
+
+/**
+ * Public mikvaos: published DB rows when available, otherwise the static
+ * source-backed catalog. Never mixes drafts into the public list.
+ */
+export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
+  if (!process.env.DATABASE_URL) return staticMikvahListings();
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.practicalPlace.findMany({
+      where: { category: "MIKVAH", status: "PUBLISHED" },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        hours: true,
+        notes: true,
+        website: true,
+        sourceUrl: true,
+        coordinates: true,
+        status: true,
+        destination: { select: { slug: true, city: true, country: true } },
+      },
+      orderBy: [{ destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
+    });
+    const published = rows.map(mikvahListingFromDbRow).filter((row): row is MikvahListing => Boolean(row));
+    if (published.length > 0) return published;
+  } catch (error) {
+    console.error("[mikvaos] DB read failed — using static catalog", error);
+  }
+  return staticMikvahListings();
+}
+
+/** Admin overview: every MIKVAH row including drafts that still need work. */
+export async function listMikvaosForAdmin(): Promise<
+  Array<MikvahListing & { status: "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW"; verification: string }>
+> {
+  if (!process.env.DATABASE_URL) {
+    return staticMikvahListings().map((listing) => ({
+      ...listing,
+      status: "PUBLISHED" as const,
+      verification: "NEEDS_VERIFICATION",
+    }));
+  }
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.practicalPlace.findMany({
+      where: { category: "MIKVAH" },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        hours: true,
+        notes: true,
+        website: true,
+        sourceUrl: true,
+        coordinates: true,
+        status: true,
+        verification: true,
+        destination: { select: { slug: true, city: true, country: true } },
+      },
+      orderBy: [{ status: "asc" }, { destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      address: row.address,
+      phone: row.phone,
+      hours: row.hours,
+      notes: row.notes,
+      website: row.website,
+      sourceUrl: row.sourceUrl ?? "",
+      coordinates: row.coordinates,
+      city: row.destination.city,
+      country: row.destination.country,
+      destinationSlug: row.destination.slug,
+      href: destinationHrefFor(row.destination.slug, row.destination.city),
+      fromDatabase: true,
+      status: row.status,
+      verification: row.verification,
+    }));
+  } catch (error) {
+    console.error("[mikvaos] admin list failed", error);
+    return [];
+  }
+}
+
+/** Published mikvaos whose destination cities match a vacation destination. */
+export async function publishedMikvaosForCities(cities: readonly string[]): Promise<MikvahListing[]> {
+  const wanted = new Set(cities.map((city) => city.toLocaleLowerCase("en")));
+  const all = await listPublishedMikvaos();
+  return all.filter((listing) => wanted.has(listing.city.toLocaleLowerCase("en")));
+}
