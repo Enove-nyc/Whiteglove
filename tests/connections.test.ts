@@ -186,6 +186,16 @@ describe("nothing is invisible", () => {
     );
   });
 
+  it("reads every described variable on the Connections screen itself", () => {
+    // Next substitutes `process.env.X` by name at build time, so a variable
+    // the screen forgets to name reads as empty forever — the screen says
+    // "not set" about a key that IS set, which is worse than saying nothing.
+    // Google sign-in sat like that: described here, never read there.
+    const page = readFileSync("app/admin/settings/connections/page.tsx", "utf8");
+    const unread = CONNECTIONS.flatMap((c) => c.vars).filter((name) => !page.includes(`process.env.${name}`));
+    assert.deepEqual(unread, [], `described but never read by the screen, so they always show as not set: ${unread.join(", ")}`);
+  });
+
   it("describes nothing the code does not read", () => {
     // The other direction. A connection listed but never read is a key
     // somebody would go and get for no reason.
