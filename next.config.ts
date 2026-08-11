@@ -65,6 +65,13 @@ const nextConfig: NextConfig = {
       // address redirects permanently so old links and any ranking carry
       // across to the page that does the work.
       { source: "/flights", destination: "/book", permanent: true },
+      // /cars went the same way, and kept the one thing it had that the
+      // booking page did not: the destination pages link with the place
+      // already filled in, so the search opens on it rather than asking a
+      // visitor who has just been told the site knows where they are going.
+      // The tab is named in the query string; ?destination= carries across on
+      // the links that had it. See app/book/page.tsx.
+      { source: "/cars", destination: "/book?type=cars", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];
   },

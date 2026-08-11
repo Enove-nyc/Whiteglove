@@ -26,7 +26,16 @@ import { citiesFor, staySearchHref } from "@/lib/stay-search";
 
 const PAGE = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
 const STICKY = readFileSync("components/DestinationStickyCta.tsx", "utf8");
-const CARS = readFileSync("app/cars/page.tsx", "utf8");
+/**
+ * The car search, which is a tab on the booking page rather than a page.
+ *
+ * /cars was deleted: it ran the same partner search as that tab, and the one
+ * thing it did that the tab did not — opening on the destination the visitor
+ * came from — moved across with it. So the assertions that used to be made
+ * against app/cars/page.tsx are made against these two instead.
+ */
+const BOOK = readFileSync("app/book/page.tsx", "utf8");
+const PARTNERS = readFileSync("components/BookPartners.tsx", "utf8");
 /** The bar without its comments, which explain why it is not a fixed one. */
 const STICKY_CODE = STICKY.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
@@ -91,13 +100,20 @@ describe("what the commercial links promise", () => {
     }
   });
 
-  it("CARRIES THE DESTINATION TO A CAR PAGE THAT READS IT", () => {
+  it("CARRIES THE DESTINATION TO A CAR SEARCH THAT READS IT", () => {
     // A link that says the site knows where you are going and then asks again
-    // is worse than one that never claimed to.
-    assert.match(PAGE, /\/cars\?destination=\$\{encodeURIComponent\(destination\.name\)\}/);
-    assert.match(STICKY, /\/cars\?destination=\$\{encodeURIComponent\(destination\)\}/);
-    assert.match(CARS, /searchParams: Promise<\{ destination\?: string \| string\[\] \}>/);
-    assert.match(CARS, /destinationValue=\{pickUp\}/);
+    // is worse than one that never claimed to. Both links go through
+    // bookingHref rather than naming /book — see tests/booking-link.test.ts —
+    // and both open the Cars tab with the place already in it.
+    assert.match(PROSE, /bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)/);
+    assert.match(PROSE, /carsHref=\{bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)\}/);
+    assert.match(STICKY_CODE, /href=\{carsHref\}/);
+    // And the booking page reads both halves of that link.
+    assert.match(BOOK, /destination\?: string \| string\[\]/);
+    assert.match(BOOK, /initialKind=\{initialKind\}/);
+    assert.match(BOOK, /q\.type === "cars"/);
+    // …and hands the place to the form that asks for one.
+    assert.match(PARTNERS, /useState\(prefill\?\.destination \?\? ""\)/);
   });
 
   it("PREFILLS NO AIRPORT CODE IT DOES NOT HAVE", () => {
@@ -114,13 +130,17 @@ describe("what the commercial links promise", () => {
     assert.doesNotMatch(STICKY_CODE, /["'`]\/book/);
     assert.match(STICKY_CODE, /href=\{flightsHref\}/);
     assert.match(PROSE, /flightsHref=\{bookingHref\(booking, \{ type: "flights" \}\)\}/);
+    // The flight prefill the booking page does accept is dates and airport
+    // codes from the planner, which has both. The destination name is not one
+    // of them, and must not quietly become one.
+    assert.doesNotMatch(PARTNERS, /prefill\?\.destination[^\n]*legs/);
   });
 
-  it("clamps what arrives on the car page rather than printing it", () => {
+  it("clamps what arrives on the car search rather than printing it", () => {
     // It lands in a text field as though the visitor typed it, and a link is
     // not a trustworthy author.
-    assert.match(CARS, /\.slice\(0, 80\)/);
-    assert.match(CARS, /Array\.isArray\(raw\)/, "a repeated parameter would render as an array");
+    assert.match(BOOK, /\.slice\(0, 80\)/);
+    assert.match(BOOK, /Array\.isArray\(q\.destination\)/, "a repeated parameter would render as an array");
   });
 });
 

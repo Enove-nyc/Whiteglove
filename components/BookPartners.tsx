@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { type Leg, type SearchShape, airportCode, describeSearch, searchProblem } from "@/lib/kayak-search";
@@ -110,20 +110,32 @@ export type PendingBooking = {
  * off the public site entirely. lib/booking-partners.ts cannot route the
  * public site to it at all.
  */
-export default function BookPartners({ prefill, multiCity = true }: { prefill?: Prefill; multiCity?: boolean }) {
+export default function BookPartners({
+  prefill,
+  multiCity = true,
+  initialKind = "hotels",
+}: {
+  prefill?: Prefill;
+  multiCity?: boolean;
+  /**
+   * Which tab opens. HOTELS BY DEFAULT, not flights: accommodation is the one
+   * product this site knows something a comparison site does not — which
+   * quarter makes Shabbos walkable, what is within a walk of it — so it is the
+   * tab that earns the visit. Flights and cars are the same search anybody can
+   * run anywhere.
+   *
+   * The page resolves `?type=` and hands it in, rather than this component
+   * reading the URL in an effect after mount. It used to do the latter, which
+   * meant a link to the car search painted Hotels first and swapped a frame
+   * later — visible, and wrong for the whole of that frame. It matters more now
+   * that /cars is this tab rather than a page.
+   */
+  initialKind?: Kind;
+}) {
   const [pay, setPay] = useState<Pay>("cash");
-  // HOTELS OPENS, not flights. Accommodation is the one product this site
-  // knows something a comparison site does not — which quarter makes Shabbos
-  // walkable, what is within a walk of it — so it is the tab that earns the
-  // visit. Flights and cars are the same search anybody can run anywhere.
-  const [kind, setKind] = useState<Kind>("hotels");
+  const [kind, setKind] = useState<Kind>(initialKind);
   const [added, setAdded] = useState(false);
   const [pending, setPending] = useState<PendingBooking | null>(null);
-
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("type");
-    if (requested === "flights" || requested === "hotels" || requested === "cars") setKind(requested);
-  }, []);
 
   // Save items into the traveler's itinerary (localStorage + account sync).
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {
@@ -201,8 +213,8 @@ export default function BookPartners({ prefill, multiCity = true }: { prefill?: 
       {pay === "cash" && kind === "flights" && (
         <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} multiCity={multiCity} />
       )}
-      {pay === "cash" && kind === "hotels" && <HotelsForm onAdd={addToTrip} onOpened={setPending} />}
-      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} />}
+      {pay === "cash" && kind === "hotels" && <HotelsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} />}
+      {pay === "cash" && kind === "cars" && <CarsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} />}
 
       {pay === "miles" && kind === "flights" && <MilesFlightsForm onAdd={addToTrip} />}
       {pay === "miles" && kind === "hotels" && <MilesHotelsForm onAdd={addToTrip} />}
@@ -238,7 +250,20 @@ type AddFn = (patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activiti
  * to type them again to look at flights. Read once, at first render, so the
  * form stays theirs to change afterwards.
  */
-export type Prefill = { from?: string; to?: string; depart?: string; ret?: string };
+/**
+ * What a link may fill in before anybody types.
+ *
+ * `destination` is the place, and it belongs to the two searches that ask for
+ * one — the car pick-up and the hotel city. It arrives from the destination
+ * pages, which know where the visitor is going: `/book?type=cars&destination=Rome`
+ * is what /cars used to be, and a link that says the site knows where you are
+ * going and then asks again is worse than one that never claimed to.
+ *
+ * It is NOT used to prefill a flight. That form asks for an airport code, this
+ * site holds none for a vacation destination, and several destinations are
+ * regions with three airports — see components/DestinationStickyCta.tsx.
+ */
+export type Prefill = { from?: string; to?: string; depart?: string; ret?: string; destination?: string };
 
 // ---- Cash --------------------------------------------------------------
 
@@ -412,8 +437,8 @@ function FlightsForm({ onAdd, onOpened, prefill, multiCity = true }: { onAdd: Ad
   );
 }
 
-function HotelsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
-  const [dest, setDest] = useState("");
+function HotelsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
+  const [dest, setDest] = useState(prefill?.destination ?? "");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [guests, setGuests] = useState("2");
@@ -479,8 +504,8 @@ function HotelsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBo
  * key for the flight AND CAR searches that open on Kayak", which was a promise
  * the code did not keep.
  */
-function CarsForm({ onAdd, onOpened }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void }) {
-  const [loc, setLoc] = useState("");
+function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
+  const [loc, setLoc] = useState(prefill?.destination ?? "");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [error, setError] = useState("");

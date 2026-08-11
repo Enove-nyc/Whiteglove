@@ -616,20 +616,22 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
         <Section id="getting-around" title="Getting there and around">
           <p className="max-w-3xl text-lg leading-8 text-stone-600">{destination.transport}</p>
-          {/* The car search, on the page that runs it, carrying the
-              destination — a link that says the site knows where you are going
-              and then asks again is worse than one that never claimed to.
+          {/* The car search, carrying the destination as the pick-up — a link
+              that says the site knows where you are going and then asks again
+              is worse than one that never claimed to.
 
-              Flights used to sit beside it as a second button pointing at
-              /flights. That page is gone and its search is a tab on the
-              booking page, which is the "Everything in one search" link
-              directly below — so a Search flights button here would be the
-              same destination twice, and a hardcoded one at that. The booking
-              path can be locked from the admin; only the resolved link may be
-              printed on a public page. See lib/booking-access.ts. */}
+              It opens the booking page on its Cars tab. /cars and /flights
+              were separate pages running these same partner searches and have
+              folded into that one; the flights button that used to sit beside
+              this one is gone rather than repointed, because the "Everything
+              in one search" link directly below is now the same destination.
+
+              RESOLVED, NEVER A TYPED /book: the owner can put that path behind
+              an access code, and this is a public page. Only bookingHref may
+              decide where a booking link lands. See lib/booking-access.ts. */}
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href={`/cars?destination=${encodeURIComponent(destination.name)}`}
+              href={bookingHref(booking, { type: "cars", destination: destination.name })}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
             >
               Car hire in {destination.name}
@@ -696,6 +698,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <DestinationStickyCta
           destination={destination.name}
           flightsHref={bookingHref(booking, { type: "flights" })}
+          carsHref={bookingHref(booking, { type: "cars", destination: destination.name })}
         />
       </div>
 
