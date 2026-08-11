@@ -456,7 +456,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span className="text-sm font-semibold text-[var(--navy)]">Rooms for this trip</span>
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
-          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel /></div>
+          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel itin={itin} onChange={persist} /></div>
         </details>
       </div>
 

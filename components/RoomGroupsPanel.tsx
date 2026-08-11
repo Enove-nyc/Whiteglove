@@ -1,8 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { useState } from "react";
-import { emptyItinerary, travelersOf, type Itinerary } from "@/data/itinerary";
+import { travelersOf, type Itinerary } from "@/data/itinerary";
 import {
   assignTravelerRoom,
   roomLabelProblem,
@@ -10,28 +9,6 @@ import {
   type TripRoom,
   unassignedTravelers,
 } from "@/lib/trip-collaboration";
-
-const STORAGE_KEY = "wg-itinerary";
-
-function subscribe(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener("wg-itinerary-changed", onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener("wg-itinerary-changed", onChange);
-  };
-}
-
-function readItinerary(): Itinerary {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyItinerary();
-    const parsed = JSON.parse(raw) as Itinerary;
-    return parsed && typeof parsed === "object" ? parsed : emptyItinerary();
-  } catch {
-    return emptyItinerary();
-  }
-}
 
 function newRoomId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `room-${crypto.randomUUID()}`;
@@ -43,20 +20,36 @@ function newRoomId(): string {
  *
  * Stored on the itinerary JSON with the trip, so sharing and printing carry
  * the same rooming list. Purely self-service — no quote request.
+ *
+ * THE TRIP COMES FROM THE PLANNER, and this panel does not go looking for it.
+ * It used to read localStorage itself through useSyncExternalStore, which was
+ * wrong three times over:
+ *
+ *   • The snapshot was parsed afresh on every read, so React got a new object
+ *     each time, re-rendered, read again, and never stopped — "Maximum update
+ *     depth exceeded". The error boundary above it took the whole planner down
+ *     with it, so /itinerary lost everything below the assistant box.
+ *   • It read "wg-itinerary". Every other part of the trip is kept under
+ *     "whiteGloveItinerary", so the panel was looking at a trip that did not
+ *     exist and never saw the travelers it is meant to group.
+ *   • It wrote straight to storage. The planner holds the trip in state and
+ *     saves the whole thing on the next edit, so a room added here was
+ *     overwritten by the next change made anywhere else, and never reached the
+ *     account, the shared copy or the printed one.
+ *
+ * Taking the trip as a prop and handing changes back settles all three: one
+ * copy of the trip, saved the one way the planner saves everything.
  */
-export default function RoomGroupsPanel() {
-  const itin = useSyncExternalStore(subscribe, readItinerary, emptyItinerary);
+export default function RoomGroupsPanel({
+  itin,
+  onChange,
+}: {
+  itin: Itinerary;
+  /** Saves the trip the way the planner saves every other edit — storage and account. */
+  onChange: (next: Itinerary) => void;
+}) {
   const [roomName, setRoomName] = useState("");
   const [error, setError] = useState("");
-
-  function persist(next: Itinerary) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, updatedAt: new Date().toISOString() }));
-      window.dispatchEvent(new Event("wg-itinerary-changed"));
-    } catch {
-      setError("Could not save rooms on this device.");
-    }
-  }
 
   const rooms = roomsOf(itin);
   const travelers = travelersOf(itin);
@@ -75,12 +68,12 @@ export default function RoomGroupsPanel() {
       label: roomName.trim(),
       travelerIds: [],
     };
-    persist({ ...itin, rooms: [...rooms, room] });
+    onChange({ ...itin, rooms: [...rooms, room] });
     setRoomName("");
   }
 
   function move(travelerId: string, roomId: string | null) {
-    persist({ ...itin, rooms: assignTravelerRoom(rooms, travelerId, roomId) });
+    onChange({ ...itin, rooms: assignTravelerRoom(rooms, travelerId, roomId) });
   }
 
   if (travelers.length === 0) {
