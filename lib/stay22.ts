@@ -210,6 +210,50 @@ export function stay22SearchUrl(searchUrl: string, link: Stay22Link | null): str
 }
 
 /**
+ * GetYourGuide's own search address for a place.
+ *
+ * WHY THIS EXISTS AT ALL. The tours hand-off was a landing link: whatever the
+ * owner pasted, opened as-is, so every visitor arrived at the same GetYourGuide
+ * page whether they had been reading about Rome or about Kraków. The site knows
+ * which — it is the whole point of the page they came from — and throwing that
+ * away is the same mistake as a car link that carries no city.
+ *
+ * IT IS ONLY BUILT WHEN THE PASTED LINK IS A STAY22 GETYOURGUIDE DESK. That is
+ * what `link=` is for: a slot the traveller's own search goes into, exactly as
+ * the Kayak chain above uses it. A Travelpayouts link, or a plain GetYourGuide
+ * URL, has no such slot — those still open the landing page, unchanged, because
+ * a search this site cannot express is better sent as a page that works than
+ * as a guess that does not.
+ *
+ * NOT VERIFIED END TO END FROM HERE, and that is worth saying plainly next to
+ * the Kayak chain that was. GetYourGuide answers 403 to every automated
+ * request, including addresses known to be good, so the 403 tells us nothing
+ * either way and no trace was possible. `/s/?q=` is GetYourGuide's own search
+ * address as used by their site. A wrong one does not throw — it opens a front
+ * page and the referral is lost in silence — so this is the one link on the
+ * site whose first click should be somebody's rather than a test's.
+ */
+export function getYourGuideSearchUrl(where: string): string {
+  return `https://www.getyourguide.com/s/?q=${encodeURIComponent(where.trim())}`;
+}
+
+/** The Stay22 desk that sells tours. */
+export const TOURS_DESK = "getyourguide";
+
+/**
+ * The tours hand-off for a place, or null when it cannot be built.
+ *
+ * Null means "use what the owner pasted" — never a broken link.
+ */
+export function tourSearchUrl(where: string, pasted: string): string | null {
+  const place = where.trim();
+  if (!place) return null;
+  const link = readStay22Link(pasted);
+  if (!link || link.desk !== TOURS_DESK) return null;
+  return stay22SearchUrl(getYourGuideSearchUrl(place), link);
+}
+
+/**
  * What the search button should say.
  *
  * THE PARTNER IS NOT NAMED, and that is the owner's decision rather than an

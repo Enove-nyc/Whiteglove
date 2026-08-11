@@ -2,6 +2,7 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
 
@@ -62,10 +63,17 @@ export default async function AttractionsPage() {
           buy a ticket for it; the same block above the directory would be an
           advert in front of the thing they came for. Renders nothing until the
           owner has a tours hand-off enabled and configured. */}
+      {/* The search, when the pasted link is a Stay22 tours desk — it carries
+          the city, so the partner opens on somewhere rather than on their front
+          page. Renders nothing otherwise, and the row below covers that case. */}
+      <TourBooking />
+
+      {/* Everything else the owner has enabled for this page, and the tours
+          card itself when it cannot be made into a search. */}
       <TravelEssentials
         pageType="things-to-do"
-        heading="Tickets and guided visits"
-        intro="For the places above that need booking ahead. Prices, availability and terms are the provider's."
+        heading="Before you go"
+        intro="Practical add-ons for the days above. Prices, availability and terms are the provider's."
         placement="things-to-do-essentials"
       />
 
