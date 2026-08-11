@@ -11,11 +11,14 @@ export default async function AboutSettingsPage() {
       <header>
         <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">About</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          <strong className="font-semibold text-[var(--navy)]">Where the business is based is the only one of these
-          the public page needs.</strong>{" "}
-          It appears as a sentence at the end of the opening paragraphs. The rest — name, photograph, experience,
-          languages, why White Glove exists — are optional, stay off the page while they are blank, and nothing on the
-          site asks for them.
+          <strong className="font-semibold text-[var(--navy)]">Nothing on this screen is required, and the About page
+          is finished without any of it.</strong>{" "}
+          It already says what the site is for and what its information is worth, which is what a visitor is deciding
+          about. Every field here is optional, stays off the page while it is blank, and none of them is a gap.
+        </p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          Fill one in only if you want it public. “Where” is for a business with a place; a website does not need one,
+          and leaving it empty is the normal state rather than an unfinished one.
         </p>
       </header>
       <AboutProfileForm current={profile} storeReady={storeReady} />

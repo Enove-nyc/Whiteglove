@@ -186,8 +186,22 @@ describe("two things this site is not", () => {
     assert.match(AGENTS_MD, /## The paid planning service is a last resort/);
     assert.match(AGENTS_MD, /Do not ask the owner to price it/i);
     assert.match(AGENTS_MD, /## Settled decisions/);
-    assert.match(AGENTS_MD, /carries no name and no background/i);
+    assert.match(AGENTS_MD, /carries no personal facts at all/i);
+    // THE NEWEST OF THESE, and the easiest to undo in good faith. The rule
+    // used to read "no name and no background — only where the business is
+    // based", so the obvious next kindness was to ask him for a town and put
+    // it on the page. There is no town: White Glove is a website, not a
+    // business with a place, and the About page is finished without one.
+    assert.match(AGENTS_MD, /not based anywhere/i);
     assert.match(AGENTS_MD, /## Working with the owner/);
+  });
+
+  it("ASKS FOR NO LOCATION ANYWHERE THE OWNER WILL SEE IT", () => {
+    // The admin screen is where a "you have not filled this in" nudge would
+    // live, so it is the screen that has to say the opposite.
+    const aboutAdmin = readFileSync("app/admin/settings/about/page.tsx", "utf8");
+    assert.match(aboutAdmin, /Nothing on this screen is required/i);
+    assert.doesNotMatch(aboutAdmin, /is the only one of these the public page needs/i);
   });
 
   it("QUOTES NO PRICE FOR PLANNING WORK", () => {
