@@ -145,7 +145,20 @@ export type WordField = {
   long?: boolean;
   /**
    * Owner must decide before this can be a real public answer.
-   * Shown in Admin → Words; public page already marks PRICE_NOT_PUBLISHED.
+   * Shown in Admin → Words as an amber badge.
+   *
+   * NOTHING SETS THIS TODAY, AND THE PRICING LINES MUST NOT SET IT AGAIN.
+   * The six pricing questions carried it — where prices start, how long a
+   * quote takes, whether a fee comes off a booking, how long planning takes,
+   * cancellation, and support afterwards — which put six permanent "Needs
+   * your decision" badges on the Words screen. The owner has answered them,
+   * once, for good: he is not pricing the planning service, because it is the
+   * bottom option and not something this website sells. See AGENTS.md.
+   *
+   * The fields stay editable, so the day he wants a price there is somewhere
+   * to put one. What is gone is the screen telling him he owes an answer.
+   * The public page never needed it either — publicPricingView() already
+   * collapses every unanswered line into one polished note.
    */
   needsOwnerDecision?: boolean;
   /** Short example of a defendable answer — guidance, never published as fact. */
@@ -186,8 +199,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page, first",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. A starting fee or typical range you will honour — or leave the built-in “ask when you write in” line.",
+    guidance: "Optional. A starting fee or typical range you will honour — or leave the built-in “ask when you write in” line.",
     example: "Planning usually starts from £X for a short city break; longer or multi-city trips are quoted after we understand the brief.",
   },
   { key: "pricingWhatAffects", group: "pricing", label: "What moves the number", where: "on the Services page", href: "/services", long: true },
@@ -198,8 +210,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. How long until they hear a price — not how long planning takes once hired.",
+    guidance: "Optional. How long until they hear a price — not how long planning takes once hired.",
     example: "A first quote usually comes back within a few working days once we have the dates and places.",
   },
   { key: "pricingRevisions", group: "pricing", label: "Whether changes cost extra", where: "on the Services page", href: "/services", long: true },
@@ -211,8 +222,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. Is any planning fee credited toward booking assistance, or is it separate?",
+    guidance: "Optional. Is any planning fee credited toward booking assistance, or is it separate?",
     example: "The planning fee is for the itinerary. If you later hire us to book, we will say whether any of it is credited before that work starts.",
   },
   {
@@ -222,8 +232,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. Typical duration once planning has started — distinct from quote turnaround.",
+    guidance: "Optional. Typical duration once planning has started — distinct from quote turnaround.",
     example: "A straightforward city break is often ready within about two weeks of kickoff; heritage or multi-country trips take longer.",
   },
   {
@@ -233,8 +242,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. Cancellation / refund for planning work — only what you will actually do.",
+    guidance: "Optional. Cancellation / refund for planning work — only what you will actually do.",
     example: "If you cancel before planning starts, you owe nothing. Once work has begun, the fee for work already done is not refundable; unused paid time is discussed case by case.",
   },
   {
@@ -244,8 +252,7 @@ export const FIELDS: WordField[] = [
     where: "on the Services page",
     href: "/services",
     long: true,
-    needsOwnerDecision: true,
-    guidance: "Owner decision required. What support exists after delivery, and for how long.",
+    guidance: "Optional. What support exists after delivery, and for how long.",
     example: "Questions about the written plan are welcome for a set window after delivery; changes that need new research are a new piece of work.",
   },
   { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
