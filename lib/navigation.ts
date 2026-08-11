@@ -84,8 +84,11 @@ export const BOOKING_NAV: NavItem = {
  * Search & Book button, which searches the same three things. That tripled the
  * booking pitch and crowded the first item onto the logo at 1280px. The menu
  * used to list Hotels, Flights, Cars and the combined search as four separate
- * links to the same job — they are one entry now. Dedicated /hotels, /flights
- * and /cars addresses stay for deep links and stay-search content.
+ * links to the same job — they are one entry now, and /flights and /cars have
+ * since been deleted outright: both ran the same partner searches as the
+ * booking page's own tabs, so they redirect to it. /hotels keeps its own
+ * address, because the stay directory and the quarters are not on the booking
+ * page and are the one thing here a comparison site cannot do.
  */
 export const PRIMARY_NAV: readonly NavItem[] = [
   {

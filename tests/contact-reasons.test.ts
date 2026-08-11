@@ -210,8 +210,6 @@ describe("personal booking assistance is offered here and nowhere else", () => {
     "app/destinations/(hub)/page.tsx",
     "app/destinations/[destination]/page.tsx",
     "app/hotels/page.tsx",
-    "app/flights/page.tsx",
-    "app/cars/page.tsx",
     "app/book/page.tsx",
     "components/Footer.tsx",
     "components/Navbar.tsx",

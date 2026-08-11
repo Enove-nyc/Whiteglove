@@ -141,17 +141,11 @@ export const CONNECTIONS: Connection[] = [
     weight: "nicety",
   },
   {
-    vars: ["AMADEUS_CLIENT_ID", "AMADEUS_CLIENT_SECRET"],
-    what: "Live flight schedules.",
+    vars: ["AERODATABOX_API_KEY"],
+    what: "Live flight schedules — looking a flight up by its number.",
     without: "A traveller typing a flight number gets nothing back and has to enter the times by hand.",
     weight: "nicety",
-    where: "Amadeus for Developers — free tier.",
-  },
-  {
-    vars: ["AERODATABOX_API_KEY"],
-    what: "The second source for a flight number, when Amadeus does not have it.",
-    without: "Some flight numbers — smaller carriers especially — cannot be looked up.",
-    weight: "nicety",
+    where: "AeroDataBox, through RapidAPI. The free tier is small, so a busy minute can hit its limit.",
   },
   {
     vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY"],
@@ -197,13 +191,6 @@ export const CONNECTIONS: Connection[] = [
     vars: ["SITE_PREVIEW_PASSWORD"],
     what: "The one-off code for somebody you want to show the site to while it is closed.",
     without: "Only the full code gets anybody in while the site is locked, and that code lets them keep coming back.",
-    weight: "nicety",
-  },
-  {
-    vars: ["AMADEUS_HOSTNAME"],
-    what: "Which Amadeus to talk to. Their test environment unless this says otherwise.",
-    without:
-      "Flight lookups go to the test service, which has a small and out-of-date set of flights. Set it to the live host once the account is approved.",
     weight: "nicety",
   },
   {

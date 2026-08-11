@@ -95,7 +95,11 @@ describe("hotels first", () => {
     // Accommodation is the one product this site knows something a comparison
     // site does not — which quarter makes Shabbos walkable — so it is the tab
     // that earns the visit.
-    assert.match(PANEL, /useState<Kind>\("hotels"\)/);
+    // The default is the prop's default now, because a link may ask for a
+    // particular tab: /cars folded into this page and redirects to
+    // ?type=cars, which the page resolves and hands in. Absent that, hotels.
+    assert.match(PANEL, /initialKind = "hotels"/);
+    assert.match(PANEL, /useState<Kind>\(initialKind\)/);
     const tabs = PANEL.slice(PANEL.indexOf("What are you booking?"));
     const order = ["hotels", "flights", "cars"].map((kind) => tabs.indexOf(`setKind("${kind}")`));
     assert.ok(order[0] >= 0 && order[0] < order[1] && order[1] < order[2], "the tab order is not hotels, flights, cars");
@@ -142,8 +146,17 @@ describe("what is not bookable is named", () => {
     assert.match(PROSE, /Things to do/);
     assert.match(PROSE, /We do not book transfers yet/);
     assert.match(PROSE, /We do not sell tickets yet/);
-    // And each points somewhere that does help.
-    assert.match(PROSE, /href="\/cars"/);
-    assert.match(PROSE, /href="\/things-to-do"/);
+    // Drivers joined them when /cars folded into this page: that page named
+    // three ways of getting around and only car hire was ever bookable.
+    assert.match(PROSE, /Drivers on a heritage route/);
+    // And each points somewhere that does help. There is no /cars button here
+    // any more — the car search is a tab at the top of this same page, so a
+    // link to it was a link back up the page you were already on.
+    assert.doesNotMatch(PROSE, /["'`]\/cars/);
+    // The link now travels with the card it belongs to rather than sitting in
+    // a row of buttons underneath, so it is declared beside its own sentence.
+    assert.match(PROSE, /href: "\/directory"/);
+    assert.match(PROSE, /href: "\/things-to-do"/);
+    assert.match(PROSE, /href=\{link\.href\}/);
   });
 });

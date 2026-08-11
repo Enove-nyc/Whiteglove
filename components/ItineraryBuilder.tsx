@@ -1397,7 +1397,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
     if (!flightNumber) { setLegStatus("Enter the next flight number."); return; }
     if (!f.to?.trim()) { setLegStatus("Fill in where this flight lands first — that becomes the connection."); return; }
     // The onward leg leaves on the day this one lands, which is not always the
-    // day it left. Asking Amadeus for the wrong date finds nothing.
+    // day it left. Asking the schedule service for the wrong date finds nothing.
     const date = f.date
       ? flightArrivalDate({ id: "draft", from: f.from ?? "", to: f.to ?? "", date: f.date, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: f.stops })
       : startDate;

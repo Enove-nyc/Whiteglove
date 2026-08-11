@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseLocal, readAmadeusFlight, splitFlightNumber, type AmadeusDated, type LookupFlight } from "@/lib/flight-lookup";
+import { parseLocal, type LookupFlight } from "@/lib/flight-lookup";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 20;
@@ -9,44 +9,16 @@ export const maxDuration = 20;
 // details: without a configured provider, or when the flight is not found,
 // we say so and return nothing to fill.
 //
-// Two free providers are supported; whichever is configured is used.
-//   1. Amadeus for Developers  (AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET)
-//      — email sign-up, no RapidAPI, and its schedule API covers future dates.
-//   2. AeroDataBox via RapidAPI (AERODATABOX_API_KEY).
+// One provider: AeroDataBox via RapidAPI (AERODATABOX_API_KEY).
+//
+// Amadeus was supported here too, and picked FIRST whenever its keys were
+// present — not as a fallback, despite being described as one. So adding
+// Amadeus test keys, which carry a thin schedule, silently replaced a working
+// lookup with a worse one and never fell back. Two providers where only one
+// can ever run is not redundancy, it is a trap for whoever adds the second
+// key. Removed rather than made into a real fallback: nothing was using it.
 
 type LookupResult = { flight?: LookupFlight; reason?: string; moreResults?: number };
-
-async function lookupAmadeus(flightNumber: string, date: string): Promise<LookupResult> {
-  const clientId = process.env.AMADEUS_CLIENT_ID?.trim();
-  const clientSecret = process.env.AMADEUS_CLIENT_SECRET?.trim();
-  const host = process.env.AMADEUS_HOSTNAME?.trim() || "test.api.amadeus.com";
-  if (!clientId || !clientSecret) return { reason: "unconfigured" };
-
-  const parts = splitFlightNumber(flightNumber);
-  if (!parts) return { reason: "Enter a flight number like LY1 or BA2490." };
-
-  const tokenRes = await fetch(`https://${host}/v1/security/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
-    cache: "no-store",
-  });
-  if (!tokenRes.ok) return { reason: "The flight-lookup key was rejected. Check AMADEUS_CLIENT_ID / AMADEUS_CLIENT_SECRET." };
-  const token = ((await tokenRes.json().catch(() => null)) as { access_token?: string } | null)?.access_token;
-  if (!token) return { reason: "The flight-lookup service did not return a token." };
-
-  const res = await fetch(
-    `https://${host}/v2/schedule/flights?carrierCode=${encodeURIComponent(parts.carrierCode)}&flightNumber=${encodeURIComponent(parts.number)}&scheduledDepartureDate=${encodeURIComponent(date)}`,
-    { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
-  );
-  if (res.status === 429) return { reason: "Flight lookups are rate-limited right now — try again shortly, or enter the details by hand." };
-  if (!res.ok) return { reason: `No flight ${flightNumber} found on ${date}. Check the number and date.` };
-
-  const data = ((await res.json().catch(() => null)) as { data?: AmadeusDated[] } | null)?.data ?? [];
-  const flight = readAmadeusFlight(data[0], { ...parts, date });
-  if (!flight) return { reason: `No flight ${flightNumber} found on ${date}. Check the number and date.` };
-  return { flight, moreResults: Math.max(0, data.length - 1) };
-}
 
 type AdbAirport = { iata?: string; icao?: string; name?: string; shortName?: string };
 type AdbEndpoint = { airport?: AdbAirport; scheduledTime?: { local?: string } };
@@ -90,12 +62,10 @@ async function lookupAeroDataBox(flightNumber: string, date: string): Promise<Lo
 }
 
 export async function POST(request: Request) {
-  const hasAmadeus = Boolean(process.env.AMADEUS_CLIENT_ID?.trim() && process.env.AMADEUS_CLIENT_SECRET?.trim());
-  const hasAeroDataBox = Boolean(process.env.AERODATABOX_API_KEY?.trim());
-  if (!hasAmadeus && !hasAeroDataBox) {
+  if (!process.env.AERODATABOX_API_KEY?.trim()) {
     return NextResponse.json({
       available: false,
-      reason: "Flight lookup is off. Add free Amadeus keys (AMADEUS_CLIENT_ID + AMADEUS_CLIENT_SECRET) in the site settings to enable it.",
+      reason: "Flight lookup is off. Add an AERODATABOX_API_KEY in the site settings to enable it.",
     });
   }
 
@@ -110,7 +80,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = hasAmadeus ? await lookupAmadeus(flightNumber, date) : await lookupAeroDataBox(flightNumber, date);
+    const result = await lookupAeroDataBox(flightNumber, date);
     if (result.flight) {
       return NextResponse.json({ available: true, flight: result.flight, moreResults: result.moreResults ?? 0 });
     }

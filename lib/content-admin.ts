@@ -111,17 +111,30 @@ export type ContactFields = {
 export async function createContact(destinationId: string, fields: ContactFields) {
   const prisma = await db();
   return prisma.contact.create({
-    data: { ...fields, status: "VERIFIED", destinationId },
+    // Saved here as VERIFIED, so the day it was saved IS the day somebody last
+    // confirmed it. Stamping it means the date is a record of what happened
+    // rather than something anybody had to remember to type.
+    data: { ...fields, status: "VERIFIED", lastVerified: new Date(), destinationId },
   });
 }
 
 export async function updateContact(id: string, fields: ContactFields) {
   const prisma = await db();
-  const before = await prisma.contact.findUnique({
+  const existing = await prisma.contact.findUnique({
     where: { id },
-    select: { label: true, phone: true, email: true, note: true },
+    select: { label: true, phone: true, email: true, note: true, status: true },
   });
-  const row = await prisma.contact.update({ where: { id }, data: fields });
+  // The change log gets what it always got — status is read for the stamp
+  // below, not to be diffed.
+  const before = existing
+    ? { label: existing.label, phone: existing.phone, email: existing.email, note: existing.note }
+    : null;
+  // ONLY A VERIFIED CONTACT GETS A DATE. lib/verification.ts is explicit that
+  // a date only ever appears beside "Verified" — a date beside "being checked"
+  // would be a date on a thing nobody has checked. Saving an unverified
+  // contact is editing a note, not confirming a phone number answers.
+  const data = existing?.status === "VERIFIED" ? { ...fields, lastVerified: new Date() } : fields;
+  const row = await prisma.contact.update({ where: { id }, data });
   await recordChange({ kind: "contact", rowId: id, title: fields.label, before, after: fields as unknown as Record<string, unknown> });
   return row;
 }

@@ -12,6 +12,7 @@ import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
+import { checkedOn } from "@/lib/trust-status";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
@@ -51,6 +52,25 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
     description: `${guide.city}, ${guide.country}: how to reach the kever of ${guide.tzaddik}, who else is buried there, access and shomer details, kosher food, minyanim and mikvaos — checked before it is published.`,
     path: `/${guide.slug}`,
   });
+}
+
+/**
+ * The day somebody last confirmed this number answers, when there is one.
+ *
+ * A phone number is the most perishable record on the site: it reads as
+ * complete for years after it has stopped working, and a shomer number that
+ * does not answer is the one that strands somebody at a locked gate. So the
+ * date is worth saying where it exists.
+ *
+ * Only the admin-managed contacts carry one, and only once they are verified
+ * — lib/content-admin.ts stamps it on save and refuses to stamp anything that
+ * is not verified. The built-in guide contacts have no date and this says
+ * nothing about them, which is the honest reading of "nobody has checked".
+ */
+function checkedOnFor(contact: unknown): string | null {
+  const value = (contact as { lastVerified?: Date | string | null }).lastVerified;
+  if (!value) return null;
+  return checkedOn(value instanceof Date ? value.toISOString() : String(value));
 }
 
 export default async function CityGuidePage({ params }: { params: Promise<{ city: string }> }) {
@@ -143,7 +163,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
             {accessContacts.length > 0 ? <div className="wg-card mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Shomer & access contact</p>
               <div className="mt-4 space-y-5">
-                {accessContacts.map((contact) => <div key={`${contact.label}-${contact.phone ?? contact.email}`} className="border-t border-[var(--gold-light)] pt-4 first:border-t-0 first:pt-0"><h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{contact.label}</h3><p className="mt-2 text-sm leading-6 text-stone-600">{contact.note}</p><div className="mt-3 flex flex-wrap gap-3">{contact.phone && <a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {contact.phone}</a>}{contact.email && <a href={`mailto:${contact.email}`} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Email access desk</a>}</div></div>)}
+                {accessContacts.map((contact) => <div key={`${contact.label}-${contact.phone ?? contact.email}`} className="border-t border-[var(--gold-light)] pt-4 first:border-t-0 first:pt-0"><h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{contact.label}</h3><p className="mt-2 text-sm leading-6 text-stone-600">{contact.note}</p><div className="mt-3 flex flex-wrap gap-3">{contact.phone && <a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {contact.phone}</a>}{contact.email && <a href={`mailto:${contact.email}`} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Email access desk</a>}</div>{checkedOnFor(contact) && <p className="mt-3 text-[11px] leading-4 text-stone-500">Checked on {checkedOnFor(contact)}</p>}</div>)}
               </div>
             </div> : <div className="wg-card mt-8 border border-dashed border-[var(--gold-light)] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Shomer & access contact</p>

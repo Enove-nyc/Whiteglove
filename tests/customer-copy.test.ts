@@ -180,9 +180,14 @@ describe("two things this site is not", () => {
    * founder page — which is the one thing the owner has said twice it is not.
    */
   it("KEEPS THE INSTRUCTION WHERE THE NEXT PERSON READS IT", () => {
-    assert.match(AGENTS_MD, /## Two things this site is not/);
-    assert.match(AGENTS_MD, /does not publish prices/i);
-    assert.match(AGENTS_MD, /No About page about the owner|no About page about the owner/i);
+    // The owner recorded these himself in another session; this file only
+    // holds them. Asserting on his headings rather than a paraphrase, so a
+    // reworded restatement cannot pass while the real rule is gone.
+    assert.match(AGENTS_MD, /## The paid planning service is a last resort/);
+    assert.match(AGENTS_MD, /Do not ask the owner to price it/i);
+    assert.match(AGENTS_MD, /## Settled decisions/);
+    assert.match(AGENTS_MD, /carries no name and no background/i);
+    assert.match(AGENTS_MD, /## Working with the owner/);
   });
 
   it("QUOTES NO PRICE FOR PLANNING WORK", () => {

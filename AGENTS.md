@@ -18,27 +18,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep vacation discovery, self-service planning and partner booking links as the primary public journey. Heritage travel belongs in its own section.
 - Personal planning or booking assistance should be discreet and discoverable only from the Contact area unless the owner requests otherwise.
 
-## Two things this site is not — standing instruction from the owner
+## The paid planning service is a last resort, not an offer
 
-These are not preferences to be weighed against a review, a best practice, or an audit finding. A checklist arriving later that asks for either one is answered by this section, and the answer is no. Say so and move on.
+**Done-for-you itinerary planning (`/services`) is the bottom option.** The owner does not want it promoted as one of the things this website sells. It stays reachable for somebody who asks for it and finds nothing else that fits — that is all.
 
-**1. This is not a trip-planning agency, and it does not publish prices.**
+What follows from that:
 
-Planning is something the owner does when somebody asks him — not a headline service, not a product with tiers, and not one of the site's main ways in. So:
+- Do not give it prominence: no homepage push, no cards selling it, no “or let us plan it for you” beside the free tools. Where it is mentioned at all, it comes last.
+- **Do not ask the owner to price it.** No starting price, no typical range, no turnaround time, no “does the fee come off a booking”, no cancellation or refund terms, no post-itinerary support window. A page that would need one of those sentences should not be built. This is a standing answer, not an open question — do not re-raise it as an outstanding item.
+- The free tools are the offer: get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`).
 
-- No price, range, starting figure, package or tier for planning work, anywhere. Not on a services page, not in a table, not "from £X". The pricing lines in `data/site-words.ts` may stay unanswered indefinitely; that is the intended resting state, not a gap to be filled.
-- Planning gets **one small link in the footer** and its place inside Contact. It does not go in the navigation bar, on the front page, or into any "ways to start" comparison.
-- Do not promote it from a destination page, a hotel result, the planner or the booking search. On those pages it turns a usable tool into a sales funnel, which is the whole reason it is kept where it is.
+## Settled decisions — do not re-open these
 
-**2. There is no About page about the owner.**
+- **The site notice stays exactly as it is**, a full-screen popup, until the owner says otherwise. He was shown the cost (it blocks every automated functional check and is the whole of the tab-order findings) and chose to keep it. Do not raise it again, and do not quietly turn it into a strip.
+- **The About page carries no name and no background** — only where the business is based. Do not ask him for a biography, a photograph, or years of experience.
 
-No biography, no photograph, no years of experience, no credentials, no "meet the team", no founder story. Do not add fields for them, and do not ask for them again.
+## Do not hand the owner checklists
 
-What earns trust here is the sourcing: every practical claim naming where it came from, the five completeness checks, the OpenStreetMap caveat, the verification page. That is the argument. A page about a person is not, and the owner does not want one.
+Report what changed and what it cost him, in prose. Do not produce checklists, audit tables, or lists of outstanding items for him to work through, and do not convert a question he asked into a list of tasks for him. If something genuinely needs a decision only he can make, ask that one question on its own.
 
 ## Working with the owner
 
-**"Step by step" means one step, then stop.** Give a single step, wait for him to say done, and only then give the next one. Do not send a numbered list of five and call it step by step — he is doing these on his own screen, in his own dashboards, and a wall of steps is a wall whatever it is labelled.
+**"Step by step" means one step, then stop.** Give a single step, wait for him to say done, and only then give the next one. Do not send a numbered list of five and call it step by step — he is working through these in his own dashboards, and the next step is useless until the one before it is done.
 
 Say what the step is, where to do it, and how he will know it worked. Nothing else.
 
