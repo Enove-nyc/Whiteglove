@@ -58,6 +58,20 @@ const nextConfig: NextConfig = {
       // records for, so that is where the address goes.
       { source: "/honeymoon", destination: "/destinations?kind=couples", permanent: true },
       { source: "/kosher-stays", destination: "/hotels", permanent: true },
+      // /flights was a flight search and two "before you book" cards, all of
+      // which /book already does under its Flights tab — with miles as well as
+      // cash. Keeping both meant two pages running the same partner handoff,
+      // and the navigation had already stopped pointing at this one. The
+      // address redirects permanently so old links and any ranking carry
+      // across to the page that does the work.
+      { source: "/flights", destination: "/book", permanent: true },
+      // /cars went the same way, and kept the one thing it had that the
+      // booking page did not: the destination pages link with the place
+      // already filled in, so the search opens on it rather than asking a
+      // visitor who has just been told the site knows where they are going.
+      // The tab is named in the query string; ?destination= carries across on
+      // the links that had it. See app/book/page.tsx.
+      { source: "/cars", destination: "/book?type=cars", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];
   },

@@ -422,31 +422,17 @@ function pushSitePages(docs: DraftDoc[]) {
       keywords: ["documents", "border", "insurance", "points"],
     },
     {
-      id: "page-flights",
-      kind: "Site page",
-      title: "Flights",
-      subtitle: "Search booking partners for flights",
-      href: "/flights",
-      names: ["flights", "flight", "airfare", "plane"],
-      keywords: ["flights", "booking", "air travel"],
-    },
-    {
-      id: "page-cars",
-      kind: "Site page",
-      title: "Cars",
-      subtitle: "Car hire through booking partners",
-      href: "/cars",
-      names: ["cars", "car hire", "car rental", "rental car"],
-      keywords: ["cars", "driving"],
-    },
-    {
       id: "page-book",
       kind: "Site page",
       title: "Search booking partners",
       subtitle: "Flights, hotels and cars",
       href: "/book",
-      names: ["book", "booking", "booking partners"],
-      keywords: ["flights", "hotels", "cars"],
+      // The flight and car words live here rather than on pages of their own:
+      // /flights and /cars were these same searches and now redirect to this
+      // one, so a visitor typing "airfare" or "rental car" should land on the
+      // page that actually runs it.
+      names: ["book", "booking", "booking partners", "flights", "flight", "airfare", "plane", "cars", "car hire", "car rental", "rental car"],
+      keywords: ["flights", "hotels", "cars", "air travel", "driving"],
     },
     {
       id: "page-plan",
