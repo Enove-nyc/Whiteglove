@@ -4,16 +4,18 @@ import { isSafeAboutPhotoUrl } from "@/lib/about-profile";
 /**
  * The top of the About page.
  *
- * WRITTEN FOR A PAGE WITH NO BIOGRAPHY ON IT. The owner has decided this page
- * carries no name and no background — only where the business is based — so
- * the old shape was wrong twice over. It asked "Who you are dealing with." and
- * then answered with nobody, and it put the one fact he does want to give
- * behind a small "WHERE" label in a two-column grid built for a photograph and
- * a career history that are never coming.
+ * WRITTEN FOR A PAGE WITH NO BIOGRAPHY ON IT. The owner has decided it carries
+ * no personal facts at all — no name, no background, and no location either,
+ * because White Glove is not based anywhere: it is a website. The old shape
+ * asked "Who you are dealing with." and then answered with nobody, in a
+ * two-column grid built for a photograph and a career history that are never
+ * coming.
  *
- * So the intro paragraphs are the page, the heading is about what a reader
- * gets rather than who they are meeting, and the location is a sentence in the
- * flow of it.
+ * So the intro paragraphs ARE the page. They stand on their own and are not
+ * waiting on anything: what the site is for, and what its information is
+ * worth, which is what a family deciding whether to trust it is actually
+ * asking. Nothing below is missing when every field is blank — blank is the
+ * expected state.
  *
  * The personal grid is still here and still works. Nothing about this decision
  * is irreversible: fill any of those fields in and they appear, exactly as
@@ -43,9 +45,10 @@ export default function AboutProfileSection({ profile }: { profile: AboutProfile
             {line}
           </p>
         ))}
-        {/* The one personal fact the page carries, as a sentence rather than a
-            label — it reads as part of the paragraph above it, which is what
-            "only where my business is based" should look like. */}
+        {/* Normally absent, and that is correct: a website is not based
+            anywhere. Kept for the day there is a place worth naming, and shown
+            as a sentence rather than a label so it reads as part of the
+            paragraph above rather than as a field somebody filled in. */}
         {profile.location && (
           <p className="leading-7 text-stone-600">
             White Glove Itineraries is based in {profile.location}.

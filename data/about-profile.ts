@@ -40,9 +40,10 @@ export const EMPTY_ABOUT_PROFILE: AboutProfile = {
  * What the About page opens with, whoever is reading it.
  *
  * THIS IS THE PAGE NOW, not a placeholder waiting for a biography. The owner
- * has decided the page carries no name and no background — only where the
- * business is based — so what used to be a stopgap line apologising for being
- * "a small independent travel outfit" has to do the whole job instead.
+ * has decided it carries no personal facts at all — no name, no background,
+ * and no location, because White Glove is not based anywhere: it is a website.
+ * So what used to be a stopgap line apologising for being "a small independent
+ * travel outfit" has to do the whole job instead, and does.
  *
  * It says what the site is for and what its information is worth, because that
  * is what a family deciding whether to trust it actually wants to know. Not
