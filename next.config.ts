@@ -58,6 +58,13 @@ const nextConfig: NextConfig = {
       // records for, so that is where the address goes.
       { source: "/honeymoon", destination: "/destinations?kind=couples", permanent: true },
       { source: "/kosher-stays", destination: "/hotels", permanent: true },
+      // /flights was a flight search and two "before you book" cards, all of
+      // which /book already does under its Flights tab — with miles as well as
+      // cash. Keeping both meant two pages running the same partner handoff,
+      // and the navigation had already stopped pointing at this one. The
+      // address redirects permanently so old links and any ranking carry
+      // across to the page that does the work.
+      { source: "/flights", destination: "/book", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
     ];
   },

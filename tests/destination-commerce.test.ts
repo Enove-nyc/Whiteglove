@@ -47,7 +47,7 @@ describe("the action that follows the page", () => {
   });
 
   it("CARRIES A STICKY ACTION, and it is sticky rather than fixed", () => {
-    assert.match(PAGE, /<DestinationStickyCta destination=\{destination\.name\} \/>/);
+    assert.match(PAGE, /<DestinationStickyCta\s+destination=\{destination\.name\}/);
     assert.match(STICKY, /sticky bottom-0/);
     assert.doesNotMatch(STICKY_CODE, /\bfixed\b/, "a fixed bar covers the page it is about");
   });
@@ -105,9 +105,15 @@ describe("what the commercial links promise", () => {
     // destination, and several of them are regions with three airports.
     // Passing "The Dolomites" into a field labelled "e.g. FCO" opens the
     // partner on a search they may not understand.
-    assert.doesNotMatch(PROSE, /\/flights\?/);
-    assert.doesNotMatch(STICKY, /\/flights\?/);
-    assert.match(STICKY, /href="\/flights"/);
+    // /flights is gone — the flight search is a tab on the booking page — so
+    // the link is bare there too, for the same reason. And the bar does not
+    // type the booking path either: it is locked from the admin, so the page
+    // resolves it and hands it down. See tests/booking-link.test.ts.
+    assert.doesNotMatch(PROSE, /\/flights/);
+    assert.doesNotMatch(STICKY_CODE, /\/flights/);
+    assert.doesNotMatch(STICKY_CODE, /["'`]\/book/);
+    assert.match(STICKY_CODE, /href=\{flightsHref\}/);
+    assert.match(PROSE, /flightsHref=\{bookingHref\(booking, \{ type: "flights" \}\)\}/);
   });
 
   it("clamps what arrives on the car page rather than printing it", () => {

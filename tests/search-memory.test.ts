@@ -184,7 +184,7 @@ describe("it is an enhancement, never a dependency", () => {
   });
 
   it("is mounted where searches are made and answered", () => {
-    for (const page of ["app/page.tsx", "app/hotels/page.tsx", "app/cars/page.tsx", "app/flights/page.tsx"]) {
+    for (const page of ["app/page.tsx", "app/hotels/page.tsx", "app/cars/page.tsx"]) {
       assert.match(readFileSync(page, "utf8"), /<SearchMemory/, `${page} does not carry the search`);
     }
     // And /hotels is the one that has a search to write down.
