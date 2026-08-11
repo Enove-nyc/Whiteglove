@@ -397,7 +397,10 @@ async function run(width, viewport) {
   });
 
   // ---- the affiliate disclosure, everywhere it is owed ---------------------
-  for (const path of ["/hotels", "/flights", "/cars"]) {
+  // /flights and /cars are gone — both ran the same partner searches as the
+  // booking page's own tabs, so they redirect to it now. /hotels keeps its own
+  // address because the stay directory and the quarters are not on /book.
+  for (const path of ["/hotels", "/book"]) {
     await flow(`${path} discloses how the site is paid`, viewport, width, async (page) => {
       await open(page, path);
       await page.waitForTimeout(1200);
