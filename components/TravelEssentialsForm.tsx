@@ -21,6 +21,7 @@ const PAGE_OPTIONS: Array<{ value: EssentialPageType; label: string }> = [
   { value: "itinerary", label: "Itinerary planner" },
   { value: "book", label: "Booking page" },
   { value: "transfers", label: "Transfers page" },
+  { value: "things-to-do", label: "Things to do" },
 ];
 
 export default function TravelEssentialsForm({

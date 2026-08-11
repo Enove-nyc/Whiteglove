@@ -10,6 +10,8 @@ import { contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
+import { messagesAlert } from "@/lib/contact-messages";
+import { listContactMessages } from "@/lib/contact-store";
 import { listPagesForAdmin } from "@/lib/pages";
 import { listPlanRequests } from "@/lib/account-plan-store";
 import { getDashboardStats } from "@/lib/site-analytics";
@@ -83,13 +85,14 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, promotions, content, pages, picturesWaiting] = await Promise.all([
+  const [stats, inventory, promotions, content, pages, picturesWaiting, messages] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
     getPromotionsDashboard(),
     getAdminContent(),
     listPagesForAdmin(),
     countPendingSubmissions(),
+    listContactMessages(),
   ]);
 
   const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
@@ -125,6 +128,16 @@ export default async function AdminHome() {
       href: "/admin/photos",
       label: "Look at them",
     });
+  }
+
+  // Somebody wrote in from the contact page, the trip enquiry or the flight
+  // request. Until now the only record of any of them was an email — so if the
+  // mail service was away, or the address had quietly stopped working, nothing
+  // anywhere said that a person had asked this website for something and heard
+  // nothing back.
+  const messageNews = messagesAlert(messages, new Date().toISOString());
+  if (messageNews) {
+    alerts.push({ text: messageNews, href: "/admin/messages", label: "Read them" });
   }
 
   // Somebody asked about Pro or Business and is waiting on a person. This used

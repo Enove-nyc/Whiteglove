@@ -3,6 +3,8 @@ import { readWords } from "@/lib/site-words-store";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { flightPartnerDoesMultiCity } from "@/lib/affiliate/partners";
 import { readExtras } from "@/lib/travel-extras-store";
+import { essentialIsBookable, type EssentialServiceId } from "@/lib/travel-essentials";
+import { readTravelEssentials } from "@/lib/travel-essentials-store";
 import TravelEssentials from "@/components/TravelEssentials";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
@@ -81,12 +83,20 @@ const STEPS: Array<[string, string]> = [
  *
  * AIRPORT TRANSFERS HAVE LEFT IT, and that is the rule this list lives by:
  * each entry becomes a search the day there is something behind it, and must
- * leave on that day. A transfer programme is joined, so the apology is gone
- * and /transfers is the page. An entry left here after its product launches is
- * the site contradicting itself on the screen where somebody is deciding
- * whether to trust it — tests/booking-page.test.ts fails on exactly that.
+ * leave on that day. An entry left here after its product launches is the site
+ * contradicting itself on the screen where somebody is deciding whether to
+ * trust it — which is exactly what happened with transfers, and was found by a
+ * person clicking the card and reading the apology beside it.
+ *
+ * SO IT IS NOT A HAND-EDITED LIST ANY MORE. An entry carrying `needs` names the
+ * hand-off that would replace it, and drops out of the list the moment that
+ * hand-off is enabled and configured. Turning the programme off puts the
+ * sentence back. Nobody has to remember, and the page cannot disagree with the
+ * settings screen. An entry with no `needs` is a standing truth rather than a
+ * pending launch — a driver on a heritage route is a person, and no programme
+ * is going to change that.
  */
-const NOT_YET: Array<[string, string, { href: string; label: string }?]> = [
+const NOT_YET: Array<[string, string, { href: string; label: string }?, EssentialServiceId?]> = [
   [
     "Drivers on a heritage route",
     "A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider directory, with what we know about each.",
@@ -96,6 +106,7 @@ const NOT_YET: Array<[string, string, { href: string; label: string }?]> = [
     "Things to do",
     "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
     { href: "/things-to-do", label: "Browse things to do" },
+    "activity",
   ],
 ];
 
@@ -117,6 +128,10 @@ export default async function BookPage({
   // The paragraph under the heading. /admin/settings/words.
   const words = await readWords();
   const extras = await readExtras();
+  // The not-bookable list, minus anything that has since become bookable. See
+  // the comment on NOT_YET: this is the reason it cannot be left behind again.
+  const essentials = await readTravelEssentials();
+  const notYet = NOT_YET.filter(([, , , needs]) => !needs || !essentialIsBookable(needs, essentials));
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   // Trimmed and capped rather than printed as given: it lands in a text field
   // as though the visitor had typed it, and a link is not a trustworthy author.
@@ -257,12 +272,21 @@ export default async function BookPage({
         </div>
       </section>
       {/* What is NOT bookable here. A tab that takes somebody's dates and
-          gives them nothing is worse than a sentence saying so. */}
+          gives them nothing is worse than a sentence saying so.
+
+          The whole section goes when there is nothing left in it — a heading
+          called "The rest of the trip" over an empty space is worse than no
+          heading, and the day everything here is bookable is a day worth
+          reaching without a deploy. */}
+      {notYet.length > 0 && (
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            Two things people ask us for that we do not book, and where to go for each of them.
+            {/* Counted rather than typed. "Two things" was written when there
+                were two, and stayed while the list changed underneath it. */}
+            {notYet.length === 1 ? "One thing people" : `${notYet.length} things people`} ask us for that we do not
+            book, and where to go for {notYet.length === 1 ? "it" : "each of them"}.
           </p>
           {/* The link sits on the card it belongs to, rather than in a row of
               buttons underneath. That row used to lead with "Cars and
@@ -270,7 +294,7 @@ export default async function BookPage({
               tab at the top of this one, which made the button a link back up
               the page it was already on. */}
           <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {NOT_YET.map(([heading, body, link]) => (
+            {notYet.map(([heading, body, link]) => (
               <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
@@ -287,6 +311,7 @@ export default async function BookPage({
           </div>
         </div>
       </section>
+      )}
 
       {/* Which of the four doors this one is, for somebody who arrived here
           from the navigation and is not sure a partner search is what they

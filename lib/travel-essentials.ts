@@ -24,7 +24,7 @@ import { looksTracked } from "@/lib/travel-extras";
  * automatically worth putting under the booking search, and a checkbox that
  * silently governs two pages is a checkbox that gets ticked for one of them.
  */
-export type EssentialPageType = "destination" | "itinerary" | "book" | "transfers";
+export type EssentialPageType = "destination" | "itinerary" | "book" | "transfers" | "things-to-do";
 
 /**
  * Stable service ids. Search-backed ids map 1:1 to TravelProduct; landing ids
@@ -113,9 +113,10 @@ export const ESSENTIAL_SERVICES: readonly EssentialServiceDef[] = [
     icon: "◎",
     linkMode: "landing",
     product: "activity",
-    defaultPageTypes: ["destination"],
+    defaultPageTypes: ["destination", "things-to-do"],
     preferredNetwork: "travelpayouts",
-    adminNote: "Only enable once a tours/attractions programme link is approved and pasted.",
+    adminNote:
+      "Only enable once a tours/attractions programme link is approved and pasted. A card saved before the things-to-do page existed keeps the pages it was saved with — tick “Things to do” to show it there too.",
   },
   {
     id: "car",
@@ -183,7 +184,7 @@ export type TravelEssentialsSettings = {
   updatedBy?: string;
 };
 
-const PAGE_TYPES: readonly EssentialPageType[] = ["destination", "itinerary", "book", "transfers"];
+const PAGE_TYPES: readonly EssentialPageType[] = ["destination", "itinerary", "book", "transfers", "things-to-do"];
 
 export function isEssentialPageType(value: string): value is EssentialPageType {
   return (PAGE_TYPES as readonly string[]).includes(value);
@@ -258,6 +259,34 @@ export function mergeTravelEssentials(raw: unknown): TravelEssentialsSettings {
     updatedAt: typeof incoming.updatedAt === "string" ? incoming.updatedAt : undefined,
     updatedBy: typeof incoming.updatedBy === "string" ? incoming.updatedBy : undefined,
   };
+}
+
+/**
+ * Can this product actually be booked from this site today?
+ *
+ * EXISTS SO A PAGE CANNOT CONTRADICT THE SETTINGS. /book carries a short list
+ * of things it does not sell, each with somewhere better to go. That list was
+ * hardcoded, so when a programme was joined the apology stayed: the booking
+ * page told visitors transfers were not on offer on the same screen as a
+ * working transfer card. Nothing failed, nothing looked broken, and it was
+ * found by a person clicking it.
+ *
+ * A page asking this question instead cannot fall out of step. The list
+ * shrinks the moment a hand-off is configured and grows back if it is turned
+ * off, without anybody editing a file.
+ *
+ * LANDING PRODUCTS ONLY, deliberately. A search product's availability is a
+ * question for the affiliate registry — it depends on a pasted redirect, the
+ * partner it resolves to and whether that partner can express the search — and
+ * routeFor already answers it. This is the simpler question the landing cards
+ * need: has the owner enabled it and given it somewhere real to go.
+ */
+export function essentialIsBookable(id: EssentialServiceId, settings: TravelEssentialsSettings): boolean {
+  if (!settings.sectionEnabled) return false;
+  const def = defFor(id);
+  if (def.linkMode !== "landing") return false;
+  const cfg = settings.services[id];
+  return Boolean(cfg?.enabled) && landingUrlProblem(cfg.url) === null;
 }
 
 /** Why a landing URL cannot be used, or null. */

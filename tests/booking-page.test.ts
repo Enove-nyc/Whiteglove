@@ -193,6 +193,28 @@ describe("what is not bookable is named", () => {
     assert.match(PROSE, /href=\{link\.href\}/);
   });
 
+  it("DROPS AN ENTRY BY READING THE SETTINGS, NOT BY BEING EDITED", () => {
+    // The transfers apology was hardcoded, so it survived the launch of the
+    // thing it apologised for: /book told visitors transfers were not on offer
+    // on the same screen as a working transfer card. Nothing failed and nothing
+    // looked broken — a person found it by clicking.
+    //
+    // The list is filtered against the hand-off settings now, so it cannot fall
+    // out of step again. These assertions are the mechanism, not the wording:
+    // an entry names the hand-off that replaces it, and the page asks whether
+    // that hand-off is live.
+    assert.match(PAGE, /essentialIsBookable/);
+    assert.match(PAGE, /NOT_YET\.filter/);
+    assert.match(PAGE, /notYet\.map/);
+    assert.doesNotMatch(PAGE, /NOT_YET\.map/, "the page still renders the unfiltered list");
+    // Things to do names the tours hand-off, so it goes when tours go live.
+    assert.match(PAGE, /"activity",/);
+    // And the count in the sentence is counted rather than typed — "Two things"
+    // was written when there were two and stayed while the list changed.
+    assert.match(PAGE, /notYet\.length === 1/);
+    assert.doesNotMatch(PROSE, /Two things people ask us for/);
+  });
+
   it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {
     // Airport transfers were on the not-bookable list while there was no
     // programme behind them. There is one now, and it has its own page — so
