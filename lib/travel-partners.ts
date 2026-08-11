@@ -35,7 +35,7 @@ import type { SearchShape } from "@/lib/kayak-search";
 /** The three searches that hand off to somebody else. */
 export type SearchSlot = "flights" | "hotels" | "cars";
 
-export type PartnerKey = "kayak" | "aviasales" | "kiwi" | "booking" | "economybookings";
+export type PartnerKey = "kayak" | "aviasales" | "kiwi" | "booking" | "economybookings" | "discovercars";
 
 export type TravelPartner = {
   key: PartnerKey;
@@ -84,6 +84,13 @@ export const TRAVEL_PARTNERS: readonly TravelPartner[] = [
     slot: "cars",
     domain: "economybookings.com",
     note: "Carries the pick-up city. Its link format has no dates, so the traveller chooses those on arrival.",
+  },
+  {
+    key: "discovercars",
+    label: "DiscoverCars",
+    slot: "cars",
+    domain: "discovercars.com",
+    note: "Opens the city's own hire page where we have checked one exists, and their front page otherwise. No dates in the format, so the traveller picks those there. Usually pays better than EconomyBookings — worth comparing.",
   },
   {
     key: "kayak",
@@ -239,6 +246,66 @@ export function flightUrl(partner: TravelPartner, query: FlightQuery): string | 
  * looks right, opens, and drops the dates in silence. The traveller picks them
  * on arrival, which the admin note says out loud so the owner is not surprised.
  */
+/**
+ * DiscoverCars' own address for a city, for the cities this site sends people to.
+ *
+ * EVERY ONE OF THESE WAS FETCHED AND ANSWERED 200. That is the point of the
+ * table and the reason it is a table rather than a rule: their slugs cannot be
+ * derived. Italy is `italy-mainland`, not `italy`. The Czech Republic is
+ * `czech-republic`, and `czechia` is a 404. Kraków is `krakow` and `cracow` is
+ * a 404. Grindelwald has no page at all, so it is absent rather than guessed.
+ *
+ * A wrong deep link does not throw. It 404s or lands on a front page, the
+ * traveller shrugs and leaves, and the referral is lost in silence — which is
+ * exactly why nothing here is inferred from the country name.
+ *
+ * Keyed by the city as this site writes it, normalised — lower case, accents
+ * stripped, anything that is not a letter or digit removed — so "Kraków",
+ * "Krakow" and "KRAKÓW" all find the same row.
+ *
+ * Checked against discovercars.com in August 2026. A slug that goes stale
+ * costs the city page and nothing else: `carUrl` falls back to their front
+ * page, which still earns.
+ */
+const DISCOVERCARS_PLACES: Readonly<Record<string, string>> = {
+  rome: "italy-mainland/rome",
+  venice: "italy-mainland/venice",
+  florence: "italy-mainland/florence",
+  merano: "italy-mainland/merano",
+  canazei: "italy-mainland/canazei",
+  bolzano: "italy-mainland/bolzano",
+  paris: "france/paris",
+  nice: "france/nice",
+  chamonix: "france/chamonix",
+  annecy: "france/annecy",
+  grenoble: "france/grenoble",
+  lyon: "france/lyon",
+  london: "united-kingdom/london",
+  amsterdam: "netherlands/amsterdam",
+  prague: "czech-republic/prague",
+  vienna: "austria/vienna",
+  innsbruck: "austria/innsbruck",
+  salzburg: "austria/salzburg",
+  zellamsee: "austria/zell-am-see",
+  budapest: "hungary/budapest",
+  zurich: "switzerland/zurich",
+  lucerne: "switzerland/lucerne",
+  interlaken: "switzerland/interlaken",
+  geneva: "switzerland/geneva",
+  munich: "germany/munich",
+  jerusalem: "israel/jerusalem",
+  krakow: "poland/krakow",
+};
+
+/** The key a place is looked up by. Accents off, punctuation and spaces out. */
+export function placeKey(where: string): string {
+  return where
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 export function carUrl(partner: TravelPartner, query: CarQuery): string | null {
   const where = query.where.trim();
   if (!where) return null;
@@ -249,6 +316,14 @@ export function carUrl(partner: TravelPartner, query: CarQuery): string | null {
     if (/^[A-Za-z]{3}$/.test(where)) params.set("idpickval", where.toUpperCase());
     else params.set("idpick", where);
     return `https://www.economybookings.com/en?${params.toString()}`;
+  }
+
+  if (partner.key === "discovercars") {
+    // The city's own hire page when we have checked one exists, and their front
+    // page when we have not. Never a slug built from the country name: those
+    // 404, and a 404 costs the traveller rather than the commission.
+    const slug = DISCOVERCARS_PLACES[placeKey(where)];
+    return slug ? `https://www.discovercars.com/${slug}` : "https://www.discovercars.com/";
   }
 
   if (partner.key === "kayak") {

@@ -189,3 +189,35 @@ describe("matching a pasted link's destination to the partner", () => {
     assert.equal(hostBelongsTo("notaviasales.com", "aviasales.com"), false);
   });
 });
+
+describe("DiscoverCars", () => {
+  const partner = TRAVEL_PARTNERS.find((p) => p.key === "discovercars")!;
+
+  it("OPENS THE CITY'S OWN PAGE where one was checked", () => {
+    // Every slug in the table was fetched and answered 200. They cannot be
+    // derived: Italy is italy-mainland, the Czech Republic is czech-republic
+    // (czechia 404s), and Kraków is krakow (cracow 404s).
+    assert.equal(carUrl(partner, { where: "Rome" }), "https://www.discovercars.com/italy-mainland/rome");
+    assert.equal(carUrl(partner, { where: "Prague" }), "https://www.discovercars.com/czech-republic/prague");
+    assert.equal(carUrl(partner, { where: "Kraków" }), "https://www.discovercars.com/poland/krakow");
+    // Accents and case are normalised away rather than being separate rows.
+    assert.equal(carUrl(partner, { where: "KRAKOW" }), carUrl(partner, { where: "Kraków" }));
+    assert.equal(carUrl(partner, { where: "Zell am See" }), "https://www.discovercars.com/austria/zell-am-see");
+  });
+
+  it("FALLS BACK TO THE FRONT PAGE rather than guessing a slug", () => {
+    // Grindelwald has no DiscoverCars page — checked, 404. A slug invented from
+    // the country name would 404 too, and a 404 costs the traveller, not just
+    // the commission. Their front page still earns.
+    assert.equal(carUrl(partner, { where: "Grindelwald" }), "https://www.discovercars.com/");
+    assert.equal(carUrl(partner, { where: "Somewhere We Have Never Heard Of" }), "https://www.discovercars.com/");
+  });
+
+  it("is a car partner the owner can actually choose", () => {
+    assert.equal(partner.slot, "cars");
+    assert.ok(partnersFor("cars").some((p) => p.key === "discovercars"));
+    // And a pasted link is checked against it, so a DiscoverCars link on the
+    // cars row is accepted only while DiscoverCars is the chosen partner.
+    assert.equal(partner.domain, "discovercars.com");
+  });
+});

@@ -509,26 +509,26 @@ export const OWNER_PROGRAMME_CHECKLIST = [
   {
     category: "Travel insurance",
     status: "Not auto-configured. Confirm the programme is approved in Travelpayouts, then paste the tracked link here.",
-    where: "/admin/settings/travel-essentials",
+    where: "/admin/settings/earnings",
   },
   {
     category: "eSIM",
     status: "Not auto-configured. Confirm approval, then paste the tracked link here.",
-    where: "/admin/settings/travel-essentials",
+    where: "/admin/settings/earnings",
   },
   {
     category: "Airport transfers",
     status: "Not auto-configured. Confirm approval, then paste the tracked link here.",
-    where: "/admin/settings/travel-essentials",
+    where: "/admin/settings/earnings",
   },
   {
     category: "Tours / attractions",
     status: "Not auto-configured. Confirm approval, then paste the tracked link here.",
-    where: "/admin/settings/travel-essentials",
+    where: "/admin/settings/earnings",
   },
   {
     category: "Lounges, train/bus, luggage storage",
     status: "Not present in this codebase. Do not enable until a programme is approved and a link is pasted — do not guess.",
-    where: "/admin/settings/travel-essentials",
+    where: "/admin/settings/earnings",
   },
 ] as const;

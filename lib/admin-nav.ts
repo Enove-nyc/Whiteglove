@@ -80,8 +80,15 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
       { href: "/admin/accounts", label: "Visitor accounts", blurb: "People who signed up." },
       { href: "/admin/messages", label: "Messages sent in", blurb: "What people wrote from the website." },
-      { href: "/admin/settings/earnings", label: "What the searches earn", blurb: "Partners, extras and destination placements." },
-      { href: "/admin/settings/travel-essentials", label: "Travel Essentials", blurb: "Insurance, eSIM, transfers, tours and related offers." },
+      // ONE ENTRY, not two. Travel Essentials was a second screen answering the
+      // same question — is this site earning, and where — so whichever one you
+      // opened looked complete on its own. It is a section of this page now,
+      // and its old address redirects to it.
+      {
+        href: "/admin/settings/earnings",
+        label: "What the site earns",
+        blurb: "Searches, partner cards, free-form offers and destination placements.",
+      },
       { href: "/admin/settings/referral", label: "Referral programme", blurb: "Kept off until rewards are final." },
       { href: "/admin/settings/collaboration", label: "Group planning tools", blurb: "Voting, favorites and rooms." },
       { href: "/admin/settings/membership", label: "White Glove Plus", blurb: "Planned only — not launched." },

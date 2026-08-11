@@ -141,12 +141,27 @@ describe("Travel Essentials visibility", () => {
 });
 
 describe("Travel Essentials surfaces", () => {
-  it("has an admin page and nav entry", () => {
+  it("IS A SECTION OF THE EARNINGS SCREEN, not a second screen", () => {
+    // It used to have its own page, and that was the problem: two screens
+    // answered "is this site earning, and where", so whichever one you opened
+    // looked complete on its own. A perfectly configured set of searches told
+    // you nothing about four cards sitting disabled next door — and a card is
+    // the thing most likely to be pasted and never enabled.
     const nav = readFileSync("lib/admin-nav.ts", "utf8");
-    const page = readFileSync("app/admin/settings/travel-essentials/page.tsx", "utf8");
-    assert.match(nav, /\/admin\/settings\/travel-essentials/);
-    assert.match(page, /Travel Essentials/);
-    assert.match(page, /Owner programme checklist/);
+    const earnings = readFileSync("app/admin/settings/earnings/page.tsx", "utf8");
+    assert.match(earnings, /TravelEssentialsForm/);
+    assert.match(earnings, /id="travel-essentials"/);
+    // One entry in the navigation, not two pointing at the same question.
+    assert.doesNotMatch(nav, /href: "\/admin\/settings\/travel-essentials"/);
+    assert.match(nav, /\/admin\/settings\/earnings/);
+  });
+
+  it("REDIRECTS THE OLD ADDRESS rather than 404ing it", () => {
+    // It is in the admin's own history, the quick-add list and whatever the
+    // owner bookmarked. An admin screen that 404s reads as something broken
+    // rather than something moved.
+    const moved = readFileSync("app/admin/settings/travel-essentials/page.tsx", "utf8");
+    assert.match(moved, /redirect\("\/admin\/settings\/earnings#travel-essentials"\)/);
   });
 
   it("is placed on destination, itinerary and book pages", () => {
