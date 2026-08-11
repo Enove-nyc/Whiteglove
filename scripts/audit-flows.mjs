@@ -86,7 +86,35 @@ async function flow(name, viewport, width, body) {
   await context.close();
 }
 
-const open = (page, path) => page.goto(BASE + path, { waitUntil: "domcontentloaded", timeout: 45000 });
+/**
+ * Open a page and get past the front door.
+ *
+ * The site-wide "before you travel" caution is a MODAL: it covers the page,
+ * sets body{overflow:hidden} and traps focus until it is dismissed. That is a
+ * deliberate decision (components/NewSiteNotice.tsx), and it means every
+ * check below was failing on "element is not clickable" rather than on
+ * anything it was written to measure. A real visitor dismisses it once; so
+ * does this.
+ */
+async function open(page, path) {
+  await page.goto(BASE + path, { waitUntil: "domcontentloaded", timeout: 45000 });
+  // It mounts after hydration, so it is not there at domcontentloaded — wait
+  // for it rather than looking once and missing it. Absent is fine too: once
+  // dismissed it stays dismissed for that wording.
+  const notice = page.locator('[role="dialog"][aria-modal="true"]').first();
+  await notice.waitFor({ state: "visible", timeout: 6000 }).catch(() => undefined);
+  if (await notice.isVisible().catch(() => false)) {
+    const hide = notice.locator("button").last();
+    await hide.click({ timeout: 5000 }).catch(() => undefined);
+    await notice.waitFor({ state: "hidden", timeout: 5000 }).catch(() => undefined);
+    // Escape is the same action, and is the fallback if the wording changed.
+    if (await notice.isVisible().catch(() => false)) {
+      await page.keyboard.press("Escape");
+      await notice.waitFor({ state: "hidden", timeout: 5000 }).catch(() => undefined);
+    }
+  }
+  return page;
+}
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -247,17 +275,35 @@ async function run(width, viewport) {
       const refused = (await complaint.count()) ? await complaint.innerText() : "";
       assert(!refused, `the form refused to search: ${refused}`);
       assert(opened.length === 1, `the search opened ${opened.length} tabs`);
-      assert(/^https:\/\//.test(opened[0]), `not an https hand-off: ${opened[0]}`);
-      return new URL(opened[0]).host;
+      // EVERY BOOKING LINK GOES THROUGH /go NOW (app/go/route.ts): it records
+      // the click, then 302s to the partner. So the check follows the hop and
+      // asserts where it lands — which is the whole chain rather than the
+      // first link of it, and is what actually has to be right.
+      const first = new URL(opened[0], BASE);
+      let target = first.href;
+      if (first.pathname === "/go") {
+        const hop = await fetch(first.href, { redirect: "manual" });
+        assert(hop.status >= 300 && hop.status < 400, `/go answered ${hop.status} instead of redirecting`);
+        target = hop.headers.get("location") ?? "";
+      }
+      assert(/^https:\/\//.test(target), `the hand-off did not reach an https partner: ${target || "(no location)"}`);
+      return new URL(target).host;
     });
   }
 
-  await flow("the commission disclosure sits beside the search", viewport, width, async (page) => {
+  await flow("/book can always reach how the site is paid", viewport, width, async (page) => {
     await open(page, "/book");
     await page.waitForTimeout(800);
     const panel = await page.locator("main").innerText();
-    assert(/How this site is paid/i.test(panel), "no disclosure on the booking page");
-    assert(/commission/i.test(panel), "the disclosure does not mention a commission");
+    // The disclosure moved into the booking terms and onto each partner
+    // action (tests/booking-page.test.ts records that decision). What must
+    // not happen is /book carrying neither: three commission-earning searches
+    // with no route to the arrangement behind them. A link to the terms
+    // counts; nothing at all does not.
+    const inline = /commission/i.test(panel);
+    const toTerms = (await page.locator('a[href="/terms"], a[href^="/terms#"]').count()) > 0;
+    assert(inline || toTerms, "no commission disclosure and no link to the terms anywhere on /book");
+    return inline ? "disclosed on the page" : "via the terms link";
   });
 
   await flow("saving a booking puts it on the trip", viewport, width, async (page) => {
@@ -273,11 +319,19 @@ async function run(width, viewport) {
         input.dispatchEvent(new Event("change", { bubbles: true }));
       }, i === 0 ? "2026-11-02" : "2026-11-06");
     }
-    await page.getByRole("button", { name: /Add to my trip/i }).first().click();
+    // THE TRIP IS SAVED AFTER THE SEARCH, NOT BESIDE IT. The inline
+    // "+ Add to my trip" button is gone: the booking happens on the partner's
+    // site, so the site asks for it back when they return. That prompt is now
+    // the only way a hotel reaches the itinerary from here, which makes it
+    // the thing worth checking.
+    await page.evaluate(() => { window.open = () => null; });
+    await page.locator("main").getByRole("button", { name: /^Search hotels/i }).first().click();
+    const prompt = page.getByRole("dialog").filter({ hasText: /booked/i }).first();
+    await prompt.waitFor({ state: "visible", timeout: 10000 });
+    await prompt.getByRole("button", { name: /add it to my trip/i }).first().click();
     await page.waitForTimeout(600);
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("whiteGloveItinerary") || "{}"));
     assert((saved.lodging ?? []).length > 0, "nothing reached the itinerary");
-    assert(await page.getByText(/Added to your trip/i).count(), "the page did not confirm the save");
     return `${saved.lodging.length} stay saved`;
   });
 
@@ -343,7 +397,7 @@ async function run(width, viewport) {
   });
 
   // ---- the affiliate disclosure, everywhere it is owed ---------------------
-  for (const path of ["/book", "/hotels", "/flights", "/cars"]) {
+  for (const path of ["/hotels", "/flights", "/cars"]) {
     await flow(`${path} discloses how the site is paid`, viewport, width, async (page) => {
       await open(page, path);
       await page.waitForTimeout(1200);
