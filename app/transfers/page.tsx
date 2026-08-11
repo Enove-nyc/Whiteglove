@@ -2,7 +2,7 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
-import TravelEssentials from "@/components/TravelEssentials";
+import TransferBooking from "@/components/TransferBooking";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -72,13 +72,11 @@ export default async function TransfersPage() {
         </div>
       </section>
 
-      {/* The hand-off, when one is configured. Renders nothing otherwise. */}
-      <TravelEssentials
-        pageType="transfers"
-        heading="Book a transfer"
-        intro="Prices, vehicles and payment terms are the transfer company's. Confirm them before you book."
-        placement="transfers-essentials"
-      />
+      {/* The hand-off, as a panel rather than a card in a row — on this page it
+          is the point rather than an add-on. Renders nothing when the owner has
+          not enabled and configured it. See components/TransferBooking.tsx for
+          why it is not a search form. */}
+      <TransferBooking />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading
