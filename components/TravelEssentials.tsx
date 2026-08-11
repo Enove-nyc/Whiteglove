@@ -47,12 +47,19 @@ export default async function TravelEssentials({
   const [settings, affiliate] = await Promise.all([readTravelEssentials(), readAffiliateConfig()]);
   if (!settings.sectionEnabled) return null;
 
+  // Where the click is recorded as having happened. Named per page type
+  // rather than defaulting everything that is not a destination or the planner
+  // to /book — the transfers page would otherwise report its clicks against
+  // the booking page, and the one number that says whether that page earns its
+  // place would be credited to another.
   const page =
     pageType === "destination" && destinationSlug
       ? `/destinations/${destinationSlug}`
       : pageType === "itinerary"
         ? "/itinerary"
-        : "/book";
+        : pageType === "transfers"
+          ? "/transfers"
+          : "/book";
 
   const ctx: EssentialContext = {
     pageType,
