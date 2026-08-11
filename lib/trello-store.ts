@@ -118,7 +118,13 @@ export async function sendCard(
   }
   try {
     const response = await fetch(cardUrl(settings, cardFor(input), memberFor(settings, input.kind)), { method: "POST", cache: "no-store" });
-    if (!response.ok) return { ok: false, message: describeSendFailure(response.status) };
+    if (!response.ok) {
+      // Trello's own words, which name the field it objected to. Read here
+      // rather than guessed from the status, because the status alone sent
+      // somebody looking at the one value that was right.
+      const said = await response.text().catch(() => "");
+      return { ok: false, message: describeSendFailure(response.status, said) };
+    }
     return { ok: true, message: "Trello made the card." };
   } catch {
     return { ok: false, message: "Trello could not be reached. The card was not created; the item is still on the admin screen." };

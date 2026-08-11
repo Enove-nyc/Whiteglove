@@ -271,9 +271,47 @@ export function describeTrello(settings: TrelloSettings): string {
  * causes are named instead. Nothing here ever reaches a visitor — a failed card
  * is the owner's problem, not theirs.
  */
-export function describeSendFailure(status: number): string {
+export function describeSendFailure(status: number, body = ""): string {
+  return [cause(status), trelloSaid(body)].filter(Boolean).join(" ");
+}
+
+/**
+ * The plain-English cause, from the status alone.
+ *
+ * 400 AND 404 USED TO SAY THE SAME THING, and that cost somebody an evening.
+ * 404 really is the list — Trello cannot find the id it was given. 400 is a
+ * parameter it did not like, and the list is only one of six things on the
+ * card: an `idMembers` that is a username rather than a member id produces a
+ * 400, and being told to check the list ID sends you to look at the one value
+ * that was right all along. So it now says which, and hands over Trello's own
+ * words below rather than guessing on its behalf.
+ */
+function cause(status: number): string {
   if (status === 401) return "Trello refused the key or the token. Generate a new token and paste it again.";
-  if (status === 400 || status === 404) return "Trello could not find that list. Check the list ID — a board ID will not work.";
+  if (status === 404) return "Trello could not find that list. Check the list ID — a board ID will not work.";
+  if (status === 400) {
+    return "Trello refused something on the card. The list ID is one candidate; a member id that is a username rather than a Trello id is another — clear those two boxes and try again.";
+  }
   if (status === 429) return "Trello is rate-limiting this site. The card was not created; the item is still on the admin screen.";
   return `Trello answered ${status}. The card was not created; the item is still on the admin screen.`;
+}
+
+/**
+ * Trello's own words, when it gave any.
+ *
+ * A TRANSLATION THAT CANNOT BE CHECKED IS A GUESS. Everything above is this
+ * site's reading of a number, and a reading can be wrong — it was. Trello's
+ * reply is usually one short, exact phrase ("invalid value for idMembers"),
+ * and showing it beside the guess is the difference between a person fixing
+ * this in a minute and a person changing values at random.
+ *
+ * Kept short and stripped of anything that looks like a credential: this is
+ * printed on a screen that is often open in front of somebody else, and an
+ * error body is not a place to trust with a token.
+ */
+function trelloSaid(body: string): string {
+  const said = body.trim().replace(/\s+/g, " ").slice(0, 160);
+  if (!said) return "";
+  if (/[A-Za-z0-9]{32,}/.test(said)) return "";
+  return `Trello said: "${said}"`;
 }
