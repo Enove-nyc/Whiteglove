@@ -108,14 +108,37 @@ export type ContactFields = {
   note: string | null;
 };
 
+/**
+ * Run a write that sets Contact.lastVerified, and fall back to the same write
+ * without it.
+ *
+ * The column is added by the "set up database" button, so between deploying
+ * the schema and pressing it the two disagree and Postgres answers P2022. That
+ * must not turn into a failed save: the owner would lose what he typed over a
+ * date, which is the least important thing in the record. Saving without the
+ * stamp is the honest degradation — no date is exactly what the contact had
+ * before the column existed.
+ */
+async function withOptionalStamp<T>(stamped: () => Promise<T>, plain: () => Promise<T>): Promise<T> {
+  try {
+    return await stamped();
+  } catch (error) {
+    const code = (error as { code?: string })?.code;
+    if (code !== "P2022") throw error;
+    console.error("[content-admin] Contact.lastVerified is missing — saved without the date. Run the database setup.");
+    return plain();
+  }
+}
+
 export async function createContact(destinationId: string, fields: ContactFields) {
   const prisma = await db();
-  return prisma.contact.create({
-    // Saved here as VERIFIED, so the day it was saved IS the day somebody last
-    // confirmed it. Stamping it means the date is a record of what happened
-    // rather than something anybody had to remember to type.
-    data: { ...fields, status: "VERIFIED", lastVerified: new Date(), destinationId },
-  });
+  // Saved here as VERIFIED, so the day it was saved IS the day somebody last
+  // confirmed it. Stamping it means the date is a record of what happened
+  // rather than something anybody had to remember to type.
+  return withOptionalStamp(
+    () => prisma.contact.create({ data: { ...fields, status: "VERIFIED", lastVerified: new Date(), destinationId } }),
+    () => prisma.contact.create({ data: { ...fields, status: "VERIFIED", destinationId } }),
+  );
 }
 
 export async function updateContact(id: string, fields: ContactFields) {
@@ -133,8 +156,11 @@ export async function updateContact(id: string, fields: ContactFields) {
   // a date only ever appears beside "Verified" — a date beside "being checked"
   // would be a date on a thing nobody has checked. Saving an unverified
   // contact is editing a note, not confirming a phone number answers.
-  const data = existing?.status === "VERIFIED" ? { ...fields, lastVerified: new Date() } : fields;
-  const row = await prisma.contact.update({ where: { id }, data });
+  const stamp = existing?.status === "VERIFIED";
+  const row = await withOptionalStamp(
+    () => prisma.contact.update({ where: { id }, data: stamp ? { ...fields, lastVerified: new Date() } : fields }),
+    () => prisma.contact.update({ where: { id }, data: fields }),
+  );
   await recordChange({ kind: "contact", rowId: id, title: fields.label, before, after: fields as unknown as Record<string, unknown> });
   return row;
 }
