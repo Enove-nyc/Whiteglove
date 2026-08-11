@@ -185,6 +185,16 @@ model Contact {
   note   String?
   source String?
   status VerificationStatus @default(NEEDS_VERIFICATION)
+  /**
+   * The day somebody last confirmed this contact still answers.
+   *
+   * A phone number is the most perishable thing on the site — the record can
+   * look complete for years after the number stopped working. Stamped whenever
+   * the contact is saved in the admin, so a date means somebody looked at it
+   * on that day rather than that somebody typed a date in. Null means nobody
+   * has, and the public side says nothing rather than guessing.
+   */
+  lastVerified DateTime?
 
   destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
   destinationId String?
