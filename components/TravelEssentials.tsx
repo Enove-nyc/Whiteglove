@@ -59,7 +59,9 @@ export default async function TravelEssentials({
         ? "/itinerary"
         : pageType === "transfers"
           ? "/transfers"
-          : "/book";
+          : pageType === "things-to-do"
+            ? "/things-to-do"
+            : "/book";
 
   const ctx: EssentialContext = {
     pageType,
