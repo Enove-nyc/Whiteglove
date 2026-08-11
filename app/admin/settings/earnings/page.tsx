@@ -2,6 +2,7 @@ import Link from "next/link";
 import AdminPlacementsForm from "@/components/AdminPlacementsForm";
 import EarningsForm from "@/components/EarningsForm";
 import Stay22Form from "@/components/Stay22Form";
+import TravelEssentialsForm from "@/components/TravelEssentialsForm";
 import TravelExtrasForm from "@/components/TravelExtrasForm";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { routeFor } from "@/lib/affiliate/partners";
@@ -11,6 +12,7 @@ import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
 import { describeLinks } from "@/lib/travelpayouts";
 import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
+import { readTravelEssentialsFresh, travelEssentialsStoreAvailable } from "@/lib/travel-essentials-store";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,7 @@ export default async function EarningsSettings() {
   const stay22 = await readStay22Fresh();
   const placements = await readDestinationPlacements();
   const affiliate = await readAffiliateConfig();
+  const essentials = await readTravelEssentialsFresh();
   const routeNotes = (["hotel", "flight", "car"] as const).map((product) => {
     const route = routeFor(product, affiliate);
     return {
@@ -39,12 +42,12 @@ export default async function EarningsSettings() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              What the searches earn
+              What the site earns
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              The three searches on the booking page hand travellers to somebody else to pay. Routed through
-              Travelpayouts, a booking made afterwards is credited to you. Left alone, the search works exactly the
-              same and earns nothing.
+              Everything on this site that hands a traveller to somebody else to pay, in one place: the three
+              searches, the cards on the pages, and the free-form offers. Routed through a partner, a booking made
+              afterwards is credited to you. Left alone, each one works exactly the same and earns nothing.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners)}</p>
           </div>
@@ -122,18 +125,36 @@ export default async function EarningsSettings() {
         />
       </section>
 
-      <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Travel Essentials</h2>
+      {/* THE OTHER HALF OF THE MONEY, AND IT USED TO BE ANOTHER SCREEN.
+          Everything above earns when somebody searches; everything here earns
+          when they buy something else — insurance, an eSIM, a transfer, a tour.
+          Splitting them meant the answer to "is this site earning" lived in two
+          places, and the one you were not on always looked complete.
+
+          The programme checklist that opened the old screen is gone rather than
+          moved. It listed each category and told the owner to confirm it in the
+          partner dashboard — while every card below already says exactly where
+          it stands in its own words, from what is actually saved. Two accounts
+          of the same thing, one of them hand-written and unable to notice a
+          change. */}
+      <section id="travel-essentials" className="mt-14 scroll-mt-24 border-t border-[var(--gold-light)] pt-10">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
+          Cards on the pages
+        </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Structured cards for insurance, eSIM, transfers, tours and related hand-offs live on their own screen — enable
-          each service, paste approved links, set placements and order without editing code.
+          Insurance, eSIM, transfers and tours. Enable each one, paste the approved link, and choose which pages it
+          appears on. A card with no working hand-off is not shown to anybody, and each says below which it is.
         </p>
-        <Link
-          href="/admin/settings/travel-essentials"
-          className="mt-4 inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white"
-        >
-          Open Travel Essentials
-        </Link>
+        {!travelEssentialsStoreAvailable() && (
+          <p className="mt-4 rounded-lg border border-[var(--gold-light)] bg-[#fffdf9] p-4 text-sm leading-6 text-amber-900">
+            Waiting on the private store. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, then return here.
+          </p>
+        )}
+        <TravelEssentialsForm
+          current={essentials}
+          affiliate={affiliate}
+          storeReady={travelEssentialsStoreAvailable()}
+        />
       </section>
 
       <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
