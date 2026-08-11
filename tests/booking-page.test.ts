@@ -135,16 +135,49 @@ describe("the commission disclosure", () => {
   });
 });
 
+describe("a date is called what that product calls it", () => {
+  const FORM = readFileSync("components/PartnerSearchForm.tsx", "utf8");
+
+  it("DOES NOT CHECK A CAR IN AND OUT", () => {
+    // The labels used to be keyed off the field set rather than the product,
+    // and cars share the "stay" fields because they also ask where and when —
+    // so /cars asked a visitor to "check in" a hire car and "check out" of it.
+    // A room is checked into; a car is picked up and dropped off.
+    //
+    // The car search has since moved into the booking panel, which names those
+    // dates correctly on its own — so the row below guards the component
+    // rather than a page today. It is kept because the component still accepts
+    // a car product, and the failure it prevents is silent: a car search
+    // rendered through here again would read as a hotel stay and nothing would
+    // look broken.
+    assert.match(FORM, /car:\s*\["Pick-up",\s*"Drop-off"\]/);
+    assert.match(FORM, /hotel:\s*\["Check in",\s*"Check out"\]/);
+    assert.match(FORM, /flight:\s*\["Leaving",\s*"Coming back"\]/);
+    // And the wording is no longer decided by the field set anywhere.
+    assert.doesNotMatch(FORM, /fields === "stay" \? "Check in"/);
+    assert.doesNotMatch(FORM, /fields === "stay" \? "Check out"/);
+  });
+
+  it("GIVES A TRANSFER NO TWO-DATE FORM AT ALL", () => {
+    // A transfer is one journey on one date, not a period with two ends.
+    // There is no transfer row in the table, and there must not be one: the
+    // hand-off is a landing link and the partner asks for the date. A row here
+    // would build a form nothing renders and assert that a transfer spans two
+    // dates while doing it.
+    assert.doesNotMatch(FORM, /transfer:\s*\[/);
+    const TRANSFERS = readFileSync("app/transfers/page.tsx", "utf8");
+    assert.doesNotMatch(TRANSFERS, /PartnerSearchForm/);
+    assert.doesNotMatch(TRANSFERS, /Check in|Check out/);
+  });
+});
+
 describe("what is not bookable is named", () => {
   it("SAYS SO RATHER THAN OFFERING A TAB THAT CANNOT WORK", () => {
     // The brief names transfers and activities alongside hotels, flights and
-    // cars. No programme is joined for either, and the registry refuses to
-    // build a link without one — so they are a sentence each, with what to do
-    // instead, rather than a form that takes somebody's dates and gives them
-    // nothing.
-    assert.match(PROSE, /Airport transfers/);
+    // cars. Where no programme is joined the registry refuses to build a link,
+    // so it is a sentence with what to do instead rather than a form that takes
+    // somebody's dates and gives them nothing.
     assert.match(PROSE, /Things to do/);
-    assert.match(PROSE, /We do not book transfers yet/);
     assert.match(PROSE, /We do not sell tickets yet/);
     // Drivers joined them when /cars folded into this page: that page named
     // three ways of getting around and only car hire was ever bookable.
@@ -158,5 +191,22 @@ describe("what is not bookable is named", () => {
     assert.match(PROSE, /href: "\/directory"/);
     assert.match(PROSE, /href: "\/things-to-do"/);
     assert.match(PROSE, /href=\{link\.href\}/);
+  });
+
+  it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {
+    // Airport transfers were on the not-bookable list while there was no
+    // programme behind them. There is one now, and it has its own page — so
+    // the booking page must not still be telling visitors the opposite on the
+    // same screen as the transfer card. This is the assertion that fails if a
+    // product is ever launched and its apology left behind.
+    assert.doesNotMatch(PROSE, /We do not book transfers yet/);
+    assert.doesNotMatch(PROSE, /Airport transfers/);
+    // The hand-off itself is the Travel Essentials transfer card, which this
+    // page already renders — so there is no separate button to assert here,
+    // and adding one would be a second front door to the same product.
+    assert.match(PROSE, /TravelEssentials/);
+    // "Cars and transfers" was one label over two products that are chosen
+    // instead of each other. It must not come back.
+    assert.doesNotMatch(PROSE, /Cars and transfers/);
   });
 });

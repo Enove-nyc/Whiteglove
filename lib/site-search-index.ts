@@ -422,6 +422,15 @@ function pushSitePages(docs: DraftDoc[]) {
       keywords: ["documents", "border", "insurance", "points"],
     },
     {
+      id: "page-transfers",
+      kind: "Site page",
+      title: "Airport transfers",
+      subtitle: "A booked ride from the airport to your first stop",
+      href: "/transfers",
+      names: ["transfers", "transfer", "airport transfer", "airport pickup", "taxi"],
+      keywords: ["transfers", "airport", "arrival"],
+    },
+    {
       id: "page-book",
       kind: "Site page",
       title: "Search booking partners",

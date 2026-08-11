@@ -15,8 +15,16 @@ import { goHref } from "@/lib/affiliate/request";
 import { readStay22Link } from "@/lib/stay22";
 import { looksTracked } from "@/lib/travel-extras";
 
-/** Where a card may appear. */
-export type EssentialPageType = "destination" | "itinerary" | "book";
+/**
+ * Where a card may appear.
+ *
+ * `transfers` is the airport-transfer page. It is its own type rather than
+ * borrowing `book` because the owner has to be able to run one without the
+ * other: a transfer programme worth offering on a page about transfers is not
+ * automatically worth putting under the booking search, and a checkbox that
+ * silently governs two pages is a checkbox that gets ticked for one of them.
+ */
+export type EssentialPageType = "destination" | "itinerary" | "book" | "transfers";
 
 /**
  * Stable service ids. Search-backed ids map 1:1 to TravelProduct; landing ids
@@ -92,9 +100,10 @@ export const ESSENTIAL_SERVICES: readonly EssentialServiceDef[] = [
     icon: "▸",
     linkMode: "landing",
     product: "transfer",
-    defaultPageTypes: ["destination", "book"],
+    defaultPageTypes: ["destination", "book", "transfers"],
     preferredNetwork: "travelpayouts",
-    adminNote: "Only enable once an airport-transfer programme link is approved and pasted.",
+    adminNote:
+      "Only enable once an airport-transfer programme link is approved and pasted. A card already saved before the transfers page existed keeps the pages it was saved with — tick “Transfers page” to show it there too.",
   },
   {
     id: "activity",
@@ -174,7 +183,7 @@ export type TravelEssentialsSettings = {
   updatedBy?: string;
 };
 
-const PAGE_TYPES: readonly EssentialPageType[] = ["destination", "itinerary", "book"];
+const PAGE_TYPES: readonly EssentialPageType[] = ["destination", "itinerary", "book", "transfers"];
 
 export function isEssentialPageType(value: string): value is EssentialPageType {
   return (PAGE_TYPES as readonly string[]).includes(value);
