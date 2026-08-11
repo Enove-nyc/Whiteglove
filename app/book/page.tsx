@@ -70,21 +70,23 @@ const STEPS: Array<[string, string]> = [
  * What is not bookable here, said plainly.
  *
  * The brief names transfers and activities alongside hotels, flights and cars.
- * No programme is joined for either, and lib/affiliate/partners.ts refuses to
- * build a link for a product that has none — so the honest thing is a sentence
- * about each rather than a tab that takes somebody's dates and gives them
- * nothing. These become searches the day there is something behind them.
+ * lib/affiliate/partners.ts refuses to build a link for a product with no
+ * programme behind it — so the honest thing is a sentence about each rather
+ * than a tab that takes somebody's dates and gives them nothing.
  *
  * DRIVERS JOINED THE LIST when /cars folded into this page. That page named
  * three ways of getting around — hire, transfers, drivers — and only the first
- * was ever bookable. The other two are the honest sentences they always were,
- * and they belong wherever the car search is.
+ * was ever bookable. A driver is the honest sentence it always was, and it
+ * belongs wherever the car search is.
+ *
+ * AIRPORT TRANSFERS HAVE LEFT IT, and that is the rule this list lives by:
+ * each entry becomes a search the day there is something behind it, and must
+ * leave on that day. A transfer programme is joined, so the apology is gone
+ * and /transfers is the page. An entry left here after its product launches is
+ * the site contradicting itself on the screen where somebody is deciding
+ * whether to trust it — tests/booking-page.test.ts fails on exactly that.
  */
 const NOT_YET: Array<[string, string, { href: string; label: string }?]> = [
-  [
-    "Airport transfers",
-    "We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the better answer the destination page will say so.",
-  ],
   [
     "Drivers on a heritage route",
     "A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider directory, with what we know about each.",
@@ -260,7 +262,7 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            Three things people ask us for that we do not book, and where to go for each of them.
+            Two things people ask us for that we do not book, and where to go for each of them.
           </p>
           {/* The link sits on the card it belongs to, rather than in a row of
               buttons underneath. That row used to lead with "Cars and

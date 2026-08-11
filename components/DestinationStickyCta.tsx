@@ -77,7 +77,7 @@ export default function DestinationStickyCta({
           href={carsHref}
           className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
         >
-          Cars and transfers
+          Car hire
         </Link>
       </div>
     </div>
