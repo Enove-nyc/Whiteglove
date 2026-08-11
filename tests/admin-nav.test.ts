@@ -90,6 +90,18 @@ describe("the nav and the middleware agree about what a screen is", () => {
       assert.ok(section.label.trim() && section.blurb.trim(), `${section.label} is missing its wording`);
     }
   });
+
+  test("Directory destinations include Bulk imports", () => {
+    const directory = ADMIN_SECTIONS.find((section) => section.href === "/admin/directory");
+    assert.ok(directory, "Directory section is missing");
+    const bulk = directory.children?.find((child) => child.href === "/admin/imports");
+    assert.ok(bulk, "Directory does not list /admin/imports");
+    assert.match(bulk.label, /bulk imports/i);
+    assert.ok(
+      allAdminDestinations().some((destination) => destination.href === "/admin/imports"),
+      "allAdminDestinations() omits /admin/imports",
+    );
+  });
 });
 
 /**

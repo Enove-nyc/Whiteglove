@@ -48,4 +48,10 @@ describe("import needs-review queue", () => {
     assert.match(home, /\/admin\/imports\/needs-review/);
     assert.match(directory, /\/admin\/imports\/needs-review/);
   });
+
+  it("Directory hub exposes Bulk imports, not only Needs review", () => {
+    const directory = readFileSync("app/admin/directory/page.tsx", "utf8");
+    assert.match(directory, /href="\/admin\/imports"/);
+    assert.match(directory, /Bulk imports/);
+  });
 });
