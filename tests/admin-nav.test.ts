@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
 import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdminPath } from "../lib/admin-nav";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // THE ADMIN HOSTNAME SERVES BARE PATHS. admin.…/settings is Settings, and the
@@ -88,6 +88,77 @@ describe("the nav and the middleware agree about what a screen is", () => {
     for (const section of ADMIN_SECTIONS) {
       assert.ok(section.href.startsWith("/admin"), `${section.label} is not an admin path`);
       assert.ok(section.label.trim() && section.blurb.trim(), `${section.label} is missing its wording`);
+    }
+  });
+});
+
+/**
+ * Every static admin screen must be discoverable — either listed in
+ * allAdminDestinations() (nav + home “Everything you can manage”), or linked
+ * from a documented hub. Dynamic detail routes and login are excluded; flow
+ * steps that only make sense after a parent screen are allowed when that
+ * parent links them.
+ */
+function listAdminPageRoutes(dir = join(process.cwd(), "app", "admin"), base = "/admin"): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (entry.name.startsWith("[")) continue; // dynamic segments, e.g. imports/[id]
+      out.push(...listAdminPageRoutes(join(dir, entry.name), `${base}/${entry.name}`));
+    } else if (entry.name === "page.tsx") {
+      out.push(base);
+    }
+  }
+  return out;
+}
+
+/** Href strings pulled from Link/Card props in a hub page source. */
+function hrefsIn(source: string): Set<string> {
+  const found = new Set<string>();
+  for (const match of source.matchAll(/href=["'](\/admin[^"']*)["']/g)) {
+    found.add(match[1].split("?")[0]);
+  }
+  return found;
+}
+
+describe("every static admin page is reachable from nav or a hub", () => {
+  test("no hidden screens outside nav, settings overview, or documented flow steps", () => {
+    const destinations = new Set(allAdminDestinations().map((d) => d.href));
+    const settingsOverview = hrefsIn(readFileSync(join(process.cwd(), "app", "admin", "settings", "page.tsx"), "utf8"));
+    const home = hrefsIn(readFileSync(join(process.cwd(), "app", "admin", "page.tsx"), "utf8"));
+
+    // Flow steps: only useful after the parent screen; parent must link them.
+    const flowSteps = new Map<string, { parent: string; parentSource: string }>([
+      [
+        "/admin/duffel/review",
+        { parent: "/admin/duffel", parentSource: readFileSync(join(process.cwd(), "app", "admin", "duffel", "page.tsx"), "utf8") },
+      ],
+    ]);
+
+    const excluded = new Set(["/admin/login"]);
+
+    for (const route of listAdminPageRoutes()) {
+      if (excluded.has(route)) continue;
+
+      if (destinations.has(route)) continue;
+      if (settingsOverview.has(route) || home.has(route)) continue;
+
+      const flow = flowSteps.get(route);
+      if (flow) {
+        assert.ok(
+          destinations.has(flow.parent) || settingsOverview.has(flow.parent) || home.has(flow.parent),
+          `${route} parent ${flow.parent} is itself unreachable`,
+        );
+        assert.ok(
+          flow.parentSource.includes(route),
+          `${route} is a flow step but ${flow.parent} does not link to it`,
+        );
+        continue;
+      }
+
+      assert.fail(
+        `${route} is not in allAdminDestinations(), settings overview, home quick links, or a documented flow step`,
+      );
     }
   });
 });
