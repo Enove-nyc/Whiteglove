@@ -174,9 +174,9 @@ export const editablePages: PageDef[] = [
         // structured profile instead and skips this block so empty personal
         // fields can hide cleanly.
         eyebrow: "About White Glove",
-        heading: "Who you are dealing with.",
+        heading: "Travel information you can plan around.",
         intro:
-          "White Glove Itineraries is a small independent travel outfit that plans kosher holidays and Jewish heritage journeys. The person who answers your message is the person who does the planning — there is no call centre behind this.",
+          "White Glove Itineraries is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
         hidden: true,
       },
       {
