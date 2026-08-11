@@ -172,12 +172,41 @@ describe("what the owner is told", () => {
     assert.match(describeTrello({ ...GOOD, token: "short" }), /^Not sending/);
   });
 
-  it("names the likely cause of a failure rather than repeating Trello's", () => {
+  it("names the likely cause of a failure", () => {
     assert.match(describeSendFailure(401), /key or the token/);
     assert.match(describeSendFailure(404), /could not find that list/);
     assert.match(describeSendFailure(429), /rate-limiting/);
     // And whatever else happens, it says the item is not lost.
     assert.match(describeSendFailure(500), /still on the admin screen/);
+  });
+
+  it("DOES NOT SAY 400 AND 404 ARE THE SAME THING", () => {
+    // THE ONE THAT COST SOMEBODY AN EVENING. Both used to answer "check the
+    // list ID", so a 400 caused by an idMembers that was a username sent him
+    // to check, and recheck, and prove by hand the one value that was right.
+    assert.notEqual(describeSendFailure(400), describeSendFailure(404));
+    assert.match(describeSendFailure(400), /member id/);
+  });
+
+  it("hands over Trello's own words, because a translation can be wrong", () => {
+    const said = describeSendFailure(400, "invalid value for idMembers");
+    assert.match(said, /invalid value for idMembers/);
+    // The site's reading comes first; Trello's is the evidence beside it.
+    assert.ok(said.indexOf("refused something") < said.indexOf("Trello said"));
+  });
+
+  it("says nothing extra when Trello said nothing", () => {
+    assert.doesNotMatch(describeSendFailure(404, "   "), /Trello said/);
+  });
+
+  it("WILL NOT PRINT SOMETHING THAT LOOKS LIKE A CREDENTIAL", () => {
+    // This lands on a screen that is often open in front of somebody else, and
+    // an error body is not a thing to trust with a token.
+    assert.doesNotMatch(describeSendFailure(401, `invalid token: ${"a".repeat(64)}`), /aaaa/);
+  });
+
+  it("does not let a wall of text off the end of the screen", () => {
+    assert.ok(describeSendFailure(400, "x".repeat(5000)).length < 500);
   });
 
   it("always says something", () => {
