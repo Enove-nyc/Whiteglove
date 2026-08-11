@@ -134,16 +134,24 @@ describe("the commission disclosure", () => {
 describe("what is not bookable is named", () => {
   it("SAYS SO RATHER THAN OFFERING A TAB THAT CANNOT WORK", () => {
     // The brief names transfers and activities alongside hotels, flights and
-    // cars. No programme is joined for either, and the registry refuses to
-    // build a link without one — so they are a sentence each, with what to do
-    // instead, rather than a form that takes somebody's dates and gives them
-    // nothing.
-    assert.match(PROSE, /Airport transfers/);
+    // cars. Where no programme is joined the registry refuses to build a link,
+    // so it is a sentence with what to do instead rather than a form that takes
+    // somebody's dates and gives them nothing.
     assert.match(PROSE, /Things to do/);
-    assert.match(PROSE, /We do not book transfers yet/);
     assert.match(PROSE, /We do not sell tickets yet/);
-    // And each points somewhere that does help.
-    assert.match(PROSE, /href="\/cars"/);
     assert.match(PROSE, /href="\/things-to-do"/);
+  });
+
+  it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {
+    // Airport transfers were on the not-bookable list while there was no
+    // programme behind them. There is one now, and it has its own page — so
+    // the booking page must not still be telling visitors the opposite on the
+    // same screen as the transfer card. This is the assertion that fails if a
+    // product is ever launched and its apology left behind.
+    assert.doesNotMatch(PROSE, /We do not book transfers yet/);
+    assert.match(PROSE, /href="\/transfers"/);
+    // Cars and transfers are separate products and separate links.
+    assert.match(PROSE, /href="\/cars"/);
+    assert.doesNotMatch(PROSE, /Cars and transfers/);
   });
 });

@@ -7,14 +7,14 @@ import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Cars and transfers for a kosher trip | White Glove Itineraries",
+  title: "Car hire for a kosher trip | White Glove Itineraries",
   description:
-    "Hire a car or arrange a transfer, and find out first whether the destination actually needs one — some are better without.",
+    "Hire a car for the days between stops, and find out first whether the destination actually needs one — some are better without.",
   path: "/cars",
 });
 
 /**
- * Cars and transfers.
+ * Car hire.
  *
  * THE USEFUL PART IS THE FIRST QUESTION, not the search. A city with a
  * walkable Jewish quarter is worse with a car — parking, Shabbos, and a cost
@@ -22,10 +22,12 @@ export const metadata = pageMetadata({
  * impossible without one. Every destination page says which, and this page
  * says so before offering the search rather than after.
  *
- * Transfers and heritage-route drivers are named here and are NOT bookable:
- * no transfer programme is joined, and the driver side is the provider
- * directory rather than an affiliate. Saying so is better than a button that
- * cannot do anything.
+ * TRANSFERS USED TO BE HALF OF THIS PAGE and are now their own, at /transfers.
+ * They were here while there was nothing to offer for them, under a heading
+ * that said so; two products chosen instead of each other should not share one
+ * page once both can actually be booked. Heritage-route drivers stay named
+ * here and are still not bookable — that side is the provider directory rather
+ * than an affiliate, and saying so beats a button that cannot do anything.
  *
  * ARRIVING FROM A DESTINATION PAGE, the place is already filled in. A link
  * that carries a destination to a page which ignores it is worse than a link
@@ -49,9 +51,9 @@ export default async function CarsPage({
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cars and transfers</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Getting around</p>
           <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
-            Cars and transfers
+            Car hire
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
             A car is the difference between an alpine week working and not working. In a city with a walkable quarter it
@@ -90,9 +92,15 @@ export default async function CarsPage({
               Airport transfers
             </h2>
             <p className="mt-3 leading-7 text-stone-600">
-              We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the
-              better answer the destination page will say so.
+              Booked in advance and meeting you at arrivals. Often the better answer in a city you were not going to
+              drive in, and worth arranging early when you land close to Shabbos.
             </p>
+            <Link
+              href="/transfers"
+              className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              Arrange an airport transfer
+            </Link>
           </article>
           <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
             <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">

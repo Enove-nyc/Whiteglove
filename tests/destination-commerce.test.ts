@@ -66,7 +66,7 @@ describe("the action that follows the page", () => {
     assert.equal(filled.length, 1, `${filled.length} filled buttons in the sticky bar`);
     assert.match(STICKY, /See places to stay/);
     assert.match(STICKY, />\s*Flights\s*</);
-    assert.match(STICKY, /Cars and transfers/);
+    assert.match(STICKY, /Car hire/);
   });
 
   it("gives every control a real touch target", () => {

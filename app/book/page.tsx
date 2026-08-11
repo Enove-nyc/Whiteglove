@@ -66,16 +66,13 @@ const STEPS: Array<[string, string]> = [
  * What is not bookable here, said plainly.
  *
  * The brief names transfers and activities alongside hotels, flights and cars.
- * No programme is joined for either, and lib/affiliate/partners.ts refuses to
- * build a link for a product that has none — so the honest thing is a sentence
- * about each rather than a tab that takes somebody's dates and gives them
- * nothing. These become searches the day there is something behind them.
+ * lib/affiliate/partners.ts refuses to build a link for a product with no
+ * programme behind it — so the honest thing is a sentence rather than a tab
+ * that takes somebody's dates and gives them nothing. Each becomes a search
+ * the day there is something behind it, and each must LEAVE this list on that
+ * day: airport transfers did, and are now at /transfers.
  */
 const NOT_YET: Array<[string, string]> = [
-  [
-    "Airport transfers",
-    "We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the better answer the destination page will say so.",
-  ],
   [
     "Things to do",
     "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
@@ -218,7 +215,7 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            Two things people ask us for that we do not book, and where to go for each of them.
+            One thing people ask us for that we do not book, and where to go for it.
           </p>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {NOT_YET.map(([heading, body]) => (
@@ -233,7 +230,13 @@ export default async function BookPage({
               href="/cars"
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
             >
-              Cars and transfers
+              Car hire
+            </Link>
+            <Link
+              href="/transfers"
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
+            >
+              Airport transfers
             </Link>
             <Link
               href="/things-to-do"

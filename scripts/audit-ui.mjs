@@ -74,7 +74,10 @@ const PAGES = [
   // prefilled form, and a filtered list rather than the whole directory.
   ["/hotels?destination=Rome&in=2026-09-01&out=2026-09-08&adults=3&children=2", "hotels, searched"],
   ["/flights", "flights"],
-  ["/cars", "cars and transfers"],
+  ["/cars", "car hire"],
+  // Transfers left /cars when a transfer programme was joined. Audited in its
+  // own right, because a page nothing measures is a page that drifts.
+  ["/transfers", "airport transfers"],
   ["/things-to-do", "things to do"],
   ["/destinations/rome", "vacation destination"],
   ["/kosher-travel", "kosher travel hub"],
