@@ -1,0 +1,102 @@
+[
+  {
+    "list": "Needs you",
+    "name": "Pricing: a starting price or a typical range",
+    "desc": "**Where:** /admin/settings/words\n\nThe first thing anyone deciding whether to write in wants. Currently unanswered."
+  },
+  {
+    "list": "Needs you",
+    "name": "Pricing: how long until someone hears back",
+    "desc": "**Where:** /admin/settings/words\n\nA turnaround you can keep. \"Within two working days\" beats silence."
+  },
+  {
+    "list": "Needs you",
+    "name": "Pricing: does the planning fee come off a booking",
+    "desc": "**Where:** /admin/settings/words\n\nYes, no, or partly — any of the three is better than the gap."
+  },
+  {
+    "list": "Needs you",
+    "name": "Pricing: how long the planning itself takes",
+    "desc": "**Where:** /admin/settings/words\n\nNot the same as the reply time. From go-ahead to itinerary."
+  },
+  {
+    "list": "Needs you",
+    "name": "Pricing: cancellation and refund terms",
+    "desc": "**Where:** /admin/settings/words\n\nWhat happens if the trip is called off after work has started."
+  },
+  {
+    "list": "Needs you",
+    "name": "Pricing: support after the itinerary is sent",
+    "desc": "**Where:** /admin/settings/words\n\nWhether anyone is there while they travel, and for how long. This is the one that decides whether the service reads as a service or as a PDF."
+  },
+  {
+    "list": "Needs you",
+    "name": "About: your name, background, and where the business is based",
+    "desc": "**Where:** /admin/settings/about\n\nThe page is live and deliberately says nothing invented about who runs it."
+  },
+  {
+    "list": "Needs you",
+    "name": "One real case study, with permission recorded",
+    "desc": "**Where:** /admin/settings/proof\n\nThe section is built and hides itself until then — /case-studies currently 404s, correctly. One real trip beats any amount of generic praise."
+  },
+  {
+    "list": "Needs you",
+    "name": "Last-checked dates on time-sensitive records",
+    "desc": "**Where:** admin content screens\n\nKosher places, seasonal programmes, minyanim, access contacts, borders. The display is ready; no record carries a date yet."
+  },
+  {
+    "list": "Decide",
+    "name": "Keep the site notice as a full-screen modal, or go back to a strip",
+    "desc": "**Where:** components/NewSiteNotice.tsx\n\nIt covers every page and traps focus until dismissed. Measured: it blocked all 23 functional checks until the audit learned to dismiss it, and it is the whole of the 26 tab-order findings."
+  },
+  {
+    "list": "Decide",
+    "name": "Put one line of commission disclosure back under the /book panel",
+    "desc": "**Where:** app/book/page.tsx\n\nIt now lives in Terms and on each partner action. /book's three searches only show one because the Travel Essentials block happens to be filled. Empty that and three earning searches carry no disclosure."
+  },
+  {
+    "list": "Decide",
+    "name": "Confirm the flights and cars partner configuration",
+    "desc": "**Where:** /admin/settings/earnings\n\nUnconfigured, both fall back to Kayak, which this account was not approved for. Production resolves to Aviasales and EconomyBookings, so this only bites if the config is lost."
+  },
+  {
+    "list": "Decide",
+    "name": "Confirm the Stay22 aid is live in the Stay22 dashboard",
+    "desc": "**Where:** /admin/settings/earnings\n\nHotels is the tab /book opens on. If the id is blank the search still works and earns nothing."
+  },
+  {
+    "list": "Decide",
+    "name": "Merge the branch with the typecheck and audit fixes",
+    "desc": "**Where:** claude/white-glove-launch-checklist-ewkr21\n\nnpm run check was red: a regex flag tsc rejects. Fixed, plus the flow audit updated for the modal, the /go redirect and the moved disclosure. 50/50 passing."
+  },
+  {
+    "list": "Affiliates",
+    "name": "Kiwitaxi — airport transfers",
+    "desc": "**Where:** Travelpayouts, then /admin/settings/travel-essentials\n\nThe best fit on this list. 50% revenue share, ~$8 an order, 102 countries. Someone shomer Shabbos cannot pay a driver on Shabbos or Yom Tov, so a pre-booked transfer is a real need rather than an upsell."
+  },
+  {
+    "list": "Affiliates",
+    "name": "GetYourGuide — tours and attractions",
+    "desc": "**Where:** Stay22 (/allez/getyourguide) or Travelpayouts\n\n/book still says we do not sell tickets yet. May cost nothing to switch on: it is a supported path under the Stay22 id you already have."
+  },
+  {
+    "list": "Affiliates",
+    "name": "Airalo — eSIM",
+    "desc": "**Where:** Travelpayouts, then /admin/settings/travel-essentials\n\nLanding on a Friday afternoon needing to find the shul is exactly when a working phone matters."
+  },
+  {
+    "list": "Affiliates",
+    "name": "DiscoverCars — test against EconomyBookings",
+    "desc": "**Where:** Travelpayouts\n\nUsually pays better. Worth running against the current car partner."
+  },
+  {
+    "list": "Affiliates",
+    "name": "Amazon Associates — the kosher travel kit",
+    "desc": "**Where:** amazon associates, then /travel-guide and /kosher-travel\n\nTravel blech, hotplate, candles and holders, travel Havdalah set. Low rate, enormous intent, and nobody else is monetising that shelf."
+  },
+  {
+    "list": "Affiliates",
+    "name": "Direct sponsorship — probably the biggest earner",
+    "desc": "**Where:** /admin (ad manager), /contact?reason=advertise\n\nPesach programme operators, kosher hotels and heritage drivers will pay far more than a 4% affiliate rate to reach this audience. The ad manager and the directory already exist."
+  }
+]
