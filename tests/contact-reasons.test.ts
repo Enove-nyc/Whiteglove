@@ -8,6 +8,7 @@ import {
   readReason,
   reasonSpec,
 } from "@/lib/contact-reasons";
+import { assigneeFor } from "@/lib/trello";
 import { publicPaths } from "@/lib/site-map";
 
 /**
@@ -33,9 +34,12 @@ import { publicPaths } from "@/lib/site-map";
 const PAGE = readFileSync("app/contact/page.tsx", "utf8");
 const FORM = readFileSync("components/ContactForm.tsx", "utf8");
 
-describe("the four reasons", () => {
-  it("is four, and each is answerable without reading the others", () => {
-    assert.equal(CONTACT_REASONS.length, 4);
+describe("the reasons", () => {
+  it("is five, and each is answerable without reading the others", () => {
+    // Five since the site fault was split out of "something here is wrong":
+    // one is a claim about the world and one is a claim about the site, and
+    // only the second can be checked without ringing somebody up.
+    assert.equal(CONTACT_REASONS.length, 5);
     for (const reason of CONTACT_REASONS) {
       assert.ok(reason.label.length > 5, reason.value);
       assert.ok(reason.blurb.length > 10, `${reason.value} has no blurb`);
@@ -44,16 +48,26 @@ describe("the four reasons", () => {
     }
   });
 
-  it("gives each one its own subject, so four errands do not look alike in a list", () => {
+  it("gives each one its own subject, so the errands do not look alike in a list", () => {
     const subjects = new Set(CONTACT_REASONS.map((reason) => reason.subject));
     assert.equal(subjects.size, CONTACT_REASONS.length);
   });
 
-  it("COVERS THE FOUR ERRANDS THE SITE ACTUALLY HAS", () => {
+  it("COVERS THE ERRANDS THE SITE ACTUALLY HAS", () => {
     assert.deepEqual(
       CONTACT_REASONS.map((reason) => reason.value),
-      ["trip", "correction", "advertise", "question"],
+      ["trip", "correction", "advertise", "fault", "question"],
     );
+  });
+
+  it("SENDS THE SITE FAULT TO THE BOT AND EVERYTHING ELSE TO A PERSON", () => {
+    // The one distinction the board is built on. A wrong address is a claim
+    // about the world and only somebody who can ring the place up can settle
+    // it; a broken button is a claim about this repository.
+    assert.equal(assigneeFor("fault"), "bot");
+    for (const kind of ["photo", "suggestion", "listing", "plan", "report", "contact"] as const) {
+      assert.equal(assigneeFor(kind), "owner", kind);
+    }
   });
 
   it("puts personal assistance first, because it is the one people write for", () => {
@@ -100,7 +114,7 @@ describe("a field belongs to one reason", () => {
 });
 
 describe("reading the reason off the URL", () => {
-  it("takes the four it knows", () => {
+  it("takes the ones it knows", () => {
     for (const reason of CONTACT_REASONS) assert.equal(readReason(reason.value), reason.value);
     assert.equal(readReason("ADVERTISE"), "advertise");
     assert.equal(readReason(" advertise "), "advertise");

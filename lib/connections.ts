@@ -232,6 +232,15 @@ export const CONNECTIONS: Connection[] = [
     weight: "nicety",
   },
   {
+    vars: ["GITHUB_ISSUE_TOKEN", "GITHUB_ISSUE_REPO"],
+    what:
+      "Files a reported site fault as an issue on the code repository, so it can be picked up and fixed. Only site faults — never a correction to a place, a hechsher or a phone number, which no repository can settle.",
+    without:
+      "A reported fault still reaches your inbox and still makes a Trello card. It simply does not open an issue as well.",
+    weight: "nicety",
+    where: "A GitHub fine-grained token with Issues: write on this repository, and the repo as owner/name.",
+  },
+  {
     vars: ["DIRECTORY_FEATURED_NOTE"],
     what: "The wording shown beside a featured listing in the directory.",
     without: "The built-in wording is used. Nothing breaks.",

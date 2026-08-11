@@ -23,6 +23,8 @@ function fromForm(form: FormData): TrelloSettings {
     token: String(form.get("token") ?? "").trim(),
     listId: String(form.get("listId") ?? "").trim(),
     kinds: CARD_KINDS.map((k) => k.kind).filter((k) => form.get(`kind-${k}`) === "on"),
+    ownerMemberId: String(form.get("ownerMemberId") ?? "").trim(),
+    botMemberId: String(form.get("botMemberId") ?? "").trim(),
   };
 }
 
