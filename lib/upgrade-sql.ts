@@ -53,6 +53,11 @@ ALTER TABLE "Destination" ADD COLUMN IF NOT EXISTS "sources" TEXT[] DEFAULT ARRA
 ALTER TABLE "PracticalPlace" ADD COLUMN IF NOT EXISTS "sourceUrl" TEXT;
 ALTER TABLE "PracticalPlace" ADD COLUMN IF NOT EXISTS "lastVerified" TIMESTAMP(3);
 ALTER TABLE "PracticalPlace" ADD COLUMN IF NOT EXISTS "verification" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION';
+-- Contact had no date column at all, so a shomer or access contact could
+-- never carry one however often somebody rang it. A phone number is the most
+-- perishable record on the site: it looks complete for years after it stops
+-- working. Null means nobody has checked, and the public side says nothing.
+ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "lastVerified" TIMESTAMP(3);
 
 -- Permission to publish somebody's phone number, and why a listing is
 -- featured. contactConsent defaults to FALSE: consent is given, never assumed.

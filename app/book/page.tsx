@@ -164,6 +164,17 @@ export default async function BookPage({
           <div className="mt-6">
             <BookPartners prefill={prefill} multiCity={multiCity} initialKind={initialKind} />
           </div>
+          {/*
+            One line, under the searches, always.
+            It used to be here, then moved to Terms and to each partner action.
+            That left /book itself covered only by accident: the disclosure a
+            visitor saw came from the Travel Essentials block below, so on a
+            deployment where that block is empty all three earning searches sat
+            on the page with nothing said. This does not depend on anything
+            else being filled in. Kept as small as it can be and still be read
+            — the owner's sentence, no heading, no panel.
+          */}
+          <p className="mt-3 max-w-2xl text-[11px] leading-4 text-stone-500">{words.affiliateDisclosure}</p>
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
