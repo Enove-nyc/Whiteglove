@@ -20,6 +20,7 @@ import {
   cardFor,
   cardUrl,
   describeSendFailure,
+  memberFor,
   NO_TRELLO,
   sendsCardFor,
 } from "@/lib/trello";
@@ -59,6 +60,10 @@ function clean(stored: Partial<TrelloSettings> | null): TrelloSettings {
     // Only kinds this site knows, so nothing unexpected can arrive through the
     // door and be sent as a card kind that has no screen behind it.
     kinds: CARD_KINDS.map((k) => k.kind).filter((k) => kinds.includes(k)),
+    // Blank is the normal state and is not a fault: with no member id the card
+    // still names its lane in the description.
+    ownerMemberId: String(stored?.ownerMemberId ?? "").trim(),
+    botMemberId: String(stored?.botMemberId ?? "").trim(),
   };
 }
 
@@ -112,7 +117,7 @@ export async function sendCard(
     return { ok: false, message: "Nothing is set up to send this kind of card." };
   }
   try {
-    const response = await fetch(cardUrl(settings, cardFor(input)), { method: "POST", cache: "no-store" });
+    const response = await fetch(cardUrl(settings, cardFor(input), memberFor(settings, input.kind)), { method: "POST", cache: "no-store" });
     if (!response.ok) return { ok: false, message: describeSendFailure(response.status) };
     return { ok: true, message: "Trello made the card." };
   } catch {

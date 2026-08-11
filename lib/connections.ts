@@ -54,7 +54,7 @@ export const CONNECTIONS: Connection[] = [
     vars: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
     what: "The private store. Accounts, trips, notes, uploads, the admin's own settings.",
     without:
-      "Nobody can make an account or save a trip, no picture can be uploaded, and every setting on these screens falls back to what is written in the code.",
+      "Nobody can make an account or save a trip, no picture can be uploaded, and every setting on these screens falls back to what is written in the code. A message written on the contact form is emailed and kept nowhere, so if the email does not go, the message is gone.",
     weight: "essential",
     where: "Upstash — a free Redis database.",
   },
@@ -98,14 +98,14 @@ export const CONNECTIONS: Connection[] = [
     vars: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],
     what: "Sending email.",
     without:
-      "No verification code, no password reset, no share invitation, and no word to you when somebody writes in or leaves a note on a trip. Accounts still work; the emails simply never arrive.",
+      "No verification code, no password reset, no share invitation, and nothing in your inbox when somebody writes in or leaves a note on a trip. Accounts still work; the emails simply never arrive. Messages sent from the website are still kept and counted on the dashboard — that half does not depend on this.",
     weight: "feature",
     where: "Resend.",
   },
   {
     vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
     what: "Where messages to you are sent.",
-    without: "Contact messages and suggestions are still saved to the admin, but nothing lands in your inbox.",
+    without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages sent in, and counted on the dashboard — but nothing lands in your inbox.",
     weight: "feature",
   },
   {
@@ -217,6 +217,15 @@ export const CONNECTIONS: Connection[] = [
     what: "Which country a phone number typed without a code belongs to.",
     without: "It is read as American, so somebody in London typing their own number gets it stored wrong.",
     weight: "nicety",
+  },
+  {
+    vars: ["GITHUB_ISSUE_TOKEN", "GITHUB_ISSUE_REPO"],
+    what:
+      "Files a reported site fault as an issue on the code repository, so it can be picked up and fixed. Only site faults — never a correction to a place, a hechsher or a phone number, which no repository can settle.",
+    without:
+      "A reported fault still reaches your inbox and still makes a Trello card. It simply does not open an issue as well.",
+    weight: "nicety",
+    where: "A GitHub fine-grained token with Issues: write on this repository, and the repo as owner/name.",
   },
   {
     vars: ["DIRECTORY_FEATURED_NOTE"],

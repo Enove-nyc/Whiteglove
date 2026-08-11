@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { BUILT_IN_WORDS } from "@/data/site-words";
+import { services } from "@/data/services";
 
 /**
  * The customer-facing copy rules from AGENTS.md, as a test.
@@ -163,6 +165,84 @@ describe("the rules are written down where the next person reads them", () => {
   it("KEEPS PERSONAL ASSISTANCE INSIDE CONTACT, which the rules also say", () => {
     assert.match(AGENTS, /discoverable only from the Contact area/);
     assert.match(readFileSync("app/contact/page.tsx", "utf8"), /<PlanningRequestForm/);
+  });
+});
+
+describe("two things this site is not", () => {
+  /**
+   * The owner's standing instruction, encoded so a later review cannot talk
+   * the site back into either one.
+   *
+   * BOTH HAVE ALREADY BEEN ASKED FOR ONCE by a post-launch review, in good
+   * faith, and built. That is exactly why they are a test now rather than a
+   * paragraph: a persuasive checklist arrives, the reasoning looks sound in
+   * isolation, and the site drifts into being a planning agency with a
+   * founder page — which is the one thing the owner has said twice it is not.
+   */
+  it("KEEPS THE INSTRUCTION WHERE THE NEXT PERSON READS IT", () => {
+    // The owner recorded these himself in another session; this file only
+    // holds them. Asserting on his headings rather than a paraphrase, so a
+    // reworded restatement cannot pass while the real rule is gone.
+    assert.match(AGENTS_MD, /## The paid planning service is a last resort/);
+    assert.match(AGENTS_MD, /Do not ask the owner to price it/i);
+    assert.match(AGENTS_MD, /## Settled decisions/);
+    assert.match(AGENTS_MD, /carries no personal facts at all/i);
+    // THE NEWEST OF THESE, and the easiest to undo in good faith. The rule
+    // used to read "no name and no background — only where the business is
+    // based", so the obvious next kindness was to ask him for a town and put
+    // it on the page. There is no town: White Glove is a website, not a
+    // business with a place, and the About page is finished without one.
+    assert.match(AGENTS_MD, /not based anywhere/i);
+    assert.match(AGENTS_MD, /## Working with the owner/);
+  });
+
+  it("ASKS FOR NO LOCATION ANYWHERE THE OWNER WILL SEE IT", () => {
+    // The admin screen is where a "you have not filled this in" nudge would
+    // live, so it is the screen that has to say the opposite.
+    const aboutAdmin = readFileSync("app/admin/settings/about/page.tsx", "utf8");
+    assert.match(aboutAdmin, /Nothing on this screen is required/i);
+    assert.doesNotMatch(aboutAdmin, /is the only one of these the public page needs/i);
+  });
+
+  it("QUOTES NO PRICE FOR PLANNING WORK", () => {
+    // Not a figure, not a range, not a "from". The pricing lines staying
+    // unanswered is the resting state, not a gap.
+    for (const key of ["pricingStartsAt", "pricingWhatAffects", "pricingTurnaround", "pricingRevisions", "pricingBookingSupport", "pricingFeeCredit", "pricingTimeline", "pricingCancellation", "pricingSupportAfter"] as const) {
+      assert.doesNotMatch(BUILT_IN_WORDS[key], /[€$£]\s?\d/, `${key} quotes a price`);
+    }
+    for (const service of services) {
+      assert.doesNotMatch(service.pricing, /[€$£]\s?\d/, `${service.id} quotes a price`);
+      assert.doesNotMatch(service.pricing, /\bfrom\s+[€$£]/i, service.id);
+    }
+  });
+
+  it("KEEPS PLANNING OUT OF THE WAYS TO START", () => {
+    // Enforced in the component rather than remembered per page: it is
+    // dropped unless a page opts in, and only the services page does, where
+    // it is listing what you could do for free instead.
+    const points = readFileSync("components/StartingPoints.tsx", "utf8");
+    assert.match(points, /includePlanning \? \[\] : \["\/services"\]/, "planning is no longer excluded by default");
+    const optIn = PAGES.filter((path) => readFileSync(path, "utf8").includes("includePlanning"));
+    assert.deepEqual(
+      optIn.map((path) => path.replace(/\\/g, "/")),
+      ["app/services/page.tsx"],
+      "a page other than /services is promoting personal planning as a way to start",
+    );
+  });
+
+  it("KEEPS PLANNING TO ONE FOOTER LINK", () => {
+    const footer = readFileSync("components/Footer.tsx", "utf8");
+    const links = (footer.match(/href: "\/services"/g) ?? []).length;
+    assert.ok(links <= 1, `the footer links to planning ${links} times; the rule is one small link`);
+  });
+
+  it("ASKS FOR NO BIOGRAPHY", () => {
+    // No field anywhere for the owner's story. If one appears, somebody has
+    // been asked for it again.
+    const banned = /\b(founder(?:'s)? (?:story|bio)|meet the team|years of experience|our credentials)\b/i;
+    for (const path of FILES) {
+      assert.doesNotMatch(prose(path), banned, `${path} asks for or prints a biography`);
+    }
   });
 });
 

@@ -2,30 +2,43 @@ import Link from "next/link";
 import { startingPointsExcept } from "@/lib/starting-points";
 
 /**
- * "Which of these four is the one I want?"
+ * "Which of these is the one I want?"
  *
- * Four front doors — get recommendations, build it yourself, search partners,
- * have us plan it — shown side by side with what each one actually does, so
- * the choice is made once rather than by trial and error through the
- * navigation. The wording is not written here: it comes from
- * lib/starting-points.ts, which is the single place any of the four is named.
+ * The free ways in — get recommendations, build it yourself, search booking
+ * partners — shown side by side with what each one actually does, so the
+ * choice is made once rather than by trial and error through the navigation.
+ * The wording is not written here: it comes from lib/starting-points.ts, which
+ * is the single place any of the doors is named.
  *
- * `omit` drops the door you are standing in. The front page also omits
- * /services deliberately and not for that reason — a front page that offers to
- * arrange the trip for you is a page about an agency, and every free tool below
- * it then reads as a funnel into a phone call. Personal assistance is offered
- * inside Contact and on its own page. See AGENTS.md and tests/homepage-order.
+ * PERSONAL PLANNING IS NOT ONE OF THEM, AND THAT IS ENFORCED HERE RATHER THAN
+ * REMEMBERED AT EACH CALL SITE. It was an argument the front page made for
+ * itself and every other page then got wrong: /book, /plan and /about all
+ * offered it, because each passed `omit` for the door it was standing in and
+ * nothing else.
+ *
+ * AGENTS.md, "Two things this site is not": planning is something the owner
+ * does when somebody asks him. It gets one small link in the footer and its
+ * place inside Contact, and it is not one of the site's ways to start. On a
+ * tool page it turns something usable into a funnel into a phone call, which
+ * is the whole reason it is kept where it is.
+ *
+ * So it is dropped by default, and the one page that genuinely lists it — the
+ * services page, naming the free alternatives — opts in. A page added later
+ * cannot promote it by forgetting to.
  */
 export default function StartingPoints({
   omit = [],
-  heading = "Four ways to start",
+  includePlanning = false,
+  heading = "Ways to start",
   intro = "Most people end up using two of them. This is what each one is for.",
 }: {
   omit?: string[];
+  /** Only the services page, which is listing what you could do instead. */
+  includePlanning?: boolean;
   heading?: string;
   intro?: string;
 }) {
-  const points = startingPointsExcept(...omit);
+  const points = startingPointsExcept(...omit, ...(includePlanning ? [] : ["/services"]));
   if (points.length === 0) return null;
 
   return (

@@ -31,11 +31,17 @@ What follows from that:
 ## Settled decisions — do not re-open these
 
 - **The site notice stays exactly as it is**, a full-screen popup, until the owner says otherwise. He was shown the cost (it blocks every automated functional check and is the whole of the tab-order findings) and chose to keep it. Do not raise it again, and do not quietly turn it into a strip.
-- **The About page carries no name and no background** — only where the business is based. Do not ask him for a biography, a photograph, or years of experience.
+- **The About page carries no personal facts at all** — no name, no background, no photograph, no years of experience, and no location. White Glove is not based anywhere: it is a website. Do not ask him for any of them, and do not treat the empty fields on `/admin/settings/about` as gaps. The page is finished as it stands: what the site is for, and what its information is worth.
 
 ## Do not hand the owner checklists
 
 Report what changed and what it cost him, in prose. Do not produce checklists, audit tables, or lists of outstanding items for him to work through, and do not convert a question he asked into a list of tasks for him. If something genuinely needs a decision only he can make, ask that one question on its own.
+
+## Working with the owner
+
+**"Step by step" means one step, then stop.** Give a single step, wait for him to say done, and only then give the next one. Do not send a numbered list of five and call it step by step — he is working through these in his own dashboards, and the next step is useless until the one before it is done.
+
+Say what the step is, where to do it, and how he will know it worked. Nothing else.
 
 ## One name per thing
 

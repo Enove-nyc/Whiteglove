@@ -63,7 +63,33 @@ export async function getPublishedDestinationContent(
     const destination = await prisma.destination.findUnique({
       where: { slug },
       include: {
-        contacts: { orderBy: { label: "asc" } },
+        // NAMED, AND THEY HAVE TO STAY NAMED. `include: true` selects every
+        // column the generated client knows about, so the day a column is
+        // added to Contact in schema.prisma this whole read starts throwing
+        // P2022 against a database that has not had the migration run yet —
+        // and the page silently falls back to built-in content, losing every
+        // listing and phone number the owner entered. That is the failure the
+        // paragraph above describes, and adding Contact.lastVerified caused it
+        // again: /ropshitz threw "The column (not available) does not exist"
+        // in production while the schema and the database disagreed.
+        //
+        // Naming the columns means the schema can move ahead of the database
+        // without taking a public page down with it. Anything new is read
+        // separately and allowed to fail, exactly like the pictures below.
+        contacts: {
+          orderBy: { label: "asc" },
+          select: {
+            id: true,
+            label: true,
+            phone: true,
+            email: true,
+            note: true,
+            source: true,
+            status: true,
+            destinationId: true,
+            cemeteryId: true,
+          },
+        },
         places: {
           where: { status: "PUBLISHED" },
           orderBy: [{ category: "asc" }, { name: "asc" }],
@@ -95,8 +121,26 @@ export async function getPublishedDestinationContent(
       byPlace.set(photo.placeId, list);
     }
 
+    // The last-checked dates, separately and allowed to fail — same reason the
+    // pictures are. On a database that has not had the migration run yet this
+    // returns nothing and the contacts simply carry no date, which is what
+    // they showed before the column existed. It never costs the page.
+    const contactDates = await optionalRead(
+      `contact dates for ${slug}`,
+      async () =>
+        prisma.contact.findMany({
+          where: { destinationId: destination.id },
+          select: { id: true, lastVerified: true },
+        }),
+      [] as Array<{ id: string; lastVerified: Date | null }>,
+    );
+    const checkedById = new Map(contactDates.map((row) => [row.id, row.lastVerified]));
+
     return {
-      contacts: destination.contacts,
+      contacts: destination.contacts.map((contact) => ({
+        ...contact,
+        lastVerified: checkedById.get(contact.id) ?? null,
+      })),
       places: destination.places.map((place) => ({ ...place, photos: byPlace.get(place.id) ?? [] })),
       photos: pictures.filter((photo) => photo.destinationId === destination.id),
     };

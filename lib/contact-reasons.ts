@@ -26,7 +26,7 @@
  * for something.
  */
 
-export type ContactReason = "trip" | "correction" | "advertise" | "question";
+export type ContactReason = "trip" | "correction" | "advertise" | "question" | "fault";
 
 export type ContactField = {
   name: string;
@@ -113,6 +113,52 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
       },
     ],
     messageLabel: "What you have in mind",
+    messagePlaceholder: "",
+  },
+  {
+    /**
+     * THE ONE REASON THAT IS NOT ABOUT THE WORLD.
+     *
+     * "Something here is wrong" above and this one look alike and are not. The
+     * first is a claim about a place — an address, a hechsher, a shomer's
+     * number — and only a person who can ring somebody up is able to settle
+     * it. This is a claim about the SITE, and the site is the one thing that
+     * can be checked without leaving the code. So it is the only queue routed
+     * to the bot (lib/trello.ts), and the only one that opens an issue.
+     *
+     * The two questions asked here are the two that decide whether a fault can
+     * be reproduced at all: which page, and what happened. The device is
+     * optional and is asked because half the faults ever reported on this site
+     * happened at one width and nowhere else.
+     */
+    value: "fault",
+    label: "Something on the site is broken",
+    blurb: "A page that will not load, a button that does nothing, a link that goes nowhere.",
+    heading: "What broke, and where",
+    subject: "Site fault",
+    fields: [
+      {
+        // NOT "page", which belongs to the correction above. A field name is
+        // owned by exactly one reason — tests/contact-reasons enforces it —
+        // so that a value typed under one reason can never be composed into
+        // another's message. The label is what a person reads, and both may
+        // fairly ask "Which page".
+        name: "faultPage",
+        label: "Which page",
+        placeholder: "Paste the address you were on",
+        kind: "text",
+        required: true,
+      },
+      {
+        name: "device",
+        label: "Phone or computer (optional)",
+        placeholder: "iPhone, Safari — or Windows, Chrome",
+        kind: "text",
+        required: false,
+        hint: "Worth a second: plenty of faults happen on a phone and nowhere else.",
+      },
+    ],
+    messageLabel: "What you did, and what happened instead",
     messagePlaceholder: "",
   },
   {

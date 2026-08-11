@@ -79,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
       { href: "/admin/accounts", label: "Visitor accounts", blurb: "People who signed up." },
+      { href: "/admin/messages", label: "Messages sent in", blurb: "What people wrote from the website." },
       // ONE ENTRY, not two. Travel Essentials was a second screen answering the
       // same question — is this site earning, and where — so whichever one you
       // opened looked complete on its own. It is a section of this page now,

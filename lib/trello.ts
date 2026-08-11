@@ -22,7 +22,39 @@
  */
 
 /** The queues that can raise a card. */
-export type CardKind = "photo" | "suggestion" | "listing" | "plan" | "report" | "contact";
+export type CardKind = "photo" | "suggestion" | "listing" | "plan" | "report" | "contact" | "fault";
+
+/**
+ * WHOSE CARD IT IS, and the one distinction that matters on this board.
+ *
+ * EVERY queue raises a card — that is the point, and there is no second-class
+ * queue that quietly goes to email only. What changes from one to the next is
+ * who it lands on, and there are exactly two answers.
+ *
+ * "owner" is the default and it is the default for a reason a robot cannot
+ * argue with: almost everything a visitor sends about this site is a CLAIM
+ * ABOUT THE WORLD — a shul's number has changed, a restaurant has shut, a
+ * hechsher has lapsed, a keyholder has moved away. Nothing automated can
+ * confirm any of that. It can only produce a confident sentence, and a
+ * confident sentence about kashrus that nobody checked is the one thing this
+ * site cannot survive publishing. data/kosher-eateries.ts already refuses to
+ * ship directory research as certified; this is the same rule one step
+ * earlier.
+ *
+ * "bot" is for the one kind of report that is a claim about the SITE rather
+ * than about the world: a page that will not load, a button that does
+ * nothing, a link that goes nowhere. Those are checkable without leaving the
+ * repository, they are covered by the tests and the two audits, and being
+ * wrong about one costs a failed build rather than somebody's Shabbos.
+ *
+ * The line is not about difficulty. It is about what can be verified, and by
+ * whom.
+ */
+export type Assignee = "owner" | "bot";
+
+export function assigneeFor(kind: CardKind): Assignee {
+  return kind === "fault" ? "bot" : "owner";
+}
 
 export type KindInfo = {
   kind: CardKind;
@@ -41,6 +73,12 @@ export const CARD_KINDS: readonly KindInfo[] = [
   { kind: "plan", label: "A Pro or Business request", href: "/admin/accounts", why: "A person waiting on an answer from you. Nothing is charged either way." },
   { kind: "report", label: "Something reported as wrong", href: "/admin/reports", why: "The quickest signal that a page has gone stale." },
   { kind: "contact", label: "A message through the contact form", href: "/admin", why: "These already come by email; a card is for when you would rather work from the board." },
+  {
+    kind: "fault",
+    label: "Something on the site is broken",
+    href: "/admin",
+    why: "A page that will not load, a control that does nothing, a link that goes nowhere. This is the only queue a machine can check for itself.",
+  },
 ];
 
 export function kindInfo(kind: CardKind): KindInfo {
@@ -57,9 +95,22 @@ export type TrelloSettings = {
   listId: string;
   /** Which queues raise a card. Empty means none, and the screen says so. */
   kinds: CardKind[];
+  /**
+   * Who cards get put on, by Trello member id. BOTH ARE OPTIONAL and the
+   * integration is fully useful without either: the lane is written into every
+   * card's description regardless, so a board with nobody configured still
+   * says which of the two a card is. Setting these only adds the avatar, which
+   * is what makes a board filterable.
+   *
+   * Ids rather than usernames because Trello's card API takes ids, and looking
+   * a username up would be a second call that can fail on its own — inside a
+   * send that is deliberately fire-and-forget.
+   */
+  ownerMemberId: string;
+  botMemberId: string;
 };
 
-export const NO_TRELLO: TrelloSettings = { key: "", token: "", listId: "", kinds: [] };
+export const NO_TRELLO: TrelloSettings = { key: "", token: "", listId: "", kinds: [], ownerMemberId: "", botMemberId: "" };
 
 /* ---- what a usable setting looks like ----------------------------------- */
 
@@ -154,7 +205,17 @@ export function cardFor(input: { kind: CardKind; about?: string; siteUrl?: strin
   const info = kindInfo(input.kind);
   const about = (input.about ?? "").trim().slice(0, 80);
   const where = input.siteUrl ? new URL(info.href, input.siteUrl).toString() : info.href;
+  // THE LANE IS THE FIRST LINE, and it is written whether or not anybody has
+  // configured a member id. A card that says who it belongs to works on any
+  // board; an avatar only works on a board that has been set up. Belt first,
+  // braces second.
+  const lane =
+    assigneeFor(input.kind) === "bot"
+      ? "FOR THE BOT — a fault on the site itself, which can be checked from the code."
+      : "FOR THE OWNER — this is a claim about the world, and only a person can confirm it.";
   const desc = [
+    lane,
+    "",
     info.why,
     "",
     `Handle it here: ${where}`,
@@ -166,8 +227,14 @@ export function cardFor(input: { kind: CardKind; about?: string; siteUrl?: strin
   return { name: about ? `${info.label} — ${about}` : info.label, desc };
 }
 
+/** The member this kind of card goes on, or "" when none is configured. */
+export function memberFor(settings: TrelloSettings, kind: CardKind): string {
+  const who = assigneeFor(kind) === "bot" ? settings.botMemberId : settings.ownerMemberId;
+  return who.trim();
+}
+
 /** The address to POST a card to. Credentials go in the query string, per Trello. */
-export function cardUrl(settings: TrelloSettings, card: CardDraft): string {
+export function cardUrl(settings: TrelloSettings, card: CardDraft, member = ""): string {
   const query = new URLSearchParams({
     idList: settings.listId.trim(),
     key: settings.key.trim(),
@@ -178,6 +245,10 @@ export function cardUrl(settings: TrelloSettings, card: CardDraft): string {
     // waiting is not the most useful one to see first.
     pos: "top",
   });
+  // Only when there is one. Trello rejects the whole card for an idMembers it
+  // does not recognise, so an unset or mistyped id must not be sent — losing
+  // the card would be a far worse outcome than losing the avatar on it.
+  if (member.trim()) query.set("idMembers", member.trim());
   return `https://api.trello.com/1/cards?${query.toString()}`;
 }
 
