@@ -31,7 +31,7 @@
  * the redirect handler, the admin screens and the tests.
  */
 
-import { allezUrl, readStay22Link, stay22IsOn, type Stay22Settings } from "@/lib/stay22";
+import { allezUrl, readStay22Link, stay22IsOn, tourSearchUrl, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
 import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
@@ -386,6 +386,14 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
   ) {
     const url = config.essentialsLandings?.[request.product]?.url?.trim() ?? "";
     if (!url || !landingUrlOk(url)) return null;
+    // TOURS CARRY THE PLACE when the pasted link is a Stay22 GetYourGuide desk.
+    // The visitor came from a page about somewhere; sending them to the same
+    // front page whether they were reading about Rome or Kraków throws away the
+    // one thing this site knew. Everything else — a Travelpayouts link, a plain
+    // partner URL, no place in the request — opens what the owner pasted,
+    // unchanged. See lib/stay22.ts for why this is the only landing product
+    // that can do it, and for what has NOT been verified about it.
+    if (request.product === "activity") return tourSearchUrl(where, url) ?? url;
     return url;
   }
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  tourSearchUrl,
   aidProblem,
   allezUrl,
   CAMPAIGN,
@@ -190,5 +191,40 @@ describe("what the admin is told", () => {
     for (const s of [NO_STAY22, on(), on({ aid: "a b" }), on({ provider: "vrbo" })]) {
       assert.ok(describeStay22(s).length > 40);
     }
+  });
+});
+
+describe("tours carry the place", () => {
+  it("BUILDS A SEARCH when the pasted link is a Stay22 tours desk", () => {
+    // The hand-off used to open whatever was pasted, so somebody reading about
+    // Kraków and somebody reading about Rome arrived at the same front page and
+    // both typed their city again. Stay22's link= slot is what the flight and
+    // car searches already use; tours get it for the same reason.
+    const built = tourSearchUrl("Rome", "https://getyourguide.stay22.com/myaccount/abc123");
+    assert.ok(built, "no search was built from a tours short link");
+    const url = new URL(built!);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/getyourguide");
+    assert.equal(url.searchParams.get("aid"), "myaccount");
+    // The traveller's own place survives the hand-off — that is the whole point.
+    assert.equal(url.searchParams.get("link"), "https://www.getyourguide.com/s/?q=Rome");
+  });
+
+  it("REFUSES TO GUESS for any other desk or network", () => {
+    // A Travelpayouts link and a plain partner URL have no slot to put a search
+    // in. Returning null means "open what the owner pasted" — a page that works
+    // beats a guess that does not, which is the rule the whole module follows.
+    assert.equal(tourSearchUrl("Rome", "https://tp.media/r?marker=1&u=https%3A%2F%2Fexample.com"), null);
+    assert.equal(tourSearchUrl("Rome", "https://www.getyourguide.com/"), null);
+    // A hotels desk is not a tours desk, however well formed.
+    assert.equal(tourSearchUrl("Rome", "https://kayak.stay22.com/myaccount/abc123"), null);
+    // And no place is no search.
+    assert.equal(tourSearchUrl("   ", "https://getyourguide.stay22.com/myaccount/abc123"), null);
+  });
+
+  it("encodes a place that would otherwise break the address", () => {
+    const built = tourSearchUrl("Nice & Côte d'Azur", "https://getyourguide.stay22.com/myaccount/abc123");
+    const inner = new URL(built!).searchParams.get("link")!;
+    assert.equal(new URL(inner).searchParams.get("q"), "Nice & Côte d'Azur");
   });
 });
