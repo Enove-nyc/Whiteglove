@@ -78,7 +78,7 @@ export default async function ServicesPage() {
           free. Saying so on the page that sells the fourth is the difference
           between a services page and a wall. lib/starting-points.ts. */}
       <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
-        <StartingPoints omit={["/services"]} heading="Or do it yourself, free" />
+        <StartingPoints omit={["/services"]} includePlanning heading="Or do it yourself, free" />
       </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">

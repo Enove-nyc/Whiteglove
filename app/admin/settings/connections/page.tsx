@@ -47,6 +47,11 @@ export default function ConnectionSettings() {
     TRIP_ARRANGEMENT: process.env.TRIP_ARRANGEMENT,
     DEFAULT_PHONE_COUNTRY: process.env.DEFAULT_PHONE_COUNTRY,
     DIRECTORY_FEATURED_NOTE: process.env.DIRECTORY_FEATURED_NOTE,
+    // Files a reported site fault as an issue. Read here so the screen can say
+    // whether it is set — a described variable the screen never reads shows as
+    // missing for ever, which tests/connections.ts catches.
+    GITHUB_ISSUE_TOKEN: process.env.GITHUB_ISSUE_TOKEN,
+    GITHUB_ISSUE_REPO: process.env.GITHUB_ISSUE_REPO,
     GOOGLE_ROUTES_URL: process.env.GOOGLE_ROUTES_URL,
     OSRM_ROUTER_URL: process.env.OSRM_ROUTER_URL,
   };

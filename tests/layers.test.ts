@@ -27,7 +27,11 @@ describe("what is in front of what", () => {
     assert.match(body, /position:\s*relative/, "isolation only contains z-index on a positioned element");
     // Google draws into the same box; it needs the same containment so its
     // chrome cannot climb over the advertisement either.
-    assert.match(css, /\.wg-map-box\s*\{[^}]*z-index:\s*var\(--wg-z-map\)/s, "the public map box is boxed the same way");
+    // [\s\S] rather than the `s` flag: tsconfig targets ES2017, where
+    // dotAll does not exist, and `tsc --noEmit` refuses it (TS1501). The
+    // suite still passed, because `npm test` runs through tsx and never
+    // typechecks — so `npm run check` was the only thing that went red.
+    assert.match(css, /\.wg-map-box\s*\{[\s\S]*?z-index:\s*var\(--wg-z-map\)/, "the public map box is boxed the same way");
   });
 
   it("puts the advertisement in front of the page and the header", () => {
