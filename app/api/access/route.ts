@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { accessToken, sameOrigin } from "@/lib/secure-access";
-import { identifySiteCode, verifyAccessPassword } from "@/lib/access-passwords";
+import { hasStoredPassword, identifySiteCode, passwordStorageAvailable, verifyAccessPassword } from "@/lib/access-passwords";
 import { recordFailedAttempt, tooManyAttempts } from "@/lib/access-attempts";
 import { accessGeneration, recordSignIn, whereFrom } from "@/lib/signin-log";
 import { mintSiteAccess, PREVIEW_MINUTES, SITE_COOKIE } from "@/lib/site-access";
@@ -33,6 +33,21 @@ export async function POST(request: NextRequest) {
   if (body.scope === "admin") {
     if (!(await verifyAccessPassword("admin", password))) {
       await recordFailedAttempt(request, "admin");
+      // Local DX: distinguish "this server has no ADMIN_PASSWORD loaded" from a
+      // wrong guess. The origin-main worktree often runs without `.env.local`.
+      if (
+        process.env.NODE_ENV !== "production" &&
+        !process.env.ADMIN_PASSWORD?.trim() &&
+        !(passwordStorageAvailable() && (await hasStoredPassword("admin")))
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "This local server has no ADMIN_PASSWORD loaded. Put it in .env.local in this worktree and restart npm run dev.",
+          },
+          { status: 503 },
+        );
+      }
       return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
     }
     const token = accessToken("admin");

@@ -45,7 +45,7 @@ need the same map.
 | Route | What it is | Redesign role |
 | --- | --- | --- |
 | `/kosher-travel` | — | **New.** Hub over the resources below |
-| `/kosher` | Live OpenStreetMap kosher food finder + 22 researched eateries | Kept |
+| `/kosher` | Curated kosher food finder + researched eateries | Kept |
 | `/directory` | Provider directory (drivers, shomrim, services) | Kept |
 | `/travel-guide` | Entry documents, payments, advisories | Kept |
 | `/verification` | — | **New.** What the four status labels mean |
@@ -164,9 +164,9 @@ Nothing below was rebuilt, replaced or degraded for the sake of the redesign.
   the cemetery records with burials, coordinates, arrival notes, shomer
   contacts and sources, 327 tzaddikim, traditional Yiddish names, the
   verification statuses and completeness queue.
-- **Kosher data** — the live OpenStreetMap finder, the researched eateries and
-  their hechsher statuses, the stays with their `kosherClaim` and seasons, the
-  quarters and their anchors.
+- **Kosher data** — the curated kosher food finder, the researched eateries
+  and their hechsher statuses, the stays with their `kosherClaim` and seasons,
+  the quarters and their anchors.
 - **Owner tooling** — the whole admin, the editable pages, the editable site
   words, promotions and advertisements, the directory listings, photo
   submissions, suggestions, the recycle bin, analytics.

@@ -36,7 +36,9 @@ describe("Google Maps loader", () => {
     assert.match(AREA, /drawOsm/);
     assert.match(AREA, /drawGoogle/);
     assert.match(AREA, /useGoogle \|\| googleMaps\(\)\?\.Map/);
-    // Deciding must not claim the OpenStreetMap scroll-zoom wording.
+    assert.match(AREA, /tile\.openstreetmap\.org/);
+    assert.match(AREA, /curatedKosherPlaces/);
+    assert.doesNotMatch(AREA, /lookupKosherPlaces|kosher-osm/i);
     assert.match(AREA, /Loading the map/);
   });
 });

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AreaMap from "@/components/AreaMap";
-import { geocodeOne } from "@/lib/geocode";
 import { MAP_STYLE } from "@/lib/map-icons";
 import { pointFrom, withinArea, type MapMarker, type Point } from "@/lib/map-markers";
 
@@ -48,23 +47,49 @@ export default function MapExplorer({
   const [radius, setRadius] = useState(50);
   const [status, setStatus] = useState("");
 
-  async function search(value: string, coords?: string) {
+  function search(value: string, coords?: string) {
     const label = value.trim();
     if (!label) return;
-    setStatus("Finding that place…");
+    setStatus("Finding that listing…");
 
-    // A place we already hold beats a geocoder lookup — our own coordinates for
-    // a kever are the verified ones.
-    const ours = kevarim.find((k) => `${k.city} ${k.name}`.toLowerCase().includes(label.toLowerCase()));
+    const normalized = label.toLocaleLowerCase("en");
+    const locations = [
+      ...kevarim.map((place) => ({
+        name: place.name,
+        city: place.city,
+        country: place.country,
+        coordinates: place.coordinates,
+      })),
+      ...attractions.flatMap((place) => place.coordinates ? [{
+        name: place.name,
+        city: place.city,
+        country: place.country,
+        coordinates: place.coordinates,
+      }] : []),
+      ...stays.flatMap((place) => place.coordinates ? [{
+        name: place.name,
+        city: place.city,
+        country: place.country,
+        coordinates: place.coordinates,
+      }] : []),
+      ...airports.map((place) => ({
+        name: place.name,
+        city: place.city,
+        country: "",
+        coordinates: `${place.lat}, ${place.lng}`,
+      })),
+    ];
+    const ours = locations.find((place) => place.city.toLocaleLowerCase("en") === normalized)
+      ?? locations.find((place) => `${place.name} ${place.city} ${place.country}`.toLocaleLowerCase("en").includes(normalized));
     const fromPicker = coords ? pointFrom(coords) : null;
-    const point = fromPicker ?? (ours ? pointFrom(ours.coordinates) : null) ?? pointFrom((await geocodeOne(label))?.coordinates ?? "");
+    const point = fromPicker ?? (ours ? pointFrom(ours.coordinates) : null);
 
     if (!point) {
-      setStatus(`Could not find “${label}”. Try a town name, or pick from the suggestions.`);
+      setStatus(`Could not find “${label}” in White Glove’s curated map. Try a listed destination or place name.`);
       return;
     }
     setCenter(point);
-    setName(ours ? `${ours.city}` : label);
+    setName(ours?.city || label);
     setStatus("");
   }
 
@@ -148,14 +173,14 @@ export default function MapExplorer({
     <div>
       <div className="grid gap-4 sm:grid-cols-[1.6fr_auto_auto] sm:items-end">
         <label className="block">
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Search a town, kever or address</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Search White Glove listings</span>
           <AddressAutocomplete
             value={query}
             onChange={(value, coords) => {
               setQuery(value);
               if (coords) void search(value, coords);
             }}
-            placeholder="e.g. Kraków"
+            placeholder="Destination, kever or listing name…"
             className="mt-1.5 w-full border border-[var(--gold-light)] px-3 py-3 text-base text-[var(--navy)] outline-none transition focus:border-[var(--gold)]"
           />
         </label>
@@ -190,7 +215,7 @@ export default function MapExplorer({
           </button>
         ) : (
           <p className="text-xs leading-5 text-stone-500">
-            Showing everywhere the site knows. Search a town above to narrow it and to bring in kosher food nearby.
+            Showing White Glove&apos;s curated collection. Search a listed destination or place to narrow the map.
           </p>
         )}
       </div>
@@ -203,7 +228,7 @@ export default function MapExplorer({
           centerName={name}
           markers={markers}
           radiusKm={Math.min(radius, 50)}
-          loadKosher={Boolean(center)}
+          loadKosher
           height={520}
         />
       </div>

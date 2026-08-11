@@ -1,7 +1,7 @@
 // Curated, editorial trip ideas for the honeymoon and planning pages. These are
 // general destination ideas and sample day-outlines — NOT specific business
 // listings. We never invent a hotel, restaurant, phone, or price here; for real
-// kosher places, the pages embed the live kosher finder, and the itinerary
+// kosher places, the pages link to the curated kosher food finder, and the itinerary
 // planner pulls from our sourced kever directory.
 
 export type DestinationIdea = {

@@ -2,19 +2,21 @@
  * Server-side searchable index for global search.
  *
  * Built once per process and reused. Owner-published DB rows (attractions,
- * stays, quarters, info pages) are merged in when DATABASE_URL is set. Call
- * invalidateSiteSearchIndex() after a publish so the next request rebuilds.
+ * stays, practical listings, quarters, info pages) are merged in when
+ * DATABASE_URL is set. Call invalidateSiteSearchIndex() after a publish so the
+ * next request rebuilds.
  *
  * The browser never receives this index — only ranked hit rows go over the wire.
  */
 
 import { cemeteries } from "@/data/cemeteries";
-import { destinationHaystack, destinations } from "@/data/destinations";
+import { destinationHaystack, destinationHref as heritageDestinationHref, destinations, getDestination } from "@/data/destinations";
 import { HECHSHERIM } from "@/data/hechsherim";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { services } from "@/data/services";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
+import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
 import { compact } from "@/lib/site-search-match";
@@ -63,6 +65,20 @@ export async function getSearchIndex(): Promise<SearchDocument[]> {
 
 type DraftDoc = Omit<SearchDocument, "normTokens" | "normCompact">;
 
+export type PublishedPracticalPlaceSearchRow = {
+  id: string;
+  category: string;
+  name: string;
+  address: string | null;
+  notes: string | null;
+  sourceUrl?: string | null;
+  destination: {
+    slug: string;
+    city: string;
+    country: string;
+  };
+};
+
 /** Pure builder for tests — does not touch the module cache. */
 export async function buildSearchIndex(): Promise<SearchDocument[]> {
   const docs: DraftDoc[] = [];
@@ -72,6 +88,7 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   pushCemeteries(docs);
   pushTzaddikim(docs);
   await pushAttractionsStaysAreas(docs);
+  await pushPublishedPracticalPlaces(docs);
   pushEateries(docs);
   pushServices(docs);
   pushSitePages(docs);
@@ -302,6 +319,92 @@ async function pushAttractionsStaysAreas(docs: DraftDoc[]) {
   });
 }
 
+/**
+ * Practical listings live on destination pages, so they used to be invisible
+ * to global search even after the owner had published them. This is a
+ * database-only additive read; with no database the existing static index
+ * remains exactly as it was.
+ */
+async function pushPublishedPracticalPlaces(docs: DraftDoc[]) {
+  if (!process.env.DATABASE_URL) return;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.practicalPlace.findMany({
+      where: { status: "PUBLISHED" },
+      select: {
+        id: true,
+        category: true,
+        name: true,
+        address: true,
+        notes: true,
+        sourceUrl: true,
+        destination: { select: { slug: true, city: true, country: true } },
+      },
+      orderBy: [{ destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
+    });
+    rows
+      .filter((place) => !isDisallowedImportSource({
+        sourceUrl: place.sourceUrl ?? "",
+        sourceName: "",
+        attribution: "",
+      }))
+      .forEach((place, index) => {
+      docs.push(publishedPracticalPlaceSearchDocument(place, index));
+      });
+  } catch {
+    // Search is a navigation aid, not a reason to blank its static index if an
+    // optional DB table is temporarily unavailable.
+  }
+}
+
+/**
+ * One published practical listing's global-search representation. Exported so
+ * the publish/search contract can be tested without requiring a live database.
+ */
+export function publishedPracticalPlaceSearchDocument(
+  place: PublishedPracticalPlaceSearchRow,
+  rankWeight = 0,
+): SearchDocument {
+  const staticDestination = getDestination(place.destination.slug);
+  const vacationDestination = vacationDestinations.find((item) => item.slug === place.destination.slug);
+  const href = vacationDestination
+    ? vacationHref(vacationDestination)
+    : staticDestination
+      ? heritageDestinationHref(staticDestination)
+      : heritageTownHref(place.destination.slug);
+  return finalize({
+    id: `practical-${place.id}`,
+    kind: "Practical travel",
+    section: sectionForKind("Practical travel"),
+    title: place.name,
+    subtitle: `${place.destination.city} · ${place.destination.country} · ${place.category.replace(/_/g, " ")}`,
+    href,
+    names: [
+      place.name,
+      place.destination.city,
+      place.destination.country,
+      place.category.replace(/_/g, " "),
+      extraSpellings([place.destination.slug, place.destination.city, place.name]),
+    ].filter(Boolean),
+    keywords: [
+      "practical travel",
+      "travel information",
+      place.category.replace(/_/g, " "),
+      ...(place.category === "MIKVAH"
+        ? ["mikvah", "mikvaos", "mikveh", "mikve", "tvilah", "ritual bath"]
+        : place.category === "MINYAN"
+          ? ["minyan", "minyanim", "shul", "davening"]
+          : []),
+    ],
+    body: [place.address ?? "", place.notes ?? ""].join(" "),
+    city: place.destination.city,
+    country: place.destination.country,
+    rankWeight,
+    heritage: false,
+    vacation: Boolean(vacationDestination),
+  });
+}
+
 function pushEateries(docs: DraftDoc[]) {
   kosherEateries.forEach((e, index) => {
     docs.push({
@@ -411,6 +514,24 @@ function pushSitePages(docs: DraftDoc[]) {
       href: "/hechsherim",
       names: ["hechsherim", "hechsher", "kashrus", "certification"],
       keywords: ["hechsher", "kosher certification", ...HECHSHERIM.flatMap((h) => [h.name, h.mark, ...h.aliases])],
+    },
+    {
+      id: "page-mikvaos",
+      kind: "Travel guide",
+      title: "Mikvaos",
+      subtitle: "Source-backed mikvah listings for travel",
+      href: "/mikvaos",
+      names: ["mikvaos", "mikvah", "mikveh", "mikve", "ritual bath"],
+      keywords: ["mikvah", "mikvaos", "mikveh", "tvilah", "kosher travel"],
+    },
+    {
+      id: "page-zmanim",
+      kind: "Travel guide",
+      title: "Zmanim",
+      subtitle: "Halachic times for a place and date",
+      href: "/zmanim",
+      names: ["zmanim", "zman", "halachic times", "candle lighting", "alos", "tzeit"],
+      keywords: ["zmanim", "sof zman shema", "chatzos", "mincha", "sunset", "sunrise", "candle-lighting"],
     },
     {
       id: "page-travel-guide",

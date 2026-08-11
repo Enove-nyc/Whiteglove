@@ -3,13 +3,12 @@
 // The /api/admin/db-setup route executes this to create the tables, because a
 // migration cannot be run against the database from every environment.
 //
-// It had drifted badly: generated back when the directory tables were added
-// and never again, so it was missing the six PlaceCategory values, the whole
-// Photo table, the verification and consent columns, and everything after. A
-// database set up with the admin button would have come up missing them, and
-// the first symptom would have been pictures failing to save.
-//
-// tests/generated-sql.test.ts now fails when it falls behind the schema again.
+// WHAT IT CAN AND CANNOT DO. It is a from-empty script, so on a fresh database
+// it builds everything. On a database that already has tables, lib/db-setup.ts
+// runs it statement by statement and swallows "already exists" — which adds a
+// whole NEW table, but cannot add a column to a table that is already there,
+// and cannot add a value to an enum. Those need `npm run db:migrate`, and the
+// admin screen says so rather than implying the button is enough.
 //
 // Regenerate:
 //   npm run build:sql
@@ -22,6 +21,12 @@ CREATE TYPE "DestinationKind" AS ENUM ('CITY_GUIDE', 'DESTINATION', 'SACRED_STOP
 
 -- CreateEnum
 CREATE TYPE "ContentStatus" AS ENUM ('PUBLISHED', 'DRAFT', 'NEEDS_REVIEW');
+
+-- CreateEnum
+CREATE TYPE "ContentImportKind" AS ENUM ('ATTRACTION', 'KOSHER_FOOD', 'PLACE_TO_STAY', 'PRACTICAL');
+
+-- CreateEnum
+CREATE TYPE "ContentImportStatus" AS ENUM ('NEEDS_REVIEW', 'DUPLICATE', 'REJECTED', 'PUBLISHED');
 
 -- CreateEnum
 CREATE TYPE "VerificationStatus" AS ENUM ('VERIFIED', 'UNAVAILABLE', 'NEEDS_VERIFICATION');
@@ -207,6 +212,92 @@ CREATE TABLE "KosherArea" (
 );
 
 -- CreateTable
+CREATE TABLE "ContentImportBatch" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "sourceName" TEXT NOT NULL,
+    "sourceUrl" TEXT NOT NULL,
+    "attribution" TEXT NOT NULL,
+    "license" TEXT,
+    "isBuiltIn" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ContentImportBatch_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContentImportCandidate" (
+    "id" TEXT NOT NULL,
+    "kind" "ContentImportKind" NOT NULL,
+    "category" TEXT,
+    "name" TEXT NOT NULL,
+    "aliases" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "city" TEXT NOT NULL,
+    "region" TEXT,
+    "country" TEXT NOT NULL,
+    "destinationSlug" TEXT,
+    "address" TEXT,
+    "coordinates" TEXT,
+    "website" TEXT,
+    "summary" TEXT,
+    "anchorName" TEXT,
+    "anchorCoords" TEXT,
+    "kosherClaim" TEXT NOT NULL DEFAULT 'none',
+    "kosherSourceUrl" TEXT,
+    "sourceUrl" TEXT NOT NULL,
+    "sourceId" TEXT NOT NULL,
+    "sourceName" TEXT NOT NULL,
+    "attribution" TEXT NOT NULL,
+    "license" TEXT,
+    "sourceEvidence" JSONB,
+    "normalizedName" TEXT NOT NULL,
+    "normalizedLocation" TEXT NOT NULL,
+    "dedupeKey" TEXT NOT NULL,
+    "status" "ContentImportStatus" NOT NULL DEFAULT 'NEEDS_REVIEW',
+    "validationErrors" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "duplicateOf" TEXT,
+    "publishedKind" TEXT,
+    "publishedId" TEXT,
+    "reviewedAt" TIMESTAMP(3),
+    "publishedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "batchId" TEXT NOT NULL,
+
+    CONSTRAINT "ContentImportCandidate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TrelloCandidateReviewSettings" (
+    "id" TEXT NOT NULL,
+    "boardId" TEXT NOT NULL,
+    "reviewListId" TEXT NOT NULL,
+    "doneListId" TEXT NOT NULL,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TrelloCandidateReviewSettings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TrelloCandidateReviewCard" (
+    "id" TEXT NOT NULL,
+    "candidateId" TEXT NOT NULL,
+    "boardId" TEXT NOT NULL,
+    "reviewListId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'CREATING',
+    "trelloCardId" TEXT,
+    "cardUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TrelloCandidateReviewCard_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Photo" (
     "id" TEXT NOT NULL,
     "url" TEXT NOT NULL,
@@ -386,6 +477,36 @@ CREATE UNIQUE INDEX "KosherArea_slug_key" ON "KosherArea"("slug");
 CREATE INDEX "KosherArea_country_city_idx" ON "KosherArea"("country", "city");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ContentImportBatch_slug_key" ON "ContentImportBatch"("slug");
+
+-- CreateIndex
+CREATE INDEX "ContentImportBatch_createdAt_idx" ON "ContentImportBatch"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ContentImportCandidate_dedupeKey_key" ON "ContentImportCandidate"("dedupeKey");
+
+-- CreateIndex
+CREATE INDEX "ContentImportCandidate_batchId_status_idx" ON "ContentImportCandidate"("batchId", "status");
+
+-- CreateIndex
+CREATE INDEX "ContentImportCandidate_kind_status_idx" ON "ContentImportCandidate"("kind", "status");
+
+-- CreateIndex
+CREATE INDEX "ContentImportCandidate_country_city_idx" ON "ContentImportCandidate"("country", "city");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TrelloCandidateReviewCard_candidateId_key" ON "TrelloCandidateReviewCard"("candidateId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TrelloCandidateReviewCard_trelloCardId_key" ON "TrelloCandidateReviewCard"("trelloCardId");
+
+-- CreateIndex
+CREATE INDEX "TrelloCandidateReviewCard_status_idx" ON "TrelloCandidateReviewCard"("status");
+
+-- CreateIndex
+CREATE INDEX "TrelloCandidateReviewCard_boardId_reviewListId_idx" ON "TrelloCandidateReviewCard"("boardId", "reviewListId");
+
+-- CreateIndex
 CREATE INDEX "Photo_destinationId_idx" ON "Photo"("destinationId");
 
 -- CreateIndex
@@ -429,6 +550,9 @@ ALTER TABLE "Contact" ADD CONSTRAINT "Contact_cemeteryId_fkey" FOREIGN KEY ("cem
 
 -- AddForeignKey
 ALTER TABLE "PracticalPlace" ADD CONSTRAINT "PracticalPlace_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ContentImportCandidate" ADD CONSTRAINT "ContentImportCandidate_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "ContentImportBatch"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Photo" ADD CONSTRAINT "Photo_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;

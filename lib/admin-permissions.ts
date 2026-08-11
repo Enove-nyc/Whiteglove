@@ -72,8 +72,11 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/kevarim", "directory"],
   ["/admin/shomrim", "directory"],
   ["/admin/destinations", "directory"],
+  ["/admin/countries", "directory"],
   ["/admin/hechsherim", "directory"],
+  ["/admin/mikvaos", "directory"],
   ["/admin/add", "directory"],
+  ["/admin/imports", "directory"],
 ];
 
 export function areaForPath(pathname: string): AdminArea | null {

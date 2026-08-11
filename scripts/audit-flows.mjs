@@ -30,7 +30,7 @@ const WIDTHS = [
 ];
 
 /** Requests that fail because this machine cannot reach the open internet. */
-const EXTERNAL = /photon\.komoot|nominatim|overpass|openstreetmap|tile\.|googleapis|gstatic|stay22|tp\.media|travelpayouts|booking\.com|kayak|aviasales/i;
+const EXTERNAL = /googleapis|gstatic|stay22|tp\.media|travelpayouts|booking\.com|kayak|aviasales/i;
 
 const results = [];
 let browser;

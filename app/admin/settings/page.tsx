@@ -180,6 +180,11 @@ export default async function AdminSettingsPage() {
             detail="Whether email, driving times and the travel assistant are actually working."
             state={stats.configured ? undefined : "Private store not connected"}
           />
+          <Card
+            href="/admin/duffel"
+            title="Duffel flights"
+            detail="Search and ticket directly from the admin. Not on the public site."
+          />
         </div>
       </section>
     </>

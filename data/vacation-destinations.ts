@@ -573,6 +573,112 @@ export const vacationDestinations: readonly VacationDestination[] = [
       "Altitude at the top of the Aiguille du Midi is nearly 3,800m and people feel it. Take it slowly, especially with children.",
     ],
   },
+  // ---- South Florida ---------------------------------------------------
+  {
+    slug: "miami-beach",
+    name: "Miami Beach",
+    country: "United States",
+    region: "South Florida",
+    cities: ["Miami Beach"],
+    themes: ["beach", "family", "couples", "short-break"],
+    seasons: ["winter", "spring", "autumn"],
+    whyGo: "A warm-weather break built around a long oceanfront walk, gardens and Jewish heritage stops, with a defined local Shabbos anchor.",
+    bestFor: ["Families", "Winter sun", "Short breaks"],
+    suggestedLength: "4–7 days",
+    overview:
+      "Miami Beach works best as a city-and-coast break rather than a list of resort days. The Beachwalk links the island north toward Surfside and Bal Harbour, while the Holocaust Memorial and Botanical Garden add quieter stops in the middle. West 41st Street is the practical starting point for choosing where to stay, food arrangements and a Shabbos plan.",
+    whyVisit: [
+      "The Miami Beach Beachwalk, a long pedestrian route that connects the island's neighbourhoods without a car.",
+      "The Holocaust Memorial Miami Beach, a thoughtful Jewish heritage stop with an education center.",
+      "The Botanical Garden, a compact green pause close to the Convention Center and Meridian Avenue.",
+      "Hollywood's Broadwalk and ArtsPark are close enough to make a second South Florida day without changing hotels.",
+    ],
+    bestTime:
+      "Winter, spring and autumn are the practical seasons for an outdoor itinerary. Summer brings heavier heat, humidity and a less predictable forecast, so plan indoor alternatives and keep the walking days flexible.",
+    suits:
+      "Suits families who want a warm, low-logistics trip and couples looking for a few restful days between city breaks. It is less suited to anyone expecting one compact Jewish quarter to contain every food option and attraction.",
+    transport:
+      "Miami International Airport is the usual arrival point for Miami Beach; Fort Lauderdale-Hollywood International Airport can work well for the northern part of the trip. Use a car, taxi or rideshare for moves between the beach communities and Hollywood. The Beachwalk is useful once you are in Miami Beach, but the wider region is too spread out to treat as one walking district.",
+    cautions: [
+      "Use the official ORB and Kosher Miami directories to choose an exact food option and confirm its current certification before visiting.",
+      "Choose a hotel by its real walking route to the community anchor, not only by the neighbourhood name.",
+      "The page focuses on parks, promenades and cultural stops; make separate arrangements for any water activity that matters to your family.",
+    ],
+  },
+  {
+    slug: "hollywood-hallandale",
+    name: "Hollywood and Hallandale",
+    country: "United States",
+    region: "South Florida",
+    cities: ["Hollywood", "Hallandale Beach"],
+    themes: ["beach", "family", "couples", "short-break"],
+    seasons: ["winter", "spring", "autumn"],
+    whyGo: "A South Florida base with a pedestrian seaside promenade, a family park in downtown Hollywood and a clear Hallandale Shabbos anchor.",
+    bestFor: ["Families", "Short breaks", "Outdoor days"],
+    suggestedLength: "3–5 days",
+    overview:
+      "Hollywood and Hallandale make a useful second South Florida base when you want a quieter rhythm than central Miami Beach. Hollywood supplies the Broadwalk, ArtsPark and the Anne Kolb mangroves; Hallandale supplies the community anchor for Shabbos planning. The food and community addresses are not all in one square, so selecting the hotel comes before booking the days out.",
+    whyVisit: [
+      "The nearly 2.5-mile Hollywood Beach Broadwalk, a pedestrian route for a long outdoor walk.",
+      "ArtsPark at Young Circle, with a playground, walking path and public art in downtown Hollywood.",
+      "Anne Kolb Nature Center, a large coastal mangrove wetland with county-run environmental programmes.",
+      "A Hallandale-based Shabbos plan can be paired with Hollywood's food corridor and day stops.",
+    ],
+    bestTime:
+      "Winter, spring and autumn are the easiest seasons to spend long stretches outdoors. Summer has stronger heat, humidity and rain risk, so build the trip around shorter walks and indoor alternatives.",
+    suits:
+      "Suits families who value walks, parks and a manageable base for several days, and couples looking for an unhurried South Florida stop. It is less suited to travelers who want every food option and every community address on the same block.",
+    transport:
+      "Fort Lauderdale-Hollywood International Airport is the closest main airport, while Miami International Airport is another option for a wider South Florida route. A car, taxi or rideshare is practical for moving between Hallandale, Hollywood's Stirling Road corridor and the Broadwalk. The Broadwalk itself is easy on foot, but it is not beside the community and food anchors.",
+    cautions: [
+      "The Hallandale community anchor, Hollywood food corridor and seaside promenade are distinct places; trace the real route before choosing a hotel.",
+      "Use the official ORB directory for an individual food listing and its current certification rather than assuming a whole street is uniform.",
+      "The outdoor stops here are best planned as weekday activities; check each operator's current visitor arrangements before you go.",
+    ],
+  },
+  // ---- Orlando and Central Florida ------------------------------------
+  {
+    slug: "orlando",
+    name: "Orlando",
+    country: "United States",
+    region: "Central Florida",
+    cities: ["Orlando", "Lake Buena Vista"],
+    themes: ["family", "short-break"],
+    seasons: ["winter", "spring", "summer", "autumn"],
+    whyGo: "A family park holiday built around food and a practical Shabbos anchor, so the rest of the week can be planned around the attractions.",
+    bestFor: ["Families", "Park days", "School holidays"],
+    suggestedLength: "5–7 days",
+    overview:
+      "Orlando is a region of separate park districts, not a compact city break. Disney is in Lake Buena Vista, while Universal, SeaWorld, the food listings and the Shabbos anchor sit in other parts of the area. That makes the order of planning matter: settle the base and the food first, then give each major park or quieter day its own outing instead of trying to cross Central Florida repeatedly.",
+    whyVisit: [
+      "Walt Disney World Resort in Lake Buena Vista and Universal Orlando Resort, each substantial enough to deserve their own park days.",
+      "SeaWorld Orlando for animal encounters and family rides, plus Gatorland for a more Florida-focused outdoor day.",
+      "Orlando Science Center and Harry P. Leu Gardens when the family needs a break from the big park rhythm.",
+      "A local food directory and a defined Chabad of South Orlando anchor to make Shabbos and meal planning part of the itinerary from the start.",
+    ],
+    bestTime:
+      "Winter and spring make long outdoor days easier. Summer can work well for school holidays, but build in indoor breaks and leave the order of the days flexible around the weather. Autumn is often a useful quieter window, while holiday weeks need earlier planning.",
+    suits:
+      "Suits families who want a full holiday built around attractions and are comfortable planning each day in advance. It is less suited to travelers looking for a walkable city where the hotel, food and sightseeing are all on the same few streets.",
+    transport:
+      "Orlando International Airport (MCO) is the usual arrival point. A car or rideshare is practical once you land: Lake Buena Vista, Universal, SeaWorld, the food listings and the Shabbos anchor are separate parts of a large metro area. Treat one major attraction cluster as a day rather than trying to move between several of them.",
+    outline: {
+      title: "Six days with room to breathe",
+      days: [
+        "Arrive, settle the food plan, and make the short local journeys before the first full park day.",
+        "Give one Disney park day the whole day rather than adding another major stop.",
+        "Choose Universal or SeaWorld for a second park day, based on the family’s pace.",
+        "Use Gatorland, Orlando Science Center or Leu Gardens as a lower-intensity change of rhythm.",
+        "Keep a flexible day for a second major park, a rest day or anything missed earlier in the week.",
+        "Leave enough time to collect food for the journey home rather than fitting in one last long drive.",
+      ],
+    },
+    cautions: [
+      "The accommodation, Shabbos anchor and food listings are not all in the same district; check the actual route before booking a property.",
+      "Use the official attraction pages for current entry and visitor arrangements, and make ticketed parks weekday plans.",
+      "Use the local food directory to select exact establishments, then confirm the current supervision and arrangements directly before relying on them.",
+    ],
+  },
   {
     slug: "jerusalem",
     name: "Jerusalem",

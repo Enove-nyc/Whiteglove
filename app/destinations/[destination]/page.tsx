@@ -30,6 +30,9 @@ import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { bookingHref } from "@/lib/booking-access";
 import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
+import DestinationZmanim from "@/components/DestinationZmanim";
+import { publishedMikvaosForCities } from "@/lib/mikvaos";
+import { placeMapUrl } from "@/data/route-utils";
 
 /**
  * PRERENDERED, AND THIS IS THE FIX FOR THE THING PEOPLE ACTUALLY NOTICED.
@@ -263,6 +266,122 @@ async function ShabbosSignal({ destination }: { destination: VacationDestination
   return <SignalPanel signal={shabbosPracticality(destination, await factsOf(destination))} />;
 }
 
+async function DestinationShabbosExtras({ destination }: { destination: VacationDestination }) {
+  const facts = await factsOf(destination);
+  const anchor = facts.areas[0];
+  if (!anchor?.coordinates) return null;
+  return (
+    <DestinationZmanim
+      placeName={destination.name}
+      city={anchor.city}
+      country={anchor.country}
+      coordinates={anchor.coordinates}
+    />
+  );
+}
+
+async function MinyanimAndMikvaos({ destination }: { destination: VacationDestination }) {
+  const heritage = heritageGuideFor(destination);
+  const mikvaos = await publishedMikvaosForCities(destination.cities);
+
+  return (
+    <>
+      {mikvaos.length > 0 && (
+        <ul className="mb-6 grid gap-4 md:grid-cols-2">
+          {mikvaos.map((listing) => (
+            <li key={listing.id} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Mikvah · {listing.city}</p>
+              <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+                {listing.name}
+              </h3>
+              {listing.address && <p className="mt-2 text-sm leading-6 text-stone-600">{listing.address}</p>}
+              {listing.hours && (
+                <p className="mt-2 text-sm leading-6 text-stone-600">
+                  <span className="font-semibold text-[var(--navy)]">Hours:</span> {listing.hours}
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                {listing.phone && (
+                  <a
+                    href={`tel:${listing.phone.replace(/[^+\d]/g, "")}`}
+                    className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                  >
+                    Call
+                  </a>
+                )}
+                {listing.address && (
+                  <a
+                    href={placeMapUrl(listing.address, listing.coordinates)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                  >
+                    Map
+                  </a>
+                )}
+                <a
+                  href={listing.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-stone-500 underline decoration-stone-300 underline-offset-4"
+                >
+                  Source
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {heritage ? (
+        <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+          <p className="leading-7 text-stone-600">
+            {destination.name} also has a researched guide in the heritage section of this site, and further minyanim,
+            mikvaos and local contacts live there.
+          </p>
+          <p className="mt-4">
+            <Link
+              href={heritageHref(heritage)}
+              className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              Open the {heritage.city} guide for minyanim, mikvaos and contacts
+            </Link>
+          </p>
+        </div>
+      ) : mikvaos.length === 0 ? (
+        <p className="text-sm leading-6 text-stone-600">
+          Minyan times, mikvah access and Shabbos arrangements are best confirmed locally. Browse{" "}
+          <Link
+            href="/mikvaos"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            mikvaos on the site
+          </Link>{" "}
+          or the{" "}
+          <Link
+            href="/directory"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            provider directory
+          </Link>
+          .
+        </p>
+      ) : (
+        <p className="text-sm leading-6 text-stone-600">
+          Confirm access and hours locally before you travel.{" "}
+          <Link
+            href="/mikvaos"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            All mikvaos on the site
+          </Link>
+          .
+        </p>
+      )}
+    </>
+  );
+}
+
 async function WhereToStay({ destination }: { destination: VacationDestination }) {
   return <StaysSection facts={await factsOf(destination)} />;
 }
@@ -305,10 +424,9 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
 
 async function KosherFood({ destination }: { destination: VacationDestination }) {
   const facts = await factsOf(destination);
-  // Where the live kosher lookup should be centred: the quarter's own
-  // published coordinate, or failing that the anchor a stay is measured from.
-  // Both are real positions for a shul or a street — never a guess at the
-  // middle of a city, which would return the wrong half of it.
+  // Centre the curated kosher listings on the quarter's published coordinate,
+  // or the anchor a stay is measured from. Both are real positions for a shul
+  // or a street — never a guess at the middle of a city.
   const anchor = facts.areas[0]?.coordinates ?? facts.stays[0]?.anchor?.coordinates;
   return (
     <>
@@ -327,13 +445,11 @@ async function KosherFood({ destination }: { destination: VacationDestination })
                   {eatery.name}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-stone-600">{eatery.summary}</p>
-                <div className="mt-3">
-                  {hechsher ? (
+                {hechsher && (
+                  <div className="mt-3">
                     <VerificationBadge descriptor={hechsher} size="sm" />
-                  ) : (
-                    <VerificationBadge descriptor={TRUST_LEVELS["being-checked"]} size="sm" />
-                  )}
-                </div>
+                  </div>
+                )}
               </li>
             );
           })}
@@ -363,19 +479,12 @@ async function KosherFood({ destination }: { destination: VacationDestination })
 
       {anchor ? (
         <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-          {/* Live, and deliberately not loaded until it is asked for: this
-              reaches OpenStreetMap, and a page that fires that on every
-              view is slow for everybody and rude to a free service. */}
           <KosherNearby
             coordinates={anchor}
-            heading={`Kosher places tagged near ${destination.name}, live`}
+            heading={`Kosher food near ${destination.name}`}
             radiusKm={10}
             showAddToTrip
           />
-          <p className="mt-3 text-xs leading-5 text-stone-500">
-            This lookup is OpenStreetMap data, not our own checking — anybody can add to it. Treat it as a lead and
-            confirm the hechsher yourself.
-          </p>
         </div>
       ) : (
         <p className="mt-6 text-sm">
@@ -383,7 +492,7 @@ async function KosherFood({ destination }: { destination: VacationDestination })
             href="/kosher"
             className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
           >
-            Search live for kosher food anywhere
+            Browse the kosher food finder
           </Link>
         </p>
       )}
@@ -402,7 +511,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
   // Both are cached reads of the owner's own settings, so they cost one round
   // trip between them rather than two — and neither depends on the other.
   const booking = await readBookingLink();
-  const heritage = heritageGuideFor(destination);
 
   const contents: Array<[string, string]> = [
     ["why-visit", "Why visit"],
@@ -554,7 +662,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <Section
           id="kosher-food"
           title="Kosher food"
-          lead="Kosher food here, and a live lookup for whatever has opened since."
+          lead="Kosher food listings for this destination and nearby White Glove recommendations."
         >
           <Suspense fallback={<Skeleton what={`kosher food in ${destination.name}`} />}>
             <KosherFood destination={destination} />
@@ -564,6 +672,9 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <Section id="shabbos" title="Shabbos">
           <Suspense fallback={<SignalFallback label="Shabbos" />}>
             <ShabbosSignal destination={destination} />
+          </Suspense>
+          <Suspense fallback={null}>
+            <DestinationShabbosExtras destination={destination} />
           </Suspense>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <VerificationBadge descriptor={reconfirmBeforeTravel()} />
@@ -576,42 +687,21 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               >
                 What the labels on this page mean
               </Link>
+              {" · "}
+              <Link
+                href="/zmanim"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                Full zmanim
+              </Link>
             </p>
           </div>
         </Section>
 
         <Section id="minyanim-and-mikvaos" title="Minyanim and mikvaos">
-          {heritage ? (
-            <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-              <p className="leading-7 text-stone-600">
-                {destination.name} also has a researched guide in the heritage section of this site, and the minyanim,
-                mikvaos and local contacts we hold for it live there with their own verification labels.
-              </p>
-              <p className="mt-4">
-                <Link
-                  href={heritageHref(heritage)}
-                  className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                >
-                  Open the {heritage.city} guide for minyanim, mikvaos and contacts
-                </Link>
-              </p>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm leading-6 text-stone-600">
-                Minyan times, mikvah access and Shabbos arrangements are best confirmed locally. The provider directory
-                holds contacts across the site, and the community in the quarter named above is usually the fastest
-                answer.{" "}
-                <Link
-                  href="/directory"
-                  className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                >
-                  Open the provider directory
-                </Link>
-                .
-              </p>
-            </>
-          )}
+          <Suspense fallback={<Skeleton what={`minyanim and mikvaos in ${destination.name}`} />}>
+            <MinyanimAndMikvaos destination={destination} />
+          </Suspense>
         </Section>
 
         <Section id="getting-around" title="Getting there and around">

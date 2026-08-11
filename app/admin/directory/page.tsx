@@ -84,6 +84,9 @@ export default async function AdminDirectoryPage() {
           <Link href="/admin/directory/businesses?new=1" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
             Add a business
           </Link>
+          <Link href="/admin/imports/needs-review" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+            Needs review
+          </Link>
         </div>
       </header>
 

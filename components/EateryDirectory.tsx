@@ -7,16 +7,8 @@ import { placeDirectionsUrl } from "@/data/route-utils";
 import { describeHechsher, hechsherLabel } from "@/data/hechsherim";
 import type { KosherEatery } from "@/data/kosher-eateries";
 
-// The researched eateries, above the live map lookup.
-//
-// The two answer different questions and both belong on this page. The finder
-// below asks "what is near me right now" and gets it from OpenStreetMap, which
-// is current but knows nothing about supervision. This list is the opposite:
-// small, checked, and honest about how far each claim has been checked.
-//
-// The kashrus line is never decoration. It goes through the same
-// hechsherLabel/describeHechsher the rest of the site uses, so "reported"
-// prints as unverified here exactly as it does everywhere else.
+// The curated kosher listings. The food finder filters this same White Glove
+// collection, so every public card has the same editorial boundary.
 
 function toneFor(state: string) {
   if (state === "certified") return "border-emerald-500 bg-emerald-50 text-emerald-900";
@@ -81,11 +73,13 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
             <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{e.name}</h3>
             <p className="mt-3 text-sm leading-7 text-stone-600">{e.summary}</p>
 
-            {/* The kashrus line, said before anything practical, because it is
+            {/* The kashrus line comes before anything practical because it is
                 the thing that decides whether the rest matters. */}
-            <p className={`mt-4 border-l-4 px-3 py-2 text-sm leading-6 ${toneFor(e.hechsher.state)}`}>
-              <strong>{hechsherLabel(e.hechsher)}</strong> — {describeHechsher(e.hechsher)}
-            </p>
+            {e.hechsher.state !== "unverified" && (
+              <p className={`mt-4 border-l-4 px-3 py-2 text-sm leading-6 ${toneFor(e.hechsher.state)}`}>
+                <strong>{hechsherLabel(e.hechsher)}</strong> — {describeHechsher(e.hechsher)}
+              </p>
+            )}
 
             {e.notes && e.notes.length > 0 && (
               <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-600">

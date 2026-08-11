@@ -2,10 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-// The map's markers used to paint over the sponsored banner and over the
-// sticky header — Leaflet numbers its panes 200 to 1000 and, with nothing
-// containing them, those numbers competed with the whole page. Two things
-// keep that fixed, and both are easy to undo by accident.
+// Map controls must stay inside the map's stacking context rather than painting
+// over the sponsored banner or sticky header.
 
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
@@ -28,10 +26,12 @@ describe("what is in front of what", () => {
     // Google draws into the same box; it needs the same containment so its
     // chrome cannot climb over the advertisement either.
     // [\s\S] rather than the `s` flag: tsconfig targets ES2017, where
-    // dotAll does not exist, and `tsc --noEmit` refuses it (TS1501). The
-    // suite still passed, because `npm test` runs through tsx and never
-    // typechecks — so `npm run check` was the only thing that went red.
+    // dotAll does not exist, and `tsc --noEmit` refuses it (TS1501).
     assert.match(css, /\.wg-map-box\s*\{[\s\S]*?z-index:\s*var\(--wg-z-map\)/, "the public map box is boxed the same way");
+    const boxRule = css.match(/\.wg-map-box\s*\{([^}]*)\}/);
+    assert.ok(boxRule, ".wg-map-box rule is missing from globals.css");
+    assert.match(boxRule![1], /isolation:\s*isolate/);
+    assert.match(css, /@import "leaflet\/dist\/leaflet\.css"/);
   });
 
   it("puts the advertisement in front of the page and the header", () => {

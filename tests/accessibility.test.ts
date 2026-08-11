@@ -271,6 +271,7 @@ describe("dialogs", () => {
  */
 
 const HUB = readFileSync("components/VacationIdeasHub.tsx", "utf8");
+const DESTINATIONS = readFileSync("app/destinations/(hub)/page.tsx", "utf8");
 const FLOW = readFileSync("components/TripStartFlow.tsx", "utf8");
 const REQUEST = readFileSync("components/PlanningRequestForm.tsx", "utf8");
 
@@ -305,6 +306,23 @@ describe("the vacation-ideas filters", () => {
   it("names each filter group rather than leaving thirty loose buttons", () => {
     assert.match(HUB, /<fieldset/);
     assert.match(HUB, /<legend/);
+  });
+
+  it("keeps every style card a keyboard link to the matching, visible result set", () => {
+    // A link is the correct control here: the selection is a shareable route,
+    // not a one-off visual toggle. The `TRIP_THEMES.map` supplies every card
+    // from the same canonical taxonomy used to filter the results.
+    assert.match(DESTINATIONS, /TRIP_THEMES\.map/);
+    assert.match(DESTINATIONS, /href=\{`\$\{vacationBrowseHref\(\{ theme: theme\.value, season: initialSeason \}\)\}#browse`\}/);
+    assert.match(DESTINATIONS, /aria-current=\{selected \? "true" : undefined\}/);
+    assert.match(DESTINATIONS, /Selected/);
+    assert.match(DESTINATIONS, /min-w-0/);
+    // Same-route links preserve Client Component state by default, so the hub
+    // reads the new server-provided query values directly rather than trying
+    // to reset all of the visitor's local refinements after navigation lands.
+    assert.match(HUB, /useMemo<VacationFilters>\(\s*\(\) => \(\{ \.\.\.localFilters, theme: initialTheme, season: initialSeason \}\)/);
+    assert.match(HUB, /router\.push\(vacationBrowseHref/);
+    assert.match(HUB, /All destinations/);
   });
 });
 

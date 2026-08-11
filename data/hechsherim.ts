@@ -5,15 +5,13 @@
 // a hechsher to a particular restaurant is a claim about kashrus, and the site
 // makes that claim on its own authority only when the owner has confirmed it.
 //
-// So there are two different "we think it has one":
+// The source trail distinguishes a listed supervision from one the owner has
+// confirmed directly:
 //
-//   reported  — something says so (OpenStreetMap's own tag, usually) and the
-//               source is named. Shown, because the traveler is better off
-//               knowing, but never presented as confirmed.
+//   reported  — an editorial source names a supervision, but it has not been
+//               confirmed directly.
 //   certified — the owner checked it against a teudah, the rov, or the
 //               agency's own list, and said so.
-//
-// Anything else is unverified, which is the honest answer until somebody looks.
 //
 // A logo is shown when one has been added at public/hechsherim/<id>.svg.
 // Otherwise the mark is the agency's own short form set in a circle, which is
@@ -74,6 +72,22 @@ export const HECHSHERIM: Hechsher[] = [
   { id: "local-rov", name: "The local rov", mark: "רב", region: "Wherever the town's rov gives the hechsher", aliases: ["local rabbi", "local rov", "town rabbi"] },
 
   /* ---- United States ---------------------------------------------------- */
+  {
+    id: "orb-kosher",
+    name: "Orthodox Rabbinical Board — ORB Kosher",
+    mark: "ORB",
+    region: "South Florida",
+    aliases: ["orb", "orb kosher", "orthodox rabbinical board"],
+    website: "https://www.orbkosher.com",
+  },
+  {
+    id: "kosher-miami",
+    name: "Kosher Miami — Vaad HaKashrus of Miami-Dade",
+    mark: "KM",
+    region: "Miami-Dade County",
+    aliases: ["kosher miami", "vaad hakashrus of miami-dade", "km kosher"],
+    website: "https://koshermiami.org",
+  },
   { id: "triangle-k", name: "Triangle K", mark: "K", region: "United States", aliases: ["triangle k", "triangle-k"], website: "https://www.trianglek.org" },
   { id: "ksa", name: "Kosher Supervision of America", mark: "KSA", region: "Los Angeles and the west coast", aliases: ["ksa", "kosher supervision of america"], website: "https://www.ksakosher.com" },
   { id: "scroll-k", name: "Scroll K — Vaad Hakashrus of Denver", mark: "K", region: "Denver and the Mountain West", aliases: ["scroll k", "vaad hakashrus of denver"], website: "https://www.scrollk.org" },
@@ -151,9 +165,9 @@ export function getHechsher(id?: string | null, agencies: Hechsher[] = HECHSHERI
 /**
  * Which agency a piece of free text is naming, if any.
  *
- * Used on OpenStreetMap's own certification tags, so "OU" or "Badatz Eda
- * HaChareidis" in someone's map edit lands on the right circle. A miss is
- * fine — the text is still shown as written.
+ * Used when an editorial source names a certifier, so "OU" or "Badatz Eda
+ * HaChareidis" can land on the right mark. A miss is fine — the text remains
+ * available for an editor to review.
  */
 export function matchHechsher(text?: string | null, agencies: Hechsher[] = HECHSHERIM): Hechsher | undefined {
   const value = text?.trim().toLowerCase();
@@ -168,9 +182,9 @@ export function matchHechsher(text?: string | null, agencies: Hechsher[] = HECHS
  *
  * `state` is the whole point of this type:
  *   • "certified"  — the owner has confirmed which hechsher it holds
- *   • "reported"   — a named source says so; nobody here has confirmed it
+ *   • "reported"   — an editorial source says so; it is not confirmed here
  *   • "none"       — the owner has confirmed it carries no hechsher
- *   • "unverified" — nobody has checked yet. The default, and the honest one.
+ *   • "unverified" — no editorial status has been recorded
  */
 export type HechsherState = "certified" | "reported" | "none" | "unverified";
 
@@ -190,9 +204,9 @@ export const UNVERIFIED: HechsherStatus = { state: "unverified" };
 export function hechsherLabel(status: HechsherStatus, agencies: Hechsher[] = HECHSHERIM): string {
   const named = getHechsher(status.hechsherId, agencies)?.name ?? status.note?.trim();
   if (status.state === "none") return "No hechsher";
-  if (status.state === "unverified") return "Unverified";
-  if (status.state === "reported") return named ? `${named} — unverified` : "Unverified";
-  return named || "Certified";
+  if (status.state === "unverified") return "";
+  if (status.state === "reported") return named ? `Hechsher: ${named}` : "Kosher details";
+  return named ? `Hechsher: ${named}` : "Hechsher confirmed";
 }
 
 /** A short line for the badge's tooltip and for a screen reader. */
@@ -202,10 +216,10 @@ export function describeHechsher(status: HechsherStatus, agencies: Hechsher[] = 
     case "none":
       return "Confirmed as carrying no hechsher.";
     case "reported":
-      return `Reported as ${named ?? "certified"}${status.source ? ` by ${status.source}` : ""} — nobody here has confirmed it. Check before you eat.`;
+      return `Supervision is listed as ${named ?? "kosher"}. Confirm directly before you eat.`;
     case "certified":
       return `Confirmed: ${named ?? "a hechsher"}${status.source ? ` (${status.source})` : ""}.`;
     default:
-      return "Nobody has confirmed this one's hechsher yet — check before you eat.";
+      return "Confirm supervision directly before you eat.";
   }
 }

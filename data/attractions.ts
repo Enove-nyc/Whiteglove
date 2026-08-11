@@ -2658,4 +2658,211 @@ export const attractions: Attraction[] = [
     shabbos: "Ticketed, and twenty kilometres from the Innsbruck shul. A weekday, and a good one for a wet one.",
     sourceUrl: "https://www.innsbruck.info/en/sightseeing/i/swarovski-crystal-worlds.html",
   },
+
+  // ---- South Florida ---------------------------------------------------
+  {
+    slug: "miami-beach-beachwalk",
+    name: "Miami Beach Beachwalk",
+    city: "Miami Beach",
+    country: "United States",
+    kind: "Landmark",
+    summary:
+      "A nine-mile oceanfront pedestrian promenade linking Miami Beach with Surfside and Bal Harbour, useful for an unhurried walk without getting in a car.",
+    address: "Miami Beach Beachwalk — access points run from South Pointe to 87th Street",
+    website: "https://www.miamibeachfl.gov/city-hall/parks-and-recreation/parks-facilities-directory/beachwalk/",
+    notes: [
+      "The City describes it as a pedestrian, non-motorized route. Choose the section nearest your hotel rather than treating the full length as one walk.",
+      "It passes parks, fountains and playgrounds, so it works as a simple outdoor break between planned stops.",
+    ],
+    shabbos: "A walking route rather than a ticketed attraction. Choose a section within the distance you can comfortably walk before Shabbos.",
+    sourceUrl: "https://www.miamibeachfl.gov/city-hall/parks-and-recreation/parks-facilities-directory/beachwalk/",
+  },
+  {
+    slug: "miami-beach-holocaust-memorial",
+    name: "Holocaust Memorial Miami Beach",
+    city: "Miami Beach",
+    country: "United States",
+    kind: "Jewish heritage",
+    summary:
+      "An outdoor memorial and education center dedicated to the six million Jews murdered in the Holocaust, on Meridian Avenue in central Miami Beach.",
+    address: "1933–1945 Meridian Avenue, Miami Beach, FL 33139",
+    website: "https://holocaustmemorialmiamibeach.org/visit/",
+    notes: [
+      "The memorial's own visitor information covers directions, accessibility and group visits; use it for the current arrangements before traveling.",
+      "This is a reflective stop rather than a quick photo stop. Give it the time it deserves.",
+    ],
+    shabbos: "The memorial and education center have their own visitor arrangements; check the official visitor information before building a Shabbos plan around it.",
+    sourceUrl: "https://holocaustmemorialmiamibeach.org/visit/",
+  },
+  {
+    slug: "miami-beach-botanical-garden",
+    name: "Miami Beach Botanical Garden",
+    city: "Miami Beach",
+    country: "United States",
+    kind: "Nature",
+    summary:
+      "A compact subtropical garden beside the Miami Beach Convention Center, with a quieter pace than the surrounding streets.",
+    address: "2000 Convention Center Drive, Miami Beach, FL 33139",
+    website: "https://www.mbgarden.org/",
+    notes: [
+      "The garden publishes visitor and parking information itself. Check the current programme rather than planning around a previous event listing.",
+      "It works well as a short, low-key stop between the memorial and the Beachwalk.",
+    ],
+    shabbos: "Plan this for a weekday and use the garden's own visitor information for current arrangements.",
+    sourceUrl: "https://www.mbgarden.org/contact",
+  },
+  {
+    slug: "hollywood-beach-broadwalk",
+    name: "Hollywood Beach Broadwalk",
+    city: "Hollywood",
+    country: "United States",
+    kind: "Landmark",
+    summary:
+      "A nearly 2.5-mile brick-paved pedestrian promenade along Hollywood's Atlantic coastline, with a walking path and public art.",
+    address: "Hollywood Beach Broadwalk, Hollywood, FL",
+    website: "https://www.hollywoodfl.org/facilities/facility/details/Hollywood-Beach-Broadwalk-109",
+    notes: [
+      "The City identifies it as a walking and biking route. It is best treated as a promenade, not as an all-day attraction.",
+      "The City shuttle links the barrier island and downtown; check its current route before relying on it.",
+    ],
+    shabbos: "A walking route rather than a ticketed attraction. Plan how you will reach the section you want before Shabbos.",
+    sourceUrl: "https://www.hollywoodfl.org/facilities/facility/details/Hollywood-Beach-Broadwalk-109",
+  },
+  {
+    slug: "hollywood-artspark",
+    name: "ArtsPark at Young Circle",
+    city: "Hollywood",
+    country: "United States",
+    kind: "Family",
+    summary:
+      "A ten-acre downtown park with a walking path, playground, glass-blowing pavilion and public art at the meeting of Hollywood Boulevard and US 1.",
+    address: "1 Young Circle, Hollywood, FL 33020",
+    website: "https://hollywoodfl.org/1727/ArtsPark",
+    notes: [
+      "The City publishes its events and activities separately. Check what is scheduled for your dates rather than assuming a class or demonstration is running.",
+      "The play space and walking path make this a useful gentler stop for a family day in Hollywood.",
+    ],
+    shabbos: "An outdoor park; leave scheduled activities for a weekday and check the City's calendar for current programmes.",
+    sourceUrl: "https://hollywoodfl.org/1727/ArtsPark",
+  },
+  {
+    slug: "anne-kolb-nature-center",
+    name: "Anne Kolb Nature Center",
+    city: "Hollywood",
+    country: "United States",
+    kind: "Nature",
+    summary:
+      "Broward County's Anne Kolb Nature Center sits within a 1,501-acre coastal mangrove wetland in Hollywood.",
+    address: "751 Sheridan Street, Hollywood, FL 33019",
+    notes: [
+      "The County's nature-center material identifies the site and its environmental education programmes; check it for current visitor arrangements.",
+      "Treat the trails and programmes as a weekday plan, and bring the food you need for a longer outdoor stop.",
+    ],
+    shabbos: "Nature-center programmes are scheduled. Check Broward County Parks for current access and plan a weekday visit.",
+    sourceUrl: "https://www.broward.org/Parks/Documents/STEAMinParksProgramSummariesrev10-3-2024.pdf",
+  },
+
+  // ---- Orlando and Central Florida ------------------------------------
+  {
+    slug: "walt-disney-world-resort",
+    name: "Walt Disney World Resort",
+    city: "Lake Buena Vista",
+    country: "United States",
+    kind: "Family",
+    summary:
+      "A multi-park family resort in Lake Buena Vista, best planned as a dedicated day rather than a quick stop between other Orlando districts.",
+    address: "Walt Disney World Resort, Lake Buena Vista, FL 32830",
+    website: "https://disneyworld.disney.go.com/",
+    notes: [
+      "Disney’s own planning information is the live source for the parks, visitor arrangements and accessibility details.",
+      "Lake Buena Vista is a separate part of the wider Orlando region, so build the journey there into the day rather than treating it as a short walk from other park clusters.",
+    ],
+    shabbos: "A ticketed theme-park visit. Plan it for a weekday and use Disney’s official visitor information for current arrangements.",
+    sourceUrl: "https://disneyworld.disney.go.com/",
+  },
+  {
+    slug: "universal-orlando-resort",
+    name: "Universal Orlando Resort",
+    city: "Orlando",
+    country: "United States",
+    kind: "Family",
+    summary:
+      "A multi-park Orlando resort with a distinct Universal Boulevard arrival area, suited to a full family day rather than an add-on to another park.",
+    address: "6000 Universal Boulevard, Orlando, FL 32819",
+    website: "https://www.universalorlando.com/web/en/us",
+    notes: [
+      "Universal’s official directions list 6000 Universal Boulevard for Universal Studios Florida, Islands of Adventure, Volcano Bay and CityWalk.",
+      "Epic Universe has a separate arrival area, so use the operator’s current directions for the specific park on your plan.",
+    ],
+    shabbos: "A ticketed theme-park visit. Keep it to a weekday and use Universal’s official visitor information for current arrangements.",
+    sourceUrl: "https://www.universalorlando.com/web/en/us/plan-your-visit/hours-information/directions-and-parking",
+  },
+  {
+    slug: "seaworld-orlando",
+    name: "SeaWorld Orlando",
+    city: "Orlando",
+    country: "United States",
+    kind: "Family",
+    summary:
+      "A marine-life and family-rides park near the International Drive and Central Florida Parkway corridor.",
+    address: "7007 Sea World Drive, Orlando, FL 32821",
+    website: "https://seaworld.com/orlando/",
+    notes: [
+      "SeaWorld’s own visitor information covers animal encounters, rides and current park planning.",
+      "It is a separate outing from the Disney and Universal districts, even though all three are part of the wider Orlando holiday.",
+    ],
+    shabbos: "A ticketed park with scheduled attractions. Plan a weekday visit and use the operator’s current visitor information before you go.",
+    sourceUrl: "https://seaworld.com/orlando/park-info/directions/",
+  },
+  {
+    slug: "gatorland",
+    name: "Gatorland",
+    city: "Orlando",
+    country: "United States",
+    kind: "Nature",
+    summary:
+      "An Orlando wildlife park focused on alligators, crocodiles, birds and other Florida animals, for a more outdoors-focused family day.",
+    address: "14501 South Orange Blossom Trail, Orlando, FL 32837",
+    website: "https://www.gatorland.com/",
+    notes: [
+      "Gatorland is in South Orlando, near the Orlando–Kissimmee line, and is best treated as its own outing rather than a stop between parks.",
+      "Use the operator’s visitor information for current access and activity arrangements.",
+    ],
+    shabbos: "A ticketed wildlife attraction. Plan it for a weekday and check the operator’s current visitor information before setting the day.",
+    sourceUrl: "https://www.gatorland.com/plan-your-visit/directions/",
+  },
+  {
+    slug: "orlando-science-center",
+    name: "Orlando Science Center",
+    city: "Orlando",
+    country: "United States",
+    kind: "Museum",
+    summary:
+      "A hands-on science museum with exhibits, live demonstrations and interactive experiences for children and adults.",
+    website: "https://www.osc.org/",
+    notes: [
+      "The Science Center’s own visitor guide is the live source for exhibits, scheduled programmes and accessibility information.",
+      "It is a useful indoor change of pace between the large park days.",
+    ],
+    shabbos: "Exhibits and live programmes are scheduled. Treat this as a weekday visit and use the official visitor guide for current arrangements.",
+    sourceUrl: "https://www.osc.org/visit/",
+  },
+  {
+    slug: "harry-p-leu-gardens",
+    name: "Harry P. Leu Gardens",
+    city: "Orlando",
+    country: "United States",
+    kind: "Nature",
+    summary:
+      "A 50-acre botanical garden near Downtown Orlando, offering a quieter outdoor break between major park days.",
+    address: "1920 North Forest Avenue, Orlando, FL 32803",
+    coordinates: "28.5696605, -81.3563552",
+    website: "https://www.leugardens.org/",
+    notes: [
+      "The City of Orlando publishes the garden’s location, visitor information and walking-path amenities.",
+      "Use the garden’s own visitor information for current programme and arrival arrangements.",
+    ],
+    shabbos: "A managed garden with visitor arrangements. Plan it for a weekday and check the official information before you go.",
+    sourceUrl: "https://www.orlando.gov/Parks-the-Environment/Directory/Leu-Gardens",
+  },
 ];

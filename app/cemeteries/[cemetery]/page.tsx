@@ -16,7 +16,6 @@ import { kmBetween } from "@/data/itinerary";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getCemeteryView } from "@/lib/cemeteries-view";
 import { hrefFor } from "@/lib/tzaddikim";
-import { LIVE_FINDER_SHORT } from "@/lib/kosher-live";
 import { PLACE_CATEGORY_LABELS, PLACE_CATEGORY_ORDER } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
@@ -240,11 +239,8 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           <div className="mt-14">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Kosher food nearby</p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">What&apos;s kosher around here</h2>
-            {/* The same caveat the finder carries everywhere else. Naming
-                OpenStreetMap is not the point — what it means for the
-                traveller is. lib/kosher-live.ts. */}
             <p className="mt-3 mb-6 max-w-3xl text-sm leading-6 text-stone-500">
-              Kosher restaurants, bakeries and groceries near the kever. {LIVE_FINDER_SHORT}
+              White Glove kosher listings near this beis hachaim. Confirm current supervision directly before you go.
             </p>
             <KosherNearby coordinates={cemetery.coordinates} radiusKm={15} heading="Kosher near this kever" />
           </div>

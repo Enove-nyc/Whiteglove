@@ -9,13 +9,10 @@ import {
   type GoogleMapsProbeResult,
 } from "@/lib/google-maps-loader";
 
-// Is the map drawing with Google, or with the free fallback?
+// Is the Google map ready for visitors?
 //
-// Worth its own check because the failure is silent. A browser key that is set
-// but restricted to the wrong hostname, or on a project with no billing
-// account, does not produce an error anywhere a person would look — the map
-// simply draws with OpenStreetMap instead, which looks fine until somebody
-// notices the roads are not the ones they navigate by.
+// A browser key restricted to the wrong hostname, or a project with no billing
+// account, can otherwise fail without an actionable owner-facing message.
 //
 // So this does the real thing: it asks the browser to load Google's map script
 // exactly as the map pages do, constructs a tiny map (many refusals only fire
@@ -103,8 +100,8 @@ export default function MapKeyStatus() {
       {state === "no-key" && (
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
-            <strong>Drawing with OpenStreetMap.</strong> The map works and nothing is broken, but it is not the map
-            people navigate by, so a kever pinned on it can look like it is somewhere slightly different.
+            <strong>The public map is unavailable.</strong> Visitors see the map-unavailable state until a browser key
+            is configured.
           </p>
           <p className="mt-3 text-sm leading-6 text-stone-600">
             To use Google&apos;s map, add <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code>{" "}
@@ -118,7 +115,7 @@ export default function MapKeyStatus() {
           <p className="mt-3 text-sm leading-6 text-stone-700">
             <strong>The key is set, but the value is not a key.</strong> It holds a character that cannot appear in
             one — almost always something invisible picked up when the key was copied, which looks identical to a
-            correct key in every box you paste it into. Visitors are seeing the OpenStreetMap map.
+            correct key in every box you paste it into. Visitors are seeing the map-unavailable state.
           </p>
           <p className="mt-3 text-sm leading-6 text-stone-600">
             Delete <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code> in Vercel, copy
@@ -144,7 +141,7 @@ export default function MapKeyStatus() {
       {state === "timeout" && (
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
-            <strong>Google&apos;s script never became ready in time.</strong> Visitors are seeing OpenStreetMap.
+            <strong>Google&apos;s script never became ready in time.</strong> Visitors are seeing the map-unavailable state.
             Usually a blocked script, a slow network, or an ad blocker — less often a key that never answers.
           </p>
           <p className="mt-3 text-sm leading-6 text-stone-600">
@@ -158,7 +155,7 @@ export default function MapKeyStatus() {
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
             <strong>Google refused the key, and said why.</strong> {explained.what} Visitors are seeing the
-            OpenStreetMap map meanwhile.
+            map-unavailable state meanwhile.
           </p>
           <p className="mt-3 text-sm leading-6 text-stone-600">{explained.fix}</p>
           <p className="mt-3 text-xs leading-5 text-stone-500">
@@ -173,7 +170,7 @@ export default function MapKeyStatus() {
         <>
           <p className="mt-3 text-sm leading-6 text-stone-700">
             <strong>A key is set, but Google would not load the map here.</strong> Visitors are seeing the
-            OpenStreetMap map instead. Almost always one of these — check them in this order on the key&apos;s own
+            map-unavailable state instead. Almost always one of these — check them in this order on the key&apos;s own
             Google Cloud project:
           </p>
           <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-6 text-stone-600">

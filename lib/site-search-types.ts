@@ -11,6 +11,7 @@ export type SiteHitKind =
   | "Hotel or stay"
   | "Thing to do"
   | "Kosher food"
+  | "Practical travel"
   | "Neighborhood"
   | "Travel guide"
   | "Service"
@@ -98,6 +99,7 @@ export const SITE_HIT_KINDS: readonly SiteHitKind[] = [
   "Hotel or stay",
   "Thing to do",
   "Kosher food",
+  "Practical travel",
   "Neighborhood",
   "Travel guide",
   "Service",
@@ -126,6 +128,7 @@ export function sectionForKind(kind: SiteHitKind): SiteHitSection {
     case "Thing to do":
       return "Things to do";
     case "Kosher food":
+    case "Practical travel":
       return "Kosher travel";
     case "Travel guide":
     case "Service":

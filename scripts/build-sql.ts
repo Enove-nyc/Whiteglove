@@ -35,11 +35,13 @@ const HEADER = `// Auto-generated from prisma/schema.prisma. Do NOT hand-edit.
 export const INIT_SQL = String.raw\`
 `;
 
-const out = execFileSync(
-  "npx",
-  ["prisma", "migrate", "diff", "--from-empty", "--to-schema", "prisma/schema.prisma", "--script"],
-  { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
-);
+const prismaArgs = ["prisma", "migrate", "diff", "--from-empty", "--to-schema", "prisma/schema.prisma", "--script"];
+// `.cmd` launchers need cmd.exe when invoked through Node's spawn APIs. The
+// command works transparently in a terminal, which is why this only appeared
+// when the generated setup SQL was rebuilt on Windows.
+const out = process.platform === "win32"
+  ? execFileSync("cmd.exe", ["/d", "/s", "/c", `npx ${prismaArgs.join(" ")}`], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 })
+  : execFileSync("npx", prismaArgs, { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
 
 const start = out.indexOf("-- CreateSchema");
 if (start < 0) throw new Error("prisma migrate diff produced no schema script:\n" + out.slice(0, 500));
