@@ -110,18 +110,18 @@ an email alert. It will not cap a spend, but it tells you the same day.
 
 ## 3. Flight lookup by flight number — done
 
-Connected, and looking up flights. Nothing further is needed to use it.
+Connected, and looking up flights. Nothing further is needed.
 
-One thing left, for when you are ready. The Amadeus **test** environment is the
-default, and it carries a thin schedule — plenty to prove the lookup works, not
-enough to trust for a real trip. To move to the live data: in the Amadeus
-dashboard move the app to Production, then in Vercel add
-`AMADEUS_HOSTNAME=api.amadeus.com` and redeploy.
+It runs on **AeroDataBox**, through RapidAPI, as `AERODATABOX_API_KEY`. Amadeus
+used to be supported alongside it and has been removed — sign-up was the
+obstacle, and the two were never a real pair anyway: whenever Amadeus keys were
+present they were used *instead of* AeroDataBox, never as a fallback, so adding
+Amadeus test keys would have replaced a working lookup with a thinner one.
 
-(For reference, if the keys ever need replacing:
-[developers.amadeus.com](https://developers.amadeus.com/) → **My Self-Service
-Workspace → Create New App** gives an API Key and an API Secret, which go into
-Vercel as `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`.)
+The one limit worth knowing: the free RapidAPI tier is small, so several
+lookups in the same minute can come back "try again shortly". If that starts
+happening to real travellers, the fix is a paid RapidAPI tier rather than a
+second provider.
 
 ## 4. Signing up with a phone number
 

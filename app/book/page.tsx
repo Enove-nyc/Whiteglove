@@ -49,7 +49,11 @@ const COMPARISON: Array<[string, string, string]> = [
   ],
   [
     "Cars",
-    "Hire a car where the destination needs one — and each destination page says whether it does.",
+    // The cross-border line came off /cars when that page folded into this
+    // one. It is the single most expensive thing to find out late: several
+    // hire companies forbid taking the car over a border outright, and a
+    // heritage route crosses two or three.
+    "Hire a car where the destination needs one — and each destination page says whether it does. Check the cross-border rules first if the trip crosses one; several hire companies forbid it outright.",
     "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
   ],
 ];
@@ -70,22 +74,40 @@ const STEPS: Array<[string, string]> = [
  * build a link for a product that has none — so the honest thing is a sentence
  * about each rather than a tab that takes somebody's dates and gives them
  * nothing. These become searches the day there is something behind them.
+ *
+ * DRIVERS JOINED THE LIST when /cars folded into this page. That page named
+ * three ways of getting around — hire, transfers, drivers — and only the first
+ * was ever bookable. The other two are the honest sentences they always were,
+ * and they belong wherever the car search is.
  */
-const NOT_YET: Array<[string, string]> = [
+const NOT_YET: Array<[string, string, { href: string; label: string }?]> = [
   [
     "Airport transfers",
     "We do not book transfers yet. For most trips the car search above covers it, and where a transfer is the better answer the destination page will say so.",
   ],
   [
+    "Drivers on a heritage route",
+    "A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider directory, with what we know about each.",
+    { href: "/directory", label: "Open the provider directory" },
+  ],
+  [
     "Things to do",
     "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
+    { href: "/things-to-do", label: "Browse things to do" },
   ],
 ];
 
 export default async function BookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; depart?: string; return?: string }>;
+  searchParams: Promise<{
+    from?: string;
+    to?: string;
+    depart?: string;
+    return?: string;
+    type?: string;
+    destination?: string | string[];
+  }>;
 }) {
   // The planner links here with the trip's dates already worked out, so nobody
   // has to type them a second time.
@@ -94,12 +116,21 @@ export default async function BookPage({
   const words = await readWords();
   const extras = await readExtras();
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
+  // Trimmed and capped rather than printed as given: it lands in a text field
+  // as though the visitor had typed it, and a link is not a trustworthy author.
+  // A repeated ?destination= arrives as an array, which would render as one.
+  const rawDestination = Array.isArray(q.destination) ? q.destination[0] : q.destination;
+  const destination = (rawDestination ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   const prefill = {
     from: clean(q.from),
     to: clean(q.to),
     depart: clean(q.depart),
     ret: clean(q.return),
+    destination: destination || undefined,
   };
+  // Which tab opens. Resolved here so the link lands on the right search
+  // painted correctly, rather than on Hotels for a frame — see BookPartners.
+  const initialKind = q.type === "flights" || q.type === "cars" || q.type === "hotels" ? q.type : "hotels";
   // Whether a multi-city flight search can be opened at all. A boolean, and
   // nothing else commercial — see flightPartnerDoesMultiCity. Without it the
   // form would hand off a five-leg search, /go would rightly decline to build
@@ -131,7 +162,7 @@ export default async function BookPage({
             Flights, hotels and cars
           </h1>
           <div className="mt-6">
-            <BookPartners prefill={prefill} multiCity={multiCity} />
+            <BookPartners prefill={prefill} multiCity={multiCity} initialKind={initialKind} />
           </div>
           {/*
             One line, under the searches, always.
@@ -229,29 +260,28 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            Two things people ask us for that we do not book, and where to go for each of them.
+            Three things people ask us for that we do not book, and where to go for each of them.
           </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {NOT_YET.map(([heading, body]) => (
+          {/* The link sits on the card it belongs to, rather than in a row of
+              buttons underneath. That row used to lead with "Cars and
+              transfers" pointing at /cars — a page whose search is now the Cars
+              tab at the top of this one, which made the button a link back up
+              the page it was already on. */}
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {NOT_YET.map(([heading, body, link]) => (
               <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
+                {link && (
+                  <Link
+                    href={link.href}
+                    className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                  >
+                    {link.label}
+                  </Link>
+                )}
               </article>
             ))}
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/cars"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Cars and transfers
-            </Link>
-            <Link
-              href="/things-to-do"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Things to do
-            </Link>
           </div>
         </div>
       </section>
