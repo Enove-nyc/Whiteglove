@@ -79,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
       { href: "/admin/accounts", label: "Visitor accounts", blurb: "People who signed up." },
+      { href: "/admin/messages", label: "Messages sent in", blurb: "What people wrote from the website." },
       { href: "/admin/settings/earnings", label: "What the searches earn", blurb: "Partners, extras and destination placements." },
       { href: "/admin/settings/travel-essentials", label: "Travel Essentials", blurb: "Insurance, eSIM, transfers, tours and related offers." },
       { href: "/admin/settings/referral", label: "Referral programme", blurb: "Kept off until rewards are final." },
