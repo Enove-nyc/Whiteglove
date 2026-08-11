@@ -28,6 +28,7 @@ import {
 import { staySearchHref } from "@/lib/stay-search";
 import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
+import { bookingHref } from "@/lib/booking-access";
 import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 
 /**
@@ -615,22 +616,25 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
         <Section id="getting-around" title="Getting there and around">
           <p className="max-w-3xl text-lg leading-8 text-stone-600">{destination.transport}</p>
-          {/* The two searches this section is actually about, each on the
-              page that runs it. The car link carries the destination, because
-              a link that says the site knows where you are going and then
-              asks again is worse than one that never claimed to. */}
+          {/* The car search, carrying the destination as the pick-up — a link
+              that says the site knows where you are going and then asks again
+              is worse than one that never claimed to.
+
+              It opens the booking page on its Cars tab. /cars and /flights
+              were separate pages running these same partner searches and have
+              folded into that one; the flights button that used to sit beside
+              this one is gone rather than repointed, because the "Everything
+              in one search" link directly below is now the same destination.
+
+              RESOLVED, NEVER A TYPED /book: the owner can put that path behind
+              an access code, and this is a public page. Only bookingHref may
+              decide where a booking link lands. See lib/booking-access.ts. */}
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href={`/cars?destination=${encodeURIComponent(destination.name)}`}
+              href={bookingHref(booking, { type: "cars", destination: destination.name })}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
             >
               Car hire in {destination.name}
-            </Link>
-            <Link
-              href="/flights"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-            >
-              Search flights
             </Link>
           </div>
           {/* Resolved, never a typed `/book`: the owner can have that path
@@ -691,7 +695,11 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         {/* Rides the bottom of the viewport while there is page left, then
             lets go — the last section and the footer are never underneath it.
             See components/DestinationStickyCta.tsx. */}
-        <DestinationStickyCta destination={destination.name} />
+        <DestinationStickyCta
+          destination={destination.name}
+          flightsHref={bookingHref(booking, { type: "flights" })}
+          carsHref={bookingHref(booking, { type: "cars", destination: destination.name })}
+        />
       </div>
 
       <DestinationBookingOptions destinationName={destination.name} destinationSlug={destination.slug} />

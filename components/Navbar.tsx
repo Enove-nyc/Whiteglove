@@ -164,18 +164,39 @@ export default function Navbar() {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <div className="hidden items-center gap-2 sm:flex">
+            {/*
+              THE WAY IN IS IN THE HEADER AT EVERY WIDTH, and it was not.
+              This block was `hidden sm:flex`, so on a phone the header offered
+              the logo and Menu and nothing else — and the only other Sign in
+              on the site sat at the very bottom of the menu drawer, 1695px of
+              content in a 640px window. Somebody on a phone had no way of
+              knowing an account existed without scrolling a drawer to its end.
+
+              The header is already sticky, so putting it here is the "always
+              on screen" part without a second banner over the page.
+
+              Signed in, only My account comes to the phone; Sign out stays in
+              the menu, because two account controls beside Menu is more than a
+              412px header can hold and signing out is not what somebody is
+              reaching for mid-trip.
+            */}
+            <div className="flex items-center gap-2">
               {signedIn ? (
                 <>
-                  <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-3 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white" href="/account">
+                  {/* px-2 until sm: at 320px the row was 6px wider than the
+                      screen, which pushed Menu off the edge. */}
+                  <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-2 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white sm:px-3" href="/account">
                     My account
                   </Link>
-                  <button type="button" onClick={signOut} className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
+                  <button type="button" onClick={signOut} className="hidden min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)] sm:inline-flex">
                     Sign out
                   </button>
                 </>
               ) : (
-                <Link className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]" href={SIGN_IN.href}>
+                // Outlined on a phone so it reads as a control rather than as
+                // one more word in the header; the plain desktop link is
+                // untouched from sm up.
+                <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-2 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-0 sm:px-3 sm:text-stone-600 sm:hover:text-[var(--navy)]" href={SIGN_IN.href}>
                   {SIGN_IN.label}
                 </Link>
               )}

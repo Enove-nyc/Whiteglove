@@ -456,7 +456,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span className="text-sm font-semibold text-[var(--navy)]">Rooms for this trip</span>
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
-          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel /></div>
+          <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel itin={itin} onChange={persist} /></div>
         </details>
       </div>
 
@@ -1397,7 +1397,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
     if (!flightNumber) { setLegStatus("Enter the next flight number."); return; }
     if (!f.to?.trim()) { setLegStatus("Fill in where this flight lands first — that becomes the connection."); return; }
     // The onward leg leaves on the day this one lands, which is not always the
-    // day it left. Asking Amadeus for the wrong date finds nothing.
+    // day it left. Asking the schedule service for the wrong date finds nothing.
     const date = f.date
       ? flightArrivalDate({ id: "draft", from: f.from ?? "", to: f.to ?? "", date: f.date, departTime: f.departTime, arriveTime: f.arriveTime, arriveDate: f.arriveDate, stops: f.stops })
       : startDate;

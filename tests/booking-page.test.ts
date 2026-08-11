@@ -95,7 +95,11 @@ describe("hotels first", () => {
     // Accommodation is the one product this site knows something a comparison
     // site does not — which quarter makes Shabbos walkable — so it is the tab
     // that earns the visit.
-    assert.match(PANEL, /useState<Kind>\("hotels"\)/);
+    // The default is the prop's default now, because a link may ask for a
+    // particular tab: /cars folded into this page and redirects to
+    // ?type=cars, which the page resolves and hands in. Absent that, hotels.
+    assert.match(PANEL, /initialKind = "hotels"/);
+    assert.match(PANEL, /useState<Kind>\(initialKind\)/);
     const tabs = PANEL.slice(PANEL.indexOf("What are you booking?"));
     const order = ["hotels", "flights", "cars"].map((kind) => tabs.indexOf(`setKind("${kind}")`));
     assert.ok(order[0] >= 0 && order[0] < order[1] && order[1] < order[2], "the tab order is not hotels, flights, cars");
@@ -139,6 +143,13 @@ describe("a date is called what that product calls it", () => {
     // and cars share the "stay" fields because they also ask where and when —
     // so /cars asked a visitor to "check in" a hire car and "check out" of it.
     // A room is checked into; a car is picked up and dropped off.
+    //
+    // The car search has since moved into the booking panel, which names those
+    // dates correctly on its own — so the row below guards the component
+    // rather than a page today. It is kept because the component still accepts
+    // a car product, and the failure it prevents is silent: a car search
+    // rendered through here again would read as a hotel stay and nothing would
+    // look broken.
     assert.match(FORM, /car:\s*\["Pick-up",\s*"Drop-off"\]/);
     assert.match(FORM, /hotel:\s*\["Check in",\s*"Check out"\]/);
     assert.match(FORM, /flight:\s*\["Leaving",\s*"Coming back"\]/);
@@ -168,7 +179,18 @@ describe("what is not bookable is named", () => {
     // somebody's dates and gives them nothing.
     assert.match(PROSE, /Things to do/);
     assert.match(PROSE, /We do not sell tickets yet/);
-    assert.match(PROSE, /href="\/things-to-do"/);
+    // Drivers joined them when /cars folded into this page: that page named
+    // three ways of getting around and only car hire was ever bookable.
+    assert.match(PROSE, /Drivers on a heritage route/);
+    // And each points somewhere that does help. There is no /cars button here
+    // any more — the car search is a tab at the top of this same page, so a
+    // link to it was a link back up the page you were already on.
+    assert.doesNotMatch(PROSE, /["'`]\/cars/);
+    // The link now travels with the card it belongs to rather than sitting in
+    // a row of buttons underneath, so it is declared beside its own sentence.
+    assert.match(PROSE, /href: "\/directory"/);
+    assert.match(PROSE, /href: "\/things-to-do"/);
+    assert.match(PROSE, /href=\{link\.href\}/);
   });
 
   it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {
@@ -178,9 +200,13 @@ describe("what is not bookable is named", () => {
     // same screen as the transfer card. This is the assertion that fails if a
     // product is ever launched and its apology left behind.
     assert.doesNotMatch(PROSE, /We do not book transfers yet/);
-    assert.match(PROSE, /href="\/transfers"/);
-    // Cars and transfers are separate products and separate links.
-    assert.match(PROSE, /href="\/cars"/);
+    assert.doesNotMatch(PROSE, /Airport transfers/);
+    // The hand-off itself is the Travel Essentials transfer card, which this
+    // page already renders — so there is no separate button to assert here,
+    // and adding one would be a second front door to the same product.
+    assert.match(PROSE, /TravelEssentials/);
+    // "Cars and transfers" was one label over two products that are chosen
+    // instead of each other. It must not come back.
     assert.doesNotMatch(PROSE, /Cars and transfers/);
   });
 });

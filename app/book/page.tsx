@@ -49,7 +49,11 @@ const COMPARISON: Array<[string, string, string]> = [
   ],
   [
     "Cars",
-    "Hire a car where the destination needs one — and each destination page says whether it does.",
+    // The cross-border line came off /cars when that page folded into this
+    // one. It is the single most expensive thing to find out late: several
+    // hire companies forbid taking the car over a border outright, and a
+    // heritage route crosses two or three.
+    "Hire a car where the destination needs one — and each destination page says whether it does. Check the cross-border rules first if the trip crosses one; several hire companies forbid it outright.",
     "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
   ],
 ];
@@ -67,22 +71,45 @@ const STEPS: Array<[string, string]> = [
  *
  * The brief names transfers and activities alongside hotels, flights and cars.
  * lib/affiliate/partners.ts refuses to build a link for a product with no
- * programme behind it — so the honest thing is a sentence rather than a tab
- * that takes somebody's dates and gives them nothing. Each becomes a search
- * the day there is something behind it, and each must LEAVE this list on that
- * day: airport transfers did, and are now at /transfers.
+ * programme behind it — so the honest thing is a sentence about each rather
+ * than a tab that takes somebody's dates and gives them nothing.
+ *
+ * DRIVERS JOINED THE LIST when /cars folded into this page. That page named
+ * three ways of getting around — hire, transfers, drivers — and only the first
+ * was ever bookable. A driver is the honest sentence it always was, and it
+ * belongs wherever the car search is.
+ *
+ * AIRPORT TRANSFERS HAVE LEFT IT, and that is the rule this list lives by:
+ * each entry becomes a search the day there is something behind it, and must
+ * leave on that day. A transfer programme is joined, so the apology is gone
+ * and /transfers is the page. An entry left here after its product launches is
+ * the site contradicting itself on the screen where somebody is deciding
+ * whether to trust it — tests/booking-page.test.ts fails on exactly that.
  */
-const NOT_YET: Array<[string, string]> = [
+const NOT_YET: Array<[string, string, { href: string; label: string }?]> = [
+  [
+    "Drivers on a heritage route",
+    "A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider directory, with what we know about each.",
+    { href: "/directory", label: "Open the provider directory" },
+  ],
   [
     "Things to do",
     "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
+    { href: "/things-to-do", label: "Browse things to do" },
   ],
 ];
 
 export default async function BookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; depart?: string; return?: string }>;
+  searchParams: Promise<{
+    from?: string;
+    to?: string;
+    depart?: string;
+    return?: string;
+    type?: string;
+    destination?: string | string[];
+  }>;
 }) {
   // The planner links here with the trip's dates already worked out, so nobody
   // has to type them a second time.
@@ -91,12 +118,21 @@ export default async function BookPage({
   const words = await readWords();
   const extras = await readExtras();
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
+  // Trimmed and capped rather than printed as given: it lands in a text field
+  // as though the visitor had typed it, and a link is not a trustworthy author.
+  // A repeated ?destination= arrives as an array, which would render as one.
+  const rawDestination = Array.isArray(q.destination) ? q.destination[0] : q.destination;
+  const destination = (rawDestination ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   const prefill = {
     from: clean(q.from),
     to: clean(q.to),
     depart: clean(q.depart),
     ret: clean(q.return),
+    destination: destination || undefined,
   };
+  // Which tab opens. Resolved here so the link lands on the right search
+  // painted correctly, rather than on Hotels for a frame — see BookPartners.
+  const initialKind = q.type === "flights" || q.type === "cars" || q.type === "hotels" ? q.type : "hotels";
   // Whether a multi-city flight search can be opened at all. A boolean, and
   // nothing else commercial — see flightPartnerDoesMultiCity. Without it the
   // form would hand off a five-leg search, /go would rightly decline to build
@@ -128,8 +164,19 @@ export default async function BookPage({
             Flights, hotels and cars
           </h1>
           <div className="mt-6">
-            <BookPartners prefill={prefill} multiCity={multiCity} />
+            <BookPartners prefill={prefill} multiCity={multiCity} initialKind={initialKind} />
           </div>
+          {/*
+            One line, under the searches, always.
+            It used to be here, then moved to Terms and to each partner action.
+            That left /book itself covered only by accident: the disclosure a
+            visitor saw came from the Travel Essentials block below, so on a
+            deployment where that block is empty all three earning searches sat
+            on the page with nothing said. This does not depend on anything
+            else being filled in. Kept as small as it can be and still be read
+            — the owner's sentence, no heading, no panel.
+          */}
+          <p className="mt-3 max-w-2xl text-[11px] leading-4 text-stone-500">{words.affiliateDisclosure}</p>
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
@@ -215,35 +262,28 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            One thing people ask us for that we do not book, and where to go for it.
+            Two things people ask us for that we do not book, and where to go for each of them.
           </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {NOT_YET.map(([heading, body]) => (
+          {/* The link sits on the card it belongs to, rather than in a row of
+              buttons underneath. That row used to lead with "Cars and
+              transfers" pointing at /cars — a page whose search is now the Cars
+              tab at the top of this one, which made the button a link back up
+              the page it was already on. */}
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {NOT_YET.map(([heading, body, link]) => (
               <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
+                {link && (
+                  <Link
+                    href={link.href}
+                    className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                  >
+                    {link.label}
+                  </Link>
+                )}
               </article>
             ))}
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/cars"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Car hire
-            </Link>
-            <Link
-              href="/transfers"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Airport transfers
-            </Link>
-            <Link
-              href="/things-to-do"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Things to do
-            </Link>
           </div>
         </div>
       </section>

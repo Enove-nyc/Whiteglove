@@ -110,8 +110,11 @@ export default async function TransfersPage() {
                 An alpine valley, a route between towns, anywhere the days are spent somewhere other than where you
                 sleep. Each destination page says which of the two it is before you book either.
               </p>
+              {/* The car search is the Cars tab on the booking page — /cars
+                  folded into it and is a redirect now, so linking the real
+                  address saves the visitor a hop. */}
               <Link
-                href="/cars"
+                href="/book?type=cars"
                 className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
                 Search car hire

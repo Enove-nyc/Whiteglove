@@ -11,6 +11,18 @@ import { staySearchHref } from "@/lib/stay-search";
  * partner on a search they may not understand, which is worse than opening
  * them on an empty one.
  *
+ * BOTH QUIET LINKS ARE HANDED IN, NEVER TYPED. They used to point at /flights
+ * and /cars, two pages running the same partner searches as the booking page's
+ * own tabs; both have since folded into it. The booking path is the
+ * replacement, and the owner can lock it from the admin — so the page resolves
+ * it and passes it down rather than this component naming it, which is the
+ * difference between a link and an access-code screen. See
+ * lib/booking-access.ts and tests/booking-link.test.ts.
+ *
+ * The cars link still carries the destination as the pick-up; that prefill is
+ * the one thing /cars did that the booking page did not, and it came across
+ * with it rather than being dropped.
+ *
  * A DESTINATION PAGE IS LONG — eleven sections, and the practical ones are at
  * the bottom because that is the order somebody decides in. By the time a
  * person has read what Shabbos looks like in Rome and decided they can do it,
@@ -35,7 +47,17 @@ import { staySearchHref } from "@/lib/stay-search";
  * "have us plan it" here would turn every section above into a sales funnel.
  * It is offered inside Contact. See lib/contact-reasons.ts.
  */
-export default function DestinationStickyCta({ destination }: { destination: string }) {
+export default function DestinationStickyCta({
+  destination,
+  flightsHref,
+  carsHref,
+}: {
+  destination: string;
+  /** Resolved by the page: the booking search, or the assistance page when it is locked. */
+  flightsHref: string;
+  /** The same, on the cars tab, carrying the destination as the pick-up. */
+  carsHref: string;
+}) {
   return (
     <div className="sticky bottom-0 z-30 -mx-5 mt-6 border-t border-[var(--gold-light)] bg-[var(--surface)]/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/85 sm:-mx-8 sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2">
@@ -46,13 +68,13 @@ export default function DestinationStickyCta({ destination }: { destination: str
           See places to stay
         </Link>
         <Link
-          href="/flights"
+          href={flightsHref}
           className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
         >
           Flights
         </Link>
         <Link
-          href={`/cars?destination=${encodeURIComponent(destination)}`}
+          href={carsHref}
           className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
         >
           Car hire

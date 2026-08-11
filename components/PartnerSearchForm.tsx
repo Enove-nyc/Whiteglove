@@ -44,6 +44,12 @@ export type SearchFieldSet = "stay" | "journey";
  * set called a car hire a check-in and a check-out. A room is checked into; a
  * car is picked up and dropped off; a flight leaves and comes back.
  *
+ * ONLY HOTELS RENDER THROUGH HERE TODAY. The car and flight searches folded
+ * into the booking panel, which names their dates correctly itself. The rows
+ * below stay because this component still accepts those products, and the
+ * failure they prevent is a silent one: a car search rendered through here
+ * again would read as a hotel stay and nothing would look broken.
+ *
  * Not cosmetic. "Check out" over a car-hire date is the kind of thing that
  * makes somebody wonder whether the site knows what it is selling, on the one
  * screen where they are deciding whether to trust it with a booking.
