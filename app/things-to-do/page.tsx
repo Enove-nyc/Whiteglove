@@ -2,6 +2,7 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
 
 // Rendered per request, not frozen at build time.
@@ -54,10 +55,19 @@ export default async function AttractionsPage() {
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <AttractionDirectory attractions={attractions} />
 
-        <div className="mt-10">
-          
-        </div>
       </section>
+
+      {/* UNDER THE LIST, NOT OVER IT. Somebody who has read what a place is,
+          how long to give it and what it does on Shabbos is the person ready to
+          buy a ticket for it; the same block above the directory would be an
+          advert in front of the thing they came for. Renders nothing until the
+          owner has a tours hand-off enabled and configured. */}
+      <TravelEssentials
+        pageType="things-to-do"
+        heading="Tickets and guided visits"
+        intro="For the places above that need booking ahead. Prices, availability and terms are the provider's."
+        placement="things-to-do-essentials"
+      />
 
       <Footer />
     </main>
