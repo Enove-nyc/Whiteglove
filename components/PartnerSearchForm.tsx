@@ -35,6 +35,40 @@ const label = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-600"
 
 export type SearchFieldSet = "stay" | "journey";
 
+/**
+ * What the two dates are called, per product.
+ *
+ * KEYED OFF THE PRODUCT, NOT THE FIELD SET — the same correction the check-out
+ * floor below already carries, and for the same reason. Cars use the "stay"
+ * fields because they ask where and when, so reading the wording off the field
+ * set called a car hire a check-in and a check-out. A room is checked into; a
+ * car is picked up and dropped off; a flight leaves and comes back.
+ *
+ * Not cosmetic. "Check out" over a car-hire date is the kind of thing that
+ * makes somebody wonder whether the site knows what it is selling, on the one
+ * screen where they are deciding whether to trust it with a booking.
+ *
+ * ONLY THESE THREE HAVE A TWO-DATE FORM. A transfer is a single day — one
+ * journey, on one date, not a period with two ends — so it would need a
+ * one-date form rather than an entry here, and it does not have one: the
+ * transfer hand-off is a landing link and the partner asks for the date on
+ * their own page. Adding a transfer row here would build a form nothing
+ * renders and quietly assert that a transfer spans two dates.
+ */
+const DATE_WORDS = {
+  hotel: ["Check in", "Check out"],
+  car: ["Pick-up", "Drop-off"],
+  flight: ["Leaving", "Coming back"],
+} as const satisfies Partial<Record<TravelProduct, readonly [string, string]>>;
+
+function dateWordsFor(product: TravelProduct, fields: SearchFieldSet): readonly [string, string] {
+  if (product in DATE_WORDS) return DATE_WORDS[product as keyof typeof DATE_WORDS];
+  // Unreachable today: every other product is a landing hand-off with no form
+  // at all. Neutral rather than plausible, so a future product that lands here
+  // reads as unnamed instead of being silently called a hotel stay.
+  return fields === "stay" ? ["Starting", "Ending"] : ["Leaving", "Coming back"];
+}
+
 export default async function PartnerSearchForm({
   product,
   fields,
@@ -78,6 +112,8 @@ export default async function PartnerSearchForm({
   const route = routeFor(product, await readAffiliateConfig());
   // No programme, no form. The admin says which products are connected.
   if (!route.destinationLabel) return null;
+
+  const [inLabel, outLabel] = dateWordsFor(product, fields);
 
   return (
     // data-search-memory: see components/SearchMemory.tsx. Empty fields only,
@@ -130,7 +166,7 @@ export default async function PartnerSearchForm({
         )}
 
         <label className="block" htmlFor={`${id}-in`}>
-          <span className={label}>{fields === "stay" ? "Check in" : "Leaving"}</span>
+          <span className={label}>{inLabel}</span>
           {/* Not a date that has passed. Rendered on the server, so on a
               prerendered page this floor can be a few days stale — it never
               refuses a date that is genuinely available, and SearchMemory
@@ -146,7 +182,7 @@ export default async function PartnerSearchForm({
           />
         </label>
         <label className="block" htmlFor={`${id}-out`}>
-          <span className={label}>{fields === "stay" ? "Check out" : "Coming back"}</span>
+          <span className={label}>{outLabel}</span>
           {/* Optional on a journey: a one-way flight is a real search, and the
               registry builds one when this is empty. */}
           <input

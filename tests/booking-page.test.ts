@@ -131,6 +131,35 @@ describe("the commission disclosure", () => {
   });
 });
 
+describe("a date is called what that product calls it", () => {
+  const FORM = readFileSync("components/PartnerSearchForm.tsx", "utf8");
+
+  it("DOES NOT CHECK A CAR IN AND OUT", () => {
+    // The labels used to be keyed off the field set rather than the product,
+    // and cars share the "stay" fields because they also ask where and when —
+    // so /cars asked a visitor to "check in" a hire car and "check out" of it.
+    // A room is checked into; a car is picked up and dropped off.
+    assert.match(FORM, /car:\s*\["Pick-up",\s*"Drop-off"\]/);
+    assert.match(FORM, /hotel:\s*\["Check in",\s*"Check out"\]/);
+    assert.match(FORM, /flight:\s*\["Leaving",\s*"Coming back"\]/);
+    // And the wording is no longer decided by the field set anywhere.
+    assert.doesNotMatch(FORM, /fields === "stay" \? "Check in"/);
+    assert.doesNotMatch(FORM, /fields === "stay" \? "Check out"/);
+  });
+
+  it("GIVES A TRANSFER NO TWO-DATE FORM AT ALL", () => {
+    // A transfer is one journey on one date, not a period with two ends.
+    // There is no transfer row in the table, and there must not be one: the
+    // hand-off is a landing link and the partner asks for the date. A row here
+    // would build a form nothing renders and assert that a transfer spans two
+    // dates while doing it.
+    assert.doesNotMatch(FORM, /transfer:\s*\[/);
+    const TRANSFERS = readFileSync("app/transfers/page.tsx", "utf8");
+    assert.doesNotMatch(TRANSFERS, /PartnerSearchForm/);
+    assert.doesNotMatch(TRANSFERS, /Check in|Check out/);
+  });
+});
+
 describe("what is not bookable is named", () => {
   it("SAYS SO RATHER THAN OFFERING A TAB THAT CANNOT WORK", () => {
     // The brief names transfers and activities alongside hotels, flights and
