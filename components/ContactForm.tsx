@@ -71,6 +71,10 @@ export default function ContactForm({
         name: form.name,
         email: form.email,
         phone: form.phone,
+        // The reason travels with the message so the server can put the right
+        // card on the board. It is checked there against the known list rather
+        // than trusted — this is a public endpoint.
+        reason,
         subject: spec.subject,
         message: composeMessage(reason, answers, form.message),
       }),

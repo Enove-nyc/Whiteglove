@@ -37,6 +37,12 @@ What follows from that:
 
 Report what changed and what it cost him, in prose. Do not produce checklists, audit tables, or lists of outstanding items for him to work through, and do not convert a question he asked into a list of tasks for him. If something genuinely needs a decision only he can make, ask that one question on its own.
 
+## Working with the owner
+
+**"Step by step" means one step, then stop.** Give a single step, wait for him to say done, and only then give the next one. Do not send a numbered list of five and call it step by step — he is working through these in his own dashboards, and the next step is useless until the one before it is done.
+
+Say what the step is, where to do it, and how he will know it worked. Nothing else.
+
 ## One name per thing
 
 The site had several names for each of its own features, so four front doors looked like seven. Use the first column; the alternatives are fine inside a sentence where the context genuinely calls for one, and are not names.

@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { saveTrelloAction, testTrelloAction } from "@/app/admin/settings/trello/actions";
-import { CARD_KINDS, type CardKind, describeTrello, keyProblem, listProblem, settingsProblem, tokenProblem, type TrelloSettings } from "@/lib/trello";
+import { assigneeFor, CARD_KINDS, type CardKind, describeTrello, keyProblem, listProblem, settingsProblem, tokenProblem, type TrelloSettings } from "@/lib/trello";
 
 /**
  * The three values, and what raises a card.
@@ -87,6 +87,39 @@ export default function TrelloForm({ current, storeReady }: { current: TrelloSet
         </div>
 
         <fieldset>
+          <legend className={label}>Who the card goes on</legend>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            Optional. Every card already says which of the two it is in its own description; these only add the avatar,
+            so the board can be filtered by it. A Trello member id is on your profile page, or in the board&rsquo;s
+            <code className="mx-1 rounded bg-[var(--cream)] px-1">.json</code>.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className={label}>Your member id</span>
+              <input
+                name="ownerMemberId"
+                type="text"
+                value={settings.ownerMemberId}
+                onChange={(e) => setSettings({ ...settings, ownerMemberId: e.target.value })}
+                className={input}
+              />
+              <span className="mt-1 block text-xs leading-5 text-stone-500">Everything except a site fault.</span>
+            </label>
+            <label className="block">
+              <span className={label}>The bot&rsquo;s member id</span>
+              <input
+                name="botMemberId"
+                type="text"
+                value={settings.botMemberId}
+                onChange={(e) => setSettings({ ...settings, botMemberId: e.target.value })}
+                className={input}
+              />
+              <span className="mt-1 block text-xs leading-5 text-stone-500">Site faults only — the one kind that can be checked from the code.</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
           <legend className={label}>What should make a card</legend>
           <div className="mt-3 space-y-2">
             {CARD_KINDS.map((k) => (
@@ -99,7 +132,21 @@ export default function TrelloForm({ current, storeReady }: { current: TrelloSet
                   className="mt-1"
                 />
                 <span>
-                  <span className="block text-sm font-semibold text-[var(--navy)]">{k.label}</span>
+                  <span className="block text-sm font-semibold text-[var(--navy)]">
+                    {k.label}
+                    {/* Whose card it is, said on the row that switches it on,
+                        so the one queue that behaves differently cannot be a
+                        surprise later. */}
+                    <span
+                      className={`ml-2 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${
+                        assigneeFor(k.kind) === "bot"
+                          ? "border-sky-700 bg-sky-50 text-sky-800"
+                          : "border-[var(--gold)] bg-[var(--cream)] text-[var(--navy)]"
+                      }`}
+                    >
+                      {assigneeFor(k.kind) === "bot" ? "Bot" : "You"}
+                    </span>
+                  </span>
                   <span className="block text-xs leading-5 text-stone-500">{k.why}</span>
                 </span>
               </label>

@@ -38,6 +38,8 @@ const GOOD: TrelloSettings = {
   token: "t".repeat(64),
   listId: "5abbe4b7ddc1b351ef961414",
   kinds: ["photo", "plan"],
+  ownerMemberId: "",
+  botMemberId: "",
 };
 
 describe("what can be saved", () => {
