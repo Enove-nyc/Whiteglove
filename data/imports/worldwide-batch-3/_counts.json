@@ -1,9 +1,9 @@
 {
   "cities": 67,
-  "total": 1916,
+  "total": 1914,
   "byListingLabel": {
     "Vacation destination": 66,
-    "Attraction": 1068,
+    "Attraction": 1066,
     "Jewish heritage attraction": 91,
     "Where to stay": 136,
     "Shul": 262,
@@ -14,12 +14,12 @@
   },
   "byImportKind": {
     "PRACTICAL": 500,
-    "ATTRACTION": 1280,
+    "ATTRACTION": 1278,
     "PLACE_TO_STAY": 136
   },
   "byEntityType": {
     "vacation_destination": 66,
-    "attraction": 1159,
+    "attraction": 1157,
     "stay_anchor": 136,
     "shul": 262,
     "mikvah": 110,

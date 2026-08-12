@@ -390,16 +390,4 @@ export const whiteGloveFillCandidates: readonly WhiteGloveFillCandidate[] = [
     sourceKey: "nl-nihs",
     category: "Jewish heritage attraction",
   }),
-  resource({
-    market: "netherlands-amsterdam-extra",
-    slug: "jewish-cultural-quarter-resource",
-    name: "Jewish Cultural Quarter visitor resource",
-    aliases: ["JCK Amsterdam"],
-    keywords: ["Amsterdam", "jewish", "museum"],
-    locality: "Amsterdam",
-    destination: "Amsterdam",
-    country: "Netherlands",
-    sourceKey: "nl-nihs",
-    category: "Jewish community resource",
-  }),
-];
+  ];
