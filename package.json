@@ -13,6 +13,7 @@
     "test": "tsx --test tests/**/*.test.ts",
     "check": "npm run lint && tsc --noEmit && npm run test",
     "export-content": "tsx scripts/export-content.ts",
+    "snapshot": "tsx scripts/write-snapshot.ts",
     "audit:ui": "node scripts/audit-ui.mjs",
     "audit:admin": "node scripts/audit-admin.mjs",
     "build:sql": "tsx scripts/build-sql.ts",
