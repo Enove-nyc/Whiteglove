@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { searchPartnerFlights } from "@/lib/partner-flights";
+
+describe("on-site flight compare rows", () => {
+  it("builds a tracked /go link with the route and dates when live fares are off", async () => {
+    const previous = process.env.TRAVELPAYOUTS_TOKEN;
+    delete process.env.TRAVELPAYOUTS_TOKEN;
+    try {
+      const result = await searchPartnerFlights({
+        origin: "JFK",
+        destination: "FCO",
+        departDate: "2026-09-12",
+        returnDate: "2026-09-19",
+        adults: 2,
+      });
+      assert.equal(result.ok, true);
+      if (!result.ok) return;
+      assert.equal(result.mode, "compare");
+      assert.equal(result.flights.length, 1);
+      assert.match(result.message, /Kayak/i);
+      assert.doesNotMatch(result.message, /unavailable|not available|could not be loaded/i);
+      assert.match(result.flights[0].bookHref, /^\/go\?/);
+      assert.match(result.flights[0].bookHref, /product=flight/);
+      assert.match(result.flights[0].bookHref, /legs=JFK-FCO-2026-09-12/);
+      assert.match(result.flights[0].bookHref, /out=2026-09-19/);
+      assert.doesNotMatch(result.flights[0].bookHref, /aid=|marker|kayak\.com|stay22|TRAVELPAYOUTS/i);
+    } finally {
+      if (previous !== undefined) process.env.TRAVELPAYOUTS_TOKEN = previous;
+    }
+  });
+
+  it("refuses missing airports rather than inventing a search", async () => {
+    const result = await searchPartnerFlights({
+      origin: "",
+      destination: "FCO",
+      departDate: "2026-09-12",
+    });
+    assert.equal(result.ok, false);
+  });
+});

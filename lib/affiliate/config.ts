@@ -10,7 +10,7 @@
 import { unstable_cache } from "next/cache";
 import { readStay22 } from "@/lib/stay22-store";
 import { readTravelpayouts } from "@/lib/travelpayouts-store";
-import { NO_STAY22 } from "@/lib/stay22";
+import { stay22FromEnv } from "@/lib/stay22";
 import { LANDING_PRODUCTS, type AffiliateConfig, type EssentialsLandings } from "@/lib/affiliate/partners";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
 import { landingUrlProblem } from "@/lib/travel-essentials";
@@ -61,7 +61,7 @@ const cached = unstable_cache(
 
 export async function readAffiliateConfig(): Promise<AffiliateConfig> {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return { travelpayouts: {}, stay22: NO_STAY22, kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "" };
+    return { travelpayouts: {}, stay22: stay22FromEnv(), kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "" };
   }
   return cached();
 }

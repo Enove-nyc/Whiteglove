@@ -11,6 +11,10 @@
  *
  * TERMS: do not cold-store listings. Short in-memory TTL only.
  * Docs: https://dev.stay22.com/docs/api/accommodations/search
+ *
+ * Flights are not in this API. Stay22's Direct Travel API is accommodations
+ * only. Kayak flights earn through Allez (`/allez/kayak?aid=&link=`), built
+ * in lib/stay22.ts from the Stay22 ID — STAY22_API_KEY cannot list fares.
  */
 
 import { CAMPAIGN, type HotelSearch, type Stay22Settings } from "@/lib/stay22";

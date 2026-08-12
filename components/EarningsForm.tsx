@@ -28,6 +28,7 @@ export default function EarningsForm({
   currentPartners,
   storeReady,
   hotelsElsewhere,
+  flightsElsewhere,
 }: {
   current: TravelpayoutsLinks;
   /** Which partner each search opens. Empty means the defaults. */
@@ -40,6 +41,12 @@ export default function EarningsForm({
    * contradicts the site is worse than one that says less.
    */
   hotelsElsewhere?: string;
+  /**
+   * Set when Stay22 carries Kayak flights from the ID above. The paste box
+   * stays for a Travelpayouts wrap or an explicit Stay22 link, but it is not
+   * required for flights to earn.
+   */
+  flightsElsewhere?: string;
 }) {
   const [links, setLinks] = useState<TravelpayoutsLinks>(current);
   const [partners, setPartners] = useState<PartnerChoices>(currentPartners);
@@ -71,7 +78,11 @@ export default function EarningsForm({
             <div key={s.slot} className="rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
               <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">{s.label}</span>
               <span className="mt-1 block text-sm leading-6 text-stone-600">
-                {s.slot === "hotels" && hotelsElsewhere ? hotelsElsewhere : describeSlot(s.slot, value, partners)}
+                {s.slot === "hotels" && hotelsElsewhere
+                  ? hotelsElsewhere
+                  : s.slot === "flights" && flightsElsewhere
+                    ? flightsElsewhere
+                    : describeSlot(s.slot, value, partners)}
               </span>
 
               {/* THE PARTNER IS A CHOICE, not a fact about the code. It used to

@@ -9,9 +9,13 @@ import {
   describeStay22,
   hotelButtonLabel,
   isProvider,
+  kayakStay22Link,
+  KAYAK_DESK,
   mergeStay22,
   NO_STAY22,
   PROVIDERS,
+  stay22FromEnv,
+  stay22SearchUrl,
   type Stay22Settings,
   stay22IsOn,
 } from "@/lib/stay22";
@@ -181,6 +185,7 @@ describe("what the admin is told", () => {
     const said = describeStay22(on());
     assert.match(said, /wg123/);
     assert.match(said, /suits each traveller/);
+    assert.match(said, /Kayak flight/);
   });
 
   it("does not call a broken ID working", () => {
@@ -226,5 +231,27 @@ describe("tours carry the place", () => {
     const built = tourSearchUrl("Nice & Côte d'Azur", "https://getyourguide.stay22.com/myaccount/abc123");
     const inner = new URL(built!).searchParams.get("link")!;
     assert.equal(new URL(inner).searchParams.get("q"), "Nice & Côte d'Azur");
+  });
+});
+
+describe("Kayak flights use the Stay22 ID, not a pasted wrap", () => {
+  it("builds a Kayak desk link from the ID", () => {
+    const link = kayakStay22Link(on());
+    assert.deepEqual(link, { aid: "wg123", desk: KAYAK_DESK });
+    assert.equal(kayakStay22Link(NO_STAY22), null);
+  });
+
+  it("wraps a Kayak search so the route and dates survive", () => {
+    const search = "https://www.kayak.com/flights/JFK-FCO/2026-09-01/2026-09-08";
+    const url = new URL(stay22SearchUrl(search, kayakStay22Link(on())));
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "wg123");
+    assert.equal(url.searchParams.get("link"), search);
+  });
+
+  it("reads STAY22_AID from an env object without needing Redis", () => {
+    assert.equal(stay22FromEnv({ STAY22_AID: "wgenvaid" }).aid, "wgenvaid");
+    assert.equal(stay22FromEnv({ STAY22_AID: "" }).aid, "");
+    assert.equal(stay22FromEnv({ STAY22_AID: "https://www.stay22.com/allez/kayak?aid=x" }).aid, "");
   });
 });

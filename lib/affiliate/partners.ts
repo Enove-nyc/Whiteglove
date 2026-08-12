@@ -31,7 +31,7 @@
  * the redirect handler, the admin screens and the tests.
  */
 
-import { allezUrl, readStay22Link, stay22IsOn, tourSearchUrl, type Stay22Settings } from "@/lib/stay22";
+import { allezUrl, kayakStay22Link, readStay22Link, stay22IsOn, stay22SearchUrl, tourSearchUrl, type Stay22Link, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
 import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
@@ -222,6 +222,21 @@ function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot, choices
   return Boolean(pasted) && linkProblem(pasted!, slot, choices) === null;
 }
 
+/**
+ * Stay22 Kayak wrap for flights: the Stay22 ID first, then a pasted Kayak
+ * wrap. Travelpayouts is not required. Null when the flight partner is not
+ * Kayak, or when neither an ID nor a Stay22 Kayak link is present.
+ */
+function stay22KayakForFlights(config: AffiliateConfig): Stay22Link | null {
+  if (partnerFor("flights", config.partners).key !== "kayak") return null;
+  const fromAid = kayakStay22Link(config.stay22);
+  if (fromAid) return fromAid;
+  const pasted = config.travelpayouts.flights?.trim() ?? "";
+  if (!pasted || linkProblem(pasted, "flights", config.partners)) return null;
+  const link = readStay22Link(pasted);
+  return link?.desk === "kayak" ? link : null;
+}
+
 const NOT_CONNECTED = (product: TravelProduct, what: string): ProductRoute => ({
   product,
   destinationLabel: "",
@@ -264,17 +279,34 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
     };
   }
 
-  if (product === "flight" || product === "car") {
-    const slot: SearchSlot = product === "flight" ? "flights" : "cars";
-    const partner = partnerFor(slot, config.partners);
-    const wrapped = travelpayoutsEarns(config.travelpayouts, slot, config.partners);
-    const what = product === "flight" ? "Flight" : "Car";
-    // Either network can carry these two now: Travelpayouts by wrapping the
-    // search in `u=`, Stay22 by wrapping it in `link=`. Which one is whichever
-    // link the owner pasted, so the label is read off the link rather than
-    // assumed — an admin screen that names the wrong network is how nobody
-    // notices the right one is not being paid.
-    const viaStay22 = wrapped ? readStay22Link(config.travelpayouts[slot] ?? "") : null;
+  if (product === "flight") {
+    const partner = partnerFor("flights", config.partners);
+    const stay22Kayak = stay22KayakForFlights(config);
+    if (stay22Kayak) {
+      return {
+        product,
+        destinationLabel: partner.label,
+        network: "stay22",
+        earns: true,
+        note: `Flight searches go through Stay22, then on to ${partner.label}.`,
+      };
+    }
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "flights", config.partners);
+    return {
+      product,
+      destinationLabel: partner.label,
+      network: wrapped ? "travelpayouts" : "none",
+      earns: wrapped,
+      note: wrapped
+        ? `Flight searches go through Travelpayouts, then on to ${partner.label}.`
+        : `Flight searches open ${partner.label} directly. They work, and they earn nothing.`,
+    };
+  }
+
+  if (product === "car") {
+    const partner = partnerFor("cars", config.partners);
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "cars", config.partners);
+    const viaStay22 = wrapped ? readStay22Link(config.travelpayouts.cars ?? "") : null;
     const network = wrapped ? (viaStay22 ? "stay22" : "travelpayouts") : "none";
     return {
       product,
@@ -282,8 +314,8 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
       network,
       earns: wrapped,
       note: wrapped
-        ? `${what} searches go through ${viaStay22 ? "Stay22" : "Travelpayouts"}, then on to ${partner.label}.`
-        : `${what} searches open ${partner.label} directly. They work, and they earn nothing.`,
+        ? `Car searches go through ${viaStay22 ? "Stay22" : "Travelpayouts"}, then on to ${partner.label}.`
+        : `Car searches open ${partner.label} directly. They work, and they earn nothing.`,
     };
   }
 
@@ -476,6 +508,9 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   // tracked URLs from the owner's dashboard — wrapping them again would break
   // the programme's own parameters.
   if (request.product === "hotel" && route.network === "stay22") return { url, route };
+  if (request.product === "flight" && route.network === "stay22") {
+    return { url: stay22SearchUrl(url, stay22KayakForFlights(config)), route };
+  }
   if (isLandingProduct(request.product)) {
     return { url, route };
   }

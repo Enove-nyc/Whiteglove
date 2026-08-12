@@ -46,7 +46,7 @@ export default function Stay22Form({ current, storeReady }: { current: Stay22Set
             <span className="mt-1.5 block text-xs leading-5 text-red-700">{problem}</span>
           ) : (
             <span className="mt-1.5 block text-xs leading-5 text-stone-500">
-              Just the ID — not the whole link and not the script. Empty means hotels go to Booking.com as before.
+              Just the ID — not the whole link and not the script. Empty means hotels go to Booking.com as before, and Kayak flights only earn if a wrap is pasted below.
             </span>
           )}
         </label>
@@ -78,7 +78,7 @@ export default function Stay22Form({ current, storeReady }: { current: Stay22Set
 
       <p className="rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
         The Stay22 <span className="font-semibold text-[var(--navy)]">ID above is for tracked links</span> (Allez
-        hand-off). Live places to stay and prices on /book need a separate server key: set{" "}
+        hand-off for hotels, and Kayak flights). Live places to stay and prices on /book need a separate server key: set{" "}
         <code className="rounded bg-white px-1.5 py-0.5 text-xs">STAY22_API_KEY</code> in{" "}
         <code className="rounded bg-white px-1.5 py-0.5 text-xs">.env.local</code> and Vercel (from hub.stay22.com →
         Settings → API). Without that key, searches still open via the ID.

@@ -181,11 +181,19 @@ export const CONNECTIONS: Connection[] = [
     weight: "nicety",
   },
   {
-    vars: ["TRAVELPAYOUTS_TOKEN"],
-    what: "Travelpayouts Data API token — live flight prices on Search booking partners.",
+    vars: ["STAY22_AID"],
+    what: "Your Stay22 affiliate ID — tracked hotel links and Kayak flight searches.",
     without:
-      "The flight form and results panel still appear. Live prices need this token; without it, View & book opens the partner search.",
+      "Hotel and Kayak flight searches still open. They earn when this ID is set here or saved on the earnings screen; without either, Kayak flights only earn if a wrap is pasted there.",
     weight: "feature",
+    where: "Stay22 hub — the same ID as the Stay22 ID field on Settings → What the site earns. A saved ID on that screen wins when both are set.",
+  },
+  {
+    vars: ["TRAVELPAYOUTS_TOKEN"],
+    what: "Travelpayouts Data API token — optional live fare list on Search booking partners.",
+    without:
+      "Flights still search on the page and open Kayak through Stay22. This token only adds priced rows from Travelpayouts; it is not required to earn.",
+    weight: "nicety",
     where: "Travelpayouts dashboard → API tools. Separate from the marker and from pasted redirect links.",
   },
   {

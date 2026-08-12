@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { searchTravelpayoutsFlights } from "@/lib/travelpayouts-api";
+import { searchPartnerFlights } from "@/lib/partner-flights";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
-import { goHref } from "@/lib/affiliate/request";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Public live flight prices via Travelpayouts Data API.
- * Booking and payment stay with the partner (/go hand-off).
+ * Flight search for /book.
+ *
+ * Live fare rows when Travelpayouts Data API is configured. Otherwise a
+ * compare row whose View & book is /go → Stay22 Kayak (from/to/dates filled).
+ * Payment stays with the partner. Stay22 has no flights inventory API.
  */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -20,12 +22,13 @@ export async function POST(request: NextRequest) {
   const nonstop = Boolean(body?.nonstop);
   const adults = Math.max(1, Math.min(9, Number(body?.adults) || 1));
 
-  const result = await searchTravelpayoutsFlights({
+  const result = await searchPartnerFlights({
     origin,
     destination,
     departDate,
     returnDate: returnDate || undefined,
     nonstop,
+    adults,
   });
 
   if (!result.ok) {
@@ -36,18 +39,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(
     {
       ...result,
-      flights: result.flights.map((flight) => ({
-        ...flight,
-        bookHref: goHref({
-          product: "flight",
-          legs: [{ from: flight.origin, to: flight.destination, date: flight.departDate }],
-          checkOut: flight.returnDate,
-          adults,
-          nonstop,
-          page: "/book",
-          placement: "book-flights",
-        }),
-      })),
       searched: {
         origin: originPlace?.label ?? origin,
         destination: destinationPlace?.label ?? destination,

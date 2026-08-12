@@ -155,7 +155,7 @@ export const ESSENTIAL_SERVICES: readonly EssentialServiceDef[] = [
     linkMode: "search",
     product: "flight",
     defaultPageTypes: ["itinerary"],
-    preferredNetwork: "either",
+    preferredNetwork: "stay22",
   },
   {
     id: "hotel",
@@ -654,7 +654,7 @@ export const OWNER_PROGRAMME_CHECKLIST = [
   },
   {
     category: "Flights",
-    status: "Earns when a Stay22 Kayak (or Travelpayouts) wrap is pasted on the Flights row.",
+    status: "Earns through Stay22 Kayak when the Stay22 ID is set (environment or earnings screen). A pasted wrap is optional; Travelpayouts is not required.",
     where: "/admin/settings/earnings",
   },
   {

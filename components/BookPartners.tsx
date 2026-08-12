@@ -360,7 +360,7 @@ function FlightsForm({
     return {
       id: "flights-partner",
       title: describeSearch(wanted),
-      subtitle: "Compare fares and complete booking with a partner.",
+      subtitle: "Open the partner search with your route and dates filled in.",
       ctaLabel: "View & book",
       onOpen: () => handOff(wanted),
     };
@@ -378,9 +378,10 @@ function FlightsForm({
       return;
     }
 
-    // One-way / round-trip stay on-site: live prices when the Data API is on,
-    // otherwise a results row that opens the tracked partner search. Multi-city
-    // stays a hand-off because the inventory API cannot express it.
+    // One-way / round-trip stay on-site. Live fare rows when Travelpayouts is
+    // on; otherwise a compare row whose View & book is Stay22 Kayak via /go.
+    // Stay22 has no flights inventory API, so a missing Travelpayouts token
+    // is the intended product, not a broken search.
     setLoading(true);
     setRows([]);
     setLiveMessage("");
@@ -399,31 +400,40 @@ function FlightsForm({
         }),
       });
       const data = await response.json();
-      if (data?.ok && data.mode === "live" && Array.isArray(data.flights)) {
-        setLiveMessage(data.message ?? "");
+      if (data?.ok && Array.isArray(data.flights) && data.flights.length > 0) {
+        setLiveMessage(data.message ?? "Compare fares with Kayak.");
+        setLiveDetail(data.detail ?? "Prices and booking are on the partner site.");
+        const live = data.mode === "live";
         const nextRows: PartnerResultRow[] = data.flights.map(
           (flight: {
             id: string;
-            summary: string;
-            price: number;
-            currency: string;
-            transfers: number;
+            title?: string;
+            subtitle?: string;
+            summary?: string;
+            meta?: string;
+            price?: number;
+            currency?: string;
+            transfers?: number;
             airline?: string;
             bookHref?: string;
           }) => ({
             id: flight.id,
-            title: flight.airline ? flight.airline.toUpperCase() : "Flight option",
-            subtitle: flight.summary,
-            meta: flight.transfers === 0 ? "Nonstop" : flight.transfers === 1 ? "1 stop" : `${flight.transfers} stops`,
-            priceLabel: moneyLabel(flight.price, flight.currency),
-            priceNote: "From · per adult",
+            title: flight.title || (flight.airline ? flight.airline.toUpperCase() : "Flight option"),
+            subtitle: flight.subtitle || flight.summary,
+            meta: flight.meta,
+            priceLabel: live ? moneyLabel(flight.price, flight.currency ?? "USD") : undefined,
+            priceNote: live && flight.price != null ? "From · per adult" : undefined,
             ctaLabel: "View & book",
             onOpen: () => {
               if (typeof window !== "undefined") {
                 if (flight.bookHref) window.open(flight.bookHref, "_blank", "noopener,noreferrer");
                 else handOff(wanted);
               }
-              onOpened({ kind: "flight", summary: flight.summary, save: (confirmation) => addToTrip(confirmation) });
+              onOpened({
+                kind: "flight",
+                summary: flight.summary || flight.subtitle || describeSearch(wanted),
+                save: (confirmation) => addToTrip(confirmation),
+              });
             },
           }),
         );
@@ -431,12 +441,12 @@ function FlightsForm({
         setLoading(false);
         return;
       }
-      setLiveMessage(data?.message ?? "Live prices are not available for this search.");
-      setLiveDetail(data?.detail ?? "Compare and book with a partner.");
+      setLiveMessage(data?.message ?? "Compare fares with Kayak.");
+      setLiveDetail(data?.detail ?? "Prices and booking are on the partner site.");
       setRows([partnerRow(wanted)]);
     } catch {
-      setLiveMessage("Live prices could not be loaded.");
-      setLiveDetail("Compare and book with a partner.");
+      setLiveMessage("Compare fares with Kayak.");
+      setLiveDetail("Prices and booking are on the partner site.");
       setRows([partnerRow(wanted)]);
     }
     setLoading(false);

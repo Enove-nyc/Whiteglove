@@ -10,7 +10,7 @@ import { growthSettingsStoreAvailable, readDestinationPlacements } from "@/lib/g
 import { readStay22Fresh } from "@/lib/stay22-store";
 import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
-import { describeLinks } from "@/lib/travelpayouts";
+import { partnerFor } from "@/lib/travel-partners";
 import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 import { readTravelEssentialsFresh, travelEssentialsStoreAvailable } from "@/lib/travel-essentials-store";
 
@@ -49,7 +49,7 @@ export default async function EarningsSettings() {
               searches, the cards on the pages, and anything else you link to. Routed through a partner, a booking made
               afterwards is credited to you. Left alone, each one works exactly the same and earns nothing.
             </p>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners)}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners, stay22)}</p>
           </div>
           <Link
             href="/admin/settings"
@@ -118,8 +118,11 @@ export default async function EarningsSettings() {
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Live inventory on Search booking partners uses a server API key (
           <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">STAY22_API_KEY</code>
-          ), not this ID. Flights live prices use{" "}
-          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">TRAVELPAYOUTS_TOKEN</code>. Both belong in
+          ), not this ID. Kayak flights earn from this ID — Stay22 has no flights
+          inventory API, so travellers compare on Kayak and book with the partner.
+          A Travelpayouts fare list is optional (
+          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">TRAVELPAYOUTS_TOKEN</code>
+          ) and is not required for flights to work or earn. Keys belong in
           environment settings / Connections — never in this form.
         </p>
         <Stay22Form current={stay22} storeReady={travelpayoutsStoreAvailable()} />
@@ -132,6 +135,11 @@ export default async function EarningsSettings() {
         hotelsElsewhere={
           stay22IsOn(stay22)
             ? `${describeStay22(stay22)} Nothing pasted in this box is used while that is set.`
+            : undefined
+        }
+        flightsElsewhere={
+          stay22IsOn(stay22) && partnerFor("flights", affiliate.partners).key === "kayak"
+            ? "Flight searches go through Stay22, then on to Kayak, using the ID above. Nothing pasted in this box is required."
             : undefined
         }
       />

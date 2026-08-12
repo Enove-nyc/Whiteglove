@@ -19,11 +19,14 @@ describe("partner live capabilities", () => {
 });
 
 describe("live partner search wiring", () => {
-  it("keeps hotel live search on Stay22 and flights on Travelpayouts", () => {
+  it("keeps hotel live search on Stay22 and flights on the partner search helper", () => {
     const hotels = readFileSync("app/api/partners/hotels/search/route.ts", "utf8");
     const flights = readFileSync("app/api/partners/flights/search/route.ts", "utf8");
     assert.match(hotels, /searchStay22Accommodations/);
-    assert.match(flights, /searchTravelpayoutsFlights/);
+    assert.match(flights, /searchPartnerFlights/);
+    const helper = readFileSync("lib/partner-flights.ts", "utf8");
+    assert.match(helper, /searchTravelpayoutsFlights/);
+    assert.match(helper, /Stay22's Direct Travel API is accommodations only/);
     const cars = readFileSync("app/api/partners/cars/search/route.ts", "utf8");
     assert.match(cars, /searchPartnerCars/);
     assert.doesNotMatch(hotels, /DUFFEL/);
@@ -55,5 +58,8 @@ describe("live partner search wiring", () => {
     const ui = readFileSync("components/BookPartners.tsx", "utf8");
     assert.doesNotMatch(ui, /liveEnabled && wanted\.trip !== "multi-city"/);
     assert.match(ui, /wanted\.trip === "multi-city"/);
+    assert.doesNotMatch(ui, /Live prices are not available/);
+    assert.doesNotMatch(ui, /Live prices could not be loaded/);
+    assert.match(ui, /Compare fares with Kayak/);
   });
 });

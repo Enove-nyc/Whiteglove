@@ -76,7 +76,7 @@ export const TRAVEL_PARTNERS: readonly TravelPartner[] = [
     label: "Kayak",
     slot: "flights",
     domain: "kayak.com",
-    note: "Opens Kayak with the route and both dates. Earns when a Stay22 (or Travelpayouts) wrap for Kayak is pasted on this row — the account is approved via Stay22.",
+    note: "Opens Kayak with the route and both dates. Earns through Stay22 when the Stay22 ID is set — a pasted wrap is optional. Travelpayouts is a fallback, not required.",
   },
   {
     key: "economybookings",

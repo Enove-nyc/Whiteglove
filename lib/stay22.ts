@@ -88,9 +88,29 @@ export function mergeStay22(stored: Partial<Stay22Settings> | null | undefined):
   };
 }
 
-/** Whether the hotel search should go through Stay22. */
+/** Whether Stay22 is on — hotels and Kayak flights use this ID. */
 export function stay22IsOn(settings: Stay22Settings | undefined): boolean {
   return Boolean(settings?.aid.trim()) && !aidProblem(settings?.aid ?? "");
+}
+
+/**
+ * Stay22 ID from the server environment, when Redis has not got one yet.
+ *
+ * The earnings screen is still the place to save an ID. This is the same
+ * value, kept in STAY22_AID so Kayak flights (and hotels) can earn before
+ * anything is pasted — the owner already has the ID in env.
+ */
+export function stay22FromEnv(env: { STAY22_AID?: string } = process.env): Stay22Settings {
+  return mergeStay22({ aid: env.STAY22_AID ?? "" });
+}
+
+/** Stay22's Kayak desk — flights and cars, via `link=` around a search URL. */
+export const KAYAK_DESK = "kayak";
+
+/** The Kayak Allez wrap for this account, or null when Stay22 is off. */
+export function kayakStay22Link(settings: Stay22Settings | undefined): Stay22Link | null {
+  if (!stay22IsOn(settings) || !settings) return null;
+  return { aid: settings.aid.trim(), desk: KAYAK_DESK };
 }
 
 export type HotelSearch = {
@@ -290,5 +310,5 @@ export function describeStay22(settings: Stay22Settings): string {
     return "Not set. Hotel searches open Booking.com directly, which works and earns nothing — and Booking.com turned this site down for their own programme, so there is no way to earn on them without this.";
   }
   const provider = PROVIDERS.find((p) => p.key === settings.provider) ?? PROVIDERS[0];
-  return `Hotel searches go through Stay22 under ID ${settings.aid.trim()}. ${provider.note}`;
+  return `Hotel searches go through Stay22 under ID ${settings.aid.trim()}. ${provider.note} Kayak flight searches use this same ID.`;
 }
