@@ -104,27 +104,37 @@ describe("a day that does not stay in one place", () => {
 });
 
 describe("putting a clock to a place", () => {
-  it("takes the timezone from the country the stop carries", () => {
+  it("takes the timezone from the coordinates, and the name from a city we keep", () => {
     const place = resolveDayPlace(KRAKOW);
     assert.equal(place?.timeZoneId, "Europe/Warsaw");
     assert.equal(place?.placeName, "Kraków");
   });
 
-  it("lends a nearby city's timezone to a hotel, which carries no country", () => {
+  it("gives a hotel a timezone, though it carries no country of its own", () => {
     const hotel = resolveDayPlace({ coordinates: "50.0619,19.9370" });
     assert.equal(hotel?.timeZoneId, "Europe/Warsaw");
     assert.equal(hotel?.placeName, "Kraków");
   });
 
-  it("refuses rather than guessing an offset off the longitude", () => {
-    // Reykjavik: no country mapping, and no city we hold near enough to borrow
-    // from. A fixed offset has no daylight saving in it and would read an hour
-    // wrong for half the year, which is worse than saying nothing.
-    assert.equal(resolveDayPlace({ coordinates: "64.1466,-21.9426", country: "Iceland" }), null);
+  it("gets the zone right where a country cannot", () => {
+    // One country, two zones. Reading the timezone off the country handed both
+    // of these New York, and the difference is three hours.
+    assert.equal(resolveDayPlace({ coordinates: "40.6323,-73.9928", country: "United States" })?.timeZoneId, "America/New_York");
+    assert.equal(resolveDayPlace({ coordinates: "34.0522,-118.2437", country: "United States" })?.timeZoneId, "America/Los_Angeles");
+  });
 
-    const day = zmanimForDay({ date: "2026-08-18", morning: { coordinates: "64.1466,-21.9426" } });
-    assert.equal(day.blocks.length, 0);
-    assert.match(day.unavailable ?? "", /timezone we trust/);
+  it("works anywhere, not only where the site keeps places", () => {
+    const iceland = resolveDayPlace({ coordinates: "64.1466,-21.9426", country: "Iceland" });
+    assert.equal(iceland?.timeZoneId, "Atlantic/Reykjavik");
+    // No city of ours is near, so the stop's own country names it.
+    assert.equal(iceland?.placeName, "Iceland");
+
+    const melbourne = zmanimForDay({
+      date: "2026-08-18",
+      morning: { coordinates: "-37.8136,144.9631", country: "Australia" },
+    });
+    assert.equal(melbourne.blocks.length, 1);
+    assert.equal(melbourne.blocks[0]!.timeZoneId, "Australia/Melbourne");
   });
 
   it("tells an empty day apart from an unplaceable one", () => {

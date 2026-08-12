@@ -19,15 +19,18 @@
  * is shown as two — morning where they woke, afternoon and evening where they
  * are going. When they agree, which is most days, it collapses back to one.
  *
- * NOTHING HERE PASKENS, and nothing here guesses a clock. A place whose
- * timezone cannot be established from the trip is reported as unavailable
- * rather than shown against a longitude-derived offset, which has no daylight
- * saving in it and would read an hour wrong for half the year.
+ * NOTHING HERE PASKENS, and nothing here guesses a clock. The timezone comes
+ * from the coordinates themselves, through tz-lookup's copy of the timezone
+ * boundaries, so a trip anywhere in the world gets a zone with daylight saving
+ * in it. Where even that has no answer — a point in the open ocean — the day
+ * says so rather than falling back to an offset worked out from the longitude,
+ * which reads an hour wrong for half the year.
  */
 
 import { JewishCalendar, HebrewDateFormatter } from "kosher-zmanim";
 import { calculateZmanim, parseCoordinates, type ZmanEntry } from "@/lib/zmanim";
-import { timeZoneForPlace, zmanimPlaces } from "@/lib/zmanim-places";
+import { zmanimPlaces } from "@/lib/zmanim-places";
+import { timeZoneAt } from "@/lib/place-lookup";
 import type { DayPlaceInput, ZmanimDay, ZmanimDayInput } from "@/lib/zmanim-day";
 
 type ResolvedPlace = {
@@ -38,12 +41,11 @@ type ResolvedPlace = {
 };
 
 /**
- * How far a stop may be from the nearest city we hold a timezone for before
- * borrowing it stops being safe. The kever circuit runs to towns two hours out
- * of Kraków, which this covers; beyond it the next country's offset is a real
- * possibility and a borrowed clock would be an hour wrong.
+ * How far a stop may be from a city we keep before its name stops describing
+ * where the traveller actually is. The kever circuit runs to towns two hours
+ * out of Kraków, which this covers.
  */
-const BORROW_ZONE_WITHIN_KM = 250;
+const NAME_FROM_CITY_WITHIN_KM = 250;
 
 function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const radians = (value: number) => (value * Math.PI) / 180;
@@ -55,52 +57,46 @@ function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: numb
 }
 
 /**
- * Coordinates and a country into a point with a real IANA zone, or nothing.
+ * Coordinates into a point with a real IANA zone and a name worth reading.
  *
- * The country the stop carries is preferred, because it is the trip's own
- * answer. Failing that the nearest city on /zmanim lends its zone, which is
- * how a hotel — which carries no country at all — gets one.
+ * The zone is the coordinates' own answer. The NAME is the softer question,
+ * and the order there is: a city we already keep, then the country the stop
+ * carries, then the zone.
  */
 export function resolveDayPlace(input: DayPlaceInput | undefined): ResolvedPlace | null {
   const point = parseCoordinates(input?.coordinates);
   if (!point) return null;
 
+  // THE ZONE COMES FROM THE COORDINATES, not from the country. tz-lookup
+  // carries the timezone boundaries and answers offline, so it is right where a
+  // country name cannot be — Los Angeles and New York are one country, and this
+  // used to hand both of them New York.
+  const timeZoneId = timeZoneAt(point.lat, point.lon);
+  if (!timeZoneId) return null;
+
+  // The name is a separate question, and a nearby city we already keep is a
+  // better answer than a country. Beyond a couple of hours' drive it is not
+  // the same place any more, and the country is the honest label.
   const places = zmanimPlaces();
   let nearest: { place: (typeof places)[number]; km: number } | null = null;
   for (const place of places) {
     const km = distanceKm(point, { lat: place.latitude, lon: place.longitude });
     if (!nearest || km < nearest.km) nearest = { place, km };
   }
-  const borrowable = nearest && nearest.km <= BORROW_ZONE_WITHIN_KM ? nearest : null;
-
   const country = input?.country?.trim() ?? "";
-  if (country) {
-    const zone = timeZoneForPlace("", country, point.lon);
-    if (!zone.approximate) {
-      return {
-        latitude: point.lat,
-        longitude: point.lon,
-        timeZoneId: zone.timeZoneId,
-        // The nearby city is the more useful name, but only when it is in the
-        // country the stop says it is in — "Kraków" against a stop in Slovakia
-        // would be a worse label than "Slovakia".
-        placeName:
-          borrowable && borrowable.place.country.toLocaleLowerCase("en") === country.toLocaleLowerCase("en")
-            ? borrowable.place.city
-            : country,
-      };
-    }
-  }
+  const nearby =
+    nearest && nearest.km <= NAME_FROM_CITY_WITHIN_KM && nearest.place.timeZoneId === timeZoneId
+      ? nearest.place
+      : null;
 
-  if (borrowable) {
-    return {
-      latitude: point.lat,
-      longitude: point.lon,
-      timeZoneId: borrowable.place.timeZoneId,
-      placeName: borrowable.place.city,
-    };
-  }
-  return null;
+  return {
+    latitude: point.lat,
+    longitude: point.lon,
+    timeZoneId,
+    // Last resort is the zone itself — "Europe/Warsaw" is at least true, and a
+    // day labelled with nothing at all reads as a bug.
+    placeName: nearby?.city || country || timeZoneId,
+  };
 }
 
 /**
