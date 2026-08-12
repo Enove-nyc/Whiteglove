@@ -9,6 +9,7 @@
  */
 
 import { AIRPORTS, METRO_AREAS } from "@/data/airports";
+import { today } from "@/lib/date-range";
 
 export type Leg = {
   /** Airport or metro code, e.g. JFK or NYC. */
@@ -76,6 +77,7 @@ export function searchProblem(shape: SearchShape): string | null {
     }
     if (airportCode(leg.from) === airportCode(leg.to)) return `The two airports${where} are the same.`;
     if (!leg.date) return `Choose a date${where}.`;
+    if (leg.date < today()) return `That date${where} has already passed.`;
   }
   if (shape.trip === "round-trip") {
     if (!shape.ret) return "Choose a return date, or switch to one way.";

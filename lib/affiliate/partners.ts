@@ -33,6 +33,7 @@
 
 import { allezUrl, kayakStay22Link, readStay22Link, stay22IsOn, stay22SearchUrl, tourSearchUrl, type Stay22Link, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
+import { usableBookingDate, usableFlightDates } from "@/lib/date-range";
 import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
 import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 import { looksTracked } from "@/lib/travel-extras";
@@ -420,35 +421,37 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     // leg — the traveller would get a working search for the wrong journey and
     // nothing would look broken.
     const many = (request.legs ?? []).filter((l) => l.from && l.to && isoDate(l.date));
-    if (many.length > 1) {
-      const partner = partnerFor("flights", config.partners);
-      const shape: SearchShape = { trip: "multi-city", legs: many };
-      if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
-      // Everything else returns null for a shape it cannot express, rather
-      // than quietly sending one leg of the journey.
-      return flightUrl(partner, { shape, adults: request.adults, children: request.children });
-    }
-
-    const only = many[0];
-    const from = (only?.from ?? request.from ?? "").trim();
-    const to = (only?.to ?? request.to ?? "").trim();
-    const out = isoDate(only?.date ?? request.checkIn);
     const partner = partnerFor("flights", config.partners);
-    if (from && to && out) {
-      const back = isoDate(request.checkOut);
-      // The affiliate key goes on inside kayakUrl. Kayak takes no passenger
-      // count in the path, so `adults` is carried in the click record for
-      // reporting and not in the URL — inventing a parameter Kayak ignores
-      // would look like it was doing something.
-      const shape: SearchShape = back
-        ? { trip: "round-trip", legs: [{ from, to, date: out }], ret: back }
-        : { trip: "one-way", legs: [{ from, to, date: out }] };
+    if (many.length > 1) {
+      // A past date on any leg would otherwise be dropped and the rest sent
+      // as a different journey. Skip the dated search rather than shorten it.
+      if (many.every((l) => usableBookingDate(l.date))) {
+        const shape: SearchShape = { trip: "multi-city", legs: many };
+        if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
+        // Everything else returns null for a shape it cannot express, rather
+        // than quietly sending one leg of the journey.
+        return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+      }
+    } else {
+      const only = many[0];
+      const from = (only?.from ?? request.from ?? "").trim();
+      const to = (only?.to ?? request.to ?? "").trim();
+      const { departDate: out, returnDate: back } = usableFlightDates(only?.date ?? request.checkIn, request.checkOut);
+      if (from && to && out) {
+        // The affiliate key goes on inside kayakUrl. Kayak takes no passenger
+        // count in the path, so `adults` is carried in the click record for
+        // reporting and not in the URL — inventing a parameter Kayak ignores
+        // would look like it was doing something.
+        const shape: SearchShape = back
+          ? { trip: "round-trip", legs: [{ from, to, date: out }], ret: back }
+          : { trip: "one-way", legs: [{ from, to, date: out }] };
 
-      // Whichever flight programme the owner is actually approved for. Kayak
-      // keeps its own builder because it handles multi-city and carries the
-      // legacy affiliate params; everything else comes from the registry.
-      if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
-      return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+        // Whichever flight programme the owner is actually approved for. Kayak
+        // keeps its own builder because it handles multi-city and carries the
+        // legacy affiliate params; everything else comes from the registry.
+        if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
+        return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+      }
     }
 
     // Approved general landing only when a place context is present (destination

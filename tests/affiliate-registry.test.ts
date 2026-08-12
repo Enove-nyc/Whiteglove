@@ -84,7 +84,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(flights.destinationLabel, "Kayak");
     assert.equal(flights.earns, false);
     assert.match(flights.note, /earn nothing/i);
-    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-07-05" }, NOTHING);
+    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-09-05" }, NOTHING);
     assert.ok(link, "an unconfigured flight search stopped working entirely");
     assert.match(link.url, /kayak\.com\/flights\//i);
   });

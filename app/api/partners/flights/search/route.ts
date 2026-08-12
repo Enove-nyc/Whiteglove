@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!result.ok) {
-    const badInput = /Choose|must be after/i.test(result.message);
+    const badInput = /Choose|must be after|cannot be in the past/i.test(result.message);
     return NextResponse.json(result, { status: badInput ? 400 : 503 });
   }
 

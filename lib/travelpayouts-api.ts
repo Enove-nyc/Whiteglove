@@ -20,6 +20,7 @@
  */
 
 import { airlineCode, airlineHeading, flightNumberLabel, hydrateAirlineNames } from "@/lib/airline-names";
+import { flightDateProblem } from "@/lib/date-range";
 
 const PRICES_URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates";
 const CACHE_TTL_MS = 90_000;
@@ -292,6 +293,8 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
   if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate < search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Return date must be after departure." };
   }
+  const past = flightDateProblem(search.departDate, search.returnDate);
+  if (past) return { ok: false, mode: "unavailable", message: past };
 
   const memoKey = cacheKey({ ...search, origin, destination });
   const hit = memoryCache.get(memoKey);

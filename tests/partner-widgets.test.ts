@@ -27,6 +27,30 @@ describe("same-origin widget paths", () => {
     assert.equal(flightsEmbedPath({ origin: "not-an-airport", departDate: "soon" }), "/embed/flights");
     assert.doesNotMatch(carsEmbedPath({ location: "https://evil.example.com" }), /evil/);
   });
+
+  it("omits dates that have already passed rather than prefilling the widget with them", () => {
+    const stale = flightsEmbedPath({
+      origin: "JFK",
+      destination: "FCO",
+      departDate: "2020-01-15",
+      returnDate: "2026-09-19",
+    });
+    assert.match(stale, /origin=JFK/);
+    assert.match(stale, /destination=FCO/);
+    assert.doesNotMatch(stale, /depart=/);
+    assert.doesNotMatch(stale, /return=/);
+  });
+
+  it("omits a return that is before the departure", () => {
+    const path = flightsEmbedPath({
+      origin: "JFK",
+      destination: "FCO",
+      departDate: "2026-09-19",
+      returnDate: "2026-09-12",
+    });
+    assert.match(path, /depart=2026-09-19/);
+    assert.doesNotMatch(path, /return=/);
+  });
 });
 
 describe("Travelpayouts widget scripts", () => {
@@ -52,6 +76,27 @@ describe("Travelpayouts widget scripts", () => {
       assert.equal(url.searchParams.get("return_date"), "2026-09-19");
       assert.match(url.searchParams.get("searchUrl") ?? "", /aviasales\.com/);
       assert.equal(url.searchParams.get("show_hotels"), "false");
+    } finally {
+      if (previous === undefined) delete process.env.TRAVELPAYOUTS_MARKER;
+      else process.env.TRAVELPAYOUTS_MARKER = previous;
+    }
+  });
+
+  it("does not put a past date on the Aviasales widget", () => {
+    const previous = process.env.TRAVELPAYOUTS_MARKER;
+    process.env.TRAVELPAYOUTS_MARKER = "761677";
+    try {
+      const src = aviasalesWidgetSrc({
+        origin: "JFK",
+        destination: "TLV",
+        departDate: "2020-01-15",
+        returnDate: "2020-01-22",
+      });
+      const url = new URL(src);
+      assert.equal(url.searchParams.get("origin"), "JFK");
+      assert.equal(url.searchParams.get("destination"), "TLV");
+      assert.equal(url.searchParams.get("depart_date"), null);
+      assert.equal(url.searchParams.get("return_date"), null);
     } finally {
       if (previous === undefined) delete process.env.TRAVELPAYOUTS_MARKER;
       else process.env.TRAVELPAYOUTS_MARKER = previous;

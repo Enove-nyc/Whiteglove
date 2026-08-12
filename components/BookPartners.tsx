@@ -816,6 +816,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
     const o = airportCode(from);
     const d = airportCode(to);
     if (!o || !d || !when) return;
+    if (when < today()) return;
     onAdd({ flights: [{ id: uid(), from: o, to: d, date: when, bookedOnSite: false }], dates: [when] });
   }
 

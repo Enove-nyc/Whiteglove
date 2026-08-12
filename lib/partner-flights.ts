@@ -13,6 +13,7 @@
 
 import { airlineHeading } from "@/lib/airline-names";
 import { goHref } from "@/lib/affiliate/request";
+import { flightDateProblem } from "@/lib/date-range";
 import { describeSearch, type SearchShape } from "@/lib/kayak-search";
 import { searchTravelpayoutsFlights, travelpayoutsTokenConfigured, type TravelpayoutsFlightOption } from "@/lib/travelpayouts-api";
 
@@ -139,6 +140,8 @@ export async function searchPartnerFlights(search: PartnerFlightSearch): Promise
   if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate < search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Return date must be after departure." };
   }
+  const past = flightDateProblem(search.departDate, search.returnDate);
+  if (past) return { ok: false, mode: "unavailable", message: past };
 
   if (travelpayoutsTokenConfigured()) {
     const live = await searchTravelpayoutsFlights({
