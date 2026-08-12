@@ -15,12 +15,16 @@ export type CityGuide = {
   findingNotes?: string[];
   accessContact?: {
     label: string;
+    /** Whose number it is — see the note on Cemetery.accessContacts. */
+    name?: string;
     phone?: string;
     email?: string;
     note: string;
   };
   accessContacts?: Array<{
     label: string;
+    /** Whose number it is — see the note on Cemetery.accessContacts. */
+    name?: string;
     phone?: string;
     email?: string;
     note: string;

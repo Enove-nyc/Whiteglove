@@ -233,6 +233,17 @@ export type Itinerary = {
   /** When the traveler gets going each morning, HH:MM. Drives arrival times. */
   dayStartTime?: string;
   /**
+   * Whether each day carries its zmanim.
+   *
+   * On the itinerary rather than in the browser, for the same reason the day's
+   * adjustments are: it belongs to the trip. Somebody who turned the times on
+   * while planning wants them on the phone they are actually travelling with,
+   * and everyone sharing a trip is keeping the same Shabbos.
+   *
+   * Absent on trips saved before it was offered, which reads as off.
+   */
+  showZmanim?: boolean;
+  /**
    * Who shares which room — family / group planning only.
    *
    * Optional on older trips. See lib/trip-collaboration.ts.

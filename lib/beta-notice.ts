@@ -74,8 +74,12 @@ export type BetaNotice = {
 export const DEFAULT_NOTICE: BetaNotice = {
   on: true,
   heading: "Before you travel",
+  // THE OWNER ASKED FOR THE FIRST SENTENCE, and it is written forwards rather
+  // than as an apology — a guide that grows every day is a reason to come back,
+  // where "we are still building this" is a reason to discount what is already
+  // here. That was the whole of the last rewrite and it survives this one.
   body:
-    "Travel details change. Confirm kosher certification, opening hours and Shabbos arrangements directly before you rely on them for your own dates.",
+    "White Glove is new and growing: listings are added and updated every day. Travel details change too, so confirm kosher certification, opening hours and Shabbos arrangements directly before you rely on them for your own dates.",
   caution:
     "Whether somewhere is kosher is the certifying body's statement rather than ours, so ask to see the current teudah before you eat.",
   feedback: "If something here is wrong, missing or out of date, we would be glad to hear it — it is quicker than you think.",
@@ -83,10 +87,11 @@ export const DEFAULT_NOTICE: BetaNotice = {
   feedbackLabel: "Report an update",
   dismissLabel: "Hide this notice",
   // BUMPED AGAIN, and a dismissal is per version, so everybody meets this one.
-  // Version 3 said the traveler-facing caution as a page strip. Version 4 is
-  // the same words as a dismissible popup — people who hid the strip have not
-  // agreed to the new placement.
-  version: "4",
+  // Version 3 said the traveler-facing caution as a page strip. Version 4 was
+  // the same words as a dismissible popup. Version 5 adds that the site is new
+  // and added to daily — a visitor who hid version 4 has never been told that,
+  // and it is the half of this notice that asks them back.
+  version: "5",
 };
 
 /** Where a dismissal is remembered, per version. */

@@ -61,7 +61,15 @@ describe("what it says when nobody has set anything", () => {
   it("BRINGS THE NOTICE BACK when the wording changes", () => {
     // A dismissal is per version. Somebody who dismissed the old wording has
     // not been shown this one, and this one says something different.
-    assert.equal(DEFAULT_NOTICE.version, "4");
+    assert.equal(DEFAULT_NOTICE.version, "5");
+  });
+
+  it("says the site is new and added to, in the forwards direction", () => {
+    // The owner asked for it. It is written as a guide that grows rather than
+    // as a site that is unfinished — the assertion above about "still
+    // building" is what keeps the difference honest, and both hold at once.
+    assert.match(DEFAULT_NOTICE.body, /new/i);
+    assert.match(DEFAULT_NOTICE.body, /added and updated every day/i);
   });
 
   it("DOES NOT DESCRIBE THIS SITE AS A KEVARIM DATABASE", () => {

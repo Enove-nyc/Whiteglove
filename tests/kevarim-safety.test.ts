@@ -61,9 +61,18 @@ describe("nothing here sends somebody to the wrong place", () => {
     }
   });
 
-  test("every kever names who it is, in English and in Yiddish", () => {
+  test("a kever that IS named is named in English and in Yiddish", () => {
+    // A BEIS HACHAIM DOES NOT NEED A NAME ON IT. This used to insist every
+    // entry listed somebody, and the owner's rule is the other way round: if we
+    // know a cemetery is there, it gets a page — with the ground, the way in,
+    // and the keyholder's number where we have one. Knowing where Jews are
+    // buried is the thing worth publishing; the names come when they come, and
+    // waiting for one keeps the whole place off the site.
+    //
+    // What still holds is that a name, once written, is written properly: parts
+    // of this site print the Yiddish alone, so an English-only burial appears
+    // as a blank card.
     for (const c of cemeteries) {
-      assert.ok(c.burials.length > 0, `${c.slug} lists nobody`);
       for (const b of c.burials) {
         assert.ok(b.name?.trim(), `${c.slug} has a burial with no name`);
         assert.ok(b.yiddishName?.trim(), `${c.slug}: ${b.name} has no Yiddish name — parts of the site print Yiddish only`);
