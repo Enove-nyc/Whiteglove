@@ -58,6 +58,8 @@ export type CandidateInput = {
   kind: ImportKind;
   importTarget: ImportTarget;
   category: string;
+  /** Owner-facing label when a row was tagged for review (shul, attraction, …). */
+  listingLabel?: string;
   slug: string;
   name: string;
   aliases: readonly string[];

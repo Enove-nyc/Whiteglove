@@ -100,7 +100,7 @@ export function stay22IsOn(settings: Stay22Settings | undefined): boolean {
  * value, kept in STAY22_AID so Kayak flights (and hotels) can earn before
  * anything is pasted — the owner already has the ID in env.
  */
-export function stay22FromEnv(env: { STAY22_AID?: string } = process.env): Stay22Settings {
+export function stay22FromEnv(env: { STAY22_AID?: string } = { STAY22_AID: process.env.STAY22_AID }): Stay22Settings {
   return mergeStay22({ aid: env.STAY22_AID ?? "" });
 }
 

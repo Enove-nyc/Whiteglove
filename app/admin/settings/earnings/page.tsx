@@ -11,6 +11,7 @@ import { readStay22Fresh } from "@/lib/stay22-store";
 import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
 import { partnerFor } from "@/lib/travel-partners";
+import { describeLinks } from "@/lib/travelpayouts";
 import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 import { readTravelEssentialsFresh, travelEssentialsStoreAvailable } from "@/lib/travel-essentials-store";
 
