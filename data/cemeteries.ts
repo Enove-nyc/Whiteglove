@@ -23,7 +23,23 @@ export type Cemetery = {
   arrivalNotes: string[];
   accessNote?: string;
   accessContacts?: Array<{
+    /**
+     * What this contact IS — "Cemetery shomer", "Regional heritage office".
+     * Also the identity the admin matches an override against, so it is the one
+     * field here that must not be rewritten casually.
+     */
     label: string;
+    /**
+     * WHOSE NUMBER IT IS.
+     *
+     * A number on its own tells a traveller nothing about who will answer it,
+     * and "may I speak to — " is the first thing he has to say. It used to be
+     * squeezed into the label as "מיקי · Cemetery shomer", which put a person's
+     * name into the field the admin matches on: correcting the number of a
+     * shomer whose name was spelled differently added a second contact instead
+     * of replacing the first.
+     */
+    name?: string;
     phone?: string;
     email?: string;
     note: string;
@@ -375,28 +391,36 @@ const featuredCemeteries: Cemetery[] = [
     ],
     sourceUrl: "https://lia.lvivcenter.org/en/objects/old-jewish-cemetery/",
   },
+  // VOLOVE AND MAIDAN ARE TWO BATEI CHAIM, and for a long time this file held
+  // them as one record: the name and the kevarim were Volove's, the address and
+  // the map pin were Maidan's, and the two are nine kilometres apart. Somebody
+  // navigating to the Volover kever was sent to a village he was not looking
+  // for. They are separate below, each with its own ground.
   {
     slug: "mizhhirya",
-    city: "Maidan / Mizhhirya (Volova)",
+    city: "Mizhhirya (Volove)",
     yiddishCity: "וואלאווע",
-    name: "Maidan Guest House & Mizhhirya (Volova) Kever",
+    name: "Volove (Mizhhirya) Jewish Cemetery",
     yiddishName: "בית החיים וואלאווע",
     country: "Ukraine",
-    address: "Maidan Guest House, vul. Verkhovynska 56, Maidan, Zakarpattia Oblast, Ukraine, 90024",
-    coordinates: "48.605444, 23.481472",
+    address: "Jewish cemetery, Suvorova / Leonova crossroads, Mizhhirya, Zakarpattia Oblast, Ukraine",
+    // The cemetery itself, from the Center for Jewish Art survey — NOT the
+    // Maidan point this record used to carry.
+    coordinates: "48.531479, 23.501989",
     arrivalNotes: [
-      "This Carpathian area (Mizhhirya hromada, Zakarpattia) had a large pre-war Jewish population and was a seat of a Teitelbaum Hasidic branch (the Volover Rav). The documented regional kever site is the Mizhhirya (Volova/Volové) Jewish cemetery at the Suvorova/Leonova crossroads (~64 gravestones, some renovated), ~10 km from Maidan.",
-      "Lodging base: the Maidan Guest House at vul. Verkhovynska 56, Maidan. Note: this guest house could not be independently verified in public listings — confirm its details, kosher status and booking directly before relying on it.",
-      "Nearest towns are Mizhhirya (~10 km) and Khust; regional airports at Uzhhorod/Mukachevo are limited during wartime, with Košice (Slovakia) the common overland gateway. Ukraine wartime advisories apply.",
+      "The beis hachaim is in Mizhhirya town itself, at the crossroads of Suvorova and Leonova streets — walled, with about 64 matzevos, several of them renovated. The oldest stone read in the survey is from 1801 and the newest from 1942.",
+      "This is not the Maidan beis hachaim. Maidan is a separate village about nine kilometres north with a beis hachaim of its own; set navigation to the Suvorova/Leonova crossroads rather than to Maidan.",
+      "Mizhhirya (Volove) was a seat of a Teitelbaum branch — the Volover Rav — and the town had a large Jewish population before the war.",
+      "Nearest towns are Khust and Uzhhorod; regional airports at Uzhhorod and Mukachevo are limited during wartime, with Košice in Slovakia the common overland gateway. Ukraine wartime advisories apply.",
     ],
-    accessNote: "A small village-area cemetery; current gate/caretaker status is not documented in public sources. Confirm access locally or via a regional heritage contact before traveling.",
+    accessNote: "Walled with a gate; no on-site caretaker is recorded in public sources. Confirm access locally before traveling.",
     burials: [
-      { name: "Rabbi Hayim Shalom Landa", yiddishName: "רבי חיים שלום לאנדא", knownAs: "Dayan and moreh tzedek of Mizhhirya", yahrzeit: "1924", note: "His renovated tomb is among the notable graves in the Mizhhirya (Volova) cemetery." },
-      { name: "Rabbi Yisroel Yaakov Yoikel Teitelbaum", yiddishName: "רבי ישראל יעקב יואל טייטלבוים", knownAs: "Rabbi/dayan of the Teitelbaum line (Berbeshti, Gorlice, Mizhhirya)", note: "Among the renovated tombs recorded in the Mizhhirya cemetery." },
+      { name: "Rabbi Hayim Shalom Landa", yiddishName: "רבי חיים שלום לאנדא", knownAs: "Dayan and moreh tzedek of Mizhhirya", yahrzeit: "1924", note: "His renovated matzeivah is among the notable graves in the Volove (Mizhhirya) beis hachaim." },
+      { name: "Rabbi Yisroel Yaakov Yoikel Teitelbaum", yiddishName: "רבי ישראל יעקב יואל טייטלבוים", knownAs: "Rabbi/dayan of the Teitelbaum line (Berbeshti, Gorlice, Mizhhirya)", note: "Buried with his rebbetzin Hendl; among the renovated matzevos recorded in the survey." },
     ],
     places: [
       { category: "ACCOMMODATION", name: "Hotel-Restaurant \"Duet\", Maidan", address: "vul. Verkhovynska 24a, s. Maidan, Mizhhirya raion, Zakarpattia", website: "https://duet-hotel.com/", notes: "Secular Carpathian resort hotel-restaurant (~8 rooms) in Maidan, ~10 km from Mizhhirya town. NOT kosher — the nearest verifiable public lodging to the Mizhhirya cemetery. Bring/arrange kosher provisions.", source: "https://duet-hotel.com/" },
-      { category: "ACCOMMODATION", name: "Recreation complex \"ZRUB\", Maidan", address: "vul. Verkhovynska 36, s. Maidan, Mizhhirya raion, Zakarpattia", notes: "Two-story guest house (~4 rooms) on the same street, ~10 km from Mizhhirya. Secular, NOT kosher. (The 'Maidan Guest House' at #56 could not be verified in any public listing — confirm directly.)", source: "https://turizm-karpaty.com.ua/vidpochinkovij-kompleks-zrub-majdan/" },
+      { category: "ACCOMMODATION", name: "Recreation complex \"ZRUB\", Maidan", address: "vul. Verkhovynska 36, s. Maidan, Mizhhirya raion, Zakarpattia", notes: "Two-story guest house (~4 rooms) on the same street in Maidan, ~10 km from Mizhhirya town. Secular, NOT kosher.", source: "https://turizm-karpaty.com.ua/vidpochinkovij-kompleks-zrub-majdan/" },
       { category: "KOSHER_FOOD", name: "Kosher food via Uzhhorod Chabad (~130+ km)", notes: "No kosher food in the Mizhhirya/Maidan area. Nearest is the Uzhhorod Chabad community (kosher meals by reservation), ~130-155 km / ~2.5 hr away. Bring provisions.", source: "https://www.chabad.org/jewish-centers/249713/Uzhgorod/Synagogue/Jewish-Community-of-Uzhgorod" },
       { category: "AIRPORT", name: "Košice International Airport (KSC), Slovakia", notes: "Overland gateway: Košice → Uzhhorod border, then ~130-155 km / ~2h40 onward drive to Mizhhirya/Maidan. Plan a full travel day; no direct public transit to the village.", source: "https://www.rome2rio.com/s/Mizhhirya/Uzhhorod" },
       { category: "TRANSPORT", name: "Uzhhorod → Mizhhirya road connection", notes: "Reached by road from Uzhhorod (~132-154 km, ~2h30-2h40 via mountain highways). A private car/driver is the practical option; no kosher/Jewish transport specific to this route is documented.", source: "https://www.rome2rio.com/s/Mizhhirya/Uzhhorod" },

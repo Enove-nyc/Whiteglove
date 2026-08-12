@@ -143,6 +143,14 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                 {cemetery.accessContacts.map((contact) => (
                   <div key={`${contact.label}-${contact.phone ?? contact.email}`}>
                     <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{contact.label}</p>
+                    {/* Whose number it is. A traveller dialling a strange
+                        country has to open with a name, and a number with
+                        nobody attached to it is the reason he does not ring. */}
+                    {contact.name && (
+                      <p className="mt-1 inline-block rounded-full border border-[var(--gold)] px-3 py-0.5 text-xs font-bold tracking-[0.06em] text-[var(--navy)]">
+                        Ask for {contact.name}
+                      </p>
+                    )}
                     <p className="mt-1 text-sm leading-6 text-stone-600">{contact.note}</p>
                     <div className="mt-3 flex flex-wrap gap-3">
                       {contact.phone && <a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {contact.phone}</a>}
