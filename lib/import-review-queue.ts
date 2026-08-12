@@ -416,3 +416,43 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
     };
   }
 }
+
+/** Slim pack rows for admin search. Read-only — does not rewrite pack files. */
+export type PackSearchRow = {
+  id: string;
+  name: string;
+  kind: ReviewQueueKind;
+  kindLabel: string;
+  city: string;
+  country: string;
+  destination: string;
+  status: string;
+  batchSlug: string;
+  batchName: string;
+  sourceId: string;
+  href: string;
+};
+
+export function listSourcePackSearchRows(): PackSearchRow[] {
+  const out: PackSearchRow[] = [];
+  for (const pack of KNOWN_PACKS) {
+    for (const candidate of pack.loadCandidates().filter(allowedPackCandidate)) {
+      if (candidate.status === "PUBLISHED") continue;
+      out.push({
+        id: `pack:${pack.slug}:${candidate.sourceId}`,
+        name: candidate.name,
+        kind: candidate.kind,
+        kindLabel: reviewQueueKindLabel(candidate.kind),
+        city: candidate.city,
+        country: candidate.country,
+        destination: candidate.destination,
+        status: candidate.status,
+        batchSlug: pack.slug,
+        batchName: pack.name,
+        sourceId: candidate.sourceId,
+        href: `/admin/imports/needs-review?q=${encodeURIComponent(candidate.name)}`,
+      });
+    }
+  }
+  return out;
+}

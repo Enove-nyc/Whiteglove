@@ -18,7 +18,7 @@
 
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { getSearchIndex } from "@/lib/site-search-index";
-import { normalize, queryTokens } from "@/lib/site-search-match";
+import { compact, normalize, queryTokens } from "@/lib/site-search-match";
 import {
   groupHits,
   hasHeritageIntent,
@@ -101,32 +101,42 @@ export async function searchSite(query: string, limit = 10): Promise<SearchRespo
  */
 function diversifyHits(sorted: ScoredHit[], limit: number): SiteHit[] {
   const seen = new Set<string>();
+  const results: SiteHit[] = [];
+
+  function take(hit: SiteHit): boolean {
+    const key = `${hit.kind}:${normalize(hit.title)}:${hit.href}`;
+    if (seen.has(key) || results.some((r) => r.id === hit.id)) return false;
+    seen.add(key);
+    results.push(hit);
+    return results.length >= limit;
+  }
+
+  // Exact / near-exact names first so "cars" opens booking partners rather than
+  // a cable-car attraction that merely contains the word.
+  for (const row of sorted) {
+    if ((row.hit.matchRank ?? 99) > 1) continue;
+    if (take(row.hit)) return results;
+  }
+
   const bySection = new Map<SiteHitSection, SiteHit[]>();
   for (const row of sorted) {
     const key = `${row.hit.kind}:${normalize(row.hit.title)}:${row.hit.href}`;
     if (seen.has(key)) continue;
-    seen.add(key);
     const list = bySection.get(row.hit.section) ?? [];
     list.push(row.hit);
     bySection.set(row.hit.section, list);
   }
 
-  const results: SiteHit[] = [];
   const order = SITE_HIT_SECTIONS.filter((section) => (bySection.get(section)?.length ?? 0) > 0);
-  // First pass: up to two from each section so categories appear.
   const perSection = Math.max(2, Math.ceil(limit / Math.max(order.length, 1)));
   for (const section of order) {
     const list = bySection.get(section) ?? [];
     for (const hit of list.slice(0, perSection)) {
-      if (results.length >= limit) return results;
-      if (!results.some((r) => r.id === hit.id)) results.push(hit);
+      if (take(hit)) return results;
     }
   }
-  // Fill remaining slots in overall rank order.
   for (const row of sorted) {
-    if (results.length >= limit) break;
-    if (results.some((r) => r.id === row.hit.id)) continue;
-    results.push(row.hit);
+    if (take(row.hit)) break;
   }
   return results;
 }
@@ -150,6 +160,10 @@ export async function searchEverything(query: string, limit = 8): Promise<SiteHi
  */
 function isPlausibleCandidate(qTokens: string[], docTokens: string[], docCompact: string[]): boolean {
   if (qTokens.length === 0) return false;
+  const joined = qTokens.join("");
+  if (joined.length >= 3 && docCompact.some((c) => c === joined || c.startsWith(joined) || (joined.startsWith(c) && c.length >= 3))) {
+    return true;
+  }
   if (qTokens.length === 1 && qTokens[0].length === 1) {
     const ch = qTokens[0];
     return docTokens.some((t) => t.startsWith(ch));
@@ -162,7 +176,7 @@ function isPlausibleCandidate(qTokens: string[], docTokens: string[], docCompact
     }
     // Compact fuzzy: “dolomits” vs “thedolomites” / “dolomites”.
     if (qt.length >= 4) {
-      const cq = qt.replace(/[\s-]+/g, "");
+      const cq = compact(qt);
       return docCompact.some((c) => Math.abs(c.length - cq.length) <= 3 && (c.startsWith(cq.slice(0, 3)) || cq.startsWith(c.slice(0, 3))));
     }
     return false;

@@ -49,7 +49,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places, kevarim, contacts and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
+    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/add", label: "Add an entry", blurb: "A cemetery, a tzadik, or a new page." },

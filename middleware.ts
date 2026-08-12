@@ -124,6 +124,7 @@ const ADMIN_SCREENS = new Set([
   "pages",
   "photos",
   "planner",
+  "ratings",
   "recycle",
   "reports",
   "settings",

@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 };
 
 // Every admin screen sits inside the shell — five sections down the left, a
-// "go to" box, no visitor navigation and no public footer. Auto sign-out after
-// 20 minutes of inactivity, so /admin asks for the code again rather than
-// staying open on a shared screen.
+// search across listings, candidates and screens, no visitor navigation and
+// no public footer. Auto sign-out after 20 minutes of inactivity, so /admin
+// asks for the code again rather than staying open on a shared screen.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // The middleware already blocks these paths. This checks again anyway,
   // because middleware is routing, not authorisation — anything that stops it
