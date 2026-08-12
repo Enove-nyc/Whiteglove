@@ -163,8 +163,18 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           </aside>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who is buried here</p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
+            {/* A beis hachaim earns its page by existing — where the ground is,
+                how to reach it, who holds the key. Names are not the price of
+                entry, so this whole section stands down when there are none
+                rather than printing a heading over an empty space. It says
+                nothing in their place: a visitor is owed the place, not a note
+                about how far we have got with it. */}
+            {cemetery.burials.length > 0 && (
+              <>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who is buried here</p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
+              </>
+            )}
 
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => (

@@ -427,6 +427,40 @@ const featuredCemeteries: Cemetery[] = [
     ],
     sourceUrl: "https://cja.huji.ac.il/browser.php?mode=set&id=48428",
   },
+  {
+    slug: "maidan",
+    city: "Maidan",
+    yiddishCity: "מײַדאַן",
+    name: "Maidan Jewish Cemetery",
+    yiddishName: "בית החיים מײַדאַן",
+    country: "Ukraine",
+    address: "Jewish cemetery, Maidan, Mizhhirya hromada, Zakarpattia Oblast, Ukraine",
+    // NO GRAVE PIN, and airportRef rather than coordinates is how that is said:
+    // it ranks the airports and never becomes a "navigate here" button. The
+    // village is at roughly this point; where the beis hachaim sits inside it is
+    // not in any source we hold, and the catalogue that photographs it carries
+    // the Mizhhirya cemetery's coordinates by mistake. A pin nine kilometres out
+    // is what sent people to the wrong village in the first place.
+    airportRef: "48.611667, 23.501944",
+    arrivalNotes: [
+      "Maidan has its own beis hachaim. It is not the Volove (Mizhhirya) one — that is a separate cemetery about nine kilometres south, at the Suvorova and Leonova crossroads in Mizhhirya town.",
+      "Ask in the village to be walked to the beis hachaim rather than setting navigation and hoping — it is not signposted.",
+      "Maidan is in the Mizhhirya hromada of Zakarpattia. The usual way in is Košice in Slovakia, over the Uzhhorod border, then about two and a half hours of mountain driving. Ukraine wartime advisories apply.",
+    ],
+    accessNote: "A village beis hachaim with no published gate hours. Arrange access before you travel rather than on arrival.",
+    // Empty on purpose. The beis hachaim is documented — photographed in Maidan
+    // in July 2025 and catalogued apart from the Mizhhirya one — and no source
+    // we have names anybody in it. Knowing the ground is there is worth a page
+    // on its own; a name invented to fill this list would not be.
+    burials: [],
+    places: [
+      { category: "ACCOMMODATION", name: "Hotel-Restaurant \"Duet\", Maidan", address: "vul. Verkhovynska 24a, s. Maidan, Mizhhirya raion, Zakarpattia", website: "https://duet-hotel.com/", notes: "Secular Carpathian resort hotel-restaurant (~8 rooms) in Maidan itself. NOT kosher — bring or arrange kosher provisions.", source: "https://duet-hotel.com/" },
+      { category: "ACCOMMODATION", name: "Recreation complex \"ZRUB\", Maidan", address: "vul. Verkhovynska 36, s. Maidan, Mizhhirya raion, Zakarpattia", notes: "Two-story guest house (~4 rooms) on the same street. Secular, NOT kosher.", source: "https://turizm-karpaty.com.ua/vidpochinkovij-kompleks-zrub-majdan/" },
+      { category: "KOSHER_FOOD", name: "Kosher food via Uzhhorod Chabad (~130+ km)", notes: "No kosher food in the Maidan or Mizhhirya area. Nearest is the Uzhhorod Chabad community (kosher meals by reservation), ~130-155 km / ~2.5 hr away. Bring provisions.", source: "https://www.chabad.org/jewish-centers/249713/Uzhgorod/Synagogue/Jewish-Community-of-Uzhgorod" },
+      { category: "AIRPORT", name: "Košice International Airport (KSC), Slovakia", notes: "Overland gateway: Košice → Uzhhorod border, then ~130-155 km / ~2h40 onward drive. Plan a full travel day; no direct public transit to the village.", source: "https://www.rome2rio.com/s/Mizhhirya/Uzhhorod" },
+    ],
+    sourceUrl: "https://commons.wikimedia.org/wiki/Category:Jewish_cemetery_in_Maidan,_Mizhhiria_Raion",
+  },
 ];
 
 const cemeteryNames: Record<string, { name: string; yiddishName: string }> = {
