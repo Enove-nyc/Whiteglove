@@ -7,6 +7,7 @@ import { readBookingLink } from "@/lib/booking-access-store";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
+import TravelpayoutsScript from "@/components/TravelpayoutsScript";
 import { getBetaNotice } from "@/lib/beta-notice-store";
 import { siteOrigin } from "@/lib/seo";
 
@@ -88,6 +89,7 @@ export default async function RootLayout({
             strip that pushes the brand and the proposition down the page. */}
         <NewSiteNotice notice={betaNotice} />
         <SiteTracker />
+        <TravelpayoutsScript />
         <RequiredFields />
         <ServiceWorkerRegister />
         <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
