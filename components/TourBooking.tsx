@@ -35,7 +35,7 @@ export default async function TourBooking() {
 
   // Only a Stay22 tours desk has somewhere to put a search. Anything else keeps
   // the plain card, rather than a form whose city goes nowhere.
-  const pasted = affiliate.essentialsLandings?.activity?.url ?? "";
+  const pasted = (affiliate.essentialsLandings?.activity ?? []).find((entry) => entry.url.trim())?.url ?? "";
   const link = readStay22Link(pasted);
   if (!link || link.desk !== TOURS_DESK) return null;
 

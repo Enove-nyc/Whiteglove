@@ -26,10 +26,23 @@ async function loadEssentialsLandings(): Promise<EssentialsLandings> {
   const out: EssentialsLandings = {};
   for (const id of LANDING_IDS) {
     const row = essentials.services[id];
-    if (!row?.enabled) continue;
-    const url = row.url.trim();
-    if (!url || landingUrlProblem(url)) continue;
-    out[id] = { url, label: "Partner" };
+    if (!row) continue;
+    // Every provider in the category, first one first, so /go can resolve the
+    // one a card asked for. Built from the same rule the cards render by.
+    const offers: Array<{ url: string; label?: string }> = [];
+    if (row.enabled && !landingUrlProblem(row.url.trim())) {
+      offers.push({ url: row.url.trim(), label: row.label?.trim() || "Partner" });
+    } else {
+      // A hole rather than a shift: offer 1 must stay offer 1 even when the
+      // first provider is turned off, or every link already rendered on a
+      // cached page would start pointing at the wrong company.
+      offers.push({ url: "", label: "" });
+    }
+    for (const extra of row.extra ?? []) {
+      const url = extra.url.trim();
+      offers.push(extra.enabled && !landingUrlProblem(url) ? { url, label: extra.label.trim() || "Partner" } : { url: "", label: "" });
+    }
+    if (offers.some((entry) => entry.url)) out[id] = offers;
   }
   return out;
 }

@@ -111,6 +111,10 @@ export function readAffiliateRequest(params: URLSearchParams): AffiliateRequest 
     page: text(params.get("page"), 120),
     placement: slug(params.get("placement")),
     campaignId: slug(params.get("campaign")),
+    // Clamped to a small range rather than trusted: it indexes the owner's own
+    // list, and an absurd value should read as "the first one" rather than
+    // throwing on a booking link.
+    offer: count(params.get("offer"), 8) ?? 0,
   };
 }
 
@@ -135,5 +139,6 @@ export function goHref(request: AffiliateRequest): string {
   put("page", request.page);
   put("placement", request.placement);
   put("campaign", request.campaignId);
+  put("offer", request.offer);
   return `/go?${query.toString()}`;
 }
