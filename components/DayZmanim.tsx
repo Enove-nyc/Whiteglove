@@ -1,6 +1,6 @@
 "use client";
 
-import { ZMANIM_DAY_DISCLAIMER, type ZmanimDay } from "@/lib/zmanim-day";
+import type { ZmanimDay } from "@/lib/zmanim-day";
 
 /**
  * The day's zmanim, on the day's own card.
@@ -71,8 +71,6 @@ export default function DayZmanim({ zmanim }: { zmanim: ZmanimDay | undefined })
               </div>
             ))}
           </div>
-
-          <p className="mt-3 text-[11px] leading-5 text-stone-500">{ZMANIM_DAY_DISCLAIMER}</p>
         </>
       )}
     </section>

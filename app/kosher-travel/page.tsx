@@ -95,7 +95,7 @@ const questions: Array<{
     cta: "Open zmanim",
     body: "Halachic times calculated for a destination or coordinates: alos, sunrise, sof zman Shema, chatzos, mincha, sunset and tzeit.",
     detail:
-      "Informational travel aid only — confirm with local kehillah custom. White Glove does not pasken.",
+      "Search any city, town or postcode in the world. Where Gra and Magen Avraham differ, both times are given.",
   },
   {
     title: "The hechsher on a listing",

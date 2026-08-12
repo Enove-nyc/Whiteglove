@@ -55,10 +55,10 @@ export default async function ZmanimPage({
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
             Halachic times for a place and date — sunrise, sof zman Shema, chatzos, mincha, sunset and nightfall.
-            Calculated for the coordinates you choose; confirm with the local kehillah before relying on them.
+            Search any city, town or postcode in the world, or enter your own coordinates.
           </p>
           <p className="mt-4 max-w-3xl leading-7 text-stone-600">
-            White Glove does not pasken. Where Gra and Magen Avraham differ, both are shown.
+            Where Gra and Magen Avraham differ, both times are given, and each one says which opinion it follows.
           </p>
         </div>
       </section>

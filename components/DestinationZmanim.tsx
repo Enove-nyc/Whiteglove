@@ -30,7 +30,6 @@ export default function DestinationZmanim({ placeName, city, country, coordinate
 
   let entries;
   let attribution: string;
-  let disclaimer: string;
   try {
     const result = calculateZmanim({
       locationName: placeName,
@@ -41,7 +40,6 @@ export default function DestinationZmanim({ placeName, city, country, coordinate
     });
     entries = compactZmanim(result);
     attribution = result.attribution;
-    disclaimer = result.disclaimer;
   } catch {
     return null;
   }
@@ -75,7 +73,6 @@ export default function DestinationZmanim({ placeName, city, country, coordinate
         ))}
       </dl>
       <p className="mt-3 text-xs leading-5 text-stone-500">{attribution}</p>
-      <p className="mt-1 text-xs leading-5 text-stone-500">{disclaimer}</p>
       {(matchedPlace?.timeZoneApproximate || zone.approximate) && (
         <p className="mt-1 text-xs leading-5 text-amber-800">Timezone estimated from longitude — confirm with local custom.</p>
       )}

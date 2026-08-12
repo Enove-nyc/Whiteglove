@@ -47,12 +47,3 @@ export type ZmanimDay = {
   /** Why there are no blocks, when there are none. */
   unavailable?: string;
 };
-
-/**
- * Said wherever the times are shown, and not softened.
- *
- * The calculation is somebody's opinion rendered to the minute, and a page
- * that prints it without saying so is claiming more than it knows.
- */
-export const ZMANIM_DAY_DISCLAIMER =
-  "A travel aid, not psak. Times follow the local kehillah's custom — confirm before you rely on them.";

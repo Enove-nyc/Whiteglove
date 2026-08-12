@@ -2,8 +2,21 @@
  * Halachic times for a place and date.
  *
  * Calculations come from kosher-zmanim (KosherJava port, LGPL-3.0) using the
- * NOAA solar algorithm. This is a travel aid — not psak, not a substitute for
- * the local kehillah's custom, and never presented as White Glove paskening.
+ * NOAA solar algorithm.
+ *
+ * NO DISCLAIMER RIDES ALONG WITH THESE. Every result used to carry
+ * "Informational travel aid only. Confirm with the local kehillah custom. White
+ * Glove does not pasken." The owner had it removed, and he is right: a sunrise
+ * is not an opinion, and a caveat under a number that IS correct teaches people
+ * to discount the ones that matter.
+ *
+ * Where opinions genuinely differ, the ENTRY says so instead of the page —
+ * "Sof zman Shema (Gra)" beside "Sof zman Shema (Magen Avraham)", candle
+ * lighting labelled with the eighteen minutes it assumes, tzeis noted as the
+ * library's default where customs vary. That is the honest form of the same
+ * caution: naming which opinion produced the number, rather than apologising
+ * for all of them at once. The attribution line stays too, so the page always
+ * says what it computed, where, and with what.
  */
 
 import { getZmanimJson } from "kosher-zmanim";
@@ -36,7 +49,6 @@ export type ZmanimResult = {
   longitude: number;
   algorithm: string;
   attribution: string;
-  disclaimer: string;
   entries: ZmanEntry[];
 };
 
@@ -171,8 +183,6 @@ export function calculateZmanim(input: ZmanimInput): ZmanimResult {
     longitude: input.longitude,
     algorithm: metadata?.algorithm ?? "US National Oceanic and Atmospheric Administration Algorithm",
     attribution: `Times calculated for ${input.locationName} (${input.latitude.toFixed(4)}, ${input.longitude.toFixed(4)}) on ${input.date}, ${input.timeZoneId}, via kosher-zmanim / KosherJava.`,
-    disclaimer:
-      "Informational travel aid only. Confirm with the local kehillah custom. White Glove does not pasken.",
     entries,
   };
 }

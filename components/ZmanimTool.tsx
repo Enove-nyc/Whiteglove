@@ -333,7 +333,6 @@ export default function ZmanimTool({ places, initialPlaceId, initialDate }: Prop
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{result.locationName}</h2>
             <p className="mt-2 text-sm leading-6 text-stone-600">{result.attribution}</p>
-            <p className="mt-1 text-sm leading-6 text-stone-500">{result.disclaimer}</p>
           </div>
           <dl className="grid gap-2 sm:grid-cols-2">
             {result.entries.map((entry) => (

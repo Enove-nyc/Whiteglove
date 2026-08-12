@@ -97,8 +97,12 @@ describe("zmanim calculation", () => {
       date: "2026-08-11",
     });
     assert.equal(result.date, "2026-08-11");
+    // The attribution stays and says what was computed, where, and with what.
+    // The old "White Glove does not pasken" line does not: a sunrise is not an
+    // opinion, and where opinions DO differ the entries name them — which is
+    // what the Gra and Magen Avraham assertions below are checking.
     assert.match(result.attribution, /kosher-zmanim/i);
-    assert.match(result.disclaimer, /does not pasken/i);
+    assert.ok(!("disclaimer" in result), "no blanket disclaimer rides along with the times");
 
     const byId = Object.fromEntries(result.entries.map((entry) => [entry.id, entry]));
     assert.ok(byId.sunrise?.time);
