@@ -49,6 +49,20 @@ const columnsFor = (
     ],
   },
   {
+    // THE THREE PRODUCT PAGES HAD NO ENTRY ANYWHERE. Transfers, eSIMs and
+    // insurance were each reachable only by scrolling past a search on another
+    // page, so a visitor who WANTED one had nowhere to look — which is exactly
+    // how the owner found them missing. A footer column is the cheapest fix
+    // and the one a person actually uses.
+    title: "Before you go",
+    links: [
+      { label: "Travel guide", href: "/travel-guide" },
+      { label: "Airport transfers", href: "/transfers" },
+      { label: "eSIMs and data", href: "/esim" },
+      { label: "Travel insurance", href: "/travel-insurance" },
+    ],
+  },
+  {
     title: "Kosher travel",
     links: [
       { label: "Kosher travel guide", href: "/kosher-travel" },
