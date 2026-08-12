@@ -13,82 +13,32 @@ import { whiteGloveFillCandidates } from "@/data/imports/white-glove-fill-batch/
 import { whiteGloveGlobalCandidates } from "@/data/imports/white-glove-global-batch/candidates";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
 import { isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
+import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
-  getContentImportDashboard,
-  type ContentImportCandidateView,
-  type ContentImportStatus,
-} from "@/lib/content-imports";
+  isOpenReviewStatus,
+  reviewQueueKindLabel,
+  reviewQueueStatusLabel,
+  type ImportReviewQueue,
+  type ImportReviewQueueCounts,
+  type PrivateImportPackSummary,
+  type ReviewQueueItem,
+  type ReviewQueueItemStatus,
+  type ReviewQueueKind,
+} from "@/lib/review-queue";
 
-export type ReviewQueueKind = "attraction" | "stay" | "food" | "practical";
-
-export type ReviewQueueItemStatus =
-  | "NEEDS_REVIEW"
-  | "DUPLICATE"
-  | "REJECTED"
-  | "PUBLISHED"
-  | "AWAITING_VERIFICATION";
-
-export type ReviewQueueItem = {
-  id: string;
-  name: string;
-  kind: ReviewQueueKind;
-  kindLabel: string;
-  status: ReviewQueueItemStatus;
-  statusLabel: string;
-  market: string;
-  destination: string;
-  city: string;
-  country: string;
-  batchSlug: string;
-  batchName: string;
-  origin: "database" | "source_pack";
-  href: string;
-  publishBlockers: number;
-};
-
-export type PrivateImportPackSummary = {
-  slug: string;
-  name: string;
-  path: string;
-  candidateCount: number;
-  needsReviewCount: number;
-  inDatabase: boolean;
-  href: string;
-  note: string;
-};
-
-export type ImportReviewQueueCounts = {
-  awaitingVerification: number;
-  needsReview: number;
-  duplicates: number;
-  sourcePackOnly: number;
-  byKind: Record<ReviewQueueKind, number>;
-  byBatch: Array<{ slug: string; name: string; count: number }>;
-  byMarket: Array<{ market: string; count: number }>;
-};
-
-export type ImportReviewQueue = {
-  configured: boolean;
-  databaseReady: boolean;
-  items: ReviewQueueItem[];
-  packs: PrivateImportPackSummary[];
-  counts: ImportReviewQueueCounts;
-  error: string | null;
-};
-
-const KIND_LABEL: Record<ReviewQueueKind, string> = {
-  attraction: "Attraction",
-  stay: "Where to stay",
-  food: "Kosher food",
-  practical: "Practical",
-};
-
-const STATUS_LABEL: Record<ReviewQueueItemStatus, string> = {
-  NEEDS_REVIEW: "Needs review",
-  DUPLICATE: "Possible duplicate",
-  REJECTED: "Rejected",
-  PUBLISHED: "Published",
-  AWAITING_VERIFICATION: "Awaiting verification",
+// The shape and the labels live in lib/review-queue.ts so the screen can read
+// them without this module's filesystem work. Re-exported here because the
+// callers that build the queue want both from one place.
+export {
+  isOpenReviewStatus,
+  reviewQueueKindLabel,
+  reviewQueueStatusLabel,
+  type ImportReviewQueue,
+  type ImportReviewQueueCounts,
+  type PrivateImportPackSummary,
+  type ReviewQueueItem,
+  type ReviewQueueItemStatus,
+  type ReviewQueueKind,
 };
 
 type PackCandidate = {
@@ -177,7 +127,9 @@ const KNOWN_PACKS: readonly KnownPack[] = [
         destination: candidate.destination || candidate.locality,
         city: candidate.locality,
         country: candidate.country,
-        status: candidate.publicationReadiness === "PUBLISHED" ? "PUBLISHED" : "NEEDS_REVIEW",
+        // The pack's own schema admits one readiness and it is NEEDS_REVIEW,
+        // so there is nothing here to ask about.
+        status: "NEEDS_REVIEW",
         sourceUrl: candidate.sourceUrl,
         sourceName: candidate.sourceName,
         attribution: candidate.sourceAttribution,
@@ -219,7 +171,8 @@ const KNOWN_PACKS: readonly KnownPack[] = [
         destination: candidate.destination || candidate.locality,
         city: candidate.locality,
         country: candidate.country,
-        status: candidate.publicationReadiness === "PUBLISHED" ? "PUBLISHED" : "NEEDS_REVIEW",
+        // Same as the fill pack: NEEDS_REVIEW is the only readiness it has.
+        status: "NEEDS_REVIEW",
         sourceUrl: candidate.sourceUrl,
         sourceName: candidate.sourceName,
         attribution: candidate.sourceAttribution,
@@ -241,9 +194,9 @@ function fromDatabase(candidate: ContentImportCandidateView): ReviewQueueItem {
     id: `db:${candidate.id}`,
     name: candidate.name,
     kind,
-    kindLabel: KIND_LABEL[kind],
+    kindLabel: reviewQueueKindLabel(kind),
     status: candidate.status,
-    statusLabel: STATUS_LABEL[candidate.status],
+    statusLabel: reviewQueueStatusLabel(candidate.status),
     market: candidate.destinationSlug || candidate.country,
     destination: [candidate.city, candidate.region, candidate.country].filter(Boolean).join(", "),
     city: candidate.city,
@@ -261,9 +214,9 @@ function fromPack(pack: KnownPack, candidate: PackCandidate): ReviewQueueItem {
     id: `pack:${pack.slug}:${candidate.sourceId}`,
     name: candidate.name,
     kind: candidate.kind,
-    kindLabel: KIND_LABEL[candidate.kind],
+    kindLabel: reviewQueueKindLabel(candidate.kind),
     status: "AWAITING_VERIFICATION",
-    statusLabel: STATUS_LABEL.AWAITING_VERIFICATION,
+    statusLabel: reviewQueueStatusLabel("AWAITING_VERIFICATION"),
     market: candidate.market,
     destination: candidate.destination,
     city: candidate.city,
@@ -387,16 +340,4 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
       error: error instanceof Error ? error.message : "The review queue could not be loaded.",
     };
   }
-}
-
-export function reviewQueueStatusLabel(status: ReviewQueueItemStatus): string {
-  return STATUS_LABEL[status];
-}
-
-export function reviewQueueKindLabel(kind: ReviewQueueKind): string {
-  return KIND_LABEL[kind];
-}
-
-export function isOpenReviewStatus(status: ReviewQueueItemStatus | ContentImportStatus): boolean {
-  return status === "NEEDS_REVIEW" || status === "AWAITING_VERIFICATION" || status === "DUPLICATE";
 }
