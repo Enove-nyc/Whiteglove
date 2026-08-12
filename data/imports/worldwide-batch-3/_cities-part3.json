@@ -1,0 +1,1676 @@
+[
+  {
+    "market": "israel-jerusalem",
+    "locality": "Jerusalem",
+    "destination": "Jerusalem",
+    "country": "Israel",
+    "includeDestination": true,
+    "tourism": {
+      "key": "il-jerusalem",
+      "name": "Jerusalem Municipality Tourism",
+      "url": "https://www.itraveljerusalem.com/",
+      "attribution": "Jerusalem Development Authority / iTravelJerusalem",
+      "evidence": "Official Jerusalem visitor orientation for sites, museums and neighbourhoods."
+    },
+    "community": {
+      "key": "il-jerusalem-community",
+      "name": "Jerusalem Jewish community orientation",
+      "url": "https://www.itraveljerusalem.com/article/jewish-jerusalem/",
+      "attribution": "iTravelJerusalem",
+      "evidence": "Jerusalem Jewish sites and visitor orientation."
+    },
+    "attractions": [
+      "Western Wall Plaza",
+      "Davidson Center Archaeological Park framing",
+      "Tower of David Museum",
+      "Israel Museum",
+      "Yad Vashem",
+      "Machane Yehuda Market daytime framing",
+      "Tisch Family Zoological Gardens",
+      "Bloomfield Science Museum",
+      "Haas Promenade",
+      "Ramparts Walk framing",
+      "City of David framing",
+      "Mount Scopus lookout",
+      "Liberty Bell Park",
+      "Train Track Park",
+      "Jerusalem Botanical Gardens",
+      "Time Elevator framing",
+      "Wohl Rose Park",
+      "Hebrew University Givat Ram framing"
+    ],
+    "heritage": [
+      "Hurva Synagogue framing",
+      "Four Sephardi Synagogues framing",
+      "Menachem Begin Heritage Center"
+    ],
+    "stays": [
+      "Staying near Shaarei Chesed",
+      "Staying near Rehavia",
+      "Staying near Ramat Eshkol"
+    ],
+    "shuls": [
+      "Hurva Synagogue",
+      "Great Synagogue of Jerusalem",
+      "Yeshurun Central Synagogue",
+      "Zoharei Chama Sundial Synagogue",
+      "Belz Great Synagogue framing"
+    ],
+    "mikvaos": [
+      "Jerusalem neighbourhood mikvaos — Shaarei Chesed",
+      "Jerusalem neighbourhood mikvaos — Ramot"
+    ],
+    "cemeteries": [
+      "Mount of Olives Jewish Cemetery",
+      "Har HaMenuchot"
+    ],
+    "communityResources": [
+      "Jerusalem religious council visitor orientation"
+    ]
+  },
+  {
+    "market": "israel-haifa",
+    "locality": "Haifa",
+    "destination": "Haifa",
+    "country": "Israel",
+    "includeDestination": true,
+    "tourism": {
+      "key": "il-haifa",
+      "name": "Visit Haifa",
+      "url": "https://www.visit-haifa.org/",
+      "attribution": "Haifa Tourism Board",
+      "evidence": "Official Haifa visitor attractions guide."
+    },
+    "community": {
+      "key": "il-haifa-community",
+      "name": "Haifa Jewish community orientation",
+      "url": "https://www.visit-haifa.org/",
+      "attribution": "Haifa Tourism Board",
+      "evidence": "Haifa visitor and community orientation links."
+    },
+    "attractions": [
+      "Baháʼí Gardens terrace viewing",
+      "Louis Promenade",
+      "Madatech National Museum of Science",
+      "Haifa Museum of Art",
+      "Stella Maris outlook framing",
+      "Bat Galim beach promenade",
+      "Hecht Museum",
+      "Tikotin Museum of Japanese Art",
+      "Dado Beach promenade",
+      "Haifa Educational Zoo",
+      "Cable car upper station framing",
+      "German Colony streetscape",
+      "Mount Carmel National Park trails",
+      "Clandestine Immigration and Naval Museum framing",
+      "Wadi Nisnas market daytime framing",
+      "Haifa Port boardwalk framing"
+    ],
+    "heritage": [
+      "Central Synagogue Haifa framing",
+      "Haifa Auditorium campus walk"
+    ],
+    "stays": [
+      "Staying near Carmel Center",
+      "Staying near Hadar"
+    ],
+    "shuls": [
+      "Central Synagogue of Haifa",
+      "Moriah Synagogue Haifa",
+      "Chabad of Haifa",
+      "Or Zarua Synagogue"
+    ],
+    "mikvaos": [
+      "Haifa Community Mikvah",
+      "Carmel Mikvah"
+    ],
+    "cemeteries": [
+      "Haifa Jewish Cemetery Hof HaCarmel",
+      "Old Haifa Jewish Cemetery research listing"
+    ],
+    "communityResources": [
+      "Haifa religious council visitor orientation"
+    ]
+  },
+  {
+    "market": "israel-tzfat",
+    "locality": "Tzfat",
+    "destination": "Tzfat",
+    "country": "Israel",
+    "includeDestination": true,
+    "tourism": {
+      "key": "il-tzfat",
+      "name": "Safed Tourism",
+      "url": "https://www.safed-home.com/",
+      "attribution": "Safed municipal / visitor orientation",
+      "evidence": "Tzfat visitor orientation for Old City lanes, synagogues and viewpoints."
+    },
+    "community": {
+      "key": "il-tzfat-community",
+      "name": "Tzfat Jewish community orientation",
+      "url": "https://www.safed-home.com/",
+      "attribution": "Safed visitor resources",
+      "evidence": "Tzfat synagogue and community visitor orientation."
+    },
+    "attractions": [
+      "Tzfat Old City artists' quarter daytime",
+      "Citadel Hill lookout",
+      "Abuhav Synagogue courtyard framing",
+      "Ari Ashkenazi Synagogue framing",
+      "Tzfat Candle Factory framing",
+      "Biblical Museum of Natural History framing",
+      "Gan HaMetsuda",
+      "Tzfat overlook to Amud Stream",
+      "Kikar HaMeginim",
+      "Alsheich Synagogue framing",
+      "Sephardic Ari Synagogue framing",
+      "Tzfat cemetery hillside path framing",
+      "Mount Meron day-trip framing",
+      "Rosh Pina day-trip framing",
+      "Biriya Forest trails framing",
+      "Hula Valley day-trip framing"
+    ],
+    "heritage": [
+      "Abuhav Synagogue",
+      "Ari Ashkenazi Synagogue",
+      "Joseph Caro Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Old City Tzfat",
+      "Staying near Canaan neighbourhood"
+    ],
+    "shuls": [
+      "Abuhav Synagogue",
+      "Ari Ashkenazi Synagogue",
+      "Beirav Synagogue",
+      "Chabad of Tzfat"
+    ],
+    "mikvaos": [
+      "Tzfat Community Mikvah",
+      "Ari Mikvah tradition site framing"
+    ],
+    "cemeteries": [
+      "Tzfat Ancient Jewish Cemetery",
+      "Ari HaKadosh gravesite area"
+    ],
+    "communityResources": [
+      "Tzfat tourist information — synagogue hours"
+    ]
+  },
+  {
+    "market": "israel-netanya",
+    "locality": "Netanya",
+    "destination": "Netanya",
+    "country": "Israel",
+    "includeDestination": true,
+    "tourism": {
+      "key": "il-netanya",
+      "name": "Netanya Tourism",
+      "url": "https://www.netanya.muni.il/en/",
+      "attribution": "Netanya Municipality",
+      "evidence": "Official Netanya visitor orientation for beachfront and parks."
+    },
+    "community": {
+      "key": "il-netanya-community",
+      "name": "Netanya Jewish community orientation",
+      "url": "https://www.netanya.muni.il/en/",
+      "attribution": "Netanya Municipality",
+      "evidence": "Netanya municipal visitor orientation."
+    },
+    "attractions": [
+      "Netanya Beach promenade",
+      "Cliff Park Netanya",
+      "Netanya Boardwalk",
+      "Agamim Park",
+      "Ir Yamim Mall outdoor plaza framing",
+      "Poleg Nature Reserve framing",
+      "Netanya Stadium park framing",
+      "Independence Square Netanya",
+      "Sokolov Street daytime walk",
+      "Wingate Institute grounds framing",
+      "Avihayil neighbourhood park",
+      "Netanya Academic College campus framing",
+      "Sharon Beach Park",
+      "Argaman Beach framing",
+      "Yehoshua Park",
+      "Netanya Cultural Center plaza"
+    ],
+    "heritage": [
+      "Netanya Great Synagogue framing",
+      "Ohel Pathach Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Ir Yamim",
+      "Staying near city center Netanya"
+    ],
+    "shuls": [
+      "Netanya Great Synagogue",
+      "Ohel Pathach",
+      "Chabad of Netanya",
+      "Young Israel of Netanya"
+    ],
+    "mikvaos": [
+      "Netanya Community Mikvah",
+      "Ir Yamim Mikvah"
+    ],
+    "cemeteries": [
+      "Netanya Civil Cemetery Jewish sections",
+      "Shikun Vatikim cemetery research listing"
+    ],
+    "communityResources": [
+      "Netanya religious council"
+    ]
+  },
+  {
+    "market": "israel-eilat",
+    "locality": "Eilat",
+    "destination": "Eilat",
+    "country": "Israel",
+    "includeDestination": true,
+    "tourism": {
+      "key": "il-eilat",
+      "name": "Eilat Tourism Board",
+      "url": "https://www.eilat.city/",
+      "attribution": "Eilat Municipality / Tourism",
+      "evidence": "Official Eilat visitor attractions for nature, promenade and family sites."
+    },
+    "community": {
+      "key": "il-eilat-community",
+      "name": "Eilat Jewish community orientation",
+      "url": "https://www.eilat.city/",
+      "attribution": "Eilat Municipality",
+      "evidence": "Eilat visitor and community orientation."
+    },
+    "attractions": [
+      "Eilat Promenade",
+      "Coral Beach Nature Reserve",
+      "Underwater Observatory Marine Park",
+      "Timna Park framing",
+      "Mount Yoash lookout framing",
+      "Dolphin Reef outdoor viewing framing",
+      "Botanical Garden Eilat",
+      "Birdwatching Park Eilat",
+      "Kings City framing outdoor plaza",
+      "North Beach boardwalk",
+      "Hai-Bar Yotvata framing",
+      "Red Canyon hike framing",
+      "Ein Netafim framing",
+      "Eilat Museum framing",
+      "Dekel Beach promenade",
+      "Peace Park Eilat"
+    ],
+    "heritage": [
+      "Eilat Central Synagogue framing"
+    ],
+    "stays": [
+      "Staying near North Beach",
+      "Staying near hotel zone promenade"
+    ],
+    "shuls": [
+      "Eilat Central Synagogue",
+      "Chabad of Eilat",
+      "Beit Knesset HaYam"
+    ],
+    "mikvaos": [
+      "Eilat Community Mikvah"
+    ],
+    "cemeteries": [
+      "Eilat Civil Cemetery Jewish sections"
+    ],
+    "communityResources": [
+      "Eilat religious council"
+    ]
+  },
+  {
+    "market": "poland-warsaw",
+    "locality": "Warsaw",
+    "destination": "Warsaw",
+    "country": "Poland",
+    "includeDestination": true,
+    "tourism": {
+      "key": "pl-warsaw",
+      "name": "Warsaw Tourist Office",
+      "url": "https://warsawtour.eu/",
+      "attribution": "Warsaw Tourist Office",
+      "evidence": "Official Warsaw visitor attractions guide."
+    },
+    "community": {
+      "key": "pl-warsaw-jewish",
+      "name": "Jewish Community of Warsaw",
+      "url": "https://www.warszawa.jewish.org.pl/",
+      "attribution": "Gmina Wyznaniowa Żydowska w Warszawie",
+      "evidence": "Official Warsaw Jewish community resource."
+    },
+    "attractions": [
+      "Łazienki Park",
+      "Royal Castle Warsaw framing",
+      "Old Town Market Square",
+      "Copernicus Science Centre",
+      "Warsaw Uprising Museum",
+      "National Museum Warsaw",
+      "Saxon Garden",
+      "Vistula boulevards",
+      "Wilánów Palace framing",
+      "Palace of Culture viewing terrace framing",
+      "Krakowskie Przedmieście walk",
+      "Multimedia Fountain Park",
+      "Museum of King Jan III's Palace at Wilanów gardens",
+      "Praga district riverside",
+      "Warsaw Zoo",
+      "Chopin Museum framing"
+    ],
+    "heritage": [
+      "POLIN Museum of the History of Polish Jews",
+      "Nożyk Synagogue",
+      "Jewish Cemetery Okopowa"
+    ],
+    "stays": [
+      "Staying near Śródmieście",
+      "Staying near Nożyk Synagogue area"
+    ],
+    "shuls": [
+      "Nożyk Synagogue",
+      "Chabad of Warsaw",
+      "Ec Chaim Synagogue"
+    ],
+    "mikvaos": [
+      "Warsaw Community Mikvah"
+    ],
+    "cemeteries": [
+      "Okopowa Street Jewish Cemetery",
+      "Bródno Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Community of Warsaw"
+    ]
+  },
+  {
+    "market": "poland-krakow",
+    "locality": "Kraków",
+    "destination": "Kraków",
+    "country": "Poland",
+    "includeDestination": true,
+    "tourism": {
+      "key": "pl-krakow",
+      "name": "Kraków Municipal Tourism",
+      "url": "https://www.krakow.pl/en",
+      "attribution": "City of Kraków",
+      "evidence": "Official Kraków visitor attractions guide."
+    },
+    "community": {
+      "key": "pl-krakow-jewish",
+      "name": "Jewish Community of Kraków",
+      "url": "https://www.jewishkrakow.net/",
+      "attribution": "Jewish Community / visitor resources Kraków",
+      "evidence": "Kazimierz synagogue and Jewish-quarter visitor orientation."
+    },
+    "attractions": [
+      "Main Market Square",
+      "Wawel Castle grounds",
+      "Kazimierz district daytime walk",
+      "Planty Park",
+      "Schindler's Factory Museum framing",
+      "St. Mary's Basilica exterior",
+      "Vistula boulevards Kraków",
+      "Kościuszko Mound",
+      "Jagiellonian University Collegium Maius framing",
+      "Cloth Hall exterior",
+      "Wolski Forest",
+      "Botanical Garden Kraków",
+      "Kraków Zoo",
+      "Wieliczka Salt Mine framing",
+      "Oskar Schindler museum area walk",
+      "Blonia Park"
+    ],
+    "heritage": [
+      "Remuh Synagogue and Cemetery",
+      "Tempel Synagogue",
+      "Old Synagogue Museum Kazimierz",
+      "Isaac Synagogue"
+    ],
+    "stays": [
+      "Staying near Kazimierz",
+      "Staying near Old Town Kraków"
+    ],
+    "shuls": [
+      "Remuh Synagogue",
+      "Tempel Synagogue",
+      "Isaac Synagogue",
+      "Chabad of Kraków"
+    ],
+    "mikvaos": [
+      "Kraków Community Mikvah Kazimierz"
+    ],
+    "cemeteries": [
+      "Remuh Cemetery",
+      "New Jewish Cemetery Miodowa"
+    ],
+    "communityResources": [
+      "Jewish Community of Kraków"
+    ]
+  },
+  {
+    "market": "romania-bucharest",
+    "locality": "Bucharest",
+    "destination": "Bucharest",
+    "country": "Romania",
+    "includeDestination": true,
+    "tourism": {
+      "key": "ro-bucharest",
+      "name": "Bucharest Tourism",
+      "url": "https://www.visitbucharest.ro/",
+      "attribution": "Visit Bucharest",
+      "evidence": "Official Bucharest visitor attractions guide."
+    },
+    "community": {
+      "key": "ro-bucharest-jewish",
+      "name": "Federation of Jewish Communities of Romania",
+      "url": "https://www.jewishfed.ro/",
+      "attribution": "FEDROM",
+      "evidence": "Official Romanian Jewish community federation resource."
+    },
+    "attractions": [
+      "Herăstrău Park",
+      "Palace of Parliament exterior framing",
+      "Romanian Athenaeum exterior",
+      "Old Town Lipscani daytime walk",
+      "Village Museum Bucharest",
+      "Cişmigiu Gardens",
+      "National Museum of Art of Romania",
+      "Revolution Square",
+      "Carturesti Carusel framing",
+      "Dimitrie Gusti National Village Museum",
+      "King Michael I Park",
+      "Stavropoleos Monastery exterior",
+      "Cotroceni Palace museum framing",
+      "Natural History Museum Grigore Antipa",
+      "Carol Park",
+      "Arcul de Triumf framing"
+    ],
+    "heritage": [
+      "Choral Temple Bucharest",
+      "Jewish History Museum Bucharest",
+      "Great Synagogue Bucharest framing"
+    ],
+    "stays": [
+      "Staying near Old Town Bucharest",
+      "Staying near Aviatorilor"
+    ],
+    "shuls": [
+      "Choral Temple",
+      "Great Synagogue Bucharest",
+      "Chabad of Romania"
+    ],
+    "mikvaos": [
+      "Bucharest Community Mikvah"
+    ],
+    "cemeteries": [
+      "Filantropia Jewish Cemetery",
+      "Sephardic Jewish Cemetery Bucharest"
+    ],
+    "communityResources": [
+      "Federation of Jewish Communities of Romania"
+    ]
+  },
+  {
+    "market": "hungary-debrecen",
+    "locality": "Debrecen",
+    "destination": "Debrecen",
+    "country": "Hungary",
+    "includeDestination": true,
+    "tourism": {
+      "key": "hu-debrecen",
+      "name": "Visit Debrecen",
+      "url": "https://www.visitdebrecen.com/",
+      "attribution": "Visit Debrecen",
+      "evidence": "Official Debrecen visitor attractions guide."
+    },
+    "community": {
+      "key": "hu-debrecen-jewish",
+      "name": "Debrecen Jewish Community",
+      "url": "https://www.zsido.com/",
+      "attribution": "Hungarian Jewish community orientation",
+      "evidence": "Hungarian Jewish community visitor orientation."
+    },
+    "attractions": [
+      "Great Reformed Church Debrecen",
+      "Nagyerdei Park",
+      "Debrecen Zoo",
+      "Déri Museum",
+      "Aquaticum Debrecen framing",
+      "Main Street Debrecen pedestrian walk",
+      "Kossuth Square Debrecen",
+      "MODEM Center for Modern and Contemporary Arts",
+      "University of Debrecen campus framing",
+      "Erdőspuszta recreation area",
+      "Csokonai Theatre exterior",
+      "Thermal bath park framing",
+      "Botanical Garden Debrecen",
+      "Hortobágy National Park day-trip framing",
+      "Medgyessy Museum",
+      "Small Church Debrecen exterior"
+    ],
+    "heritage": [
+      "Debrecen Synagogue framing",
+      "Jewish cemetery Debrecen"
+    ],
+    "stays": [
+      "Staying near city center Debrecen",
+      "Staying near Nagyerdő"
+    ],
+    "shuls": [
+      "Debrecen Synagogue",
+      "Chabad of Debrecen research listing"
+    ],
+    "mikvaos": [
+      "Debrecen Community Mikvah research listing"
+    ],
+    "cemeteries": [
+      "Debrecen Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Debrecen Jewish Community"
+    ]
+  },
+  {
+    "market": "slovakia-bratislava",
+    "locality": "Bratislava",
+    "destination": "Bratislava",
+    "country": "Slovakia",
+    "includeDestination": true,
+    "tourism": {
+      "key": "sk-bratislava",
+      "name": "Visit Bratislava",
+      "url": "https://www.visitbratislava.com/",
+      "attribution": "Bratislava Tourist Board",
+      "evidence": "Official Bratislava visitor attractions guide."
+    },
+    "community": {
+      "key": "sk-bratislava-jewish",
+      "name": "Jewish Community of Bratislava",
+      "url": "https://www.synagogue.sk/",
+      "attribution": "Jewish Community Bratislava / Chatam Sofer orientation",
+      "evidence": "Bratislava Jewish heritage and community visitor orientation."
+    },
+    "attractions": [
+      "Bratislava Castle",
+      "Old Town Bratislava",
+      "St. Martin's Cathedral exterior",
+      "Danube promenade",
+      "Slavin Memorial framing",
+      "Blue Church exterior",
+      "Devín Castle framing",
+      "Grassalkovich Palace gardens framing",
+      "SNP Bridge UFO observation framing",
+      "Hviezdoslav Square",
+      "Medical Garden",
+      "Bratislava Zoo",
+      "Eurovea riverside walk",
+      "Michael's Gate",
+      "Primate's Palace courtyard",
+      "Sad Janka Kráľa park"
+    ],
+    "heritage": [
+      "Chatam Sofer Memorial",
+      "Museum of Jewish Culture Bratislava",
+      "Orthodox Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Old Town Bratislava",
+      "Staying near Eurovea"
+    ],
+    "shuls": [
+      "Bratislava Synagogue",
+      "Chabad of Bratislava"
+    ],
+    "mikvaos": [
+      "Bratislava Community Mikvah research listing"
+    ],
+    "cemeteries": [
+      "Chatam Sofer Memorial cemetery",
+      "Orthodox Jewish Cemetery Bratislava"
+    ],
+    "communityResources": [
+      "Jewish Community of Bratislava"
+    ]
+  },
+  {
+    "market": "lithuania-vilnius",
+    "locality": "Vilnius",
+    "destination": "Vilnius",
+    "country": "Lithuania",
+    "includeDestination": true,
+    "tourism": {
+      "key": "lt-vilnius",
+      "name": "Go Vilnius",
+      "url": "https://www.govilnius.lt/visit-vilnius",
+      "attribution": "Go Vilnius",
+      "evidence": "Official Vilnius visitor attractions guide."
+    },
+    "community": {
+      "key": "lt-vilnius-jewish",
+      "name": "Jewish Community of Lithuania",
+      "url": "https://www.lzb.lt/",
+      "attribution": "Jewish Community of Lithuania",
+      "evidence": "Official Lithuanian Jewish community resource."
+    },
+    "attractions": [
+      "Vilnius Old Town",
+      "Gediminas Castle Tower",
+      "Cathedral Square Vilnius",
+      "Užupis district daytime walk",
+      "Bernardine Garden",
+      "Gates of Dawn exterior",
+      "National Museum of Lithuania",
+      "Vilnius University courtyard",
+      "Vingis Park",
+      "TV Tower observation framing",
+      "Palace of the Grand Dukes",
+      "Literatų Street",
+      "Three Crosses Hill",
+      "Europa Square",
+      "Belmontas recreation framing",
+      "Trakai day-trip framing"
+    ],
+    "heritage": [
+      "Vilna Gaon Jewish State Museum",
+      "Choral Synagogue Vilnius",
+      "Jewish cemetery Sudervė"
+    ],
+    "stays": [
+      "Staying near Old Town Vilnius",
+      "Staying near Žvėrynas"
+    ],
+    "shuls": [
+      "Choral Synagogue of Vilnius",
+      "Chabad of Vilnius"
+    ],
+    "mikvaos": [
+      "Vilnius Community Mikvah research listing"
+    ],
+    "cemeteries": [
+      "Sudervės Jewish Cemetery — Vilna Gaon ohel area",
+      "Snipiskes Jewish Cemetery memorial"
+    ],
+    "communityResources": [
+      "Jewish Community of Lithuania"
+    ]
+  },
+  {
+    "market": "latvia-riga",
+    "locality": "Riga",
+    "destination": "Riga",
+    "country": "Latvia",
+    "includeDestination": true,
+    "tourism": {
+      "key": "lv-riga",
+      "name": "Live Riga",
+      "url": "https://www.liveriga.com/",
+      "attribution": "Riga Tourism Development Bureau",
+      "evidence": "Official Riga visitor attractions guide."
+    },
+    "community": {
+      "key": "lv-riga-jewish",
+      "name": "Jewish Community of Riga",
+      "url": "https://www.jews.lv/",
+      "attribution": "Jewish Community of Latvia / Riga",
+      "evidence": "Official Riga Jewish community resource."
+    },
+    "attractions": [
+      "Old Town Riga",
+      "Art Nouveau District Alberta Street",
+      "Central Market Riga",
+      "Freedom Monument",
+      "Riga Canal green belt",
+      "Mežaparks",
+      "Latvian National Museum of Art",
+      "House of the Black Heads exterior",
+      "Jūrmala day-trip framing",
+      "Riga Zoo",
+      "Victory Park Riga",
+      "Powder Tower framing",
+      "Daugava embankment walk",
+      "Kalnciema Quarter framing",
+      "Ethnographic Open-Air Museum framing",
+      "St. Peter's Church tower framing"
+    ],
+    "heritage": [
+      "Peitav Synagogue",
+      "Riga Ghetto and Latvian Holocaust Museum",
+      "Old Jewish Cemetery memorial"
+    ],
+    "stays": [
+      "Staying near Old Town Riga",
+      "Staying near Centrs"
+    ],
+    "shuls": [
+      "Peitav Synagogue",
+      "Chabad of Riga"
+    ],
+    "mikvaos": [
+      "Riga Community Mikvah"
+    ],
+    "cemeteries": [
+      "New Jewish Cemetery Riga",
+      "Old Jewish Cemetery Riga memorial ground"
+    ],
+    "communityResources": [
+      "Jewish Community of Riga"
+    ]
+  },
+  {
+    "market": "finland-helsinki",
+    "locality": "Helsinki",
+    "destination": "Helsinki",
+    "country": "Finland",
+    "includeDestination": true,
+    "tourism": {
+      "key": "fi-helsinki",
+      "name": "My Helsinki",
+      "url": "https://www.myhelsinki.fi/en",
+      "attribution": "City of Helsinki / My Helsinki",
+      "evidence": "Official Helsinki visitor attractions guide."
+    },
+    "community": {
+      "key": "fi-helsinki-jewish",
+      "name": "Jewish Community of Helsinki",
+      "url": "https://www.jchelsinki.fi/",
+      "attribution": "Jewish Community of Helsinki",
+      "evidence": "Official Helsinki Jewish community resource."
+    },
+    "attractions": [
+      "Suomenlinna Sea Fortress",
+      "Market Square Helsinki",
+      "Temppeliaukio Rock Church exterior",
+      "Helsinki Cathedral exterior",
+      "Esplanade Park",
+      "Seurasaari Open-Air Museum",
+      "Design Museum Helsinki",
+      "Oodi Central Library",
+      "Kaivopuisto Park",
+      "Linnanmäki amusement framing outdoor",
+      "Natural History Museum Helsinki",
+      "Ullanlinna waterfront walk",
+      "Allas Sea Pool outdoor framing",
+      "Töölönlahti Bay path",
+      "Ateneum Art Museum",
+      "Porvoo day-trip framing"
+    ],
+    "heritage": [
+      "Helsinki Synagogue",
+      "Jewish Community Center Helsinki framing"
+    ],
+    "stays": [
+      "Staying near Kamppi",
+      "Staying near Töölö"
+    ],
+    "shuls": [
+      "Helsinki Synagogue",
+      "Chabad of Helsinki"
+    ],
+    "mikvaos": [
+      "Helsinki Community Mikvah"
+    ],
+    "cemeteries": [
+      "Helsinki Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Community of Helsinki"
+    ]
+  },
+  {
+    "market": "norway-oslo",
+    "locality": "Oslo",
+    "destination": "Oslo",
+    "country": "Norway",
+    "includeDestination": true,
+    "tourism": {
+      "key": "no-oslo",
+      "name": "Visit Oslo",
+      "url": "https://www.visitoslo.com/",
+      "attribution": "VisitOSLO",
+      "evidence": "Official Oslo visitor attractions guide."
+    },
+    "community": {
+      "key": "no-oslo-jewish",
+      "name": "Det Mosaiske Trossamfund",
+      "url": "https://www.dmt.oslo.no/",
+      "attribution": "Jewish Community of Oslo",
+      "evidence": "Official Oslo Jewish community resource."
+    },
+    "attractions": [
+      "Vigeland Park",
+      "Opera House Oslo roof walk",
+      "Akershus Fortress",
+      "Frogner Park",
+      "Munch Museum framing",
+      "Norwegian Folk Museum",
+      "Holmenkollen ski jump framing",
+      "Bygdøy peninsula museums",
+      "Aker Brygge boardwalk",
+      "Botanical Garden Oslo",
+      "Royal Palace grounds",
+      "Ekebergparken Sculpture Park",
+      "Oslo City Hall exterior",
+      "Sognsvann lake loop",
+      "Nobel Peace Center framing",
+      "Island hopping Oslofjord framing"
+    ],
+    "heritage": [
+      "Oslo Synagogue",
+      "Jewish Museum Oslo",
+      "Center for Studies of Holocaust and Religious Minorities"
+    ],
+    "stays": [
+      "Staying near Majorstuen",
+      "Staying near City Center Oslo"
+    ],
+    "shuls": [
+      "Oslo Synagogue",
+      "Chabad of Oslo"
+    ],
+    "mikvaos": [
+      "Oslo Community Mikvah"
+    ],
+    "cemeteries": [
+      "Helsfyr Jewish Cemetery Oslo"
+    ],
+    "communityResources": [
+      "Det Mosaiske Trossamfund"
+    ]
+  },
+  {
+    "market": "brazil-sao-paulo",
+    "locality": "São Paulo",
+    "destination": "São Paulo",
+    "country": "Brazil",
+    "includeDestination": true,
+    "tourism": {
+      "key": "br-saopaulo",
+      "name": "Visit São Paulo",
+      "url": "https://www.visitesaopaulo.com/",
+      "attribution": "São Paulo Turismo",
+      "evidence": "Official São Paulo visitor attractions guide."
+    },
+    "community": {
+      "key": "br-saopaulo-jewish",
+      "name": "Federação Israelita do Estado de São Paulo",
+      "url": "https://www.fisesp.org.br/",
+      "attribution": "FISESP",
+      "evidence": "Official São Paulo Jewish federation resource."
+    },
+    "attractions": [
+      "Ibirapuera Park",
+      "São Paulo Museum of Art framing",
+      "Pinacoteca de São Paulo",
+      "Municipal Market São Paulo framing",
+      "Batman Alley Vila Madalena framing",
+      "Latin America Memorial",
+      "Botanical Garden São Paulo",
+      "Catavento Cultural",
+      "Paulista Avenue daytime walk",
+      "Japanese Pavilion Ibirapuera",
+      "Zoo São Paulo",
+      "MASP plaza",
+      "Trianon Park",
+      "Football Museum framing",
+      "Sala São Paulo exterior",
+      "Independence Park"
+    ],
+    "heritage": [
+      "Jewish Museum of São Paulo",
+      "CIP Congregação Israelita Paulista framing",
+      "Beit Chabad São Paulo framing"
+    ],
+    "stays": [
+      "Staying near Higienópolis",
+      "Staying near Jardins"
+    ],
+    "shuls": [
+      "Beit Chabad São Paulo",
+      "Congregação Israelita Paulista",
+      "Sinagoga Beit Yaacov",
+      "Kehilat Israel"
+    ],
+    "mikvaos": [
+      "São Paulo Community Mikvah",
+      "Higienópolis Mikvah"
+    ],
+    "cemeteries": [
+      "Butantã Jewish Cemetery",
+      "Israeli Cemetery of São Paulo"
+    ],
+    "communityResources": [
+      "FISESP — Federação Israelita do Estado de São Paulo"
+    ]
+  },
+  {
+    "market": "chile-santiago",
+    "locality": "Santiago",
+    "destination": "Santiago",
+    "country": "Chile",
+    "includeDestination": true,
+    "tourism": {
+      "key": "cl-santiago",
+      "name": "Santiago Turismo",
+      "url": "https://www.chile.travel/en/where-to-go/central-chile/santiago/",
+      "attribution": "Chile Travel / SERNATUR",
+      "evidence": "Official Chile travel orientation for Santiago attractions."
+    },
+    "community": {
+      "key": "cl-santiago-jewish",
+      "name": "Comunidad Judía de Chile",
+      "url": "https://www.judios.cl/",
+      "attribution": "Comunidad Judía de Chile",
+      "evidence": "Official Chilean Jewish community resource."
+    },
+    "attractions": [
+      "Cerro San Cristóbal",
+      "Cerro Santa Lucía",
+      "La Moneda Palace exterior",
+      "Museum of Memory and Human Rights",
+      "Barrio Lastarria walk",
+      "Parque Forestal",
+      "Sky Costanera framing",
+      "Central Market Santiago framing",
+      "La Chascona framing",
+      "Quinta Normal Park",
+      "Chilean National Museum of Fine Arts",
+      "Cajón del Maipo day-trip framing",
+      "Bicentennial Park",
+      "Plaza de Armas",
+      "Metropolitan Cathedral exterior",
+      "Vitacura parks walk"
+    ],
+    "heritage": [
+      "Jewish Museum of Chile framing",
+      "Comunidad Israelita de Santiago framing"
+    ],
+    "stays": [
+      "Staying near Las Condes",
+      "Staying near Providencia"
+    ],
+    "shuls": [
+      "Comunidad Israelita de Santiago",
+      "Chabad of Chile",
+      "B'nei Israel Santiago"
+    ],
+    "mikvaos": [
+      "Santiago Community Mikvah",
+      "Las Condes Mikvah"
+    ],
+    "cemeteries": [
+      "Jewish Cemetery Santiago",
+      "Israelite Cemetery Recoleta"
+    ],
+    "communityResources": [
+      "Comunidad Judía de Chile"
+    ]
+  },
+  {
+    "market": "india-mumbai",
+    "locality": "Mumbai",
+    "destination": "Mumbai",
+    "country": "India",
+    "includeDestination": true,
+    "tourism": {
+      "key": "in-mumbai",
+      "name": "Maharashtra Tourism — Mumbai",
+      "url": "https://www.maharashtratourism.gov.in/",
+      "attribution": "Maharashtra Tourism Development Corporation",
+      "evidence": "Official Maharashtra tourism orientation for Mumbai sites."
+    },
+    "community": {
+      "key": "in-mumbai-jewish",
+      "name": "Jewish community of Mumbai orientation",
+      "url": "https://www.jacbd.org/",
+      "attribution": "Jewish community visitor resources Mumbai",
+      "evidence": "Mumbai synagogue and Bene Israel community visitor orientation."
+    },
+    "attractions": [
+      "Gateway of India",
+      "Marine Drive",
+      "Elephanta Caves framing",
+      "Chhatrapati Shivaji Maharaj Vastu Sangrahalaya",
+      "Sanjay Gandhi National Park",
+      "Juhu Beach promenade daytime",
+      "Hanging Gardens Mumbai",
+      "Crawford Market framing",
+      "Bandra Bandstand promenade",
+      "Kanheri Caves framing",
+      "Haji Ali Dargah exterior viewing from shore",
+      "Colaba Causeway daytime walk",
+      "Powai Lake",
+      "Nehru Science Centre",
+      "Oval Maidan framing",
+      "Worli Sea Face"
+    ],
+    "heritage": [
+      "Knesset Eliyahoo Synagogue",
+      "Magen David Synagogue Mumbai",
+      "Kenah Rachel Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Colaba",
+      "Staying near Bandra"
+    ],
+    "shuls": [
+      "Knesset Eliyahoo Synagogue",
+      "Magen David Synagogue",
+      "Shaar Hashamaim Synagogue",
+      "Chabad of Mumbai"
+    ],
+    "mikvaos": [
+      "Mumbai Community Mikvah research listing"
+    ],
+    "cemeteries": [
+      "Jewish Cemetery Mumbai Worli",
+      "Bene Israel cemeteries research listing"
+    ],
+    "communityResources": [
+      "Mumbai Jewish community visitor orientation"
+    ]
+  },
+  {
+    "market": "australia-brisbane",
+    "locality": "Brisbane",
+    "destination": "Brisbane",
+    "country": "Australia",
+    "includeDestination": true,
+    "tourism": {
+      "key": "au-brisbane",
+      "name": "Visit Brisbane",
+      "url": "https://www.visitbrisbane.com.au/",
+      "attribution": "Brisbane Economic Development Agency",
+      "evidence": "Official Brisbane visitor attractions guide."
+    },
+    "community": {
+      "key": "au-brisbane-jewish",
+      "name": "Queensland Jewish Board of Deputies",
+      "url": "https://www.jewishqld.com/",
+      "attribution": "Queensland Jewish Board of Deputies",
+      "evidence": "Official Queensland Jewish community resource."
+    },
+    "attractions": [
+      "South Bank Parklands",
+      "Lone Pine Koala Sanctuary",
+      "Brisbane Botanic Gardens Mount Coot-tha",
+      "Queensland Museum",
+      "Story Bridge Climb framing outdoor",
+      "City Botanic Gardens",
+      "GOMA exterior framing",
+      "Kangaroo Point Cliffs Park",
+      "Roma Street Parkland",
+      "Mount Coot-tha Lookout",
+      "Streets Beach South Bank",
+      "New Farm Park",
+      "Queensland Art Gallery",
+      "D'Aguilar National Park framing",
+      "Fortitude Valley daytime streetscape",
+      "Shorncliffe pier framing"
+    ],
+    "heritage": [
+      "Brisbane Hebrew Congregation",
+      "Jewish Museum of Australia Brisbane events framing"
+    ],
+    "stays": [
+      "Staying near South Bank",
+      "Staying near CBD Brisbane"
+    ],
+    "shuls": [
+      "Brisbane Hebrew Congregation",
+      "Chabad of Brisbane",
+      "Beit Or v'Shalom"
+    ],
+    "mikvaos": [
+      "Brisbane Community Mikvah"
+    ],
+    "cemeteries": [
+      "Toowong Cemetery Jewish sections",
+      "Brisbane Jewish Cemetery research listing"
+    ],
+    "communityResources": [
+      "Queensland Jewish Board of Deputies"
+    ]
+  },
+  {
+    "market": "australia-perth",
+    "locality": "Perth",
+    "destination": "Perth",
+    "country": "Australia",
+    "includeDestination": true,
+    "tourism": {
+      "key": "au-perth",
+      "name": "Destination Perth",
+      "url": "https://www.westernaustralia.com/en/Destination/Perth",
+      "attribution": "Tourism Western Australia",
+      "evidence": "Official Western Australia tourism orientation for Perth."
+    },
+    "community": {
+      "key": "au-perth-jewish",
+      "name": "Jewish Community Council of Western Australia",
+      "url": "https://www.jccwa.org/",
+      "attribution": "JCCWA",
+      "evidence": "Official Western Australia Jewish community resource."
+    },
+    "attractions": [
+      "Kings Park and Botanic Garden",
+      "Elizabeth Quay",
+      "Perth Zoo",
+      "Scarborough Beach promenade",
+      "Fremantle day-trip framing",
+      "AQWA Aquarium framing",
+      "Yagan Square",
+      "Cottesloe Beach daytime",
+      "Art Gallery of Western Australia",
+      "Swan River foreshore",
+      "Rottnest Island day-trip framing",
+      "Perth Cultural Centre",
+      "Hyde Park Perth",
+      "Adventure World framing outdoor",
+      "Whiteman Park",
+      "Northbridge daytime walk"
+    ],
+    "heritage": [
+      "Perth Hebrew Congregation",
+      "Jewish Historical & Genealogical Society of WA framing"
+    ],
+    "stays": [
+      "Staying near Dianella",
+      "Staying near Perth CBD"
+    ],
+    "shuls": [
+      "Perth Hebrew Congregation",
+      "Chabad of Western Australia",
+      "Carmel School campus framing community"
+    ],
+    "mikvaos": [
+      "Perth Community Mikvah"
+    ],
+    "cemeteries": [
+      "Karrakatta Cemetery Jewish sections",
+      "Midland Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Community Council of Western Australia"
+    ]
+  },
+  {
+    "market": "nz-wellington",
+    "locality": "Wellington",
+    "destination": "Wellington",
+    "country": "New Zealand",
+    "includeDestination": true,
+    "tourism": {
+      "key": "nz-wellington",
+      "name": "WellingtonNZ",
+      "url": "https://www.wellingtonnz.com/",
+      "attribution": "WellingtonNZ",
+      "evidence": "Official Wellington visitor attractions guide."
+    },
+    "community": {
+      "key": "nz-wellington-jewish",
+      "name": "Wellington Jewish Community Centre",
+      "url": "https://www.wjcc.org.nz/",
+      "attribution": "Wellington Jewish Community Centre",
+      "evidence": "Official Wellington Jewish community resource."
+    },
+    "attractions": [
+      "Te Papa Tongarewa",
+      "Wellington Botanic Garden",
+      "Mount Victoria Lookout",
+      "Cuba Street daytime walk",
+      "Zealandia ecosanctuary",
+      "Wellington Cable Car",
+      "Waterfront Wellington",
+      "Weta Workshop framing outdoor",
+      "Otari-Wilton's Bush",
+      "New Zealand Parliament grounds",
+      "Oriental Bay promenade",
+      "Space Place at Carter Observatory",
+      "Days Bay ferry framing",
+      "Red Rocks seal colony framing",
+      "Matiu/Somes Island framing",
+      "Freyberg Beach"
+    ],
+    "heritage": [
+      "Wellington Jewish Community Centre",
+      "Beth El Synagogue Wellington framing"
+    ],
+    "stays": [
+      "Staying near Te Aro",
+      "Staying near Thorndon"
+    ],
+    "shuls": [
+      "Beth El Synagogue Wellington",
+      "Chabad of Wellington"
+    ],
+    "mikvaos": [
+      "Wellington Community Mikvah"
+    ],
+    "cemeteries": [
+      "Karori Cemetery Jewish sections",
+      "Makara Cemetery Jewish sections"
+    ],
+    "communityResources": [
+      "Wellington Jewish Community Centre"
+    ]
+  },
+  {
+    "market": "south-africa-johannesburg",
+    "locality": "Johannesburg",
+    "destination": "Johannesburg",
+    "country": "South Africa",
+    "includeDestination": true,
+    "tourism": {
+      "key": "za-jhb",
+      "name": "Joburg Tourism",
+      "url": "https://www.joburgtourism.com/",
+      "attribution": "Johannesburg Tourism Company",
+      "evidence": "Official Johannesburg visitor attractions guide."
+    },
+    "community": {
+      "key": "za-jhb-jewish",
+      "name": "South African Jewish Board of Deputies",
+      "url": "https://www.sajbd.org/",
+      "attribution": "SAJBD",
+      "evidence": "Official South African Jewish community resource."
+    },
+    "attractions": [
+      "Apartheid Museum",
+      "Constitution Hill",
+      "Johannesburg Botanical Gardens",
+      "Gold Reef City outdoor framing",
+      "Origins Centre",
+      "Zoo Lake",
+      "Johannesburg Zoo",
+      "Nelson Mandela Square framing",
+      "Walter Sisulu Botanical Garden",
+      "Cradle of Humankind framing",
+      "Maboneng daytime precinct walk",
+      "Standard Bank Art Gallery framing",
+      "James Hall Museum of Transport",
+      "Delta Park",
+      "Modderfontein Reserve",
+      "Vilakazi Street framing"
+    ],
+    "heritage": [
+      "Johannesburg Holocaust and Genocide Centre",
+      "Great Park Synagogue framing",
+      "SA Jewish Museum Cape Town day context framing"
+    ],
+    "stays": [
+      "Staying near Glenhazel",
+      "Staying near Sandton"
+    ],
+    "shuls": [
+      "Great Park Synagogue",
+      "Ohr Somayach Glenhazel",
+      "Chabad of Johannesburg",
+      "Sydenham Highlands North Hebrew Congregation",
+      "Waverley Hebrew Congregation"
+    ],
+    "mikvaos": [
+      "Johannesburg Community Mikvah Glenhazel",
+      "Sandton Mikvah"
+    ],
+    "cemeteries": [
+      "West Park Jewish Cemetery",
+      "Brixton Jewish Cemetery"
+    ],
+    "communityResources": [
+      "South African Jewish Board of Deputies"
+    ]
+  },
+  {
+    "market": "uae-abu-dhabi",
+    "locality": "Abu Dhabi",
+    "destination": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "includeDestination": true,
+    "tourism": {
+      "key": "ae-abudhabi",
+      "name": "Visit Abu Dhabi",
+      "url": "https://visitabudhabi.ae/",
+      "attribution": "Department of Culture and Tourism Abu Dhabi",
+      "evidence": "Official Abu Dhabi visitor attractions guide."
+    },
+    "community": {
+      "key": "ae-abudhabi-jewish",
+      "name": "Jewish Council of the Emirates orientation",
+      "url": "https://www.jewishuae.com/",
+      "attribution": "Jewish UAE community orientation",
+      "evidence": "UAE Jewish community visitor orientation."
+    },
+    "attractions": [
+      "Sheikh Zayed Grand Mosque exterior visit framing",
+      "Louvre Abu Dhabi",
+      "Emirates Park Zoo framing",
+      "Corniche Beach promenade",
+      "Qasr Al Watan framing",
+      "Yas Marina circuit park framing",
+      "Mangrove National Park kayak framing",
+      "Ferrari World outdoor plaza framing",
+      "Warner Bros World outdoor framing",
+      "Saadiyat Cultural District",
+      "Heritage Village Abu Dhabi",
+      "Umm Al Emarat Park",
+      "Al Ain Oasis day-trip framing",
+      "Yas Bay waterfront",
+      "Corniche breakwater walk",
+      "Founder's Memorial"
+    ],
+    "heritage": [
+      "Moses Ben Maimon Synagogue Abrahamic Family House",
+      "Abrahamic Family House visitor campus"
+    ],
+    "stays": [
+      "Staying near Corniche",
+      "Staying near Yas Island"
+    ],
+    "shuls": [
+      "Moses Ben Maimon Synagogue",
+      "Chabad of Abu Dhabi research listing"
+    ],
+    "mikvaos": [
+      "Abu Dhabi Community Mikvah research listing"
+    ],
+    "cemeteries": [],
+    "communityResources": [
+      "Jewish Council of the Emirates"
+    ]
+  },
+  {
+    "market": "qatar-doha",
+    "locality": "Doha",
+    "destination": "Doha",
+    "country": "Qatar",
+    "includeDestination": true,
+    "tourism": {
+      "key": "qa-doha",
+      "name": "Visit Qatar — Doha",
+      "url": "https://visitqatar.com/",
+      "attribution": "Qatar Tourism",
+      "evidence": "Official Qatar visitor attractions guide for Doha."
+    },
+    "community": {
+      "key": "qa-doha-jewish",
+      "name": "Doha Jewish visitor orientation",
+      "url": "https://visitqatar.com/",
+      "attribution": "Qatar Tourism / community orientation",
+      "evidence": "Doha visitor orientation; Jewish infrastructure remains limited — verify before travel."
+    },
+    "attractions": [
+      "Museum of Islamic Art",
+      "Corniche Doha",
+      "Souq Waqif daytime",
+      "National Museum of Qatar",
+      "Katara Cultural Village",
+      "Aspire Park",
+      "Msheireb Downtown walk",
+      "Education City mosques exterior framing",
+      "Al Zubarah Fort day-trip framing",
+      "Banana Island framing outdoor",
+      "Olympic Ring Tower framing",
+      "Doha Exhibition and Convention outdoor plaza",
+      "Lusail waterfront framing",
+      "Emiri Diwan exterior viewing",
+      "Sealine Beach day-trip framing",
+      "Mangrove walk Al Khor framing"
+    ],
+    "heritage": [],
+    "stays": [
+      "Staying near West Bay",
+      "Staying near Msheireb"
+    ],
+    "shuls": [],
+    "mikvaos": [],
+    "cemeteries": [],
+    "communityResources": [
+      "Doha visitor religious facilities orientation"
+    ]
+  },
+  {
+    "market": "mexico-guadalajara",
+    "locality": "Guadalajara",
+    "destination": "Guadalajara",
+    "country": "Mexico",
+    "includeDestination": true,
+    "tourism": {
+      "key": "mx-guadalajara",
+      "name": "Visit Guadalajara",
+      "url": "https://visitmexico.com/en/guadalajara",
+      "attribution": "Visit México",
+      "evidence": "Official Mexico tourism orientation for Guadalajara."
+    },
+    "community": {
+      "key": "mx-guadalajara-jewish",
+      "name": "Comunidad Judía de Guadalajara",
+      "url": "https://www.tribuna.org.mx/",
+      "attribution": "Mexican Jewish community orientation",
+      "evidence": "Mexican Jewish community visitor orientation."
+    },
+    "attractions": [
+      "Hospicio Cabañas",
+      "Guadalajara Cathedral exterior",
+      "Instituto Cultural Cabañas plaza",
+      "Tlaquepaque daytime artisans walk",
+      "Los Colomos Forest",
+      "Plaza de Armas Guadalajara",
+      "Mercado Libertad framing",
+      "Teatro Degollado exterior",
+      "Zoológico Guadalajara",
+      "Barranca de Huentitán framing",
+      "Tonalá market daytime framing",
+      "Parque Agua Azul",
+      "Museo Regional de Guadalajara",
+      "Chapultepec Guadalajara park",
+      "Plaza Universidad",
+      "Cerro del Cuatro lookout framing"
+    ],
+    "heritage": [
+      "Comunidad Judía de Guadalajara campus framing"
+    ],
+    "stays": [
+      "Staying near Providencia Guadalajara",
+      "Staying near Centro Histórico"
+    ],
+    "shuls": [
+      "Comunidad Judía de Guadalajara",
+      "Chabad of Guadalajara"
+    ],
+    "mikvaos": [
+      "Guadalajara Community Mikvah"
+    ],
+    "cemeteries": [
+      "Panteón Israelita Guadalajara"
+    ],
+    "communityResources": [
+      "Comunidad Judía de Guadalajara"
+    ]
+  },
+  {
+    "market": "uruguay-montevideo",
+    "locality": "Montevideo",
+    "destination": "Montevideo",
+    "country": "Uruguay",
+    "includeDestination": true,
+    "tourism": {
+      "key": "uy-montevideo",
+      "name": "Uruguay Natural — Montevideo",
+      "url": "https://www.uruguaynatural.com/",
+      "attribution": "Ministerio de Turismo Uruguay",
+      "evidence": "Official Uruguay tourism orientation for Montevideo."
+    },
+    "community": {
+      "key": "uy-montevideo-jewish",
+      "name": "Comunidad Israelita del Uruguay",
+      "url": "https://www.ciu.org.uy/",
+      "attribution": "Comunidad Israelita del Uruguay",
+      "evidence": "Official Uruguayan Jewish community resource."
+    },
+    "attractions": [
+      "Rambla of Montevideo",
+      "Ciudad Vieja daytime walk",
+      "Mercado del Puerto framing",
+      "Parque Rodó",
+      "Palacio Salvo exterior",
+      "Independence Square Montevideo",
+      "Teleférico del Cerro framing",
+      "Museo Nacional de Artes Visuales",
+      "Pocitos Beach promenade",
+      "Jardin Botánico Montevideo",
+      "Fortaleza del Cerro",
+      "Espacio Ciencia",
+      "Parque Batlle",
+      "Carrasco neighbourhood walk",
+      "Punta Carretas shopping outdoor plaza framing",
+      "Playa Ramirez"
+    ],
+    "heritage": [
+      "Templo de la Comunidad Israelita",
+      "Holocaust Memorial Montevideo"
+    ],
+    "stays": [
+      "Staying near Pocitos",
+      "Staying near Ciudad Vieja"
+    ],
+    "shuls": [
+      "Templo Nueva Congregación Israelita",
+      "Chabad of Montevideo",
+      "Comunidad Israelita del Uruguay"
+    ],
+    "mikvaos": [
+      "Montevideo Community Mikvah"
+    ],
+    "cemeteries": [
+      "Cementerio Israelita del Uruguay",
+      "La Paz Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Comunidad Israelita del Uruguay"
+    ]
+  },
+  {
+    "market": "colombia-bogota",
+    "locality": "Bogotá",
+    "destination": "Bogotá",
+    "country": "Colombia",
+    "includeDestination": true,
+    "tourism": {
+      "key": "co-bogota",
+      "name": "Bogotá Tourism",
+      "url": "https://bogota.gov.co/internacional/en",
+      "attribution": "City of Bogotá",
+      "evidence": "Official Bogotá visitor orientation."
+    },
+    "community": {
+      "key": "co-bogota-jewish",
+      "name": "Confederación de Comunidades Judías de Colombia",
+      "url": "https://www.ccjc.co/",
+      "attribution": "CCJC",
+      "evidence": "Official Colombian Jewish community resource."
+    },
+    "attractions": [
+      "Monserrate framing",
+      "Gold Museum Bogotá",
+      "Botero Museum",
+      "La Candelaria daytime walk",
+      "Simón Bolívar Park",
+      "José Celestino Mutis Botanical Garden",
+      "Usaquén daytime square",
+      "National Museum of Colombia",
+      "Parque de la 93",
+      "Andrés Carne de Res Chía day framing outdoor",
+      "Salitre Mágico outdoor framing",
+      "Maloka Interactive Centre",
+      "Parque Nacional Enrique Olaya Herrera",
+      "Zipaquirá Salt Cathedral day-trip framing",
+      "Museo del 20 de Julio",
+      "Parque El Virrey"
+    ],
+    "heritage": [
+      "Comunidad Judía de Bogotá campus framing",
+      "Sinagoga Congregación Israelita framing"
+    ],
+    "stays": [
+      "Staying near Chicó",
+      "Staying near Zona T"
+    ],
+    "shuls": [
+      "Congregación Israelita de Bogotá",
+      "Chabad of Bogotá",
+      "Comunidad Hebrea de Bogotá"
+    ],
+    "mikvaos": [
+      "Bogotá Community Mikvah"
+    ],
+    "cemeteries": [
+      "Cementerio Hebreo de Bogotá"
+    ],
+    "communityResources": [
+      "Confederación de Comunidades Judías de Colombia"
+    ]
+  },
+  {
+    "market": "peru-lima",
+    "locality": "Lima",
+    "destination": "Lima",
+    "country": "Peru",
+    "includeDestination": true,
+    "tourism": {
+      "key": "pe-lima",
+      "name": "PromPerú — Lima",
+      "url": "https://www.peru.travel/en/where-to-go/lima",
+      "attribution": "PromPerú",
+      "evidence": "Official Peru travel orientation for Lima."
+    },
+    "community": {
+      "key": "pe-lima-jewish",
+      "name": "Asociación Judía del Perú",
+      "url": "https://www.ajp.org.pe/",
+      "attribution": "Asociación Judía del Perú",
+      "evidence": "Official Peruvian Jewish community resource."
+    },
+    "attractions": [
+      "Historic Centre of Lima",
+      "Miraflores boardwalk",
+      "Parque Kennedy",
+      "Larco Museum",
+      "Huaca Pucllana",
+      "Barranco district daytime walk",
+      "Magic Water Circuit",
+      "Plaza Mayor Lima",
+      "San Francisco Monastery exterior",
+      "Parque de la Reserva",
+      "Malecón Miraflores",
+      "Pachacamac day-trip framing",
+      "Museo Nacional de Arqueología",
+      "El Faro Miraflores",
+      "Parque Amor Miraflores",
+      "Circuito Mágico del Agua"
+    ],
+    "heritage": [
+      "Asociación Judía del Perú campus framing",
+      "1890 Synagogue Museum framing"
+    ],
+    "stays": [
+      "Staying near Miraflores",
+      "Staying near San Isidro"
+    ],
+    "shuls": [
+      "Asociación Judía del Perú",
+      "Chabad of Lima",
+      "Sociedad de Beneficencia Israelita"
+    ],
+    "mikvaos": [
+      "Lima Community Mikvah"
+    ],
+    "cemeteries": [
+      "Cementerio Judío de Lima"
+    ],
+    "communityResources": [
+      "Asociación Judía del Perú"
+    ]
+  }
+]

@@ -15,7 +15,7 @@ Private, source-backed staging pack for the centralized bulk importer. It is not
   - 2 Where to stay neighborhood anchors.
   - 12 practical Jewish-travel resources. These are community or certifier resources, not restaurant or accommodation listings.
 
-The attraction-led mix is deliberate. A named attraction can be supported by its official operator, tourism board, museum, municipal guide, or community source without making claims about food, hours, prices, availability, contacts, certification, or affiliate relationships. Individual food and accommodation listings were not added where a first-party source did not support a durable listing.
+The attraction-led mix is deliberate. Attractions do not have to be Jewish places or kosher establishments — Jewish venues are welcome when they fit, and most rows are ordinary tourism landmarks suitable for Orthodox / Torah-observant travelers. Do not stage clubs, nightlife, mixed concerts, or similar. A named attraction can be supported by its official operator, tourism board, museum, municipal guide, or community source without making claims about food, hours, prices, availability, contacts, certification, or affiliate relationships. Individual food and accommodation listings were not added where a first-party source did not support a durable listing.
 
 ## Files
 

@@ -54,4 +54,14 @@ describe("import needs-review queue", () => {
     assert.match(directory, /href="\/admin\/imports"/);
     assert.match(directory, /Bulk imports/);
   });
+
+  it("Needs review queue exposes clickable count filters and an Open review action", () => {
+    const queue = readFileSync("components/ImportNeedsReviewQueue.tsx", "utf8");
+    assert.match(queue, /function CountCard/);
+    assert.match(queue, /aria-pressed=\{active\}/);
+    assert.match(queue, /Open review/);
+    assert.match(queue, /Open Bulk imports/);
+    assert.match(queue, /source_pack/);
+    assert.match(queue, /applyCountFilter/);
+  });
 });

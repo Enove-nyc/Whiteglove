@@ -1,6 +1,10 @@
 /**
  * One-shot generator for private White Glove editorial review packs.
  * Writes TypeScript under data/imports/. Not part of the public publish path.
+ *
+ * Attractions need not be Jewish or kosher establishments. They must suit
+ * Orthodox / Torah-observant travelers — no clubs, nightlife, mixed concerts,
+ * or similar. Do not invent nightlife venues into packs.
  */
 const fs = require("fs");
 const path = require("path");
@@ -692,7 +696,7 @@ const europeMarkets = [
       "Villa des Arts Casablanca", "Museum of Moroccan Judaism", "Place Mohammed V",
       "Rick's Café framing", "Anfa Place", "La Sqala", "Phare d'El Hank",
       "Casablanca Twin Center", "Mahkama du Pasha", "Central Market Casablanca",
-      "Abderrahman Slaoui Museum", "Park of the Arab League fountains", "Beach clubs framing Ain Diab",
+      "Abderrahman Slaoui Museum", "Park of the Arab League fountains",
     ],
   }),
   expandMarket({

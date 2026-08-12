@@ -1,0 +1,20 @@
+---
+description: Listings for Orthodox travelers — not kosher-only; no nightlife
+alwaysApply: true
+---
+
+# Listings — Jewish welcome, kosher not required, audience-appropriate required
+
+**Audience-appropriate ≠ kosher-only.** Do not require attractions, lodging, cemeteries, shuls, or mikvaos to be kosher establishments or labeled kosher. “Kosher” belongs on food / kashrus features (kosher food finder, hechsher claims, meal listings).
+
+Vacation listings do **not** have to be Jewish places or kosher venues. A Jewish place is better when available; general sightseeing, parks, museums, family activities, and ordinary lodging are fine when they fit the trip and suit Orthodox / Torah-observant travelers.
+
+They **must** be places those travelers would go. Do **not** list mixed concerts, clubs, nightlife, bars, casinos, mixed swimming sold on that draw, or similar venues. Prefer rejecting the venue over publishing it with a warning.
+
+**Customer-facing wording** lives in `data/listing-audience.ts` and is shown in the site footer, About, Things to do, and Where to stay. Reuse that copy; do not invent a second public standard. Public pages say Orthodox / Torah-observant — not internal “frum” jargon.
+
+Keep scopes separate:
+
+- Kosher food finder / kashrus listings stay kosher-specific
+- Heritage / kevarim stay heritage
+- Vacation attractions and lodging = suitable general venues (Jewish welcome, not required; kosher label not required)

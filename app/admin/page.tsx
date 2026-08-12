@@ -100,8 +100,8 @@ function TotalCard({
 
   if (!href) {
     return (
-      <li>
-        <div className={totalCardClass} aria-disabled="true">
+      <li className="min-w-0">
+        <div className={`${totalCardClass} w-full min-w-0`} aria-disabled="true">
           {body}
         </div>
       </li>
@@ -109,10 +109,12 @@ function TotalCard({
   }
 
   return (
-    <li>
+    <li className="min-w-0">
+      {/* flex-col opts out of .wg-admin a[class*="border"] { inline-flex }, which
+          otherwise lays the label beside the count and spills into the next tile. */}
       <Link
         href={href}
-        className={`${totalCardClass} block hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
+        className={`${totalCardClass} flex w-full min-w-0 flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
         aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
       >
         {body}

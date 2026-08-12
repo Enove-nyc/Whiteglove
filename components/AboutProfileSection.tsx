@@ -1,4 +1,5 @@
 import { ABOUT_INTRO, type AboutProfile } from "@/data/about-profile";
+import { LISTING_AUDIENCE_ABOUT } from "@/data/listing-audience";
 import { isSafeAboutPhotoUrl } from "@/lib/about-profile";
 
 /**
@@ -45,6 +46,7 @@ export default function AboutProfileSection({ profile }: { profile: AboutProfile
             {line}
           </p>
         ))}
+        <p className="leading-7 text-stone-600">{LISTING_AUDIENCE_ABOUT}</p>
         {/* Normally absent, and that is correct: a website is not based
             anywhere. Kept for the day there is a place worth naming, and shown
             as a sentence rather than a label so it reads as part of the

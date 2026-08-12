@@ -17,6 +17,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Do not make blanket payment promises such as “no card taken” or “nothing charged.” State a price or payment step only when it is accurate and needed.
 - Keep vacation discovery, self-service planning and partner booking links as the primary public journey. Heritage travel belongs in its own section.
 - Personal planning or booking assistance should be discreet and discoverable only from the Contact area unless the owner requests otherwise.
+- Audience-appropriate is not the same as kosher-only. Vacation attractions and lodging do not have to be Jewish places or kosher establishments; prefer Jewish when it fits, and keep ordinary sightseeing and stays that Orthodox / Torah-observant travelers would use. Never promote nightlife, clubs, mixed concerts, or similar venues. Reserve “kosher” for food / kashrus features — do not demand a kosher label on every attraction, hotel, cemetery, shul or mikvah. Do not blur this into the kosher food finder or the heritage section. Public wording for this standard lives in `data/listing-audience.ts` (footer, About, Things to do, Where to stay) — reuse it; do not invent a second version.
 
 ## The paid planning service is a last resort, not an offer
 
@@ -32,6 +33,7 @@ What follows from that:
 
 - **The site notice stays exactly as it is**, a full-screen popup, until the owner says otherwise. He was shown the cost (it blocks every automated functional check and is the whole of the tab-order findings) and chose to keep it. Do not raise it again, and do not quietly turn it into a strip.
 - **The About page carries no personal facts at all** — no name, no background, no photograph, no years of experience, and no location. White Glove is not based anywhere: it is a website. Do not ask him for any of them, and do not treat the empty fields on `/admin/settings/about` as gaps. The page is finished as it stands: what the site is for, and what its information is worth.
+- **Vacation attractions need not be Jewish or kosher.** Audience-appropriate ≠ kosher-only. A Jewish venue is better when available, but general sightseeing, parks, museums, family activities and ordinary lodging are fine when Orthodox / Torah-observant travelers would go. No mixed concerts, clubs, nightlife, bars, casinos, or similar. Do not require a kosher label on attractions, lodging, cemeteries, shuls or mikvaos — “kosher” is for food / kashrus features. Kosher food tools stay kosher-specific; heritage stays heritage. Customer-facing copy is in `data/listing-audience.ts` and must stay consistent with this.
 
 ## Do not hand the owner checklists
 

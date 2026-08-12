@@ -91,9 +91,8 @@ export async function getAttractionList(cities?: CityFilter): Promise<Attraction
         name: r.name,
         city: r.city,
         country: r.country,
-        // The column is free text so the owner is not boxed in by an enum the
-        // code shipped with; anything unrecognised is shown as a Landmark.
-        kind: (["Jewish heritage", "Museum", "Landmark", "Nature", "Family", "Viewpoint"] as const).find((k) => k === r.kind) ?? "Landmark",
+        // Free-text category: presets or write-ins. Empty falls back to Landmark.
+        kind: r.kind.trim() || "Landmark",
         summary: r.summary,
         address: opt(r.address),
         coordinates: opt(r.coordinates),

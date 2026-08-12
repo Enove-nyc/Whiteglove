@@ -11,12 +11,26 @@
  * there is enough provenance to give an editor a useful lead; `canPublish`
  * adds the traveller-facing details that must be deliberately written or
  * checked before a record appears on the site.
+ *
+ * Attractions and lodging do not have to be Jewish places or kosher
+ * establishments — audience-appropriate is not kosher-only. They do have to
+ * suit Orthodox / Torah-observant travelers (no clubs, nightlife, mixed
+ * concerts, or similar). Kosher food candidates remain the only rows that
+ * require kashrus provenance.
  */
+
+import {
+  ATTRACTION_CATEGORY_PRESETS,
+  isAttractionPublishCategory,
+  isHeritageOnlyCategory,
+  normalizeListingCategory,
+} from "@/data/listing-categories";
 
 export const BULK_CONTENT_KINDS = ["ATTRACTION", "KOSHER_FOOD", "PLACE_TO_STAY", "PRACTICAL"] as const;
 export type BulkContentKind = (typeof BULK_CONTENT_KINDS)[number];
 
-export const ATTRACTION_KINDS = ["Jewish heritage", "Museum", "Landmark", "Nature", "Family", "Viewpoint"] as const;
+/** @deprecated Prefer LISTING_CATEGORY_PRESETS / ATTRACTION_CATEGORY_PRESETS — kept for existing imports. */
+export const ATTRACTION_KINDS = ATTRACTION_CATEGORY_PRESETS;
 export const PRACTICAL_CATEGORIES = [
   "ACCOMMODATION",
   "KOSHER_FOOD",
@@ -209,10 +223,6 @@ function locationKey(name: string, city: string, country: string): string {
   return `${normalizeContentText(name)}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
 }
 
-function isAttractionKind(value: string | null): boolean {
-  return Boolean(value && (ATTRACTION_KINDS as readonly string[]).includes(value));
-}
-
 function isPracticalCategory(value: string | null): boolean {
   return Boolean(value && (PRACTICAL_CATEGORIES as readonly string[]).includes(value));
 }
@@ -230,7 +240,7 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
   const sourceId = input.sourceId.trim();
   const sourceName = input.sourceName.trim();
   const attribution = input.attribution.trim();
-  const category = clean(input.category);
+  const category = normalizeListingCategory(input.category);
   const coordinates = clean(input.coordinates);
   const stageErrors: string[] = [];
 
@@ -254,8 +264,14 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
     publishBlockers.push("Keep source evidence for the editor before publishing.");
   }
 
-  if (input.kind === "ATTRACTION" && !isAttractionKind(category)) {
-    publishBlockers.push("Choose a supported attraction kind before publishing.");
+  if (input.kind === "ATTRACTION") {
+    if (!category) {
+      publishBlockers.push("Choose or write in a category before publishing.");
+    } else if (isHeritageOnlyCategory(category)) {
+      publishBlockers.push("Beis hachaim and kevarim are added on their own admin screens, not from this import queue.");
+    } else if (!isAttractionPublishCategory(category)) {
+      publishBlockers.push("This category belongs to another listing type — change Type, or write in an attraction category.");
+    }
   }
 
   if (input.kind === "PLACE_TO_STAY") {

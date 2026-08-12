@@ -119,9 +119,9 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
 
       <section className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
-          <label className="block flex-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+          <label className="block min-w-0 flex-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
             Search candidates
-            <input value={query} onChange={(event) => { setQuery(event.target.value); setLimit(100); }} placeholder="Name, city, source ID…" className="mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]" />
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setLimit(100); }} placeholder="Name, city, source ID…" className="mt-1 w-full max-w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]" />
           </label>
           <Filter label="Status" value={status} onChange={(value) => { setStatus(value as "ALL" | ContentImportStatus); setLimit(100); }}>
             <option value="ALL">Every state</option>
@@ -204,9 +204,9 @@ function Filter({ label, value, onChange, children }: {
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+    <label className="block min-w-0 w-full text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] xl:w-44">
       {label}
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 min-w-40 border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]">
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 w-full max-w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]">
         {children}
       </select>
     </label>

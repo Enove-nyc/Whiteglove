@@ -6,6 +6,7 @@ Private `NEEDS_REVIEW` editorial candidates for the Americas, Asia-Pacific, and 
 
 - Target size: about **650** candidates
 - Official tourism boards, attraction operators, municipal/cultural sites, transit planners, and Jewish community/certifier sources only
+- Attractions need not be Jewish places or kosher establishments; they must remain suitable for Orthodox / Torah-observant travelers (no clubs, nightlife, mixed concerts, or similar)
 - Complements `white-glove-fill-batch` and `worldwide-batch-2` (avoids their heavy hubs and Florida/Orlando)
 - No OSM / Google Places listing sources
 - No public copy, coordinates, hours, prices, or booking claims

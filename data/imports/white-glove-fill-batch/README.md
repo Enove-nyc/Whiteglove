@@ -26,6 +26,7 @@ Entity mix: 4 vacation destinations · 82 attractions · 4 Where to stay anchors
 - Every row is `publicationReadiness: NEEDS_REVIEW`
 - No addresses, coordinates, hours, phones, prices, or booking claims
 - Sources are official boards, museums, community organisations, or certifiers only
+- Attractions need not be Jewish places or kosher establishments; they must remain suitable for Orthodox / Torah-observant travelers (no clubs, nightlife, mixed concerts, or similar)
 - Map tiles ≠ directory data: this pack never uses OpenStreetMap or Google Places as listing sources
 
 ## Validation

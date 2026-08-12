@@ -99,7 +99,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
             allLabel: "Everywhere",
           },
           { label: "City", value: city, onChange: (value) => { setFilters({ city: value }); setLimit(PAGE); }, options: cities, allLabel: "Any city" },
-          { label: "Kind", value: kind, onChange: (value) => { setFilters({ kind: value }); setLimit(PAGE); }, options: kinds, allLabel: "Anything" },
+          { label: "Category", value: kind, onChange: (value) => { setFilters({ kind: value }); setLimit(PAGE); }, options: kinds, allLabel: "Anything" },
           {
             label: "Shabbos",
             value: shabbos,

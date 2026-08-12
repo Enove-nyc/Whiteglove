@@ -12,6 +12,7 @@ import { whiteGloveEuropeCandidates } from "@/data/imports/white-glove-europe-ba
 import { whiteGloveFillCandidates } from "@/data/imports/white-glove-fill-batch/candidates";
 import { whiteGloveGlobalCandidates } from "@/data/imports/white-glove-global-batch/candidates";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
+import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
 import { isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
 import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
@@ -91,6 +92,27 @@ function emptyCounts(): ImportReviewQueueCounts {
 }
 
 const KNOWN_PACKS: readonly KnownPack[] = [
+  {
+    slug: "worldwide-batch-3",
+    name: "Worldwide editorial review pack 3",
+    path: "data/imports/worldwide-batch-3",
+    href: "/admin/imports",
+    note: "Private source pack — open Bulk imports to stage and review. Prefills category, summary and address.",
+    loadCandidates: () =>
+      worldwideBatch3Candidates.map((candidate) => ({
+        sourceId: candidate.sourceId,
+        name: candidate.name,
+        kind: kindFromImportKind(candidate.importKind),
+        market: candidate.market,
+        destination: candidate.destination || candidate.locality,
+        city: candidate.locality,
+        country: candidate.country,
+        status: "NEEDS_REVIEW",
+        sourceUrl: candidate.sourceUrl,
+        sourceName: candidate.sourceName,
+        attribution: candidate.sourceAttribution,
+      })),
+  },
   {
     slug: "worldwide-batch-2",
     name: "Worldwide editorial review pack",

@@ -6,6 +6,7 @@ Private `NEEDS_REVIEW` editorial candidates for Europe, the Mediterranean, and n
 
 - Target size: about **700** candidates
 - Official tourism boards, attraction operators, municipal/cultural sites, and Jewish community/certifier sources only
+- Attractions need not be Jewish places or kosher establishments; they must remain suitable for Orthodox / Torah-observant travelers (no clubs, nightlife, mixed concerts, or similar)
 - No OSM / Google Places listing sources
 - No public copy, coordinates, hours, prices, or booking claims
 

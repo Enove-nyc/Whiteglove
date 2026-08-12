@@ -15,7 +15,7 @@ export default async function AdminImportNeedsReviewPage() {
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Needs review</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
-              Every listing candidate that still needs verification before it can become a public White Glove listing. Nothing here is published automatically.
+              Every listing candidate that still needs verification before it can become a public White Glove listing. Nothing here is published automatically. Packs prefill category, summary, and address when known — open a row, check it, then publish. Attractions and lodging do not have to be Jewish or kosher — audience-appropriate is not kosher-only — but they must suit Orthodox / Torah-observant travelers (reject clubs, nightlife, mixed concerts, and similar). Reserve kosher checks for food / kashrus candidates. Beis hachaim and kevarim stay on their own admin screens.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

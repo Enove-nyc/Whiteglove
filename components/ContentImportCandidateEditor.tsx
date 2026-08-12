@@ -1,37 +1,24 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useState } from "react";
 import {
-  ATTRACTION_KINDS,
   BULK_CONTENT_KINDS,
-  PRACTICAL_CATEGORIES,
   bulkContentKindLabel,
   type BulkContentKind,
 } from "@/lib/bulk-content";
 import type { ContentImportCandidateView } from "@/lib/content-imports";
 import { reviewContentImportCandidateAction } from "@/app/admin/imports/actions";
+import ListingCategoryField from "@/components/ListingCategoryField";
+import { normalizeListingCategory } from "@/data/listing-categories";
 
 const fieldClass = "mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]";
 const labelClass = "block text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]";
 
-function categoriesFor(kind: BulkContentKind): readonly string[] {
-  if (kind === "ATTRACTION") return ATTRACTION_KINDS;
-  if (kind === "PRACTICAL") return PRACTICAL_CATEGORIES;
-  if (kind === "KOSHER_FOOD") return ["KOSHER_FOOD"];
-  // Open-data location records may identify accommodation, but they never
-  // establish its food or certification. Those claims stay in the destination
-  // editor after a human has checked an appropriate source.
-  return ["Ordinary hotel, well placed"];
-}
-
 export default function ContentImportCandidateEditor({ candidate }: { candidate: ContentImportCandidateView }) {
   const [kind, setKind] = useState<BulkContentKind>(candidate.kind);
-  const [category, setCategory] = useState(
-    () => categoriesFor(candidate.kind).includes(candidate.category ?? "") ? candidate.category ?? "" : "",
-  );
   const [state, action, pending] = useActionState(reviewContentImportCandidateAction, null);
-  const categories = useMemo(() => categoriesFor(kind), [kind]);
   const editable = candidate.status !== "PUBLISHED";
+  const categoryDefault = normalizeListingCategory(candidate.category) ?? candidate.category ?? "";
 
   return (
     <form action={action} className="space-y-8">
@@ -60,6 +47,9 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             Published as {candidate.publishedKind}. This source candidate remains here as an audit record.
           </p>
         )}
+        <p className="mt-3 text-sm leading-6 text-stone-600">
+          Fields below are prefilled from the source pack and any matching place already on the site. Check them, then save or publish — nothing goes live until you publish.
+        </p>
       </section>
 
       <fieldset disabled={!editable || pending} className="space-y-8 disabled:opacity-60">
@@ -69,23 +59,21 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             <select
               name="kind"
               value={kind}
-              onChange={(event) => {
-                const nextKind = event.target.value as BulkContentKind;
-                setKind(nextKind);
-                setCategory((current) => categoriesFor(nextKind).includes(current) ? current : "");
-              }}
+              onChange={(event) => setKind(event.target.value as BulkContentKind)}
               className={fieldClass}
             >
               {BULK_CONTENT_KINDS.map((value) => <option key={value} value={value}>{bulkContentKindLabel(value)}</option>)}
             </select>
           </label>
-          <label className={labelClass}>
-            Category
-            <select name="category" value={category} onChange={(event) => setCategory(event.target.value)} className={fieldClass}>
-              <option value="">Choose a category</option>
-              {categories.map((value) => <option key={value} value={value}>{value.replace(/_/g, " ")}</option>)}
-            </select>
-          </label>
+          <ListingCategoryField
+            name="category"
+            defaultValue={categoryDefault}
+            className={fieldClass}
+            labelClassName={labelClass}
+            label="Category"
+            required
+            disabled={!editable || pending}
+          />
           <label className={labelClass}>
             Canonical name
             <input name="name" required defaultValue={candidate.name} className={fieldClass} />

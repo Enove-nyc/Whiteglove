@@ -1,0 +1,257 @@
+[
+  {
+    "market": "usa-indianapolis",
+    "locality": "Indianapolis",
+    "destination": "Indianapolis",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "indy-visit",
+      "name": "Visit Indy — Things to Do",
+      "url": "https://www.visitindy.com/things-to-do/",
+      "attribution": "Visit Indy",
+      "evidence": "Official Indianapolis visitor attractions guide."
+    },
+    "community": {
+      "key": "indy-jewish",
+      "name": "Jewish Federation of Greater Indianapolis",
+      "url": "https://www.jewishindianapolis.org/",
+      "attribution": "Jewish Federation of Greater Indianapolis",
+      "evidence": "Official Indianapolis Jewish community resource."
+    },
+    "attractions": [
+      "Indianapolis Museum of Art at Newfields",
+      "Children's Museum of Indianapolis",
+      "White River State Park",
+      "Indianapolis Zoo",
+      "Monument Circle",
+      "Canal Walk Indianapolis",
+      "Indiana State Museum",
+      "Eagle Creek Park",
+      "Garfield Park Conservatory",
+      "Soldiers and Sailors Monument",
+      "Rhythm! Discovery Center",
+      "Broad Ripple Village daytime walk",
+      "Holliday Park",
+      "Virginia B. Fairbanks Art & Nature Park",
+      "Indiana Medical History Museum",
+      "Fort Harrison State Park"
+    ],
+    "heritage": [
+      "Indianapolis Hebrew Congregation framing",
+      "Jewish Federation campus framing"
+    ],
+    "stays": [
+      "Staying near North Meridian",
+      "Staying near Downtown Indianapolis"
+    ],
+    "shuls": [
+      "Congregation Beth-El Zedeck",
+      "Shaarey Tefilla Congregation",
+      "Chabad of Indianapolis",
+      "Etz Chaim Sephardic Congregation"
+    ],
+    "mikvaos": [
+      "Indianapolis Community Mikvah"
+    ],
+    "cemeteries": [
+      "Indianapolis Hebrew Congregation Cemetery",
+      "Beth-El Zedeck Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Indianapolis"
+    ]
+  },
+  {
+    "market": "usa-richmond-va",
+    "locality": "Richmond",
+    "destination": "Richmond",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "richmond-visit",
+      "name": "Visit Richmond Region",
+      "url": "https://www.visitrichmondva.com/things-to-do/",
+      "attribution": "Richmond Region Tourism",
+      "evidence": "Official Richmond visitor attractions guide."
+    },
+    "community": {
+      "key": "richmond-jewish",
+      "name": "Jewish Community Federation of Richmond",
+      "url": "https://www.jewishrichmond.org/",
+      "attribution": "Jewish Community Federation of Richmond",
+      "evidence": "Official Richmond Jewish community resource."
+    },
+    "attractions": [
+      "Virginia Museum of Fine Arts",
+      "Maymont",
+      "Lewis Ginter Botanical Garden",
+      "Capitol Square Richmond",
+      "Science Museum of Virginia",
+      "James River Park System",
+      "Byrd Park",
+      "American Civil War Museum framing",
+      "Carytown daytime walk",
+      "Agecroft Hall",
+      "Bryan Park",
+      "Pony Pasture Rapids framing",
+      "Virginia Holocaust Museum",
+      "Shockoe Bottom daytime walk",
+      "Three Lakes Park",
+      "Forest Hill Park"
+    ],
+    "heritage": [
+      "Virginia Holocaust Museum",
+      "Congregation Beth Ahabah framing"
+    ],
+    "stays": [
+      "Staying near West End Richmond",
+      "Staying near Downtown Richmond"
+    ],
+    "shuls": [
+      "Congregation Beth Ahabah",
+      "Young Israel of Richmond",
+      "Chabad of Richmond",
+      "Or Atid Congregation"
+    ],
+    "mikvaos": [
+      "Richmond Community Mikvah"
+    ],
+    "cemeteries": [
+      "Hebrew Cemetery Richmond",
+      "Forest Lawn Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Community Federation of Richmond"
+    ]
+  },
+  {
+    "market": "uk-london-extra",
+    "locality": "London",
+    "destination": "London",
+    "country": "United Kingdom",
+    "includeDestination": false,
+    "tourism": {
+      "key": "uk-london-extra",
+      "name": "Visit London — Things to Do",
+      "url": "https://www.visitlondon.com/things-to-do",
+      "attribution": "London & Partners",
+      "evidence": "Official London visitor attractions used for complementary NEEDS_REVIEW candidates."
+    },
+    "community": {
+      "key": "uk-london-jewish",
+      "name": "Jewish Leadership Council / community orientation",
+      "url": "https://www.thejlc.org/",
+      "attribution": "UK Jewish community orientation",
+      "evidence": "UK Jewish community orientation for London practical listings."
+    },
+    "attractions": [
+      "Natural History Museum London",
+      "Science Museum London",
+      "British Museum framing",
+      "Hyde Park",
+      "Kew Gardens",
+      "Tower of London exterior framing",
+      "St James's Park",
+      "Greenwich Park",
+      "Tate Modern exterior framing",
+      "Regent's Park",
+      "Hampstead Heath",
+      "Museum of London Docklands",
+      "Cutty Sark framing",
+      "Sky Garden framing",
+      "Richmond Park",
+      "Horniman Museum and Gardens"
+    ],
+    "heritage": [
+      "Jewish Museum London",
+      "Bevis Marks Synagogue",
+      "Sandys Row Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Golders Green",
+      "Staying near Hendon",
+      "Staying near Stamford Hill edge"
+    ],
+    "shuls": [
+      "Hendon United Synagogue",
+      "Golders Green Synagogue",
+      "Bevis Marks Synagogue",
+      "Chabad of Hendon",
+      "Machzikei Hadass Synagogue"
+    ],
+    "mikvaos": [
+      "North West London Community Mikvah",
+      "Stamford Hill Mikvah resource"
+    ],
+    "cemeteries": [
+      "Willesden Jewish Cemetery",
+      "Bushey Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Leadership Council visitor orientation"
+    ]
+  },
+  {
+    "market": "france-lyon",
+    "locality": "Lyon",
+    "destination": "Lyon",
+    "country": "France",
+    "includeDestination": true,
+    "tourism": {
+      "key": "fr-lyon",
+      "name": "OnlyLyon Tourism",
+      "url": "https://en.lyon-france.com/",
+      "attribution": "OnlyLyon Tourism and Conventions",
+      "evidence": "Official Lyon visitor attractions guide."
+    },
+    "community": {
+      "key": "fr-lyon-jewish",
+      "name": "Consistoire de Lyon",
+      "url": "https://www.consistoirelyon.fr/",
+      "attribution": "Consistoire Israélite de Lyon",
+      "evidence": "Official Lyon Jewish community resource."
+    },
+    "attractions": [
+      "Basilica of Notre-Dame de Fourvière exterior",
+      "Vieux Lyon daytime walk",
+      "Parc de la Tête d'Or",
+      "Musée des Confluences",
+      "Place Bellecour",
+      "Traboules of Vieux Lyon",
+      "Croix-Rousse slopes walk",
+      "Musée des Beaux-Arts de Lyon",
+      "Île Barbe framing",
+      "Jardin des Plantes Lyon",
+      "Confluence district waterfront",
+      "Roman theatres of Fourvière",
+      "Presqu'île shopping streets daytime",
+      "Parc de Gerland",
+      "Institut Lumière framing",
+      "Saône river quays"
+    ],
+    "heritage": [
+      "Grande Synagogue de Lyon",
+      "Centre d'Histoire de la Résistance framing"
+    ],
+    "stays": [
+      "Staying near Bellecour",
+      "Staying near Guillotière"
+    ],
+    "shuls": [
+      "Grande Synagogue de Lyon",
+      "Chabad of Lyon",
+      "Synagogue de Sainte-Foy-lès-Lyon"
+    ],
+    "mikvaos": [
+      "Lyon Community Mikvah"
+    ],
+    "cemeteries": [
+      "Cimetière israélite de Lyon La Mouche",
+      "Cimetière de la Guillotière Jewish sections"
+    ],
+    "communityResources": [
+      "Consistoire Israélite de Lyon"
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 import { readWords } from "@/lib/site-words-store";
 import { readBookingLink } from "@/lib/booking-access-store";
 import type { BookingLink } from "@/lib/booking-access";
+import { LISTING_AUDIENCE_COPY } from "@/data/listing-audience";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -125,6 +126,7 @@ export default async function Footer() {
           <div className="min-w-0 border-b border-white/10 pb-9 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-12">
             <Image src="/logo-footer.png" alt="White Glove Itineraries" width={977} height={754} className="h-24 w-auto max-w-full object-contain" />
             <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">{words.footerBlurb}</p>
+            <p className="mt-4 max-w-md text-sm leading-7 text-slate-300">{LISTING_AUDIENCE_COPY}</p>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">
               {words.footerStrapline}
             </p>

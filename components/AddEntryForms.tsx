@@ -1,6 +1,7 @@
 "use client";
 
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import ListingCategoryField from "@/components/ListingCategoryField";
 
 import Link from "next/link";
 import { useActionState } from "react";
@@ -77,21 +78,14 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New thing to do</p>
         <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to go</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          A museum, a mountain, a castle, somewhere for the children. It does not have to be kosher or Jewish. It appears
-          on the things-to-do page, in the search, and in the planner as soon as you save it.
+          A museum, a mountain, a castle, somewhere for the children. It does not have to be Jewish, and it does not need
+          a kosher label — suitable for Orthodox travelers is not the same as kosher-only. It must still be a place those
+          travelers would go (no clubs, nightlife, mixed concerts, or similar). It appears on the things-to-do page, in
+          the search, and in the planner as soon as you save it.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block"><span className={captionClass}>Name *</span><input name="name" defaultValue={prefillName} className={inputClass} required /></label>
-          <label className="block"><span className={captionClass}>Kind</span>
-            <select name="kind" className={inputClass} defaultValue="Landmark">
-              <option>Jewish heritage</option>
-              <option>Museum</option>
-              <option>Landmark</option>
-              <option>Nature</option>
-              <option>Family</option>
-              <option>Viewpoint</option>
-            </select>
-          </label>
+          <ListingCategoryField name="kind" defaultValue="Landmark" className={inputClass} label="Category" required />
           <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
           <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>One line — what it is, and why it is worth the half day *</span><input name="summary" className={inputClass} required /></label>

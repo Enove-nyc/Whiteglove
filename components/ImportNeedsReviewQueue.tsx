@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type {
   ImportReviewQueue,
   ReviewQueueItem,
@@ -10,12 +10,36 @@ import type {
 } from "@/lib/review-queue";
 import { isOpenReviewStatus, reviewQueueKindLabel, reviewQueueStatusLabel } from "@/lib/review-queue";
 
-function Count({ label, value }: { label: string; value: number }) {
+type StatusFilter = "OPEN" | "ALL" | ReviewQueueItemStatus;
+type OriginFilter = "ALL" | "database" | "source_pack";
+
+const countCardClass =
+  "w-full min-w-0 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
+
+function CountCard({
+  label,
+  value,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</p>
-      <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{value}</p>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={`${label}: ${value}. Filter the queue to ${label.toLowerCase()}.`}
+      className={`${countCardClass} flex flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)] ${
+        active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(23,45,82,.08)]" : ""
+      }`}
+    >
+      <span className="block text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</span>
+      <span className="mt-2 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
+    </button>
   );
 }
 
@@ -34,13 +58,21 @@ function matches(item: ReviewQueueItem, query: string) {
   return text.includes(query.toLocaleLowerCase("en"));
 }
 
+function rowActionLabel(item: ReviewQueueItem) {
+  if (item.origin === "database") return "Open review";
+  if (item.href.includes("trello")) return "Open Trello review";
+  return "Open Bulk imports";
+}
+
 export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQueue }) {
-  const [status, setStatus] = useState<"OPEN" | "ALL" | ReviewQueueItemStatus>("OPEN");
+  const [status, setStatus] = useState<StatusFilter>("OPEN");
   const [kind, setKind] = useState<"ALL" | ReviewQueueKind>("ALL");
+  const [origin, setOrigin] = useState<OriginFilter>("ALL");
   const [market, setMarket] = useState("ALL");
   const [batch, setBatch] = useState("ALL");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(100);
+  const queueRef = useRef<HTMLElement | null>(null);
 
   const markets = useMemo(
     () => [...new Set(queue.items.map((item) => item.market).filter(Boolean))].sort((a, b) => a.localeCompare(b, "en")),
@@ -58,26 +90,65 @@ export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQ
         if (status === "OPEN" && !isOpenReviewStatus(item.status)) return false;
         if (status !== "OPEN" && status !== "ALL" && item.status !== status) return false;
         if (kind !== "ALL" && item.kind !== kind) return false;
+        if (origin !== "ALL" && item.origin !== origin) return false;
         if (market !== "ALL" && item.market !== market) return false;
         if (batch !== "ALL" && item.batchSlug !== batch) return false;
         return matches(item, query);
       }),
-    [queue.items, status, kind, market, batch, query],
+    [queue.items, status, kind, origin, market, batch, query],
   );
   const shown = filtered.slice(0, limit);
+
+  function applyCountFilter(next: {
+    status?: StatusFilter;
+    kind?: "ALL" | ReviewQueueKind;
+    origin?: OriginFilter;
+  }) {
+    if (next.status !== undefined) setStatus(next.status);
+    if (next.kind !== undefined) setKind(next.kind);
+    if (next.origin !== undefined) setOrigin(next.origin);
+    setLimit(100);
+    queueRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <section className="mt-8">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Count label="Awaiting verification" value={queue.counts.awaitingVerification} />
-        <Count label="Needs review" value={queue.counts.needsReview} />
-        <Count label="In source packs only" value={queue.counts.sourcePackOnly} />
-        <Count label="Possible duplicates" value={queue.counts.duplicates} />
+        <CountCard
+          label="Awaiting verification"
+          value={queue.counts.awaitingVerification}
+          active={status === "OPEN" && origin === "ALL" && kind === "ALL"}
+          onClick={() => applyCountFilter({ status: "OPEN", origin: "ALL", kind: "ALL" })}
+        />
+        <CountCard
+          label="Needs review"
+          value={queue.counts.needsReview}
+          active={status === "NEEDS_REVIEW" && origin === "ALL"}
+          onClick={() => applyCountFilter({ status: "NEEDS_REVIEW", origin: "ALL" })}
+        />
+        <CountCard
+          label="In source packs only"
+          value={queue.counts.sourcePackOnly}
+          active={origin === "source_pack"}
+          onClick={() => applyCountFilter({ status: "OPEN", origin: "source_pack" })}
+        />
+        <CountCard
+          label="Possible duplicates"
+          value={queue.counts.duplicates}
+          active={status === "DUPLICATE" && origin === "ALL"}
+          onClick={() => applyCountFilter({ status: "DUPLICATE", origin: "ALL" })}
+        />
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {(Object.keys(queue.counts.byKind) as ReviewQueueKind[]).map((key) => (
-          <Count key={key} label={reviewQueueKindLabel(key)} value={queue.counts.byKind[key]} />
+          <CountCard
+            key={key}
+            label={reviewQueueKindLabel(key)}
+            value={queue.counts.byKind[key]}
+            active={kind === key}
+            onClick={() => applyCountFilter({ kind: key })}
+          />
         ))}
       </div>
 
@@ -130,9 +201,9 @@ export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQ
         )}
       </section>
 
-      <section className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+      <section ref={queueRef} className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
-          <label className="block flex-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+          <label className="block min-w-0 flex-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
             Search
             <input
               value={query}
@@ -141,14 +212,14 @@ export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQ
                 setLimit(100);
               }}
               placeholder="Name, destination, market…"
-              className="mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+              className="mt-1 w-full max-w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]"
             />
           </label>
           <Filter
             label="Status"
             value={status}
             onChange={(value) => {
-              setStatus(value as typeof status);
+              setStatus(value as StatusFilter);
               setLimit(100);
             }}
           >
@@ -159,6 +230,18 @@ export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQ
             <option value="DUPLICATE">{reviewQueueStatusLabel("DUPLICATE")}</option>
             <option value="REJECTED">{reviewQueueStatusLabel("REJECTED")}</option>
             <option value="PUBLISHED">{reviewQueueStatusLabel("PUBLISHED")}</option>
+          </Filter>
+          <Filter
+            label="Origin"
+            value={origin}
+            onChange={(value) => {
+              setOrigin(value as OriginFilter);
+              setLimit(100);
+            }}
+          >
+            <option value="ALL">Every origin</option>
+            <option value="database">Staged in database</option>
+            <option value="source_pack">Source packs only</option>
           </Filter>
           <Filter
             label="Type"
@@ -252,12 +335,11 @@ export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQ
                     )}
                   </td>
                   <td className="px-3 py-4">
-                    <Link href={item.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-                      {item.origin === "database"
-                        ? "Open review →"
-                        : item.href.includes("trello")
-                          ? "Open Trello review →"
-                          : "Open Bulk imports →"}
+                    <Link
+                      href={item.href}
+                      className="inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white"
+                    >
+                      {rowActionLabel(item)}
                     </Link>
                   </td>
                 </tr>
@@ -293,12 +375,12 @@ function Filter({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+    <label className="block min-w-0 w-full text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] xl:w-44">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 min-w-40 border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+        className="mt-1 w-full max-w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]"
       >
         {children}
       </select>

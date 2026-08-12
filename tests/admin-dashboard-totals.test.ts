@@ -39,6 +39,9 @@ describe("dashboard total cards are pressable", () => {
     assert.match(DASHBOARD, /function TotalCard/);
     assert.match(DASHBOARD, /href=\{may\(card\.href\) \? card\.href : null\}/);
     assert.match(DASHBOARD, /aria-label=\{`\$\{label\}: \$\{value\}\. Open \$\{label\.toLowerCase\(\)\}\.`\}/);
+    // flex-col opts out of the admin bordered-link inline-flex rule so the
+    // label stacks above the count instead of spilling into the next tile.
+    assert.match(DASHBOARD, /flex w-full min-w-0 flex-col/);
   });
 
   it("lists every linked screen in the admin nav destinations", () => {

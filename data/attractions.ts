@@ -24,21 +24,25 @@
 
 // WHAT GOES IN, AND WHAT DOES NOT.
 //
-// An attraction does not have to be kosher or Jewish to belong here. Most of
-// these are ordinary sights — mountains, museums, castles, waterfalls — and
-// that is the point: a family on a two-week trip needs somewhere to be on the
-// days that are not kevarim.
+// An attraction does not have to be Jewish, and it does not have to be a kosher
+// establishment — frum-appropriate is not kosher-only. A Jewish place is better
+// when available, but most of these are ordinary frum-suitable sights —
+// mountains, museums, castles, waterfalls, parks — and that is the point: a
+// family on a two-week trip needs somewhere to be on the days that are not
+// kevarim.
 //
 // What does not go in, at any price:
 //
-//   • bars, clubs and nightlife
+//   • bars, clubs, nightlife, and mixed concerts or similar venues frum Jews
+//     would not attend
 //   • mixed swimming and mixed dancing venues, and beach resorts sold on that
 //   • anything explicit, and anything whose draw is immodest
 //   • gambling
 //
-// The test is not "is it forbidden" — it is "would this be promoted in the
-// community this site is for". If it would not be, it is not listed, and no
-// entry is included with a warning attached instead. A caveat is not a filter.
+// The test is not "is it Jewish" and not "is it forbidden" — it is "would this
+// be promoted in the community this site is for". If it would not be, it is
+// not listed, and no entry is included with a warning attached instead. A
+// caveat is not a filter.
 //
 // Where something is a genuine question rather than a line — a church that is
 // also one of the great art collections, say — it is listed with the question
@@ -49,6 +53,7 @@ export type AttractionKind =
   | "Jewish heritage"
   | "Museum"
   | "Landmark"
+  | "Park"
   | "Nature"
   | "Family"
   | "Viewpoint";
@@ -58,7 +63,8 @@ export type Attraction = {
   name: string;
   city: string;
   country: string;
-  kind: AttractionKind;
+  /** Preset AttractionKind or a write-in category from admin / import review. */
+  kind: AttractionKind | (string & {});
   /** One line: what it is and why it is worth the half day. */
   summary: string;
   address?: string;

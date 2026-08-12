@@ -401,9 +401,10 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 }
 
 /* A bordered link is a button by any other name, so it needs to look like one
-   when it is only holding text. */
-.wg-admin a[class*="border"],
-.wg-admin a[class*="bg-"] {
+   when it is only holding text. Skip flex-col tiles (dashboard totals): those
+   need a column stack and full grid-cell width, not a shrink-wrapped row. */
+.wg-admin a[class*="border"]:not([class*="flex-col"]),
+.wg-admin a[class*="bg-"]:not([class*="flex-col"]) {
   display: inline-flex;
   align-items: center;
 }

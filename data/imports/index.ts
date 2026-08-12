@@ -6,7 +6,10 @@ import { whiteGloveGlobalCandidates } from "@/data/imports/white-glove-global-ba
 import { sourceCatalog as globalSources } from "@/data/imports/white-glove-global-batch/sources";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
 import { sourceCatalog as worldwideSources } from "@/data/imports/worldwide-batch-2/sources";
+import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
+import { sourceCatalog as worldwideBatch3Sources } from "@/data/imports/worldwide-batch-3/sources";
 import type { BulkContentCandidateInput, BulkContentKind } from "@/lib/bulk-content";
+import { prefillBulkCandidateFromPack } from "@/lib/import-prefill";
 
 /**
  * Checked-in source packages that the admin may stage. Adding a new documented
@@ -46,9 +49,9 @@ export type BuiltInContentImportPackage = {
  * town `locality` where Europe calls it `city`. So each pack needs its own
  * short mapping, which is what follows.
  *
- * The needs-review screen got away without one because it only needs eleven
- * fields to draw a row. Staging needs every field publishing later depends on,
- * which is why the mapping is written out in full rather than cast.
+ * Prefill (summary, address, coordinates, destination slug, normalized
+ * category) is applied here so staged review rows arrive ready to verify —
+ * not as empty shells. Nothing is auto-published.
  */
 
 /** Fields every pack spells the same way, whatever else differs. */
@@ -63,6 +66,12 @@ type SharedPackFields = {
   sourceUrl: string;
   sourceAttribution: string;
   sourceEvidence: string;
+  keywords?: readonly string[];
+  summary?: string | null;
+  address?: string | null;
+  coordinates?: string | null;
+  website?: string | null;
+  destinationSlug?: string | null;
 };
 
 /**
@@ -80,32 +89,26 @@ function packKind(kind: string): BulkContentKind {
 }
 
 /**
- * The candidates hold no address, coordinates, summary or destination link —
- * the packs collect provenance, deliberately, and leave the traveller-facing
- * details to be written or checked. Those absences become publish blockers
- * rather than staging errors, which is exactly the state "needs review" means.
+ * Map a pack row into a stageable candidate with every field we can prefill
+ * from the pack or from places the site already knows.
  */
 function candidateFrom(
-  pack: SharedPackFields,
+  pack: SharedPackFields & { city?: string; locality?: string; sourceRights?: string },
   kind: string,
   city: string,
   license: string,
 ): BulkContentCandidateInput {
-  return {
-    kind: packKind(kind),
-    category: pack.category,
-    name: pack.name,
-    aliases: [...pack.aliases],
-    city,
-    region: pack.destination || null,
-    country: pack.country,
-    sourceUrl: pack.sourceUrl,
-    sourceId: pack.sourceId,
-    sourceName: pack.sourceName,
-    attribution: pack.sourceAttribution,
+  return prefillBulkCandidateFromPack(
+    {
+      ...pack,
+      city,
+      locality: pack.locality,
+      attribution: pack.sourceAttribution,
+      license,
+    },
+    packKind(kind),
     license,
-    sourceEvidence: pack.sourceEvidence,
-  };
+  );
 }
 
 // Every source in every pack repeats this sentence as its `rights`. The Europe
@@ -183,6 +186,18 @@ export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPack
     // This pack also feeds the Trello review board, which reads the pack file
     // directly and is unaffected by its being stageable here as well.
     candidates: worldwideBatch2Candidates.map((candidate) =>
+      candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
+    ),
+  },
+  {
+    schemaVersion: 1,
+    batch: batchFor(
+      "worldwide-batch-3",
+      "Worldwide editorial review pack 3",
+      Object.keys(worldwideBatch3Sources).length,
+    ),
+    generatedAt: "2026-08-12",
+    candidates: worldwideBatch3Candidates.map((candidate) =>
       candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
     ),
   },

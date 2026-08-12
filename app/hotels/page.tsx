@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import KosherStayDirectory from "@/components/KosherStayDirectory";
+import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
@@ -97,6 +98,7 @@ export default async function KosherStaysPage({
             seasons rather than places — every entry here says which, because arriving in the wrong month gets you a
             room and nothing to eat.
           </p>
+          <ListingAudienceNote />
           {searching && (
             <p className="mt-4 text-sm font-semibold text-[var(--navy)]">
               {stayNights ? `${stayNights} night${stayNights === 1 ? "" : "s"}` : "Dates not set"} · {party}

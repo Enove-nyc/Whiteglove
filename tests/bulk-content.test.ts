@@ -52,6 +52,36 @@ describe("bulk content source requirements", () => {
     assert.equal(candidate.canPublish, true);
   });
 
+  it("accepts a write-in attraction category", () => {
+    const candidate = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      category: "Botanical garden",
+      summary: "A quiet garden stop with shade and room for children to walk.",
+    });
+    assert.equal(candidate.category, "Botanical garden");
+    assert.equal(candidate.canPublish, true);
+  });
+
+  it("normalizes pack attraction category aliases", () => {
+    const candidate = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      category: "Landmark attraction",
+      summary: "A landmark stop for a day in central London.",
+    });
+    assert.equal(candidate.category, "Landmark");
+    assert.equal(candidate.canPublish, true);
+  });
+
+  it("blocks publishing beis hachaim from the attraction import path", () => {
+    const candidate = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      category: "Beis hachaim",
+      summary: "A historic cemetery lead for editorial routing.",
+    });
+    assert.equal(candidate.canPublish, false);
+    assert.ok(candidate.publishBlockers.some((error) => /beis hachaim|kevarim/i.test(error)));
+  });
+
   it("rejects retired map sources and Google Places at staging time", () => {
     for (const source of [
       {

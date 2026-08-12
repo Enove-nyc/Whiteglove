@@ -1,0 +1,1309 @@
+[
+  {
+    "market": "usa-miami",
+    "locality": "Miami",
+    "destination": "Miami",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "miami-visit",
+      "name": "Greater Miami Convention & Visitors Bureau",
+      "url": "https://www.miamiandbeaches.com/things-to-do",
+      "attribution": "Greater Miami CVB",
+      "evidence": "Official Miami visitor guide for beaches, museums, parks and family attractions."
+    },
+    "community": {
+      "key": "miami-gjf",
+      "name": "Greater Miami Jewish Federation",
+      "url": "https://jewishmiami.org/",
+      "attribution": "Greater Miami Jewish Federation",
+      "evidence": "Official Miami Jewish community resource for synagogues and visitor orientation."
+    },
+    "attractions": [
+      "Vizcaya Museum and Gardens",
+      "Pérez Art Museum Miami",
+      "Frost Museum of Science",
+      "Fairchild Tropical Botanic Garden",
+      "Bill Baggs Cape Florida State Park",
+      "Deering Estate",
+      "Zoo Miami",
+      "Phillip and Patricia Frost Museum of Science outdoor plaza",
+      "Bayside Marketplace waterfront promenade",
+      "South Pointe Park",
+      "Oleta River State Park",
+      "HistoryMiami Museum",
+      "Venetian Causeway waterfront walk",
+      "Crandon Park",
+      "Matheson Hammock Park",
+      "The Barnacle Historic State Park",
+      "Kampong National Tropical Botanical Garden",
+      "Pinecrest Gardens"
+    ],
+    "heritage": [
+      "Jewish Museum of Florida — FIU"
+    ],
+    "stays": [
+      "Staying near North Miami Beach",
+      "Staying near Surfside"
+    ],
+    "shuls": [
+      "The Shul of Bal Harbour",
+      "Young Israel of Bal Harbour",
+      "Beth David Congregation",
+      "Temple Israel of Greater Miami",
+      "Aventura Turnberry Jewish Center"
+    ],
+    "mikvaos": [
+      "Miami Beach Community Mikvah",
+      "North Miami Beach Mikvah"
+    ],
+    "cemeteries": [
+      "Mount Nebo Cemetery Miami",
+      "Lakeside Memorial Park Jewish sections"
+    ],
+    "communityResources": [
+      "Greater Miami Jewish Federation visitor desk"
+    ]
+  },
+  {
+    "market": "usa-boston",
+    "locality": "Boston",
+    "destination": "Boston",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "boston-meet",
+      "name": "Meet Boston — Things to Do",
+      "url": "https://www.meetboston.com/things-to-do/",
+      "attribution": "Greater Boston Convention & Visitors Bureau",
+      "evidence": "Official Boston visitor attractions catalogue."
+    },
+    "community": {
+      "key": "boston-cjp",
+      "name": "Combined Jewish Philanthropies",
+      "url": "https://www.cjp.org/",
+      "attribution": "Combined Jewish Philanthropies of Greater Boston",
+      "evidence": "Official Greater Boston Jewish community federation resource."
+    },
+    "attractions": [
+      "Freedom Trail",
+      "Boston Common",
+      "Public Garden",
+      "Museum of Fine Arts Boston",
+      "Isabella Stewart Gardner Museum",
+      "New England Aquarium",
+      "Boston Harborwalk",
+      "USS Constitution Museum",
+      "Harvard University Yard framing",
+      "MIT Museum framing",
+      "Arnold Arboretum",
+      "Quincy Market exterior framing",
+      "Boston Public Library McKim Building",
+      "Charles River Esplanade",
+      "Museum of Science Boston",
+      "John F. Kennedy Presidential Library framing",
+      "Boston Tea Party Ships framing",
+      "Skywalk Observatory"
+    ],
+    "heritage": [
+      "Vilna Shul Boston",
+      "Mayyim Hayyim visitor framing"
+    ],
+    "stays": [
+      "Staying near Brookline Coolidge Corner",
+      "Staying near Beacon Hill"
+    ],
+    "shuls": [
+      "Congregation Kehillath Israel Brookline",
+      "Young Israel of Brookline",
+      "The Vilna Shul",
+      "Congregation Beth El Atereth Israel",
+      "Chabad of Cambridge"
+    ],
+    "mikvaos": [
+      "Mayyim Hayyim Living Waters",
+      "Brookline Mikvah"
+    ],
+    "cemeteries": [
+      "Baker Street Jewish Cemeteries West Roxbury",
+      "Pride of Israel Cemetery"
+    ],
+    "communityResources": [
+      "Combined Jewish Philanthropies"
+    ]
+  },
+  {
+    "market": "usa-philadelphia",
+    "locality": "Philadelphia",
+    "destination": "Philadelphia",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "philly-visit",
+      "name": "Visit Philadelphia — Things to Do",
+      "url": "https://www.visitphilly.com/things-to-do/",
+      "attribution": "Visit Philadelphia",
+      "evidence": "Official Philadelphia visitor attractions guide."
+    },
+    "community": {
+      "key": "philly-jewish",
+      "name": "Jewish Federation of Greater Philadelphia",
+      "url": "https://jewishphilly.org/",
+      "attribution": "Jewish Federation of Greater Philadelphia",
+      "evidence": "Official Philadelphia Jewish community resource."
+    },
+    "attractions": [
+      "Independence Hall framing",
+      "Liberty Bell Center framing",
+      "Philadelphia Museum of Art",
+      "Franklin Institute",
+      "Please Touch Museum",
+      "Fairmount Park",
+      "Boathouse Row",
+      "Reading Terminal Market framing",
+      "Eastern State Penitentiary framing",
+      "Barnes Foundation",
+      "Penn Museum",
+      "Schuylkill River Trail",
+      "Magic Gardens framing",
+      "Rodin Museum",
+      "Spruce Street Harbor Park framing",
+      "Morris Arboretum",
+      "John Heinz National Wildlife Refuge",
+      "City Hall observation framing"
+    ],
+    "heritage": [
+      "National Museum of American Jewish History",
+      "Congregation Mikveh Israel framing"
+    ],
+    "stays": [
+      "Staying near Center City",
+      "Staying near Lower Merion"
+    ],
+    "shuls": [
+      "Congregation Mikveh Israel",
+      "Congregation Rodeph Shalom",
+      "Young Israel of Elkins Park",
+      "Chabad of Center City Philadelphia",
+      "Beth Sholom Congregation Elkins Park"
+    ],
+    "mikvaos": [
+      "Philadelphia Community Mikvah",
+      "Main Line Mikvah"
+    ],
+    "cemeteries": [
+      "Mount Sinai Cemetery Philadelphia",
+      "Roosevelt Memorial Park"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Philadelphia"
+    ]
+  },
+  {
+    "market": "usa-washington-dc",
+    "locality": "Washington",
+    "destination": "Washington, D.C.",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "dc-destination",
+      "name": "Destination DC — Things to Do",
+      "url": "https://washington.org/things-do",
+      "attribution": "Destination DC",
+      "evidence": "Official Washington, D.C. visitor attractions guide."
+    },
+    "community": {
+      "key": "dc-federation",
+      "name": "Jewish Federation of Greater Washington",
+      "url": "https://www.shalomdc.org/",
+      "attribution": "Jewish Federation of Greater Washington",
+      "evidence": "Official Greater Washington Jewish community resource."
+    },
+    "attractions": [
+      "National Mall",
+      "Smithsonian National Museum of Natural History",
+      "Smithsonian National Air and Space Museum",
+      "United States Botanic Garden",
+      "National Zoo",
+      "Lincoln Memorial",
+      "Jefferson Memorial",
+      "Tidal Basin",
+      "Library of Congress exterior framing",
+      "National Gallery of Art",
+      "Hirshhorn Museum Sculpture Garden",
+      "Rock Creek Park",
+      "Georgetown Waterfront Park",
+      "Kenilworth Park and Aquatic Gardens",
+      "Arlington National Cemetery framing",
+      "Mount Vernon framing",
+      "U.S. Capitol exterior framing",
+      "National Archives exterior framing"
+    ],
+    "heritage": [
+      "United States Holocaust Memorial Museum",
+      "Lillian and Albert Small Capital Jewish Museum"
+    ],
+    "stays": [
+      "Staying near Foggy Bottom",
+      "Staying near Silver Spring"
+    ],
+    "shuls": [
+      "Kesher Israel Congregation",
+      "Ohev Sholom — The National Synagogue",
+      "Young Israel Shomrai Emunah",
+      "Chabad of Dupont Circle",
+      "Beth Sholom Congregation Potomac"
+    ],
+    "mikvaos": [
+      "Community Mikvah of Greater Washington",
+      "Potomac Mikvah"
+    ],
+    "cemeteries": [
+      "Washington Hebrew Congregation Cemetery",
+      "Judean Memorial Gardens"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Washington"
+    ]
+  },
+  {
+    "market": "usa-baltimore",
+    "locality": "Baltimore",
+    "destination": "Baltimore",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "baltimore-visit",
+      "name": "Visit Baltimore — Attractions",
+      "url": "https://baltimore.org/things-to-do/",
+      "attribution": "Visit Baltimore",
+      "evidence": "Official Baltimore visitor attractions guide."
+    },
+    "community": {
+      "key": "baltimore-associated",
+      "name": "The Associated — Jewish Federation of Baltimore",
+      "url": "https://associated.org/",
+      "attribution": "The Associated",
+      "evidence": "Official Baltimore Jewish community federation resource."
+    },
+    "attractions": [
+      "Inner Harbor promenade",
+      "National Aquarium",
+      "Maryland Science Center",
+      "Fort McHenry National Monument",
+      "Baltimore Museum of Art",
+      "Walters Art Museum",
+      "Oriole Park framing",
+      "Federal Hill Park",
+      "Druid Hill Park",
+      "Port Discovery Children's Museum",
+      "American Visionary Art Museum",
+      "USS Constellation framing",
+      "Cylburn Arboretum",
+      "Rawlings Conservatory",
+      "Fell's Point waterfront walk",
+      "Mount Vernon Place"
+    ],
+    "heritage": [
+      "Jewish Museum of Maryland",
+      "Lloyd Street Synagogue"
+    ],
+    "stays": [
+      "Staying near Pikesville",
+      "Staying near Inner Harbor"
+    ],
+    "shuls": [
+      "Beth Tfiloh Congregation",
+      "Suburban Orthodox Toras Chaim",
+      "Bnai Jacob Shaarei Zion",
+      "Chabad of Park Heights",
+      "Moses Montefiore Anshe Emunah"
+    ],
+    "mikvaos": [
+      "Baltimore Community Mikvah",
+      "Pikesville Mikvah"
+    ],
+    "cemeteries": [
+      "Baltimore Hebrew Congregation Cemetery",
+      "United Hebrew Cemetery"
+    ],
+    "communityResources": [
+      "The Associated Jewish Federation of Baltimore"
+    ]
+  },
+  {
+    "market": "usa-cleveland",
+    "locality": "Cleveland",
+    "destination": "Cleveland",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "cleveland-this",
+      "name": "This is Cleveland — Things to Do",
+      "url": "https://www.thisiscleveland.com/things-to-do",
+      "attribution": "Destination Cleveland",
+      "evidence": "Official Cleveland visitor attractions guide."
+    },
+    "community": {
+      "key": "cleveland-jewish",
+      "name": "Jewish Federation of Cleveland",
+      "url": "https://www.jewishcleveland.org/",
+      "attribution": "Jewish Federation of Cleveland",
+      "evidence": "Official Cleveland Jewish community resource."
+    },
+    "attractions": [
+      "Cleveland Museum of Art",
+      "Rock & Roll Hall of Fame exterior framing",
+      "Cleveland Metroparks Zoo",
+      "Cleveland Botanical Garden",
+      "Edgewater Park",
+      "West Side Market framing",
+      "Great Lakes Science Center",
+      "Cuyahoga Valley National Park framing",
+      "Playhouse Square exterior framing",
+      "University Circle",
+      "Cleveland Museum of Natural History",
+      "Lake View Cemetery Wade Chapel framing",
+      "Gordon Square Arts District walk",
+      "Huntington Reservation",
+      "Holden Arboretum framing",
+      "A Christmas Story House framing"
+    ],
+    "heritage": [
+      "Maltz Museum of Jewish Heritage",
+      "Park Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Beachwood",
+      "Staying near University Circle"
+    ],
+    "shuls": [
+      "Green Road Synagogue",
+      "Young Israel of Greater Cleveland",
+      "Park Synagogue",
+      "Chabad of Cleveland Heights",
+      "Taylor Road Synagogue"
+    ],
+    "mikvaos": [
+      "Cleveland Community Mikvah",
+      "Beachwood Mikvah"
+    ],
+    "cemeteries": [
+      "Mayfield Cemetery Cleveland",
+      "Bet Olam Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Cleveland"
+    ]
+  },
+  {
+    "market": "usa-detroit",
+    "locality": "Detroit",
+    "destination": "Detroit",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "detroit-visit",
+      "name": "Visit Detroit — Things to Do",
+      "url": "https://visitdetroit.com/things-to-do/",
+      "attribution": "Visit Detroit",
+      "evidence": "Official Detroit metro visitor attractions guide."
+    },
+    "community": {
+      "key": "detroit-federation",
+      "name": "Jewish Federation of Metropolitan Detroit",
+      "url": "https://jewishdetroit.org/",
+      "attribution": "Jewish Federation of Metropolitan Detroit",
+      "evidence": "Official Detroit Jewish community resource."
+    },
+    "attractions": [
+      "Detroit Institute of Arts",
+      "Henry Ford Museum framing",
+      "Greenfield Village framing",
+      "Belle Isle Park",
+      "Detroit Riverwalk",
+      "Michigan Science Center",
+      "Motown Museum framing",
+      "Campus Martius Park",
+      "Detroit Historical Museum",
+      "Charles H. Wright Museum",
+      "Cranbrook Art Museum framing",
+      "Detroit Zoo",
+      "Pewabic Pottery framing",
+      "Dequindre Cut Greenway",
+      "River Rouge Park",
+      "Edsel and Eleanor Ford House framing"
+    ],
+    "heritage": [
+      "Holocaust Memorial Center Farmington Hills",
+      "Isaac Agree Downtown Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Southfield",
+      "Staying near Oak Park"
+    ],
+    "shuls": [
+      "Young Israel of Oak-Woods",
+      "Congregation Shaarey Zedek Southfield",
+      "Beth Jacob Congregation",
+      "Chabad of Michigan",
+      "Isaac Agree Downtown Synagogue"
+    ],
+    "mikvaos": [
+      "Detroit Community Mikvah",
+      "Oak Park Mikvah"
+    ],
+    "cemeteries": [
+      "Clover Hill Park Cemetery",
+      "Hebrew Memorial Park"
+    ],
+    "communityResources": [
+      "Jewish Federation of Metropolitan Detroit"
+    ]
+  },
+  {
+    "market": "usa-dallas",
+    "locality": "Dallas",
+    "destination": "Dallas",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "dallas-visit",
+      "name": "Visit Dallas — Things to Do",
+      "url": "https://www.visitdallas.com/things-to-do/",
+      "attribution": "Visit Dallas",
+      "evidence": "Official Dallas visitor attractions guide."
+    },
+    "community": {
+      "key": "dallas-jewish",
+      "name": "Jewish Federation of Greater Dallas",
+      "url": "https://jewishdallas.org/",
+      "attribution": "Jewish Federation of Greater Dallas",
+      "evidence": "Official Dallas Jewish community resource."
+    },
+    "attractions": [
+      "Dallas Arboretum and Botanical Garden",
+      "Perot Museum of Nature and Science",
+      "Dallas Museum of Art",
+      "Klyde Warren Park",
+      "Nasher Sculpture Center",
+      "Sixth Floor Museum framing",
+      "Dallas Zoo",
+      "Reunion Tower framing",
+      "White Rock Lake",
+      "George W. Bush Presidential Library framing",
+      "Meadows Museum",
+      "Trinity River Audubon Center",
+      "Dallas Holocaust and Human Rights Museum",
+      "AT&T Discovery District plaza",
+      "Fair Park framing",
+      "Cedar Ridge Preserve"
+    ],
+    "heritage": [
+      "Dallas Holocaust and Human Rights Museum",
+      "Museum of Biblical Art Dallas framing"
+    ],
+    "stays": [
+      "Staying near Far North Dallas",
+      "Staying near Uptown"
+    ],
+    "shuls": [
+      "Congregation Shearith Israel Dallas",
+      "Tiferet Israel Congregation",
+      "Anshai Torah Plano",
+      "Chabad of Dallas",
+      "Young Israel of Dallas"
+    ],
+    "mikvaos": [
+      "Dallas Community Mikvah",
+      "Plano Mikvah"
+    ],
+    "cemeteries": [
+      "Emanu-El Cemetery Dallas",
+      "Sparkman-Hillcrest Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Dallas"
+    ]
+  },
+  {
+    "market": "usa-houston",
+    "locality": "Houston",
+    "destination": "Houston",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "houston-visit",
+      "name": "Visit Houston — Things to Do",
+      "url": "https://www.visithoustontexas.com/things-to-do/",
+      "attribution": "Houston First / Visit Houston",
+      "evidence": "Official Houston visitor attractions guide."
+    },
+    "community": {
+      "key": "houston-jewish",
+      "name": "Jewish Federation of Greater Houston",
+      "url": "https://houstonjewish.org/",
+      "attribution": "Jewish Federation of Greater Houston",
+      "evidence": "Official Houston Jewish community resource."
+    },
+    "attractions": [
+      "Space Center Houston",
+      "Houston Museum of Natural Science",
+      "Museum of Fine Arts Houston",
+      "Houston Zoo",
+      "Buffalo Bayou Park",
+      "Hermann Park",
+      "Children's Museum Houston",
+      "Houston Botanic Garden",
+      "Discovery Green",
+      "Menil Collection",
+      "Bayou Bend Collection and Gardens",
+      "Japanese Garden Hermann Park",
+      "Moody Gardens framing",
+      "San Jacinto Monument framing",
+      "Houston Arboretum and Nature Center",
+      "Market Square Park"
+    ],
+    "heritage": [
+      "Holocaust Museum Houston",
+      "Congregation Beth Israel framing"
+    ],
+    "stays": [
+      "Staying near Meyerland",
+      "Staying near Museum District"
+    ],
+    "shuls": [
+      "Congregation Beth Yeshurun",
+      "United Orthodox Synagogues",
+      "Young Israel of Houston",
+      "Chabad of Houston",
+      "Congregation Brith Shalom"
+    ],
+    "mikvaos": [
+      "Houston Community Mikvah",
+      "Meyerland Mikvah"
+    ],
+    "cemeteries": [
+      "Beth Yeshurun Cemetery",
+      "Emanu El Memorial Park"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Houston"
+    ]
+  },
+  {
+    "market": "usa-atlanta",
+    "locality": "Atlanta",
+    "destination": "Atlanta",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "atlanta-discover",
+      "name": "Atlanta Convention & Visitors Bureau",
+      "url": "https://www.atlanta.net/things-to-do/",
+      "attribution": "Atlanta CVB",
+      "evidence": "Official Atlanta visitor attractions guide."
+    },
+    "community": {
+      "key": "atlanta-jewish",
+      "name": "Jewish Federation of Greater Atlanta",
+      "url": "https://www.jewishatlanta.org/",
+      "attribution": "Jewish Federation of Greater Atlanta",
+      "evidence": "Official Atlanta Jewish community resource."
+    },
+    "attractions": [
+      "Georgia Aquarium",
+      "World of Coca-Cola framing",
+      "Atlanta Botanical Garden",
+      "Centennial Olympic Park",
+      "Martin Luther King Jr. National Historical Park",
+      "High Museum of Art",
+      "Zoo Atlanta",
+      "Piedmont Park",
+      "Fernbank Museum of Natural History",
+      "Atlanta History Center",
+      "BeltLine Eastside Trail",
+      "Stone Mountain Park framing",
+      "College Football Hall of Fame framing",
+      "Delta Flight Museum framing",
+      "Chattahoochee River National Recreation Area",
+      "Grant Park"
+    ],
+    "heritage": [
+      "William Breman Jewish Heritage Museum",
+      "The Temple Atlanta framing"
+    ],
+    "stays": [
+      "Staying near Toco Hills",
+      "Staying near Midtown"
+    ],
+    "shuls": [
+      "Congregation Beth Jacob Atlanta",
+      "Young Israel of Toco Hills",
+      "Congregation Ariel",
+      "Chabad of Georgia",
+      "Ahavath Achim Synagogue"
+    ],
+    "mikvaos": [
+      "Atlanta Community Mikvah",
+      "Toco Hills Mikvah"
+    ],
+    "cemeteries": [
+      "Greenwood Cemetery Atlanta",
+      "Crest Lawn Memorial Park Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Atlanta"
+    ]
+  },
+  {
+    "market": "usa-phoenix",
+    "locality": "Phoenix",
+    "destination": "Phoenix",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "phoenix-visit",
+      "name": "Visit Phoenix — Things to Do",
+      "url": "https://www.visitphoenix.com/things-to-do/",
+      "attribution": "Visit Phoenix",
+      "evidence": "Official Phoenix visitor attractions guide."
+    },
+    "community": {
+      "key": "phoenix-jewish",
+      "name": "Jewish Community of Greater Phoenix",
+      "url": "https://jewishphoenix.org/",
+      "attribution": "Jewish Community Association of Greater Phoenix",
+      "evidence": "Official Phoenix Jewish community resource."
+    },
+    "attractions": [
+      "Desert Botanical Garden",
+      "Heard Museum",
+      "Phoenix Art Museum",
+      "Musical Instrument Museum",
+      "South Mountain Park and Preserve",
+      "Papago Park",
+      "Phoenix Zoo",
+      "Taliesin West framing",
+      "Camelback Mountain trailheads framing",
+      "Japanese Friendship Garden",
+      "Arizona Science Center",
+      "Hole in the Rock Papago Park",
+      "Riparian Preserve at Water Ranch",
+      "McCormick-Stillman Railroad Park",
+      "Boyce Thompson Arboretum framing",
+      "Piestewa Peak trailhead framing"
+    ],
+    "heritage": [
+      "Sylvia Plotkin Judaica Museum framing",
+      "Congregation Beth Israel Phoenix framing"
+    ],
+    "stays": [
+      "Staying near Scottsdale Jewish corridor",
+      "Staying near Biltmore"
+    ],
+    "shuls": [
+      "Congregation Beth Israel Phoenix",
+      "Young Israel of Phoenix",
+      "Chabad of Phoenix",
+      "Beth El Congregation Phoenix",
+      "Ahavas Torah Scottsdale"
+    ],
+    "mikvaos": [
+      "Phoenix Community Mikvah",
+      "Scottsdale Mikvah"
+    ],
+    "cemeteries": [
+      "Beth Israel Cemetery Phoenix",
+      "Greenwood Memory Lawn Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Community Association of Greater Phoenix"
+    ]
+  },
+  {
+    "market": "usa-denver",
+    "locality": "Denver",
+    "destination": "Denver",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "denver-visit",
+      "name": "VISIT DENVER — Things to Do",
+      "url": "https://www.denver.org/things-to-do/",
+      "attribution": "VISIT DENVER",
+      "evidence": "Official Denver visitor attractions guide."
+    },
+    "community": {
+      "key": "denver-jewish",
+      "name": "JEWISHcolorado",
+      "url": "https://www.jewishcolorado.org/",
+      "attribution": "JEWISHcolorado",
+      "evidence": "Official Colorado Jewish community federation resource."
+    },
+    "attractions": [
+      "Denver Botanic Gardens",
+      "Denver Art Museum",
+      "Red Rocks Park and Amphitheatre grounds framing",
+      "Denver Zoo",
+      "Union Station plaza",
+      "Cherry Creek Trail",
+      "Molly Brown House Museum",
+      "Downtown Aquarium Denver",
+      "Confluence Park",
+      "City Park Denver",
+      "Museum of Nature and Science Denver",
+      "Mount Evans Scenic Byway framing",
+      "Rocky Mountain Arsenal National Wildlife Refuge",
+      "Wash Park",
+      "Lookout Mountain Park framing",
+      "Garden of the Gods framing"
+    ],
+    "heritage": [
+      "Mizel Museum",
+      "HEM Jewish Community framing"
+    ],
+    "stays": [
+      "Staying near Hilltop Denver",
+      "Staying near Downtown Denver"
+    ],
+    "shuls": [
+      "DAT Minyan",
+      "BMH-BJ Congregation",
+      "East Denver Orthodox Synagogue",
+      "Chabad of South Denver",
+      "Hebrew Educational Alliance"
+    ],
+    "mikvaos": [
+      "Denver Community Mikvah",
+      "East Denver Mikvah"
+    ],
+    "cemeteries": [
+      "Congregation Emanuel Cemetery",
+      "Golden Hill Cemetery"
+    ],
+    "communityResources": [
+      "JEWISHcolorado"
+    ]
+  },
+  {
+    "market": "usa-tampa",
+    "locality": "Tampa",
+    "destination": "Tampa",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "tampa-visit",
+      "name": "Visit Tampa Bay — Things to Do",
+      "url": "https://www.visittampabay.com/things-to-do/",
+      "attribution": "Visit Tampa Bay",
+      "evidence": "Official Tampa Bay visitor attractions guide."
+    },
+    "community": {
+      "key": "tampa-jewish",
+      "name": "Tampa Jewish Community Center & Federation",
+      "url": "https://www.jewishtampa.com/",
+      "attribution": "Tampa JCCand Federation",
+      "evidence": "Official Tampa Jewish community resource."
+    },
+    "attractions": [
+      "Florida Aquarium",
+      "Busch Gardens Tampa Bay framing",
+      "ZooTampa at Lowry Park",
+      "Tampa Riverwalk",
+      "Ybor City Museum and streets framing",
+      "Museum of Science and Industry Tampa",
+      "Lettuce Lake Conservation Park",
+      "Hillsborough River State Park",
+      "Sunshine Skyway fishing pier framing",
+      "Clearwater Marine Aquarium framing",
+      "Weedon Island Preserve",
+      "Fort De Soto Park framing",
+      "Dali Museum St. Petersburg framing",
+      "Bayshore Boulevard promenade",
+      "Henry B. Plant Museum",
+      "Egmont Key framing"
+    ],
+    "heritage": [
+      "Florida Holocaust Museum St. Petersburg",
+      "Congregation Rodeph Sholom Tampa framing"
+    ],
+    "stays": [
+      "Staying near South Tampa",
+      "Staying near Carrollwood"
+    ],
+    "shuls": [
+      "Congregation Rodeph Sholom Tampa",
+      "Young Israel of Tampa",
+      "Chabad of Tampa",
+      "Congregation Schaarai Zedek",
+      "Temple Beth-El St. Petersburg"
+    ],
+    "mikvaos": [
+      "Tampa Community Mikvah",
+      "Clearwater Mikvah"
+    ],
+    "cemeteries": [
+      "Myrtle Hill Memorial Park Jewish sections",
+      "Showmen's Rest framing adjacent Jewish plots research"
+    ],
+    "communityResources": [
+      "Tampa Jewish Community Center and Federation"
+    ]
+  },
+  {
+    "market": "usa-orlando",
+    "locality": "Orlando",
+    "destination": "Orlando",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "orlando-visit",
+      "name": "Visit Orlando — Things to Do",
+      "url": "https://www.visitorlando.com/things-to-do/",
+      "attribution": "Visit Orlando",
+      "evidence": "Official Orlando visitor attractions guide for parks, gardens and family sites."
+    },
+    "community": {
+      "key": "orlando-jewish",
+      "name": "Jewish Federation of Greater Orlando",
+      "url": "https://www.orlandojewishfed.org/",
+      "attribution": "Jewish Federation of Greater Orlando",
+      "evidence": "Official Orlando Jewish community resource."
+    },
+    "attractions": [
+      "Leu Gardens",
+      "Orlando Science Center",
+      "Lake Eola Park",
+      "Harry P. Leu Gardens",
+      "Mead Botanical Garden",
+      "Wekiwa Springs State Park",
+      "Kennedy Space Center framing",
+      "Gatorland framing",
+      "Icon Park observation framing",
+      "Orlando Museum of Art",
+      "Tibet-Butler Preserve",
+      "Bok Tower Gardens framing",
+      "Disney Springs outdoor promenade framing",
+      "Universal CityWalk promenade framing",
+      "Blue Spring State Park framing",
+      "Merritt Island National Wildlife Refuge framing"
+    ],
+    "heritage": [
+      "Holocaust Memorial Resource Center Maitland",
+      "Congregation Ohev Shalom framing"
+    ],
+    "stays": [
+      "Staying near Maitland",
+      "Staying near Lake Nona"
+    ],
+    "shuls": [
+      "Congregation Ohev Shalom Orlando",
+      "Southwest Orlando Jewish Congregation",
+      "Chabad of South Orlando",
+      "Congregation Beth Am Longwood",
+      "Young Israel of Orlando"
+    ],
+    "mikvaos": [
+      "Orlando Community Mikvah",
+      "Maitland Mikvah"
+    ],
+    "cemeteries": [
+      "Woodlawn Memorial Park Jewish sections",
+      "Chapel Hill Cemetery Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Orlando"
+    ]
+  },
+  {
+    "market": "usa-pittsburgh",
+    "locality": "Pittsburgh",
+    "destination": "Pittsburgh",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "pittsburgh-visit",
+      "name": "VisitPittsburgh — Things to Do",
+      "url": "https://www.visitpittsburgh.com/things-to-do/",
+      "attribution": "VisitPITTSBURGH",
+      "evidence": "Official Pittsburgh visitor attractions guide."
+    },
+    "community": {
+      "key": "pittsburgh-jewish",
+      "name": "Jewish Federation of Greater Pittsburgh",
+      "url": "https://jfedpgh.org/",
+      "attribution": "Jewish Federation of Greater Pittsburgh",
+      "evidence": "Official Pittsburgh Jewish community resource."
+    },
+    "attractions": [
+      "Phipps Conservatory",
+      "Carnegie Museum of Natural History",
+      "Carnegie Museum of Art",
+      "Point State Park",
+      "Duquesne Incline framing",
+      "Andy Warhol Museum framing",
+      "National Aviary",
+      "Pittsburgh Zoo and PPG Aquarium",
+      "Frick Art and Historical Center",
+      "Schenley Park",
+      "Mount Washington overlooks",
+      "Roberto Clemente Bridge walk",
+      "Children's Museum of Pittsburgh",
+      "Fallingwater framing",
+      "Kentuck Knob framing",
+      "Allegheny Observatory framing"
+    ],
+    "heritage": [
+      "Holocaust Center of Pittsburgh framing",
+      "Rodef Shalom Congregation framing"
+    ],
+    "stays": [
+      "Staying near Squirrel Hill",
+      "Staying near Downtown Pittsburgh"
+    ],
+    "shuls": [
+      "Congregation Poale Zedeck",
+      "Shaare Torah Congregation",
+      "Young Israel of Pittsburgh",
+      "Chabad of Squirrel Hill",
+      "Rodef Shalom Congregation"
+    ],
+    "mikvaos": [
+      "Pittsburgh Community Mikvah",
+      "Squirrel Hill Mikvah"
+    ],
+    "cemeteries": [
+      "B'nai Israel Cemetery",
+      "Beth Shalom Cemetery Pittsburgh"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Pittsburgh"
+    ]
+  },
+  {
+    "market": "usa-minneapolis",
+    "locality": "Minneapolis",
+    "destination": "Minneapolis–Saint Paul",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "msp-meet",
+      "name": "Meet Minneapolis — Things to Do",
+      "url": "https://www.meetminneapolis.com/things-to-do/",
+      "attribution": "Meet Minneapolis",
+      "evidence": "Official Twin Cities visitor attractions guide."
+    },
+    "community": {
+      "key": "minneapolis-jewish",
+      "name": "Jewish Federation of Greater Minneapolis",
+      "url": "https://jewishminneapolis.org/",
+      "attribution": "Jewish Federation of Greater Minneapolis",
+      "evidence": "Official Minneapolis Jewish community resource."
+    },
+    "attractions": [
+      "Minneapolis Sculpture Garden",
+      "Walker Art Center framing",
+      "Minnehaha Falls",
+      "Como Park Zoo and Conservatory",
+      "Mall of America indoor attractions framing",
+      "Science Museum of Minnesota",
+      "Minnesota Landscape Arboretum",
+      "Stone Arch Bridge",
+      "Chain of Lakes",
+      "Fort Snelling framing",
+      "Mississippi National River and Recreation Area",
+      "American Swedish Institute",
+      "Minnesota History Center",
+      "Lake Harriet Bandshell grounds",
+      "Cathedral of Saint Paul exterior framing",
+      "Weisman Art Museum framing"
+    ],
+    "heritage": [
+      "Sabes Jewish Community Center framing",
+      "Temple Israel Minneapolis framing"
+    ],
+    "stays": [
+      "Staying near St. Louis Park",
+      "Staying near Downtown Minneapolis"
+    ],
+    "shuls": [
+      "Bais Yisroel Congregation",
+      "Kenesseth Israel Congregation",
+      "Young Israel of Minneapolis",
+      "Chabad of Minnesota",
+      "Beth El Synagogue St. Louis Park"
+    ],
+    "mikvaos": [
+      "Minneapolis Community Mikvah",
+      "St. Louis Park Mikvah"
+    ],
+    "cemeteries": [
+      "United Hebrew Brotherhood Cemetery",
+      "Temple Israel Memorial Park"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Minneapolis"
+    ]
+  },
+  {
+    "market": "usa-austin",
+    "locality": "Austin",
+    "destination": "Austin",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "austin-visit",
+      "name": "Visit Austin — Things to Do",
+      "url": "https://www.austintexas.org/things-to-do/",
+      "attribution": "Visit Austin",
+      "evidence": "Official Austin visitor attractions guide."
+    },
+    "community": {
+      "key": "austin-jewish",
+      "name": "Jewish Community Association of Austin",
+      "url": "https://www.jewishaustin.org/",
+      "attribution": "Jewish Community Association of Austin",
+      "evidence": "Official Austin Jewish community resource."
+    },
+    "attractions": [
+      "Lady Bird Johnson Wildflower Center",
+      "Texas State Capitol grounds",
+      "Barton Springs Pool framing",
+      "Zilker Metropolitan Park",
+      "Bullock Texas State History Museum",
+      "Blanton Museum of Art",
+      "Mount Bonnell",
+      "McKinney Falls State Park",
+      "Umlauf Sculpture Garden",
+      "Mayfield Park and Preserve",
+      "Austin Nature and Science Center",
+      "Congress Avenue Bridge bat viewing framing",
+      "LBJ Presidential Library framing",
+      "Laguna Gloria",
+      "Hamilton Pool Preserve framing",
+      "Pedernales Falls State Park framing"
+    ],
+    "heritage": [
+      "Dell Jewish Community Campus framing",
+      "Congregation Agudas Achim framing"
+    ],
+    "stays": [
+      "Staying near Northwest Hills",
+      "Staying near Downtown Austin"
+    ],
+    "shuls": [
+      "Congregation Agudas Achim Austin",
+      "Chabad of Austin",
+      "Congregation Beth Israel Austin",
+      "Torah Explorers Austin",
+      "Young Israel of Austin research listing"
+    ],
+    "mikvaos": [
+      "Austin Community Mikvah",
+      "Northwest Austin Mikvah"
+    ],
+    "cemeteries": [
+      "Congregation Beth Israel Cemetery Austin",
+      "Austin Memorial Park Jewish sections"
+    ],
+    "communityResources": [
+      "Jewish Community Association of Austin"
+    ]
+  },
+  {
+    "market": "usa-portland-or",
+    "locality": "Portland",
+    "destination": "Portland",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "portland-travel",
+      "name": "Travel Portland — Things to Do",
+      "url": "https://www.travelportland.com/things-to-do/",
+      "attribution": "Travel Portland",
+      "evidence": "Official Portland visitor attractions guide."
+    },
+    "community": {
+      "key": "portland-jewish",
+      "name": "Jewish Federation of Greater Portland",
+      "url": "https://www.jewishportland.org/",
+      "attribution": "Jewish Federation of Greater Portland",
+      "evidence": "Official Portland Jewish community resource."
+    },
+    "attractions": [
+      "Washington Park",
+      "International Rose Test Garden",
+      "Portland Japanese Garden",
+      "Oregon Zoo",
+      "Pittock Mansion",
+      "Powell's City of Books framing",
+      "Lan Su Chinese Garden",
+      "Forest Park",
+      "OMSI",
+      "Waterfront Park",
+      "Crystal Springs Rhododendron Garden",
+      "Hoyt Arboretum",
+      "Multnomah Falls framing",
+      "Columbia River Gorge framing",
+      "Council Crest Park",
+      "Tryon Creek State Natural Area"
+    ],
+    "heritage": [
+      "Oregon Jewish Museum and Center for Holocaust Education",
+      "Congregation Shaarie Torah framing"
+    ],
+    "stays": [
+      "Staying near Southwest Portland",
+      "Staying near Pearl District"
+    ],
+    "shuls": [
+      "Congregation Shaarie Torah",
+      "Congregation Neveh Shalom",
+      "Chabad of Portland",
+      "Congregation Ahavath Achim",
+      "Cedar Sinai Park framing community campus"
+    ],
+    "mikvaos": [
+      "Portland Community Mikvah",
+      "Southwest Portland Mikvah"
+    ],
+    "cemeteries": [
+      "Ahavai Sholom Cemetery",
+      "Beth Israel Cemetery Portland"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Portland"
+    ]
+  },
+  {
+    "market": "usa-nashville",
+    "locality": "Nashville",
+    "destination": "Nashville",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "nashville-visit",
+      "name": "Visit Music City — Things to Do",
+      "url": "https://www.visitmusiccity.com/things-to-do",
+      "attribution": "Nashville Convention & Visitors Corp",
+      "evidence": "Official Nashville visitor attractions guide emphasizing museums, parks and family sites."
+    },
+    "community": {
+      "key": "nashville-jewish",
+      "name": "Jewish Federation of Nashville and Middle Tennessee",
+      "url": "https://www.jewishnashville.org/",
+      "attribution": "Jewish Federation of Nashville",
+      "evidence": "Official Nashville Jewish community resource."
+    },
+    "attractions": [
+      "Parthenon Centennial Park",
+      "Cheekwood Estate and Gardens",
+      "Country Music Hall of Fame framing",
+      "Tennessee State Museum",
+      "Adventure Science Center",
+      "Belle Meade Historic Site framing",
+      "Radnor Lake State Park",
+      "The Hermitage framing",
+      "Bicentennial Capitol Mall State Park",
+      "Warner Parks",
+      "Frist Art Museum",
+      "Nashville Zoo at Grassmere",
+      "Fort Negley",
+      "Johnny Cash Museum framing",
+      "Music City Walk of Fame Park",
+      "Shelby Bottoms Greenway"
+    ],
+    "heritage": [
+      "Gordon Jewish Community Center framing",
+      "Congregation Sherith Israel framing"
+    ],
+    "stays": [
+      "Staying near Green Hills",
+      "Staying near Downtown Nashville"
+    ],
+    "shuls": [
+      "Congregation Sherith Israel Nashville",
+      "Chabad of Nashville",
+      "West End Synagogue",
+      "Congregation Micah",
+      "The Temple Congregation Ohabai Sholom"
+    ],
+    "mikvaos": [
+      "Nashville Community Mikvah",
+      "Green Hills Mikvah"
+    ],
+    "cemeteries": [
+      "Temple Cemetery Nashville",
+      "Sherith Israel Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Nashville and Middle Tennessee"
+    ]
+  },
+  {
+    "market": "usa-charlotte",
+    "locality": "Charlotte",
+    "destination": "Charlotte",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "charlotte-visit",
+      "name": "Charlotte Regional Visitors Authority",
+      "url": "https://www.charlottesgotalot.com/things-to-do",
+      "attribution": "CRVA / Charlotte's Got a Lot",
+      "evidence": "Official Charlotte visitor attractions guide."
+    },
+    "community": {
+      "key": "charlotte-jewish",
+      "name": "Jewish Federation of Greater Charlotte",
+      "url": "https://www.jewishcharlotte.org/",
+      "attribution": "Jewish Federation of Greater Charlotte",
+      "evidence": "Official Charlotte Jewish community resource."
+    },
+    "attractions": [
+      "Discovery Place Science",
+      "NASCAR Hall of Fame framing",
+      "Freedom Park Charlotte",
+      "Romare Bearden Park",
+      "Mint Museum Uptown",
+      "Daniel Stowe Botanical Garden framing",
+      "U.S. National Whitewater Center framing",
+      "Levine Museum of the New South",
+      "Fourth Ward Park",
+      "Charlotte Nature Museum",
+      "McGill Rose Garden",
+      "Latta Plantation Nature Preserve",
+      "Billy Graham Library gardens framing",
+      "NoDa arts district walk",
+      "Little Sugar Creek Greenway",
+      "Reedy Creek Park"
+    ],
+    "heritage": [
+      "Levine Jewish Community Center framing",
+      "Temple Israel Charlotte framing"
+    ],
+    "stays": [
+      "Staying near Shalom Park",
+      "Staying near Uptown Charlotte"
+    ],
+    "shuls": [
+      "Temple Israel Charlotte",
+      "Congregation Beth El Charlotte",
+      "Chabad of Charlotte",
+      "Congregation Ohr HaTorah",
+      "Temple Beth El Charlotte"
+    ],
+    "mikvaos": [
+      "Charlotte Community Mikvah",
+      "Shalom Park Mikvah"
+    ],
+    "cemeteries": [
+      "Hebrew Cemetery Charlotte",
+      "Temple Israel Cemetery Charlotte"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Charlotte"
+    ]
+  }
+]

@@ -1,0 +1,1042 @@
+[
+  {
+    "market": "usa-st-louis",
+    "locality": "St. Louis",
+    "destination": "St. Louis",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "stl-explore",
+      "name": "Explore St. Louis — Things to Do",
+      "url": "https://explorestlouis.com/things-to-do/",
+      "attribution": "Explore St. Louis",
+      "evidence": "Official St. Louis visitor attractions guide."
+    },
+    "community": {
+      "key": "stl-jewish",
+      "name": "Jewish Federation of St. Louis",
+      "url": "https://www.jfedstl.org/",
+      "attribution": "Jewish Federation of St. Louis",
+      "evidence": "Official St. Louis Jewish community resource."
+    },
+    "attractions": [
+      "Gateway Arch National Park",
+      "Saint Louis Zoo",
+      "Missouri Botanical Garden",
+      "City Museum framing",
+      "Saint Louis Art Museum",
+      "Forest Park",
+      "Missouri History Museum",
+      "Grant's Farm framing",
+      "Cathedral Basilica of Saint Louis exterior",
+      "Anheuser-Busch Brewery tour framing",
+      "Laumeier Sculpture Park",
+      "Cahokia Mounds framing",
+      "Magic House St. Louis",
+      "Old Courthouse framing",
+      "Tower Grove Park",
+      "Butterfly House Faust Park"
+    ],
+    "heritage": [
+      "Holocaust Museum and Learning Center St. Louis",
+      "United Hebrew Congregation framing"
+    ],
+    "stays": [
+      "Staying near Creve Coeur",
+      "Staying near Central West End"
+    ],
+    "shuls": [
+      "Traditional Congregation St. Louis",
+      "Young Israel of St. Louis",
+      "Nusach Hari B'nai Zion",
+      "Chabad of St. Louis",
+      "United Hebrew Congregation"
+    ],
+    "mikvaos": [
+      "St. Louis Community Mikvah",
+      "Creve Coeur Mikvah"
+    ],
+    "cemeteries": [
+      "New Mount Sinai Cemetery",
+      "Chevra Kadisha Cemetery St. Louis"
+    ],
+    "communityResources": [
+      "Jewish Federation of St. Louis"
+    ]
+  },
+  {
+    "market": "usa-cincinnati",
+    "locality": "Cincinnati",
+    "destination": "Cincinnati",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "cincinnati-visit",
+      "name": "Cincinnati USA — Things to Do",
+      "url": "https://www.cincinnatiusa.com/things-to-do",
+      "attribution": "Cincinnati USA CVB",
+      "evidence": "Official Cincinnati visitor attractions guide."
+    },
+    "community": {
+      "key": "cincinnati-jewish",
+      "name": "Jewish Federation of Cincinnati",
+      "url": "https://www.jewishcincinnati.org/",
+      "attribution": "Jewish Federation of Cincinnati",
+      "evidence": "Official Cincinnati Jewish community resource."
+    },
+    "attractions": [
+      "Cincinnati Zoo and Botanical Garden",
+      "Newport Aquarium framing",
+      "Cincinnati Art Museum",
+      "Findlay Market framing",
+      "Smale Riverfront Park",
+      "Eden Park",
+      "Krohn Conservatory",
+      "National Underground Railroad Freedom Center",
+      "Ohio River Trail",
+      "Spring Grove Cemetery arboretum framing",
+      "Ault Park",
+      "Great American Ball Park framing",
+      "Carew Tower observation framing",
+      "Union Terminal Museum Center",
+      "Mount Airy Forest",
+      "Pyramid Hill Sculpture Park framing"
+    ],
+    "heritage": [
+      "Skirball Museum Cincinnati",
+      "Isaac M. Wise Temple framing"
+    ],
+    "stays": [
+      "Staying near Amberley Village",
+      "Staying near Downtown Cincinnati"
+    ],
+    "shuls": [
+      "Golf Manor Synagogue",
+      "Congregation Sha'arei Torah",
+      "Chabad of Cincinnati",
+      "Northern Hills Synagogue",
+      "Isaac M. Wise Temple"
+    ],
+    "mikvaos": [
+      "Cincinnati Community Mikvah",
+      "Amberley Mikvah"
+    ],
+    "cemeteries": [
+      "Walnut Hills Jewish Cemetery",
+      "Price Hill Jewish Cemeteries"
+    ],
+    "communityResources": [
+      "Jewish Federation of Cincinnati"
+    ]
+  },
+  {
+    "market": "usa-milwaukee",
+    "locality": "Milwaukee",
+    "destination": "Milwaukee",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "milwaukee-visit",
+      "name": "VISIT Milwaukee — Things to Do",
+      "url": "https://www.visitmilwaukee.org/things-to-do/",
+      "attribution": "VISIT Milwaukee",
+      "evidence": "Official Milwaukee visitor attractions guide."
+    },
+    "community": {
+      "key": "milwaukee-jewish",
+      "name": "Milwaukee Jewish Federation",
+      "url": "https://www.milwaukeejewish.org/",
+      "attribution": "Milwaukee Jewish Federation",
+      "evidence": "Official Milwaukee Jewish community resource."
+    },
+    "attractions": [
+      "Milwaukee Art Museum",
+      "Discovery World",
+      "Milwaukee County Zoo",
+      "Lakefront Brewery framing",
+      "Mitchell Park Domes",
+      "Harley-Davidson Museum framing",
+      "Lake Michigan lakefront path",
+      "Boerner Botanical Gardens",
+      "Betty Brinn Children's Museum",
+      "Pabst Mansion",
+      "Cathedral Square Park",
+      "Schlitz Audubon Nature Center",
+      "Villa Terrace Decorative Arts Museum",
+      "Harbor View Plaza",
+      "Whitnall Park",
+      "Downtown RiverWalk"
+    ],
+    "heritage": [
+      "Jewish Museum Milwaukee",
+      "Congregation Beth Israel Ner Tamid framing"
+    ],
+    "stays": [
+      "Staying near Mequon",
+      "Staying near East Side Milwaukee"
+    ],
+    "shuls": [
+      "Congregation Beth Jehudah",
+      "Anshe Sfard Kehillat Torah",
+      "Chabad of Milwaukee",
+      "Congregation Shalom",
+      "Lake Park Synagogue"
+    ],
+    "mikvaos": [
+      "Milwaukee Community Mikvah",
+      "Mequon Mikvah"
+    ],
+    "cemeteries": [
+      "Spring Hill Cemetery Milwaukee",
+      "Second Home Cemetery"
+    ],
+    "communityResources": [
+      "Milwaukee Jewish Federation"
+    ]
+  },
+  {
+    "market": "usa-new-orleans",
+    "locality": "New Orleans",
+    "destination": "New Orleans",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "nola-visit",
+      "name": "New Orleans & Company — Things to Do",
+      "url": "https://www.neworleans.com/things-to-do/",
+      "attribution": "New Orleans & Company",
+      "evidence": "Official New Orleans visitor attractions guide emphasizing museums, parks and heritage sites."
+    },
+    "community": {
+      "key": "nola-jewish",
+      "name": "Jewish Federation of Greater New Orleans",
+      "url": "https://jewishnola.com/",
+      "attribution": "Jewish Federation of Greater New Orleans",
+      "evidence": "Official New Orleans Jewish community resource."
+    },
+    "attractions": [
+      "Audubon Zoo",
+      "Audubon Aquarium of the Americas",
+      "City Park New Orleans",
+      "New Orleans Museum of Art",
+      "Jackson Square framing",
+      "Garden District walking streets",
+      "National WWII Museum",
+      "Mardi Gras World framing",
+      "St. Louis Cathedral exterior",
+      "French Market framing",
+      "Crescent Park",
+      "Louisiana State Museum framing",
+      "City of the Dead cemetery tours framing research",
+      "Woldenberg Riverfront Park",
+      "Sculpture Garden City Park",
+      "Chalmette Battlefield framing"
+    ],
+    "heritage": [
+      "Museum of the Southern Jewish Experience",
+      "Touro Synagogue New Orleans framing"
+    ],
+    "stays": [
+      "Staying near Uptown New Orleans",
+      "Staying near French Quarter edge"
+    ],
+    "shuls": [
+      "Congregation Beth Israel Metairie",
+      "Anshe Sfard Synagogue",
+      "Chabad of Louisiana",
+      "Touro Synagogue New Orleans",
+      "Congregation Gates of Prayer"
+    ],
+    "mikvaos": [
+      "New Orleans Community Mikvah",
+      "Metairie Mikvah"
+    ],
+    "cemeteries": [
+      "Hebrew Rest Cemetery New Orleans",
+      "Dispersed of Judah Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater New Orleans"
+    ]
+  },
+  {
+    "market": "usa-kansas-city",
+    "locality": "Kansas City",
+    "destination": "Kansas City",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "kc-visit",
+      "name": "VisitKC — Things to Do",
+      "url": "https://www.visitkc.com/things-to-do",
+      "attribution": "Visit KC",
+      "evidence": "Official Kansas City visitor attractions guide."
+    },
+    "community": {
+      "key": "kc-jewish",
+      "name": "Jewish Federation of Greater Kansas City",
+      "url": "https://www.jewishkansascity.org/",
+      "attribution": "Jewish Federation of Greater Kansas City",
+      "evidence": "Official Kansas City Jewish community resource."
+    },
+    "attractions": [
+      "Nelson-Atkins Museum of Art",
+      "Country Club Plaza framing",
+      "Union Station Kansas City",
+      "World War I Museum and Memorial",
+      "Kansas City Zoo",
+      "Loose Park",
+      "Science City",
+      "Kauffman Center exterior framing",
+      "Arabian Horse Library framing",
+      "Legends Outlets outdoor plaza framing",
+      "Shoal Creek Living History Museum",
+      "Overland Park Arboretum framing",
+      "Linda Hall Library framing",
+      "River Market district walk",
+      "Swope Park",
+      "Powell Gardens framing"
+    ],
+    "heritage": [
+      "Midwest Center for Holocaust Education",
+      "Congregation Beth Shalom framing"
+    ],
+    "stays": [
+      "Staying near Overland Park",
+      "Staying near Country Club Plaza"
+    ],
+    "shuls": [
+      "Kehilath Israel Synagogue",
+      "Congregation Beth Israel Abraham Voliner",
+      "Chabad of Kansas City",
+      "The JCC of Greater Kansas City framing campus",
+      "Congregation Ohev Sholom"
+    ],
+    "mikvaos": [
+      "Kansas City Community Mikvah",
+      "Overland Park Mikvah"
+    ],
+    "cemeteries": [
+      "Rose Hill Cemetery Kansas City",
+      "Shearith Israel Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Greater Kansas City"
+    ]
+  },
+  {
+    "market": "usa-san-antonio",
+    "locality": "San Antonio",
+    "destination": "San Antonio",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "sa-visit",
+      "name": "Visit San Antonio — Things to Do",
+      "url": "https://www.visitsanantonio.com/things-to-do/",
+      "attribution": "Visit San Antonio",
+      "evidence": "Official San Antonio visitor attractions guide."
+    },
+    "community": {
+      "key": "sa-jewish",
+      "name": "Jewish Federation of San Antonio",
+      "url": "https://www.jfsatx.org/",
+      "attribution": "Jewish Federation of San Antonio",
+      "evidence": "Official San Antonio Jewish community resource."
+    },
+    "attractions": [
+      "The Alamo framing",
+      "San Antonio River Walk daytime promenade",
+      "San Antonio Zoo",
+      "The Pearl District walk",
+      "San Antonio Missions National Historical Park",
+      "Brackenridge Park",
+      "Witte Museum",
+      "Japanese Tea Garden",
+      "Natural Bridge Caverns framing",
+      "SeaWorld San Antonio framing",
+      "McNay Art Museum",
+      "Tower of the Americas framing",
+      "San Antonio Botanical Garden",
+      "Hemisfair Park",
+      "DoSeum",
+      "Government Canyon State Natural Area"
+    ],
+    "heritage": [
+      "Holocaust Memorial Museum of San Antonio",
+      "Temple Beth-El San Antonio framing"
+    ],
+    "stays": [
+      "Staying near Medical Center",
+      "Staying near River Walk"
+    ],
+    "shuls": [
+      "Congregation Rodfei Sholom",
+      "Chabad of San Antonio",
+      "Temple Beth-El San Antonio",
+      "Congregation Agudas Achim San Antonio",
+      "Jewish Community Center of San Antonio framing campus"
+    ],
+    "mikvaos": [
+      "San Antonio Community Mikvah",
+      "North Central Mikvah"
+    ],
+    "cemeteries": [
+      "Temple Beth-El Cemetery San Antonio",
+      "Agudas Achim Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of San Antonio"
+    ]
+  },
+  {
+    "market": "usa-jacksonville",
+    "locality": "Jacksonville",
+    "destination": "Jacksonville",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "jax-visit",
+      "name": "Visit Jacksonville — Things to Do",
+      "url": "https://www.visitjacksonville.com/things-to-do/",
+      "attribution": "Visit Jacksonville",
+      "evidence": "Official Jacksonville visitor attractions guide."
+    },
+    "community": {
+      "key": "jax-jewish",
+      "name": "Jewish Federation & Foundation of Northeast Florida",
+      "url": "https://jewishjacksonville.org/",
+      "attribution": "Jewish Federation of Northeast Florida",
+      "evidence": "Official Jacksonville Jewish community resource."
+    },
+    "attractions": [
+      "Jacksonville Zoo and Gardens",
+      "Cummer Museum of Art and Gardens",
+      "Kathryn Abbey Hanna Park",
+      "Timucuan Ecological and Historic Preserve",
+      "Museum of Science and History",
+      "Fort Caroline National Memorial",
+      "Jacksonville Landing waterfront framing",
+      "Treaty Oak Park",
+      "Big Talbot Island State Park",
+      "Riverside Arts Market framing",
+      "Memorial Park Jacksonville",
+      "Tree Hill Nature Center",
+      "Castaway Island Preserve",
+      "Huguenot Memorial Park",
+      "Downtown Riverwalk Jacksonville",
+      "Museum of Contemporary Art Jacksonville"
+    ],
+    "heritage": [
+      "Jacksonville Jewish Center framing",
+      "Etz Chaim Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Southside Jacksonville",
+      "Staying near Riverside"
+    ],
+    "shuls": [
+      "Jacksonville Jewish Center",
+      "Etz Chaim Synagogue Jacksonville",
+      "Chabad of Jacksonville",
+      "Congregation Ahavath Chesed",
+      "Beth Shalom Jacksonville"
+    ],
+    "mikvaos": [
+      "Jacksonville Community Mikvah",
+      "Southside Mikvah"
+    ],
+    "cemeteries": [
+      "Evergreen Cemetery Jewish sections Jacksonville",
+      "Jacksonville Jewish Center Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation and Foundation of Northeast Florida"
+    ]
+  },
+  {
+    "market": "usa-columbus-oh",
+    "locality": "Columbus",
+    "destination": "Columbus",
+    "country": "United States",
+    "includeDestination": true,
+    "tourism": {
+      "key": "columbus-experience",
+      "name": "Experience Columbus — Things to Do",
+      "url": "https://www.experiencecolumbus.com/things-to-do/",
+      "attribution": "Experience Columbus",
+      "evidence": "Official Columbus visitor attractions guide."
+    },
+    "community": {
+      "key": "columbus-jewish",
+      "name": "JewishColumbus",
+      "url": "https://www.jewishcolumbus.org/",
+      "attribution": "JewishColumbus",
+      "evidence": "Official Columbus Jewish community resource."
+    },
+    "attractions": [
+      "Columbus Zoo and Aquarium",
+      "COSI Columbus",
+      "Franklin Park Conservatory",
+      "Scioto Mile",
+      "German Village walk",
+      "Columbus Museum of Art",
+      "Topiary Park",
+      "Ohio Statehouse grounds",
+      "Wexner Center for the Arts framing",
+      "Park of Roses",
+      "Inniswood Metro Gardens",
+      "Olentangy Trail",
+      "North Market framing",
+      "Franklin Park",
+      "Highbanks Metro Park",
+      "Ohio History Center"
+    ],
+    "heritage": [
+      "Columbus Jewish Historical Society framing",
+      "Congregation Beth Jacob Columbus framing"
+    ],
+    "stays": [
+      "Staying near Bexley",
+      "Staying near Short North"
+    ],
+    "shuls": [
+      "Congregation Beth Jacob Columbus",
+      "Ahavas Sholom Synagogue",
+      "Chabad of Columbus",
+      "Congregation Torat Emet",
+      "Temple Israel Columbus"
+    ],
+    "mikvaos": [
+      "Columbus Community Mikvah",
+      "Bexley Mikvah"
+    ],
+    "cemeteries": [
+      "New Agudas Achim Cemetery",
+      "Old Jewish Cemetery Columbus"
+    ],
+    "communityResources": [
+      "JewishColumbus"
+    ]
+  },
+  {
+    "market": "canada-ottawa",
+    "locality": "Ottawa",
+    "destination": "Ottawa",
+    "country": "Canada",
+    "includeDestination": true,
+    "tourism": {
+      "key": "ottawa-tourism",
+      "name": "Ottawa Tourism — Things to Do",
+      "url": "https://www.ottawatourism.ca/en/see-and-do",
+      "attribution": "Ottawa Tourism",
+      "evidence": "Official Ottawa visitor attractions guide."
+    },
+    "community": {
+      "key": "ottawa-jewish",
+      "name": "Jewish Federation of Ottawa",
+      "url": "https://www.jewishottawa.com/",
+      "attribution": "Jewish Federation of Ottawa",
+      "evidence": "Official Ottawa Jewish community resource."
+    },
+    "attractions": [
+      "Parliament Hill grounds",
+      "Canadian Museum of History framing",
+      "National Gallery of Canada",
+      "ByWard Market framing",
+      "Rideau Canal pathways",
+      "Canadian War Museum",
+      "Major's Hill Park",
+      "Notre-Dame Cathedral Basilica exterior",
+      "Gatineau Park framing",
+      "Canada Aviation and Space Museum",
+      "Dows Lake",
+      "Rideau Hall grounds framing",
+      "Nepean Point",
+      "Canadian Museum of Nature",
+      "Jacques-Cartier Park",
+      "Experimental Farm Arboretum"
+    ],
+    "heritage": [
+      "Ottawa Jewish Archives framing",
+      "Congregation Machzikei Hadas framing"
+    ],
+    "stays": [
+      "Staying near Centretown",
+      "Staying near Alta Vista"
+    ],
+    "shuls": [
+      "Congregation Machzikei Hadas",
+      "Congregation Beit Tikvah",
+      "Chabad of Ottawa",
+      "Ottawa Torah Center",
+      "Agudath Israel Congregation Ottawa"
+    ],
+    "mikvaos": [
+      "Ottawa Community Mikvah",
+      "Centrepointe Mikvah"
+    ],
+    "cemeteries": [
+      "Jewish Memorial Gardens Ottawa",
+      "Bank Street Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Federation of Ottawa"
+    ]
+  },
+  {
+    "market": "canada-calgary",
+    "locality": "Calgary",
+    "destination": "Calgary",
+    "country": "Canada",
+    "includeDestination": true,
+    "tourism": {
+      "key": "calgary-visit",
+      "name": "Visit Calgary — Things to Do",
+      "url": "https://www.visitcalgary.com/things-to-do",
+      "attribution": "Tourism Calgary",
+      "evidence": "Official Calgary visitor attractions guide."
+    },
+    "community": {
+      "key": "calgary-jewish",
+      "name": "Calgary Jewish Federation",
+      "url": "https://www.jewishcalgary.org/",
+      "attribution": "Calgary Jewish Federation",
+      "evidence": "Official Calgary Jewish community resource."
+    },
+    "attractions": [
+      "Calgary Tower framing",
+      "Heritage Park Historical Village",
+      "Calgary Zoo",
+      "Prince's Island Park",
+      "Glenbow Museum",
+      "Peace Bridge walk",
+      "Studio Bell National Music Centre framing",
+      "Fish Creek Provincial Park",
+      "Telus Spark",
+      "Inglewood Bird Sanctuary",
+      "Nose Hill Park",
+      "Olympic Plaza",
+      "Canada Olympic Park framing",
+      "Devonian Gardens",
+      "Bow River pathway",
+      "Banff day-trip framing"
+    ],
+    "heritage": [
+      "Jewish Historical Society of Southern Alberta framing",
+      "Beth Tzedec Congregation framing"
+    ],
+    "stays": [
+      "Staying near Bridgeland",
+      "Staying near Downtown Calgary"
+    ],
+    "shuls": [
+      "Beth Tzedec Congregation Calgary",
+      "Congregation House of Jacob Mikveh Israel",
+      "Chabad of Calgary",
+      "Calgary Jewish Community Centre framing campus",
+      "Shaarey Tzedec Congregation"
+    ],
+    "mikvaos": [
+      "Calgary Community Mikvah",
+      "Bridgeland Mikvah"
+    ],
+    "cemeteries": [
+      "Queen's Park Cemetery Jewish sections",
+      "Erlton Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Calgary Jewish Federation"
+    ]
+  },
+  {
+    "market": "uk-manchester",
+    "locality": "Manchester",
+    "destination": "Manchester",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "manchester-visit",
+      "name": "Visit Manchester — Things to Do",
+      "url": "https://www.visitmanchester.com/things-to-do",
+      "attribution": "Marketing Manchester / Visit Manchester",
+      "evidence": "Official Manchester visitor attractions guide."
+    },
+    "community": {
+      "key": "manchester-jewish",
+      "name": "Jewish Representative Council of Greater Manchester",
+      "url": "https://www.jewishmanchester.org/",
+      "attribution": "Jewish Representative Council of Greater Manchester",
+      "evidence": "Official Greater Manchester Jewish community resource."
+    },
+    "attractions": [
+      "Science and Industry Museum",
+      "Manchester Museum",
+      "Heaton Park",
+      "People's History Museum",
+      "John Rylands Library",
+      "Castlefield",
+      "National Football Museum framing",
+      "Whitworth Art Gallery",
+      "Fletcher Moss Botanical Garden",
+      "Imperial War Museum North",
+      "Salford Quays",
+      "Chetham's Library framing",
+      "Platt Fields Park",
+      "Trafford Centre outdoor plaza framing",
+      "Dunham Massey framing",
+      "Quarry Bank Mill framing"
+    ],
+    "heritage": [
+      "Manchester Jewish Museum",
+      "Higher Crumpsall Synagogue framing"
+    ],
+    "stays": [
+      "Staying near Prestwich",
+      "Staying near City Centre Manchester"
+    ],
+    "shuls": [
+      "Higher Crumpsall and Higher Broughton Synagogue",
+      "Holy Law South Broughton Congregation",
+      "Whitefield Hebrew Congregation",
+      "Chabad of Manchester",
+      "Manchester Great Synagogue framing historic"
+    ],
+    "mikvaos": [
+      "Manchester Community Mikvah Prestwich",
+      "Whitefield Mikvah"
+    ],
+    "cemeteries": [
+      "Rainsough Jewish Cemetery",
+      "Agecroft Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Jewish Representative Council of Greater Manchester"
+    ]
+  },
+  {
+    "market": "uk-leeds",
+    "locality": "Leeds",
+    "destination": "Leeds",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "leeds-visit",
+      "name": "Visit Leeds — Things to Do",
+      "url": "https://www.visitleeds.co.uk/things-to-do/",
+      "attribution": "Visit Leeds",
+      "evidence": "Official Leeds visitor attractions guide."
+    },
+    "community": {
+      "key": "leeds-jewish",
+      "name": "Leeds Jewish Community",
+      "url": "https://www.leedsjewishcommunity.com/",
+      "attribution": "Leeds Jewish Community",
+      "evidence": "Official Leeds Jewish community orientation resource."
+    },
+    "attractions": [
+      "Royal Armouries Museum",
+      "Leeds Art Gallery",
+      "Roundhay Park",
+      "Temple Newsam",
+      "Thackray Museum of Medicine",
+      "Kirkstall Abbey",
+      "Tropical World Roundhay",
+      "Leeds Industrial Museum",
+      "Harewood House framing",
+      "Otley Chevin Forest Park",
+      "Millennium Square",
+      "Canal and River Trust Leeds waterfront",
+      "Meanwood Valley Trail",
+      "Golden Acre Park",
+      "Abbey House Museum",
+      "Yorkshire Sculpture Park framing"
+    ],
+    "heritage": [
+      "Etz Chaim Synagogue Leeds framing",
+      "Beth Hamidrash Hagadol framing"
+    ],
+    "stays": [
+      "Staying near Moortown",
+      "Staying near City Centre Leeds"
+    ],
+    "shuls": [
+      "Beth Hamidrash Hagadol Synagogue",
+      "Etz Chaim Synagogue Leeds",
+      "UHC Leeds",
+      "Chabad of Leeds",
+      "Shomrei Hadass Synagogue"
+    ],
+    "mikvaos": [
+      "Leeds Community Mikvah",
+      "Moortown Mikvah"
+    ],
+    "cemeteries": [
+      "Gelderd Road Jewish Cemetery",
+      "New Farnley Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Leeds Jewish Representative Council"
+    ]
+  },
+  {
+    "market": "uk-gateshead",
+    "locality": "Gateshead",
+    "destination": "Gateshead / Newcastle",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "newcastle-gateshead",
+      "name": "NewcastleGateshead — Things to Do",
+      "url": "https://www.newcastlegateshead.com/things-to-do",
+      "attribution": "NewcastleGateshead Initiative",
+      "evidence": "Official NewcastleGateshead visitor attractions guide."
+    },
+    "community": {
+      "key": "gateshead-jewish",
+      "name": "Gateshead Jewish Community overview",
+      "url": "https://www.gatesheadjews.org.uk/",
+      "attribution": "Gateshead Jewish Community",
+      "evidence": "Community orientation resource for Gateshead Jewish institutions."
+    },
+    "attractions": [
+      "Angel of the North framing",
+      "Baltic Centre for Contemporary Art",
+      "Gateshead Millennium Bridge",
+      "Sage Gateshead exterior framing",
+      "Discovery Museum Newcastle",
+      "Great North Museum Hancock",
+      "Tynemouth Priory framing",
+      "Quayside walk",
+      "Jesmond Dene",
+      "Beamish Museum framing",
+      "Hadrian's Wall day-trip framing",
+      "Gibside National Trust framing",
+      "Saltwell Park",
+      "Life Science Centre",
+      "Souter Lighthouse framing",
+      "Northumberland National Park framing"
+    ],
+    "heritage": [
+      "Gateshead Talmudical College framing",
+      "Gateshead Jewish community streetscape"
+    ],
+    "stays": [
+      "Staying near Gateshead Jewish neighbourhood",
+      "Staying near Newcastle Quayside"
+    ],
+    "shuls": [
+      "Gateshead Hebrew Congregation",
+      "Bekehillas Yaakov Gateshead",
+      "Chabad of Gateshead research listing",
+      "Newcastle United Hebrew Congregation",
+      "Sunderland Hebrew Congregation framing historic"
+    ],
+    "mikvaos": [
+      "Gateshead Community Mikvah",
+      "Gateshead Women's Mikvah"
+    ],
+    "cemeteries": [
+      "Gateshead Jewish Cemetery",
+      "Newcastle Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Gateshead Jewish Community"
+    ]
+  },
+  {
+    "market": "uk-birmingham",
+    "locality": "Birmingham",
+    "destination": "Birmingham",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "birmingham-visit",
+      "name": "Visit Birmingham — Things to Do",
+      "url": "https://visitbirmingham.com/things-to-do",
+      "attribution": "Marketing Birmingham / Visit Birmingham",
+      "evidence": "Official Birmingham visitor attractions guide."
+    },
+    "community": {
+      "key": "birmingham-jewish",
+      "name": "Birmingham Jewish Community",
+      "url": "https://www.birminghamjewish.com/",
+      "attribution": "Birmingham Jewish Community",
+      "evidence": "Official Birmingham Jewish community orientation resource."
+    },
+    "attractions": [
+      "Birmingham Museum and Art Gallery",
+      "Cadbury World framing",
+      "Thinktank Birmingham Science Museum",
+      "Botanical Gardens Birmingham",
+      "Jewellery Quarter",
+      "Cannon Hill Park",
+      "Library of Birmingham exterior",
+      "Bullring exterior plaza framing",
+      "Sarehole Mill",
+      "Barber Institute of Fine Arts",
+      "Lickey Hills Country Park",
+      "Black Country Living Museum framing",
+      "National Trust Back to Backs",
+      "Edgbaston Reservoir",
+      "Aston Hall",
+      "Sutton Park"
+    ],
+    "heritage": [
+      "Singers Hill Synagogue framing",
+      "Birmingham Hebrew Congregation framing"
+    ],
+    "stays": [
+      "Staying near Edgbaston",
+      "Staying near City Centre Birmingham"
+    ],
+    "shuls": [
+      "Birmingham Central Synagogue",
+      "Singers Hill Synagogue",
+      "Chabad of Birmingham UK",
+      "Central Synagogue Birmingham",
+      "Moseley Synagogue framing historic"
+    ],
+    "mikvaos": [
+      "Birmingham Community Mikvah",
+      "Edgbaston Mikvah"
+    ],
+    "cemeteries": [
+      "Witton Jewish Cemetery",
+      "Brandwood End Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Birmingham Jewish Community Council"
+    ]
+  },
+  {
+    "market": "uk-liverpool",
+    "locality": "Liverpool",
+    "destination": "Liverpool",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "liverpool-visit",
+      "name": "Visit Liverpool — Things to Do",
+      "url": "https://www.visitliverpool.com/things-to-do",
+      "attribution": "Visit Liverpool",
+      "evidence": "Official Liverpool visitor attractions guide."
+    },
+    "community": {
+      "key": "liverpool-jewish",
+      "name": "Liverpool Jewish Community",
+      "url": "https://www.liverpooljewish.com/",
+      "attribution": "Liverpool Jewish Representative Council",
+      "evidence": "Official Liverpool Jewish community resource."
+    },
+    "attractions": [
+      "Royal Albert Dock",
+      "Museum of Liverpool",
+      "Merseyside Maritime Museum",
+      "Liverpool Cathedral exterior",
+      "Walker Art Gallery",
+      "Sefton Park",
+      "World Museum Liverpool",
+      "Pier Head waterfront",
+      "International Slavery Museum",
+      "Croxteth Hall and Country Park",
+      "Speke Hall framing",
+      "Calderstones Park",
+      "Liverpool Metropolitan Cathedral exterior",
+      "Otterspool Promenade",
+      "Port Sunlight Village framing",
+      "Wirral Country Park framing"
+    ],
+    "heritage": [
+      "Liverpool Old Hebrew Congregation Princes Road",
+      "Jewish Museum Liverpool research framing"
+    ],
+    "stays": [
+      "Staying near Childwall",
+      "Staying near Albert Dock"
+    ],
+    "shuls": [
+      "Liverpool Old Hebrew Congregation",
+      "Childwall Hebrew Congregation",
+      "Chabad of Liverpool",
+      "Allerton Hebrew Congregation",
+      "Greenbank Drive Synagogue framing historic"
+    ],
+    "mikvaos": [
+      "Liverpool Community Mikvah",
+      "Childwall Mikvah"
+    ],
+    "cemeteries": [
+      "Broad Green Jewish Cemetery",
+      "Rice Lane Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Liverpool Jewish Representative Council"
+    ]
+  },
+  {
+    "market": "scotland-glasgow",
+    "locality": "Glasgow",
+    "destination": "Glasgow",
+    "country": "United Kingdom",
+    "includeDestination": true,
+    "tourism": {
+      "key": "glasgow-people",
+      "name": "People Make Glasgow — Things to Do",
+      "url": "https://peoplemakeglasgow.com/things-to-do",
+      "attribution": "Glasgow City Marketing Bureau",
+      "evidence": "Official Glasgow visitor attractions guide."
+    },
+    "community": {
+      "key": "glasgow-jewish",
+      "name": "Glasgow Jewish Representative Council",
+      "url": "https://www.glasgowjewishcommunity.org/",
+      "attribution": "Glasgow Jewish Representative Council",
+      "evidence": "Official Glasgow Jewish community resource."
+    },
+    "attractions": [
+      "Kelvingrove Art Gallery and Museum",
+      "Riverside Museum",
+      "Glasgow Botanic Gardens",
+      "Pollok Country Park",
+      "Gallery of Modern Art Glasgow",
+      "People's Palace",
+      "Necropolis Glasgow framing",
+      "George Square",
+      "Hunterian Museum",
+      "Burrell Collection",
+      "Queen's Park Glasgow",
+      "Provand's Lordship",
+      "Glasgow Cathedral exterior",
+      "Loch Lomond day-trip framing",
+      "Scottish Event Campus waterfront walk",
+      "Victoria Park Fossil Grove"
+    ],
+    "heritage": [
+      "Garnethill Synagogue",
+      "Scottish Jewish Archives Centre"
+    ],
+    "stays": [
+      "Staying near Giffnock",
+      "Staying near City Centre Glasgow"
+    ],
+    "shuls": [
+      "Giffnock Newton Mearns Synagogue",
+      "Garnethill Synagogue",
+      "Chabad of Glasgow",
+      "Queen's Park Synagogue framing historic",
+      "Netherlee and Clarkston Synagogue"
+    ],
+    "mikvaos": [
+      "Glasgow Community Mikvah",
+      "Giffnock Mikvah"
+    ],
+    "cemeteries": [
+      "Glenduffhill Jewish Cemetery",
+      "Craigton Jewish Cemetery"
+    ],
+    "communityResources": [
+      "Glasgow Jewish Representative Council"
+    ]
+  }
+]

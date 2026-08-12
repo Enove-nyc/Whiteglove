@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
+import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
@@ -49,6 +50,7 @@ export default async function AttractionsPage() {
               A meaningful trip still leaves plenty of time to explore. This is the rest of it — with the two things a
               guidebook never tells you: how far it is from the kosher food, and what it does on Shabbos.
             </p>
+            <ListingAudienceNote />
           </div>
         </div>
       </section>

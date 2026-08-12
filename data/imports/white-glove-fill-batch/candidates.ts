@@ -13,6 +13,7 @@ const requiredBeforePublication: Readonly<Record<CandidateEntityType, readonly s
   ],
   attraction: [
     "Customer-facing summary reviewed against the cited source",
+    "Confirm suitable for Orthodox / Torah-observant travelers (Jewish welcome; kosher label not required; reject clubs, nightlife, mixed concerts, and similar)",
     "Current visit and Shabbos suitability checked before public release",
   ],
   stay_anchor: [
