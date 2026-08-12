@@ -17,6 +17,9 @@ import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStri
 import TripSetupPanel from "@/components/TripSetupPanel";
 import type { Crossing } from "@/lib/border-crossings";
 import DayProgress from "@/components/DayProgress";
+import DayZmanim from "@/components/DayZmanim";
+import { fetchTripZmanim, type TripZmanim } from "@/lib/trip-zmanim";
+import type { ZmanimDay } from "@/lib/zmanim-day";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { documentsForDay, tripDocuments } from "@/lib/trip-documents";
 import { borderIsWorthSaying, formatWait } from "@/lib/border-time";
@@ -220,6 +223,38 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [itin, borderCost, assume],
   );
   const summary = useMemo(() => summarize(days), [days]);
+
+  // The day's zmanim, once the traveler has asked for them. Worked out on the
+  // server — the calculation carries the whole KosherJava port, and nobody who
+  // leaves this off should be made to download it. Asked for again whenever
+  // the dates or the places move, because both change the answer.
+  //
+  // The answer is kept WITH the places it was worked out for. A hotel moved to
+  // another city leaves the old times sitting under the same date, and a table
+  // of yesterday's city's zmanim is worse than none — so a result whose key no
+  // longer matches the trip is simply not read.
+  const [zmanim, setZmanim] = useState<{ key: string; days: TripZmanim }>({ key: "", days: {} });
+  const zmanimKey = useMemo(
+    () =>
+      days
+        .map((d) => `${d.date}|${d.lodging?.coordinates ?? ""}|${d.activities.map((a) => a.coordinates ?? "").join(",")}`)
+        .join(";"),
+    [days],
+  );
+  useEffect(() => {
+    if (!itin.showZmanim || !days.length) return;
+    let current = true;
+    fetchTripZmanim(days).then((result) => {
+      if (current) setZmanim({ key: zmanimKey, days: result });
+    });
+    return () => {
+      current = false;
+    };
+    // days is rebuilt on every keystroke; zmanimKey is what actually moves the
+    // times, so the fetch follows that instead.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itin.showZmanim, zmanimKey]);
+  const zmanimForToday = itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
   // Who is buried at each beis hachaim on the trip, looked up by slug.
   const burials = useKeverBurials(itin.activities);
@@ -485,6 +520,21 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <Stat label="Driving" value={`${summary.travelHours} h`} />
             {summary.overpackedDays > 0 && <Stat label="Over-packed days" value={summary.overpackedDays} warn />}
             <div className="ml-auto flex flex-wrap items-center gap-3">
+              {/* Off until asked for. Somebody keeping the times wants them on
+                  every day of the trip and on whichever phone they open it on,
+                  so the answer is saved with the trip rather than the browser. */}
+              <button
+                type="button"
+                onClick={() => set({ showZmanim: !itin.showZmanim })}
+                aria-pressed={Boolean(itin.showZmanim)}
+                className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
+                  itin.showZmanim
+                    ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
+                    : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
+                }`}
+              >
+                {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
+              </button>
               <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
@@ -536,6 +586,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   signedIn={Boolean(viewer?.signedIn)}
                   isToday={day.date === todayInTrip}
                   adjustments={itin.adjustments ?? []}
+                  zmanim={zmanimForToday?.[day.date]}
                   onRecordAdjustment={recordAdjustment}
                   onClearAdjustments={clearAdjustments}
                   // Day one opens by default, except while the trip is running
@@ -632,12 +683,14 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, adjustments, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
   /** What actually happened, against the plan. Only asked about on the day. */
   adjustments: ItinAdjustment[];
+  /** The day's halachic times, when the traveler has asked to see them. */
+  zmanim?: ZmanimDay;
   onRecordAdjustment: (adjustment: ItinAdjustment) => void;
   onClearAdjustments: (dayKey: string) => void;
   defaultOpen?: boolean;
@@ -966,6 +1019,11 @@ function DayCard({ day, isToday, defaultOpen, adjustments, onRecordAdjustment, o
         {/* Only on the day itself. A trip three weeks away has nothing to say
             about how it is going, and a row of "are you running late?" buttons
             on every day of a fortnight would be noise on thirteen of them. */}
+        {/* Above the day's own notices, because the times govern the day rather
+            than comment on it — a Friday's candle-lighting decides when the
+            driving has to stop. */}
+        <DayZmanim zmanim={zmanim} />
+
         {isToday && (
           <DayProgress
             dayKey={day.date}
