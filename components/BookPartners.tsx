@@ -378,10 +378,10 @@ function FlightsForm({
       return;
     }
 
-    // One-way / round-trip stay on-site. Live fare rows when Travelpayouts is
-    // on; otherwise a compare row whose View & book is Stay22 Kayak via /go.
-    // Stay22 has no flights inventory API, so a missing Travelpayouts token
-    // is the intended product, not a broken search.
+    // One-way / round-trip stay on-site. Priced rows open that Travelpayouts
+    // fare's Aviasales link. A Kayak compare row has no listed price. Stay22
+    // has no flights inventory API, so a missing Travelpayouts token is the
+    // intended product, not a broken search.
     setLoading(true);
     setRows([]);
     setLiveMessage("");
@@ -403,7 +403,6 @@ function FlightsForm({
       if (data?.ok && Array.isArray(data.flights) && data.flights.length > 0) {
         setLiveMessage(data.message ?? "Compare fares with Kayak.");
         setLiveDetail(data.detail ?? "Prices and booking are on the partner site.");
-        const live = data.mode === "live";
         const nextRows: PartnerResultRow[] = data.flights.map(
           (flight: {
             id: string;
@@ -418,11 +417,11 @@ function FlightsForm({
             bookHref?: string;
           }) => ({
             id: flight.id,
-            title: flight.title || (flight.airline ? flight.airline.toUpperCase() : "Flight option"),
+            title: flight.title || "Flight option",
             subtitle: flight.subtitle || flight.summary,
             meta: flight.meta,
-            priceLabel: live ? moneyLabel(flight.price, flight.currency ?? "USD") : undefined,
-            priceNote: live && flight.price != null ? "From · per adult" : undefined,
+            priceLabel: moneyLabel(flight.price, flight.currency ?? "USD"),
+            priceNote: flight.price != null ? "From · per adult" : undefined,
             ctaLabel: "View & book",
             onOpen: () => {
               if (typeof window !== "undefined") {

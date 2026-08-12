@@ -5,14 +5,15 @@
  * search to call with STAY22_API_KEY. Kayak flights earn through Stay22 Allez
  * (`/allez/kayak?aid=&link=`), which /go already builds from the Stay22 ID.
  *
- * Travelpayouts Data API can still add a live fare list when
- * TRAVELPAYOUTS_TOKEN is set. It is optional. Without it, this returns an
- * on-site compare row whose View & book is the tracked Kayak search.
+ * Travelpayouts Data API can add cached fares when TRAVELPAYOUTS_TOKEN is set.
+ * A priced row must open THAT fare's Aviasales link (marker on the URL).
+ * Kayak is a separate compare row with no dollar amount. Never mix a
+ * Travelpayouts price with a Stay22 Kayak URL.
  */
 
 import { goHref } from "@/lib/affiliate/request";
 import { describeSearch, type SearchShape } from "@/lib/kayak-search";
-import { searchTravelpayoutsFlights, travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
+import { searchTravelpayoutsFlights, travelpayoutsTokenConfigured, type TravelpayoutsFlightOption } from "@/lib/travelpayouts-api";
 
 export type PartnerFlightOption = {
   id: string;
@@ -24,6 +25,8 @@ export type PartnerFlightOption = {
   transfers?: number;
   airline?: string;
   bookHref: string;
+  /** Who the click earns through. Must match the URL behind View & book. */
+  network: "travelpayouts" | "stay22";
 };
 
 export type PartnerFlightSearch = {
@@ -67,28 +70,61 @@ function compareHref(search: PartnerFlightSearch, origin: string, destination: s
   });
 }
 
-function compareResult(search: PartnerFlightSearch, origin: string, destination: string): PartnerFlightResult {
+function stopsLabel(transfers: number): string {
+  if (transfers === 0) return "Nonstop";
+  if (transfers === 1) return "1 stop";
+  return `${transfers} stops`;
+}
+
+export function kayakCompareRow(search: PartnerFlightSearch, origin: string, destination: string): PartnerFlightOption {
   const shape = shapeFor({ ...search, origin, destination });
-  const summary = describeSearch(shape);
+  return {
+    id: "flights-kayak",
+    title: describeSearch(shape),
+    subtitle: "Compare fares on Kayak. Prices are shown there, not here.",
+    bookHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
+    network: "stay22",
+  };
+}
+
+function compareResult(search: PartnerFlightSearch, origin: string, destination: string): PartnerFlightResult {
   return {
     ok: true,
     mode: "compare",
     message: "Compare fares with Kayak.",
     detail: "Prices and booking are on the partner site.",
-    flights: [
-      {
-        id: "flights-kayak",
-        title: summary,
-        subtitle: "Open the partner search with your route and dates filled in.",
-        bookHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
-      },
-    ],
+    flights: [kayakCompareRow(search, origin, destination)],
+  };
+}
+
+/** A priced Travelpayouts fare, or null when it has no matching booking URL. */
+export function liveRowFromFare(flight: TravelpayoutsFlightOption): PartnerFlightOption | null {
+  if (!flight.bookUrl || !flight.bookUrl.startsWith("https://")) return null;
+  try {
+    const host = new URL(flight.bookUrl).hostname.replace(/^www\./, "").toLowerCase();
+    if (host !== "aviasales.com") return null;
+  } catch {
+    return null;
+  }
+  const title = flight.airlineName?.trim() || "Flight";
+  return {
+    id: flight.id,
+    title,
+    subtitle: flight.summary,
+    meta: stopsLabel(flight.transfers),
+    price: flight.price,
+    currency: flight.currency,
+    transfers: flight.transfers,
+    airline: flight.airline,
+    bookHref: flight.bookUrl,
+    network: "travelpayouts",
   };
 }
 
 /**
  * Live fares when Travelpayouts is configured; otherwise a Kayak compare row.
  * Never tells the traveller that flights are broken because a token is missing.
+ * Never attaches a Travelpayouts price to a Kayak URL.
  */
 export async function searchPartnerFlights(search: PartnerFlightSearch): Promise<PartnerFlightResult> {
   const origin = iata(search.origin);
@@ -111,24 +147,18 @@ export async function searchPartnerFlights(search: PartnerFlightSearch): Promise
       returnDate: search.returnDate,
       nonstop: search.nonstop,
     });
-    if (live.ok && live.flights.length > 0) {
-      return {
-        ok: true,
-        mode: "live",
-        currency: live.currency,
-        message: live.message,
-        flights: live.flights.map((flight) => ({
-          id: flight.id,
-          title: flight.airline ? flight.airline.toUpperCase() : "Flight option",
-          subtitle: flight.summary,
-          meta: flight.transfers === 0 ? "Nonstop" : flight.transfers === 1 ? "1 stop" : `${flight.transfers} stops`,
-          price: flight.price,
-          currency: flight.currency,
-          transfers: flight.transfers,
-          airline: flight.airline,
-          bookHref: compareHref(search, flight.origin, flight.destination, flight.departDate, flight.returnDate),
-        })),
-      };
+    if (live.ok) {
+      const priced = live.flights.map(liveRowFromFare).filter((row): row is PartnerFlightOption => row != null);
+      if (priced.length > 0) {
+        return {
+          ok: true,
+          mode: "live",
+          currency: live.currency,
+          message: live.message,
+          detail: "A listed price opens that offer. Compare more fares on Kayak without a listed price.",
+          flights: [...priced, kayakCompareRow(search, origin, destination)],
+        };
+      }
     }
   }
 

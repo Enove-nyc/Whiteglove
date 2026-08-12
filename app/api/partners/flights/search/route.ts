@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 /**
  * Flight search for /book.
  *
- * Live fare rows when Travelpayouts Data API is configured. Otherwise a
- * compare row whose View & book is /go → Stay22 Kayak (from/to/dates filled).
- * Payment stays with the partner. Stay22 has no flights inventory API.
+ * Priced rows (Travelpayouts Data API) open that fare's Aviasales link with
+ * the marker. Otherwise — and as an extra row beside priced fares — a compare
+ * row whose View & book is /go → Stay22 Kayak. Never a Travelpayouts price
+ * with a Kayak URL. Stay22 has no flights inventory API.
  */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

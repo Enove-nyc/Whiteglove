@@ -20,6 +20,8 @@ describe("on-site flight compare rows", () => {
       assert.equal(result.flights.length, 1);
       assert.match(result.message, /Kayak/i);
       assert.doesNotMatch(result.message, /unavailable|not available|could not be loaded/i);
+      assert.equal(result.flights[0].price, undefined);
+      assert.equal(result.flights[0].network, "stay22");
       assert.match(result.flights[0].bookHref, /^\/go\?/);
       assert.match(result.flights[0].bookHref, /product=flight/);
       assert.match(result.flights[0].bookHref, /legs=JFK-FCO-2026-09-12/);

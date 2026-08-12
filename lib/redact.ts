@@ -34,6 +34,7 @@ const SECRET_ENV_VARS = [
   "DUFFEL_API_KEY",
   "BOOKING_AFFILIATE_ID",
   "TRAVELPAYOUTS_MARKER",
+  "TRAVELPAYOUTS_TOKEN",
 ] as const;
 
 const MASK = "[redacted]";

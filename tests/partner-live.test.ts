@@ -27,6 +27,8 @@ describe("live partner search wiring", () => {
     const helper = readFileSync("lib/partner-flights.ts", "utf8");
     assert.match(helper, /searchTravelpayoutsFlights/);
     assert.match(helper, /Stay22's Direct Travel API is accommodations only/);
+    assert.doesNotMatch(helper, /bookHref:\s*compareHref\(search, flight/);
+    assert.match(helper, /liveRowFromFare/);
     const cars = readFileSync("app/api/partners/cars/search/route.ts", "utf8");
     assert.match(cars, /searchPartnerCars/);
     assert.doesNotMatch(hotels, /DUFFEL/);
