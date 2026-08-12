@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { duffelRefusal } from "@/lib/duffel-guard";
+import { duffelBearer } from "@/lib/duffel-token";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
 import { getDestinationRecord } from "@/data/destination-database";
 
@@ -12,8 +13,9 @@ export async function POST(request: NextRequest) {
   if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
 
 
-  const token = process.env.DUFFEL_ACCESS_TOKEN;
-  if (!token) return NextResponse.json({ message: "Hotel search will be available once the White Glove Duffel Stays account is connected.", detail: "Duffel Stays access must be enabled for the account before live hotel results can be shown." });
+  const access = duffelBearer();
+  if (!access.ok) return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
+  const token = access.token;
 
   const { destination, guests, checkInDate, checkOutDate } = await request.json();
   const slug = String(destination).trim().toLowerCase();

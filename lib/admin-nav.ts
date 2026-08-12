@@ -82,7 +82,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, passwords, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "The website’s words", blurb: "Headline, contact line and footer." },
@@ -109,7 +109,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/membership", label: "White Glove Plus", blurb: "Planned only — not launched." },
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
-      { href: "/admin/duffel", label: "Duffel flights", blurb: "Search and ticket directly. Not on the public site." },
+      { href: "/admin/duffel", label: "Duffel", blurb: "Search and book flights here. Not on the public site." },
     ],
   },
 ];

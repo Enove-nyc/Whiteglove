@@ -124,21 +124,10 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["DUFFEL_ACCESS_TOKEN"],
-    what: "Searching and booking flights and hotels on this site.",
-    without: "Nothing — flights go to Kayak and hotels to Booking.com, which is the default either way. See lib/booking-partners.ts.",
+    what: "Admin-only Duffel search and ticketing at /admin/duffel. Not on the public site.",
+    without: "The admin Duffel screen cannot search until a real token is added. Visitors are unaffected — they use partner links on /book.",
     weight: "nicety",
-  },
-  {
-    vars: ["DUFFEL_FLIGHTS"],
-    what: 'Set to "1" to move flight search onto this site instead of Kayak.',
-    without: "Nothing. Flights go to Kayak, which is the default.",
-    weight: "nicety",
-  },
-  {
-    vars: ["DUFFEL_STAYS"],
-    what: 'Set to "1" to move hotel search onto this site instead of Booking.com.',
-    without: "Nothing. Hotels go to Booking.com, which is the default.",
-    weight: "nicety",
+    where: "Duffel dashboard (duffel.com → Developers). A placeholder value is not a token.",
   },
   {
     vars: ["AERODATABOX_API_KEY"],

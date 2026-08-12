@@ -183,8 +183,8 @@ export default async function AdminSettingsPage() {
           />
           <Card
             href="/admin/duffel"
-            title="Duffel flights"
-            detail="Search and ticket directly from the admin. Not on the public site."
+            title="Duffel"
+            detail="Search and book flights in the admin. Not on the public site."
           />
         </div>
       </section>

@@ -60,7 +60,8 @@ export default function DuffelKeyTest() {
       <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
         This runs a real search — London to New York, three weeks out, both as whole cities — and shows exactly what
         Duffel said. It also reports whether the token is a <strong>test</strong> one, which returns invented flights
-        that look real on the page and cannot be booked by anybody.
+        that look real on the admin search and cannot be ticketed. Visitors never see this; public /book uses partner
+        links.
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -97,7 +98,8 @@ export default function DuffelKeyTest() {
       <p className="mt-4 text-xs leading-5 text-stone-500">
         The variable is <code className={code}>DUFFEL_ACCESS_TOKEN</code>, set in Vercel under Settings → Environment
         Variables. Duffel issues a separate token for test and for live; environment variables are read when the site
-        builds, so a new token does nothing until you redeploy.
+        builds, so a new token does nothing until you redeploy. Get a real token from the Duffel dashboard — a
+        placeholder will not search.
       </p>
     </section>
   );
