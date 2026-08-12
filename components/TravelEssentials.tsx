@@ -1,4 +1,5 @@
 import { AffiliateDisclosure } from "@/components/BookingLink";
+import EssentialPartnerForm from "@/components/EssentialPartnerForm";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import {
   essentialsForContext,
@@ -118,27 +119,44 @@ export default async function TravelEssentials({
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
-            <li key={card.id}>
-              <a
-                href={card.href}
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                className="flex h-full flex-col justify-between border-t border-[var(--gold-light)] bg-transparent pt-5 transition hover:border-[var(--gold)]"
-              >
-                <div>
-                  <p className="text-lg leading-none text-[var(--gold-ink)]" aria-hidden="true">
-                    {card.icon}
-                  </p>
-                  <h3 className="mt-3 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
-                    {card.name}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">{card.blurb}</p>
-                </div>
-                <span className="mt-5 inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                  {card.cta}
-                  <span className="sr-only"> — opens in a new tab</span>
-                </span>
-              </a>
+            <li key={`${card.id}-${card.offer}`}>
+              {card.linkMode === "landing" ? (
+                <EssentialPartnerForm
+                  product={card.product}
+                  offer={card.offer}
+                  name={card.name}
+                  blurb={card.blurb}
+                  cta={card.cta}
+                  icon={card.icon}
+                  page={page}
+                  placement={`${ctx.placement}${card.offer > 0 ? `-${card.offer}` : ""}`}
+                  destinationSlug={destinationSlug}
+                  defaultDestination={destinationName ?? ""}
+                  defaultCheckIn={checkIn ?? ""}
+                  defaultCheckOut={checkOut ?? ""}
+                />
+              ) : (
+                <a
+                  href={card.href}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  className="flex h-full flex-col justify-between border-t border-[var(--gold-light)] bg-transparent pt-5 transition hover:border-[var(--gold)]"
+                >
+                  <div>
+                    <p className="text-lg leading-none text-[var(--gold-ink)]" aria-hidden="true">
+                      {card.icon}
+                    </p>
+                    <h3 className="mt-3 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+                      {card.name}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-stone-600">{card.blurb}</p>
+                  </div>
+                  <span className="mt-5 inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+                    {card.cta}
+                    <span className="sr-only"> — opens in a new tab</span>
+                  </span>
+                </a>
+              )}
             </li>
           ))}
         </ul>

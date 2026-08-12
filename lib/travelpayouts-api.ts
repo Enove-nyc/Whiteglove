@@ -2,7 +2,9 @@
  * Travelpayouts Data API — live flight price options for /book.
  *
  * Hotels stay on Stay22. Cars have no comparable public inventory API in this
- * account setup, so car search keeps the tracked partner hand-off.
+ * account setup (EconomyBookings / DiscoverCars APIs need separate credentials
+ * the owner has not been given). Car search still uses the on-site results
+ * panel, then a tracked /go hand-off.
  *
  * Auth: X-Access-Token (or token=). Env: TRAVELPAYOUTS_TOKEN from the
  * Travelpayouts dashboard (API tools). Marker alone is not enough for Data API.
@@ -24,6 +26,8 @@ export type TravelpayoutsFlightOption = {
   departDate: string;
   returnDate?: string;
   airline?: string;
+  flightNumber?: string;
+  departTime?: string;
   transfers: number;
   price: number;
   currency: string;
@@ -62,9 +66,81 @@ function cacheKey(search: FlightPriceSearch): string {
   return [search.origin, search.destination, search.departDate, search.returnDate ?? "", search.nonstop ? "1" : "0"].join("|");
 }
 
+export type RawTravelpayoutsFlight = {
+  origin?: string;
+  destination?: string;
+  origin_airport?: string;
+  destination_airport?: string;
+  departure_at?: string;
+  return_at?: string;
+  airline?: string;
+  transfers?: number;
+  price?: number;
+  flight_number?: string | number;
+};
+
+function clock(iso?: string): string | undefined {
+  const match = iso?.match(/T(\d{2}:\d{2})/);
+  return match?.[1];
+}
+
+/** Map a Data API payload into on-site result rows. Exported for tests. */
+export function mapTravelpayoutsFlights(
+  rows: RawTravelpayoutsFlight[] | undefined,
+  search: FlightPriceSearch,
+  currency: string,
+): TravelpayoutsFlightOption[] {
+  const origin = iata(search.origin);
+  const destination = iata(search.destination);
+  const flights: TravelpayoutsFlightOption[] = [];
+
+  for (const row of rows ?? []) {
+    const price = typeof row.price === "number" ? row.price : NaN;
+    if (!Number.isFinite(price)) continue;
+    const depart = (row.departure_at ?? search.departDate).slice(0, 10);
+    const ret = row.return_at ? String(row.return_at).slice(0, 10) : search.returnDate;
+    const transfers = Math.max(0, Number(row.transfers) || 0);
+    const airline = row.airline?.trim();
+    const from = (row.origin_airport ?? row.origin ?? origin).toUpperCase();
+    const to = (row.destination_airport ?? row.destination ?? destination).toUpperCase();
+    const flightNumber = row.flight_number != null ? String(row.flight_number).trim() : "";
+    const departTime = clock(row.departure_at);
+    const stops = transfers === 0 ? "Nonstop" : transfers === 1 ? "1 stop" : `${transfers} stops`;
+    const summary = [
+      airline ? airline.toUpperCase() : null,
+      flightNumber || null,
+      `${from} → ${to}`,
+      depart,
+      departTime ?? null,
+      ret ? `return ${ret}` : null,
+      stops,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    flights.push({
+      id: [from, to, depart, ret ?? "", airline ?? "", flightNumber, String(price), String(transfers)].join("-"),
+      origin: from,
+      destination: to,
+      departDate: depart,
+      returnDate: ret,
+      airline,
+      flightNumber: flightNumber || undefined,
+      departTime,
+      transfers,
+      price,
+      currency,
+      summary,
+    });
+    if (flights.length >= MAX_RESULTS) break;
+  }
+  return flights;
+}
+
 /**
  * Cheap / recent tickets for exact dates. Not a full OTA offer matrix — enough
  * to show live prices on-site before handing off to the booking partner.
+ *
+ * Public messages never name env vars — those belong on the connections screen.
  */
 export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Promise<TravelpayoutsFlightResult> {
   const key = token();
@@ -72,8 +148,8 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
     return {
       ok: false,
       mode: "unavailable",
-      message: "Live flight prices need TRAVELPAYOUTS_TOKEN on the server.",
-      detail: "Add the Data API token from your Travelpayouts dashboard to .env.local and Vercel. Searches still open with the partner when the token is missing.",
+      message: "Live flight prices are not available just now.",
+      detail: "You can still compare and book with a partner.",
     };
   }
 
@@ -98,6 +174,7 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
   params.set("destination", destination);
   params.set("departure_at", search.departDate);
   if (search.returnDate) params.set("return_at", search.returnDate);
+  else params.set("one_way", "true");
   params.set("currency", "usd");
   params.set("limit", String(MAX_RESULTS));
   params.set("sorting", "price");
@@ -118,8 +195,8 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
     return {
       ok: false,
       mode: "unavailable",
-      message: "Travelpayouts could not be reached just now.",
-      detail: "Try again shortly, or open the partner search.",
+      message: "Live flight prices could not be loaded just now.",
+      detail: "You can still compare and book with a partner.",
     };
   }
 
@@ -127,72 +204,36 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
     return {
       ok: false,
       mode: "unavailable",
-      message: "Travelpayouts did not accept the API token.",
-      detail: "Check TRAVELPAYOUTS_TOKEN in Vercel.",
+      message: "Live flight prices are not available just now.",
+      detail: "You can still compare and book with a partner.",
     };
   }
   if (!response.ok) {
     return {
       ok: false,
       mode: "unavailable",
-      message: "Travelpayouts could not complete this flight search.",
-      detail: `HTTP ${response.status}`,
+      message: "Live flight prices could not be loaded just now.",
+      detail: "You can still compare and book with a partner.",
     };
   }
 
   const body = (await response.json().catch(() => null)) as {
     success?: boolean;
     currency?: string;
-    data?: Array<{
-      origin?: string;
-      destination?: string;
-      departure_at?: string;
-      return_at?: string;
-      airline?: string;
-      transfers?: number;
-      price?: number;
-      flight_number?: string | number;
-    }>;
+    data?: RawTravelpayoutsFlight[];
   } | null;
 
   if (!body || body.success === false) {
     return {
       ok: false,
       mode: "unavailable",
-      message: "Travelpayouts returned no usable flight data.",
+      message: "Live flight prices are not available for this search.",
+      detail: "You can still compare and book with a partner.",
     };
   }
 
   const currency = (body.currency || "USD").toUpperCase();
-  const flights: TravelpayoutsFlightOption[] = [];
-
-  for (const row of body.data ?? []) {
-    const price = typeof row.price === "number" ? row.price : NaN;
-    if (!Number.isFinite(price)) continue;
-    const depart = (row.departure_at ?? search.departDate).slice(0, 10);
-    const ret = row.return_at ? String(row.return_at).slice(0, 10) : search.returnDate;
-    const transfers = Math.max(0, Number(row.transfers) || 0);
-    const airline = row.airline?.trim();
-    const from = (row.origin ?? origin).toUpperCase();
-    const to = (row.destination ?? destination).toUpperCase();
-    const stops = transfers === 0 ? "Nonstop" : transfers === 1 ? "1 stop" : `${transfers} stops`;
-    const summary = [airline ? airline.toUpperCase() : null, `${from} → ${to}`, depart, ret ? `return ${ret}` : null, stops]
-      .filter(Boolean)
-      .join(" · ");
-    flights.push({
-      id: [from, to, depart, ret ?? "", airline ?? "", String(price), String(transfers)].join("-"),
-      origin: from,
-      destination: to,
-      departDate: depart,
-      returnDate: ret,
-      airline,
-      transfers,
-      price,
-      currency,
-      summary,
-    });
-    if (flights.length >= MAX_RESULTS) break;
-  }
+  const flights = mapTravelpayoutsFlights(body.data, { ...search, origin, destination }, currency);
 
   const result: TravelpayoutsFlightResult = {
     ok: true,

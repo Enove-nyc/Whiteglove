@@ -46,7 +46,7 @@ const COMPARISON: Array<[string, string, string]> = [
   ],
   [
     "Flights",
-    "Compare airlines and routes for your dates, and pay by card.",
+    "Compare airlines and routes for your dates, then book with a partner.",
     "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
   ],
   [
@@ -209,7 +209,7 @@ export default async function BookPage({
       </section>
 
       {/* Structured Travel Essentials first; free-form custom extras after. */}
-      <TravelEssentials pageType="book" placement="book-essentials" />
+      <TravelEssentials pageType="book" placement="book-essentials" destinationName={destination || undefined} />
       <TravelExtras extras={extras} />
 
       {/* Cash and points, set side by side per category. Two independent

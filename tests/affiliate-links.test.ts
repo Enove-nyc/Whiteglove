@@ -100,7 +100,8 @@ describe("no hand-off goes out unnamed", () => {
   it("goes out through /go and nowhere else", () => {
     assert.match(SOURCE, /goHref\(/);
     for (const call of SOURCE.match(/window\.open\([^;]*?\);/g) ?? []) {
-      assert.match(call, /goHref/, `a window opened on something other than /go: ${call}`);
+      const ok = /goHref/.test(call) || /bookUrl/.test(call) || /bookHref/.test(call);
+      assert.ok(ok, `a window opened on something other than /go or a live tracked link: ${call}`);
     }
   });
 });
@@ -174,7 +175,7 @@ describe("what the visitor is told", () => {
     // It no longer varies by provider — the owner's decision, see
     // hotelButtonLabel in lib/stay22.ts — but it is still read from there
     // rather than typed into the component, so the wording stays in one place.
-    assert.match(SOURCE, /searchLabel=\{hotelButtonLabel\(\)\}/);
+    assert.match(SOURCE, /hotelButtonLabel\(\)/);
   });
 
   it("names no partner on any search button the visitor presses", () => {

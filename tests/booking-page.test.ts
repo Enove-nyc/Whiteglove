@@ -107,7 +107,7 @@ describe("hotels first", () => {
 
   it("puts hotels first in the cash-and-points comparison too", () => {
     const comparison = PAGE.slice(PAGE.indexOf("const COMPARISON"), PAGE.indexOf("const STEPS"));
-    assert.ok(comparison.indexOf('"Hotels"') < comparison.indexOf('"Flights"'));
+    assert.ok(comparison.indexOf('"Where to stay"') < comparison.indexOf('"Flights"'));
     assert.ok(comparison.indexOf('"Flights"') < comparison.indexOf('"Cars"'));
   });
 });

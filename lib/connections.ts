@@ -184,7 +184,7 @@ export const CONNECTIONS: Connection[] = [
     vars: ["TRAVELPAYOUTS_TOKEN"],
     what: "Travelpayouts Data API token — live flight prices on Search booking partners.",
     without:
-      "Flight search still opens with the partner and still works. Live prices on the page simply stay off until this is set.",
+      "The flight form and results panel still appear. Live prices need this token; without it, View & book opens the partner search.",
     weight: "feature",
     where: "Travelpayouts dashboard → API tools. Separate from the marker and from pasted redirect links.",
   },

@@ -170,6 +170,15 @@ describe("Travel Essentials surfaces", () => {
     assert.match(readFileSync("app/book/page.tsx", "utf8"), /TravelEssentials/);
   });
 
+  it("turns landing cards into an on-site form that still leaves through /go", () => {
+    const essentials = readFileSync("components/TravelEssentials.tsx", "utf8");
+    const form = readFileSync("components/EssentialPartnerForm.tsx", "utf8");
+    assert.match(essentials, /EssentialPartnerForm/);
+    assert.match(form, /goHref/);
+    assert.match(form, /AddressAutocomplete/);
+    assert.doesNotMatch(form, /kayak\.com|getyourguide\.com|tp\.media/);
+  });
+
   it("shows a visible disclosure, not tooltip-only", () => {
     const component = readFileSync("components/TravelEssentials.tsx", "utf8");
     assert.match(component, /We may earn a commission from qualifying bookings/);

@@ -74,8 +74,8 @@ export default async function TransfersPage() {
 
       {/* The hand-off, as a panel rather than a card in a row — on this page it
           is the point rather than an add-on. Renders nothing when the owner has
-          not enabled and configured it. See components/TransferBooking.tsx for
-          why it is not a search form. */}
+          why it is not a full inventory search — the partner still asks for
+          the address and flight number. */}
       <TransferBooking />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">

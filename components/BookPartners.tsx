@@ -233,7 +233,7 @@ export default function BookPartners({
           hand-off. White Glove never takes payment — Duffel checkout stays
           admin-only. */}
       {pay === "cash" && kind === "flights" && (
-        <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} multiCity={multiCity} liveEnabled={live.flights} />
+        <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} multiCity={multiCity} />
       )}
       {pay === "cash" && kind === "hotels" && (
         <HotelsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} liveEnabled={live.hotels} />
@@ -296,23 +296,23 @@ function FlightsForm({
   onOpened,
   prefill,
   multiCity = true,
-  liveEnabled = false,
 }: {
   onAdd: AddFn;
   onOpened: (b: PendingBooking) => void;
   prefill?: Prefill;
   multiCity?: boolean;
-  liveEnabled?: boolean;
 }) {
   const [trip, setTrip] = useState<TripKind>("round-trip");
   const [legs, setLegs] = useState<Leg[]>([{ from: prefill?.from ?? "", to: prefill?.to ?? "", date: prefill?.depart ?? "" }]);
   const [ret, setRet] = useState(prefill?.ret ?? "");
   const [nonstop, setNonstop] = useState(false);
+  const [passengers, setPassengers] = useState("1");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [liveMessage, setLiveMessage] = useState("");
   const [liveDetail, setLiveDetail] = useState("");
   const [rows, setRows] = useState<PartnerResultRow[]>([]);
+  const adults = Math.max(1, Math.min(9, Number(passengers) || 1));
 
   const setLeg = (index: number, patch: Partial<Leg>) =>
     setLegs((current) => current.map((leg, i) => (i === index ? { ...leg, ...patch } : leg)));
@@ -349,78 +349,97 @@ function FlightsForm({
       product: "flight",
       legs: wanted.legs.map((l) => ({ from: airportCode(l.from), to: airportCode(l.to), date: l.date })),
       checkOut: wanted.trip === "round-trip" ? wanted.ret : "",
+      adults,
       nonstop,
       placement: "book-flights",
     });
     onOpened({ kind: "flight", summary: describeSearch(wanted), save: (confirmation) => addToTrip(confirmation) });
   }
 
+  function partnerRow(wanted: SearchShape): PartnerResultRow {
+    return {
+      id: "flights-partner",
+      title: describeSearch(wanted),
+      subtitle: "Compare fares and complete booking with a partner.",
+      ctaLabel: "View & book",
+      onOpen: () => handOff(wanted),
+    };
+  }
+
   async function search() {
     const wanted = checked();
     if (!wanted) return;
-    if (wanted.trip === "multi-city" && !multiCity) {
-      setError("Multi-city searches are not available at the moment. Search one journey at a time, and each one can be saved to the trip.");
+    if (wanted.trip === "multi-city") {
+      if (!multiCity) {
+        setError("Multi-city searches are not available at the moment. Search one journey at a time, and each one can be saved to the trip.");
+        return;
+      }
+      handOff(wanted);
       return;
     }
 
-    // Live prices for one-way / round-trip only. Multi-city stays partner hand-off.
-    if (liveEnabled && wanted.trip !== "multi-city") {
-      setLoading(true);
-      setRows([]);
-      setLiveMessage("");
-      setLiveDetail("");
-      try {
-        const response = await fetch("/api/partners/flights/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin: airportCode(wanted.legs[0].from),
-            destination: airportCode(wanted.legs[0].to),
-            departDate: wanted.legs[0].date,
-            returnDate: wanted.trip === "round-trip" ? wanted.ret : undefined,
-            nonstop,
+    // One-way / round-trip stay on-site: live prices when the Data API is on,
+    // otherwise a results row that opens the tracked partner search. Multi-city
+    // stays a hand-off because the inventory API cannot express it.
+    setLoading(true);
+    setRows([]);
+    setLiveMessage("");
+    setLiveDetail("");
+    try {
+      const response = await fetch("/api/partners/flights/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: airportCode(wanted.legs[0].from),
+          destination: airportCode(wanted.legs[0].to),
+          departDate: wanted.legs[0].date,
+          returnDate: wanted.trip === "round-trip" ? wanted.ret : undefined,
+          nonstop,
+          adults,
+        }),
+      });
+      const data = await response.json();
+      if (data?.ok && data.mode === "live" && Array.isArray(data.flights)) {
+        setLiveMessage(data.message ?? "");
+        const nextRows: PartnerResultRow[] = data.flights.map(
+          (flight: {
+            id: string;
+            summary: string;
+            price: number;
+            currency: string;
+            transfers: number;
+            airline?: string;
+            bookHref?: string;
+          }) => ({
+            id: flight.id,
+            title: flight.airline ? flight.airline.toUpperCase() : "Flight option",
+            subtitle: flight.summary,
+            meta: flight.transfers === 0 ? "Nonstop" : flight.transfers === 1 ? "1 stop" : `${flight.transfers} stops`,
+            priceLabel: moneyLabel(flight.price, flight.currency),
+            priceNote: "From · per adult",
+            ctaLabel: "View & book",
+            onOpen: () => {
+              if (typeof window !== "undefined") {
+                if (flight.bookHref) window.open(flight.bookHref, "_blank", "noopener,noreferrer");
+                else handOff(wanted);
+              }
+              onOpened({ kind: "flight", summary: flight.summary, save: (confirmation) => addToTrip(confirmation) });
+            },
           }),
-        });
-        const data = await response.json();
-        if (data?.ok && data.mode === "live" && Array.isArray(data.flights)) {
-          setLiveMessage(data.message ?? "");
-          const nextRows: PartnerResultRow[] = data.flights.map(
-            (flight: {
-              id: string;
-              summary: string;
-              price: number;
-              currency: string;
-              transfers: number;
-              airline?: string;
-            }) => ({
-              id: flight.id,
-              title: flight.airline ? flight.airline.toUpperCase() : "Flight option",
-              subtitle: flight.summary,
-              meta: flight.transfers === 0 ? "Nonstop" : flight.transfers === 1 ? "1 stop" : `${flight.transfers} stops`,
-              priceLabel: moneyLabel(flight.price, flight.currency),
-              priceNote: "Recent fare · compare to book",
-              ctaLabel: "Compare & book",
-              onOpen: () => handOff(wanted),
-            }),
-          );
-          setRows(nextRows);
-          setLoading(false);
-          if (nextRows.length === 0) {
-            // Still offer the partner door when inventory is empty.
-            handOff(wanted);
-          }
-          return;
-        }
-        setLiveMessage(data?.message ?? "Live prices are not available for this search.");
-        setLiveDetail(data?.detail ?? "");
-      } catch {
-        setLiveMessage("Live prices could not be loaded.");
-        setLiveDetail("Opening the partner search instead.");
+        );
+        setRows(nextRows);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      setLiveMessage(data?.message ?? "Live prices are not available for this search.");
+      setLiveDetail(data?.detail ?? "Compare and book with a partner.");
+      setRows([partnerRow(wanted)]);
+    } catch {
+      setLiveMessage("Live prices could not be loaded.");
+      setLiveDetail("Compare and book with a partner.");
+      setRows([partnerRow(wanted)]);
     }
-
-    handOff(wanted);
+    setLoading(false);
   }
 
   function addToTrip(confirmation?: string) {
@@ -455,9 +474,20 @@ function FlightsForm({
         <TripTypeButton active={trip === "round-trip"} onClick={() => chooseTrip("round-trip")}>Round trip</TripTypeButton>
         <TripTypeButton active={trip === "one-way"} onClick={() => chooseTrip("one-way")}>One way</TripTypeButton>
         <TripTypeButton active={multi} onClick={() => chooseTrip("multi-city")}>Multi-city</TripTypeButton>
-        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
+        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:min-h-0">
           <input type="checkbox" checked={nonstop} onChange={(e) => setNonstop(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />
           Nonstop only
+        </label>
+        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Passengers</span>
+          <input
+            type="number"
+            min={1}
+            max={9}
+            value={passengers}
+            onChange={(e) => setPassengers(e.target.value)}
+            className="w-14 border-0 bg-transparent p-0 text-[15px] text-[var(--navy)] outline-none"
+          />
         </label>
       </div>
 
@@ -521,7 +551,16 @@ function FlightsForm({
       )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} searchLabel="Search flights" busy={loading} />
+      <ActionRow
+        onSearch={search}
+        searchLabel="Search flights"
+        busy={loading}
+        secondary={
+          rows.length > 0
+            ? { label: "Compare all on partner", onClick: () => { const wanted = checked(); if (wanted) handOff(wanted); } }
+            : undefined
+        }
+      />
       <PartnerResultsPanel loading={loading} message={liveMessage} detail={liveDetail} rows={rows} />
     </div>
   );
@@ -724,15 +763,22 @@ function HotelsForm({
 }
 
 /**
- * Car hire — tracked partner hand-off. No public car inventory API is wired;
- * the results panel still matches the other desks.
+ * Car hire — on-site results, then a tracked partner hand-off.
+ *
+ * No public car inventory API is configured (Stay22 is stays; Travelpayouts
+ * Data API is flights). The panel still matches hotels and flights: search
+ * here, View & book opens /go, the partner takes payment.
  */
 function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
   const [loc, setLoc] = useState(prefill?.destination ?? "");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
+  const [driverAge, setDriverAge] = useState("30");
   const [error, setError] = useState("");
-  const [shown, setShown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [liveMessage, setLiveMessage] = useState("");
+  const [liveDetail, setLiveDetail] = useState("");
+  const [rows, setRows] = useState<PartnerResultRow[]>([]);
 
   function validate() {
     if (!loc.trim()) {
@@ -751,8 +797,7 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
     return true;
   }
 
-  function search() {
-    if (!validate()) return;
+  function handOff() {
     openPartner({
       product: "car",
       destination: loc.trim(),
@@ -765,17 +810,77 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
       summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
       save: (confirmation) => addToTrip(confirmation),
     });
-    setShown(true);
+  }
+
+  async function search() {
+    if (!validate()) return;
+    setLoading(true);
+    setRows([]);
+    setLiveMessage("");
+    setLiveDetail("");
+    try {
+      const response = await fetch("/api/partners/cars/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destination: loc.trim(),
+          checkIn: pickup,
+          checkOut: dropoff,
+        }),
+      });
+      const data = await response.json();
+      if (data?.ok && Array.isArray(data.cars)) {
+        setLiveMessage(data.message ?? "");
+        setLiveDetail(data.detail ?? "");
+        setRows(
+          data.cars.map((car: { id: string; title: string; subtitle?: string; bookHref?: string }) => ({
+            id: car.id,
+            title: car.title,
+            subtitle: car.subtitle,
+            ctaLabel: "View & book",
+            onOpen: () => {
+              if (typeof window !== "undefined") {
+                if (car.bookHref) window.open(car.bookHref, "_blank", "noopener,noreferrer");
+                else handOff();
+              }
+              onOpened({
+                kind: "car",
+                summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
+                save: (confirmation) => addToTrip(confirmation),
+              });
+            },
+          })),
+        );
+        setLoading(false);
+        return;
+      }
+      setLiveMessage(data?.message ?? "Compare cars with a booking partner.");
+      setLiveDetail(data?.detail ?? "");
+    } catch {
+      setLiveMessage("Car options could not be loaded.");
+      setLiveDetail("Compare and book with a partner.");
+    }
+    setRows([
+      {
+        id: "cars-partner",
+        title: `Cars in ${loc.trim()}`,
+        subtitle: `${pickup} → ${dropoff}`,
+        ctaLabel: "View & book",
+        onOpen: handOff,
+      },
+    ]);
+    setLoading(false);
   }
 
   function addToTrip(confirmation?: string) {
     if (!validate()) return;
+    const age = Math.max(18, Math.min(99, Number(driverAge) || 30));
     const activities: ItinActivity[] = [
       {
         id: uid(),
         name: `Rental car — ${loc.trim()}`,
         date: pickup,
-        notes: [`Drop-off ${dropoff}`, confirmation ? `Reference ${confirmation}` : ""].filter(Boolean).join(" · "),
+        notes: [`Drop-off ${dropoff}`, `Driver ${age}`, confirmation ? `Reference ${confirmation}` : ""].filter(Boolean).join(" · "),
         bookedOnSite: false,
       },
     ];
@@ -784,7 +889,7 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
 
   return (
     <div>
-      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
+      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.7fr]">
         <Field label="Pick-up location">
           <AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} />
         </Field>
@@ -809,24 +914,22 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
             className={bareInput}
           />
         </Field>
+        <Field label="Driver age">
+          <input type="number" min={18} max={99} value={driverAge} onChange={(e) => setDriverAge(e.target.value)} className={bareInput} />
+        </Field>
       </SearchGrid>
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} searchLabel="Search cars" />
-      {shown && (
-        <PartnerResultsPanel
-          message="Car options open with a booking partner."
-          detail="Compare rates and complete payment there — White Glove does not take cards."
-          rows={[
-            {
-              id: "cars-partner",
-              title: `Cars in ${loc.trim()}`,
-              subtitle: `${pickup} → ${dropoff}`,
-              ctaLabel: "Open again",
-              onOpen: search,
-            },
-          ]}
-        />
-      )}
+      <ActionRow
+        onSearch={search}
+        searchLabel="Search cars"
+        busy={loading}
+        secondary={
+          rows.length > 0
+            ? { label: "Compare all on partner", onClick: handOff }
+            : undefined
+        }
+      />
+      <PartnerResultsPanel loading={loading} message={liveMessage} detail={liveDetail} rows={rows} />
     </div>
   );
 }

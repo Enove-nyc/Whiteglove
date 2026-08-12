@@ -1,4 +1,5 @@
 import { AffiliateDisclosure } from "@/components/BookingLink";
+import EssentialPartnerForm from "@/components/EssentialPartnerForm";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { essentialsForContext } from "@/lib/travel-essentials";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
@@ -6,38 +7,17 @@ import { readTravelEssentials } from "@/lib/travel-essentials-store";
 /**
  * The transfer hand-off, given the weight of a booking panel.
  *
- * WHY THIS IS NOT A SEARCH FORM, and the decision is the whole of this file.
+ * Kiwitaxi (and similar) publish no search format for pickup, drop-off or
+ * passenger count — inventing those parameters would look like a search and
+ * drop every field. This panel still collects the airport/city and arrival
+ * date so /go records them and Stay22 GetYourGuide-style wraps that CAN carry
+ * a place do. The partner asks for the rest on their side.
  *
- * Hotels, flights and cars are searches: the visitor types a place and dates,
- * and those travel into the partner's own URL, so the tab they land on is
- * already their search. That works because the format is known — Stay22
- * publishes theirs, and the other two are pasted redirects with the traveller's
- * search swapped in (lib/travelpayouts.ts).
- *
- * Kiwitaxi publishes no such format. Travelpayouts deep links reach a route or
- * a country page — kiwitaxi.com/en/italy — and there is no documented
- * parameter for a pickup, a drop-off, a date or a passenger count. So a form
- * here could collect all four and carry none of them: the traveller would type
- * their airport, their hotel and their landing time, press the button, and
- * arrive at a page asking for all of it again. That is the exact failure
- * app/book/page.tsx refuses to ship — "a tab that takes somebody's dates and
- * gives them nothing" — and it is worse here, because the fields would look
- * like they worked.
- *
- * WHAT IT DOES INSTEAD. It is a panel rather than a card, because on this page
- * the hand-off is the point rather than an add-on. It says what the partner
- * will ask for, so nobody arrives cold and nobody types anything twice. And it
- * says who takes the booking before the button rather than after it.
- *
- * THE DAY KIWITAXI PUBLISHES A SEARCH FORMAT, or the owner pastes per-route
- * deep links, this becomes a real form and the note below comes out. Until
- * then the honest version is the short one.
- *
- * Renders nothing at all when the owner has not enabled and configured the
- * transfer card — same rule as every other hand-off on the site.
+ * Renders nothing when the owner has not enabled and configured the transfer
+ * card — same rule as every other hand-off on the site.
  */
 
-/** What Kiwitaxi asks for on the other side. Named so nobody arrives cold. */
+/** What the partner still asks for on the other side. Named so nobody arrives cold. */
 const WHAT_THEY_ASK: Array<[string, string]> = [
   ["Where from and where to", "The airport, and the address you are going to. A hotel name is usually enough."],
   ["Arrival date and flight number", "The flight matters — a driver who has it waits when you land late."],
@@ -78,23 +58,24 @@ export default async function TransferBooking() {
           ))}
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-          <a
-            href={transfer.href}
-            target="_blank"
-            rel="sponsored noopener noreferrer"
-            className="inline-flex min-h-12 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-7 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-          >
-            {transfer.cta}
-          </a>
-          {/* Said before the new tab opens, not after. The price, the vehicle
-              and how payment is taken are the transfer company's, and the
-              payment part is the one that matters most on a Friday. */}
-          <p className="max-w-md text-sm leading-6 text-stone-600">
-            Opens with our transfer partner, who takes the booking and sets the price, the vehicle and how payment
-            is handled. Confirm those before you book.
-          </p>
+        <div className="mt-8 max-w-xl">
+          <EssentialPartnerForm
+            product={transfer.product}
+            offer={transfer.offer}
+            name={transfer.name}
+            blurb="Enter the airport or city and the arrival date. The partner will ask for the address, flight number and party size."
+            cta={transfer.cta}
+            icon={transfer.icon}
+            page="/transfers"
+            placement="transfers-panel"
+            compact
+          />
         </div>
+
+        <p className="mt-4 max-w-md text-sm leading-6 text-stone-600">
+          Opens with our transfer partner, who takes the booking and sets the price, the vehicle and how payment is
+          handled. Confirm those before you book.
+        </p>
 
         <AffiliateDisclosure className="mt-6 max-w-2xl text-xs leading-5 text-stone-500" />
       </div>
