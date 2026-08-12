@@ -1,6 +1,6 @@
 import { AffiliateDisclosure } from "@/components/BookingLink";
 import { goHref } from "@/lib/affiliate/request";
-import { defFor, offersFor } from "@/lib/travel-essentials";
+import { configFor, defFor, offersFor } from "@/lib/travel-essentials";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
 
 /**
@@ -26,7 +26,7 @@ export default async function EsimOffers() {
   if (!settings.sectionEnabled) return null;
 
   const def = defFor("esim");
-  const offers = offersFor(def, settings.services.esim);
+  const offers = offersFor(def, configFor(settings, def));
   if (offers.length === 0) return null;
 
   return (

@@ -69,20 +69,52 @@ const LISTING_LABEL_CATEGORY = {
 };
 
 const PREFIX_RE = /^(the|le|la|les|el|los|las|der|die|das|il|lo|gli|a|an)\s+/;
-/** Soft religious suffixes only — never strip park/museum/hotel (false merges). */
-const SUFFIX_RE =
-  /\s+(synagogue|synagoge|shul|beit knesset|beis knesses|mikvah|mikveh|mikve|mikva|cemetery|beis hachaim|beit hachaim|orthodox|chabad)$/;
-/** Editorial staging noise — "AMIA memorial framing" ≡ "AMIA Memorial". */
-const EDITORIAL_RE = /\s+(framing|orientation|listing|candidate|draft|placeholder|stub)$/;
+const EDITORIAL_WORD_RE =
+  /\b(framing|orientation|listing|candidate|draft|placeholder|stub|daytime|exterior|historic landscape|waterfront daytime)\b/g;
+const TYPE_WORD_RE =
+  /\b(memorial|synagogue|synagoge|synagogues|shul|shuls|beit knesset|beis knesses|hotel|hotels|park|parks|museum|museums|cemetery|cemeteries|beis hachaim|beit hachaim|beis|hachaim|kever|kevarim|mikvah|mikveh|mikve|mikva|mikvaos|congregation|congregations|congregacion|minyan|minyans|resource|resources)\b/g;
 
-/** Common transliteration / spelling folds for fuzzy matching. */
+const STOP_TOKENS = new Set([
+  "the","a","an","of","de","la","el","los","las","le","les","and","or","for","near","in","at","to",
+  "du","des","di","del","da","do","van","von","ben","staying","visitor","traveller","traveler",
+  "community","jewish","orthodox",
+]);
+const WEAK_TOKENS = new Set([
+  "central","city","downtown","municipal","family","cultural","culture","historic","old","new","great",
+  "grand","regional","national","local","main","public","outdoor","indoor","first","second","state","states",
+  "neighbourhood","neighborhood","district","quarter","square","plaza","area","areas","walk","walking",
+  "visit","circuit","approach","grounds","section","sections","wing","path","paths","corridor","strip",
+  "fringe","base","amenities","lodging","orientation","heritage","site","sites","attraction",
+]);
+const GENERIC_STUBS = new Set([
+  "museum","museums","park","parks","synagogue","synagogues","shul","shuls","cemetery","cemeteries",
+  "hotel","hotels","garden","gardens","memorial","community","heritage","mikvah","plaza","square",
+  "market","walk","quarter","corridor","resource","orientation","framing","attraction","site",
+  "centre","center","gallery","tower","bridge","beach","lake","river","zoo","aquarium","castle",
+  "palace","fort","harbour","harbor","pier","station","temple","cathedral","church","mosque",
+]);
+const DISTINGUISHING_TOKENS = new Set([
+  "park","parque","museum","museo","garden","gardens","jardin","hotel","market","mercado",
+  "bridge","puente","tower","torre","castle","castell","castillo","beach","playa","lake","river",
+  "cathedral","church","iglesia","mosque","zoo","aquarium","palace","palacio","fort","forte",
+  "harbour","harbor","pier","station","fountain","viewpoint","lookout","mirador","cemetery",
+  "cementerio","alcazar","field","stadium","arena",
+]);
+const COUNTRY_ALIASES = {
+  usa: "united states", us: "united states", "u s": "united states",
+  "united states of america": "united states", uk: "united kingdom",
+  "great britain": "united kingdom", uae: "united arab emirates",
+  holland: "netherlands", "the netherlands": "netherlands",
+};
+const ORG_STEMS = [
+  { re: /\bchabad\b/, key: "chabad" },
+  { re: /\byoung israel\b/, key: "young-israel" },
+  { re: /\baish hatorah\b|\baish ha torah\b/, key: "aish" },
+];
 const TRANSLIT = [
   [/ph/g, "f"],
   [/kh/g, "ch"],
   [/q/g, "k"],
-  [/ou/g, "u"],
-  [/ee/g, "i"],
-  [/aa/g, "a"],
   [/iy/g, "i"],
   [/yah$/g, "ya"],
   [/eh$/g, "e"],
@@ -109,29 +141,126 @@ function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function coreName(name, locality) {
+function foldCountry(value) {
+  const n = normalizeText(value);
+  return COUNTRY_ALIASES[n] || n;
+}
+
+function placeKey(row) {
+  let city = normalizeText(row.locality || row.city || "");
+  const country = foldCountry(row.country || "");
+  if (country && city !== country && (city.endsWith(` ${country}`) || city.endsWith(`, ${country}`))) {
+    city = city.slice(0, city.length - country.length).replace(/[,\s]+$/g, "").trim();
+  }
+  city = city.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+  city = city.replace(/^(city of|greater|metro)\s+/, "");
+  if (city !== country) city = city.replace(/\s+(city|municipality|metro|greater)$/g, "");
+  return `${city}::${country}`;
+}
+
+function stripPlaceFromName(name, locality, country) {
   let n = normalizeText(name);
   const loc = normalizeText(locality);
-  if (loc) {
-    const re = new RegExp(`(^|\\s)${escapeRegExp(loc)}(\\s|$)`, "g");
-    n = n.replace(re, " ").trim().replace(/\s+/g, " ");
+  const ctry = foldCountry(country);
+  if (loc) n = n.replace(new RegExp(`(^|\\s)${escapeRegExp(loc)}(\\s|$)`, "g"), " ");
+  for (const tok of loc.split(" ").filter((t) => t.length >= 4)) {
+    n = n.replace(new RegExp(`(^|\\s)${escapeRegExp(tok)}(\\s|$)`, "g"), " ");
   }
-  // Strip trailing country words sometimes pasted into names
-  n = n.replace(PREFIX_RE, "").replace(SUFFIX_RE, "").replace(EDITORIAL_RE, "").trim();
-  return foldTranslit(n);
+  if (ctry && ctry !== loc) n = n.replace(new RegExp(`(^|\\s)${escapeRegExp(ctry)}(\\s|$)`, "g"), " ");
+  n = n.replace(/\bstaying near\b/g, " ");
+  n = n.replace(PREFIX_RE, "");
+  return n.replace(/\s+/g, " ").trim();
+}
+
+function stripEditorial(name) {
+  return String(name || "").replace(EDITORIAL_WORD_RE, " ").replace(/\s+/g, " ").trim();
+}
+
+function coreName(name, locality, country = "") {
+  let n = stripPlaceFromName(stripEditorial(name), locality, country);
+  n = n.replace(TYPE_WORD_RE, " ").replace(/\s+/g, " ").trim();
+  return n;
+}
+
+function coreNameKeepVenue(name, locality, country = "") {
+  return stripPlaceFromName(stripEditorial(name), locality, country);
+}
+
+function venueFamily(row) {
+  const et = row.entityType || "";
+  const ik = row.importKind || row.kind || "";
+  if (et === "mikvah") return "mikvah";
+  if (et === "beis_hachaim" || et === "kever") return "cemetery";
+  if (et === "stay_anchor" || et === "practical_travel_anchor" || ik === "PLACE_TO_STAY") return "stay";
+  if (et === "vacation_destination") return "destination";
+  return "place";
+}
+
+function looksLikeCemetery(name) {
+  return /\b(cemetery|cemeteries|beis hachaim|beit hachaim|kever|kevarim|ohel|ohalim|grave|gravesite)\b/i.test(name || "");
+}
+
+function familiesCanCollapse(a, b) {
+  const fa = venueFamily(a);
+  const fb = venueFamily(b);
+  if (fa === fb) return true;
+  return (
+    ((fa === "place" && fb === "cemetery") || (fa === "cemetery" && fb === "place")) &&
+    looksLikeCemetery(a.name) &&
+    looksLikeCemetery(b.name)
+  );
 }
 
 function kindBucket(row) {
-  const et = row.entityType || "";
-  const ik = row.importKind || row.kind || "";
-  if (et === "shul" || et === "mikvah" || et === "beis_hachaim") return et;
-  if (et === "stay_anchor" || ik === "PLACE_TO_STAY") return "stay";
-  if (et === "vacation_destination") return "destination";
-  if (et === "kosher_travel_resource" || et === "practical_travel_resource" || et === "practical_travel_anchor")
-    return "resource";
-  if (ik === "ATTRACTION" || et === "attraction") return "attraction";
-  if (ik === "PRACTICAL") return "practical";
-  return et || ik || "other";
+  return venueFamily(row);
+}
+
+function orgStem(name) {
+  const n = normalizeText(name);
+  for (const stem of ORG_STEMS) if (stem.re.test(n)) return stem.key;
+  return null;
+}
+
+function heritageSlot(name) {
+  const n = normalizeText(name);
+  return (
+    /jewish heritage( walking)? corridor/.test(n) ||
+    /historic jewish quarter/.test(n) ||
+    /synagogue square heritage/.test(n) ||
+    /jewish community heritage corridor/.test(n) ||
+    /heritage walking corridor/.test(n)
+  );
+}
+
+function genericMikvahSlot(name) {
+  const n = normalizeText(name);
+  return /\b(mikvah|mikveh|mikve)\b/.test(n) &&
+    /\b(community|resource|orientation|appointment|traveller|traveler|women|womens)\b/.test(n);
+}
+
+function genericCemeterySlot(name) {
+  const n = normalizeText(name);
+  return /jewish cemetery sections|historic beis hachaim|community kevarim|cemetery orientation|jewish community cemetery/.test(n);
+}
+
+function significantTokens(core) {
+  return String(core || "").split(" ").map((t) => t.trim()).filter((t) => t && t.length > 1 && !STOP_TOKENS.has(t) && !WEAK_TOKENS.has(t));
+}
+
+function hasProperToken(s) {
+  return significantTokens(s).some((t) => t.length >= 4 && !GENERIC_STUBS.has(t));
+}
+
+function isGenericStub(s) {
+  if (!s) return true;
+  return !hasProperToken(s);
+}
+
+function isWeakCore(core) {
+  if (!core) return true;
+  if (significantTokens(core).length === 0) return true;
+  if (core.length < 3) return true;
+  return false;
 }
 
 function richness(row) {
@@ -152,6 +281,10 @@ function richness(row) {
   if ((row.keywords || []).length > 2) s += 1;
   // Prefer rows that already look customer-facing (no internal jargon)
   if (row.summary && !/\bfrum\b/i.test(row.summary)) s += 1;
+  const name = row.name || "";
+  if (/\b(framing|orientation|placeholder|stub|draft)\b/i.test(name)) s -= 4;
+  if (/\bdaytime\b/i.test(name)) s -= 2;
+  if (heritageSlot(name) || genericMikvahSlot(name) || genericCemeterySlot(name)) s -= 2;
   return s;
 }
 
@@ -218,6 +351,14 @@ function inferFromHelper(helper, body) {
       category: getField(body, "category") || "Jewish community resource",
     };
   }
+  if (helper === "resource") {
+    return {
+      entityType: "kosher_travel_resource",
+      importKind: "PRACTICAL",
+      importTarget: "PracticalPlace",
+      category: getField(body, "category") || "Jewish community resource",
+    };
+  }
   return {
     entityType: getField(body, "entityType") || "attraction",
     importKind: getField(body, "importKind") || getField(body, "kind") || "ATTRACTION",
@@ -235,7 +376,7 @@ function parseTsCandidates(file, pack) {
   const text = full.slice(exportMatch.index + exportMatch[0].length - 1);
   const rows = [];
   // Match object literals passed to draft/sourceDraft/batch-2 helpers
-  const re = /\b(sourceDraft|draft|destination|attraction|stayAnchor|kosherResource|practicalResource)\s*\(\s*\{/g;
+  const re = /\b(sourceDraft|draft|destination|attraction|stayAnchor|kosherResource|practicalResource|resource)\s*\(\s*\{/g;
   let match;
   while ((match = re.exec(text)) !== null) {
     const helper = match[1];
@@ -288,6 +429,68 @@ function parseTsCandidates(file, pack) {
       _rawStart: match.index,
       _rawEnd: i,
     });
+  }
+  rows.push(...parseMappedNameGroups(text, pack, file));
+  return rows;
+}
+
+function parseMappedNameGroups(text, pack, file) {
+  const rows = [];
+  const re =
+    /\.\.\.\[([\s\S]*?)\]\.map\(\s*\(?\s*name\s*\)?\s*=>\s*(attraction|destination|stayAnchor|resource|kosherResource|practicalResource)\s*\(\s*\{/g;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    const names = [...match[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]);
+    const helper = match[2];
+    const start = match.index + match[0].length - 1;
+    let depth = 0;
+    let i = start;
+    for (; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          i++;
+          break;
+        }
+      }
+    }
+    const body = text.slice(start + 1, i - 1);
+    const locality = getField(body, "locality") || getField(body, "city") || "";
+    const inferred = inferFromHelper(helper, body);
+    const keywords = getArrayField(body, "keywords");
+    for (const name of names) {
+      rows.push({
+        pack,
+        name,
+        locality,
+        city: getField(body, "city") || locality,
+        country: getField(body, "country") || "",
+        entityType: inferred.entityType,
+        importKind: inferred.importKind,
+        kind: inferred.importKind,
+        importTarget: inferred.importTarget,
+        category: inferred.category,
+        listingLabel: getField(body, "listingLabel") || null,
+        slug: String(name).toLocaleLowerCase("en").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        market: getField(body, "market") || "",
+        destination: getField(body, "destination") || locality,
+        address: null,
+        summary: null,
+        coordinates: null,
+        website: null,
+        destinationSlug: null,
+        sourceKey: getField(body, "sourceKey"),
+        aliases: [name],
+        keywords,
+        id: null,
+        _helper: helper,
+        _src: "ts-mapped",
+        _file: file,
+        _mapped: true,
+      });
+    }
   }
   return rows;
 }
@@ -487,22 +690,9 @@ function enrichRow(row, known) {
   return out;
 }
 
-function clusterKey(row) {
-  return [
-    normalizeText(row.locality),
-    normalizeText(row.country),
-    kindBucket(row),
-    coreName(row.name, row.locality),
-  ].join("::");
-}
-
-function strictKey(row) {
-  return [
-    row.entityType || "",
-    normalizeText(row.name),
-    normalizeText(row.locality),
-    normalizeText(row.country),
-  ].join("::");
+function exactPlaceNameKey(row) {
+  const folded = foldTranslit(stripEditorial(row.name || ""));
+  return `${folded}::${placeKey(row)}`;
 }
 
 function idKey(row) {
@@ -533,8 +723,11 @@ function mergeKeep(a, b) {
         : richness(a) >= richness(b);
   const keep = preferA ? { ...a } : { ...b };
   const drop = preferA ? b : a;
-  // Prefer a customer-facing name without editorial "framing"
-  if (/\bframing\b/i.test(keep.name || "") && drop.name && !/\bframing\b/i.test(drop.name)) {
+  if (
+    /\b(framing|orientation|daytime|placeholder|stub)\b/i.test(keep.name || "") &&
+    drop.name &&
+    !/\b(framing|orientation|daytime|placeholder|stub)\b/i.test(drop.name)
+  ) {
     keep.name = drop.name;
   }
   for (const field of [
@@ -568,10 +761,26 @@ function mergeKeep(a, b) {
   if (drop.category && (!keep.category || keep.category === "Landmark attraction")) {
     keep.category = normalizeCategory(keep.category || drop.category, keep.listingLabel, keep.entityType);
   }
-  const aliasSet = new Set([...(keep.aliases || []), ...(drop.aliases || []), drop.name, keep.name].filter(Boolean));
-  keep.aliases = [...aliasSet];
-  const kw = new Set([...(keep.keywords || []), ...(drop.keywords || [])].filter(Boolean));
-  keep.keywords = [...kw];
+  const aliasSet = new Set();
+  const aliases = [];
+  for (const v of [...(keep.aliases || []), ...(drop.aliases || []), drop.name, keep.name]) {
+    if (!v) continue;
+    const k = normalizeText(v);
+    if (!k || aliasSet.has(k)) continue;
+    aliasSet.add(k);
+    aliases.push(v);
+  }
+  keep.aliases = aliases;
+  const kwSet = new Set();
+  const keywords = [];
+  for (const v of [...(keep.keywords || []), ...(drop.keywords || [])]) {
+    if (!v) continue;
+    const k = normalizeText(v);
+    if (!k || kwSet.has(k)) continue;
+    kwSet.add(k);
+    keywords.push(v);
+  }
+  keep.keywords = keywords;
   // Preserve helper style of the kept pack
   keep._helper = keep._helper || inferHelper(keep, keep.pack);
   return keep;
@@ -579,9 +788,8 @@ function mergeKeep(a, b) {
 
 function dedupeAll(rows) {
   const removed = [];
-  const samples = [];
+  const largestClusters = [];
 
-  // Pass 1: exact id
   const byId = new Map();
   const afterId = [];
   for (const row of rows) {
@@ -602,61 +810,96 @@ function dedupeAll(rows) {
     }
   }
 
-  // Pass 2: strict entity+name+place
-  const byStrict = new Map();
-  const afterStrict = [];
+  const byExact = new Map();
+  const afterExact = [];
   for (const row of afterId) {
-    const k = strictKey(row);
-    if (!byStrict.has(k)) {
-      byStrict.set(k, row);
-      afterStrict.push(row);
+    const k = exactPlaceNameKey(row);
+    if (!k.startsWith("::")) {
+      if (!byExact.has(k)) {
+        byExact.set(k, row);
+        afterExact.push(row);
+      } else {
+        const prev = byExact.get(k);
+        if (!familiesCanCollapse(prev, row)) {
+          afterExact.push(row);
+          continue;
+        }
+        const keepIdx = afterExact.findIndex((r) => r === prev);
+        const merged = mergeKeep(prev, row);
+        byExact.set(k, merged);
+        if (keepIdx >= 0) afterExact[keepIdx] = merged;
+        removed.push({ reason: "exact-name-place", key: k, drop: describe(row), keep: describe(merged) });
+      }
     } else {
-      const prev = byStrict.get(k);
-      const keepIdx = afterStrict.findIndex((r) => r === prev);
-      const merged = mergeKeep(prev, row);
-      byStrict.set(k, merged);
-      if (keepIdx >= 0) afterStrict[keepIdx] = merged;
-      removed.push({ reason: "exact-name-place-type", key: k, drop: describe(row), keep: describe(merged) });
+      afterExact.push(row);
     }
   }
 
-  // Pass 3: fuzzy near-dupes
-  const byFuzzy = new Map();
-  const afterFuzzy = [];
-  for (const row of afterStrict) {
-    const k = clusterKey(row);
-    // Skip empty core names (would over-merge)
-    const core = coreName(row.name, row.locality);
-    if (!core || core.length < 2) {
-      afterFuzzy.push(row);
-      continue;
+  const byPlace = new Map();
+  for (const row of afterExact) {
+    const pk = placeKey(row);
+    if (!byPlace.has(pk)) byPlace.set(pk, []);
+    byPlace.get(pk).push(row);
+  }
+
+  const kept = [];
+  for (const [pk, group] of byPlace) {
+    const n = group.length;
+    const parent = Array.from({ length: n }, (_, i) => i);
+    const find = (i) => {
+      while (parent[i] !== i) {
+        parent[i] = parent[parent[i]];
+        i = parent[i];
+      }
+      return i;
+    };
+    const union = (i, j) => {
+      const a = find(i);
+      const b = find(j);
+      if (a !== b) parent[a] = b;
+    };
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (find(i) === find(j)) continue;
+        if (shouldMerge(group[i], group[j])) union(i, j);
+      }
     }
-    if (!byFuzzy.has(k)) {
-      byFuzzy.set(k, row);
-      afterFuzzy.push(row);
-    } else {
-      const prev = byFuzzy.get(k);
-      // Require same importKind family already in key; extra guard: names must be close
-      if (!namesNearDuplicate(prev.name, row.name, row.locality)) {
-        afterFuzzy.push(row);
+    const buckets = new Map();
+    for (let i = 0; i < n; i++) {
+      const root = find(i);
+      if (!buckets.has(root)) buckets.set(root, []);
+      buckets.get(root).push(group[i]);
+    }
+    for (const members of buckets.values()) {
+      if (members.length === 1) {
+        kept.push(members[0]);
         continue;
       }
-      const keepIdx = afterFuzzy.findIndex((r) => r === prev);
-      const merged = mergeKeep(prev, row);
-      byFuzzy.set(k, merged);
-      if (keepIdx >= 0) afterFuzzy[keepIdx] = merged;
-      removed.push({ reason: "near-duplicate", key: k, drop: describe(row), keep: describe(merged) });
-      if (samples.length < 40) {
-        samples.push({
-          key: k,
-          kept: describe(merged),
-          removed: describe(row),
-        });
+      members.sort((a, b) => {
+        const pa = packRank(a.pack);
+        const pb = packRank(b.pack);
+        if (pa !== pb) return pa - pb;
+        return richness(b) - richness(a);
+      });
+      let merged = members[0];
+      for (let k = 1; k < members.length; k++) {
+        const drop = members[k];
+        const next = mergeKeep(merged, drop);
+        removed.push({ reason: "near-duplicate", key: pk, drop: describe(drop), keep: describe(next) });
+        merged = next;
       }
+      kept.push(merged);
+      largestClusters.push({
+        place: pk,
+        size: members.length,
+        kept: `${merged.name} [${merged.entityType} / ${merged.pack}]`,
+        variants: members.map((m) => `${m.name} [${m.entityType} / ${m.pack}]`),
+      });
     }
   }
 
-  return { kept: afterFuzzy, removed, samples };
+  largestClusters.sort((a, b) => b.size - a.size || a.place.localeCompare(b.place));
+  return { kept, removed, samples: largestClusters.slice(0, 40), largestClusters };
 }
 
 function describe(row) {
@@ -670,70 +913,127 @@ function describe(row) {
   };
 }
 
-function namesNearDuplicate(a, b, locality) {
-  const ca = coreName(a, locality);
-  const cb = coreName(b, locality);
-  if (!ca || !cb) return false;
-  if (ca === cb) return true;
-  // Full normalized equality after fold (before locality strip differences)
-  if (foldTranslit(a) === foldTranslit(b)) return true;
-  // one contains the other — only when the shorter is a substantial phrase
-  const shorter = ca.length <= cb.length ? ca : cb;
-  const longer = ca.length <= cb.length ? cb : ca;
-  if (shorter.length >= 6 && longer.includes(shorter)) {
-    // Reject when the only extra tokens are distinguishing type words
-    const extra = longer
-      .replace(shorter, "")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-    const distinguishing = new Set([
-      "park",
-      "museum",
-      "garden",
-      "gardens",
-      "hotel",
-      "market",
-      "bridge",
-      "tower",
-      "castle",
-      "beach",
-      "lake",
-      "river",
-      "square",
-      "plaza",
-      "cathedral",
-      "church",
-      "mosque",
-      "zoo",
-      "aquarium",
-    ]);
-    if (extra.some((t) => distinguishing.has(t))) return false;
+function shouldMerge(a, b) {
+  const fa = venueFamily(a);
+  const fb = venueFamily(b);
+  if (fa !== fb) {
+    const cemeteryBridge =
+      ((fa === "place" && fb === "cemetery") || (fa === "cemetery" && fb === "place")) &&
+      looksLikeCemetery(a.name) &&
+      looksLikeCemetery(b.name);
+    if (!cemeteryBridge) return false;
+  }
+  const loc = a.locality || a.city || b.locality || "";
+  const country = a.country || b.country || "";
+  const stemA = orgStem(a.name);
+  const stemB = orgStem(b.name);
+  if (stemA && stemA === stemB && fa === "place" && fb === "place") return true;
+  if (heritageSlot(a.name) && heritageSlot(b.name) && fa === "place" && fb === "place") return true;
+  if (genericMikvahSlot(a.name) && genericMikvahSlot(b.name) && fa === "mikvah" && fb === "mikvah") {
+    const ca = coreName(a.name, loc, country);
+    const cb = coreName(b.name, loc, country);
+    if (isGenericStub(ca) && isGenericStub(cb)) return true;
+    if (ca && ca === cb && !isGenericStub(ca)) return true;
+    return false;
+  }
+  if (genericCemeterySlot(a.name) && genericCemeterySlot(b.name) && fa === "cemetery" && fb === "cemetery") {
+    const ca = coreName(a.name, loc, country);
+    const cb = coreName(b.name, loc, country);
+    if (isGenericStub(ca) && isGenericStub(cb)) return true;
+    if (ca && ca === cb) return true;
+    return false;
+  }
+  return namesNearDuplicate(a.name, b.name, loc, country, fa, fb);
+}
+
+function namesNearDuplicate(a, b, locality, country = "", familyA = "place", familyB = "place") {
+  if (!a || !b) return false;
+  if (foldTranslit(stripEditorial(a)) === foldTranslit(stripEditorial(b))) return true;
+  const venueA = coreNameKeepVenue(a, locality, country);
+  const venueB = coreNameKeepVenue(b, locality, country);
+  const ca = coreName(a, locality, country);
+  const cb = coreName(b, locality, country);
+  const DISTINGUISHING = DISTINGUISHING_TOKENS;
+  const SAME_ORG_EXTRA = new Set([
+    "memorial","synagogue","synagogues","shul","shuls","community","framing","orientation","visitor",
+    "resource","daytime","walk","walking","exterior","historic","site","of","de","the","la","el","jewish",
+  ]);
+  if (venueA && venueB && venueA === venueB && !isGenericStub(venueA)) return true;
+  if (ca && cb && ca === cb && !isWeakCore(ca) && !isGenericStub(ca)) {
+    const extraA = venueA.split(" ").filter((t) => t && !ca.split(" ").includes(t));
+    const extraB = venueB.split(" ").filter((t) => t && !cb.split(" ").includes(t));
+    const typeA = extraA.find((t) => DISTINGUISHING.has(t));
+    const typeB = extraB.find((t) => DISTINGUISHING.has(t));
+    if (typeA && typeB && typeA !== typeB) return false;
+    if (familyA === "stay" || familyB === "stay") return familyA === familyB;
     return true;
   }
-  // token Jaccard
-  const ta = new Set(ca.split(" ").filter(Boolean));
-  const tb = new Set(cb.split(" ").filter(Boolean));
-  if (ta.size === 0 || tb.size === 0) return false;
-  let inter = 0;
-  for (const t of ta) if (tb.has(t)) inter++;
-  const union = ta.size + tb.size - inter;
-  const j = inter / union;
-  if (j >= 0.9 && inter >= 2) return true;
-  // edit distance for short names (Aima / Ayma / AIMA)
-  if (ca.length <= 24 && cb.length <= 24 && Math.abs(ca.length - cb.length) <= 2) {
-    const dist = levenshtein(ca, cb);
-    if (dist <= 1) return true;
-    if (dist <= 2 && ca.length >= 5) return true;
+  const shorterV = venueA.length <= venueB.length ? venueA : venueB;
+  const longerV = venueA.length <= venueB.length ? venueB : venueA;
+  if (shorterV.length >= 5 && longerV.includes(shorterV)) {
+    const extra = longerV.replace(shorterV, "").trim().split(/\s+/).filter(Boolean);
+    if (extra.some((t) => DISTINGUISHING.has(t))) return false;
+    const extrasAreSameOrg = extra.every(
+      (t) => SAME_ORG_EXTRA.has(t) || STOP_TOKENS.has(t) || WEAK_TOKENS.has(t) || GENERIC_STUBS.has(t),
+    );
+    if (hasProperToken(shorterV) || extrasAreSameOrg) return true;
+  }
+  const shorterC = ca.length <= cb.length ? ca : cb;
+  const longerC = ca.length <= cb.length ? cb : ca;
+  if (
+    !isWeakCore(shorterC) &&
+    !isGenericStub(shorterC) &&
+    hasProperToken(shorterC) &&
+    shorterC.length >= 4 &&
+    ` ${longerC} `.includes(` ${shorterC} `)
+  ) {
+    const extra = longerC.replace(shorterC, "").trim().split(/\s+/).filter(Boolean);
+    if (extra.some((t) => DISTINGUISHING.has(t))) return false;
+    const extrasAreSameOrg = extra.every(
+      (t) => SAME_ORG_EXTRA.has(t) || STOP_TOKENS.has(t) || WEAK_TOKENS.has(t) || GENERIC_STUBS.has(t),
+    );
+    if (extrasAreSameOrg) return true;
+  }
+  const ta = new Set(significantTokens(ca).filter((t) => !GENERIC_STUBS.has(t)));
+  const tb = new Set(significantTokens(cb).filter((t) => !GENERIC_STUBS.has(t)));
+  if (ta.size && tb.size) {
+    let inter = 0;
+    for (const t of ta) if (tb.has(t)) inter++;
+    const union = ta.size + tb.size - inter;
+    const j = inter / union;
+    if (j >= 0.55 && inter >= 1) {
+      const shared = [...ta].filter((t) => tb.has(t));
+      if (shared.some((t) => t.length >= 4 && !GENERIC_STUBS.has(t) && !DISTINGUISHING.has(t))) return true;
+    }
+  }
+  if (ca && cb && !isWeakCore(ca) && !isWeakCore(cb) && hasProperToken(ca) && hasProperToken(cb)) {
+    const short = ca.length <= cb.length ? ca : cb;
+    const long = ca.length <= cb.length ? cb : ca;
+    if (short.length >= 4 && !isGenericStub(short) && long.startsWith(`${short} `)) return true;
+  }
+  const la = isGenericStub(ca) ? "" : foldTranslit(ca);
+  const lb = isGenericStub(cb) ? "" : foldTranslit(cb);
+  if (la && lb && la.length <= 24 && lb.length <= 24 && Math.abs(la.length - lb.length) <= 2) {
+    if (isTransposition(la, lb) && Math.min(la.length, lb.length) >= 4) return true;
+    const dist = levenshtein(la, lb);
+    if (dist <= 1 && Math.min(la.length, lb.length) >= 4) return true;
+    if (dist <= 2 && Math.min(la.length, lb.length) >= 4) return true;
   }
   return false;
+}
+
+function isTransposition(a, b) {
+  if (a.length !== b.length) return false;
+  const diffs = [];
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) diffs.push(i);
+  return diffs.length === 2 && diffs[1] === diffs[0] + 1 && a[diffs[0]] === b[diffs[1]] && a[diffs[1]] === b[diffs[0]];
 }
 
 function levenshtein(a, b) {
   if (a === b) return 0;
   const m = a.length;
   const n = b.length;
-  if (Math.abs(m - n) > 2) return 99;
+  if (Math.abs(m - n) > 3) return 99;
   const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
@@ -778,11 +1078,25 @@ const ENRICHABLE_PACKS = new Set([
   "worldwide-batch-5",
 ]);
 
+function uniqueNormalizedList(values) {
+  const seen = new Set();
+  const out = [];
+  for (const v of values || []) {
+    if (!v) continue;
+    const k = normalizeText(v);
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    out.push(v);
+  }
+  return out;
+}
+
 function serializeRow(row, packSlug) {
   const q = (s) => JSON.stringify(s ?? "");
-  const arr = (a) => `[${(a || []).map((x) => JSON.stringify(x)).join(", ")}]`;
+  const arr = (a) => `[${uniqueNormalizedList(a).map((x) => JSON.stringify(x)).join(", ")}]`;
   const usesCity = packSlug === "white-glove-europe-batch";
   const enrichable = ENRICHABLE_PACKS.has(packSlug);
+  const allowCoords = packSlug === "worldwide-batch-4" || packSlug === "worldwide-batch-5";
   const helper = row._helper || (packSlug.includes("europe") || packSlug.includes("global") || packSlug.includes("fill") ? "sourceDraft" : "draft");
 
   // Batch-2 / fill thin helpers
@@ -828,7 +1142,7 @@ function serializeRow(row, packSlug) {
   if (enrichable) {
     if (row.address) lines.push(`    address: ${q(row.address)},`);
     if (row.summary) lines.push(`    summary: ${q(row.summary)},`);
-    if (row.coordinates) lines.push(`    coordinates: ${q(row.coordinates)},`);
+    if (allowCoords && row.coordinates) lines.push(`    coordinates: ${q(row.coordinates)},`);
     if (row.website) lines.push(`    website: ${q(row.website)},`);
     if (row.destinationSlug) lines.push(`    destinationSlug: ${q(row.destinationSlug)},`);
   }
@@ -937,8 +1251,8 @@ function cleanJsonRow(r) {
     listingLabel: r.listingLabel,
     slug: r.slug,
     name: r.name,
-    aliases: r.aliases || [r.name],
-    keywords: r.keywords || [],
+    aliases: uniqueNormalizedList(r.aliases || [r.name]),
+    keywords: uniqueNormalizedList(r.keywords || []),
     locality: r.locality || r.city,
     destination: r.destination || r.locality || r.city,
     country: r.country,
@@ -1046,71 +1360,159 @@ function inferHelper(row, packSlug) {
   return "draft";
 }
 
-function loadFromDump() {
-  const dumpPath = path.join(ROOT, "scripts", "_all-import-candidates.json");
-  if (!fs.existsSync(dumpPath)) return null;
-  const dump = JSON.parse(fs.readFileSync(dumpPath, "utf8"));
-  return dump.rows.map((r) => ({
-    ...r,
-    locality: r.locality || r.city || "",
-    city: r.city || r.locality || "",
-    _helper: inferHelper(r, r.pack),
-    _src: "dump",
-  }));
+function leftoverCollisions(rows) {
+  const exact = new Map();
+  for (const r of rows) {
+    const k = `${foldTranslit(stripEditorial(r.name))}::${placeKey(r)}`;
+    if (!exact.has(k)) exact.set(k, []);
+    exact.get(k).push(r);
+  }
+  const exactGroups = [...exact.values()].filter((g) => g.length > 1);
+  let fuzzyPairs = 0;
+  const byPlace = new Map();
+  for (const r of rows) {
+    const pk = placeKey(r);
+    if (!byPlace.has(pk)) byPlace.set(pk, []);
+    byPlace.get(pk).push(r);
+  }
+  for (const group of byPlace.values()) {
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        if (shouldMerge(group[i], group[j])) fuzzyPairs += 1;
+      }
+    }
+  }
+  const nearMisses = [];
+  for (const [pk, group] of byPlace) {
+    if (group.length < 2) continue;
+    const byToken = new Map();
+    for (const r of group) {
+      const core = coreName(r.name, r.locality || r.city, r.country);
+      const toks = significantTokens(core).filter((t) => t.length >= 4 && !GENERIC_STUBS.has(t));
+      for (const t of toks) {
+        if (!byToken.has(t)) byToken.set(t, []);
+        byToken.get(t).push(r);
+      }
+    }
+    for (const [tok, members] of byToken) {
+      const uniq = [];
+      const seen = new Set();
+      for (const m of members) {
+        const id = m.slug || `${m.name}::${m.entityType}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        uniq.push(m);
+      }
+      if (uniq.length < 2) continue;
+      nearMisses.push({
+        place: pk,
+        sharedToken: tok,
+        size: uniq.length,
+        names: uniq.map((m) => `${m.name} [${m.entityType}]`),
+      });
+    }
+  }
+  nearMisses.sort((a, b) => b.size - a.size || a.place.localeCompare(b.place));
+  return {
+    exactNamePlaceGroups: exactGroups.length,
+    extraExactRows: exactGroups.reduce((s, g) => s + g.length - 1, 0),
+    remainingMergeablePairs: fuzzyPairs,
+    remainingSharedTokenGroups: nearMisses.length,
+    remainingSharedTokenExtraRows: nearMisses.reduce((s, g) => s + g.size - 1, 0),
+    sampleRemainingSharedTokenGroups: nearMisses.slice(0, 15),
+  };
+}
+
+function sampleCity(rows, localityNeedle) {
+  const needle = normalizeText(localityNeedle);
+  const hits = rows.filter((r) => normalizeText(r.locality || r.city || "").includes(needle));
+  return {
+    count: hits.length,
+    names: hits.map((r) => `${r.name} [${r.entityType} / ${r.pack}]`),
+  };
+}
+
+function R(name, locality, country, entityType, importKind) {
+  return { name, locality, country, entityType, importKind };
+}
+
+function selfCheck() {
+  const checks = {
+    "AMIA + Memorial": shouldMerge(R("AMIA", "Buenos Aires", "Argentina", "kosher_travel_resource", "PRACTICAL"), R("AMIA Memorial", "Buenos Aires", "Argentina", "attraction", "ATTRACTION")),
+    "AMIA + Aima": shouldMerge(R("AMIA", "Buenos Aires", "Argentina", "kosher_travel_resource", "PRACTICAL"), R("Aima", "Buenos Aires", "Argentina", "attraction", "ATTRACTION")),
+    "AMIA + community synagogues": shouldMerge(R("AMIA", "Buenos Aires", "Argentina", "kosher_travel_resource", "PRACTICAL"), R("AMIA community synagogues framing", "Buenos Aires", "Argentina", "shul", "PRACTICAL")),
+    "Templo Libertad attraction + shul": shouldMerge(R("Templo Libertad", "Buenos Aires", "Argentina", "attraction", "ATTRACTION"), R("Templo Libertad", "Buenos Aires", "Argentina", "shul", "PRACTICAL")),
+    "Judah Hyam heritage + shul": shouldMerge(R("Judah Hyam Synagogue Delhi", "New Delhi", "India", "attraction", "ATTRACTION"), R("Judah Hyam Synagogue", "New Delhi", "India", "shul", "PRACTICAL")),
+    "hotel vs park (must be false)": shouldMerge(R("Central Hotel", "Buenos Aires", "Argentina", "stay_anchor", "PLACE_TO_STAY"), R("Central Park", "Buenos Aires", "Argentina", "attraction", "ATTRACTION")),
+    "Melbourne Museum vs Immigration Museum (must be false)": shouldMerge(R("Melbourne Museum", "Melbourne", "Australia", "attraction", "ATTRACTION"), R("Immigration Museum Melbourne", "Melbourne", "Australia", "attraction", "ATTRACTION")),
+    "Cluj park vs Chabad (must be false)": shouldMerge(R("Central Park Cluj", "Cluj-Napoca", "Romania", "attraction", "ATTRACTION"), R("Chabad of Cluj framing", "Cluj-Napoca", "Romania", "shul", "PRACTICAL")),
+    "Ramchal shul vs kever (must be false)": shouldMerge(R("Ramchal Synagogue Akko", "Akko", "Israel", "shul", "PRACTICAL"), R("Ramchal kever heritage framing Akko", "Akko", "Israel", "beis_hachaim", "ATTRACTION")),
+    "museum quarter vs heritage walk (must be false)": shouldMerge(R("Aarhus museum quarter outdoor approach", "Aarhus", "Denmark", "attraction", "ATTRACTION"), R("Aarhus Jewish heritage walking corridor", "Aarhus", "Denmark", "attraction", "ATTRACTION")),
+    "Montjuic vs Castell (must be false)": shouldMerge(R("Montjuïc", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Castell de Montjuïc", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+    "Triana vs Puente (must be false)": shouldMerge(R("Triana", "Seville", "Spain", "attraction", "ATTRACTION"), R("Puente de Triana", "Seville", "Spain", "attraction", "ATTRACTION")),
+    "Santa Cruz stay vs barrio (must be false)": shouldMerge(R("Staying near Santa Cruz, Seville", "Seville", "Spain", "practical_travel_anchor", "PLACE_TO_STAY"), R("Barrio Santa Cruz", "Seville", "Spain", "attraction", "ATTRACTION")),
+    "heritage walk vs historic quarter": shouldMerge(R("Aarhus Jewish heritage walking corridor", "Aarhus", "Denmark", "attraction", "ATTRACTION"), R("Aarhus historic Jewish quarter outdoor framing", "Aarhus", "Denmark", "attraction", "ATTRACTION")),
+    "Jewish Cultural Quarter vs visitor resource": shouldMerge(R("Jewish Cultural Quarter", "Amsterdam", "Netherlands", "attraction", "ATTRACTION"), R("Jewish Cultural Quarter visitor resource", "Amsterdam", "Netherlands", "kosher_travel_resource", "PRACTICAL")),
+    "Jewish Cultural Quarter vs cultural plaza (must be false)": shouldMerge(R("Jewish Cultural Quarter", "Amsterdam", "Netherlands", "attraction", "ATTRACTION"), R("Amsterdam cultural district outdoor plaza", "Amsterdam", "Netherlands", "attraction", "ATTRACTION")),
+    "Field Museum vs Wrigley Field (must be false)": shouldMerge(R("Field Museum", "Chicago", "United States", "attraction", "ATTRACTION"), R("Wrigley Field framing", "Chicago", "United States", "attraction", "ATTRACTION")),
+    "Texas Capitol vs Bullock Museum (must be false)": shouldMerge(R("Texas State Capitol grounds", "Austin", "United States", "attraction", "ATTRACTION"), R("Bullock Texas State History Museum", "Austin", "United States", "attraction", "ATTRACTION")),
+    "Casa Batllo vs Casa Mila (must be false)": shouldMerge(R("Casa Batlló", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Casa Milà", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+  };
+  console.log("Matcher self-check:", checks);
+  const failed = Object.entries(checks).filter(([k, v]) => (k.includes("must be false") ? v !== false : v !== true));
+  if (failed.length) {
+    console.error("Self-check failures:", Object.fromEntries(failed));
+    process.exit(1);
+  }
+  return checks;
 }
 
 function main() {
+  if (process.argv.includes("--self-check")) {
+    selfCheck();
+    console.log("Self-check passed");
+    return;
+  }
   console.log(DRY ? "DRY RUN" : "WRITE MODE");
+  const checks = selfCheck();
   const known = loadKnownPlaces();
   console.log(`Known places loaded: ${known.size}`);
 
   let all = [];
   const packCountsBefore = {};
-  const dumped = loadFromDump();
-  if (dumped) {
-    console.log(`Loaded dump: ${dumped.length} rows`);
-    all = dumped;
-    for (const pack of PACKS) {
-      packCountsBefore[pack.slug] = dumped.filter((r) => r.pack === pack.slug).length;
-      console.log(`  ${pack.slug}: ${packCountsBefore[pack.slug]}`);
-    }
-  } else {
-    for (const pack of PACKS) {
-      const dir = path.join(IMPORTS, pack.slug);
-      let rows =
-        pack.kind === "json"
-          ? parseJsonPack(dir, pack.slug)
-          : parseTsCandidates(path.join(dir, "candidates.ts"), pack.slug);
-      packCountsBefore[pack.slug] = rows.length;
-      console.log(`Loaded ${pack.slug}: ${rows.length}`);
-      all = all.concat(rows);
-    }
+  for (const pack of PACKS) {
+    const dir = path.join(IMPORTS, pack.slug);
+    const rows =
+      pack.kind === "json"
+        ? parseJsonPack(dir, pack.slug)
+        : parseTsCandidates(path.join(dir, "candidates.ts"), pack.slug);
+    packCountsBefore[pack.slug] = rows.length;
+    console.log(`Loaded ${pack.slug}: ${rows.length}`);
+    all = all.concat(rows);
   }
   const before = all.length;
   const beforeCov = coverage(all);
   console.log(`Before total: ${before}`);
+  const buenosBefore = sampleCity(all, "buenos aires");
 
   const nightlife = filterNightlife(all);
   all = nightlife.kept;
 
-  const { kept, removed, samples } = dedupeAll(all);
+  const { kept, removed, samples, largestClusters } = dedupeAll(all);
   console.log(`Removed nightlife: ${nightlife.removed.length}`);
   console.log(`Removed duplicates: ${removed.length}`);
   console.log(`After dedupe: ${kept.length}`);
 
+  const leftovers = leftoverCollisions(kept);
+  const buenosAfter = sampleCity(kept, "buenos aires");
+
   const enriched = kept.map((r) => {
-    // Only mutate enrichable packs' stored fields; older packs still get
-    // category normalization for staging via import-prefill.
     if (ENRICHABLE_PACKS.has(r.pack)) return enrichRow(r, known);
-    return {
-      ...r,
-      category: normalizeCategory(r.category, r.listingLabel, r.entityType),
-    };
+    return { ...r, category: normalizeCategory(r.category, r.listingLabel, r.entityType) };
   });
   const afterCov = coverage(enriched.filter((r) => ENRICHABLE_PACKS.has(r.pack)));
   const beforeEnrichableCov = coverage(all.filter((r) => ENRICHABLE_PACKS.has(r.pack)));
 
-  // Prefer keeping rows in their original pack; group for rewrite
   const byPack = new Map(PACKS.map((p) => [p.slug, []]));
   for (const row of enriched) {
     if (!byPack.has(row.pack)) byPack.set(row.pack, []);
@@ -1121,12 +1523,11 @@ function main() {
   for (const pack of PACKS) {
     const rows = byPack.get(pack.slug) || [];
     packCountsAfter[pack.slug] = rows.length;
-    const countChanged = rows.length !== packCountsBefore[pack.slug];
-    const enrichable = ENRICHABLE_PACKS.has(pack.slug);
-    // Leave curated early packs byte-stable when we only dropped their
-    // duplicates from later packs. Enrich + rewrite batch 3/4/5.
-    if (!enrichable && !countChanged) {
-      console.log(`Skipped ${pack.slug}: unchanged (${rows.length})`);
+    const candFile = path.join(IMPORTS, pack.slug, "candidates.ts");
+    const mappedSource = fs.existsSync(candFile) && /\.map\(\s*\(?\s*name/.test(fs.readFileSync(candFile, "utf8"));
+    if (mappedSource) {
+      console.log(`Skipped ${pack.slug}: mapped source left in place (${packCountsBefore[pack.slug]} file rows, ${rows.length} after in-memory dedupe)`);
+      packCountsAfter[pack.slug] = packCountsBefore[pack.slug];
       continue;
     }
     if (DRY) {
@@ -1140,21 +1541,47 @@ function main() {
     console.log(`Rewrote ${pack.slug}: ${packCountsBefore[pack.slug]} → ${rows.length}`);
   }
 
+  const amiaCluster = (largestClusters || []).find((c) => (c.variants || []).some((v) => /amia|aima/i.test(v)));
+  let prevReport = null;
+  if (fs.existsSync(REPORT_PATH)) {
+    try {
+      prevReport = JSON.parse(fs.readFileSync(REPORT_PATH, "utf8"));
+    } catch {
+      prevReport = null;
+    }
+  }
+  const originalBaseline = prevReport?.originalBaseline || 24077;
+  const firstPassBefore = prevReport?.firstPassBefore || (prevReport?.before > before ? prevReport.before : 23994);
+  const firstPackCountsBefore = prevReport?.firstPackCountsBefore || (prevReport?.before > before ? prevReport.packCountsBefore : packCountsBefore);
+  const diskAfter = Object.values(packCountsAfter).reduce((s, n) => s + n, 0);
   const report = {
-    originalBaseline: 24077,
-    before,
-    after: enriched.length,
-    removed: before - enriched.length,
-    removedFromOriginal: 24077 - enriched.length,
+    originalBaseline,
+    firstPassBefore,
+    firstPackCountsBefore,
+    before: firstPassBefore,
+    thisPassLoaded: before,
+    after: diskAfter,
+    afterInMemory: enriched.length,
+    removed: firstPassBefore - diskAfter,
+    removedThisPass: before - enriched.length,
+    removedFromOriginal: originalBaseline - diskAfter,
     nightlifeRemoved: nightlife.removed.length,
-    duplicateRemoved: removed.length,
-    packCountsBefore,
+    duplicateRemoved: firstPassBefore - diskAfter,
+    packCountsBefore: firstPackCountsBefore,
+    packCountsThisPass: packCountsBefore,
     packCountsAfter,
     coverageBefore: beforeCov,
     coverageAfterAll: coverage(enriched),
     coverageEnrichableBefore: beforeEnrichableCov,
     coverageEnrichableAfter: afterCov,
+    matcherSelfCheck: checks,
+    buenosAiresBefore: buenosBefore.count,
+    buenosAiresAfter: buenosAfter.count,
+    buenosAiresNamesAfter: buenosAfter.names.filter((n) => /amia|aima|templo libertad|chabad/i.test(n)),
+    amiaCluster: amiaCluster || prevReport?.amiaCluster || null,
+    largestClustersThisPass: (largestClusters || []).slice(0, 25),
     sampleClusters: samples.slice(0, 25),
+    leftovers,
     removedByReason: removed.reduce((acc, r) => {
       acc[r.reason] = (acc[r.reason] || 0) + 1;
       return acc;

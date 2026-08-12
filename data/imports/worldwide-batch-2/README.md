@@ -4,16 +4,16 @@ Private, source-backed staging pack for the centralized bulk importer. It is not
 
 ## Coverage
 
-- 152 candidates across four vacation markets:
+- 151 candidates across four vacation markets:
   - Portugal: 48 — Lisbon, Sintra/Cascais and Porto.
   - Greece: 44 — Athens, Rhodes and Thessaloniki.
   - Canada: 38 — Toronto and Montréal.
-  - Argentina: 22 — Buenos Aires.
+  - Argentina: 21 — Buenos Aires.
 - Entity mix:
   - 9 vacation destination candidates.
   - 129 attractions, including 11 Jewish-heritage attractions.
   - 2 Where to stay neighborhood anchors.
-  - 12 practical Jewish-travel resources. These are community or certifier resources, not restaurant or accommodation listings.
+  - 11 practical Jewish-travel resources. These are community or certifier resources, not restaurant or accommodation listings.
 
 The attraction-led mix is deliberate. Attractions do not have to be Jewish places or kosher establishments — Jewish venues are welcome when they fit, and most rows are ordinary tourism landmarks suitable for Orthodox / Torah-observant travelers. Do not stage clubs, nightlife, mixed concerts, or similar. A named attraction can be supported by its official operator, tourism board, museum, municipal guide, or community source without making claims about food, hours, prices, availability, contacts, certification, or affiliate relationships. Individual food and accommodation listings were not added where a first-party source did not support a durable listing.
 
