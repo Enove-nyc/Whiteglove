@@ -2,8 +2,9 @@
  * Travel Essentials — structured affiliate offers beyond the three searches.
  *
  * Hotels, flights and cars already resolve through the affiliate registry
- * (`lib/affiliate/partners.ts`). Insurance, eSIM, transfers and tours only
- * appear when the owner pastes a real tracked link and enables the card.
+ * (`lib/affiliate/partners.ts`). Insurance, eSIM, transfers, tours and
+ * seasonal programmes only appear when the owner pastes a real tracked link
+ * and enables the card.
  *
  * NOTHING IS INVENTED HERE. A category Travelpayouts “supports generally” is
  * not enough. Empty URL + disabled = hidden. No placeholder buttons.
@@ -35,6 +36,7 @@ export type EssentialServiceId =
   | "esim"
   | "transfer"
   | "activity"
+  | "programme"
   | "car"
   | "flight"
   | "hotel";
@@ -117,6 +119,19 @@ export const ESSENTIAL_SERVICES: readonly EssentialServiceDef[] = [
     preferredNetwork: "travelpayouts",
     adminNote:
       "Only enable once a tours/attractions programme link is approved and pasted. A card saved before the things-to-do page existed keeps the pages it was saved with — tick “Things to do” to show it there too.",
+  },
+  {
+    id: "programme",
+    name: "Seasonal kosher programmes",
+    blurb: "Pesach, Sukkos and summer programmes when a kitchen is set up for the season. Dates and supervision are set by the operator.",
+    cta: "See seasonal programmes",
+    icon: "✦",
+    linkMode: "landing",
+    product: "programme",
+    defaultPageTypes: ["destination", "book"],
+    preferredNetwork: "travelpayouts",
+    adminNote:
+      "Only enable once a tracked seasonal-programme link is approved and pasted. This is a hand-off to a partner, not a listing — a stay without its season still belongs on the stay record, not here.",
   },
   {
     id: "car",
@@ -254,6 +269,20 @@ function defaultConfigFor(def: EssentialServiceDef, index: number): EssentialSer
   };
 }
 
+/**
+ * Config for one catalogue row, even when stored settings predate that row.
+ *
+ * A cached Redis blob merged under an older catalogue will not have a key for
+ * a service added later. Sorting those rows by `cfg.order` used to throw and
+ * take down every page that renders Travel Essentials.
+ */
+export function configFor(settings: TravelEssentialsSettings, def: EssentialServiceDef): EssentialServiceConfig {
+  const existing = settings.services[def.id];
+  if (existing) return existing;
+  const index = ESSENTIAL_SERVICES.findIndex((row) => row.id === def.id);
+  return defaultConfigFor(def, index < 0 ? ESSENTIAL_SERVICES.length : index);
+}
+
 /** The most providers one category may hold. Beyond this it is a list, not a choice. */
 export const MAX_OFFERS_PER_SERVICE = 4;
 
@@ -349,8 +378,7 @@ export function essentialIsBookable(id: EssentialServiceId, settings: TravelEsse
   if (!settings.sectionEnabled) return false;
   const def = defFor(id);
   if (def.linkMode !== "landing") return false;
-  const cfg = settings.services[id];
-  if (!cfg) return false;
+  const cfg = configFor(settings, def);
   // ANY provider in the category counts. The first one being switched off does
   // not mean the category is unavailable when a second is live — that is the
   // whole point of a category holding more than one.
@@ -457,7 +485,7 @@ export function describeEssentialService(
   affiliate: AffiliateConfig,
 ): string {
   const def = defFor(id);
-  const cfg = settings.services[id];
+  const cfg = configFor(settings, def);
   if (!settings.sectionEnabled) return "Section off — hidden everywhere.";
   if (def.linkMode === "landing") {
     // Counted from what would actually render, so the line cannot disagree with
@@ -473,7 +501,7 @@ export function describeEssentialService(
     const where = pageTypesFor(def, cfg).join(", ");
     const many = live.length > 1 ? `${live.length} providers, side by side, ` : "";
     if (untracked === live.length) {
-      return `${many}saved with a direct link. It will show, but may earn nothing — prefer a tracked Travelpayouts or Stay22 link.`;
+      return `${many}live on ${where}. Works, earns nothing — the saved link does not look tracked. Prefer a Travelpayouts or Stay22 link.`;
     }
     const network = networkFromLandingUrl(live[0].url);
     const partial = untracked > 0 ? ` ${untracked} of them earns nothing — check that link.` : "";
@@ -500,7 +528,7 @@ export function essentialsForContext(
 ): EssentialCard[] {
   if (!settings.sectionEnabled) return [];
 
-  const rows = ESSENTIAL_SERVICES.map((def) => ({ def, cfg: settings.services[def.id] })).sort(
+  const rows = ESSENTIAL_SERVICES.map((def) => ({ def, cfg: configFor(settings, def) })).sort(
     (a, b) => a.cfg.order - b.cfg.order || a.def.name.localeCompare(b.def.name),
   );
 
@@ -651,6 +679,11 @@ export const OWNER_PROGRAMME_CHECKLIST = [
   },
   {
     category: "Tours / attractions",
+    status: "Not auto-configured. Confirm approval, then paste the tracked link here.",
+    where: "/admin/settings/earnings",
+  },
+  {
+    category: "Seasonal kosher programmes",
     status: "Not auto-configured. Confirm approval, then paste the tracked link here.",
     where: "/admin/settings/earnings",
   },

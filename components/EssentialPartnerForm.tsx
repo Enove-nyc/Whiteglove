@@ -61,8 +61,9 @@ export default function EssentialPartnerForm({
   const [checkOut, setCheckOut] = useState(defaultCheckOut);
   const [error, setError] = useState("");
 
-  const wantsPlace = product === "activity" || product === "esim" || product === "transfer" || product === "insurance";
-  const wantsDates = product === "insurance" || product === "activity";
+  const wantsPlace =
+    product === "activity" || product === "esim" || product === "transfer" || product === "insurance" || product === "programme";
+  const wantsDates = product === "insurance" || product === "activity" || product === "programme";
   const wantsOneDate = product === "transfer";
 
   function open() {
@@ -115,7 +116,17 @@ export default function EssentialPartnerForm({
       <div className="mt-5">
         <div className="grid gap-px overflow-visible rounded-2xl border border-[var(--gold-light)] bg-[var(--gold-light)]">
           {wantsPlace ? (
-            <Field label={product === "esim" ? "Country or city" : product === "transfer" ? "Airport or city" : "Destination"}>
+            <Field
+              label={
+                product === "esim"
+                  ? "Country or city"
+                  : product === "transfer"
+                    ? "Airport or city"
+                    : product === "programme"
+                      ? "Place or programme"
+                      : "Destination"
+              }
+            >
               <AddressAutocomplete
                 mode="city"
                 value={destination}

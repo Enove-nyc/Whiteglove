@@ -3,14 +3,16 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { NO_STAY22 } from "@/lib/stay22";
 import type { AffiliateConfig } from "@/lib/affiliate/partners";
-import { resolveLink } from "@/lib/affiliate/partners";
 import {
   defaultTravelEssentials,
+  describeEssentialService,
+  ESSENTIAL_SERVICES,
   essentialsForContext,
   landingUrlProblem,
   mergeTravelEssentials,
   OWNER_PROGRAMME_CHECKLIST,
 } from "@/lib/travel-essentials";
+import { earningState, LANDING_PRODUCTS, resolveLink, routeFor } from "@/lib/affiliate/partners";
 
 const NOTHING: AffiliateConfig = { travelpayouts: {}, stay22: NO_STAY22 };
 
@@ -31,6 +33,7 @@ describe("Travel Essentials config", () => {
     const defaults = defaultTravelEssentials();
     assert.equal(defaults.services.insurance.enabled, false);
     assert.equal(defaults.services.esim.enabled, false);
+    assert.equal(defaults.services.programme.enabled, false);
     assert.equal(defaults.services.hotel.enabled, true);
     assert.equal(defaults.sectionEnabled, true);
   });
@@ -43,6 +46,21 @@ describe("Travel Essentials config", () => {
     assert.equal(merged.sectionEnabled, false);
     assert.equal(merged.services.insurance.enabled, true);
     assert.equal((merged.services as Record<string, unknown>).ghost, undefined);
+    for (const def of ESSENTIAL_SERVICES) {
+      assert.equal(typeof merged.services[def.id].order, "number", def.id);
+    }
+  });
+
+  it("does not crash when a catalogue service is missing from stored settings", () => {
+    const settings = defaultTravelEssentials();
+    delete (settings.services as Partial<typeof settings.services>).programme;
+    const cards = essentialsForContext(settings, NOTHING, {
+      pageType: "book",
+      page: "/book",
+      placement: "book-essentials",
+    });
+    assert.ok(Array.isArray(cards));
+    assert.equal(describeEssentialService("programme", settings, NOTHING).length > 0, true);
   });
 
   it("refuses non-https landing URLs", () => {
@@ -136,6 +154,7 @@ describe("Travel Essentials visibility", () => {
   it("keeps an owner checklist instead of guessing programmes", () => {
     assert.ok(OWNER_PROGRAMME_CHECKLIST.length >= 6);
     assert.ok(OWNER_PROGRAMME_CHECKLIST.some((row) => /insurance/i.test(row.category)));
+    assert.ok(OWNER_PROGRAMME_CHECKLIST.some((row) => /seasonal kosher programmes/i.test(row.category)));
     assert.ok(OWNER_PROGRAMME_CHECKLIST.some((row) => /not present|not auto-configured/i.test(row.status)));
   });
 });
@@ -305,7 +324,80 @@ describe("a visitor can find the eSIM page", () => {
     // owner had not ticked. This page IS the offer, so it reads the category
     // directly — the only question is whether a provider is live at all.
     const page = readFileSync("components/EsimOffers.tsx", "utf8");
-    assert.match(page, /offersFor\(def, settings\.services\.esim\)/);
+    assert.match(page, /offersFor\(def, configFor\(settings, def\)\)/);
     assert.doesNotMatch(page, /pageType/);
+  });
+});
+
+describe("landing products the catalogue names, the registry can resolve", () => {
+  it("KEEPS THE TWO LISTS THE SAME", () => {
+    // Programme sat in TRAVEL_PRODUCTS and routeFor returned none for it, so
+    // nothing could be offered even after a link was pasted. One list in the
+    // catalogue and one in the registry, asserted equal, is what stops a sixth
+    // product being named and then silently refused.
+    const landingIds = ESSENTIAL_SERVICES.filter((s) => s.linkMode === "landing").map((s) => s.product);
+    assert.deepEqual([...landingIds].sort(), [...LANDING_PRODUCTS].sort());
+  });
+
+  it("HAS A TRAVEL ESSENTIALS ROW FOR SEASONAL PROGRAMMES", () => {
+    const def = ESSENTIAL_SERVICES.find((s) => s.id === "programme");
+    assert.ok(def);
+    assert.equal(def!.linkMode, "landing");
+    assert.equal(def!.product, "programme");
+    const earnings = readFileSync("app/admin/settings/earnings/page.tsx", "utf8");
+    assert.match(earnings, /TravelEssentialsForm/);
+    assert.match(earnings, /What is live today/);
+    assert.match(earnings, /allRoutes/);
+  });
+});
+
+describe("a pasted landing that is not tracked", () => {
+  const DIRECT: AffiliateConfig = {
+    ...NOTHING,
+    essentialsLandings: {
+      programme: [{ url: "https://example-programmes.test/pesach", label: "Operator" }],
+    },
+  };
+
+  it("STILL OPENS, AND SAYS IT EARNS NOTHING", () => {
+    // The untagged-car-hire failure: a working link that pays nobody, invisible
+    // because the page looked identical. Refusing the link would cost a trip to
+    // save a commission. The admin has to see the state instead.
+    const route = routeFor("programme", DIRECT);
+    assert.equal(earningState(route), "earns-nothing");
+    assert.match(route.note, /earns nothing/i);
+    const resolved = resolveLink({ product: "programme", destination: "Catskills" }, DIRECT);
+    assert.ok(resolved);
+    assert.equal(resolved!.route.earns, false);
+    assert.equal(resolved!.url, "https://example-programmes.test/pesach");
+  });
+
+  it("shows the same words on the Travel Essentials row", () => {
+    const settings = defaultTravelEssentials();
+    settings.services.programme.enabled = true;
+    settings.services.programme.url = "https://example-programmes.test/pesach";
+    const line = describeEssentialService("programme", settings, DIRECT);
+    assert.match(line, /Works, earns nothing/);
+  });
+
+  it("shows a programme card once a link is pasted and enabled", () => {
+    const settings = defaultTravelEssentials();
+    settings.services.programme.enabled = true;
+    settings.services.programme.url = "https://tp.media/r?marker=761677&u=https%3A%2F%2Fexample-programmes.test";
+    const tracked: AffiliateConfig = {
+      ...NOTHING,
+      essentialsLandings: {
+        programme: [{ url: settings.services.programme.url, label: "Partner" }],
+      },
+    };
+    const cards = essentialsForContext(settings, tracked, {
+      pageType: "book",
+      page: "/book",
+      placement: "book-essentials",
+    });
+    const programme = cards.find((c) => c.id === "programme");
+    assert.ok(programme);
+    assert.match(programme!.href, /product=programme/);
+    assert.equal(programme!.earns, true);
   });
 });

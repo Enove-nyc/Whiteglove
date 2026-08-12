@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { NO_STAY22 } from "@/lib/stay22";
 import {
   allRoutes,
+  earningState,
   resolveLink,
   routeFor,
   TRAVEL_PRODUCTS,
@@ -114,13 +115,44 @@ describe("who pays and where the traveler lands", () => {
 
 describe("a link that cannot be built is not offered", () => {
   it("REFUSES A PRODUCT WITH NO PROGRAMME JOINED", () => {
-    // Activities, insurance, eSIMs and transfers are named in the brief and
-    // are not joined. The slot exists so the admin can say so; inventing a
-    // link is the one thing that must not happen.
+    // Activities, insurance, eSIMs, transfers and seasonal programmes are named
+    // in the brief and stay dark until a landing URL is pasted. The slot exists
+    // so the admin can say so; inventing a link is the one thing that must not happen.
     for (const product of ["activity", "insurance", "esim", "transfer", "programme"] as const) {
       assert.equal(resolveLink({ product, destination: "Rome" }, CONNECTED), null, product);
       assert.equal(routeFor(product, CONNECTED).earns, false, product);
+      assert.equal(earningState(routeFor(product, CONNECTED)), "not-offered", product);
     }
+  });
+
+  it("RESOLVES A PASTED PROGRAMME LINK the same way as insurance", () => {
+    // This is the test that would have caught programme sitting in
+    // TRAVEL_PRODUCTS while routeFor always returned none for it.
+    const withProgramme: AffiliateConfig = {
+      ...CONNECTED,
+      essentialsLandings: {
+        programme: [{ url: "https://tp.media/r?marker=123456&u=https%3A%2F%2Fexample-programmes.test", label: "Operator" }],
+      },
+    };
+    const route = routeFor("programme", withProgramme);
+    assert.equal(route.earns, true);
+    assert.equal(earningState(route), "earns");
+    const resolved = resolveLink({ product: "programme", destination: "Catskills" }, withProgramme);
+    assert.ok(resolved);
+    assert.match(resolved!.url, /^https:\/\/tp\.media\//);
+  });
+
+  it("KEEPS AN UNTRACKED LANDING LIVE and reports earns-nothing", () => {
+    const direct: AffiliateConfig = {
+      ...CONNECTED,
+      essentialsLandings: {
+        insurance: [{ url: "https://example-insurance.test/compare", label: "Insurer" }],
+      },
+    };
+    const route = routeFor("insurance", direct);
+    assert.equal(earningState(route), "earns-nothing");
+    assert.match(route.note, /earns nothing/i);
+    assert.ok(resolveLink({ product: "insurance" }, direct));
   });
 
   it("refuses a search that is missing what it needs", () => {

@@ -62,6 +62,20 @@ export const TRAVEL_PRODUCTS: ReadonlyArray<{ value: TravelProduct; label: strin
   { value: "programme", label: "Seasonal kosher programmes" },
 ] as const;
 
+/**
+ * Products that hand off through a pasted landing URL, not a search builder.
+ *
+ * Hotels, flights and cars are built from the visitor's dates. These five are
+ * a link the owner pastes once a programme is approved. Kept as one list so a
+ * sixth cannot be named in the catalogue and then silently refused here.
+ */
+export const LANDING_PRODUCTS = ["transfer", "activity", "insurance", "esim", "programme"] as const;
+export type LandingProduct = (typeof LANDING_PRODUCTS)[number];
+
+export function isLandingProduct(product: TravelProduct): product is LandingProduct {
+  return (LANDING_PRODUCTS as readonly string[]).includes(product);
+}
+
 /** Who records the referral and pays for it. */
 export type AffiliateNetwork = "travelpayouts" | "stay22" | "none";
 
@@ -103,6 +117,26 @@ export type ProductRoute = {
 };
 
 /**
+ * What the admin should read for a route. Never silent.
+ *
+ * "Works, earns nothing" is a real state — the untagged-car-hire failure —
+ * and it has to look different from "not offered" or the owner cannot tell
+ * which products are giving trips away.
+ */
+export function earningState(route: ProductRoute): "earns" | "earns-nothing" | "not-offered" {
+  if (route.earns) return "earns";
+  if (route.destinationLabel) return "earns-nothing";
+  return "not-offered";
+}
+
+export function earningStateLabel(route: ProductRoute): string {
+  const state = earningState(route);
+  if (state === "earns") return "Can earn";
+  if (state === "earns-nothing") return "Works, earns nothing";
+  return "Not offered";
+}
+
+/**
  * Landing-page affiliate URLs for Travel Essentials (insurance, eSIM, …).
  *
  * A LIST PER CATEGORY, because a category can hold more than one provider —
@@ -111,7 +145,7 @@ export type ProductRoute = {
  * before this existed resolves exactly as it did.
  */
 export type EssentialsLandings = Partial<
-  Record<"transfer" | "activity" | "insurance" | "esim", ReadonlyArray<{ url: string; label?: string }>>
+  Record<LandingProduct, ReadonlyArray<{ url: string; label?: string }>>
 >;
 
 /** Everything the site needs in order to build any booking link. */
@@ -253,7 +287,7 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
     };
   }
 
-  if (product === "transfer" || product === "activity" || product === "insurance" || product === "esim") {
+  if (isLandingProduct(product)) {
     // The category's route is the first provider that can actually be used —
     // "is this category connected at all", which is what the admin line asks.
     const landing = (config.essentialsLandings?.[product] ?? []).find((entry) => entry.url.trim());
@@ -272,11 +306,10 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
       earns: looksTracked(url),
       note: looksTracked(url)
         ? `Travel Essentials link goes through ${network === "stay22" ? "Stay22" : network === "travelpayouts" ? "Travelpayouts" : "a tracked redirect"}.`
-        : "Travel Essentials link is saved but does not look tracked — it may earn nothing.",
+        : "Works, earns nothing — the saved link does not look tracked.",
     };
   }
 
-  // Seasonal programmes and anything else without a joined partner stay dark.
   return NOT_CONNECTED(product, TRAVEL_PRODUCTS.find((entry) => entry.value === product)?.label.toLowerCase() ?? product);
 }
 
@@ -396,12 +429,7 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     return partner.key === "kayak" ? withAffiliate(built, config.kayakParams) : built;
   }
 
-  if (
-    request.product === "transfer" ||
-    request.product === "activity" ||
-    request.product === "insurance" ||
-    request.product === "esim"
-  ) {
+  if (isLandingProduct(request.product)) {
     // The provider asked for, or the first. An index rather than a URL: a
     // stranger editing it reaches one of the owner's own links or nothing.
     const list = config.essentialsLandings?.[request.product] ?? [];
@@ -448,12 +476,7 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   // tracked URLs from the owner's dashboard — wrapping them again would break
   // the programme's own parameters.
   if (request.product === "hotel" && route.network === "stay22") return { url, route };
-  if (
-    request.product === "transfer" ||
-    request.product === "activity" ||
-    request.product === "insurance" ||
-    request.product === "esim"
-  ) {
+  if (isLandingProduct(request.product)) {
     return { url, route };
   }
 

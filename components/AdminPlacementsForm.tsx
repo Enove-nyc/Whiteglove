@@ -5,10 +5,8 @@ import { savePlacementsAction } from "@/app/admin/settings/earnings/placements-a
 import { TRAVEL_PRODUCTS } from "@/lib/affiliate/partners";
 import type { DestinationPlacementSettings } from "@/lib/growth-settings";
 
-/** Only hotel/flight/car are wired on destination pages today. */
-const DESTINATION_PRODUCTS = TRAVEL_PRODUCTS.filter((p) =>
-  ["hotel", "flight", "car"].includes(p.value),
-);
+/** Search products wired on destination “Book the practical pieces”. Landing products live under Cards on the pages. */
+const DESTINATION_PRODUCTS = TRAVEL_PRODUCTS.filter((p) => ["hotel", "flight", "car"].includes(p.value));
 
 export default function AdminPlacementsForm({
   current,
@@ -18,9 +16,10 @@ export default function AdminPlacementsForm({
   current: DestinationPlacementSettings;
   storeReady: boolean;
   /** Live partner status lines from resolve/routeFor — never invent partners. */
-  routeNotes: Array<{ product: string; label: string; earns: boolean; note: string }>;
+  routeNotes: Array<{ product: string; label: string; earns: boolean; state?: string; note: string; landing?: boolean }>;
 }) {
   const [state, act, busy] = useActionState(savePlacementsAction, null);
+  const landingNotes = routeNotes.filter((row) => row.landing);
 
   return (
     <form action={act} className="mt-6 space-y-5">
@@ -66,7 +65,7 @@ export default function AdminPlacementsForm({
                     <span className="font-semibold text-[var(--navy)]">{product.label}</span>
                     {route && (
                       <span className="block text-stone-500">
-                        {route.earns ? "Earning when clicked. " : "Link may work but is not earning yet. "}
+                        {route.state ? `${route.state}. ` : route.earns ? "Earning when clicked. " : "Works, earns nothing. "}
                         {route.note}
                       </span>
                     )}
@@ -78,10 +77,28 @@ export default function AdminPlacementsForm({
         </ul>
       </fieldset>
 
-      <p className="text-sm leading-6 text-stone-500">
-        Transfers, insurance, eSIMs and programmes appear only when you add them under travel extras below — never as empty buttons.
-        The commission disclosure uses the editable line under Settings → The website&apos;s words.
-      </p>
+      {landingNotes.length > 0 && (
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
+            Transfers, tours, insurance, eSIM and programmes
+          </p>
+          <p className="mt-1 text-sm leading-6 text-stone-500">
+            Configured under Cards on the pages below, not as empty buttons here. Each line is the live state — including
+            when a saved link works and earns nothing.
+          </p>
+          <ul className="mt-2 space-y-2">
+            {landingNotes.map((route) => (
+              <li key={route.product} className="text-sm leading-6 text-stone-700">
+                <span className="font-semibold text-[var(--navy)]">{route.label}</span>
+                <span className="block text-stone-500">
+                  {route.state ? `${route.state}. ` : ""}
+                  {route.note}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <button
         type="submit"

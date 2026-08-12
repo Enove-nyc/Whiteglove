@@ -80,7 +80,7 @@ export default async function AdminSettingsPage() {
           <Card
             href="/admin/settings/travel-essentials"
             title="Travel Essentials"
-            detail="Enable insurance, eSIM, transfers, tours, cars, flights and stays — with URLs, placements and order."
+            detail="Enable insurance, eSIM, transfers, tours and seasonal programmes — with URLs, placements and order."
             state={stats.configured ? undefined : "Needs the private store"}
           />
         </div>

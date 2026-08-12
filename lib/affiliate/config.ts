@@ -11,20 +11,17 @@ import { unstable_cache } from "next/cache";
 import { readStay22 } from "@/lib/stay22-store";
 import { readTravelpayouts } from "@/lib/travelpayouts-store";
 import { NO_STAY22 } from "@/lib/stay22";
-import type { AffiliateConfig, EssentialsLandings } from "@/lib/affiliate/partners";
+import { LANDING_PRODUCTS, type AffiliateConfig, type EssentialsLandings } from "@/lib/affiliate/partners";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
-import type { EssentialServiceId } from "@/lib/travel-essentials";
 import { landingUrlProblem } from "@/lib/travel-essentials";
 
 export const AFFILIATE_CONFIG_TAG = "affiliate-config";
-
-const LANDING_IDS = ["transfer", "activity", "insurance", "esim"] as const satisfies readonly EssentialServiceId[];
 
 async function loadEssentialsLandings(): Promise<EssentialsLandings> {
   const essentials = await readTravelEssentials();
   if (!essentials.sectionEnabled) return {};
   const out: EssentialsLandings = {};
-  for (const id of LANDING_IDS) {
+  for (const id of LANDING_PRODUCTS) {
     const row = essentials.services[id];
     if (!row) continue;
     // Every provider in the category, first one first, so /go can resolve the
