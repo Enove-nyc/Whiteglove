@@ -131,14 +131,14 @@ describe("Travelpayouts widget scripts", () => {
 });
 
 describe("how the widgets are loaded", () => {
-  it("uses next/script on the embed pages, without WordPress attributes", () => {
+  it("puts a native script tag on the embed pages, not next/script", () => {
     const flights = readFileSync("app/embed/flights/page.tsx", "utf8");
     const cars = readFileSync("app/embed/cars/page.tsx", "utf8");
-    assert.match(flights, /from "next\/script"/);
-    assert.match(cars, /from "next\/script"/);
-    assert.match(flights, /strategy="afterInteractive"/);
-    assert.match(cars, /strategy="afterInteractive"/);
+    assert.match(flights, /<script id="tp-aviasales-search"/);
+    assert.match(cars, /<script id="tp-cars-search"/);
     for (const source of [flights, cars]) {
+      assert.doesNotMatch(source, /from "next\/script"/);
+      assert.doesNotMatch(source, /strategy="afterInteractive"/);
       assert.doesNotMatch(source, /data-no-optimize|data-wp-|noptimize/i);
     }
   });

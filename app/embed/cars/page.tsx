@@ -1,11 +1,10 @@
-import Script from "next/script";
 import { localrentWidgetSrc } from "@/lib/partner-widgets";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Travelpayouts car search form (Localrent), loaded with next/script.
- * Iframed from /book. No WordPress attributes.
+ * Travelpayouts car search form (Localrent). Native script tag — same reason
+ * as /embed/flights: next/script left the iframe empty. Iframed from /book.
  */
 export default async function EmbedCarsPage() {
   const src = localrentWidgetSrc();
@@ -18,5 +17,5 @@ export default async function EmbedCarsPage() {
     );
   }
 
-  return <Script id="tp-cars-search" src={src} strategy="afterInteractive" charSet="utf-8" />;
+  return <script id="tp-cars-search" src={src} async charSet="utf-8" />;
 }

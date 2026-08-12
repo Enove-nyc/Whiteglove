@@ -1,11 +1,12 @@
-import Script from "next/script";
 import { aviasalesWidgetSrc } from "@/lib/partner-widgets";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Aviasales search form, loaded with next/script so Travelpayouts can insert
- * the form next to the tag. Iframed from /book. No WordPress attributes.
+ * Aviasales search form. A real script tag, not next/script: Travelpayouts
+ * inserts the form next to this element. next/script afterInteractive renders
+ * null and appends to document.body, so the iframe on /book stayed empty.
+ * Iframed from /book. No WordPress attributes.
  */
 export default async function EmbedFlightsPage({
   searchParams,
@@ -39,5 +40,5 @@ export default async function EmbedFlightsPage({
     );
   }
 
-  return <Script id="tp-aviasales-search" src={src} strategy="afterInteractive" charSet="utf-8" />;
+  return <script id="tp-aviasales-search" src={src} async charSet="utf-8" />;
 }
