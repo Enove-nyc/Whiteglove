@@ -106,6 +106,18 @@ export function worthOffering(place: TripPlace): boolean {
 }
 
 /**
+ * Places on a trip that have not been asked about yet.
+ *
+ * Used when a trip was built before this question existed: the stops are
+ * already there, so there is no "just added" moment. Same filters as a new
+ * stop — not a place, or already answered, is skipped. Order is the trip's
+ * own, so the first one they put on the plan is the first one they are asked.
+ */
+export function placesStillToAsk(places: TripPlace[], answered: Record<string, boolean>): TripPlace[] {
+  return places.filter((place) => worthOffering(place) && !answered[offerKey(place)]);
+}
+
+/**
  * Does the site already hold this?
  *
  * The site's search is fuzzy on purpose — it has to find Lizhensk from

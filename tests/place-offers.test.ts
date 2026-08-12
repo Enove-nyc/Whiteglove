@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import type { Itinerary } from "@/data/itinerary";
 import {
@@ -8,6 +9,7 @@ import {
   offerKey,
   offerTitle,
   placesInTrip,
+  placesStillToAsk,
   siteAlreadyHas,
   submissionFor,
   submissionText,
@@ -133,6 +135,29 @@ describe("whether it is a place at all", () => {
     assert.equal(worthOffering(place({ name: "Drive to Kraków", address: undefined, coordinates: undefined })), false);
     assert.equal(worthOffering(place({ name: "", address: "Somewhere" })), false);
     assert.equal(worthOffering(place({ name: "Go", address: "Somewhere" })), false);
+  });
+});
+
+describe("a trip that was built before this question existed", () => {
+  it("asks about the places already on it, in the order they were put there", () => {
+    const museum = place({ id: "a1" });
+    const lunch = place({ id: "a2", name: "Lunch", address: undefined, coordinates: undefined });
+    const hotel = place({ id: "l1", kind: "stay", name: "Pensjonat u Anny", address: "Lezajsk, Poland" });
+    const still = placesStillToAsk([museum, lunch, hotel], {});
+    assert.deepEqual(still.map((p) => p.id), ["a1", "l1"]);
+  });
+
+  it("does not ask again about a place they already answered", () => {
+    const museum = place();
+    const still = placesStillToAsk([museum], { [offerKey(museum)]: true });
+    assert.deepEqual(still, []);
+  });
+
+  it("is offered when the planner opens, not only when a stop is typed", () => {
+    const builder = readFileSync("components/ItineraryBuilder.tsx", "utf8");
+    const hook = readFileSync("components/usePlaceOffer.ts", "utf8");
+    assert.match(builder, /considerExisting\(placesInTrip/, "opening a trip never looks at the places already on it");
+    assert.match(hook, /considerExisting/, "the hook has nowhere to ask about an existing trip");
   });
 });
 

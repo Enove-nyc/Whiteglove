@@ -1,16 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { ItinActivity, ItinLodging } from "@/data/itinerary";
-import { type TripPlace, offerKey, worthOffering } from "@/lib/place-offers";
+import { type TripPlace, offerKey, placesStillToAsk } from "@/lib/place-offers";
 
 /**
  * Decides whether to ask about a place, and remembers the answer.
  *
- * ASKED AT THE MOMENT IT IS ADDED, and nowhere else. Somebody who has just
- * typed a hotel in has it in mind; a notice that appears twenty minutes later,
- * or a list of them on the way out, is the site interrupting rather than
- * asking. One place, once, while they are looking at it.
+ * ASKED WHEN THE PLACE IS IN FRONT OF THEM. A stop just typed in is one
+ * moment; opening a trip that was built before this question existed is the
+ * other. One place at a time, never a list — a list on the way out is the
+ * site interrupting rather than asking.
  *
  * NOTHING HAPPENS WITHOUT A PRESS, and the check that decides whether to ask
  * sends nothing but a name — see app/api/places/unknown. Their trip stays where
@@ -72,30 +72,44 @@ export function placeFromStay(l: ItinLodging): TripPlace {
 
 export function usePlaceOffer(canAsk: boolean) {
   const [offering, setOffering] = useState<TripPlace | null>(null);
+  const seen = useRef(new Set<string>());
+  const queue = useRef<TripPlace[]>([]);
 
   /**
-   * Called when a stop or a stay has just been added.
+   * Check a list of places and offer the first one the site does not have.
    *
-   * Everything that would stop the question is checked here rather than on the
-   * server: not signed in, not really a place, already answered. Only what
-   * survives all three costs a request, and that request carries one name.
+   * One request for the whole list. Further unknowns wait in a queue and are
+   * asked one at a time after the current question is answered — never as a
+   * pile of notices.
    */
-  const consider = useCallback(
-    async (place: TripPlace) => {
-      if (!canAsk || !worthOffering(place)) return;
-      if (answeredAlready()[offerKey(place)]) return;
+  const considerExisting = useCallback(
+    async (places: TripPlace[]) => {
+      if (!canAsk) return;
+      const pending = placesStillToAsk(places, answeredAlready()).filter((place) => {
+        if (seen.current.has(place.id)) return false;
+        seen.current.add(place.id);
+        return true;
+      });
+      if (pending.length === 0) return;
       try {
         const response = await fetch("/api/places/unknown", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ names: [place.name] }),
+          body: JSON.stringify({ names: pending.map((place) => place.name) }),
         });
         if (!response.ok) return;
         const data = (await response.json()) as { unknown?: string[] };
-        // Nothing is offered unless the site really has not got it. Being asked
-        // about a kever that is already on the site reads as the site not
-        // knowing its own contents.
-        if (data.unknown?.includes(place.name)) setOffering(place);
+        const unknown = new Set(data.unknown ?? []);
+        const missing = pending.filter((place) => unknown.has(place.name));
+        if (missing.length === 0) return;
+        setOffering((current) => {
+          if (current) {
+            queue.current = [...queue.current, ...missing];
+            return current;
+          }
+          queue.current = missing.slice(1);
+          return missing[0] ?? null;
+        });
       } catch {
         // Offline, or the check failed. Say nothing — a question we cannot
         // stand behind is worse than no question.
@@ -103,6 +117,8 @@ export function usePlaceOffer(canAsk: boolean) {
     },
     [canAsk],
   );
+
+  const consider = useCallback((place: TripPlace) => considerExisting([place]), [considerExisting]);
 
   /**
    * The question has been answered — either way.
@@ -115,9 +131,9 @@ export function usePlaceOffer(canAsk: boolean) {
   const answer = useCallback(() => {
     setOffering((current) => {
       if (current) remember(offerKey(current));
-      return null;
+      return queue.current.shift() ?? null;
     });
   }, []);
 
-  return { offering, consider, answer };
+  return { offering, consider, considerExisting, answer };
 }

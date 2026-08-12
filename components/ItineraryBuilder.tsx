@@ -13,6 +13,7 @@ import SendPlaceIn from "@/components/SendPlaceIn";
 import RoomGroupsPanel from "@/components/RoomGroupsPanel";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
+import { placesInTrip } from "@/lib/place-offers";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import TripSetupPanel from "@/components/TripSetupPanel";
 import type { Crossing } from "@/lib/border-crossings";
@@ -251,7 +252,15 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // send it in. Only when signed in — a suggestion needs a name to credit and
   // somebody to ask back, and collecting an address through a pop-up to get
   // them would be worse than not asking at all.
-  const { offering, consider: considerPlace, answer: answerOffer } = usePlaceOffer(Boolean(viewer?.signedIn));
+  const { offering, consider: considerPlace, considerExisting, answer: answerOffer } = usePlaceOffer(Boolean(viewer?.signedIn));
+
+  // A trip built before this question existed has nowhere that "just added"
+  // fires. considerExisting skips a place it has already looked at, so this
+  // can run when the trip loads without asking twice about a stop just typed.
+  useEffect(() => {
+    if (!viewer?.signedIn) return;
+    void considerExisting(placesInTrip(itin));
+  }, [viewer?.signedIn, itin, considerExisting]);
 
   // The traveler's own date, so the day they are actually on opens first
   // instead of day one. Empty until the browser has said what day it is where
