@@ -1,5 +1,4 @@
 import Link from "next/link";
-import GloveMark from "@/components/GloveMark";
 import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import { SIGNAL_CLASSES, destinationHref, type Signal, type VacationCardModel } from "@/lib/vacation-ideas";
 import { staySearchHref } from "@/lib/stay-search";
@@ -79,7 +78,7 @@ function SignalChip({ signal }: { signal: Signal<string> }) {
 }
 
 export default function VacationCard({ card, compact = false }: { card: VacationCardModel; compact?: boolean }) {
-  const { destination, kosher, shabbos, thingsToDo, places } = card;
+  const { destination, kosher, shabbos } = card;
   const wash = THEME_WASH[destination.themes[0] ?? "city"];
 
   return (
@@ -113,18 +112,6 @@ export default function VacationCard({ card, compact = false }: { card: Vacation
           <SignalChip signal={kosher} />
           <SignalChip signal={shabbos} />
         </div>
-
-        {!compact && (thingsToDo > 0 || places > 0) && (
-          <p className="mt-4 flex items-center gap-2 text-xs text-stone-500">
-            <GloveMark size="xs" />
-            {[
-              thingsToDo > 0 ? `${thingsToDo} thing${thingsToDo === 1 ? "" : "s"} to do` : null,
-              places > 0 ? `${places} place${places === 1 ? "" : "s"} to stay` : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        )}
 
         <div className={`mt-auto flex flex-wrap gap-2 ${compact ? "pt-5" : "pt-6"}`}>
           {/* The commercial action, and the one in navy.

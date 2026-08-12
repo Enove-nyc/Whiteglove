@@ -6,10 +6,6 @@ import { readExtras } from "@/lib/travel-extras-store";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import VerificationBadge from "@/components/VerificationBadge";
-import { HECHSHERIM } from "@/data/hechsherim";
-import { kosherEateries } from "@/data/kosher-eateries";
-import { kosherAreas, kosherStays } from "@/data/kosher-stays";
-import { CANDLE_LIGHTING_MINUTES } from "@/lib/shabbos";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { TRUST_LEVELS } from "@/lib/trust-status";
@@ -32,8 +28,7 @@ export const metadata = pageMetadata({
  * is solvable, and no page said "here is how we solve it".
  *
  * Everything here links out to the tool that does the work. Nothing is
- * duplicated: the counts are read from the same data the pages themselves
- * render, so a hub card cannot claim a directory has more in it than it does.
+ * duplicated from those pages.
  */
 
 const questions: Array<{
@@ -102,7 +97,7 @@ const questions: Array<{
     title: "The hechsher on a listing",
     href: "/hechsherim",
     cta: "See the certification marks",
-    body: `The ${HECHSHERIM.length} certifying bodies the site knows by name, so a mark on a listing means something specific.`,
+    body: "The certifying bodies the site knows by name, so a mark on a listing means something specific.",
     detail:
       "Nothing researched from a directory is ever published as certified. That word is reserved for the owner having confirmed it with the certifying body itself.",
   },
@@ -110,10 +105,6 @@ const questions: Array<{
 
 export default async function KosherTravelPage() {
   const extras = await readExtras();
-  const quarters = kosherAreas.length;
-  const stays = kosherStays.length;
-  const seasonal = kosherStays.filter((stay) => stay.season).length;
-  const eateries = kosherEateries.length;
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -135,25 +126,6 @@ export default async function KosherTravelPage() {
             Food, Shabbos, a minyan, a mikvah, and somebody local to ask. Every travel site can book you a hotel; this
             is the half of the trip that decides whether the hotel was the right one.
           </p>
-
-          <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              [`${quarters}`, "Jewish quarters mapped", "Each with the shul or street it is measured from."],
-              [`${stays}`, "places to stay", `${seasonal} of them seasonal programmes.`],
-              [`${eateries}`, "curated kosher food listings", "Search the White Glove collection by place or name."],
-              [`${CANDLE_LIGHTING_MINUTES} min`, "before sunset", "What the planner allows for candle-lighting."],
-            ].map(([figure, label, note]) => (
-              <div key={label} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">{label}</dt>
-                <dd>
-                  <span className="mt-1 block font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
-                    {figure}
-                  </span>
-                  <span className="mt-1 block text-sm leading-6 text-stone-600">{note}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 

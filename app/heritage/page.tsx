@@ -10,7 +10,6 @@ import { guidedDestinations, destinationHref } from "@/data/destinations";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
-import { allTzaddikim } from "@/lib/tzaddikim";
 import { TRUST_LEVELS } from "@/lib/trust-status";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +42,6 @@ export const metadata = pageMetadata({
  */
 export default async function HeritagePage() {
   const [cemeteries, guides] = await Promise.all([getCemeteryList(), Promise.resolve(guidedDestinations())]);
-  const tzaddikim = allTzaddikim();
 
   // Countries, by how much we hold for each. Built from the records rather
   // than typed out, so a country cannot appear here with nothing behind it.
@@ -128,21 +126,21 @@ export default async function HeritagePage() {
             {
               href: "/tzaddikim",
               title: "Who is buried where",
-              count: `${tzaddikim.length} kevarim`,
+              count: "By the name he is known by",
               body: "By the name he is known by, because somebody looking for the Noam Elimelech is not looking under W.",
               cta: "Browse kevarim by name",
             },
             {
               href: "/cemeteries",
               title: "Batei hachaim",
-              count: `${cemeteries.length} records`,
+              count: "Cemetery by cemetery",
               body: "Cemetery by cemetery: the known kevarim, the address, arrival notes, and the shomer where we hold one.",
               cta: "Browse the batei hachaim",
             },
             {
               href: "/stops",
               title: "Towns and guides",
-              count: `${guides.length} full guides`,
+              count: "The town around the kever",
               body: "The town around the kever — where to eat, where to daven, where to sleep, and how to get in.",
               cta: "Browse towns and guides",
             },
@@ -176,17 +174,16 @@ export default async function HeritagePage() {
           <SectionHeading
             eyebrow="Browse by country"
             title="By country"
-            description="Counted from the cemetery records themselves, so a country cannot appear here with nothing behind it."
+            description="A country appears here when we hold a cemetery record for it."
           />
           <ul className="mt-8 flex flex-wrap gap-2">
-            {countries.map(([country, count]) => (
+            {countries.map(([country]) => (
               <li key={country}>
                 <Link
                   href={`/cemeteries?country=${encodeURIComponent(country)}`}
                   className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)]"
                 >
                   {country}
-                  <span className="ml-2 font-normal text-stone-500">{count}</span>
                 </Link>
               </li>
             ))}

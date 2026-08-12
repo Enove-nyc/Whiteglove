@@ -178,6 +178,8 @@ describe("the order of the page", () => {
     const seasons = HOME.slice(at("When to go"), at("Food, Shabbos and the rest of it"));
     assert.match(seasons, /if \(count === 0\) return null/);
     assert.match(seasons, /href=\{collectionPath\(season\.value\)\}/);
+    assert.match(seasons, /Browse destinations →/);
+    assert.doesNotMatch(seasons, /\{count\} destination/);
   });
 
   it("SHOWS THREE DESTINATIONS, ON THE SHORT CARD", () => {
@@ -186,7 +188,8 @@ describe("the order of the page", () => {
     // its own page gives properly.
     assert.match(HOME, /\.slice\(0, 3\)/);
     assert.match(HOME, /<VacationCard key=\{card\.destination\.slug\} card=\{card\} compact \/>/);
-    assert.match(HOME, /Browse all \{cards\.length\} destinations/);
+    assert.match(HOME, /Browse all destinations/);
+    assert.doesNotMatch(HOME, /Browse all \{cards\.length\} destinations/);
   });
 
   it("SHOWS NO ROW OF EDITORIAL STATUS LABELS", () => {
@@ -215,8 +218,8 @@ describe("the order of the page", () => {
 
   it("HIDES THE CATEGORY COUNTS", () => {
     // "1" beside Beach and resort says something about how far this section
-    // has got rather than about the holiday. The counts stay on
-    // /vacation-ideas, where somebody is choosing between filters.
+    // has got rather than about the holiday. Catalogue size is not printed
+    // on these cards.
     const categories = HOME.slice(at("Browse by holiday type"), at('id="destinations"'));
     assert.doesNotMatch(categories, /\{count\}/);
     // …but a category with nothing behind it is still not offered at all.

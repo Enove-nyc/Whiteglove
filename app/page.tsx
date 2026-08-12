@@ -24,8 +24,6 @@ import { collectionPath } from "@/lib/collections";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import { SUB_BRAND_HEBREW } from "@/components/SubBrand";
 import { readinessOf } from "@/lib/destination-readiness";
-import { guidedDestinations } from "@/data/destinations";
-import { allTzaddikim } from "@/lib/tzaddikim";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 
@@ -192,9 +190,6 @@ export default async function Home() {
     .sort((a, b) => Number(b.kosherClaim === "confirmed") - Number(a.kosherClaim === "confirmed"))
     .slice(0, 6);
 
-  const guides = guidedDestinations();
-  const kevarim = allTzaddikim();
-
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
@@ -331,7 +326,7 @@ export default async function Home() {
             href="/destinations"
             className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
           >
-            Browse all {cards.length} destinations →
+            Browse all destinations →
           </Link>
         </div>
       </section>
@@ -396,9 +391,9 @@ export default async function Home() {
       <SponsoredSlot placement="home-seasonal" />
 
       {/* ---- 7. When in the year ------------------------------------------
-          Four links and a count each, straight off the seasons written on the
-          destination records. A season with nothing in it is not offered —
-          same rule as the categories above, and for the same reason. */}
+          Four links, straight off the seasons written on the destination
+          records. A season with nothing in it is not offered — same rule as
+          the categories above, and for the same reason. */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow="Season"
@@ -419,7 +414,7 @@ export default async function Home() {
                     {season.label}
                   </span>
                   <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                    {count} destination{count === 1 ? "" : "s"} →
+                    Browse destinations →
                   </span>
                 </Link>
               </li>
@@ -473,8 +468,7 @@ export default async function Home() {
               Kevarim and the towns around them
             </h2>
             <p className="mt-4 max-w-xl leading-7 text-slate-200">
-              {kevarim.length} kevarim and {guides.length} researched town guides, with the addresses, the access notes,
-              and the shomer to ring where we have his number.
+              Addresses, access notes, and the shomer to ring where we have his number.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link

@@ -104,9 +104,9 @@ export default function ListToolbar({
               .
             </>
           ) : narrowed ? (
-            `${showing} of ${total} ${noun}.`
+            `${showing} matching ${noun}.`
           ) : (
-            `${total} ${noun}.`
+            `All ${noun}.`
           )}
         </p>
         {/* The address bar is carrying the filters (components/useListUrl.ts),

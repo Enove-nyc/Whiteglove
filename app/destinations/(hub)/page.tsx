@@ -97,16 +97,11 @@ export default async function VacationIdeasPage({
                     </span>
                     <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
                   </span>
-                  <span className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                      {count} destination{count === 1 ? "" : "s"}
+                  {selected && (
+                    <span className="rounded-full bg-[var(--navy)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                      Selected
                     </span>
-                    {selected && (
-                      <span className="rounded-full bg-[var(--navy)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
-                        Selected
-                      </span>
-                    )}
-                  </span>
+                  )}
                 </Link>
               </li>
             );
@@ -132,8 +127,7 @@ export default async function VacationIdeasPage({
               Somewhere else in mind
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              These {vacationDestinations.length} are the ones written up so far. Tell us where else you are thinking
-              of and we will look into the kosher side of it.
+              Tell us where else you are thinking of and we will look into the kosher side of it.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

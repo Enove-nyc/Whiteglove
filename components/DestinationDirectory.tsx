@@ -186,8 +186,9 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] pt-4">
           <p className="text-sm text-stone-600" role="status">
-            <strong className="text-[var(--navy)]">{results.length}</strong> of {entries.length}
-            {results.length === entries.length ? " places" : " places match"}
+            {results.length === entries.length
+              ? "Browse destinations"
+              : `${results.length} ${results.length === 1 ? "match" : "matches"}`}
           </p>
           {active ? (
             <button type="button" onClick={() => { setFilters({ ...NO_FILTERS }); setShown(PAGE); }} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">

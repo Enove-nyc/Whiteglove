@@ -24,8 +24,7 @@ export const metadata = pageMetadata({
  * The marks, and who is behind each one.
  *
  * WHY THIS PAGE EXISTS. The site holds a list of certifying bodies and used it
- * in exactly two places: to draw a small circle on a listing, and to print its
- * own length in a sentence on /kosher-travel. A traveller who saw an
+ * to draw a small circle on a listing. A traveller who saw an
  * unfamiliar mark on a restaurant had nowhere on the site to find out whose it
  * was. That is a question the site can simply answer, so it does.
  *
@@ -73,8 +72,8 @@ export default async function HechsherimPage() {
             The marks, and who is behind them
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            {agencies.length} certifying bodies, with the mark each one uses and where it certifies. Where a listing on
-            this site names a hechsher, this is the agency it means.
+            Certifying bodies, with the mark each one uses and where it certifies. Where a listing on this site names a
+            hechsher, this is the agency it means.
           </p>
           <p className="mt-4 max-w-3xl leading-7 text-stone-600">
             Which hechsherim to rely on is a question for your rov. This page says who exists and where to reach them;

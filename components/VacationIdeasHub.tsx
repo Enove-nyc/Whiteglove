@@ -99,7 +99,6 @@ function FilterGroup<V extends string>({
             className={value === option.value ? chipOn : chipOff}
           >
             {option.label}
-            <span className="ml-2 font-normal opacity-70">{option.count}</span>
           </button>
         ))}
       </div>
@@ -227,8 +226,8 @@ export default function VacationIdeasHub({
             the button appears or disappears. */}
         <p role="status" aria-live="polite" className="text-sm font-semibold text-[var(--navy)]">
           {results.length === cards.length
-            ? `${cards.length} destinations`
-            : `Showing ${results.length} of ${cards.length} destinations`}
+            ? "All destinations"
+            : `Showing ${results.length} destination${results.length === 1 ? "" : "s"}`}
           {active > 0 && `, ${active === 1 ? "1 filter" : `${active} filters`} applied`}
         </p>
         {active > 0 && (

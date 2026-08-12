@@ -97,7 +97,7 @@ export default function DirectoryBrowser({
                   active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                 }`}
               >
-                {tab.label} <span className={active ? "text-[var(--gold-light)]" : "text-stone-400"}>({counts[tab.key] ?? 0})</span>
+                {tab.label}
               </button>
             );
           })}
@@ -139,7 +139,13 @@ export default function DirectoryBrowser({
       )}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-stone-500" role="status">{filtered.length} {filtered.length === 1 ? "provider" : "providers"}</p>
+        <p className="text-sm text-stone-500" role="status">
+          {filtered.length === 0
+            ? "Nothing matches."
+            : filtered.length !== providers.length
+              ? `${filtered.length} matching ${filtered.length === 1 ? "provider" : "providers"}`
+              : "All providers"}
+        </p>
         {(region || language || specialty || category !== "ALL" || query) && (
           <button
             type="button"
