@@ -430,6 +430,21 @@ CREATE TABLE "Page" (
     CONSTRAINT "Page_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ExperienceRating" (
+    "id" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "ref" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "score" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "note" TEXT NOT NULL DEFAULT '',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ExperienceRating_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Destination_slug_key" ON "Destination"("slug");
 
@@ -534,6 +549,12 @@ CREATE INDEX "DirectoryProvider_category_idx" ON "DirectoryProvider"("category")
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Page_slug_key" ON "Page"("slug");
+
+-- CreateIndex
+CREATE INDEX "ExperienceRating_kind_ref_idx" ON "ExperienceRating"("kind", "ref");
+
+-- CreateIndex
+CREATE INDEX "ExperienceRating_createdAt_idx" ON "ExperienceRating"("createdAt");
 
 -- AddForeignKey
 ALTER TABLE "Tzaddik" ADD CONSTRAINT "Tzaddik_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;

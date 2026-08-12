@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
+import RateExperienceLink from "@/components/RateExperienceLink";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
@@ -211,6 +212,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
               >
                 Plan a trip here →
               </Link>
+              <RateExperienceLink kind="listing" refId={a.slug} label={a.name} />
             </div>
 
             {openNearby === a.slug && a.coordinates && (

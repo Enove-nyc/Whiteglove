@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
+import RateExperienceLink from "@/components/RateExperienceLink";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
@@ -208,6 +209,7 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               >
                 Things to do in {s.city} →
               </Link>
+              <RateExperienceLink kind="listing" refId={s.slug} label={s.name} />
             </div>
 
             {openNearby === s.slug && (

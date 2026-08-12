@@ -224,10 +224,10 @@ describe("what the owner is told", () => {
 });
 
 describe("a card can never cost a visitor their submission", () => {
-  const sources = ["app/api/photos/route.ts", "app/api/content/suggestions/route.ts", "app/api/account/plan/route.ts"];
+  const sources = ["app/api/ratings/route.ts", "app/api/content/suggestions/route.ts", "app/api/account/plan/route.ts"];
 
   it("IS NEVER AWAITED AT ANY CALL SITE", () => {
-    // THE ONE THAT MATTERS. Somebody sending a photograph does not care whether
+    // THE ONE THAT MATTERS. Somebody who just rated a trip does not care whether
     // the owner uses Trello, and Trello being slow must not fail their request.
     for (const file of sources) {
       const source = readFileSync(file, "utf8");
@@ -240,8 +240,8 @@ describe("a card can never cost a visitor their submission", () => {
   it("sends the card after the thing is safely stored", () => {
     // A card about a submission that then failed to save has somebody working
     // on an item that is not in the queue.
-    const photos = readFileSync("app/api/photos/route.ts", "utf8");
-    assert.ok(photos.indexOf("cardIfWanted(") > photos.indexOf("could not save the picture"));
+    const ratings = readFileSync("app/api/ratings/route.ts", "utf8");
+    assert.ok(ratings.indexOf("cardIfWanted(") > ratings.indexOf("saveExperienceRating"));
   });
 
   it("swallows its own failures", () => {

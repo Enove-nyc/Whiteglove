@@ -1,9 +1,11 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { ItinAttachment, ItineraryDay } from "@/data/itinerary";
 import { KIND_LABELS, type AttachmentKind } from "@/lib/attachments";
 import { followAlong, minutesOfClock, tripProgress, type FollowStop } from "@/lib/trip-progress";
+import ExperienceRatingForm from "@/components/ExperienceRatingForm";
+import { rateHref } from "@/lib/experience-ratings";
 
 /**
  * The line across the top of a trip: how long until it, then how far into it.
@@ -103,6 +105,8 @@ export default function TripProgressStrip({
   days,
   documentsToday = [],
   onGoToToday,
+  tripId,
+  tripTitle,
 }: {
   startDate?: string;
   endDate?: string;
@@ -119,9 +123,13 @@ export default function TripProgressStrip({
   documentsToday?: ItinAttachment[];
   /** Scroll the day open, when today is one of the days on screen. */
   onGoToToday?: (date: string) => void;
+  /** When set, a finished trip can be rated in place. */
+  tripId?: string;
+  tripTitle?: string;
 }) {
   const { today, nowMinutes } = useDeviceClock();
   const progress = tripProgress({ startDate, endDate, today });
+  const [rateOpen, setRateOpen] = useState(false);
 
   // Nothing to count and nothing to follow. The planner already tells somebody
   // to choose their dates; a second empty panel saying it is noise.
@@ -171,7 +179,33 @@ export default function TripProgressStrip({
             Open today
           </button>
         )}
+        {progress.phase === "after" && tripId && !rateOpen && (
+          <button
+            type="button"
+            onClick={() => setRateOpen(true)}
+            className="min-h-11 shrink-0 rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          >
+            Rate how it went
+          </button>
+        )}
+        {progress.phase === "after" && !tripId && (
+          <a
+            href={rateHref({ kind: "trip", ref: "finished", label: tripTitle?.trim() || "Your trip" })}
+            className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          >
+            Rate how it went
+          </a>
+        )}
       </div>
+
+      {progress.phase === "after" && rateOpen && tripId && (
+        <ExperienceRatingForm
+          kind="trip"
+          refId={tripId}
+          label={tripTitle?.trim() || "Your trip"}
+          compact
+        />
+      )}
 
       {/* A bar only while the trip is on. Before it, there is no progress to
           draw; after it, there is nothing left to say. */}

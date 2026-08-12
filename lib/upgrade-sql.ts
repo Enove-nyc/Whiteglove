@@ -90,4 +90,20 @@ END $$;
 -- which is the field an edit matches on, so a name spelled two ways made two
 -- contacts out of one man.
 ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "name" TEXT;
+
+-- Private experience ratings (listings / trips). Safe to re-run.
+CREATE TABLE IF NOT EXISTS "ExperienceRating" (
+  "id" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "ref" TEXT NOT NULL,
+  "label" TEXT NOT NULL,
+  "score" INTEGER NOT NULL,
+  "name" TEXT NOT NULL,
+  "email" TEXT NOT NULL,
+  "note" TEXT NOT NULL DEFAULT '',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "ExperienceRating_pkey" PRIMARY KEY ("id")
+);
+CREATE INDEX IF NOT EXISTS "ExperienceRating_kind_ref_idx" ON "ExperienceRating"("kind", "ref");
+CREATE INDEX IF NOT EXISTS "ExperienceRating_createdAt_idx" ON "ExperienceRating"("createdAt");
 `;

@@ -51,8 +51,9 @@ export default async function AdminPhotosPage() {
               Pictures people sent in
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Nothing here is on the site. A picture a visitor sends is a draft until you put it up, and this is
-              the only screen that can. {submissions.length > 0 && (
+              Visitors can no longer send pictures in. Anything still waiting below arrived before that closed, and
+              stays a draft until you put it up or decline it. New photographs are added only from a town or listing
+              editor. {submissions.length > 0 && (
                 <strong className="font-semibold text-[var(--navy)]">
                   {submissions.length} waiting.
                 </strong>

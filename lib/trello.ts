@@ -22,7 +22,7 @@
  */
 
 /** The queues that can raise a card. */
-export type CardKind = "photo" | "suggestion" | "listing" | "plan" | "report" | "contact" | "fault";
+export type CardKind = "photo" | "suggestion" | "listing" | "plan" | "report" | "contact" | "fault" | "rating";
 
 /**
  * WHOSE CARD IT IS, and the one distinction that matters on this board.
@@ -67,7 +67,8 @@ export type KindInfo = {
 };
 
 export const CARD_KINDS: readonly KindInfo[] = [
-  { kind: "photo", label: "A picture sent in", href: "/admin/photos", why: "It is on no page until you confirm it, and the sender is waiting." },
+  { kind: "photo", label: "A picture sent in", href: "/admin/photos", why: "Visitor picture intake is closed; finish anything still waiting." },
+  { kind: "rating", label: "An experience rating", href: "/admin/ratings", why: "Somebody said how a listing or trip went. It is not published." },
   { kind: "suggestion", label: "A suggested correction", href: "/admin/reports", why: "Somebody found something wrong and took the trouble to say so." },
   { kind: "listing", label: "A business asking to be listed", href: "/admin/directory-listings", why: "A directory entry nobody has looked at yet." },
   { kind: "plan", label: "A Pro or Business request", href: "/admin/accounts", why: "A person waiting on an answer from you. Nothing is charged either way." },

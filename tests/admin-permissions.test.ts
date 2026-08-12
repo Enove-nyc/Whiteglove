@@ -32,6 +32,7 @@ describe("which area a screen belongs to", () => {
     assert.equal(areaForPath("/admin/kevarim"), "directory");
     assert.equal(areaForPath("/admin/finances"), "money");
     assert.equal(areaForPath("/admin/photos"), "content");
+    assert.equal(areaForPath("/admin/ratings"), "content");
     assert.equal(areaForPath("/admin/advertisements"), "advertisements");
     assert.equal(areaForPath("/admin/team"), "access");
   });

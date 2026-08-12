@@ -656,3 +656,23 @@ model Page {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
+
+// Private feedback: how a listing or trip went for somebody.
+//
+// NOT published on public pages from this table. Case studies still need
+// explicit permission on their own screen.
+model ExperienceRating {
+  id        String   @id @default(cuid())
+  /** listing | trip | destination | place */
+  kind      String
+  ref       String
+  label     String
+  score     Int
+  name      String
+  email     String
+  note      String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([kind, ref])
+  @@index([createdAt])
+}

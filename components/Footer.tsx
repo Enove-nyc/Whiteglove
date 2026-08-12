@@ -107,6 +107,7 @@ const utilityLinks = [
   // asks before they read the method.
   { label: "About us", href: "/about" },
   { label: "Contact", href: "/contact" },
+  { label: "Rate how it went", href: "/rate" },
   { label: "How we verify", href: "/verification" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },

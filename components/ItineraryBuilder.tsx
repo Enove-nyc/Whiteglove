@@ -349,6 +349,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         days={days}
         documentsToday={todayInTrip ? documentsForDay(tripDocuments(itin), todayInTrip).map((d) => d.attachment) : []}
         onGoToToday={goToToday}
+        tripId={itin.startDate && itin.endDate ? `trip-${itin.startDate}-${itin.endDate}` : undefined}
+        tripTitle={itin.title?.trim() || "Your trip"}
       />
 
       {/* What this trip still needs, why each one matters, and somewhere real
