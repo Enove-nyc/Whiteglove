@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import TravelExtras from "@/components/TravelExtras";
+import { readExtras } from "@/lib/travel-extras-store";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import VerificationBadge from "@/components/VerificationBadge";
@@ -91,7 +93,8 @@ const questions: Array<{
   },
 ];
 
-export default function KosherTravelPage() {
+export default async function KosherTravelPage() {
+  const extras = await readExtras();
   const quarters = kosherAreas.length;
   const stays = kosherStays.length;
   const seasonal = kosherStays.filter((stay) => stay.season).length;
@@ -245,6 +248,16 @@ export default function KosherTravelPage() {
           </div>
         </div>
       </section>
+
+      {/* WHAT SOMEBODY TAKES WITH THEM, under the guidance about keeping
+          Shabbos away from home — which is the page where a travel blech or a
+          set of candlesticks is actually the next thought. Renders nothing
+          until the owner has added something. */}
+      <TravelExtras
+        extras={extras}
+        heading="Worth taking with you"
+        intro="Bought from the seller, not from us. Nothing here is a recommendation about which to choose."
+      />
 
       <Footer />
     </main>

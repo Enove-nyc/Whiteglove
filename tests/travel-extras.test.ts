@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
+  AMAZON_DISCLOSURE,
+  isAmazonLink,
+  needsAmazonDisclosure,
   ctaFor,
   describeExtra,
   describeExtras,
@@ -223,5 +227,58 @@ describe("the suggestions", () => {
     for (const idea of IDEAS) {
       assert.equal(extraProblem(row({ name: idea })), null, idea);
     }
+  });
+});
+
+describe("Amazon has its own required wording", () => {
+  const amazonExtra = {
+    id: "a1",
+    name: "Travel blech",
+    blurb: "Folds flat, fits a case.",
+    url: "https://www.amazon.com/dp/B000000000?tag=whitegloveiti-20",
+    cta: "",
+  };
+  const other = {
+    id: "b1",
+    name: "Yesim",
+    blurb: "Data the moment you land.",
+    url: "https://tp.media/r?marker=1&u=https%3A%2F%2Fyesim.app",
+    cta: "",
+  };
+
+  it("USES AMAZON'S SENTENCE, not this site's", () => {
+    // The Associates agreement is specific about the wording and Amazon closes
+    // accounts over it. This site's own line says "qualifying BOOKINGS", which
+    // is the right idea and the wrong words.
+    assert.equal(AMAZON_DISCLOSURE, "As an Amazon Associate I earn from qualifying purchases.");
+    assert.match(AMAZON_DISCLOSURE, /qualifying purchases/);
+  });
+
+  it("shows it only when an Amazon link is actually there", () => {
+    // Carrying Amazon's disclosure while linking to nothing of theirs is a
+    // claim about a relationship the site does not have.
+    assert.equal(needsAmazonDisclosure([amazonExtra]), true);
+    assert.equal(needsAmazonDisclosure([other]), false);
+    assert.equal(needsAmazonDisclosure([other, amazonExtra]), true);
+    assert.equal(needsAmazonDisclosure([]), false);
+  });
+
+  it("knows a storefront from a lookalike", () => {
+    assert.equal(isAmazonLink("https://www.amazon.com/dp/X?tag=t-20"), true);
+    assert.equal(isAmazonLink("https://amzn.to/abc"), true);
+    assert.equal(isAmazonLink("https://www.amazon.co.uk/dp/X"), true);
+    // Not a shop, and not Amazon.
+    assert.equal(isAmazonLink("https://files.s3.amazonaws.com/x.jpg"), false);
+    assert.equal(isAmazonLink("https://notamazon.example/dp/X"), false);
+    assert.equal(isAmazonLink("not a url"), false);
+  });
+
+  it("puts the kit where somebody is thinking about it", () => {
+    // The row lived on /book alone, where a visitor has just searched a flight
+    // — the wrong moment for a travel hotplate.
+    const guide = readFileSync("app/travel-guide/page.tsx", "utf8");
+    const kosher = readFileSync("app/kosher-travel/page.tsx", "utf8");
+    assert.match(guide, /<TravelExtras/);
+    assert.match(kosher, /<TravelExtras/);
   });
 });

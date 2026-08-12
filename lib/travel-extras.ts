@@ -161,6 +161,41 @@ export function listProblem(extras: TravelExtra[]): string | null {
   return null;
 }
 
+/**
+ * Is this an Amazon link?
+ *
+ * ASKED BECAUSE AMAZON REQUIRES ITS OWN SENTENCE. The Associates Operating
+ * Agreement is specific about the wording — "As an Amazon Associate I earn from
+ * qualifying purchases" — and it has to appear with the links rather than
+ * somewhere in the terms. This site's own disclosure says "qualifying
+ * BOOKINGS", which is the right idea and the wrong words, and Amazon enforces
+ * this one: accounts are closed over it.
+ *
+ * So the sentence appears only when there is an Amazon link to justify it. A
+ * site that carries Amazon's disclosure while linking to nothing of theirs is
+ * making a claim about a relationship it does not have.
+ *
+ * Matches the storefront domains rather than every host that contains the word:
+ * "amazonaws.com" is not a shop, and "notamazon.example" is not Amazon.
+ */
+const AMAZON_HOSTS = /(^|\.)(amazon\.(com|co\.uk|ca|de|fr|it|es|nl|com\.au|co\.jp|in|com\.mx|com\.br|se|pl|sg|ae)|amzn\.to|amzn\.com)$/i;
+
+export function isAmazonLink(url: string): boolean {
+  try {
+    return AMAZON_HOSTS.test(new URL(url.trim()).host.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+/** Does this list contain anything Amazon's own disclosure has to cover? */
+export function needsAmazonDisclosure(extras: TravelExtra[]): boolean {
+  return shownToVisitors(extras).some((extra) => isAmazonLink(extra.url));
+}
+
+/** Amazon's required wording, verbatim. Not ours to reword. */
+export const AMAZON_DISCLOSURE = "As an Amazon Associate I earn from qualifying purchases.";
+
 /** What the button should say. Never blank. */
 export function ctaFor(extra: TravelExtra): string {
   const own = extra.cta?.trim();

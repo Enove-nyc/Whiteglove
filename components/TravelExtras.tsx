@@ -1,4 +1,4 @@
-import { ctaFor, shownToVisitors, type TravelExtra } from "@/lib/travel-extras";
+import { AMAZON_DISCLOSURE, ctaFor, needsAmazonDisclosure, shownToVisitors, type TravelExtra } from "@/lib/travel-extras";
 
 /**
  * The eSIM, the insurance, the transfer — under the search, not above it.
@@ -40,12 +40,17 @@ export default function TravelExtras({
 }) {
   const shown = shownToVisitors(extras);
   if (shown.length === 0) return null;
+  // Amazon's own wording, shown only when an Amazon link is actually here.
+  const amazon = needsAmazonDisclosure(extras);
 
   return (
     <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-14 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{heading}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{intro}</p>
+        {amazon && (
+          <p className="mt-3 max-w-2xl text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>
+        )}
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((extra) => (
