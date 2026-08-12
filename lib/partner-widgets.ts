@@ -22,6 +22,7 @@
  * components/TravelpayoutsScript.tsx (the Emerald verification snippet).
  */
 
+import { previousDay, today, usableFlightDates } from "@/lib/date-range";
 import { travelpayoutsMarker } from "@/lib/travelpayouts-api";
 
 const WIDGET_ENDPOINT = "https://tp.media/content";
@@ -50,11 +51,6 @@ function iata(value: string | undefined): string {
   return /^[A-Z]{3}$/.test(code) ? code : "";
 }
 
-function iso(value: string | undefined): string {
-  const date = (value ?? "").trim();
-  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
-}
-
 function widgetUrl(params: Record<string, string>): string | "" {
   const marker = travelpayoutsMarker();
   if (!marker) return "";
@@ -76,8 +72,18 @@ function widgetUrl(params: Record<string, string>): string | "" {
 export function aviasalesWidgetSrc(prefill: FlightWidgetPrefill = {}): string {
   const origin = iata(prefill.origin);
   const destination = iata(prefill.destination);
-  const depart = iso(prefill.departDate);
-  const back = iso(prefill.returnDate);
+  // This runs on the embed page, whose clock is the server's. A traveller
+  // still on this evening in New York can have a departure of "today" that
+  // is already tomorrow in UTC. Dropping that would refuse a flight they can
+  // still take. The floor is therefore yesterday on this clock; /book filters
+  // against the browser's own today first, so a stale planner link never
+  // reaches Aviasales as yesterday.
+  const floor = previousDay(today()) || today();
+  const { departDate: depart, returnDate: back } = usableFlightDates(
+    prefill.departDate,
+    prefill.oneWay ? "" : prefill.returnDate,
+    floor,
+  );
   const params: Record<string, string> = {
     promo_id: AVIASALES_SEARCH_FORM.promo_id,
     campaign_id: AVIASALES_SEARCH_FORM.campaign_id,

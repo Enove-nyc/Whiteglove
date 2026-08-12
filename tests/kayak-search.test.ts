@@ -85,6 +85,10 @@ describe("what cannot be searched", () => {
     assert.equal(searchProblem({ trip: "one-way", legs: [leg("JFK", "KRK", "2026-09-01")] }), null);
   });
 
+  it("refuses a date that has already passed", () => {
+    assert.match(String(searchProblem({ trip: "one-way", legs: [leg("JFK", "KRK", "2020-01-15")] })), /passed/);
+  });
+
   it("names which leg of a multi-city is wrong", () => {
     const shape: SearchShape = { trip: "multi-city", legs: [leg("JFK", "KRK", "2026-09-01"), leg("KRK", "", "2026-09-05")] };
     assert.match(String(searchProblem(shape)), /flight 2/);

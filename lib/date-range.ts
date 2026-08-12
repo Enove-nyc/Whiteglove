@@ -42,6 +42,14 @@ export function nextDay(date: string): string {
   return new Date(t + 86_400_000).toISOString().slice(0, 10);
 }
 
+/** The day before, as YYYY-MM-DD. Returns "" for anything unreadable. */
+export function previousDay(date: string): string {
+  const m = ISO.exec(date ?? "");
+  if (!m) return "";
+  const t = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
+  return new Date(t - 86_400_000).toISOString().slice(0, 10);
+}
+
 /**
  * Today, as a date input spells it.
  *
@@ -55,6 +63,52 @@ export function today(now: Date = new Date()): string {
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
+}
+
+/**
+ * A date that can still be booked, or "".
+ *
+ * Past dates and unreadable values are dropped rather than clamped: sending
+ * yesterday to a partner is worse than sending no date, and inventing today
+ * would search a trip nobody asked for. Same rule as a remembered hotel
+ * search whose check-in has gone (lib/search-memory.ts).
+ */
+export function usableBookingDate(value: string | undefined, floor: string = today()): string {
+  const date = (value ?? "").trim();
+  if (!ISO.test(date) || date < floor) return "";
+  return date;
+}
+
+/**
+ * Outbound and return for a partner widget or deep link.
+ *
+ * If the outbound has gone, the return goes with it — half a range opens the
+ * partner on one date and asks for the other. A return before the outbound,
+ * or a return that has itself gone, is dropped and the outbound is kept.
+ */
+export function usableFlightDates(
+  depart: string | undefined,
+  ret: string | undefined,
+  floor: string = today(),
+): { departDate: string; returnDate: string } {
+  const departDate = usableBookingDate(depart, floor);
+  if (!departDate) return { departDate: "", returnDate: "" };
+  const returnDate = usableBookingDate(ret, floor);
+  if (!returnDate || returnDate < departDate) return { departDate, returnDate: "" };
+  return { departDate, returnDate };
+}
+
+/**
+ * Why these dates cannot be searched, or null.
+ *
+ * Format and "return before outbound" stay with the caller, which already
+ * names those in its own words. This is the floor a picker already applies:
+ * nobody flies last Tuesday.
+ */
+export function flightDateProblem(depart: string, ret?: string, floor: string = today()): string | null {
+  if (ISO.test(depart) && depart < floor) return "Departure cannot be in the past.";
+  if (ret && ISO.test(ret) && ret < floor) return "Return date cannot be in the past.";
+  return null;
 }
 
 /**

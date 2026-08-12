@@ -40,4 +40,14 @@ describe("on-site flight compare rows", () => {
     });
     assert.equal(result.ok, false);
   });
+
+  it("refuses a departure that has already passed", async () => {
+    const result = await searchPartnerFlights({
+      origin: "JFK",
+      destination: "FCO",
+      departDate: "2020-01-15",
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.message, /past/);
+  });
 });

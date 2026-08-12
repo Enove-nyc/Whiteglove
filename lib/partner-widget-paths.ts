@@ -8,6 +8,8 @@
  * traveller's airports and dates.
  */
 
+import { usableFlightDates } from "@/lib/date-range";
+
 export type FlightWidgetQuery = {
   origin?: string;
   destination?: string;
@@ -45,12 +47,14 @@ export function flightsEmbedPath(query: FlightWidgetQuery = {}): string {
   const params = new URLSearchParams();
   const origin = iata(query.origin);
   const destination = iata(query.destination);
-  const depart = iso(query.departDate);
-  const back = iso(query.returnDate);
+  const { departDate: depart, returnDate: back } = usableFlightDates(
+    query.departDate,
+    query.oneWay ? "" : query.returnDate,
+  );
   if (origin) params.set("origin", origin);
   if (destination) params.set("destination", destination);
   if (depart) params.set("depart", depart);
-  if (back && !query.oneWay) params.set("return", back);
+  if (back) params.set("return", back);
   if (query.oneWay) params.set("one_way", "true");
   const n = adults(query.adults);
   if (n) params.set("adults", n);
