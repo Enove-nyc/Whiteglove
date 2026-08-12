@@ -163,7 +163,7 @@ export const services: readonly Service[] = [
     summary: "Searching and booking the travel — with cash, or with your own miles and points.",
     who: "You want the travel booked, or you want to know whether your points are worth spending on this trip.",
     included: [
-      "Flight, hotel and car search on this site, paying by card",
+      "Flight, hotel and car search on this site, then book with a partner",
       "The points-versus-cash comparison for each leg, so you can see which is worth using",
       "Hotels chosen for where they stand, not only for their price",
       "Airport transfers and drivers where the destination needs them",

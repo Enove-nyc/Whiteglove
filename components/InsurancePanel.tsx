@@ -49,7 +49,7 @@ export default async function InsurancePanel() {
           Compare policies
         </h2>
         <p className="mt-2 max-w-2xl leading-7 text-stone-600">
-          Opens with our insurance partner, where you can compare what is available for your dates and your party.
+          Opens with our insurance partner, who shows the options, prices and terms.
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
           <a

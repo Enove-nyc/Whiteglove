@@ -87,7 +87,14 @@ export function matchField(
   if (!q || !f) return { ok: false };
 
   if (f === q) return { ok: true, rank: 0, fuzzy: false, matched: field };
+
+  // "e-sim" / "e sim" / "esim" are the same name once hyphens and spaces go.
+  const cq = compact(q);
+  const cf = compact(f);
+  if (cq.length >= 3 && cf === cq) return { ok: true, rank: 1, fuzzy: false, matched: field };
+
   if (f.startsWith(q) && q.length >= minPrefix) return { ok: true, rank: 2, fuzzy: false, matched: field };
+  if (cq.length >= 3 && cf.startsWith(cq)) return { ok: true, rank: 2, fuzzy: false, matched: field };
 
   const fTokens = f.split(" ").filter(Boolean);
   for (const token of fTokens) {

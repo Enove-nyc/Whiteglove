@@ -101,4 +101,49 @@ describe("partner handoffs (no purchase)", () => {
     assert.match(flight!.url, /JFK-KRK/);
     assert.match(flight!.url, new RegExp(FUTURE_OUT));
   });
+
+  it("wraps that Kayak search through Stay22 when the ID is set", () => {
+    const withAid: AffiliateConfig = {
+      ...KAYAK_DEFAULTS,
+      stay22: { aid: "whiteglove", provider: "roam" },
+    };
+    const flight = resolveLink(
+      {
+        product: "flight",
+        legs: [{ from: "JFK", to: "KRK", date: FUTURE_OUT }],
+        checkOut: FUTURE_BACK,
+        page: "/book",
+        placement: "book-flights",
+      },
+      withAid,
+    );
+    assert.ok(flight?.url);
+    const url = new URL(flight!.url);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/flights\/JFK-KRK/);
+  });
+
+  it("wraps Kayak car searches through Stay22 when the ID is set", () => {
+    const withAid: AffiliateConfig = {
+      ...KAYAK_DEFAULTS,
+      stay22: { aid: "whiteglove", provider: "roam" },
+    };
+    const car = resolveLink(
+      {
+        product: "car",
+        destination: "FCO",
+        checkIn: FUTURE_OUT,
+        checkOut: FUTURE_BACK,
+        page: "/book",
+        placement: "book-cars",
+      },
+      withAid,
+    );
+    assert.ok(car?.url);
+    const url = new URL(car!.url);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/cars\//);
+  });
 });

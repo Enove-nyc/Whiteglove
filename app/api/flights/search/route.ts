@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { duffelRefusal } from "@/lib/duffel-guard";
+import { duffelBearer } from "@/lib/duffel-token";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
 import { redact } from "@/lib/redact";
 
@@ -80,8 +81,9 @@ export async function POST(request: NextRequest) {
   if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
 
 
-  const token = process.env.DUFFEL_ACCESS_TOKEN;
-  if (!token) return NextResponse.json({ message: "Flight search will be available once the White Glove Duffel account is connected.", detail: "Add DUFFEL_ACCESS_TOKEN to the secure site settings. The key is never sent to visitors." });
+  const access = duffelBearer();
+  if (!access.ok) return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
+  const token = access.token;
 
   const body = await request.json();
   const { origin: submittedOrigin, destination: submittedDestination, departureDate, returnDate, maxConnections, cabin, departureTime } = body;

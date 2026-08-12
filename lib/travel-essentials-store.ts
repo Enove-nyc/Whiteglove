@@ -58,7 +58,10 @@ const cached = unstable_cache(readStored, ["travel-essentials"], {
 
 export async function readTravelEssentials(): Promise<TravelEssentialsSettings> {
   if (!travelEssentialsStoreAvailable()) return defaultTravelEssentials();
-  return cached();
+  // Merge again after the cache: a blob merged under an older catalogue will
+  // not have keys for services added since, and those missing rows used to
+  // crash every page that sorts Travel Essentials.
+  return mergeTravelEssentials(await cached());
 }
 
 export async function readTravelEssentialsFresh(): Promise<TravelEssentialsSettings> {

@@ -61,6 +61,7 @@ export function PartnerResultsPanel({
         </p>
       )}
       {rows.length === 0 && emptyHint ? <p className="text-sm leading-6 text-stone-600">{emptyHint}</p> : null}
+      {rows.length > 0 ? (
       <ul className="divide-y divide-[var(--gold-light)] overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-white">
         {rows.map((row) => (
           <li key={row.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5">
@@ -91,6 +92,7 @@ export function PartnerResultsPanel({
           </li>
         ))}
       </ul>
+      ) : null}
       <p className="text-xs leading-5 text-stone-500">
         Booking and payment happen with the partner. We may earn a commission when you book through these links.
       </p>

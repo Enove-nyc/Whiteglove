@@ -1,12 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { searchTravelpayoutsFlights } from "@/lib/travelpayouts-api";
+import { searchPartnerFlights } from "@/lib/partner-flights";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Public live flight prices via Travelpayouts Data API.
- * Booking and payment stay with the partner (/go hand-off).
+ * Flight search for /book.
+ *
+ * Priced rows (Travelpayouts Data API) open that fare's Aviasales link with
+ * the marker. Otherwise — and as an extra row beside priced fares — a compare
+ * row whose View & book is /go → Stay22 Kayak. Never a Travelpayouts price
+ * with a Kayak URL. Stay22 has no flights inventory API.
  */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -17,17 +21,19 @@ export async function POST(request: NextRequest) {
   const departDate = String(body?.departDate ?? "").trim();
   const returnDate = body?.returnDate ? String(body.returnDate).trim() : undefined;
   const nonstop = Boolean(body?.nonstop);
+  const adults = Math.max(1, Math.min(9, Number(body?.adults) || 1));
 
-  const result = await searchTravelpayoutsFlights({
+  const result = await searchPartnerFlights({
     origin,
     destination,
     departDate,
     returnDate: returnDate || undefined,
     nonstop,
+    adults,
   });
 
   if (!result.ok) {
-    const badInput = /Choose|must be after/i.test(result.message);
+    const badInput = /Choose|must be after|cannot be in the past/i.test(result.message);
     return NextResponse.json(result, { status: badInput ? 400 : 503 });
   }
 

@@ -5,12 +5,12 @@ import Stay22Form from "@/components/Stay22Form";
 import TravelEssentialsForm from "@/components/TravelEssentialsForm";
 import TravelExtrasForm from "@/components/TravelExtrasForm";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
-import { routeFor } from "@/lib/affiliate/partners";
+import { allRoutes, earningStateLabel, isLandingProduct, TRAVEL_PRODUCTS } from "@/lib/affiliate/partners";
 import { growthSettingsStoreAvailable, readDestinationPlacements } from "@/lib/growth-settings-store";
 import { readStay22Fresh } from "@/lib/stay22-store";
 import { describeStay22, stay22IsOn } from "@/lib/stay22";
 import { readExtrasFresh } from "@/lib/travel-extras-store";
-import { describeLinks } from "@/lib/travelpayouts";
+import { partnerFor } from "@/lib/travel-partners";
 import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 import { readTravelEssentialsFresh, travelEssentialsStoreAvailable } from "@/lib/travel-essentials-store";
 
@@ -25,15 +25,15 @@ export default async function EarningsSettings() {
   const placements = await readDestinationPlacements();
   const affiliate = await readAffiliateConfig();
   const essentials = await readTravelEssentialsFresh();
-  const routeNotes = (["hotel", "flight", "car"] as const).map((product) => {
-    const route = routeFor(product, affiliate);
-    return {
-      product,
-      label: product,
-      earns: route.earns,
-      note: route.note,
-    };
-  });
+  const routes = allRoutes(affiliate);
+  const routeNotes = routes.map((route) => ({
+    product: route.product,
+    label: TRAVEL_PRODUCTS.find((entry) => entry.value === route.product)?.label ?? route.product,
+    earns: route.earns,
+    state: earningStateLabel(route),
+    note: route.note,
+    landing: isLandingProduct(route.product),
+  }));
 
   return (
     <>
@@ -49,7 +49,7 @@ export default async function EarningsSettings() {
               searches, the cards on the pages, and anything else you link to. Routed through a partner, a booking made
               afterwards is credited to you. Left alone, each one works exactly the same and earns nothing.
             </p>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners)}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners, stay22)}</p>
           </div>
           <Link
             href="/admin/settings"
@@ -59,6 +59,27 @@ export default async function EarningsSettings() {
           </Link>
         </div>
       </header>
+
+      <section className="mt-8 rounded-lg border border-[var(--gold-light)] bg-white p-5">
+        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-stone-500">What is live today</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          Every product this site can hand off, including the ones that work and earn nothing. A silent gap here is how
+          car hire went out untagged.
+        </p>
+        <ul className="mt-4 space-y-3">
+          {routeNotes.map((row) => (
+            <li key={row.product} className="border-t border-[var(--gold-light)] pt-3 first:border-t-0 first:pt-0">
+              <p className="text-sm font-semibold text-[var(--navy)]">
+                {row.label}
+                <span className="ml-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+                  {row.state}
+                </span>
+              </p>
+              <p className="mt-1 text-sm leading-6 text-stone-600">{row.note}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="mt-8 rounded-lg border border-[var(--gold-light)] bg-white p-5">
         <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-stone-500">Where to get each link</h2>
@@ -97,8 +118,11 @@ export default async function EarningsSettings() {
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Live inventory on Search booking partners uses a server API key (
           <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">STAY22_API_KEY</code>
-          ), not this ID. Flights live prices use{" "}
-          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">TRAVELPAYOUTS_TOKEN</code>. Both belong in
+          ), not this ID. Kayak flights earn from this ID — Stay22 has no flights
+          inventory API, so travellers compare on Kayak and book with the partner.
+          A Travelpayouts fare list is optional (
+          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">TRAVELPAYOUTS_TOKEN</code>
+          ) and is not required for flights to work or earn. Keys belong in
           environment settings / Connections — never in this form.
         </p>
         <Stay22Form current={stay22} storeReady={travelpayoutsStoreAvailable()} />
@@ -111,6 +135,16 @@ export default async function EarningsSettings() {
         hotelsElsewhere={
           stay22IsOn(stay22)
             ? `${describeStay22(stay22)} Nothing pasted in this box is used while that is set.`
+            : undefined
+        }
+        flightsElsewhere={
+          stay22IsOn(stay22) && partnerFor("flights", affiliate.partners).key === "kayak"
+            ? "Flight searches go through Stay22, then on to Kayak, using the ID above. Nothing pasted in this box is required."
+            : undefined
+        }
+        carsElsewhere={
+          stay22IsOn(stay22) && partnerFor("cars", affiliate.partners).key === "kayak"
+            ? "Car searches go through Stay22, then on to Kayak, using the ID above. Nothing pasted in this box is required."
             : undefined
         }
       />
@@ -149,8 +183,10 @@ export default async function EarningsSettings() {
           Cards on the pages
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Insurance, eSIM, transfers and tours. Enable each one, paste the approved link, and choose which pages it
-          appears on. A card with no working hand-off is not shown to anybody, and each says below which it is.
+          Insurance, eSIM, transfers, tours and seasonal programmes. Enable each one, paste the approved link, and
+          choose which pages it appears on. A card with no working hand-off is not shown to anybody. A link that works
+          but is not tracked still shows, and the line under each card says so — that is the “earns nothing” state,
+          kept visible rather than hidden.
         </p>
         {!travelEssentialsStoreAvailable() && (
           <p className="mt-4 rounded-lg border border-[var(--gold-light)] bg-[#fffdf9] p-4 text-sm leading-6 text-amber-900">

@@ -178,6 +178,14 @@ describe("what the screen says is happening", () => {
     );
   });
 
+  it("counts Stay22 Kayak flights and cars from the ID, without a pasted wrap", () => {
+    const stay22 = { aid: "whiteglove", provider: "roam" as const };
+    const said = describeLinks({}, onKayak, stay22);
+    assert.match(said, /Stay22/);
+    assert.match(said, /All three/);
+    assert.doesNotMatch(said, /none of them earns/);
+  });
+
   it("always says something for every search", () => {
     for (const { slot } of SLOTS) assert.ok(describeSlot(slot, "").length > 30, slot);
   });

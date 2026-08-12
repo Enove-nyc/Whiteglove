@@ -4,9 +4,11 @@ import { useActionState, useMemo, useState } from "react";
 import { saveTravelEssentialsAction } from "@/app/admin/settings/travel-essentials/actions";
 import type { AffiliateConfig } from "@/lib/affiliate/partners";
 import {
+  configFor,
   describeEssentialService,
   ESSENTIAL_SERVICES,
   MAX_OFFERS_PER_SERVICE,
+  mergeTravelEssentials,
   type EssentialOffer,
   type EssentialPageType,
   type EssentialServiceConfig,
@@ -35,12 +37,12 @@ export default function TravelEssentialsForm({
   affiliate: AffiliateConfig;
   storeReady: boolean;
 }) {
-  const [settings, setSettings] = useState(current);
+  const [settings, setSettings] = useState(() => mergeTravelEssentials(current));
   const [state, act, busy] = useActionState(saveTravelEssentialsAction, null);
 
   const ordered = useMemo(
     () =>
-      ESSENTIAL_SERVICES.map((def) => ({ def, cfg: settings.services[def.id] })).sort(
+      ESSENTIAL_SERVICES.map((def) => ({ def, cfg: configFor(settings, def) })).sort(
         (a, b) => a.cfg.order - b.cfg.order || a.def.name.localeCompare(b.def.name),
       ),
     [settings],

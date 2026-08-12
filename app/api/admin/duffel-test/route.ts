@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readApiKey } from "@/lib/api-key";
 import { explainDuffelError } from "@/app/api/flights/search/route";
+import { inspectDuffelToken, duffelTokenHelp } from "@/lib/duffel-token";
 import { redact } from "@/lib/redact";
 import { isValidAccessToken } from "@/lib/secure-access";
 
@@ -38,21 +39,30 @@ export async function GET(request: NextRequest) {
   // pasted in with a token breaks it exactly the way it broke the Maps key.
   const read = readApiKey("DUFFEL_ACCESS_TOKEN");
   if (!read.key && !read.unusable) {
+    const help = duffelTokenHelp("missing");
     return NextResponse.json({
       keySet: false,
       ok: false,
-      advice:
-        "DUFFEL_ACCESS_TOKEN is not set on this deployment, so the booking page offers no live flights at all. Add it in Vercel under Settings → Environment Variables, then redeploy — environment variables are read at build time.",
+      advice: help.detail,
     });
   }
   if (read.unusable || !read.key) {
     return NextResponse.json({ keySet: true, ok: false, error: "The value in DUFFEL_ACCESS_TOKEN is not a usable token.", advice: read.problems.join(" ") });
   }
 
-  // Which Duffel account this is. The prefix is the token's own environment
-  // marker and is not the secret part, but it is the single most useful fact
-  // here: a test token returns invented flights that can never be booked.
-  const mode = read.key.startsWith("duffel_test_") ? "test" : read.key.startsWith("duffel_live_") ? "live" : "unrecognised";
+  const inspected = inspectDuffelToken(read.key);
+  if (inspected.kind !== "test" && inspected.kind !== "live") {
+    const help = duffelTokenHelp(inspected.kind);
+    return NextResponse.json({
+      keySet: true,
+      ok: false,
+      mode: inspected.kind,
+      error: help.message,
+      advice: help.detail,
+    });
+  }
+
+  const mode: "test" | "live" = inspected.kind;
 
   try {
     const response = await fetch(DUFFEL_URL, {
@@ -100,7 +110,7 @@ export async function GET(request: NextRequest) {
         error: "Duffel accepted the token but returned no flights for London → New York three weeks out.",
         advice:
           mode === "test"
-            ? "This is a test token, and Duffel's test environment only has invented flights on a few routes. That is expected here — but it also means the booking page cannot show a real fare to anybody."
+            ? "This is a test token, and Duffel's test environment only has invented flights on a few routes. That is expected here — but it also means the admin search cannot ticket a real fare."
             : "A live token that finds nothing on this route usually means the account has no airlines enabled yet. Check the airline connections in the Duffel dashboard.",
       });
     }
@@ -115,8 +125,8 @@ export async function GET(request: NextRequest) {
       route: "London (all airports) → New York (all airports)",
       advice:
         mode === "test"
-          ? "The token works, but it is a TEST token: these flights are invented by Duffel and cannot be booked. Swap it for the live token when you are ready to sell."
-          : "Working. The booking page is searching real flights, and a city with several airports is searched as one." +
+          ? "The token works, but it is a TEST token: these flights are invented by Duffel and cannot be ticketed. Swap it for the live token when you are ready to issue a real ticket from the admin."
+          : "Working. The admin Duffel search can request real flights, and a city with several airports is searched as one." +
             (read.cleaned ? ` One thing to fix anyway: ${read.problems.join(" ")}` : ""),
       warning: read.cleaned ? read.problems.join(" ") : undefined,
     });

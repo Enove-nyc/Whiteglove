@@ -1,45 +1,51 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { describeFlights, describeHotels, duffelReady, flightsVia, hotelsVia, publicFlightsVia, publicHotelsVia } from "@/lib/booking-partners";
+import { inspectDuffelToken } from "@/lib/duffel-token";
 
 /**
  * Who runs a search on /book.
  *
- * The rule these tests exist to hold: HAVING A TOKEN IS NOT A DECISION. The
- * old rule sent every flight on the site to Duffel the moment a token was
- * present, so somebody adding one to try a search moved the whole booking
- * flow without choosing to. Where the bookings go is a business decision and
- * it takes somebody deciding.
+ * HAVING A TOKEN IS NOT A DECISION, and neither is DUFFEL_FLIGHTS=1. Duffel
+ * takes a card and issues a ticket. That flow is admin-only. These tests hold
+ * that no configuration can put it on the public site.
  */
 
 describe("Duffel is off the public site", () => {
   it("CANNOT BE ROUTED TO FROM A PUBLIC PAGE, by any configuration", () => {
-    // Duffel takes a card and issues a ticket, which is a different business
-    // from being paid to send somebody to a partner. The public pair takes no
-    // environment at all — there is no setting, and no accident, that turns it
-    // back on. It lives at /admin/duffel.
     assert.equal(publicFlightsVia(), "kayak");
     assert.equal(publicHotelsVia(), "booking");
     assert.equal(publicFlightsVia.length, 0, "the public router reads configuration");
     assert.equal(publicHotelsVia.length, 0, "the public router reads configuration");
   });
 
-  it("still tells the admin whether the account is connected", () => {
+  it("still tells the admin whether a real token is connected", () => {
     assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc" }), true);
+    assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "duffel_live_abc" }), true);
     assert.equal(duffelReady({}), false);
     assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "   " }), false);
+    assert.equal(duffelReady({ DUFFEL_ACCESS_TOKEN: "DUFFEL_ACCESS_TOKEN" }), false);
   });
 
   it("is reachable from the public booking page nowhere at all", () => {
     const book = readFileSync("app/book/page.tsx", "utf8");
     const partners = readFileSync("components/BookPartners.tsx", "utf8");
-    assert.doesNotMatch(book, /flightsVia|hotelsVia|BookingSearch/);
-    assert.doesNotMatch(partners, /BookingSearch/);
+    assert.doesNotMatch(book, /flightsVia|hotelsVia|BookingSearch|FlightReview|@duffel/);
+    assert.doesNotMatch(partners, /BookingSearch|FlightReview|@duffel/);
+  });
+
+  it("is listed in the admin Settings nav and uses the admin search tools", () => {
+    const nav = readFileSync("lib/admin-nav.ts", "utf8");
+    assert.match(nav, /href: "\/admin\/duffel"/);
+    const page = readFileSync("app/admin/duffel/page.tsx", "utf8");
+    assert.match(page, /AdminDuffelTools/);
+    const layout = readFileSync("app/admin/duffel/layout.tsx", "utf8");
+    assert.match(layout, /area="money"/);
   });
 
   it("guards its endpoints rather than only hiding the buttons", () => {
-    // Anybody who saw the site last month can still post to these.
     for (const route of [
       "app/api/flights/search/route.ts",
       "app/api/flights/book/route.ts",
@@ -47,87 +53,69 @@ describe("Duffel is off the public site", () => {
       "app/api/duffel/component-key/route.ts",
     ]) {
       assert.match(readFileSync(route, "utf8"), /duffelRefusal\(request\)/, route);
+      assert.match(readFileSync(route, "utf8"), /duffelBearer\(\)/, route);
     }
   });
 });
 
-describe("where a flight search goes", () => {
-  it("goes to Kayak when nothing is set", () => {
+describe("a leftover flag cannot move visitor bookings onto Duffel", () => {
+  it("stays on the partner when nothing is set", () => {
     assert.equal(flightsVia({}), "kayak");
-  });
-
-  it("STAYS on Kayak when only a Duffel token is present", () => {
-    // The one that was wrong. A token is somebody who has an account; it is
-    // not somebody saying "move all our flights".
-    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc" }), "kayak");
-  });
-
-  it("stays on Kayak when the flag is set but there is no token", () => {
-    // A flag with no token is a search that cannot run. Better the partner
-    // that works than our own that errors.
-    assert.equal(flightsVia({ DUFFEL_FLIGHTS: "1" }), "kayak");
-  });
-
-  it("goes to Duffel only when somebody has said both", () => {
-    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc", DUFFEL_FLIGHTS: "1" }), "duffel");
-  });
-
-  it("takes exactly \"1\", not anything that looks willing", () => {
-    // "true", "yes" and "0" are all somebody guessing at the format. Only the
-    // documented value turns it on, so a guess fails safe rather than moving
-    // the bookings.
-    for (const value of ["true", "yes", "on", "0", "", "  "]) {
-      assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "t", DUFFEL_FLIGHTS: value }), "kayak", value);
-    }
-    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "t", DUFFEL_FLIGHTS: " 1 " }), "duffel", "trimmed");
-  });
-
-  it("ignores a token that is only whitespace", () => {
-    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "   ", DUFFEL_FLIGHTS: "1" }), "kayak");
-  });
-});
-
-describe("where a hotel search goes", () => {
-  it("goes to Booking.com unless told otherwise", () => {
     assert.equal(hotelsVia({}), "booking");
-    assert.equal(hotelsVia({ DUFFEL_ACCESS_TOKEN: "t" }), "booking");
-    assert.equal(hotelsVia({ DUFFEL_STAYS: "1" }), "booking");
   });
 
-  it("goes to Duffel Stays when both are set", () => {
-    // Stays is approved separately from the token and the search 403s until
-    // it is, so this flag is also saying "the approval came through".
-    assert.equal(hotelsVia({ DUFFEL_ACCESS_TOKEN: "t", DUFFEL_STAYS: "1" }), "duffel");
+  it("stays on the partner when a token is present", () => {
+    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc" }), "kayak");
+    assert.equal(hotelsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc" }), "booking");
   });
 
-  it("is not moved by the flights flag", () => {
-    assert.equal(hotelsVia({ DUFFEL_ACCESS_TOKEN: "t", DUFFEL_STAYS: "" } as { DUFFEL_ACCESS_TOKEN: string; DUFFEL_STAYS: string }), "booking");
+  it("stays on the partner even when both old flags are set", () => {
+    assert.equal(flightsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc", DUFFEL_FLIGHTS: "1" }), "kayak");
+    assert.equal(hotelsVia({ DUFFEL_ACCESS_TOKEN: "duffel_test_abc", DUFFEL_STAYS: "1" }), "booking");
   });
 });
 
 describe("what the admin is told", () => {
-  it("says where they go", () => {
-    // The last time nobody could answer "where do flights go", they moved
-    // without anybody noticing.
-    assert.match(describeFlights("kayak"), /Kayak/);
-    assert.match(describeFlights("kayak"), /default/i);
-    assert.match(describeHotels("booking"), /Booking\.com/);
+  it("says visitors stay on partners and Duffel stays in admin", () => {
+    assert.match(describeFlights("kayak"), /\/book/);
+    assert.match(describeFlights("kayak"), /admin\/duffel/);
+    assert.doesNotMatch(describeFlights("kayak"), /DUFFEL_FLIGHTS=1/);
+    assert.match(describeHotels("booking"), /\/book/);
+    assert.match(describeHotels("booking"), /admin\/duffel/);
+    assert.doesNotMatch(describeHotels("booking"), /DUFFEL_STAYS=1/);
+  });
+});
+
+describe("placeholder tokens are not treated as connected", () => {
+  it("rejects the variable name pasted as the value", () => {
+    assert.equal(inspectDuffelToken("DUFFEL_ACCESS_TOKEN").kind, "placeholder");
+    assert.equal(inspectDuffelToken("DUFFEL_ACCESS_TOKEN").ready, false);
   });
 
-  it("names the variable in BOTH directions, not only the one you are on", () => {
-    // Naming it only on the Duffel side hides it from the one person who
-    // needs it: whoever is looking at this while flights go to Kayak and
-    // wondering how to change that.
-    for (const said of [describeFlights("kayak"), describeFlights("duffel")]) {
-      assert.match(said, /DUFFEL_FLIGHTS=1/, said);
-    }
-    for (const said of [describeHotels("booking"), describeHotels("duffel")]) {
-      assert.match(said, /DUFFEL_STAYS=1/, said);
-    }
+  it("accepts Duffel's own prefixes", () => {
+    assert.equal(inspectDuffelToken("duffel_test_abc123").kind, "test");
+    assert.equal(inspectDuffelToken("duffel_live_abc123").kind, "live");
   });
+});
 
-  it("says how to undo it when it is on", () => {
-    assert.match(describeFlights("duffel"), /Remove it/);
-    assert.match(describeHotels("duffel"), /Remove it/);
+function walk(dir: string, acc: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    if (entry === "node_modules" || entry === ".next") continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) walk(full, acc);
+    else if (/\.(tsx|ts)$/.test(entry)) acc.push(full);
+  }
+  return acc;
+}
+
+describe("visitor-facing app code does not import Duffel UI", () => {
+  it("keeps BookingSearch, FlightReview and @duffel/components off public pages", () => {
+    const files = walk("app").filter((file) => !file.includes(`${join("app", "admin")}`) && !file.includes(`${join("app", "api")}`));
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      assert.doesNotMatch(source, /BookingSearch/, file);
+      assert.doesNotMatch(source, /FlightReview/, file);
+      assert.doesNotMatch(source, /@duffel/, file);
+    }
   });
 });

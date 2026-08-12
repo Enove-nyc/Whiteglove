@@ -100,10 +100,12 @@ export const DISMISS_KEY = "whiteGloveBetaNotice";
 /**
  * Should this visitor see it?
  *
- * Four noes, and each is a place a notice would be wrong rather than merely
- * unnecessary: switched off; nothing to say; already answered THIS wording; or
+ * Five noes, and each is a place a notice would be wrong rather than merely
+ * unnecessary: switched off; nothing to say; already answered THIS wording;
  * the owner looking at his own admin, where a notice telling him the site is
- * unfinished is telling him what he is in the middle of doing.
+ * unfinished is telling him what he is in the middle of doing; or an embed
+ * iframe that holds a partner search form, where a full-screen popup would
+ * sit on top of the search.
  */
 export function shouldShow(
   notice: BetaNotice,
@@ -120,10 +122,10 @@ export function shouldShow(
  *
  * The admin is the owner's workshop. The login and access pages are where
  * somebody is trying to get in, and a modal over a password box is an obstacle
- * rather than a courtesy.
+ * rather than a courtesy. /embed is the partner search form iframed from /book.
  */
 export function isOwnersOwnScreen(path: string): boolean {
-  return /^\/(admin|login|access)(\/|$)/.test(path);
+  return /^\/(admin|login|access|embed)(\/|$)/.test(path);
 }
 
 /**

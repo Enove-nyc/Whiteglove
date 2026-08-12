@@ -33,7 +33,7 @@
  * it through the layout, and the tests.
  */
 
-/** The self-service search: Duffel flights, Duffel Stays, cars. */
+/** The self-service search: partner flights, stays and cars on /book. */
 export const BOOKING_SEARCH_PATH = "/book";
 
 /**

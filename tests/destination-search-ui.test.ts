@@ -37,12 +37,20 @@ describe("DestinationSearch wiring", () => {
     assert.ok(SOURCE.includes("ArrowDown"));
   });
 
-  test("visible sitewide label and published-content note", () => {
+  test("header search has no visible sitewide heading or note", () => {
     assert.ok(LABELS.includes("Search the entire White Glove site"));
     assert.ok(LABELS.includes("Search information already published across White Glove."));
     assert.ok(SOURCE.includes("SITE_SEARCH_LABEL"));
-    assert.ok(SOURCE.includes("SITE_SEARCH_NOTE"));
+    assert.ok(SOURCE.includes('className="sr-only"'));
+    assert.ok(!SOURCE.includes("SITE_SEARCH_NOTE"));
     assert.ok(SOURCE.includes("SearchGlyph") || SOURCE.includes("viewBox=\"0 0 24 24\""));
+  });
+
+  test("placeholder is one short line and does not list eSIM", () => {
+    assert.ok(LABELS.includes("Search destinations, places to stay, food, and more…"));
+    assert.ok(!LABELS.includes("eSIM"));
+    assert.ok(!LABELS.includes("esim"));
+    assert.ok(SOURCE.includes("SITE_SEARCH_PLACEHOLDER"));
   });
 
   test("uses Where to stay naming, not Hotels and stays", () => {

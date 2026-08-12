@@ -10,9 +10,11 @@ import { readTravelEssentials } from "@/lib/travel-essentials-store";
 /**
  * Reusable Travel Essentials row — destination, itinerary, or booking pages.
  *
- * Only cards that are enabled and can actually hand off are rendered. Search
- * products go through /go; landing products resolve from owner-pasted tracked
- * URLs. No invented partners, prices, or “recommended” claims.
+ * Landing products (eSIM, insurance, transfers, tours, programmes) are a
+ * tracked link, not a form. This site cannot show their results, so collecting
+ * a city or dates here only makes the traveller type them twice. Search
+ * products (flights, hotels, cars) still go through /go with what the trip
+ * already knows. No invented partners, prices, or “recommended” claims.
  */
 
 const DISCLOSURE =
@@ -76,7 +78,10 @@ export default async function TravelEssentials({
     placement: placement ?? `${pageType}-essentials`,
   };
 
-  const cards = essentialsForContext(settings, affiliate, ctx);
+  // Tours have their own panel on Things to do — same offer, one CTA, not two.
+  const cards = essentialsForContext(settings, affiliate, ctx).filter(
+    (card) => !(pageType === "things-to-do" && card.id === "activity"),
+  );
   if (cards.length === 0) return null;
 
   const title =
@@ -118,7 +123,7 @@ export default async function TravelEssentials({
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
-            <li key={card.id}>
+            <li key={`${card.id}-${card.offer}`}>
               <a
                 href={card.href}
                 target="_blank"

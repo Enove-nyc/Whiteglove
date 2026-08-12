@@ -1,14 +1,14 @@
 /**
  * Where the Stay22 ID is kept.
  *
- * Its own key, like every other concern here. With no Redis there is nothing
- * stored, hotels open Booking.com directly and earn nothing — which is where
- * the site already was.
+ * Its own key, like every other concern here. Redis is the earnings-screen
+ * copy. STAY22_AID in the environment is the same ID, used when Redis has
+ * none — so Kayak flights and hotels can still earn.
  */
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
-import { aidProblem, mergeStay22, NO_STAY22, type Stay22Settings } from "@/lib/stay22";
+import { aidProblem, mergeStay22, stay22FromEnv, type Stay22Settings } from "@/lib/stay22";
 
 const KEY = "white-glove:stay22";
 export const STAY22_TAG = "stay22";
@@ -37,12 +37,15 @@ async function redis<T>(path: string, body?: string): Promise<T | null> {
 }
 
 async function readStored(): Promise<Stay22Settings> {
+  const fromEnv = stay22FromEnv();
   const raw = await redis<string>(`get/${KEY}`);
-  if (!raw) return NO_STAY22;
+  if (!raw) return fromEnv;
   try {
-    return mergeStay22(JSON.parse(raw) as Partial<Stay22Settings>);
+    const stored = mergeStay22(JSON.parse(raw) as Partial<Stay22Settings>);
+    // A saved ID wins. An empty store still earns via STAY22_AID.
+    return stored.aid ? stored : { aid: fromEnv.aid, provider: stored.provider };
   } catch {
-    return NO_STAY22;
+    return fromEnv;
   }
 }
 
@@ -50,13 +53,13 @@ const cached = unstable_cache(readStored, ["stay22"], { tags: [STAY22_TAG], reva
 
 /** For /book. Never throws. */
 export async function readStay22(): Promise<Stay22Settings> {
-  if (!stay22StoreAvailable()) return NO_STAY22;
+  if (!stay22StoreAvailable()) return stay22FromEnv();
   return cached();
 }
 
 /** Uncached, for the admin screen. */
 export async function readStay22Fresh(): Promise<Stay22Settings> {
-  if (!stay22StoreAvailable()) return NO_STAY22;
+  if (!stay22StoreAvailable()) return stay22FromEnv();
   return readStored();
 }
 
@@ -79,7 +82,7 @@ export async function saveStay22(next: Stay22Settings): Promise<{ ok: boolean; m
   return {
     ok: true,
     message: keep.aid
-      ? "Saved. Hotel searches now go through Stay22."
-      : "Saved. Hotel searches open Booking.com directly again, and earn nothing.",
+      ? "Saved. Hotel searches and Kayak flights now go through Stay22."
+      : "Saved. Hotel searches open Booking.com directly again. Kayak flights earn only if a wrap is pasted below.",
   };
 }

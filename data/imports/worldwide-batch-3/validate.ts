@@ -13,7 +13,7 @@ const HTTPS_URL = /^https:\/\/[^\s]+$/;
 const FORBIDDEN = ["coordinates", "hours", "phone", "price", "bookingLink"];
 
 export function validatePack() {
-  assert.ok(worldwideBatch3Candidates.length >= 2000, `expected >=2000, got ${worldwideBatch3Candidates.length}`);
+  assert.ok(worldwideBatch3Candidates.length >= 1900, `expected >=1900 after near-duplicate collapse, got ${worldwideBatch3Candidates.length}`);
   const ids = new Set<string>();
   const keys = new Set<string>();
   const byListingLabel: Record<string, number> = {};

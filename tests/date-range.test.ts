@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
-import { correctedEnd, earliestEnd, nextDay, notBefore, rangeIsBackwards, today } from "../lib/date-range";
+import { correctedEnd, earliestEnd, flightDateProblem, nextDay, notBefore, previousDay, rangeIsBackwards, today, usableBookingDate, usableFlightDates } from "../lib/date-range";
 
 // A trip that ends before it begins builds zero days and says nothing about
 // why. These hold the rule that stops it.
@@ -91,6 +91,44 @@ describe("today", () => {
 
   test("pads a single-figure month and day", () => {
     assert.equal(today(new Date(2027, 0, 5, 12)), "2027-01-05");
+  });
+});
+
+describe("the day before", () => {
+  test("moves one day back", () => {
+    assert.equal(previousDay("2026-08-12"), "2026-08-11");
+    assert.equal(previousDay("2026-03-01"), "2026-02-28");
+  });
+});
+
+describe("a date that can still be booked", () => {
+  const floor = "2026-08-12";
+
+  test("keeps today and later, and drops yesterday", () => {
+    assert.equal(usableBookingDate("2026-08-12", floor), "2026-08-12");
+    assert.equal(usableBookingDate("2026-09-01", floor), "2026-09-01");
+    assert.equal(usableBookingDate("2026-08-11", floor), "");
+    assert.equal(usableBookingDate("soon", floor), "");
+  });
+
+  test("drops both dates when the outbound has gone", () => {
+    // Half a range opens the partner on the return and asks for the outbound.
+    assert.deepEqual(usableFlightDates("2026-08-01", "2026-09-19", floor), { departDate: "", returnDate: "" });
+  });
+
+  test("keeps the outbound and drops a return that is before it", () => {
+    assert.deepEqual(usableFlightDates("2026-09-19", "2026-09-12", floor), { departDate: "2026-09-19", returnDate: "" });
+  });
+
+  test("keeps a same-day return, which is a real flight", () => {
+    assert.deepEqual(usableFlightDates("2026-09-12", "2026-09-12", floor), { departDate: "2026-09-12", returnDate: "2026-09-12" });
+  });
+});
+
+describe("why a search cannot run", () => {
+  test("names a departure that has already passed", () => {
+    assert.equal(flightDateProblem("2026-08-11", undefined, "2026-08-12"), "Departure cannot be in the past.");
+    assert.equal(flightDateProblem("2026-09-01", undefined, "2026-08-12"), null);
   });
 });
 

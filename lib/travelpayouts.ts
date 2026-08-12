@@ -36,7 +36,7 @@ import {
   type SearchSlot,
   type TravelPartner,
 } from "@/lib/travel-partners";
-import { readStay22Link, stay22SearchUrl } from "@/lib/stay22";
+import { readStay22Link, stay22IsOn, stay22SearchUrl, type Stay22Settings } from "@/lib/stay22";
 
 export type { SearchSlot };
 
@@ -273,9 +273,22 @@ export function describeSlot(slot: SearchSlot, pasted: string | undefined, choic
   return `Goes through Travelpayouts under marker ${markerIn(value)}, then on to ${partner.label}.`;
 }
 
+function slotEarns(slot: SearchSlot, links: TravelpayoutsLinks, choices?: PartnerChoices, stay22?: Stay22Settings): boolean {
+  if (slot === "hotels" && stay22IsOn(stay22)) return true;
+  if ((slot === "flights" || slot === "cars") && stay22IsOn(stay22) && partnerFor(slot, choices).key === "kayak") return true;
+  const pasted = (links[slot] ?? "").trim();
+  return Boolean(pasted) && linkProblem(pasted, slot, choices) === null;
+}
+
+function slotNetwork(slot: SearchSlot, links: TravelpayoutsLinks, stay22?: Stay22Settings, choices?: PartnerChoices): "Stay22" | "Travelpayouts" {
+  if (slot === "hotels" && stay22IsOn(stay22)) return "Stay22";
+  if ((slot === "flights" || slot === "cars") && stay22IsOn(stay22) && partnerFor(slot, choices).key === "kayak") return "Stay22";
+  return readStay22Link(links[slot] ?? "") ? "Stay22" : "Travelpayouts";
+}
+
 /** How many of the three are earning, for the top of the screen. */
-export function describeLinks(links: TravelpayoutsLinks, choices?: PartnerChoices): string {
-  const live = SLOTS.filter((s) => !linkProblem(links[s.slot] ?? "", s.slot, choices) && (links[s.slot] ?? "").trim());
+export function describeLinks(links: TravelpayoutsLinks, choices?: PartnerChoices, stay22?: Stay22Settings): string {
+  const live = SLOTS.filter((s) => slotEarns(s.slot, links, choices, stay22));
   if (live.length === 0) {
     return "None of the three searches is going through a network yet, so none of them earns anything. Paste a link below to change that.";
   }
@@ -283,7 +296,7 @@ export function describeLinks(links: TravelpayoutsLinks, choices?: PartnerChoice
   // not say whose. Two networks can be live at once — Stay22 carrying flights
   // while Travelpayouts carries hotels — and naming one of them then would be
   // worse than naming neither.
-  const networks = new Set(live.map((s) => (readStay22Link(links[s.slot] ?? "") ? "Stay22" : "Travelpayouts")));
+  const networks = new Set(live.map((s) => slotNetwork(s.slot, links, stay22, choices)));
   const network = networks.size === 1 ? [...networks][0] : "a network";
   if (live.length === SLOTS.length) {
     return `All three searches go through ${network}. A booking made after one of them should show up in that dashboard.`;

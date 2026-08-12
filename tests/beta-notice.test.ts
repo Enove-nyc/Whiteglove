@@ -126,7 +126,7 @@ describe("whether to show it", () => {
     // The admin is his workshop; telling him the site is unfinished is telling
     // him what he is in the middle of doing. And a modal over a password box
     // is an obstacle rather than a courtesy.
-    for (const path of ["/admin", "/admin/destinations", "/login", "/access"]) {
+    for (const path of ["/admin", "/admin/destinations", "/login", "/access", "/embed", "/embed/flights"]) {
       assert.equal(shouldShow(notice(), { dismissedVersion: null, path }), false, path);
     }
   });
@@ -142,6 +142,8 @@ describe("whether to show it", () => {
     assert.equal(isOwnersOwnScreen("/accessories"), false);
     assert.equal(isOwnersOwnScreen("/admin"), true);
     assert.equal(isOwnersOwnScreen("/admin/photos"), true);
+    assert.equal(isOwnersOwnScreen("/embed/flights"), true);
+    assert.equal(isOwnersOwnScreen("/embedded-tours"), false);
   });
 });
 

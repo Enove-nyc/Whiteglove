@@ -64,13 +64,19 @@ function rowActionLabel(item: ReviewQueueItem) {
   return "Open Bulk imports";
 }
 
-export default function ImportNeedsReviewQueue({ queue }: { queue: ImportReviewQueue }) {
+export default function ImportNeedsReviewQueue({
+  queue,
+  initialQuery = "",
+}: {
+  queue: ImportReviewQueue;
+  initialQuery?: string;
+}) {
   const [status, setStatus] = useState<StatusFilter>("OPEN");
   const [kind, setKind] = useState<"ALL" | ReviewQueueKind>("ALL");
   const [origin, setOrigin] = useState<OriginFilter>("ALL");
   const [market, setMarket] = useState("ALL");
   const [batch, setBatch] = useState("ALL");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [limit, setLimit] = useState(100);
   const queueRef = useRef<HTMLElement | null>(null);
 

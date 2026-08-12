@@ -1,4 +1,5 @@
-import Link from "next/link";
+import AdminNavLink from "@/components/AdminNavLink";
+import AdminSectionScreens from "@/components/AdminSectionScreens";
 import DirectoryBrowserAdmin from "@/components/DirectoryBrowserAdmin";
 import { builtInDirectory, type DirectoryEntry } from "@/lib/directory-index";
 import { describeDirectorySource, readProviders, type DirectorySource } from "@/lib/directory";
@@ -72,26 +73,22 @@ export default async function AdminDirectoryPage() {
           </p>
         )}
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link
+          <AdminNavLink
             href="/admin/kevarim"
             className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
             Add a kever
-          </Link>
-          <Link href="/admin/add" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+          </AdminNavLink>
+          <AdminNavLink href="/admin/add" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
             Add a beis hachaim
-          </Link>
-          <Link href="/admin/directory/businesses?new=1" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
+          </AdminNavLink>
+          <AdminNavLink href="/admin/directory/businesses?new=1" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
             Add a business
-          </Link>
-          <Link href="/admin/imports" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-            Bulk imports
-          </Link>
-          <Link href="/admin/imports/needs-review" className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">
-            Needs review
-          </Link>
+          </AdminNavLink>
         </div>
       </header>
+
+      <AdminSectionScreens sectionHref="/admin/directory" />
 
       <div className="mt-8">
         <DirectoryBrowserAdmin entries={entries} />

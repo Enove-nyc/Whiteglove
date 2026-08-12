@@ -13,10 +13,12 @@ import { cemeteries } from "@/data/cemeteries";
 import { destinationHaystack, destinationHref as heritageDestinationHref, destinations, getDestination } from "@/data/destinations";
 import { HECHSHERIM } from "@/data/hechsherim";
 import { kosherEateries } from "@/data/kosher-eateries";
+import { practicalContent } from "@/data/practical-content";
 import { services } from "@/data/services";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
+import { staticMikvahListings } from "@/lib/mikvaos";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
 import { compact } from "@/lib/site-search-match";
@@ -89,6 +91,7 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   pushTzaddikim(docs);
   await pushAttractionsStaysAreas(docs);
   await pushPublishedPracticalPlaces(docs);
+  pushStaticPracticalPlaces(docs);
   pushEateries(docs);
   pushServices(docs);
   pushSitePages(docs);
@@ -516,8 +519,8 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Kosher travel",
       subtitle: "Food, Shabbos, minyanim, mikvaos and hechsherim",
       href: "/kosher-travel",
-      names: ["kosher travel", "shabbos", "shabos", "shabbat", "minyanim", "mikvaos", "mikvah", "eruvim", "eruv", "hechsherim"],
-      keywords: ["shabbos", "shabos", "minyan", "mikvah", "eruv", "hechsher", "walkable"],
+      names: ["kosher travel", "shabbos", "shabos", "shabbat", "minyanim", "mikvaos", "mikvah", "eruvim", "eruv", "hechsherim", "shul", "shuls", "בית כנסת"],
+      keywords: ["shabbos", "shabos", "minyan", "mikvah", "eruv", "hechsher", "walkable", "shul"],
     },
     {
       id: "page-hechsherim",
@@ -534,7 +537,7 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Mikvaos",
       subtitle: "Source-backed mikvah listings for travel",
       href: "/mikvaos",
-      names: ["mikvaos", "mikvah", "mikveh", "mikve", "ritual bath"],
+      names: ["mikvaos", "mikvah", "mikveh", "mikve", "ritual bath", "מקוה", "מקווה", "מקוואות"],
       keywords: ["mikvah", "mikvaos", "mikveh", "tvilah", "kosher travel"],
     },
     {
@@ -543,7 +546,7 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Zmanim",
       subtitle: "Halachic times for a place and date",
       href: "/zmanim",
-      names: ["zmanim", "zman", "halachic times", "candle lighting", "alos", "tzeit"],
+      names: ["zmanim", "zman", "halachic times", "candle lighting", "alos", "tzeit", "זמנים"],
       keywords: ["zmanim", "sof zman shema", "chatzos", "mincha", "sunset", "sunrise", "candle-lighting"],
     },
     {
@@ -561,8 +564,26 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "eSIMs and data abroad",
       subtitle: "A data plan installed before you fly",
       href: "/esim",
-      names: ["esim", "e-sim", "sim", "data", "data plan", "internet", "roaming", "phone"],
-      keywords: ["esim", "data", "connectivity", "roaming"],
+      names: [
+        "esim",
+        "e-sim",
+        "e sim",
+        "esims",
+        "e-sims",
+        "sim",
+        "sim card",
+        "data",
+        "data plan",
+        "mobile data",
+        "phone data",
+        "internet",
+        "roaming",
+        "phone",
+        "airalo",
+        "yesim",
+        "סים",
+      ],
+      keywords: ["esim", "e-sim", "e sim", "sim card", "data", "connectivity", "roaming", "travel essentials"],
     },
     {
       id: "page-transfers",
@@ -570,8 +591,8 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Airport transfers",
       subtitle: "A booked ride from the airport to your first stop",
       href: "/transfers",
-      names: ["transfers", "transfer", "airport transfer", "airport pickup", "taxi"],
-      keywords: ["transfers", "airport", "arrival"],
+      names: ["transfers", "transfer", "airport transfer", "airport pickup", "taxi", "private transfer"],
+      keywords: ["transfers", "airport", "arrival", "travel essentials"],
     },
     {
       id: "page-book",
@@ -583,8 +604,32 @@ function pushSitePages(docs: DraftDoc[]) {
       // /flights and /cars were these same searches and now redirect to this
       // one, so a visitor typing "airfare" or "rental car" should land on the
       // page that actually runs it.
-      names: ["book", "booking", "booking partners", "flights", "flight", "airfare", "plane", "cars", "car hire", "car rental", "rental car"],
-      keywords: ["flights", "hotels", "cars", "air travel", "driving"],
+      names: [
+        "book",
+        "booking",
+        "booking partners",
+        "flights",
+        "flight",
+        "airfare",
+        "plane",
+        "airline",
+        "cars",
+        "car hire",
+        "car rental",
+        "rental car",
+        "hire car",
+        "travel essentials",
+      ],
+      keywords: ["flights", "hotels", "cars", "air travel", "driving", "partners"],
+    },
+    {
+      id: "page-travel-essentials",
+      kind: "Site page",
+      title: "Travel Essentials",
+      subtitle: "eSIMs, insurance, transfers, cars and flights",
+      href: "/book",
+      names: ["travel essentials", "essentials", "before you go"],
+      keywords: ["esim", "insurance", "transfers", "cars", "flights", "tours"],
     },
     {
       id: "page-plan",
@@ -619,7 +664,7 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Jewish heritage journeys",
       subtitle: "Towns, batei hachaim and tzaddikim",
       href: "/heritage",
-      names: ["heritage", "jewish heritage", "nesios"],
+      names: ["heritage", "jewish heritage", "nesios", "שתוליכנו לשלום"],
       keywords: ["heritage", "kever", "tzaddik"],
     },
     {
@@ -628,7 +673,7 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Batei hachaim",
       subtitle: "Cemetery directory",
       href: "/cemeteries",
-      names: ["batei hachaim", "cemeteries", "cemetery directory"],
+      names: ["batei hachaim", "cemeteries", "cemetery directory", "בית החיים"],
       keywords: ["cemetery", "beis hachaim", "kever"],
     },
     {
@@ -637,7 +682,7 @@ function pushSitePages(docs: DraftDoc[]) {
       title: "Tzaddikim",
       subtitle: "Find a kever by the person",
       href: "/tzaddikim",
-      names: ["tzaddikim", "tzadikim", "kevarim directory"],
+      names: ["tzaddikim", "tzadikim", "kevarim directory", "kevarim"],
       keywords: ["tzaddik", "rebbe", "kever"],
     },
     {
@@ -647,7 +692,7 @@ function pushSitePages(docs: DraftDoc[]) {
       subtitle: "Cover for the trip",
       href: "/travel-insurance",
       names: ["travel insurance", "insurance"],
-      keywords: ["insurance"],
+      keywords: ["insurance", "travel essentials"],
     },
     {
       id: "page-sample-itinerary",
@@ -657,6 +702,96 @@ function pushSitePages(docs: DraftDoc[]) {
       href: "/sample-itinerary",
       names: ["sample itinerary"],
       keywords: ["itinerary", "example"],
+    },
+    {
+      id: "page-about",
+      kind: "Site page",
+      title: "About White Glove",
+      subtitle: "What this site is for, and what its information is worth",
+      href: "/about",
+      names: ["about", "about us", "about white glove", "who we are", "אודות"],
+      keywords: ["about", "white glove"],
+    },
+    {
+      id: "page-contact",
+      kind: "Site page",
+      title: "Contact",
+      subtitle: "Write to White Glove",
+      href: "/contact",
+      names: ["contact", "get in touch", "email", "write", "צור קשר"],
+      keywords: ["contact", "message"],
+    },
+    {
+      id: "page-rate",
+      kind: "Site page",
+      title: "Rate how it went",
+      subtitle: "Private feedback after a place or a trip",
+      href: "/rate",
+      names: ["rate", "rate how it went", "feedback", "rating"],
+      keywords: ["rate", "feedback"],
+    },
+    {
+      id: "page-directory",
+      kind: "Site page",
+      title: "Provider directory",
+      subtitle: "Drivers, agencies and operators",
+      href: "/directory",
+      names: ["directory", "provider directory", "drivers", "agencies"],
+      keywords: ["directory", "provider"],
+    },
+    {
+      id: "page-map",
+      kind: "Site page",
+      title: "Map",
+      subtitle: "Towns and batei hachaim on a map",
+      href: "/map",
+      names: ["map", "maps"],
+      keywords: ["map", "heritage"],
+    },
+    {
+      id: "page-verification",
+      kind: "Site page",
+      title: "How we verify",
+      subtitle: "How practical claims on this site are sourced",
+      href: "/verification",
+      names: ["verification", "how we verify", "sources"],
+      keywords: ["verify", "source"],
+    },
+    {
+      id: "page-flight-assistance",
+      kind: "Site page",
+      title: "Flight booking assistance",
+      subtitle: "Ask a person to help with a flight that does not fit a search box",
+      href: "/flight-booking-assistance",
+      names: ["flight booking assistance", "flight help", "complicated flight"],
+      keywords: ["flights", "booking"],
+    },
+    {
+      id: "page-stops",
+      kind: "Site page",
+      title: "Towns and guides",
+      subtitle: "Heritage towns with practical notes",
+      href: "/stops",
+      names: ["stops", "towns and guides", "heritage towns"],
+      keywords: ["heritage", "towns"],
+    },
+    {
+      id: "page-case-studies",
+      kind: "Site page",
+      title: "Case studies",
+      subtitle: "Trip outcomes published with permission",
+      href: "/case-studies",
+      names: ["case studies", "proof"],
+      keywords: ["case study"],
+    },
+    {
+      id: "page-submit",
+      kind: "Site page",
+      title: "Send in a listing",
+      subtitle: "A kever, cemetery, provider, or a correction",
+      href: "/submit",
+      names: ["submit", "send in", "correction"],
+      keywords: ["submit"],
     },
   ];
 
@@ -721,4 +856,62 @@ function unique(values: string[]): string[] {
     out.push(value.trim());
   }
   return out;
+}
+
+/**
+ * Source-backed mikvaos and minyanim that ship in the repo. Database-published
+ * practical rows are added separately; this keeps those names searchable when
+ * the database is off, and fills gaps the public mikvaos page already shows.
+ */
+function pushStaticPracticalPlaces(docs: DraftDoc[]) {
+  const seen = new Set(docs.filter((d) => d.kind === "Practical travel").map((d) => `${normalize(d.title)}|${normalize(d.city ?? "")}`));
+
+  for (const listing of staticMikvahListings()) {
+    const key = `${normalize(listing.name)}|${normalize(listing.city)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    docs.push(
+      publishedPracticalPlaceSearchDocument(
+        {
+          id: listing.id,
+          category: "MIKVAH",
+          name: listing.name,
+          address: listing.address,
+          notes: listing.notes,
+          sourceUrl: listing.sourceUrl,
+          destination: { slug: listing.destinationSlug, city: listing.city, country: listing.country },
+        },
+        0,
+      ),
+    );
+  }
+
+  for (const [slug, content] of Object.entries(practicalContent)) {
+    for (const [index, place] of (content.places ?? []).entries()) {
+      if (place.category !== "MINYAN") continue;
+      const sourceUrl = place.source?.trim();
+      if (!sourceUrl || isDisallowedImportSource({ sourceUrl, sourceName: "", attribution: "" })) continue;
+      const staticDestination = getDestination(slug);
+      const vacationDestination = vacationDestinations.find((item) => item.slug === slug);
+      const city = staticDestination?.city ?? vacationDestination?.cities[0] ?? slug;
+      const country = staticDestination?.country ?? vacationDestination?.country ?? "";
+      const key = `${normalize(place.name)}|${normalize(city)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      docs.push(
+        publishedPracticalPlaceSearchDocument(
+          {
+            id: `static-minyan-${slug}-${index}`,
+            category: "MINYAN",
+            name: place.name,
+            address: place.address ?? null,
+            notes: place.notes ?? null,
+            sourceUrl,
+            destination: { slug, city, country },
+          },
+          index,
+        ),
+      );
+    }
+  }
 }

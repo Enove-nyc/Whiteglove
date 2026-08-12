@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { NO_STAY22 } from "@/lib/stay22";
 import {
   allRoutes,
+  earningState,
   resolveLink,
   routeFor,
   TRAVEL_PRODUCTS,
@@ -83,9 +84,69 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(flights.destinationLabel, "Kayak");
     assert.equal(flights.earns, false);
     assert.match(flights.note, /earn nothing/i);
-    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-07-05" }, NOTHING);
+    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-09-05" }, NOTHING);
     assert.ok(link, "an unconfigured flight search stopped working entirely");
     assert.match(link.url, /kayak\.com\/flights\//i);
+  });
+
+  it("sends Kayak flights through Stay22 from the ID, without a pasted wrap or Travelpayouts", () => {
+    const viaAid: AffiliateConfig = {
+      travelpayouts: {},
+      stay22: { aid: "whiteglove", provider: "roam" },
+      partners: { flights: "kayak", cars: "kayak" },
+    };
+    const route = routeFor("flight", viaAid);
+    assert.equal(route.earns, true);
+    assert.equal(route.network, "stay22");
+    assert.equal(route.destinationLabel, "Kayak");
+    const resolved = resolveLink(
+      { product: "flight", from: "JFK", to: "FCO", checkIn: "2026-09-01", checkOut: "2026-09-08" },
+      viaAid,
+    );
+    assert.ok(resolved);
+    const url = new URL(resolved!.url);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "whiteglove");
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/flights\/JFK-FCO\/2026-09-01\/2026-09-08/);
+  });
+
+  it("sends Kayak cars through Stay22 from the ID, without a pasted wrap or Travelpayouts", () => {
+    const viaAid: AffiliateConfig = {
+      travelpayouts: {},
+      stay22: { aid: "whiteglove", provider: "roam" },
+      partners: { flights: "kayak", cars: "kayak" },
+    };
+    const route = routeFor("car", viaAid);
+    assert.equal(route.earns, true);
+    assert.equal(route.network, "stay22");
+    assert.equal(route.destinationLabel, "Kayak");
+    const resolved = resolveLink(
+      { product: "car", destination: "Rome", checkIn: "2026-09-01", checkOut: "2026-09-08" },
+      viaAid,
+    );
+    assert.ok(resolved);
+    const url = new URL(resolved!.url);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "whiteglove");
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/cars\/Rome\/2026-09-01\/2026-09-08/);
+  });
+
+  it("prefers Stay22 Kayak over a Travelpayouts wrap when the Stay22 ID is set", () => {
+    const both: AffiliateConfig = {
+      ...ON_KAYAK,
+      stay22: { aid: "whiteglove", provider: "roam" },
+    };
+    const route = routeFor("flight", both);
+    assert.equal(route.network, "stay22");
+    assert.equal(route.earns, true);
+    const resolved = resolveLink(
+      { product: "flight", from: "JFK", to: "KRK", checkIn: "2026-09-01" },
+      both,
+    );
+    assert.match(resolved!.url, /^https:\/\/www\.stay22\.com\/allez\/kayak/);
+    assert.doesNotMatch(resolved!.url, /tp\.media/);
   });
 
   it("prefers Stay22 for hotels when it is on, and Booking.com when it is not", () => {
@@ -114,13 +175,44 @@ describe("who pays and where the traveler lands", () => {
 
 describe("a link that cannot be built is not offered", () => {
   it("REFUSES A PRODUCT WITH NO PROGRAMME JOINED", () => {
-    // Activities, insurance, eSIMs and transfers are named in the brief and
-    // are not joined. The slot exists so the admin can say so; inventing a
-    // link is the one thing that must not happen.
+    // Activities, insurance, eSIMs, transfers and seasonal programmes are named
+    // in the brief and stay dark until a landing URL is pasted. The slot exists
+    // so the admin can say so; inventing a link is the one thing that must not happen.
     for (const product of ["activity", "insurance", "esim", "transfer", "programme"] as const) {
       assert.equal(resolveLink({ product, destination: "Rome" }, CONNECTED), null, product);
       assert.equal(routeFor(product, CONNECTED).earns, false, product);
+      assert.equal(earningState(routeFor(product, CONNECTED)), "not-offered", product);
     }
+  });
+
+  it("RESOLVES A PASTED PROGRAMME LINK the same way as insurance", () => {
+    // This is the test that would have caught programme sitting in
+    // TRAVEL_PRODUCTS while routeFor always returned none for it.
+    const withProgramme: AffiliateConfig = {
+      ...CONNECTED,
+      essentialsLandings: {
+        programme: [{ url: "https://tp.media/r?marker=123456&u=https%3A%2F%2Fexample-programmes.test", label: "Operator" }],
+      },
+    };
+    const route = routeFor("programme", withProgramme);
+    assert.equal(route.earns, true);
+    assert.equal(earningState(route), "earns");
+    const resolved = resolveLink({ product: "programme", destination: "Catskills" }, withProgramme);
+    assert.ok(resolved);
+    assert.match(resolved!.url, /^https:\/\/tp\.media\//);
+  });
+
+  it("KEEPS AN UNTRACKED LANDING LIVE and reports earns-nothing", () => {
+    const direct: AffiliateConfig = {
+      ...CONNECTED,
+      essentialsLandings: {
+        insurance: [{ url: "https://example-insurance.test/compare", label: "Insurer" }],
+      },
+    };
+    const route = routeFor("insurance", direct);
+    assert.equal(earningState(route), "earns-nothing");
+    assert.match(route.note, /earns nothing/i);
+    assert.ok(resolveLink({ product: "insurance" }, direct));
   });
 
   it("refuses a search that is missing what it needs", () => {

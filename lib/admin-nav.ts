@@ -49,7 +49,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places, kevarim, contacts and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
+    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/add", label: "Add an entry", blurb: "A cemetery, a tzadik, or a new page." },
@@ -82,7 +82,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, passwords, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "The website’s words", blurb: "Headline, contact line and footer." },
@@ -109,7 +109,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/membership", label: "White Glove Plus", blurb: "Planned only — not launched." },
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
-      { href: "/admin/duffel", label: "Duffel flights", blurb: "Search and ticket directly. Not on the public site." },
+      { href: "/admin/duffel", label: "Duffel", blurb: "Search and book flights here. Not on the public site." },
     ],
   },
 ];
@@ -158,13 +158,18 @@ export function activeSection(pathname: string): AdminSection {
   );
 }
 
+/** Screens inside a section, not including the section’s own front page. */
+export function sectionScreens(sectionHref: string): Array<{ href: string; label: string; blurb: string }> {
+  const section = ADMIN_SECTIONS.find((item) => item.href === sectionHref);
+  return (section?.children ?? []).filter((child) => child.href !== sectionHref);
+}
+
 /** Everything the "go to" box can jump to. */
 export function allAdminDestinations(): Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> {
   const out: Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> = [];
   for (const section of ADMIN_SECTIONS) {
     out.push({ href: section.href, label: section.label, blurb: section.blurb, section: section.label, keywords: section.keywords ?? "" });
-    for (const child of section.children ?? []) {
-      if (child.href === section.href) continue;
+    for (const child of sectionScreens(section.href)) {
       out.push({ href: child.href, label: child.label, blurb: child.blurb, section: section.label, keywords: section.keywords ?? "" });
     }
   }

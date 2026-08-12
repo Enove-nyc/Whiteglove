@@ -1,21 +1,7 @@
 {
   "originalBaseline": 24077,
-  "before": 24001,
-  "after": 23994,
-  "removed": 7,
-  "removedFromOriginal": 83,
-  "nightlifeRemoved": 0,
-  "duplicateRemoved": 7,
-  "packCountsBefore": {
-    "white-glove-europe-batch": 783,
-    "white-glove-global-batch": 665,
-    "white-glove-fill-batch": 94,
-    "worldwide-batch-2": 152,
-    "worldwide-batch-3": 2008,
-    "worldwide-batch-4": 5325,
-    "worldwide-batch-5": 14974
-  },
-  "packCountsAfter": {
+  "firstPassBefore": 23994,
+  "firstPackCountsBefore": {
     "white-glove-europe-batch": 783,
     "white-glove-global-batch": 665,
     "white-glove-fill-batch": 94,
@@ -24,187 +10,331 @@
     "worldwide-batch-4": 5318,
     "worldwide-batch-5": 14974
   },
+  "before": 23994,
+  "thisPassLoaded": 22333,
+  "after": 22333,
+  "afterInMemory": 22332,
+  "removed": 1661,
+  "removedThisPass": 1,
+  "removedFromOriginal": 1744,
+  "nightlifeRemoved": 0,
+  "duplicateRemoved": 1661,
+  "packCountsBefore": {
+    "white-glove-europe-batch": 783,
+    "white-glove-global-batch": 665,
+    "white-glove-fill-batch": 94,
+    "worldwide-batch-2": 152,
+    "worldwide-batch-3": 2008,
+    "worldwide-batch-4": 5318,
+    "worldwide-batch-5": 14974
+  },
+  "packCountsThisPass": {
+    "white-glove-europe-batch": 770,
+    "white-glove-global-batch": 654,
+    "white-glove-fill-batch": 94,
+    "worldwide-batch-2": 151,
+    "worldwide-batch-3": 1916,
+    "worldwide-batch-4": 5089,
+    "worldwide-batch-5": 13659
+  },
+  "packCountsAfter": {
+    "white-glove-europe-batch": 770,
+    "white-glove-global-batch": 654,
+    "white-glove-fill-batch": 94,
+    "worldwide-batch-2": 151,
+    "worldwide-batch-3": 1916,
+    "worldwide-batch-4": 5089,
+    "worldwide-batch-5": 13659
+  },
   "coverageBefore": {
-    "total": 24001,
-    "address": 92.9,
-    "summary": 92.9,
+    "total": 22333,
+    "address": 92.5,
+    "summary": 92.5,
     "category": 100,
     "coordinates": 0.1,
-    "addressCount": 22307,
-    "summaryCount": 22307,
-    "categoryCount": 24001,
-    "coordinatesCount": 29
+    "addressCount": 20664,
+    "summaryCount": 20664,
+    "categoryCount": 22333,
+    "coordinatesCount": 26
   },
   "coverageAfterAll": {
-    "total": 23994,
-    "address": 93,
-    "summary": 93,
+    "total": 22332,
+    "address": 92.5,
+    "summary": 92.5,
     "category": 100,
     "coordinates": 0.1,
-    "addressCount": 22303,
-    "summaryCount": 22303,
-    "categoryCount": 23994,
-    "coordinatesCount": 30
+    "addressCount": 20664,
+    "summaryCount": 20664,
+    "categoryCount": 22332,
+    "coordinatesCount": 31
   },
   "coverageEnrichableBefore": {
-    "total": 22307,
+    "total": 20664,
     "address": 100,
     "summary": 100,
     "category": 100,
     "coordinates": 0.1,
-    "addressCount": 22307,
-    "summaryCount": 22307,
-    "categoryCount": 22307,
-    "coordinatesCount": 29
+    "addressCount": 20664,
+    "summaryCount": 20664,
+    "categoryCount": 20664,
+    "coordinatesCount": 26
   },
   "coverageEnrichableAfter": {
-    "total": 22300,
+    "total": 20664,
     "address": 100,
     "summary": 100,
     "category": 100,
-    "coordinates": 0.1,
-    "addressCount": 22300,
-    "summaryCount": 22300,
-    "categoryCount": 22300,
-    "coordinatesCount": 30
+    "coordinates": 0.2,
+    "addressCount": 20664,
+    "summaryCount": 20664,
+    "categoryCount": 20664,
+    "coordinatesCount": 31
   },
-  "sampleClusters": [
+  "matcherSelfCheck": {
+    "AMIA + Memorial": true,
+    "AMIA + Aima": true,
+    "AMIA + community synagogues": true,
+    "Templo Libertad attraction + shul": true,
+    "Judah Hyam heritage + shul": true,
+    "hotel vs park (must be false)": false,
+    "Melbourne Museum vs Immigration Museum (must be false)": false,
+    "Cluj park vs Chabad (must be false)": false,
+    "Ramchal shul vs kever (must be false)": false,
+    "museum quarter vs heritage walk (must be false)": false,
+    "Montjuic vs Castell (must be false)": false,
+    "Triana vs Puente (must be false)": false,
+    "Santa Cruz stay vs barrio (must be false)": false,
+    "heritage walk vs historic quarter": true,
+    "Jewish Cultural Quarter vs visitor resource": true,
+    "Jewish Cultural Quarter vs cultural plaza (must be false)": false,
+    "Field Museum vs Wrigley Field (must be false)": false,
+    "Texas Capitol vs Bullock Museum (must be false)": false,
+    "Casa Batllo vs Casa Mila (must be false)": false
+  },
+  "buenosAiresBefore": 58,
+  "buenosAiresAfter": 58,
+  "buenosAiresNamesAfter": [
+    "Templo Libertad [attraction / worldwide-batch-2]",
+    "AMIA Memorial [attraction / worldwide-batch-2]",
+    "Chabad of Buenos Aires framing [shul / worldwide-batch-4]"
+  ],
+  "amiaCluster": {
+    "place": "buenos aires::argentina",
+    "size": 3,
+    "kept": "AMIA Memorial [attraction / worldwide-batch-2]",
+    "variants": [
+      "AMIA Memorial [attraction / worldwide-batch-2]",
+      "AMIA [kosher_travel_resource / worldwide-batch-2]",
+      "AMIA community synagogues framing [shul / worldwide-batch-4]"
+    ]
+  },
+  "largestClustersThisPass": [
     {
-      "key": "montreal::canada::attraction::museum of jewish",
-      "kept": {
-        "pack": "worldwide-batch-2",
-        "name": "Museum of Jewish Montreal",
-        "locality": "Montréal",
-        "country": "Canada",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Museum of Jewish Montreal framing",
-        "locality": "Montreal",
-        "country": "Canada",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      }
-    },
-    {
-      "key": "porto::portugal::attraction::jewish museum of",
-      "kept": {
-        "pack": "worldwide-batch-2",
-        "name": "Jewish Museum of Porto",
-        "locality": "Porto",
-        "country": "Portugal",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Jewish Museum of Porto framing",
-        "locality": "Porto",
-        "country": "Portugal",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      }
-    },
-    {
-      "key": "buenos aires::argentina::attraction::amia memorial",
-      "kept": {
-        "pack": "worldwide-batch-2",
-        "name": "AMIA Memorial",
-        "locality": "Buenos Aires",
-        "country": "Argentina",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "AMIA memorial framing",
-        "locality": "Buenos Aires",
-        "country": "Argentina",
-        "entityType": "attraction",
-        "importKind": "ATTRACTION"
-      }
-    },
-    {
-      "key": "richmond::united states::shul::congregation beth ahabah",
-      "kept": {
-        "pack": "worldwide-batch-3",
-        "name": "Congregation Beth Ahabah",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Congregation Beth Ahabah framing",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      }
-    },
-    {
-      "key": "richmond::united states::shul::yung israel of",
-      "kept": {
-        "pack": "worldwide-batch-3",
-        "name": "Young Israel of Richmond",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Young Israel of Richmond framing",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      }
-    },
-    {
-      "key": "richmond::united states::shul::chabad of",
-      "kept": {
-        "pack": "worldwide-batch-3",
-        "name": "Chabad of Richmond",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Chabad of Richmond framing",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "shul",
-        "importKind": "PRACTICAL"
-      }
-    },
-    {
-      "key": "richmond::united states::beis_hachaim::forest lawn jewish sections",
-      "kept": {
-        "pack": "worldwide-batch-3",
-        "name": "Forest Lawn Jewish sections",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "beis_hachaim",
-        "importKind": "ATTRACTION"
-      },
-      "removed": {
-        "pack": "worldwide-batch-4",
-        "name": "Forest Lawn Jewish sections framing",
-        "locality": "Richmond",
-        "country": "United States",
-        "entityType": "beis_hachaim",
-        "importKind": "ATTRACTION"
-      }
+      "place": "amsterdam::netherlands",
+      "size": 2,
+      "kept": "Jewish Cultural Quarter [attraction / white-glove-fill-batch]",
+      "variants": [
+        "Jewish Cultural Quarter [attraction / white-glove-fill-batch]",
+        "Jewish Cultural Quarter visitor resource [kosher_travel_resource / white-glove-fill-batch]"
+      ]
     }
   ],
+  "sampleClusters": [
+    {
+      "place": "amsterdam::netherlands",
+      "size": 2,
+      "kept": "Jewish Cultural Quarter [attraction / white-glove-fill-batch]",
+      "variants": [
+        "Jewish Cultural Quarter [attraction / white-glove-fill-batch]",
+        "Jewish Cultural Quarter visitor resource [kosher_travel_resource / white-glove-fill-batch]"
+      ]
+    }
+  ],
+  "leftovers": {
+    "exactNamePlaceGroups": 0,
+    "extraExactRows": 0,
+    "remainingMergeablePairs": 0,
+    "remainingSharedTokenGroups": 963,
+    "remainingSharedTokenExtraRows": 1174,
+    "sampleRemainingSharedTokenGroups": [
+      {
+        "place": "barcelona::spain",
+        "sharedToken": "casa",
+        "size": 5,
+        "names": [
+          "Casa Batlló [attraction]",
+          "Casa Milà [attraction]",
+          "Casa Vicens [attraction]",
+          "Casa Amatller [attraction]",
+          "Casa Lleó i Morera [attraction]"
+        ]
+      },
+      {
+        "place": "beit shemesh::israel",
+        "sharedToken": "ramat",
+        "size": 5,
+        "names": [
+          "Staying near Ramat Beit Shemesh Alef [stay_anchor]",
+          "Staying near Ramat Beit Shemesh Bet [stay_anchor]",
+          "Ramat Beit Shemesh Alef community batei knesset framing [shul]",
+          "Ramat Beit Shemesh Bet synagogues framing [shul]",
+          "Ramat Beit Shemesh mikvah resource [mikvah]"
+        ]
+      },
+      {
+        "place": "edgware::united kingdom",
+        "sharedToken": "borehamwood",
+        "size": 5,
+        "names": [
+          "Edgware / Borehamwood [vacation_destination]",
+          "Borehamwood Jewish community corridor [attraction]",
+          "Staying near Borehamwood [stay_anchor]",
+          "Borehamwood and Elstree Synagogue framing [shul]",
+          "Borehamwood mikvah resource [mikvah]"
+        ]
+      },
+      {
+        "place": "lima::peru",
+        "sharedToken": "miraflores",
+        "size": 5,
+        "names": [
+          "Miraflores boardwalk [attraction]",
+          "Malecón Miraflores [attraction]",
+          "El Faro Miraflores [attraction]",
+          "Parque Amor Miraflores [attraction]",
+          "Staying near Miraflores [stay_anchor]"
+        ]
+      },
+      {
+        "place": "melbourne::australia",
+        "sharedToken": "victoria",
+        "size": 5,
+        "names": [
+          "National Gallery of Victoria [attraction]",
+          "Royal Botanic Gardens Victoria [attraction]",
+          "Queen Victoria Market [attraction]",
+          "State Library Victoria [attraction]",
+          "Public Transport Victoria trip planning [practical_travel_resource]"
+        ]
+      },
+      {
+        "place": "mexico::mexico",
+        "sharedToken": "museo",
+        "size": 5,
+        "names": [
+          "Museo Nacional de Antropología [attraction]",
+          "Museo Soumaya [attraction]",
+          "Museo Jumex [attraction]",
+          "Museo Tamayo [attraction]",
+          "Museo de Arte Moderno [attraction]"
+        ]
+      },
+      {
+        "place": "paris::france",
+        "sharedToken": "musee",
+        "size": 5,
+        "names": [
+          "Musée du Louvre daytime [attraction]",
+          "Musée d'Orsay [attraction]",
+          "Musée Rodin gardens [attraction]",
+          "Musée Carnavalet [attraction]",
+          "Musée d'Art et d'Histoire du Judaïsme [attraction]"
+        ]
+      },
+      {
+        "place": "raleigh::united states",
+        "sharedToken": "cary",
+        "size": 5,
+        "names": [
+          "Bond Park Cary [attraction]",
+          "Raleigh-Cary Jewish heritage corridor [attraction]",
+          "Staying near Cary [stay_anchor]",
+          "Chabad of Cary framing [shul]",
+          "Raleigh-Cary community mikvah resource [mikvah]"
+        ]
+      },
+      {
+        "place": "seville::spain",
+        "sharedToken": "sevilla",
+        "size": 5,
+        "names": [
+          "Museo de Bellas Artes de Sevilla [attraction]",
+          "Ayuntamiento de Sevilla [attraction]",
+          "Setas de Sevilla [attraction]",
+          "Universidad de Sevilla historic building [attraction]",
+          "CaixaForum Sevilla [attraction]"
+        ]
+      },
+      {
+        "place": "barcelona::spain",
+        "sharedToken": "montjuic",
+        "size": 4,
+        "names": [
+          "Montjuïc [attraction]",
+          "Magic Fountain of Montjuïc [attraction]",
+          "Castell de Montjuïc [attraction]",
+          "Montjuïc Cemetery Viewpoint [attraction]"
+        ]
+      },
+      {
+        "place": "barcelona::spain",
+        "sharedToken": "sant",
+        "size": 4,
+        "names": [
+          "Hospital de Sant Pau [attraction]",
+          "Sant Pau Art Nouveau Site [attraction]",
+          "Mercat de Sant Antoni [attraction]",
+          "Recinte Modernista de Sant Pau [attraction]"
+        ]
+      },
+      {
+        "place": "boise::united states",
+        "sharedToken": "idaho",
+        "size": 4,
+        "names": [
+          "Idaho State Museum [attraction]",
+          "Discovery Center of Idaho [attraction]",
+          "Old Idaho Penitentiary historic site [attraction]",
+          "Chabad of Idaho framing [shul]"
+        ]
+      },
+      {
+        "place": "boston::united states",
+        "sharedToken": "brookline",
+        "size": 4,
+        "names": [
+          "Staying near Brookline Coolidge Corner [stay_anchor]",
+          "Congregation Kehillath Israel Brookline [shul]",
+          "Young Israel of Brookline [shul]",
+          "Brookline Mikvah [mikvah]"
+        ]
+      },
+      {
+        "place": "boston::united states",
+        "sharedToken": "israel",
+        "size": 4,
+        "names": [
+          "Congregation Kehillath Israel Brookline [shul]",
+          "Young Israel of Brookline [shul]",
+          "Congregation Beth El Atereth Israel [shul]",
+          "Pride of Israel Cemetery [beis_hachaim]"
+        ]
+      },
+      {
+        "place": "deal::united states",
+        "sharedToken": "long",
+        "size": 4,
+        "names": [
+          "Long Branch Pier Village daytime promenade [attraction]",
+          "Staying near Long Branch [stay_anchor]",
+          "Long Branch Sephardic synagogue framing [shul]",
+          "Long Branch mikvah resource framing [mikvah]"
+        ]
+      }
+    ]
+  },
   "removedByReason": {
-    "near-duplicate": 7
+    "near-duplicate": 1
   },
   "dryRun": false
 }

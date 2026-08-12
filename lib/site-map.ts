@@ -37,7 +37,9 @@ import { allTzaddikim } from "@/lib/tzaddikim";
  *    by nature, and the pages already say noindex;
  *  - **the way in** (`/admin`, `/login`, `/access`) — no value in a search
  *    result, and an admin door in an index is an invitation;
- *  - **machinery** (`/api`, `/version`) — not pages at all.
+ *  - **machinery** (`/api`, `/version`, `/embed`) — not pages a person should
+ *    land on from search. `/embed` holds the partner search forms iframed
+ *    from Search booking partners.
  */
 export const PRIVATE_PATHS = [
   "/admin",
@@ -45,6 +47,7 @@ export const PRIVATE_PATHS = [
   "/account",
   "/login",
   "/access",
+  "/embed",
   "/itinerary",
   "/my-route",
   "/command-center",

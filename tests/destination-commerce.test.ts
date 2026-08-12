@@ -49,7 +49,7 @@ describe("the action that follows the page", () => {
     // walkable for Shabbos.
     const hero = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf('aria-label="On this page"'));
     const stay = hero.indexOf("See places to stay in {destination.name}");
-    const trip = hero.indexOf("Add {destination.name} to a trip");
+    const trip = hero.indexOf("AddDestinationToTrip");
     assert.ok(stay > 0, "the hero no longer offers places to stay");
     assert.ok(trip > 0 && stay < trip, "the planner comes before the commercial action");
     assert.match(hero.slice(stay - 400, stay), /bg-\[var\(--navy\)\]/, "the stay action is not the filled button");
@@ -112,8 +112,9 @@ describe("what the commercial links promise", () => {
     assert.match(BOOK, /destination\?: string \| string\[\]/);
     assert.match(BOOK, /initialKind=\{initialKind\}/);
     assert.match(BOOK, /q\.type === "cars"/);
-    // …and hands the place to the form that asks for one.
-    assert.match(PARTNERS, /useState\(prefill\?\.destination \?\? ""\)/);
+    // …and hands the place to the car widget, not a second White Glove form.
+    assert.match(PARTNERS, /carsEmbedPath\(\{ location: loc \}\)/);
+    assert.match(PARTNERS, /prefill\?\.destination/);
   });
 
   it("PREFILLS NO AIRPORT CODE IT DOES NOT HAVE", () => {

@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
-import { type Leg, type SearchShape, airportCode, describeSearch, searchProblem } from "@/lib/kayak-search";
+import { airportCode } from "@/lib/kayak-search";
 import { hotelButtonLabel } from "@/lib/stay22";
 import DateField from "@/components/DateField";
 import type { AffiliateRequest } from "@/lib/affiliate/partners";
 import { goHref } from "@/lib/affiliate/request";
 import { useFocusTrap } from "@/components/useFocusTrap";
-import { emptyItinerary, nextDate, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
+import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
+import PartnerSearchWidget from "@/components/PartnerSearchWidget";
+import { carsEmbedPath, flightsEmbedPath } from "@/lib/partner-widget-paths";
 import type { PartnerLiveCapabilities } from "@/lib/partner-live";
 
 // Unified "Book" experience. The traveler makes two choices, in order:
@@ -26,7 +28,6 @@ import type { PartnerLiveCapabilities } from "@/lib/partner-live";
 
 type Pay = "cash" | "miles";
 type Kind = "flights" | "hotels" | "cars";
-type TripKind = "round-trip" | "one-way" | "multi-city";
 
 // The search panel is laid out the way booking sites lay one out: fields sit
 // shoulder to shoulder inside a single bordered block, divided by hairlines,
@@ -64,8 +65,8 @@ function Field({ label, children, className = "" }: { label: string; children: R
     </label>
   );
 }
-const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
+const LS_KEY = "whiteGloveItinerary";
 
 /**
  * Hand the traveller off, by asking /go for the partner rather than knowing one.
@@ -114,11 +115,9 @@ export type PendingBooking = {
  */
 export default function BookPartners({
   prefill,
-  multiCity = true,
   initialKind = "hotels",
 }: {
   prefill?: Prefill;
-  multiCity?: boolean;
   /**
    * Which tab opens. HOTELS BY DEFAULT, not flights: accommodation is the one
    * product this site knows something a comparison site does not — which
@@ -136,7 +135,6 @@ export default function BookPartners({
 }) {
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>(initialKind);
-  const [added, setAdded] = useState(false);
   const [pending, setPending] = useState<PendingBooking | null>(null);
   const [live, setLive] = useState<PartnerLiveCapabilities>({ hotels: false, flights: false, cars: false });
 
@@ -159,7 +157,6 @@ export default function BookPartners({
     };
   }, []);
 
-  // Save items into the traveler's itinerary (localStorage + account sync).
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {
     let itin: Itinerary = emptyItinerary();
     try {
@@ -189,7 +186,6 @@ export default function BookPartners({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itinerary: next }),
     }).catch(() => undefined);
-    setAdded(true);
   }
 
   // Whether the tab you are looking at searches here or hands off to a
@@ -222,18 +218,11 @@ export default function BookPartners({
 
       <div className="px-5 py-7 sm:px-8 sm:py-9">
 
-      {added && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--gold)] bg-[var(--cream)] p-4 text-sm">
-          <span className="font-semibold text-[var(--navy)]">✓ Added to your trip.</span>
-          <a href="/itinerary" className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Open my itinerary planner →</a>
-        </div>
-      )}
-
-      {/* Live options when partner APIs are configured; otherwise tracked
-          hand-off. White Glove never takes payment — Duffel checkout stays
-          admin-only. */}
+      {/* Hotels: Stay22 live options when the API key is set. Flights and
+          cars: partner search widgets (prices on their form, not ours).
+          White Glove never takes payment — Duffel checkout stays admin-only. */}
       {pay === "cash" && kind === "flights" && (
-        <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} multiCity={multiCity} liveEnabled={live.flights} />
+        <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
       )}
       {pay === "cash" && kind === "hotels" && (
         <HotelsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} liveEnabled={live.hotels} />
@@ -259,7 +248,9 @@ export default function BookPartners({
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "miles"
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
-          : "Cash searches show live options when available, then open with a trusted booking partner for payment. After you book, you can add the details to your White Glove itinerary."}
+          : kind === "hotels"
+            ? "Places to stay are listed here when live options are available. Booking and payment happen with a trusted partner. After you book, you can add the details to your White Glove itinerary."
+            : "Search in the partner form on this page. Prices and payment stay with them — White Glove does not list a fare here. After you book, you can add the details to your itinerary."}
       </p>
     </div>
   );
@@ -291,238 +282,68 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 
 // ---- Cash --------------------------------------------------------------
 
+/**
+ * Cash flights — the Aviasales widget is the search.
+ *
+ * A White Glove from/to/dates form in front of this widget made people type
+ * the same trip twice. Dates the planner already knows are passed into the
+ * widget; everything else is filled once, in their form.
+ */
 function FlightsForm({
   onAdd,
   onOpened,
   prefill,
-  multiCity = true,
-  liveEnabled = false,
 }: {
   onAdd: AddFn;
   onOpened: (b: PendingBooking) => void;
   prefill?: Prefill;
-  multiCity?: boolean;
-  liveEnabled?: boolean;
 }) {
-  const [trip, setTrip] = useState<TripKind>("round-trip");
-  const [legs, setLegs] = useState<Leg[]>([{ from: prefill?.from ?? "", to: prefill?.to ?? "", date: prefill?.depart ?? "" }]);
-  const [ret, setRet] = useState(prefill?.ret ?? "");
-  const [nonstop, setNonstop] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [liveMessage, setLiveMessage] = useState("");
-  const [liveDetail, setLiveDetail] = useState("");
-  const [rows, setRows] = useState<PartnerResultRow[]>([]);
-
-  const setLeg = (index: number, patch: Partial<Leg>) =>
-    setLegs((current) => current.map((leg, i) => (i === index ? { ...leg, ...patch } : leg)));
-
-  function chooseTrip(next: TripKind) {
-    setTrip(next);
-    setError("");
-    setRows([]);
-    setLiveMessage("");
-    setLiveDetail("");
-    if (next === "multi-city") {
-      setLegs((current) => (current.length > 1 ? current : [...current, { from: current[0]?.to ?? "", to: "", date: "" }]));
-    } else {
-      setLegs((current) => [current[0]]);
-    }
-  }
-
-  const shape = (): SearchShape =>
-    trip === "round-trip"
-      ? { trip: "round-trip", legs: [legs[0]], ret }
-      : trip === "one-way"
-        ? { trip: "one-way", legs: [legs[0]] }
-        : { trip: "multi-city", legs };
-
-  function checked(): SearchShape | null {
-    const wanted = shape();
-    const problem = searchProblem(wanted);
-    setError(problem ?? "");
-    return problem ? null : wanted;
-  }
-
-  function handOff(wanted: SearchShape) {
-    openPartner({
-      product: "flight",
-      legs: wanted.legs.map((l) => ({ from: airportCode(l.from), to: airportCode(l.to), date: l.date })),
-      checkOut: wanted.trip === "round-trip" ? wanted.ret : "",
-      nonstop,
-      placement: "book-flights",
-    });
-    onOpened({ kind: "flight", summary: describeSearch(wanted), save: (confirmation) => addToTrip(confirmation) });
-  }
-
-  async function search() {
-    const wanted = checked();
-    if (!wanted) return;
-    if (wanted.trip === "multi-city" && !multiCity) {
-      setError("Multi-city searches are not available at the moment. Search one journey at a time, and each one can be saved to the trip.");
-      return;
-    }
-
-    // Live prices for one-way / round-trip only. Multi-city stays partner hand-off.
-    if (liveEnabled && wanted.trip !== "multi-city") {
-      setLoading(true);
-      setRows([]);
-      setLiveMessage("");
-      setLiveDetail("");
-      try {
-        const response = await fetch("/api/partners/flights/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin: airportCode(wanted.legs[0].from),
-            destination: airportCode(wanted.legs[0].to),
-            departDate: wanted.legs[0].date,
-            returnDate: wanted.trip === "round-trip" ? wanted.ret : undefined,
-            nonstop,
-          }),
-        });
-        const data = await response.json();
-        if (data?.ok && data.mode === "live" && Array.isArray(data.flights)) {
-          setLiveMessage(data.message ?? "");
-          const nextRows: PartnerResultRow[] = data.flights.map(
-            (flight: {
-              id: string;
-              summary: string;
-              price: number;
-              currency: string;
-              transfers: number;
-              airline?: string;
-            }) => ({
-              id: flight.id,
-              title: flight.airline ? flight.airline.toUpperCase() : "Flight option",
-              subtitle: flight.summary,
-              meta: flight.transfers === 0 ? "Nonstop" : flight.transfers === 1 ? "1 stop" : `${flight.transfers} stops`,
-              priceLabel: moneyLabel(flight.price, flight.currency),
-              priceNote: "Recent fare · compare to book",
-              ctaLabel: "Compare & book",
-              onOpen: () => handOff(wanted),
-            }),
-          );
-          setRows(nextRows);
-          setLoading(false);
-          if (nextRows.length === 0) {
-            // Still offer the partner door when inventory is empty.
-            handOff(wanted);
-          }
-          return;
-        }
-        setLiveMessage(data?.message ?? "Live prices are not available for this search.");
-        setLiveDetail(data?.detail ?? "");
-      } catch {
-        setLiveMessage("Live prices could not be loaded.");
-        setLiveDetail("Opening the partner search instead.");
-      }
-      setLoading(false);
-    }
-
-    handOff(wanted);
-  }
+  const origin = airportCode(prefill?.from ?? "");
+  const destination = airportCode(prefill?.to ?? "");
+  const widgetSrc = flightsEmbedPath({
+    origin,
+    destination,
+    departDate: prefill?.depart,
+    returnDate: prefill?.ret,
+  });
+  const summary = [origin, destination].filter(Boolean).join(" → ") || "Flight";
 
   function addToTrip(confirmation?: string) {
-    const wanted = checked();
-    if (!wanted) return;
-    const flights: ItinFlight[] = wanted.legs.map((leg) => ({
-      id: uid(),
-      from: airportCode(leg.from),
-      to: airportCode(leg.to),
-      date: leg.date,
-      bookedOnSite: false,
-      confirmation,
-    }));
-    if (wanted.trip === "round-trip") {
-      flights.push({
-        id: uid(),
-        from: airportCode(wanted.legs[0].to),
-        to: airportCode(wanted.legs[0].from),
-        date: wanted.ret,
-        bookedOnSite: false,
-        confirmation,
-      });
+    const date = prefill?.depart ?? "";
+    if (origin && destination && date) {
+      const flights: ItinFlight[] = [{ id: uid(), from: origin, to: destination, date, bookedOnSite: false, confirmation }];
+      if (prefill?.ret) {
+        flights.push({ id: uid(), from: destination, to: origin, date: prefill.ret, bookedOnSite: false, confirmation });
+      }
+      onAdd({ flights, dates: flights.map((f) => f.date) });
+      return;
     }
-    onAdd({ flights, dates: flights.map((f) => f.date) });
+    onAdd({
+      activities: [
+        {
+          id: uid(),
+          name: summary,
+          date: date || prefill?.ret || "",
+          notes: confirmation ? `Reference ${confirmation}` : "",
+          bookedOnSite: false,
+        },
+      ],
+    });
   }
-
-  const multi = trip === "multi-city";
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center" data-choice-row="trip type">
-        <TripTypeButton active={trip === "round-trip"} onClick={() => chooseTrip("round-trip")}>Round trip</TripTypeButton>
-        <TripTypeButton active={trip === "one-way"} onClick={() => chooseTrip("one-way")}>One way</TripTypeButton>
-        <TripTypeButton active={multi} onClick={() => chooseTrip("multi-city")}>Multi-city</TripTypeButton>
-        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
-          <input type="checkbox" checked={nonstop} onChange={(e) => setNonstop(e.target.checked)} className="h-4 w-4 accent-[var(--navy)]" />
-          Nonstop only
-        </label>
-      </div>
-
-      {legs.map((leg, index) => (
-        <SearchGrid key={index} className={`sm:grid-cols-2 lg:grid-cols-4 ${index > 0 ? "mt-4" : ""}`}>
-          <Field label={multi ? `From — flight ${index + 1}` : "From"}>
-            <AirportAutocomplete value={leg.from} onChange={(from) => setLeg(index, { from })} placeholder="City or airport" className={bareInput} />
-          </Field>
-          <Field label={multi ? `To — flight ${index + 1}` : "To"}>
-            <AirportAutocomplete value={leg.to} onChange={(to) => setLeg(index, { to })} placeholder="City or airport" className={bareInput} />
-          </Field>
-          <Field label={multi ? `Departure — flight ${index + 1}` : "Departure"}>
-            <DateField
-              ariaLabel={`Departure date${multi ? ` for flight ${index + 1}` : ""}`}
-              value={leg.date}
-              min={notBefore(today(), index > 0 ? legs[index - 1]?.date : undefined)}
-              onChange={(v) => {
-                setLeg(index, { date: v });
-                if (index === 0 && !multi) setRet((r) => correctedEnd(v, r));
-              }}
-              className={bareInput}
-            />
-          </Field>
-          {multi ? (
-            index > 0 ? (
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => setLegs((c) => c.filter((_, i) => i !== index))}
-                  className="min-h-11 w-full border border-[var(--gold-light)] px-3 text-xs font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-300 hover:text-red-700"
-                >
-                  Remove flight
-                </button>
-              </div>
-            ) : (
-              <div aria-hidden="true" />
-            )
-          ) : (
-            <Field label="Return" className={trip === "one-way" ? "opacity-45" : ""}>
-              <DateField
-                ariaLabel="Return date"
-                value={ret}
-                disabled={trip === "one-way"}
-                min={notBefore(today(), earliestEnd(legs[0]?.date ?? ""))}
-                onChange={(v) => setRet(correctedEnd(legs[0]?.date ?? "", v))}
-                className={bareInput}
-              />
-            </Field>
-          )}
-        </SearchGrid>
-      ))}
-
-      {multi && (
-        <button
-          type="button"
-          onClick={() => setLegs((c) => [...c, { from: c[c.length - 1]?.to ?? "", to: "", date: "" }])}
-          className="mt-4 min-h-11 border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream)]"
-        >
-          + Add another flight
-        </button>
-      )}
-
-      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} searchLabel="Search flights" busy={loading} />
-      <PartnerResultsPanel loading={loading} message={liveMessage} detail={liveDetail} rows={rows} />
+      <p className="text-sm leading-6 text-stone-600">
+        Search and prices are in the form below. White Glove does not list a fare here.
+      </p>
+      <PartnerSearchWidget src={widgetSrc} title="Flight search" minHeight={520} />
+      <button
+        type="button"
+        onClick={() => onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) })}
+        className="mt-4 min-h-11 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+      >
+        I booked it — add it to my trip
+      </button>
     </div>
   );
 }
@@ -724,109 +545,44 @@ function HotelsForm({
 }
 
 /**
- * Car hire — tracked partner hand-off. No public car inventory API is wired;
- * the results panel still matches the other desks.
+ * Cash cars — the Localrent widget is the search.
+ *
+ * A White Glove city/dates form in front of this widget made people type the
+ * same hire twice. A destination the site already knows is passed in; they
+ * fill the rest once, in the partner form.
  */
 function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
-  const [loc, setLoc] = useState(prefill?.destination ?? "");
-  const [pickup, setPickup] = useState("");
-  const [dropoff, setDropoff] = useState("");
-  const [error, setError] = useState("");
-  const [shown, setShown] = useState(false);
-
-  function validate() {
-    if (!loc.trim()) {
-      setError("Enter a pick-up city or airport.");
-      return false;
-    }
-    if (!pickup || !dropoff) {
-      setError("Choose pick-up and drop-off dates.");
-      return false;
-    }
-    if (dropoff < pickup) {
-      setError("Drop-off must be on or after pick-up.");
-      return false;
-    }
-    setError("");
-    return true;
-  }
-
-  function search() {
-    if (!validate()) return;
-    openPartner({
-      product: "car",
-      destination: loc.trim(),
-      checkIn: pickup,
-      checkOut: dropoff,
-      placement: "book-cars",
-    });
-    onOpened({
-      kind: "car",
-      summary: `${loc.trim()}, ${pickup} → ${dropoff}`,
-      save: (confirmation) => addToTrip(confirmation),
-    });
-    setShown(true);
-  }
+  const loc = (prefill?.destination ?? "").trim();
+  const widgetSrc = carsEmbedPath({ location: loc });
+  const summary = loc ? `Rental car — ${loc}` : "Rental car";
 
   function addToTrip(confirmation?: string) {
-    if (!validate()) return;
-    const activities: ItinActivity[] = [
-      {
-        id: uid(),
-        name: `Rental car — ${loc.trim()}`,
-        date: pickup,
-        notes: [`Drop-off ${dropoff}`, confirmation ? `Reference ${confirmation}` : ""].filter(Boolean).join(" · "),
-        bookedOnSite: false,
-      },
-    ];
-    onAdd({ activities, dates: [pickup, dropoff] });
+    onAdd({
+      activities: [
+        {
+          id: uid(),
+          name: summary,
+          date: "",
+          notes: confirmation ? `Reference ${confirmation}` : "",
+          bookedOnSite: false,
+        },
+      ],
+    });
   }
 
   return (
     <div>
-      <SearchGrid className="sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
-        <Field label="Pick-up location">
-          <AddressAutocomplete mode="city" value={loc} onChange={(city) => setLoc(city)} placeholder="City or airport" className={bareInput} />
-        </Field>
-        <Field label="Pick-up date">
-          <DateField
-            ariaLabel="Pick-up date"
-            value={pickup}
-            min={today()}
-            onChange={(v) => {
-              setPickup(v);
-              setDropoff((d) => correctedEnd(v, d));
-            }}
-            className={bareInput}
-          />
-        </Field>
-        <Field label="Drop-off date">
-          <DateField
-            ariaLabel="Drop-off date"
-            value={dropoff}
-            min={notBefore(today(), earliestEnd(pickup))}
-            onChange={(v) => setDropoff(correctedEnd(pickup, v))}
-            className={bareInput}
-          />
-        </Field>
-      </SearchGrid>
-      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
-      <ActionRow onSearch={search} searchLabel="Search cars" />
-      {shown && (
-        <PartnerResultsPanel
-          message="Car options open with a booking partner."
-          detail="Compare rates and complete payment there — White Glove does not take cards."
-          rows={[
-            {
-              id: "cars-partner",
-              title: `Cars in ${loc.trim()}`,
-              subtitle: `${pickup} → ${dropoff}`,
-              ctaLabel: "Open again",
-              onOpen: search,
-            },
-          ]}
-        />
-      )}
+      <p className="text-sm leading-6 text-stone-600">
+        Search and prices are in the form below. White Glove does not list a price here.
+      </p>
+      <PartnerSearchWidget src={widgetSrc} title="Car search" minHeight={640} />
+      <button
+        type="button"
+        onClick={() => onOpened({ kind: "car", summary, save: (confirmation) => addToTrip(confirmation) })}
+        className="mt-4 min-h-11 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+      >
+        I booked it — add it to my trip
+      </button>
     </div>
   );
 }
@@ -933,19 +689,6 @@ function ActionRow({
         </button>
       ) : null}
     </div>
-  );
-}
-
-function TripTypeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`min-h-11 w-full rounded-full border px-2 text-[11px] font-bold uppercase tracking-[0.12em] transition sm:w-auto sm:px-4 ${active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] bg-white text-stone-500 hover:border-[var(--gold)] hover:text-[var(--navy)]"}`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -1097,6 +840,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
     const o = airportCode(from);
     const d = airportCode(to);
     if (!o || !d || !when) return;
+    if (when < today()) return;
     onAdd({ flights: [{ id: uid(), from: o, to: d, date: when, bookedOnSite: false }], dates: [when] });
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { duffelRefusal } from "@/lib/duffel-guard";
+import { duffelBearer } from "@/lib/duffel-token";
 
 type Traveler = { firstName?: string; lastName?: string; email?: string; bornOn?: string; title?: string; gender?: string; phone?: string; passportNumber?: string; passportCountry?: string; passportExpires?: string };
 
@@ -23,8 +24,9 @@ export async function POST(request: NextRequest) {
   if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
 
 
-  const token = process.env.DUFFEL_ACCESS_TOKEN;
-  if (!token) return NextResponse.json({ message: "The White Glove Duffel account is not connected." }, { status: 503 });
+  const access = duffelBearer();
+  if (!access.ok) return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
+  const token = access.token;
 
   const { offerId, threeDSecureSessionId, traveler } = await request.json() as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler };
   if (!offerId || !threeDSecureSessionId || !traveler?.firstName || !traveler.lastName || !traveler.email || !traveler.bornOn || !traveler.title || !traveler.gender || !traveler.phone) {

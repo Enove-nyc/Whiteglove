@@ -2,6 +2,7 @@
 
 import { BUILT_IN_WORDS, type SiteWords } from "@/data/site-words";
 import DateField from "@/components/DateField";
+import { notBefore, today } from "@/lib/date-range";
 import { useState } from "react";
 import ComingSoonNotice from "@/components/ComingSoonNotice";
 
@@ -64,6 +65,14 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
     if (!open) return;
     if (!form.name.trim() || !form.email.trim() || !form.from.trim() || !form.to.trim() || !form.depart.trim()) {
       setError("Please add your name, email, where you are flying from and to, and the date out.");
+      return;
+    }
+    if (form.depart < today()) {
+      setError("Departure cannot be in the past.");
+      return;
+    }
+    if (form.ret && form.ret < form.depart) {
+      setError("The date back cannot be before the date out.");
       return;
     }
     setBusy(true);
@@ -143,8 +152,8 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
       <fieldset disabled={!open} className={`mt-8 grid gap-x-5 gap-y-6 sm:grid-cols-2 ${open ? "" : "opacity-55"}`}>
         <label className="block"><span className={caption}>Flying from *</span><input required className={inputClass} value={form.from} onChange={(e) => set({ from: e.target.value })} placeholder="New York, JFK" /></label>
         <label className="block"><span className={caption}>Flying to *</span><input required className={inputClass} value={form.to} onChange={(e) => set({ to: e.target.value })} placeholder="Kraków, KRK" /></label>
-        <label className="block"><span className={caption}>Date out *</span><DateField required value={form.depart} onChange={(v) => set({ depart: v })} className={inputClass} ariaLabel="Date out" /></label>
-        <label className="block"><span className={caption}>Date back — leave empty for one way</span><DateField min={form.depart || undefined} value={form.ret} onChange={(v) => set({ ret: v })} className={inputClass} ariaLabel="Date back" /></label>
+        <label className="block"><span className={caption}>Date out *</span><DateField required value={form.depart} onChange={(v) => set({ depart: v })} min={today()} className={inputClass} ariaLabel="Date out" /></label>
+        <label className="block"><span className={caption}>Date back — leave empty for one way</span><DateField min={notBefore(today(), form.depart)} value={form.ret} onChange={(v) => set({ ret: v })} className={inputClass} ariaLabel="Date back" /></label>
         <label className="block"><span className={caption}>Adults</span><input type="number" min={1} max={20} className={inputClass} value={form.adults} onChange={(e) => set({ adults: e.target.value })} /></label>
         <label className="block"><span className={caption}>Children</span><input type="number" min={0} max={20} className={inputClass} value={form.children} onChange={(e) => set({ children: e.target.value })} /></label>
         <label className="block">

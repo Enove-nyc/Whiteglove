@@ -663,3 +663,54 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
   });
   return published;
 }
+
+/** Staged review rows for admin search. Empty when the database is off. */
+export async function listStagedCandidatesForAdminSearch(): Promise<
+  Array<{
+    id: string;
+    name: string;
+    kindLabel: string;
+    city: string;
+    country: string;
+    status: ContentImportStatus;
+    sourceId: string;
+    href: string;
+    batchName: string;
+  }>
+> {
+  if (!isDbEnabled()) return [];
+  try {
+    const prisma = await db();
+    const rows = await prisma.contentImportCandidate.findMany({
+      where: { status: { in: ["NEEDS_REVIEW", "DUPLICATE"] } },
+      select: {
+        id: true,
+        name: true,
+        kind: true,
+        city: true,
+        country: true,
+        status: true,
+        sourceId: true,
+        sourceUrl: true,
+        sourceName: true,
+        attribution: true,
+        batch: { select: { name: true } },
+      },
+    });
+    return rows
+      .filter((row) => !isDisallowedImportSource(row))
+      .map((row) => ({
+        id: `db:${row.id}`,
+        name: row.name,
+        kindLabel: row.kind === "PLACE_TO_STAY" ? "Where to stay" : bulkContentKindLabel(row.kind),
+        city: row.city,
+        country: row.country,
+        status: row.status,
+        sourceId: row.sourceId,
+        href: `/admin/imports/${row.id}`,
+        batchName: row.batch.name,
+      }));
+  } catch {
+    return [];
+  }
+}

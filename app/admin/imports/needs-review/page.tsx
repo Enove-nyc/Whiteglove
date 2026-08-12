@@ -4,8 +4,13 @@ import { getImportReviewQueue } from "@/lib/import-review-queue";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminImportNeedsReviewPage() {
+export default async function AdminImportNeedsReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const queue = await getImportReviewQueue();
+  const { q = "" } = await searchParams;
 
   return (
     <>
@@ -42,7 +47,7 @@ export default async function AdminImportNeedsReviewPage() {
         </section>
       )}
 
-      {!queue.error && <ImportNeedsReviewQueue queue={queue} />}
+      {!queue.error && <ImportNeedsReviewQueue queue={queue} initialQuery={q} />}
     </>
   );
 }

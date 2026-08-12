@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { duffelRefusal } from "@/lib/duffel-guard";
+import { duffelBearer } from "@/lib/duffel-token";
 
 export async function POST(request: NextRequest) {
   // ADMIN ONLY. Taking the buttons off the public page is not the same as
@@ -10,10 +11,11 @@ export async function POST(request: NextRequest) {
   if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
 
 
-  const token = process.env.DUFFEL_ACCESS_TOKEN;
-  if (!token) {
-    return NextResponse.json({ message: "The White Glove Duffel account is not connected yet." }, { status: 503 });
+  const access = duffelBearer();
+  if (!access.ok) {
+    return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
   }
+  const token = access.token;
 
   const response = await fetch("https://api.duffel.com/identity/component_client_keys", {
     method: "POST",

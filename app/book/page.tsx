@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { readWords } from "@/lib/site-words-store";
-import { readAffiliateConfig } from "@/lib/affiliate/config";
-import { flightPartnerDoesMultiCity } from "@/lib/affiliate/partners";
 import { readExtras } from "@/lib/travel-extras-store";
 import { essentialIsBookable, type EssentialServiceId } from "@/lib/travel-essentials";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
@@ -46,7 +44,7 @@ const COMPARISON: Array<[string, string, string]> = [
   ],
   [
     "Flights",
-    "Compare airlines and routes for your dates, and pay by card.",
+    "Compare airlines and routes for your dates, then book with a partner.",
     "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
   ],
   [
@@ -148,12 +146,6 @@ export default async function BookPage({
   // Which tab opens. Resolved here so the link lands on the right search
   // painted correctly, rather than on Hotels for a frame — see BookPartners.
   const initialKind = q.type === "flights" || q.type === "cars" || q.type === "hotels" ? q.type : "hotels";
-  // Whether a multi-city flight search can be opened at all. A boolean, and
-  // nothing else commercial — see flightPartnerDoesMultiCity. Without it the
-  // form would hand off a five-leg search, /go would rightly decline to build
-  // a wrong link, and the traveller would watch a new tab bounce back with no
-  // explanation.
-  const multiCity = flightPartnerDoesMultiCity(await readAffiliateConfig());
 
   // THE ACCOUNT NUMBERS ARE NOT READ HERE ANY MORE, and that is the point.
   //
@@ -179,7 +171,7 @@ export default async function BookPage({
             Search booking partners
           </h1>
           <div className="mt-6">
-            <BookPartners prefill={prefill} multiCity={multiCity} initialKind={initialKind} />
+            <BookPartners prefill={prefill} initialKind={initialKind} />
           </div>
           {/*
             One line, under the searches, always.
@@ -209,7 +201,7 @@ export default async function BookPage({
       </section>
 
       {/* Structured Travel Essentials first; free-form custom extras after. */}
-      <TravelEssentials pageType="book" placement="book-essentials" />
+      <TravelEssentials pageType="book" placement="book-essentials" destinationName={destination || undefined} />
       <TravelExtras extras={extras} />
 
       {/* Cash and points, set side by side per category. Two independent

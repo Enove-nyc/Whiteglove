@@ -31,6 +31,7 @@
  */
 
 import type { SearchShape } from "@/lib/kayak-search";
+import { usableBookingDate } from "@/lib/date-range";
 
 /** The three searches that hand off to somebody else. */
 export type SearchSlot = "flights" | "hotels" | "cars";
@@ -76,7 +77,7 @@ export const TRAVEL_PARTNERS: readonly TravelPartner[] = [
     label: "Kayak",
     slot: "flights",
     domain: "kayak.com",
-    note: "Opens Kayak with the route and both dates. Earns when a Stay22 (or Travelpayouts) wrap for Kayak is pasted on this row — the account is approved via Stay22.",
+    note: "Opens Kayak with the route and both dates. Earns through Stay22 when the Stay22 ID is set — a pasted wrap is optional. Travelpayouts is a fallback, not required.",
   },
   {
     key: "economybookings",
@@ -200,9 +201,9 @@ export function flightUrl(partner: TravelPartner, query: FlightQuery): string | 
   if (!leg) return null;
   const from = leg.from.trim().toUpperCase();
   const to = leg.to.trim().toUpperCase();
-  const depart = iso(leg.date);
+  const depart = usableBookingDate(leg.date);
   if (!from || !to || !depart) return null;
-  const back = shape.trip === "round-trip" ? iso(shape.ret) : "";
+  const back = shape.trip === "round-trip" ? usableBookingDate(shape.ret) : "";
   const adults = count(query.adults, 1);
   const children = count(query.children, 0);
 

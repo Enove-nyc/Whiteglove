@@ -29,7 +29,7 @@
  */
 
 import { normalize } from "@/lib/place-search";
-import { fuzzyAllowedForQuery, matchField, queryTokens } from "@/lib/site-search-match";
+import { compact, fuzzyAllowedForQuery, matchField, queryTokens } from "@/lib/site-search-match";
 import type { SearchDocument, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
 import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
@@ -76,14 +76,44 @@ const CATEGORY_INTENT: Array<{ phrases: string[]; kinds: SiteHitKind[] }> = [
     kinds: ["Thing to do", "Site page"],
   },
   {
-    phrases: ["mikvah", "mikvaos", "mikveh", "mikve", "tvilah"],
+    phrases: ["mikvah", "mikvaos", "mikveh", "mikve", "tvilah", "מקוה", "מקווה", "מקוואות"],
     kinds: ["Practical travel", "Travel guide", "Site page"],
   },
   {
     phrases: ["destination", "destinations", "vacation", "holiday", "getaway", "getaways"],
     kinds: ["Vacation destination", "Site page"],
   },
+  {
+    phrases: ["esim", "e sim", "sim card", "data plan", "roaming"],
+    kinds: ["Site page"],
+  },
+  {
+    phrases: ["travel essentials", "travel insurance", "airport transfer", "airport transfers"],
+    kinds: ["Site page", "Travel guide"],
+  },
+  {
+    phrases: ["zmanim", "zman", "candle lighting", "halachic times", "זמנים"],
+    kinds: ["Travel guide", "Site page"],
+  },
+  {
+    phrases: ["cars", "car hire", "car rental", "rental car", "flights", "airfare"],
+    kinds: ["Site page"],
+  },
+  {
+    phrases: ["about", "about us", "contact", "rate", "map", "directory"],
+    kinds: ["Site page"],
+  },
 ];
+
+/** Whole-phrase / whole-token match — short words must not hitchhike inside longer ones. */
+function phraseMatchesQuery(q: string, phrase: string): boolean {
+  if (q === phrase) return true;
+  if (phrase.includes(" ")) return q.includes(phrase);
+  const tokens = q.split(" ").filter(Boolean);
+  if (tokens.includes(phrase)) return true;
+  if (phrase.length >= 5) return q.includes(phrase);
+  return false;
+}
 
 /** Type priority for ordinary (vacation-first) travel. Lower wins. */
 const VACATION_KIND_PRIORITY: Record<SiteHitKind, number> = {
@@ -145,7 +175,7 @@ export function categoryIntentKinds(query: string): SiteHitKind[] | null {
   const q = normalize(query);
   if (!q) return null;
   for (const rule of CATEGORY_INTENT) {
-    if (rule.phrases.some((phrase) => q === phrase || q.includes(phrase))) {
+    if (rule.phrases.some((phrase) => phraseMatchesQuery(q, phrase))) {
       return rule.kinds;
     }
   }
@@ -180,27 +210,60 @@ export function scoreDocument(query: string, doc: SearchDocument, heritageIntent
   let bestRank = 99;
   let bestLabel = doc.title;
   let fuzzy = false;
+  const cq = compact(nq);
+  let compactRank = 99;
+  if (cq.length >= 3) {
+    for (const field of [...nameFields, doc.yiddish ?? ""]) {
+      const cf = compact(field);
+      if (!cf) continue;
+      if (cf === cq) {
+        compactRank = 1;
+        break;
+      }
+      if (cf.startsWith(cq) || (cq.startsWith(cf) && cf.length >= 3)) {
+        compactRank = Math.min(compactRank, 2);
+      }
+    }
+    if (compactRank > 2) {
+      for (const c of doc.normCompact) {
+        if (c === cq) {
+          compactRank = 1;
+          break;
+        }
+        if (c.startsWith(cq)) compactRank = Math.min(compactRank, 2);
+      }
+    }
+  }
 
   // Multi-token queries require every meaningful token to land on names/keywords.
   // Otherwise “kosher hotle” would match every doc that merely says “kosher”.
   if (tokens.length > 1) {
-    const hay = normalize([...doc.names, doc.title, ...doc.keywords, doc.city ?? "", doc.country ?? ""].join(" "));
-    const tokenHay = hay.split(" ").filter(Boolean);
+    const hasShortToken = tokens.some((t) => t.length < 2);
     let anyFuzzy = false;
-    const all = tokens.every((qt) => {
-      if (hay.includes(qt) && qt.length >= 2) return true;
-      return tokenHay.some((ht) => {
-        if (ht.startsWith(qt) && qt.length >= 2) return true;
-        if (!allowFuzzy || qt.length < 3) return false;
-        const hit = matchField(qt, ht, { allowFuzzy: true });
-        if (hit.ok) {
-          anyFuzzy = anyFuzzy || hit.fuzzy;
-          return true;
-        }
-        return false;
+    let hay = "";
+    // "e-sim" normalises to "e" + "sim". The one-letter remnant must not veto
+    // a compact hit on "esim", and must not match every document that merely
+    // contains a word starting with E.
+    if (hasShortToken && cq.length >= 3) {
+      if (compactRank >= 99) return null;
+    } else {
+      hay = normalize([...doc.names, doc.title, ...doc.keywords, doc.city ?? "", doc.country ?? ""].join(" "));
+      const tokenHay = hay.split(" ").filter(Boolean);
+      const all = tokens.every((qt) => {
+        if (hay.includes(qt) && qt.length >= 2) return true;
+        return tokenHay.some((ht) => {
+          if (ht.startsWith(qt) && qt.length >= 2) return true;
+          if (!allowFuzzy || qt.length < 3) return false;
+          const hit = matchField(qt, ht, { allowFuzzy: true });
+          if (hit.ok) {
+            anyFuzzy = anyFuzzy || hit.fuzzy;
+            return true;
+          }
+          return false;
+        });
       });
-    });
-    if (!all) return null;
+      if (!all) return null;
+    }
     // Prefer docs whose title/name covers the query tightly.
     for (const field of nameFields) {
       const hit = matchField(q, field, { allowFuzzy, minPrefix: 2 });
@@ -210,10 +273,13 @@ export function scoreDocument(query: string, doc: SearchDocument, heritageIntent
         fuzzy = hit.fuzzy;
       }
     }
-    if (bestRank >= 99) {
+    if (bestRank >= 99 && compactRank < 99) {
+      bestRank = compactRank;
+      bestLabel = doc.title;
+    } else if (bestRank >= 99) {
       bestRank = 3.5;
       bestLabel = doc.title;
-      fuzzy = anyFuzzy || tokens.some((qt) => !hay.includes(qt));
+      fuzzy = anyFuzzy || (hay ? tokens.some((qt) => !hay.includes(qt)) : false);
     }
   } else {
     // Single-token: 2-char prefixes/aliases only; longer may fuzzy.

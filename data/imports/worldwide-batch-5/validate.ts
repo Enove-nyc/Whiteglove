@@ -54,8 +54,8 @@ function loadPriorKeys(): { keys: Set<string>; ids: Set<string> } {
 
 export function validatePack() {
   assert.ok(
-    worldwideBatch5Candidates.length >= 14500 && worldwideBatch5Candidates.length <= 15500,
-    `expected ~15000, got ${worldwideBatch5Candidates.length}`,
+    worldwideBatch5Candidates.length >= 13000 && worldwideBatch5Candidates.length <= 15500,
+    `expected ~13600 after near-duplicate collapse, got ${worldwideBatch5Candidates.length}`,
   );
   const ids = new Set<string>();
   const keys = new Set<string>();

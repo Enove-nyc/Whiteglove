@@ -73,9 +73,9 @@ export default async function TransfersPage() {
       </section>
 
       {/* The hand-off, as a panel rather than a card in a row — on this page it
-          is the point rather than an add-on. Renders nothing when the owner has
-          not enabled and configured it. See components/TransferBooking.tsx for
-          why it is not a search form. */}
+          is the point rather than an add-on. A tracked link, not a form: this
+          site cannot show transfer results, so collecting an airport here would
+          be typed twice. Renders nothing when the owner has no hand-off. */}
       <TransferBooking />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">

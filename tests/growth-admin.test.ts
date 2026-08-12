@@ -32,4 +32,11 @@ describe("growth admin surfaces", () => {
     assert.match(component, /readDestinationPlacements/);
     assert.match(component, /AffiliateDisclosure/);
   });
+
+  it("shows landing-product earn state on the destination placements form", () => {
+    const form = readFileSync("components/AdminPlacementsForm.tsx", "utf8");
+    assert.match(form, /Works, earns nothing/);
+    assert.match(form, /landingNotes/);
+    assert.doesNotMatch(form, /under travel extras below/);
+  });
 });

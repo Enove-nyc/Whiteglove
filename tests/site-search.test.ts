@@ -345,3 +345,58 @@ describe("folding a letter that has no accent to remove", () => {
     }
   });
 });
+
+describe("public tools and pages are findable", () => {
+  test("esim / eSIM / e-sim / e sim / sim card all reach the eSIM page", async () => {
+    for (const q of ["esim", "eSIM", "e-sim", "e sim", "eSIMs", "sim card"]) {
+      const hits = await searchEverything(q, 20);
+      assert.ok(
+        hits.some((h) => h.href === "/esim"),
+        `${q} should find /esim, got ${hits.map((h) => h.href).join(", ") || "(none)"}`,
+      );
+    }
+  });
+
+  test("Travel Essentials, insurance, transfers, cars and flights are indexed", async () => {
+    const essentials = await searchEverything("travel essentials", 15);
+    assert.ok(
+      essentials.some((h) => h.href === "/book" || h.href === "/esim" || h.href === "/travel-insurance" || h.href === "/transfers"),
+      "travel essentials should reach booking partners or a before-you-go page",
+    );
+
+    const insurance = await searchEverything("insurance", 10);
+    assert.ok(insurance.some((h) => h.href === "/travel-insurance"));
+
+    const transfers = await searchEverything("transfers", 10);
+    assert.ok(transfers.some((h) => h.href === "/transfers"));
+
+    const cars = await searchEverything("cars", 10);
+    assert.ok(cars.some((h) => h.href === "/book"), "cars should reach search booking partners");
+    assert.equal(cars[0].href, "/book");
+
+    const flights = await searchEverything("flights", 10);
+    assert.ok(flights.some((h) => h.href === "/book"));
+  });
+
+  test("about, contact, rate, map, directory, zmanim and mikvaos are indexed", async () => {
+    assert.ok((await searchEverything("about", 10)).some((h) => h.href === "/about"));
+    assert.ok((await searchEverything("contact", 10)).some((h) => h.href === "/contact"));
+    assert.ok((await searchEverything("rate", 10)).some((h) => h.href === "/rate"));
+    assert.ok((await searchEverything("map", 10)).some((h) => h.href === "/map"));
+    assert.ok((await searchEverything("directory", 10)).some((h) => h.href === "/directory"));
+    assert.ok((await searchEverything("zmanim", 10)).some((h) => h.href === "/zmanim"));
+    assert.ok((await searchEverything("mikvaos", 10)).some((h) => h.href === "/mikvaos"));
+  });
+
+  test("Hebrew mikvah spelling reaches mikvaos when indexed", async () => {
+    const hits = await searchEverything("מקוה", 10);
+    assert.ok(hits.some((h) => h.href === "/mikvaos" || h.kind === "Practical travel"));
+  });
+
+  test("itinerary planner and get recommendations keep their names", async () => {
+    const itinerary = await searchEverything("itinerary planner", 10);
+    assert.ok(itinerary.some((h) => h.href === "/itinerary" && /itinerary planner/i.test(h.title)));
+    const plan = await searchEverything("get recommendations", 10);
+    assert.ok(plan.some((h) => h.href === "/plan"));
+  });
+});
