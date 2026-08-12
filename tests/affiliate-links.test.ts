@@ -90,11 +90,14 @@ describe("no hand-off goes out unnamed", () => {
     assert.deepEqual(unnamed, [], `a hand-off /go cannot route: ${unnamed.join(" | ")}`);
   });
 
-  it("all three searches still hand off", () => {
-    // The cars form was once not even wired up. Absence is the failure mode.
-    for (const product of ["flight", "hotel", "car"]) {
-      assert.match(SOURCE, new RegExp(`product: "${product}"`), `the ${product} search no longer hands off`);
-    }
+  it("hotels still hand off; cash flights and cars are the partner widget", () => {
+    // Hotels show Stay22 results on this site, then /go. Flights and cars used
+    // to collect the same fields here and again in the widget — that is gone.
+    assert.match(SOURCE, /product: "hotel"/);
+    assert.match(SOURCE, /flightsEmbedPath/);
+    assert.match(SOURCE, /carsEmbedPath/);
+    assert.match(SOURCE, /PartnerSearchWidget/);
+    assert.doesNotMatch(SOURCE, /product: "flight"/);
   });
 
   it("goes out through /go and nowhere else", () => {
@@ -131,13 +134,13 @@ describe("the whole journey survives the hand-off", () => {
 
   it("hands off airport codes rather than what the box says", () => {
     // A LEG IS THREE HYPHEN-SEPARATED FIELDS, and the airport box holds a
-    // label after a pick — "New York (JFK)". The booking page was sending the
-    // label, so a city with a hyphen in its name split into four fields and
-    // the leg was dropped on arrival: /go could build nothing, the new tab
-    // bounced back to the site, and the referral went with it. Measured on
-    // production with Cluj-Napoca before this was changed.
-    assert.match(SOURCE, /legs: wanted\.legs\.map\(\(l\) => \(\{ from: airportCode\(l\.from\), to: airportCode\(l\.to\)/,
-      "the flights hand-off is sending airport labels again");
+    // label after a pick — "New York (JFK)". Sending the label used to split
+    // a hyphenated city into extra fields and drop the leg. Cash flights no
+    // longer collect airports here; when the planner already has codes they
+    // are stripped before they reach the widget. /go still has to survive
+    // the same labels if a leftover tab sends them.
+    assert.match(SOURCE, /airportCode\(prefill\?\.from/);
+    assert.match(SOURCE, /airportCode\(prefill\?\.to/);
 
     const legs = [{ from: airportCode("Cluj-Napoca (CLJ)"), to: airportCode("Rome (FCO)"), date: "2026-09-01" }];
     const href = goHref({ product: "flight", legs, checkOut: "2026-09-08" });

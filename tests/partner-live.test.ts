@@ -53,15 +53,23 @@ describe("live partner search wiring", () => {
     assert.match(ui, /flightsEmbedPath/);
     assert.match(ui, /carsEmbedPath/);
     assert.match(ui, /View & book/);
-    assert.match(ui, /AirportAutocomplete/);
-    assert.match(ui, /Passengers/);
-    assert.match(ui, /Driver age/);
+    assert.match(ui, /PartnerSearchWidget/);
+    assert.doesNotMatch(ui, /Passengers/);
+    assert.doesNotMatch(ui, /Driver age/);
+    assert.doesNotMatch(ui, /Open with these dates in a new tab/);
   });
 
-  it("keeps one-way and round-trip flights on the partner form, not a White Glove fare list", () => {
+  it("keeps cash flights and cars on the partner widget, not a White Glove form in front of it", () => {
     const ui = readFileSync("components/BookPartners.tsx", "utf8");
-    assert.doesNotMatch(ui, /liveEnabled && wanted\.trip !== "multi-city"/);
-    assert.match(ui, /wanted\.trip === "multi-city"/);
+    const flights = ui.slice(ui.indexOf("function FlightsForm"), ui.indexOf("function HotelsForm"));
+    const cars = ui.slice(ui.indexOf("function CarsForm"), ui.indexOf("function BookedPrompt"));
+    assert.match(flights, /PartnerSearchWidget/);
+    assert.match(flights, /flightsEmbedPath/);
+    assert.doesNotMatch(flights, /AirportAutocomplete|DateField|SearchGrid/);
+    assert.match(cars, /PartnerSearchWidget/);
+    assert.match(cars, /carsEmbedPath/);
+    assert.doesNotMatch(cars, /AddressAutocomplete|DateField|SearchGrid/);
+    assert.doesNotMatch(ui, /wanted\.trip === "multi-city"/);
     assert.doesNotMatch(ui, /Live prices are not available/);
     assert.doesNotMatch(ui, /Live prices could not be loaded/);
     assert.doesNotMatch(ui, /Compare fares with Kayak/);

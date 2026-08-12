@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { NO_STAY22 } from "@/lib/stay22";
 import type { AffiliateConfig } from "@/lib/affiliate/partners";
@@ -189,13 +189,20 @@ describe("Travel Essentials surfaces", () => {
     assert.match(readFileSync("app/book/page.tsx", "utf8"), /TravelEssentials/);
   });
 
-  it("turns landing cards into an on-site form that still leaves through /go", () => {
+  it("hands landing products off through /go, with no city or dates form", () => {
+    // This site cannot show eSIM, insurance, transfer or tour results. A form
+    // here would be filled in and then filled in again on the partner.
     const essentials = readFileSync("components/TravelEssentials.tsx", "utf8");
-    const form = readFileSync("components/EssentialPartnerForm.tsx", "utf8");
-    assert.match(essentials, /EssentialPartnerForm/);
-    assert.match(form, /goHref/);
-    assert.match(form, /AddressAutocomplete/);
-    assert.doesNotMatch(form, /kayak\.com|getyourguide\.com|tp\.media/);
+    assert.equal(existsSync("components/EssentialPartnerForm.tsx"), false);
+    assert.match(essentials, /href=\{card\.href\}/);
+    const transfer = readFileSync("components/TransferBooking.tsx", "utf8");
+    const tours = readFileSync("components/TourBooking.tsx", "utf8");
+    const insurance = readFileSync("components/InsurancePanel.tsx", "utf8");
+    const esim = readFileSync("components/EsimOffers.tsx", "utf8");
+    for (const source of [transfer, tours, insurance, esim]) {
+      assert.match(source, /goHref/);
+      assert.doesNotMatch(source, /AddressAutocomplete|DateField|<form|<select/);
+    }
   });
 
   it("shows a visible disclosure, not tooltip-only", () => {

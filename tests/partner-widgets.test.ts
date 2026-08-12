@@ -113,11 +113,15 @@ describe("how the widgets are loaded", () => {
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 
-  it("leaves Stay22 hotel live search in place and Duffel off /book", () => {
+  it("shows the partner widget as the only cash flight and car search", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
-    const hotels = readFileSync("app/api/partners/hotels/search/route.ts", "utf8");
+    const flights = panel.slice(panel.indexOf("function FlightsForm"), panel.indexOf("function HotelsForm"));
+    const cars = panel.slice(panel.indexOf("function CarsForm"), panel.indexOf("function BookedPrompt"));
+    assert.match(flights, /PartnerSearchWidget/);
+    assert.doesNotMatch(flights, /AirportAutocomplete|DateField/);
+    assert.match(cars, /PartnerSearchWidget/);
+    assert.doesNotMatch(cars, /AddressAutocomplete|DateField|Driver age/);
     assert.match(panel, /\/api\/partners\/hotels\/search/);
-    assert.match(hotels, /searchStay22Accommodations/);
     assert.doesNotMatch(panel, /@duffel|BookingSearch|FlightReview/);
   });
 });

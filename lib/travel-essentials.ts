@@ -72,7 +72,7 @@ export const ESSENTIAL_SERVICES: readonly EssentialServiceDef[] = [
   {
     id: "insurance",
     name: "Protect Your Trip",
-    blurb: "Compare available travel insurance options for your dates. Terms and cover are set by the provider.",
+    blurb: "Travel insurance from our partner. Terms and cover are set by the provider.",
     cta: "Compare travel insurance",
     icon: "◇",
     linkMode: "landing",

@@ -5,6 +5,7 @@ import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import { getAttractionList } from "@/lib/attractions-view";
 
 // Rendered per request, not frozen at build time.
@@ -57,21 +58,21 @@ export default async function AttractionsPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <AttractionDirectory attractions={attractions} />
-
       </section>
+
+      <SponsoredSlot placement="things-to-do-featured" />
 
       {/* UNDER THE LIST, NOT OVER IT. Somebody who has read what a place is,
           how long to give it and what it does on Shabbos is the person ready to
           buy a ticket for it; the same block above the directory would be an
-          advert in front of the thing they came for. Renders nothing until the
-          owner has a tours hand-off enabled and configured. */}
-      {/* The search, when the pasted link is a Stay22 tours desk — it carries
-          the city, so the partner opens on somewhere rather than on their front
-          page. Renders nothing otherwise, and the row below covers that case. */}
+          advert in front of the thing they came for. A tracked link, not a
+          form — this site cannot show tour results, so a city picker here
+          would be typed twice. Renders nothing until the owner has a tours
+          hand-off enabled and configured. */}
       <TourBooking />
 
-      {/* Everything else the owner has enabled for this page, and the tours
-          card itself when it cannot be made into a search. */}
+      {/* Everything else the owner has enabled for this page. Tours themselves
+          are the panel above, so they are not repeated in this row. */}
       <TravelEssentials
         pageType="things-to-do"
         heading="Before you go"
