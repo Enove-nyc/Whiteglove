@@ -1,0 +1,32 @@
+{
+  "cities": 332,
+  "chunks": 6,
+  "total": 15000,
+  "byListingLabel": {
+    "Vacation destination": 326,
+    "Attraction": 6854,
+    "Jewish heritage attraction": 1304,
+    "Where to stay": 2279,
+    "Shul": 1956,
+    "Mikvah": 978,
+    "Beis hachaim": 652,
+    "Kever": 326,
+    "Community resource": 325
+  },
+  "byImportKind": {
+    "PRACTICAL": 3585,
+    "ATTRACTION": 9136,
+    "PLACE_TO_STAY": 2279
+  },
+  "byEntityType": {
+    "vacation_destination": 326,
+    "attraction": 8158,
+    "stay_anchor": 2279,
+    "shul": 1956,
+    "mikvah": 978,
+    "beis_hachaim": 978,
+    "kosher_travel_resource": 325
+  },
+  "skippedPriorDupes": 20,
+  "skippedInternalDupes": 0
+}

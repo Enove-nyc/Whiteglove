@@ -16,6 +16,8 @@ describe("import needs-review queue", () => {
       assert.ok(queue.items.every((item) => item.origin === "source_pack" || item.origin === "database"));
       assert.ok(queue.items.every((item) => item.href.startsWith("/admin/imports")));
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-2"));
+      assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-4"));
+      assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-5"));
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-fill-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-europe-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-global-batch"));

@@ -12,7 +12,7 @@ import {
   SITE_SEARCH_NOTE,
   SITE_SEARCH_PLACEHOLDER,
 } from "@/lib/site-search-labels";
-import type { SearchResponse, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
+import type { SearchResponse, SiteHit, SiteHitKind } from "@/lib/site-search-types";
 import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
 // The search bar in the navbar, on every page.
