@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dropShulDoubles } from "./_drop-shul-doubles.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CHECKED = "2026-08-12";
@@ -1062,5 +1063,5 @@ const CITIES = [
   },
 ];
 
-fs.writeFileSync(path.join(__dirname, "_cities-part1.json"), JSON.stringify(CITIES, null, 2));
+fs.writeFileSync(path.join(__dirname, "_cities-part1.json"), JSON.stringify(dropShulDoubles(CITIES), null, 2));
 console.log("Wrote part1 cities", CITIES.length, "approx items", CITIES.reduce((n, c) => n + 1 + c.attractions.length + (c.heritage?.length || 0) + c.stays.length + (c.shuls?.length || 0) + (c.mikvaos?.length || 0) + (c.cemeteries?.length || 0) + (c.communityResources?.length || 0), 0));

@@ -16,10 +16,13 @@ import {
 import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherStays } from "@/data/kosher-stays";
 import {
+  annotateBatchDuplicates,
   bulkContentKindLabel,
   findBulkContentDuplicate,
   isDisallowedImportSource,
   prepareBulkContentCandidate,
+  softListingName,
+  softLocationKey,
   type BulkContentCandidateInput,
   type BulkContentKind,
   type KnownContentRecord,
@@ -409,42 +412,142 @@ export async function stageBuiltInContentBatch(slug: string): Promise<{ created:
     },
   });
   const existing = [...staticOwnedContent(), ...await databaseOwnedContent()];
-  const rows = packageCandidates(sourcePackage).filter((candidate) => candidate.canStage).map((candidate) => {
-    const duplicate = findBulkContentDuplicate(candidate, existing);
-    return {
-      batchId: batch.id,
-      kind: candidate.kind,
-      category: candidate.category,
-      name: candidate.name,
-      aliases: candidate.aliases,
-      city: candidate.city,
-      region: candidate.region,
-      country: candidate.country,
-      destinationSlug: candidate.destinationSlug,
-      address: candidate.address,
-      coordinates: candidate.coordinates,
-      website: candidate.website,
-      summary: candidate.summary,
-      anchorName: candidate.anchorName,
-      anchorCoords: candidate.anchorCoords,
-      kosherClaim: candidate.kosherClaim,
-      kosherSourceUrl: candidate.kosherSourceUrl,
-      sourceUrl: candidate.sourceUrl,
-      sourceId: candidate.sourceId,
-      sourceName: candidate.sourceName,
-      attribution: candidate.attribution,
-      license: candidate.license,
-      sourceEvidence: rawSourceEvidence(candidate.sourceEvidence),
-      normalizedName: candidate.normalizedName,
-      normalizedLocation: candidate.normalizedLocation,
-      dedupeKey: candidate.dedupeKey,
-      status: duplicate ? "DUPLICATE" as const : "NEEDS_REVIEW" as const,
-      validationErrors: candidate.publishBlockers,
-      duplicateOf: duplicate?.id ?? null,
-    };
-  });
+  const staged = annotateBatchDuplicates(
+    packageCandidates(sourcePackage).filter((candidate) => candidate.canStage),
+    existing,
+  );
+  const rows = staged.map((candidate) => ({
+    batchId: batch.id,
+    kind: candidate.kind,
+    category: candidate.category,
+    name: candidate.name,
+    aliases: candidate.aliases,
+    city: candidate.city,
+    region: candidate.region,
+    country: candidate.country,
+    destinationSlug: candidate.destinationSlug,
+    address: candidate.address,
+    coordinates: candidate.coordinates,
+    website: candidate.website,
+    summary: candidate.summary,
+    anchorName: candidate.anchorName,
+    anchorCoords: candidate.anchorCoords,
+    kosherClaim: candidate.kosherClaim,
+    kosherSourceUrl: candidate.kosherSourceUrl,
+    sourceUrl: candidate.sourceUrl,
+    sourceId: candidate.sourceId,
+    sourceName: candidate.sourceName,
+    attribution: candidate.attribution,
+    license: candidate.license,
+    sourceEvidence: rawSourceEvidence(candidate.sourceEvidence),
+    normalizedName: candidate.normalizedName,
+    normalizedLocation: candidate.normalizedLocation,
+    dedupeKey: candidate.dedupeKey,
+    status: candidate.duplicateOf ? ("DUPLICATE" as const) : ("NEEDS_REVIEW" as const),
+    validationErrors: candidate.publishBlockers,
+    duplicateOf: candidate.duplicateOf,
+  }));
   const result = await prisma.contentImportCandidate.createMany({ data: rows, skipDuplicates: true });
+  // Older staged rows can still hold Attraction + Practical for one place.
+  await reconcileOpenImportDuplicates();
   return { created: result.count, total: rows.length };
+}
+
+function looksLikeSynagogueListing(name: string, category: string | null, kind: BulkContentKind): boolean {
+  if (kind === "PRACTICAL" && /minyan/i.test(category || "")) return true;
+  return /\b(synagogue|synagoge|shul|beit knesset|beis knesses|templo)\b/i.test(name);
+}
+
+function openDuplicateKeeperScore(row: {
+  kind: BulkContentKind;
+  category: string | null;
+  name: string;
+  summary: string | null;
+  address: string | null;
+  validationErrors: string[];
+  createdAt: Date;
+}): number {
+  let score = 0;
+  score -= (row.validationErrors?.length || 0) * 10;
+  if (row.summary?.trim()) score += 5;
+  if (row.address?.trim()) score += 3;
+  if (looksLikeSynagogueListing(row.name, row.category, row.kind)) {
+    // One shul listing beats a second heritage Attraction for the same building.
+    if (row.kind === "PRACTICAL") score += 50;
+    else if (row.kind === "ATTRACTION") score += 15;
+  }
+  // Stable tie-break: earlier staged row wins when scores match.
+  score -= Math.min(row.createdAt.getTime() / 1e15, 1);
+  return score;
+}
+
+/**
+ * Walk every open staged candidate and mark same-place doubles as DUPLICATE.
+ * Catches Attraction vs Practical pairs that slipped through older staging
+ * (Abuhav Synagogue is the example that showed up in Needs review).
+ */
+export async function reconcileOpenImportDuplicates(): Promise<{ groups: number; marked: number }> {
+  if (!isDbEnabled()) return { groups: 0, marked: 0 };
+  const prisma = await db();
+  const rows = await prisma.contentImportCandidate.findMany({
+    where: { status: { in: ["NEEDS_REVIEW", "DUPLICATE"] } },
+    select: {
+      id: true,
+      kind: true,
+      category: true,
+      name: true,
+      city: true,
+      country: true,
+      summary: true,
+      address: true,
+      validationErrors: true,
+      status: true,
+      duplicateOf: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const groups = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const key = softLocationKey(row.name, row.city, row.country);
+    if (!key || !softListingName(row.name)) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(row);
+  }
+
+  let marked = 0;
+  let groupCount = 0;
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    groupCount += 1;
+    const ranked = [...members].sort((a, b) => openDuplicateKeeperScore(b) - openDuplicateKeeperScore(a));
+    const keeper = ranked[0]!;
+    const keeperRef = `candidate:${keeper.id}`;
+    for (const member of ranked.slice(1)) {
+      if (member.status === "DUPLICATE" && member.duplicateOf === keeperRef) continue;
+      await prisma.contentImportCandidate.update({
+        where: { id: member.id },
+        data: {
+          status: "DUPLICATE",
+          duplicateOf: keeperRef,
+          reviewedAt: new Date(),
+        },
+      });
+      marked += 1;
+    }
+    if (keeper.status !== "NEEDS_REVIEW" || keeper.duplicateOf) {
+      await prisma.contentImportCandidate.update({
+        where: { id: keeper.id },
+        data: {
+          status: "NEEDS_REVIEW",
+          duplicateOf: null,
+          reviewedAt: new Date(),
+        },
+      });
+    }
+  }
+  return { groups: groupCount, marked };
 }
 
 export async function getContentImportCandidate(id: string): Promise<ContentImportCandidateView | null> {

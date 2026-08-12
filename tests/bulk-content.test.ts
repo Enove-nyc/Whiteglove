@@ -3,9 +3,11 @@ import { existsSync } from "node:fs";
 import { describe, it } from "node:test";
 import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "@/data/imports";
 import {
+  annotateBatchDuplicates,
   findBulkContentDuplicate,
   isDisallowedImportSource,
   prepareBulkContentCandidate,
+  softListingName,
   type BulkContentCandidateInput,
 } from "@/lib/bulk-content";
 
@@ -190,6 +192,85 @@ describe("bulk content deduplication", () => {
       sourceUrl: "https://official.example/museum",
     }]);
     assert.deepEqual(duplicate, { id: "attraction:old", reason: "name-and-location" });
+  });
+
+  it("treats Attraction and Practical for the same synagogue as one place", () => {
+    const attraction = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "ATTRACTION",
+      category: "Jewish heritage",
+      name: "Abuhav Synagogue",
+      city: "Tzfat",
+      country: "Israel",
+      sourceId: "heritage:abuhav",
+      sourceUrl: "https://example.org/tzfat/abuhav-heritage",
+    });
+    const practical = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "PRACTICAL",
+      category: "MINYAN",
+      name: "Abuhav Synagogue",
+      city: "Tzfat",
+      country: "Israel",
+      destinationSlug: "tzfat",
+      sourceId: "shul:abuhav",
+      sourceUrl: "https://example.org/tzfat/abuhav-shul",
+      summary: "Abuhav Synagogue is a synagogue / minyan address in Tzfat.",
+    });
+    assert.equal(softListingName("Abuhav Synagogue courtyard framing"), "abuhav synagogue");
+    assert.deepEqual(
+      findBulkContentDuplicate(practical, [{
+        id: "candidate:attraction",
+        kind: "ATTRACTION",
+        name: attraction.name,
+        city: attraction.city,
+        country: attraction.country,
+        sourceUrl: attraction.sourceUrl,
+        sourceId: attraction.sourceId,
+      }]),
+      { id: "candidate:attraction", reason: "name-and-location" },
+    );
+    assert.deepEqual(
+      findBulkContentDuplicate(attraction, [{
+        id: "candidate:practical",
+        kind: "PRACTICAL",
+        name: "Abuhav Synagogue courtyard framing",
+        city: "Tzfat",
+        country: "Israel",
+        sourceUrl: practical.sourceUrl,
+        sourceId: practical.sourceId,
+      }]),
+      { id: "candidate:practical", reason: "name-and-location" },
+    );
+  });
+
+  it("marks the second same-place row inside one staging batch as a duplicate", () => {
+    const attraction = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "ATTRACTION",
+      category: "Jewish heritage",
+      name: "Abuhav Synagogue",
+      city: "Tzfat",
+      country: "Israel",
+      sourceId: "heritage:abuhav",
+      sourceUrl: "https://example.org/tzfat/abuhav-heritage",
+      summary: "A Jewish-heritage site in Tzfat.",
+    });
+    const practical = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "PRACTICAL",
+      category: "MINYAN",
+      name: "Abuhav Synagogue",
+      city: "Tzfat",
+      country: "Israel",
+      destinationSlug: "tzfat",
+      sourceId: "shul:abuhav",
+      sourceUrl: "https://example.org/tzfat/abuhav-shul",
+      summary: "Abuhav Synagogue is a synagogue / minyan address in Tzfat.",
+    });
+    const annotated = annotateBatchDuplicates([attraction, practical]);
+    assert.equal(annotated[0]?.duplicateOf, null);
+    assert.equal(annotated[1]?.duplicateOf, `batch:${attraction.dedupeKey}`);
   });
 });
 

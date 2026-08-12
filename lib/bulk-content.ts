@@ -223,6 +223,27 @@ function locationKey(name: string, city: string, country: string): string {
   return `${normalizeContentText(name)}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
 }
 
+/**
+ * Same place under Attraction vs Practical / "X" vs "X framing" still needs to
+ * collapse in the review queue. Strip only editorial suffixes — keep words that
+ * distinguish real neighbours (Sephardic Ari vs Ari Ashkenazi).
+ */
+export function softListingName(name: string | null | undefined): string {
+  return normalizeContentText(name)
+    .replace(
+      /\b(framing|daytime|courtyard|outdoor|approach|orientation|historic|visitor resource|tradition site|listing|candidate|stub|placeholder|exterior)\b/g,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function softLocationKey(name: string, city: string, country: string): string {
+  const soft = softListingName(name);
+  if (!soft) return "";
+  return `${soft}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
+}
+
 function isPracticalCategory(value: string | null): boolean {
   return Boolean(value && (PRACTICAL_CATEGORIES as readonly string[]).includes(value));
 }
@@ -345,7 +366,8 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
  * Finds a duplicate by stable source identity first, then the deliberately
  * conservative normalized name + city + country fallback. The fallback makes a
  * new source record visible to an editor rather than silently creating a
- * second public listing for the same place.
+ * second public listing for the same place. Soft name matching also catches the
+ * Attraction vs Practical / framing pairs that share one place (Abuhav, etc.).
  */
 export function findBulkContentDuplicate(
   candidate: PreparedBulkContentCandidate,
@@ -353,6 +375,7 @@ export function findBulkContentDuplicate(
 ): DuplicateMatch | null {
   const normalizedSource = normalizeSourceUrl(candidate.sourceUrl);
   const location = locationKey(candidate.name, candidate.city, candidate.country);
+  const softLocation = softLocationKey(candidate.name, candidate.city, candidate.country);
 
   for (const item of existing) {
     const sameSourceUrl = normalizedSource && normalizeSourceUrl(item.sourceUrl) === normalizedSource;
@@ -368,8 +391,41 @@ export function findBulkContentDuplicate(
     if (location === locationKey(item.name, item.city, item.country)) {
       return { id: item.id, reason: "name-and-location" };
     }
+    if (
+      softLocation &&
+      softLocation === softLocationKey(item.name, item.city, item.country)
+    ) {
+      return { id: item.id, reason: "name-and-location" };
+    }
   }
   return null;
+}
+
+/**
+ * While staging one package, later rows must see earlier rows from the same
+ * batch. createMany cannot do that on its own because Attraction and Practical
+ * for the same place use different dedupeKeys.
+ */
+export function annotateBatchDuplicates(
+  candidates: readonly PreparedBulkContentCandidate[],
+  alreadyKnown: readonly KnownContentRecord[] = [],
+): Array<PreparedBulkContentCandidate & { duplicateOf: string | null }> {
+  const known: KnownContentRecord[] = [...alreadyKnown];
+  return candidates.map((candidate) => {
+    const duplicate = findBulkContentDuplicate(candidate, known);
+    if (!duplicate) {
+      known.push({
+        id: `batch:${candidate.dedupeKey}`,
+        kind: candidate.kind,
+        name: candidate.name,
+        city: candidate.city,
+        country: candidate.country,
+        sourceUrl: candidate.sourceUrl,
+        sourceId: candidate.sourceId,
+      });
+    }
+    return { ...candidate, duplicateOf: duplicate?.id ?? null };
+  });
 }
 
 export function bulkContentKindLabel(kind: BulkContentKind): string {
