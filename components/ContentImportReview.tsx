@@ -77,8 +77,20 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
                 <p className="mt-2 text-sm leading-6 text-stone-600">
                   {source.packageCandidates} candidates · {source.stagedCandidates} in the private queue · {source.sourceName} · {source.license}
                 </p>
+                {/* A package compiled from dozens of official sources has no one
+                    set of terms to link to, and linking one of sixty-five would
+                    say the other sixty-four were it. Those packages leave the
+                    URL empty; every candidate below still carries its own real
+                    source link, which is where the provenance is. */}
                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                  Attribution: {source.attribution}. <a className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4" href={source.sourceUrl} target="_blank" rel="noreferrer">Read source terms ↗</a>
+                  Attribution: {source.attribution}
+                  {source.sourceUrl ? (
+                    <>
+                      . <a className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4" href={source.sourceUrl} target="_blank" rel="noreferrer">Read source terms ↗</a>
+                    </>
+                  ) : (
+                    <> — each candidate below links to the source it came from.</>
+                  )}
                 </p>
               </div>
               {source.stagedCandidates < source.packageCandidates && (
