@@ -75,34 +75,13 @@ export const editablePages: PageDef[] = [
     ],
   },
   {
-    slug: "phone-rentals",
-    href: "/phone-rentals",
-    label: "Phone Rentals",
-    seoTitle: "Phone Rentals — White Glove Itineraries",
-    seoDescription: "This page covers the future SIM, eSIM, hotspot, and phone rental offering so travelers can stay reachable without juggling setup details.",
-    blocks: [
-    { id: "phone-rentals-hero", kind: "hero", eyebrow: "Future service", heading: "Phone Rentals", intro: "This page covers the future SIM, eSIM, hotspot, and phone rental offering so travelers can stay reachable without juggling setup details." },
-    {
-      id: "phone-rentals-cards",
-      kind: "cards",
-      heading: "What we arrange",
-      items: [
-        { title: "SIM cards", body: "Country-specific connectivity for travelers who want a simple local solution." },
-        { title: "eSIMs", body: "Digital setup for phones that support it, without needing a physical card." },
-        { title: "International rentals", body: "Short-term phone rentals for travelers who need a backup device." },
-        { title: "Wi-Fi hotspot rentals", body: "Portable internet for family trips, groups, or locations with limited access." },
-      ],
-    },
-    ],
-  },
-  {
     slug: "travel-insurance",
     href: "/travel-insurance",
     label: "Travel Insurance",
     seoTitle: "Travel Insurance — White Glove Itineraries",
-    seoDescription: "This page introduces the future travel insurance referral or guidance page. It is designed to explain the coverage types without pretending to be the ",
+    seoDescription: "What travel insurance usually covers, what to check before you buy, and where to compare policies for your dates.",
     blocks: [
-    { id: "travel-insurance-hero", kind: "hero", eyebrow: "Future service", heading: "Travel Insurance", intro: "This page introduces the future travel insurance referral or guidance page. It is designed to explain the coverage types without pretending to be the insurer." },
+    { id: "travel-insurance-hero", kind: "hero", eyebrow: "Before you travel", heading: "Travel insurance", intro: "What a policy usually covers, and what to read before you buy one. We are not the insurer and we do not advise on cover — the terms, the price and the exclusions are theirs." },
     {
       id: "travel-insurance-cards",
       kind: "cards",
@@ -123,7 +102,7 @@ export const editablePages: PageDef[] = [
     seoTitle: "Flight Booking Assistance — White Glove Itineraries",
     seoDescription: "This page is for travelers who want a person to help gather the flight details and request a booking on their behalf.",
     blocks: [
-    { id: "flight-booking-assistance-hero", kind: "hero", eyebrow: "Future service", heading: "Flight Booking Assistance", intro: "This page is for travelers who want a person to help gather the flight details and request a booking on their behalf." },
+    { id: "flight-booking-assistance-hero", kind: "hero", eyebrow: "Ask a person", heading: "Flight booking assistance", intro: "For a journey that does not fit a search box — a group, a complicated routing, or a date somebody wants a second opinion on. Send what you have and a person picks it up." },
     {
       id: "flight-booking-assistance-list",
       kind: "list",
