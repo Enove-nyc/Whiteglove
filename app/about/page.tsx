@@ -12,6 +12,8 @@ import { readAboutProfile } from "@/lib/about-profile-store";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { readWords } from "@/lib/site-words-store";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("about");
   return pageMetadata({

@@ -5,6 +5,8 @@ import PageBlocks from "@/components/PageBlocks";
 import SubmitEntryForm from "@/components/SubmitEntryForm";
 import { resolvePage } from "@/lib/pages";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("submit");
   // The owner writes the title and description in the admin; the

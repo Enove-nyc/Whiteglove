@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { editablePages, getPageDef } from "@/data/pages";
 import { blockSummary, emptyBlock, parseBlocks, visibleBlocks, type BlockKind, type PageBlock } from "@/data/page-blocks";
@@ -41,9 +42,31 @@ describe("every editable page ships with content", () => {
     assert.equal(new Set(slugs).size, slugs.length);
   });
 
+  it("registers the remaining content pages", () => {
+    for (const slug of ["travel-guide", "map", "lizensk"]) {
+      assert.ok(getPageDef(slug), `${slug} is not in the registry`);
+    }
+  });
+
   it("finds a page by slug and refuses an unknown one", () => {
     assert.ok(getPageDef(editablePages[0].slug));
     assert.equal(getPageDef("not-a-page"), undefined);
+  });
+});
+
+describe("owner-edited public pages are not frozen at build", () => {
+  it("reads per request so a published edit appears", () => {
+    for (const def of editablePages) {
+      const file = `app${def.href === "/" ? "" : def.href}/page.tsx`;
+      let source: string;
+      try {
+        source = readFileSync(file, "utf8");
+      } catch {
+        if (def.slug === "getaways") continue;
+        throw new Error(`${def.slug} has no page at ${file}`);
+      }
+      assert.match(source, /force-dynamic/, `${def.slug} would freeze a published edit at build`);
+    }
   });
 });
 

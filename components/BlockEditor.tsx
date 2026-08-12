@@ -7,9 +7,11 @@ import {
   BLOCK_LABELS,
   blockSummary,
   emptyBlock,
+  parseBlocks,
   type BlockKind,
   type PageBlock,
 } from "@/data/page-blocks";
+import { describeDraft, draftKey, draftToStorage, readDraft, worthOffering, writeDraft } from "@/lib/drafts";
 
 // Editing a page as a stack of sections.
 //
@@ -230,12 +232,19 @@ export default function BlockEditor({ page }: { page: Page }) {
   const [adding, setAdding] = useState(false);
   const [preview, setPreview] = useState<"off" | "desktop" | "mobile">("off");
   const [confirmReset, setConfirmReset] = useState(false);
+  const [held, setHeld] = useState<ReturnType<typeof readDraft>>(null);
+  const [restored, setRestored] = useState(false);
+  const [now, setNow] = useState(0);
+  const key = draftKey("page", page.slug);
 
   const [saveState, saveAction, savePending] = useActionState<ActionResult | null, FormData>(savePageAction, null);
   const [resetState, resetAction] = useActionState<ActionResult | null, FormData>(resetPageAction, null);
 
-  // Nothing is saved until you press a button, so leaving with changes would
-  // lose them silently.
+  useEffect(() => {
+    setHeld(readDraft(window.localStorage.getItem(key)));
+    setNow(Date.now());
+  }, [key]);
+
   useEffect(() => {
     if (!dirty) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -244,8 +253,34 @@ export default function BlockEditor({ page }: { page: Page }) {
   }, [dirty]);
 
   useEffect(() => {
-    if (saveState?.ok) setDirty(false);
-  }, [saveState]);
+    if (!saveState?.ok) return;
+    setDirty(false);
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      /* storage blocked */
+    }
+    setHeld(null);
+  }, [saveState, key]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const timer = window.setTimeout(() => {
+      try {
+        const draft = writeDraft({
+          blocks: JSON.stringify(blocks),
+          seoTitle,
+          seoDescription,
+        });
+        window.localStorage.setItem(key, draftToStorage(draft));
+      } catch {
+        /* a full store is not worth breaking the editor over */
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [dirty, blocks, seoTitle, seoDescription, key]);
+
+  const offer = !restored && worthOffering(held, now);
 
   const change = (next: PageBlock[]) => {
     setBlocks(next);
@@ -281,6 +316,49 @@ export default function BlockEditor({ page }: { page: Page }) {
           </button>
         </div>
       </div>
+
+      {offer && held && (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3">
+          <p className="text-sm leading-6 text-stone-700">
+            You typed something here {describeDraft(held, now)} and did not save it. It is still on this computer.
+          </p>
+          <span className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  const parsed = parseBlocks(JSON.parse(held.values.blocks ?? "[]"));
+                  if (parsed) setBlocks(parsed);
+                  if (held.values.seoTitle) setSeoTitle(held.values.seoTitle);
+                  if (held.values.seoDescription) setSeoDescription(held.values.seoDescription);
+                  setDirty(true);
+                } catch {
+                  /* unreadable draft */
+                }
+                setRestored(true);
+              }}
+              className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white"
+            >
+              Put it back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  window.localStorage.removeItem(key);
+                } catch {
+                  /* storage blocked */
+                }
+                setHeld(null);
+                setRestored(true);
+              }}
+              className="min-h-11 rounded-md border border-[var(--gold-light)] px-3 text-xs font-bold uppercase tracking-[0.1em] text-stone-500"
+            >
+              Throw it away
+            </button>
+          </span>
+        </div>
+      )}
 
       {preview !== "off" && (
         <div className="mt-5 border border-[var(--gold-light)] bg-white p-3">

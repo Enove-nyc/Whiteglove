@@ -6,6 +6,8 @@ import PageBlocks from "@/components/PageBlocks";
 import SponsoredSlot from "@/components/SponsoredSlot";
 import { resolvePage } from "@/lib/pages";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("travel-insurance");
   // The owner writes the title and description in the admin; the

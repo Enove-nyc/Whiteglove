@@ -4,19 +4,25 @@ import { readBookingLink } from "@/lib/booking-access-store";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import TravelExtras from "@/components/TravelExtras";
 import { readExtras } from "@/lib/travel-extras-store";
 import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-guide";
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
+import { resolvePage } from "@/lib/pages";
 
-export const metadata = pageMetadata({
-  title: "Travel guide — documents, advisories & paying | White Glove Itineraries",
-  description: "Entry documents, live U.S. State Department safety advisories, and how to pay for your trip with points or cash.",
-  path: "/travel-guide",
-});
+export const dynamic = "force-dynamic";
 
-// Advisories are read on the server and cached for an hour.
-export const revalidate = 3600;
+export async function generateMetadata() {
+  const page = await resolvePage("travel-guide");
+  return pageMetadata({
+    title: page?.seoTitle ?? "Travel guide — documents, advisories & paying | White Glove Itineraries",
+    description:
+      page?.seoDescription ??
+      "Entry documents, live U.S. State Department safety advisories, and how to pay for your trip with points or cash.",
+    path: "/travel-guide",
+  });
+}
 
 const TONE: Record<string, string> = {
   ok: "border-emerald-300 bg-emerald-50 text-emerald-900",
@@ -27,9 +33,12 @@ const TONE: Record<string, string> = {
 
 export default async function TravelGuidePage() {
   // Where the booking call to action may point today. See lib/booking-access.ts.
-  const booking = await readBookingLink();
-  const extras = await readExtras();
-  const feed = await fetchAdvisories();
+  const [booking, extras, feed, page] = await Promise.all([
+    readBookingLink(),
+    readExtras(),
+    fetchAdvisories(),
+    resolvePage("travel-guide"),
+  ]);
   const rows = COUNTRY_DOCS.map((c) => ({
     ...c,
     advisory: feed.available ? advisoryFor(feed.advisories, c.country) : null,
@@ -41,25 +50,14 @@ export default async function TravelGuidePage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      {page ? <PageBlocks blocks={page.blocks} /> : null}
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-5xl">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]"><GloveMark size="xs" />Before you travel</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Travel guide</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Entry documents, live government safety advisories, and how to pay for the trip. The advisory levels below update automatically from the U.S. State Department.
-          </p>
-          <nav className="mt-8 flex flex-wrap gap-3">
-            <a href="#advisories" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Safety advisories</a>
-            <a href="#documents" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Documents &amp; visas</a>
-            <a href="#paying" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Paying for the trip</a>
-            {/* Data abroad is the same kind of question as documents and money,
-                and this is the page somebody already thinking "before I
-                travel" is on. It had no link from here at all. */}
-            <Link href="/esim" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">eSIMs &amp; data</Link>
-          </nav>
-        </div>
-      </section>
+      <nav className="mx-auto flex max-w-5xl flex-wrap gap-3 px-5 pb-10 sm:px-8">
+        <a href="#advisories" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Safety advisories</a>
+        <a href="#documents" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Documents &amp; visas</a>
+        <a href="#paying" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Paying for the trip</a>
+        <Link href="/esim" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">eSIMs &amp; data</Link>
+      </nav>
 
       {/* ---- Live advisories ---- */}
       <section id="advisories" className="mx-auto max-w-5xl px-5 py-14 sm:px-8">

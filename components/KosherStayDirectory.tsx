@@ -10,6 +10,7 @@ import { useListUrl } from "@/components/useListUrl";
 import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import type { KosherStay } from "@/data/kosher-stays";
+import { checkedOn } from "@/lib/trust-status";
 
 // Where to sleep, and what is within walking distance of it.
 //
@@ -146,7 +147,8 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             )}
             {s.kosherClaim === "confirmed" && (
               <p className="mt-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">
-                The kashrus here has been confirmed by us.
+                The kashrus here has been confirmed by us
+                {checkedOn(s.lastChecked) ? ` on ${checkedOn(s.lastChecked)}` : ""}.
               </p>
             )}
             {s.kosherClaim === "none" && (

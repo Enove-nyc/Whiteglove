@@ -73,6 +73,7 @@ export type KosherStay = {
   notes?: string[];
   website?: string;
   sourceUrl: string;
+  lastChecked?: string;
 };
 
 /**

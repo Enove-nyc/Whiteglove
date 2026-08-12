@@ -5,11 +5,13 @@ import {
   type Draft,
   describeDraft,
   draftKey,
+  draftToStorage,
   draftableValues,
   fieldsToRestore,
   readDraft,
   sameValues,
   worthOffering,
+  writeDraft,
 } from "@/lib/drafts";
 
 /**
@@ -208,5 +210,18 @@ describe("what a draft never carries", () => {
     // would make it look full of work and it would be offered back.
     const stored = JSON.stringify({ savedAt: agoHours(1), values: { $ACTION_KEY: "abc", overview: "" } });
     assert.equal(worthOffering(readDraft(stored), NOW), false);
+  });
+});
+
+describe("a page editor draft", () => {
+  it("keeps the blocks JSON and drops which page it is", () => {
+    const made = writeDraft({
+      slug: "about",
+      blocks: '[{"kind":"hero","heading":"Hello"}]',
+      seoTitle: "About",
+    });
+    assert.equal(made.values.slug, undefined);
+    assert.ok(made.values.blocks?.includes("hero"));
+    assert.equal(readDraft(draftToStorage(made))?.values.seoTitle, "About");
   });
 });

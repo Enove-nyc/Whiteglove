@@ -274,6 +274,60 @@ export const editablePages: PageDef[] = [
       },
     ],
   },
+  {
+    slug: "travel-guide",
+    href: "/travel-guide",
+    label: "Travel guide",
+    seoTitle: "Travel guide — documents, advisories & paying | White Glove Itineraries",
+    seoDescription:
+      "Entry documents, live U.S. State Department safety advisories, and how to pay for your trip with points or cash.",
+    blocks: [
+      {
+        id: "travel-guide-hero",
+        kind: "hero",
+        eyebrow: "Before you travel",
+        heading: "Travel guide",
+        intro:
+          "Entry documents, live government safety advisories, and how to pay for the trip. The advisory levels below update automatically from the U.S. State Department.",
+      },
+    ],
+  },
+  {
+    slug: "map",
+    href: "/map",
+    label: "Map",
+    seoTitle: "Map — everywhere we know, on one map | White Glove Itineraries",
+    seoDescription:
+      "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
+    blocks: [
+      {
+        id: "map-hero",
+        kind: "hero",
+        eyebrow: "See the area",
+        heading: "Everywhere we know, on one map",
+        intro:
+          "Batei hachaim, places worth the half day, kosher hotels and the airports you would fly into — all of it at once. Search a town to narrow it down and see what is around that place, kosher food included.",
+      },
+    ],
+  },
+  {
+    slug: "lizensk",
+    href: "/lizensk",
+    label: "Lizhensk",
+    seoTitle: "Lizhensk Travel Guide & Kever of Reb Elimelech | White Glove",
+    seoDescription:
+      "Leżajsk, Poland: how to reach the kever of Rabbi Elimelech of Lizhensk, the ohel and its access, kosher food and Shabbos, minyanim, mikvaos, drivers and where to stay.",
+    blocks: [
+      {
+        id: "lizensk-hero",
+        kind: "hero",
+        eyebrow: "Featured destination · Poland",
+        heading: "Lizhensk",
+        intro:
+          "A practical, respectful guide to Lizhensk—designed around your tefillos and every essential detail of the visit.",
+      },
+    ],
+  },
 ];
 
 export function getPageDef(slug: string): PageDef | undefined {

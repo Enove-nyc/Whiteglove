@@ -72,6 +72,7 @@ export type DestinationFields = {
   summary: string | null;
   safetyNote: string | null;
   status: ContentStatus;
+  lastVerified?: Date | null;
 };
 
 export async function updateDestinationFields(slug: string, fields: DestinationFields) {
@@ -93,7 +94,7 @@ export async function updateDestinationFields(slug: string, fields: DestinationF
   };
   const row = await prisma.destination.update({
     where: { slug },
-    data: { ...data, lastVerified: new Date() },
+    data: fields.lastVerified ? { ...data, lastVerified: fields.lastVerified } : data,
   });
   await recordChange({ kind: "town", rowId: slug, title: fields.city || slug, before, after: data });
   return row;
@@ -106,6 +107,7 @@ export type ContactFields = {
   phone: string | null;
   email: string | null;
   note: string | null;
+  lastVerified?: Date | null;
 };
 
 /**
@@ -132,12 +134,11 @@ async function withOptionalStamp<T>(stamped: () => Promise<T>, plain: () => Prom
 
 export async function createContact(destinationId: string, fields: ContactFields) {
   const prisma = await db();
-  // Saved here as VERIFIED, so the day it was saved IS the day somebody last
-  // confirmed it. Stamping it means the date is a record of what happened
-  // rather than something anybody had to remember to type.
+  const { lastVerified, ...rest } = fields;
+  const checked = lastVerified ?? new Date();
   return withOptionalStamp(
-    () => prisma.contact.create({ data: { ...fields, status: "VERIFIED", lastVerified: new Date(), destinationId } }),
-    () => prisma.contact.create({ data: { ...fields, status: "VERIFIED", destinationId } }),
+    () => prisma.contact.create({ data: { ...rest, status: "VERIFIED", lastVerified: checked, destinationId } }),
+    () => prisma.contact.create({ data: { ...rest, status: "VERIFIED", destinationId } }),
   );
 }
 
@@ -145,23 +146,20 @@ export async function updateContact(id: string, fields: ContactFields) {
   const prisma = await db();
   const existing = await prisma.contact.findUnique({
     where: { id },
-    select: { label: true, phone: true, email: true, note: true, status: true },
+    select: { label: true, phone: true, email: true, note: true, status: true, lastVerified: true },
   });
-  // The change log gets what it always got — status is read for the stamp
-  // below, not to be diffed.
   const before = existing
     ? { label: existing.label, phone: existing.phone, email: existing.email, note: existing.note }
     : null;
-  // ONLY A VERIFIED CONTACT GETS A DATE. lib/verification.ts is explicit that
-  // a date only ever appears beside "Verified" — a date beside "being checked"
-  // would be a date on a thing nobody has checked. Saving an unverified
-  // contact is editing a note, not confirming a phone number answers.
+  const { lastVerified, ...rest } = fields;
   const stamp = existing?.status === "VERIFIED";
+  const checked = lastVerified ?? existing?.lastVerified ?? (stamp ? new Date() : null);
+  const stamped = stamp && checked ? { ...rest, lastVerified: checked } : rest;
   const row = await withOptionalStamp(
-    () => prisma.contact.update({ where: { id }, data: stamp ? { ...fields, lastVerified: new Date() } : fields }),
-    () => prisma.contact.update({ where: { id }, data: fields }),
+    () => prisma.contact.update({ where: { id }, data: stamped }),
+    () => prisma.contact.update({ where: { id }, data: rest }),
   );
-  await recordChange({ kind: "contact", rowId: id, title: fields.label, before, after: fields as unknown as Record<string, unknown> });
+  await recordChange({ kind: "contact", rowId: id, title: fields.label, before, after: rest as unknown as Record<string, unknown> });
   return row;
 }
 
@@ -343,17 +341,19 @@ export async function deletePhoto(id: string) {
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {
   const prisma = await db();
+  const checked = fields.lastVerified ?? new Date();
   return prisma.practicalPlace.create({
-    data: { ...fields, lastVerified: new Date(), destinationId },
+    data: { ...fields, lastVerified: checked, destinationId },
   });
 }
 
 export async function updatePlace(id: string, fields: PlaceFields) {
   const prisma = await db();
   const before = await prisma.practicalPlace.findUnique({ where: { id } });
+  const checked = fields.lastVerified ?? before?.lastVerified ?? new Date();
   const row = await prisma.practicalPlace.update({
     where: { id },
-    data: { ...fields, lastVerified: new Date() },
+    data: { ...fields, lastVerified: checked },
   });
   await recordChange({
     kind: "listing",

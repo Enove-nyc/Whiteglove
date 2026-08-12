@@ -9,13 +9,21 @@ import { placeDirectionsUrl } from "@/data/route-utils";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
+import { resolvePage } from "@/lib/pages";
+import PageBlocks from "@/components/PageBlocks";
 
-export const metadata = pageMetadata({
-  title: "Lizhensk Travel Guide & Kever of Reb Elimelech | White Glove",
-  description:
-    "Leżajsk, Poland: how to reach the kever of Rabbi Elimelech of Lizhensk, the ohel and its access, kosher food and Shabbos, minyanim, mikvaos, drivers and where to stay.",
-  path: "/lizensk",
-});
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const page = await resolvePage("lizensk");
+  return pageMetadata({
+    title: page?.seoTitle ?? "Lizhensk Travel Guide & Kever of Reb Elimelech | White Glove",
+    description:
+      page?.seoDescription ??
+      "Leżajsk, Poland: how to reach the kever of Rabbi Elimelech of Lizhensk, the ohel and its access, kosher food and Shabbos, minyanim, mikvaos, drivers and where to stay.",
+    path: "/lizensk",
+  });
+}
 
 const guideSections = [
   ["Daven", "Tefillos at the kever", "Preparation for your visit, including commonly said tefillos and practical guidance for the ohel."],
@@ -72,7 +80,7 @@ const verifiedDetails = (contactEmail: string) => [
 ];
 
 export default async function LizenskPage() {
-  const { contactEmail } = await readWords();
+  const [{ contactEmail }, page] = await Promise.all([readWords(), resolvePage("lizensk")]);
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <StructuredData
@@ -95,11 +103,15 @@ export default async function LizenskPage() {
       />
       <Navbar />
       <SubBrandBanner />
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
       <section className="border-b border-[var(--gold-light)] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-7xl"><p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Featured destination · Poland</p><h1 dir="rtl" lang="yi" className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">ליזענסק</h1><p className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-stone-500 sm:text-4xl">Lizhensk</p><p className="mt-5 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Journey to the Noam Elimelech</p><p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">A practical, respectful guide to Lizhensk—designed around your tefillos and every essential detail of the visit.</p>
           <div className="mt-12 grid border-y border-[var(--gold-light)] sm:grid-cols-3"><a href="#tefillos" className="border-b border-[var(--gold-light)] px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-b-0 sm:border-r">Tefillos & preparation</a><a href="#essentials" className="border-b border-[var(--gold-light)] px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-b-0 sm:border-r">Food, minyan & mikvah</a><a href="#contacts" className="px-5 py-5 text-center text-xs font-bold uppercase tracking-[0.16em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Contacts & transport</a></div>
         </div>
       </section>
+      )}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-start">
           <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">About the tzaddik</p><h2 dir="rtl" lang="yi" className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">רבי אלימלך מליזענסק</h2><p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-stone-500 sm:text-3xl">Rabbi Elimelech Weisblum of Lizhensk</p><a href={placeDirectionsUrl("Górna 16, 37-300 Leżajsk, Poland", "50.251139, 22.422611")} target="_blank" rel="noreferrer" className="mt-6 inline-flex min-h-11 items-center bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to the kever →</a><Link href="/cemeteries/lizhensk" className="mt-5 inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">View this בית החיים →</Link><SavePlaceButtons place={{ id: "lizensk", name: "Lizhensk", yiddishName: "ליזענסק", address: "Górna 16, 37-300 Leżajsk, Poland", coordinates: "50.251139, 22.422611", href: "/lizensk" }} /><div className="mt-8 border-t border-[var(--gold-light)] pt-5"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Finding the kever</p><ol className="mt-4 space-y-3"><li className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold-ink)]">1.</span><span>Navigate to Górna 16, the Lizhensk Jewish Cemetery.</span></li><li className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold-ink)]">2.</span><span>The kever of Reb Elimelech is within the ohel at the cemetery.</span></li><li className="flex gap-3 text-sm leading-6 text-stone-600"><span className="font-semibold text-[var(--gold-ink)]">3.</span><span>For a yahrzeit visit, expect special access and crowd arrangements; confirm them before you travel.</span></li></ol></div></div>

@@ -3,10 +3,12 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type MapStay } from "@/components/MapExplorer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
 import { pointFrom } from "@/lib/map-markers";
+import { resolvePage } from "@/lib/pages";
 
 // Rendered per request, not frozen at build time.
 //
@@ -23,16 +25,25 @@ import { pointFrom } from "@/lib/map-markers";
 // small, so the cost is a cheap render rather than a cached file.
 export const dynamic = "force-dynamic";
 
-export const metadata = pageMetadata({
-  title: "Map — everywhere we know, on one map | White Glove Itineraries",
-  description: "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
-  path: "/map",
-});
+export async function generateMetadata() {
+  const page = await resolvePage("map");
+  return pageMetadata({
+    title: page?.seoTitle ?? "Map — everywhere we know, on one map | White Glove Itineraries",
+    description:
+      page?.seoDescription ??
+      "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
+    path: "/map",
+  });
+}
 
 export default async function MapPage() {
   // Read through the view so anything the owner adds appears here without a
   // redeploy, the same as on the directories.
-  const [attractionList, stayList] = await Promise.all([getAttractionList(), getStayList()]);
+  const [attractionList, stayList, page] = await Promise.all([
+    getAttractionList(),
+    getStayList(),
+    resolvePage("map"),
+  ]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
   const kevarim: MapKever[] = plottableCemeteries.map((c) => ({
@@ -67,7 +78,9 @@ export default async function MapPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
@@ -83,6 +96,7 @@ export default async function MapPage() {
           </p>
         </div>
       </section>
+      )}
 
       <section className="px-5 py-10 sm:px-8">
         <div className="mx-auto max-w-5xl">

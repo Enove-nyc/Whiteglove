@@ -84,6 +84,13 @@ describe("what a stay claims about kashrus", () => {
       assert.ok(s.season?.trim(), `${s.slug} is a seasonal programme with no season named`);
     }
   });
+
+  test("a last-checked date is a real day or is absent", () => {
+    for (const s of kosherStays) {
+      if (!s.lastChecked) continue;
+      assert.match(s.lastChecked, /^\d{4}-\d{2}-\d{2}$/, `${s.slug} lastChecked is not a day`);
+    }
+  });
 });
 
 describe("the quarters", () => {

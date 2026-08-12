@@ -149,6 +149,10 @@ export type PipelineCandidate = {
    * gathered. Every line names a file, because that is where the work lands.
    */
   needs: readonly string[];
+  evidence?: {
+    lastChecked?: string;
+    notes?: readonly string[];
+  };
 };
 
 /**

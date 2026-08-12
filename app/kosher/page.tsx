@@ -7,6 +7,8 @@ import KosherFinder from "@/components/KosherFinder";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { resolvePage } from "@/lib/pages";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("kosher");
   // The owner writes the title and description in the admin; the

@@ -6,6 +6,7 @@ import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { describeHechsher, hechsherLabel } from "@/data/hechsherim";
 import type { KosherEatery } from "@/data/kosher-eateries";
+import { checkedOn } from "@/lib/trust-status";
 
 // The curated kosher listings. The food finder filters this same White Glove
 // collection, so every public card has the same editorial boundary.
@@ -78,6 +79,9 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
             {e.hechsher.state !== "unverified" && (
               <p className={`mt-4 border-l-4 px-3 py-2 text-sm leading-6 ${toneFor(e.hechsher.state)}`}>
                 <strong>{hechsherLabel(e.hechsher)}</strong> — {describeHechsher(e.hechsher)}
+                {e.hechsher.state === "certified" && checkedOn(e.lastChecked ?? e.hechsher.confirmedAt)
+                  ? ` Checked ${checkedOn(e.lastChecked ?? e.hechsher.confirmedAt)}.`
+                  : ""}
               </p>
             )}
 

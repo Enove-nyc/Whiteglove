@@ -6,6 +6,7 @@ import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
+import TripProgressStrip from "@/components/TripProgressStrip";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { allCrossings } from "@/lib/border-store";
@@ -108,6 +109,10 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           </dl>
 
           <SharedItineraryActions itinerary={itin} shareId={shareId} />
+        </div>
+
+        <div className="mt-6">
+          <TripProgressStrip startDate={itin.startDate} endDate={itin.endDate} days={days} tripTitle={itin.title} />
         </div>
 
         {days.length === 0 ? (

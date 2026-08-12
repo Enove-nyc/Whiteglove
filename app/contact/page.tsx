@@ -11,6 +11,8 @@ import { CONTACT_REASONS, readReason } from "@/lib/contact-reasons";
 import { resolvePage } from "@/lib/pages";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("contact");
   // The owner writes the title and description in the admin; the

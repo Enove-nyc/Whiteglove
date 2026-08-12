@@ -106,4 +106,11 @@ describe("an eatery can be reached and checked", () => {
       assert.ok(known.has(e.nearQuarter), `${e.slug} points at quarter "${e.nearQuarter}", which does not exist`);
     }
   });
+
+  test("a last-checked date is a real day or is absent", () => {
+    for (const e of kosherEateries) {
+      if (!e.lastChecked) continue;
+      assert.match(e.lastChecked, /^\d{4}-\d{2}-\d{2}$/, `${e.slug} lastChecked is not a day`);
+    }
+  });
 });

@@ -68,6 +68,7 @@ export type KosherEatery = {
   /** Which quarter or shul this sits in, tying it to the stays data. */
   nearQuarter?: string;
   sourceUrl: string;
+  lastChecked?: string;
 };
 
 export const kosherEateries: KosherEatery[] = [

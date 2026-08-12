@@ -384,6 +384,20 @@ function ContactFields({ contact }: { contact?: Contact }) {
       <div className="mt-4">
         <TextArea label="Note" name="note" defaultValue={contact?.note} placeholder="When to call, what they help with" rows={2} />
       </div>
+      <Group label="How far this has been checked">
+        <label className="block">
+          <span className={captionClass}>Date checked</span>
+          <FormDateField
+            name="lastVerified"
+            defaultValue={contact?.lastVerified ? contact.lastVerified.toISOString().slice(0, 10) : ""}
+            className={inputClass}
+            ariaLabel="Date this contact was last checked"
+          />
+          <span className="mt-1 block text-xs text-stone-400">
+            The day you last confirmed this number answers. Leave blank on a new contact and today is recorded.
+          </span>
+        </label>
+      </Group>
     </>
   );
 }
@@ -412,6 +426,20 @@ export default function DestinationEditor({ destination }: { destination: Editor
               <TextArea label="Overview" name="overview" defaultValue={destination.overview} rows={3} />
               <TextArea label="Short summary" name="summary" defaultValue={destination.summary} rows={2} />
             </div>
+            <Group label="How far this has been checked">
+              <label className="block">
+                <span className={captionClass}>Date checked</span>
+                <FormDateField
+                  name="lastVerified"
+                  defaultValue={destination.lastVerified ? destination.lastVerified.toISOString().slice(0, 10) : ""}
+                  className={inputClass}
+                  ariaLabel="Date this town was last checked"
+                />
+                <span className="mt-1 block text-xs text-stone-400">
+                  The day you last confirmed the facts on this page. Leave blank to keep the date already stored.
+                </span>
+              </label>
+            </Group>
           </ActionForm>
         </div>
       </section>

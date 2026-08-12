@@ -9,6 +9,8 @@ import { visibleBlocks } from "@/data/page-blocks";
 import { tripArrangementOpen } from "@/lib/features";
 import { resolvePage } from "@/lib/pages";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("flight-booking-assistance");
   // The owner writes the title and description in the admin; the

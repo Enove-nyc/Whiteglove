@@ -76,6 +76,7 @@ export async function saveDestinationAction(
       summary: nullable(formData, "summary"),
       safetyNote: nullable(formData, "safetyNote"),
       status: (str(formData, "status") as ContentStatus) || "PUBLISHED",
+      lastVerified: dateOrNull(str(formData, "lastVerified")),
     });
     revalidateDestination(slug);
     return { ok: true, message: "Destination details saved." };
@@ -241,6 +242,7 @@ export async function saveContactAction(
     phone: nullable(formData, "phone"),
     email: nullable(formData, "email"),
     note: nullable(formData, "note"),
+    lastVerified: dateOrNull(str(formData, "lastVerified")),
   };
   try {
     if (contactId) {

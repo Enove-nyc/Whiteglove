@@ -4,6 +4,8 @@ import Image from "next/image";
 import { buildDays, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
+import { useDeviceClock } from "@/components/TripProgressStrip";
+import { tripProgress } from "@/lib/trip-progress";
 
 // The printed itinerary — a keepsake document, not a screen dump.
 //
@@ -79,6 +81,15 @@ export default function PrintableItinerary({
   const year = itin.startDate.slice(0, 4);
   const month = dates ? dates.split(" ")[0] : "";
   const footerRight = [title, month && year ? `${month.charAt(0)}${month.slice(1).toLowerCase()} ${year}` : ""].filter(Boolean).join(" · ");
+  const { today } = useDeviceClock();
+  const progress = tripProgress({ startDate: itin.startDate, endDate: itin.endDate, today });
+  const standing =
+    today && progress.phase !== "no-dates"
+      ? {
+          label: progress.phase === "during" ? "Now" : progress.phase === "after" ? "Since" : "Until then",
+          value: progress.headline,
+        }
+      : null;
 
   // The cover used to say all of this in large type down the middle of the
   // page — the countries at 21px, the dates, who it was for, each on its own
@@ -92,6 +103,7 @@ export default function PrintableItinerary({
     itin.flights.length > 0 && { label: "Flights", value: `${itin.flights.length}` },
     itin.lodging.length > 0 && { label: "Where you sleep", value: `${itin.lodging.length} booked` },
     sharedBy && { label: "Shared by", value: sharedBy },
+    standing,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   return (

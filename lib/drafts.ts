@@ -165,3 +165,11 @@ export function sameValues(a: Record<string, string>, b: Record<string, string>)
   for (const field of fields) if ((a[field] ?? "") !== (b[field] ?? "")) return false;
   return true;
 }
+
+export function writeDraft(values: Record<string, string>, savedAt = new Date().toISOString()): Draft {
+  return { savedAt, values: draftableValues(Object.entries(values)) };
+}
+
+export function draftToStorage(draft: Draft): string {
+  return JSON.stringify(draft);
+}

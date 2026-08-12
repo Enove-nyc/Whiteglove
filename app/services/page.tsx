@@ -9,6 +9,8 @@ import StartingPoints from "@/components/StartingPoints";
 import { resolvePage } from "@/lib/pages";
 import { readWords } from "@/lib/site-words-store";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata() {
   const page = await resolvePage("services");
   // The owner writes the title and description in the admin; the

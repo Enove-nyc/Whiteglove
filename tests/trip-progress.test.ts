@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   countdownPhrase,
@@ -120,6 +121,13 @@ describe("the short phrase beside a trip name", () => {
 
   it("says nothing at all for a trip with no dates", () => {
     assert.equal(countdownPhrase(tripProgress({ today: "2026-07-31" })), null);
+  });
+
+  it("is on the shared and printed views, not only the planner", () => {
+    const shared = readFileSync("app/i/[shareId]/page.tsx", "utf8");
+    const printed = readFileSync("components/PrintableItinerary.tsx", "utf8");
+    assert.match(shared, /TripProgressStrip/, "the shared trip has no countdown");
+    assert.match(printed, /tripProgress/, "the printed trip has no countdown");
   });
 });
 

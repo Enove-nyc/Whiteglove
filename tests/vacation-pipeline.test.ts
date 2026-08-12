@@ -152,6 +152,16 @@ describe("the queue", () => {
     assert.doesNotMatch(source, /[€$£]\s?\d/, "the pipeline quotes a price");
   });
 
+  it("holds evidence without publishing it", () => {
+    for (const candidate of PIPELINE) {
+      if (!candidate.evidence?.lastChecked) continue;
+      assert.match(candidate.evidence.lastChecked, /^\d{4}-\d{2}-\d{2}$/, `${candidate.slug} evidence date is not a day`);
+      for (const note of candidate.evidence.notes ?? []) {
+        assert.doesNotMatch(note, /\bis kosher\b|\bglatt\b|\bcertified\b|\bhas a minyan\b/i, `${candidate.slug}: ${note}`);
+      }
+    }
+  });
+
   it("names the towns before the research starts", () => {
     // The commonest way a destination page comes out empty is a city spelled
     // one way in data/attractions.ts and another in the destination record.
