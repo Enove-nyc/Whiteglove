@@ -453,11 +453,6 @@ export async function stageBuiltInContentBatch(slug: string): Promise<{ created:
   return { created: result.count, total: rows.length };
 }
 
-function looksLikeSynagogueListing(name: string, category: string | null, kind: BulkContentKind): boolean {
-  if (kind === "PRACTICAL" && /minyan/i.test(category || "")) return true;
-  return /\b(synagogue|synagoge|shul|beit knesset|beis knesses|templo)\b/i.test(name);
-}
-
 function openDuplicateKeeperScore(row: {
   kind: BulkContentKind;
   category: string | null;
@@ -471,20 +466,24 @@ function openDuplicateKeeperScore(row: {
   score -= (row.validationErrors?.length || 0) * 10;
   if (row.summary?.trim()) score += 5;
   if (row.address?.trim()) score += 3;
-  if (looksLikeSynagogueListing(row.name, row.category, row.kind)) {
-    // One shul listing beats a second heritage Attraction for the same building.
-    if (row.kind === "PRACTICAL") score += 50;
-    else if (row.kind === "ATTRACTION") score += 15;
-  }
+  // Every kind competes the same way. Prefer the practical / stay form of a
+  // place when Attraction and Practical both exist; prefer cleaner names.
+  if (row.kind === "PRACTICAL") score += 25;
+  else if (row.kind === "PLACE_TO_STAY") score += 18;
+  else if (row.kind === "ATTRACTION") score += 10;
+  else if (row.kind === "KOSHER_FOOD") score += 12;
+  if (!/\b(framing|orientation|corridor|daytime|placeholder|stub)\b/i.test(row.name)) score += 8;
+  score -= Math.min(row.name.length, 120) * 0.01;
   // Stable tie-break: earlier staged row wins when scores match.
   score -= Math.min(row.createdAt.getTime() / 1e15, 1);
   return score;
 }
 
 /**
- * Walk every open staged candidate and mark same-place doubles as DUPLICATE.
- * Catches Attraction vs Practical pairs that slipped through older staging
- * (Abuhav Synagogue is the example that showed up in Needs review).
+ * Walk every open staged candidate — every kind, every batch — and mark
+ * same-place doubles as DUPLICATE. Soft name matching covers Attraction vs
+ * Practical, stay-anchor wording variants, heritage corridor duplicates, and
+ * framing suffixes. Nothing is limited to synagogues.
  */
 export async function reconcileOpenImportDuplicates(): Promise<{ groups: number; marked: number }> {
   if (!isDbEnabled()) return { groups: 0, marked: 0 };

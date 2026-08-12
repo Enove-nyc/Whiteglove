@@ -11,14 +11,14 @@ export default async function AdminImportNeedsReviewPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  // Housekeeping for older staged rows: Attraction + Practical for one place
-  // (Abuhav Synagogue, and the same pattern elsewhere) must not both sit in
-  // Needs review. Soft-fail so a database hiccup still renders the queue.
+  // Housekeeping for older staged rows: every kind is checked (attractions,
+  // practical, stays, food). Same-place doubles must not both sit in Needs
+  // review. Soft-fail so a database hiccup still renders the queue.
   let reconcileNote: string | null = null;
   try {
     const reconciled = await reconcileOpenImportDuplicates();
     if (reconciled.marked > 0) {
-      reconcileNote = `Marked ${reconciled.marked} same-place doubles across ${reconciled.groups} places. The stronger listing stays in Needs review; the rest moved to Possible duplicates.`;
+      reconcileNote = `Checked every open listing and marked ${reconciled.marked} same-place doubles across ${reconciled.groups} places. The stronger listing stays in Needs review; the rest moved to Possible duplicates.`;
     }
   } catch {
     reconcileNote = null;

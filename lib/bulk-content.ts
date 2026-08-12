@@ -224,24 +224,59 @@ function locationKey(name: string, city: string, country: string): string {
 }
 
 /**
- * Same place under Attraction vs Practical / "X" vs "X framing" still needs to
- * collapse in the review queue. Strip only editorial suffixes — keep words that
- * distinguish real neighbours (Sephardic Ari vs Ari Ashkenazi).
+ * Same place under any kinds (Attraction vs Practical, stay anchors, heritage
+ * corridors, "X" vs "X framing", etc.) must collapse in the review queue.
+ * Strip editorial suffixes only — keep words that distinguish real neighbours
+ * (Sephardic Ari vs Ari Ashkenazi, District 1 vs District 3).
  */
 export function softListingName(name: string | null | undefined): string {
-  return normalizeContentText(name)
+  let soft = normalizeContentText(name)
+    .replace(/\bheritage walking corridor\b/g, "heritage corridor")
+    .replace(/\bcommunity heritage corridor\b/g, "heritage corridor")
+    .replace(/\bjewish community heritage corridor\b/g, "jewish heritage corridor")
+    .replace(/\bjewish visitor heritage orientation\b/g, "jewish visitor orientation")
+    .replace(/\bjewish community visitor orientation\b/g, "jewish visitor orientation")
+    .replace(/\bvisitor heritage orientation\b/g, "visitor orientation")
+    .replace(/\bcommunity visitor orientation\b/g, "visitor orientation")
+    .replace(/\bstaying near historic center\b/g, "staying near city center")
+    .replace(/\bstaying near city(?! center)\b/g, "staying near city center")
     .replace(
-      /\b(framing|daytime|courtyard|outdoor|approach|orientation|historic|visitor resource|tradition site|listing|candidate|stub|placeholder|exterior)\b/g,
+      /\b(framing|daytime|courtyard|outdoor|approach|orientation|historic|visitor resource|tradition site|listing|candidate|stub|placeholder|exterior|walking|metro)\b/g,
       " ",
     )
     .replace(/\s+/g, " ")
     .trim();
+  return soft;
 }
 
 export function softLocationKey(name: string, city: string, country: string): string {
-  const soft = softListingName(name);
+  let soft = softListingName(name);
   if (!soft) return "";
-  return `${soft}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
+  // City is already part of the key — drop city tokens from the name so
+  // "Staying near Florence city center" and "Staying near Historic Center Florence"
+  // land on the same place without merging District 1 with District 3.
+  const cityNorm = normalizeContentText(city);
+  for (const tok of cityNorm.split(" ").filter((part) => part.length >= 3)) {
+    soft = soft.replace(new RegExp(`(^|\\s)${tok}(\\s|$)`, "g"), " ");
+  }
+  soft = soft
+    // Re-apply synonym collapses after city tokens are removed ("Jewish community
+    // Dubai heritage corridor" → "jewish community heritage corridor").
+    .replace(/\bjewish community heritage corridor\b/g, "jewish heritage corridor")
+    .replace(/\bcommunity heritage corridor\b/g, "heritage corridor")
+    .replace(/\bjewish visitor heritage orientation\b/g, "jewish visitor orientation")
+    .replace(/\bjewish community visitor orientation\b/g, "jewish visitor orientation")
+    .replace(/\bvisitor heritage orientation\b/g, "visitor orientation")
+    .replace(/\bcommunity visitor orientation\b/g, "visitor orientation")
+    .replace(/\bstaying near\b/g, "stay")
+    .replace(/\bcity center\b/g, "center")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter((tok, index, parts) => tok && tok !== parts[index - 1])
+    .join(" ");
+  if (!soft) return "";
+  return `${soft}|${cityNorm}|${normalizeContentText(country)}`;
 }
 
 function isPracticalCategory(value: string | null): boolean {

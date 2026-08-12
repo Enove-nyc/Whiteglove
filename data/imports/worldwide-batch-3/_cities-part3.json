@@ -1212,9 +1212,7 @@
       "Matiu/Somes Island framing",
       "Freyberg Beach"
     ],
-    "heritage": [
-      "Wellington Jewish Community Centre"
-    ],
+    "heritage": [],
     "stays": [
       "Staying near Te Aro",
       "Staying near Thorndon"
@@ -1462,9 +1460,7 @@
     "cemeteries": [
       "Panteón Israelita Guadalajara"
     ],
-    "communityResources": [
-      "Comunidad Judía de Guadalajara"
-    ]
+    "communityResources": []
   },
   {
     "market": "uruguay-montevideo",
@@ -1524,9 +1520,7 @@
       "Cementerio Israelita del Uruguay",
       "La Paz Jewish Cemetery"
     ],
-    "communityResources": [
-      "Comunidad Israelita del Uruguay"
-    ]
+    "communityResources": []
   },
   {
     "market": "colombia-bogota",
@@ -1646,8 +1640,6 @@
     "cemeteries": [
       "Cementerio Judío de Lima"
     ],
-    "communityResources": [
-      "Asociación Judía del Perú"
-    ]
+    "communityResources": []
   }
 ]

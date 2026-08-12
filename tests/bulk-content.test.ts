@@ -272,6 +272,59 @@ describe("bulk content deduplication", () => {
     assert.equal(annotated[0]?.duplicateOf, null);
     assert.equal(annotated[1]?.duplicateOf, `batch:${attraction.dedupeKey}`);
   });
+
+  it("collapses same-place doubles for every kind, not only synagogues", async () => {
+    const { softLocationKey } = await import("@/lib/bulk-content");
+    assert.equal(
+      softLocationKey("Staying near Historic Center Florence", "Florence", "Italy"),
+      softLocationKey("Staying near Florence city center", "Florence", "Italy"),
+    );
+    assert.equal(
+      softLocationKey("Jewish community Dubai heritage corridor", "Dubai", "United Arab Emirates"),
+      softLocationKey("Dubai Jewish heritage walking corridor", "Dubai", "United Arab Emirates"),
+    );
+    assert.notEqual(
+      softLocationKey("Staying near District 1", "Ho Chi Minh City", "Vietnam"),
+      softLocationKey("Staying near District 3", "Ho Chi Minh City", "Vietnam"),
+    );
+    assert.notEqual(
+      softLocationKey("Congregation Beth Israel Austin", "Austin", "United States"),
+      softLocationKey("Congregation Beth Israel Cemetery Austin", "Austin", "United States"),
+    );
+
+    const corridorA = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "ATTRACTION",
+      category: "Jewish heritage",
+      name: "Jewish community Dubai heritage corridor",
+      city: "Dubai",
+      country: "United Arab Emirates",
+      sourceId: "dubai:corridor-a",
+      sourceUrl: "https://example.org/dubai/a",
+    });
+    const corridorB = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      kind: "ATTRACTION",
+      category: "Jewish heritage",
+      name: "Dubai Jewish heritage walking corridor",
+      city: "Dubai",
+      country: "United Arab Emirates",
+      sourceId: "dubai:corridor-b",
+      sourceUrl: "https://example.org/dubai/b",
+    });
+    assert.deepEqual(
+      findBulkContentDuplicate(corridorB, [{
+        id: "candidate:corridor-a",
+        kind: "ATTRACTION",
+        name: corridorA.name,
+        city: corridorA.city,
+        country: corridorA.country,
+        sourceUrl: corridorA.sourceUrl,
+        sourceId: corridorA.sourceId,
+      }]),
+      { id: "candidate:corridor-a", reason: "name-and-location" },
+    );
+  });
 });
 
 describe("checked-in import packages", () => {
