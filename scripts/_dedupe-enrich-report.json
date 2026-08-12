@@ -1,0 +1,210 @@
+{
+  "originalBaseline": 24077,
+  "before": 24001,
+  "after": 23994,
+  "removed": 7,
+  "removedFromOriginal": 83,
+  "nightlifeRemoved": 0,
+  "duplicateRemoved": 7,
+  "packCountsBefore": {
+    "white-glove-europe-batch": 783,
+    "white-glove-global-batch": 665,
+    "white-glove-fill-batch": 94,
+    "worldwide-batch-2": 152,
+    "worldwide-batch-3": 2008,
+    "worldwide-batch-4": 5325,
+    "worldwide-batch-5": 14974
+  },
+  "packCountsAfter": {
+    "white-glove-europe-batch": 783,
+    "white-glove-global-batch": 665,
+    "white-glove-fill-batch": 94,
+    "worldwide-batch-2": 152,
+    "worldwide-batch-3": 2008,
+    "worldwide-batch-4": 5318,
+    "worldwide-batch-5": 14974
+  },
+  "coverageBefore": {
+    "total": 24001,
+    "address": 92.9,
+    "summary": 92.9,
+    "category": 100,
+    "coordinates": 0.1,
+    "addressCount": 22307,
+    "summaryCount": 22307,
+    "categoryCount": 24001,
+    "coordinatesCount": 29
+  },
+  "coverageAfterAll": {
+    "total": 23994,
+    "address": 93,
+    "summary": 93,
+    "category": 100,
+    "coordinates": 0.1,
+    "addressCount": 22303,
+    "summaryCount": 22303,
+    "categoryCount": 23994,
+    "coordinatesCount": 30
+  },
+  "coverageEnrichableBefore": {
+    "total": 22307,
+    "address": 100,
+    "summary": 100,
+    "category": 100,
+    "coordinates": 0.1,
+    "addressCount": 22307,
+    "summaryCount": 22307,
+    "categoryCount": 22307,
+    "coordinatesCount": 29
+  },
+  "coverageEnrichableAfter": {
+    "total": 22300,
+    "address": 100,
+    "summary": 100,
+    "category": 100,
+    "coordinates": 0.1,
+    "addressCount": 22300,
+    "summaryCount": 22300,
+    "categoryCount": 22300,
+    "coordinatesCount": 30
+  },
+  "sampleClusters": [
+    {
+      "key": "montreal::canada::attraction::museum of jewish",
+      "kept": {
+        "pack": "worldwide-batch-2",
+        "name": "Museum of Jewish Montreal",
+        "locality": "Montréal",
+        "country": "Canada",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Museum of Jewish Montreal framing",
+        "locality": "Montreal",
+        "country": "Canada",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      }
+    },
+    {
+      "key": "porto::portugal::attraction::jewish museum of",
+      "kept": {
+        "pack": "worldwide-batch-2",
+        "name": "Jewish Museum of Porto",
+        "locality": "Porto",
+        "country": "Portugal",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Jewish Museum of Porto framing",
+        "locality": "Porto",
+        "country": "Portugal",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      }
+    },
+    {
+      "key": "buenos aires::argentina::attraction::amia memorial",
+      "kept": {
+        "pack": "worldwide-batch-2",
+        "name": "AMIA Memorial",
+        "locality": "Buenos Aires",
+        "country": "Argentina",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "AMIA memorial framing",
+        "locality": "Buenos Aires",
+        "country": "Argentina",
+        "entityType": "attraction",
+        "importKind": "ATTRACTION"
+      }
+    },
+    {
+      "key": "richmond::united states::shul::congregation beth ahabah",
+      "kept": {
+        "pack": "worldwide-batch-3",
+        "name": "Congregation Beth Ahabah",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Congregation Beth Ahabah framing",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      }
+    },
+    {
+      "key": "richmond::united states::shul::yung israel of",
+      "kept": {
+        "pack": "worldwide-batch-3",
+        "name": "Young Israel of Richmond",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Young Israel of Richmond framing",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      }
+    },
+    {
+      "key": "richmond::united states::shul::chabad of",
+      "kept": {
+        "pack": "worldwide-batch-3",
+        "name": "Chabad of Richmond",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Chabad of Richmond framing",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "shul",
+        "importKind": "PRACTICAL"
+      }
+    },
+    {
+      "key": "richmond::united states::beis_hachaim::forest lawn jewish sections",
+      "kept": {
+        "pack": "worldwide-batch-3",
+        "name": "Forest Lawn Jewish sections",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "beis_hachaim",
+        "importKind": "ATTRACTION"
+      },
+      "removed": {
+        "pack": "worldwide-batch-4",
+        "name": "Forest Lawn Jewish sections framing",
+        "locality": "Richmond",
+        "country": "United States",
+        "entityType": "beis_hachaim",
+        "importKind": "ATTRACTION"
+      }
+    }
+  ],
+  "removedByReason": {
+    "near-duplicate": 7
+  },
+  "dryRun": false
+}

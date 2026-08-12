@@ -55,7 +55,7 @@ function draft(
 }
 
 /**
- * Private NEEDS_REVIEW candidates (~2009).
+ * Private NEEDS_REVIEW candidates (2008).
  * Prefills listingLabel, bulk category, customer-facing summary and address for verification.
  * Does not publish.
  */
@@ -75,7 +75,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Miami",
     country: "United States",
     address: "Miami, United States",
-    summary: "Miami is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Miami is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "miami-visit",
   }),
   draft({
@@ -417,7 +417,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Miami",
     country: "United States",
     address: "301 Washington Ave, Miami Beach, FL 33139, United States",
-    summary: "Jewish Museum of Florida — FIU is a Jewish-heritage site in Miami. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum of Florida — FIU is a Jewish-heritage site in Miami. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "miami-gjf",
   }),
   draft({
@@ -651,7 +651,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Boston",
     country: "United States",
     address: "Boston, United States",
-    summary: "Boston is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Boston is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "boston-meet",
   }),
   draft({
@@ -993,7 +993,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Boston",
     country: "United States",
     address: "Vilna Shul Boston, Boston, United States",
-    summary: "Vilna Shul Boston is a Jewish-heritage site in Boston. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Vilna Shul Boston is a Jewish-heritage site in Boston. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "boston-cjp",
   }),
   draft({
@@ -1011,7 +1011,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Boston",
     country: "United States",
     address: "Mayyim Hayyim visitor framing, Boston, United States",
-    summary: "Mayyim Hayyim visitor framing is a Jewish-heritage site in Boston. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Mayyim Hayyim visitor framing is a Jewish-heritage site in Boston. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "boston-cjp",
   }),
   draft({
@@ -1245,7 +1245,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Philadelphia",
     country: "United States",
     address: "Philadelphia, United States",
-    summary: "Philadelphia is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Philadelphia is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "philly-visit",
   }),
   draft({
@@ -1587,7 +1587,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Philadelphia",
     country: "United States",
     address: "101 S Independence Mall E, Philadelphia, PA 19106, United States",
-    summary: "National Museum of American Jewish History is a Jewish-heritage site in Philadelphia. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "National Museum of American Jewish History is a Jewish-heritage site in Philadelphia. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "philly-jewish",
   }),
   draft({
@@ -1605,7 +1605,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Philadelphia",
     country: "United States",
     address: "Congregation Mikveh Israel framing, Philadelphia, United States",
-    summary: "Congregation Mikveh Israel framing is a Jewish-heritage site in Philadelphia. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Mikveh Israel framing is a Jewish-heritage site in Philadelphia. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "philly-jewish",
   }),
   draft({
@@ -1839,7 +1839,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Washington, D.C.",
     country: "United States",
     address: "Washington, D.C., United States",
-    summary: "Washington, D.C. is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Washington, D.C. is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "dc-destination",
   }),
   draft({
@@ -2181,7 +2181,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Washington, D.C.",
     country: "United States",
     address: "100 Raoul Wallenberg Pl SW, Washington, DC 20024, United States",
-    summary: "United States Holocaust Memorial Museum is a Jewish-heritage site in Washington. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "United States Holocaust Memorial Museum is a Jewish-heritage site in Washington. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "dc-federation",
   }),
   draft({
@@ -2199,7 +2199,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Washington, D.C.",
     country: "United States",
     address: "Lillian and Albert Small Capital Jewish Museum, Washington, United States",
-    summary: "Lillian and Albert Small Capital Jewish Museum is a Jewish-heritage site in Washington. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Lillian and Albert Small Capital Jewish Museum is a Jewish-heritage site in Washington. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "dc-federation",
   }),
   draft({
@@ -2433,7 +2433,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Baltimore",
     country: "United States",
     address: "Baltimore, United States",
-    summary: "Baltimore is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Baltimore is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "baltimore-visit",
   }),
   draft({
@@ -2739,7 +2739,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Baltimore",
     country: "United States",
     address: "15 Lloyd St, Baltimore, MD 21202, United States",
-    summary: "Jewish Museum of Maryland is a Jewish-heritage site in Baltimore. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum of Maryland is a Jewish-heritage site in Baltimore. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "baltimore-associated",
   }),
   draft({
@@ -2757,7 +2757,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Baltimore",
     country: "United States",
     address: "Lloyd Street Synagogue, Baltimore, United States",
-    summary: "Lloyd Street Synagogue is a Jewish-heritage site in Baltimore. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Lloyd Street Synagogue is a Jewish-heritage site in Baltimore. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "baltimore-associated",
   }),
   draft({
@@ -2991,7 +2991,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cleveland",
     country: "United States",
     address: "Cleveland, United States",
-    summary: "Cleveland is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Cleveland is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "cleveland-this",
   }),
   draft({
@@ -3297,7 +3297,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cleveland",
     country: "United States",
     address: "Maltz Museum of Jewish Heritage, Cleveland, United States",
-    summary: "Maltz Museum of Jewish Heritage is a Jewish-heritage site in Cleveland. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Maltz Museum of Jewish Heritage is a Jewish-heritage site in Cleveland. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cleveland-jewish",
   }),
   draft({
@@ -3315,7 +3315,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cleveland",
     country: "United States",
     address: "Park Synagogue framing, Cleveland, United States",
-    summary: "Park Synagogue framing is a Jewish-heritage site in Cleveland. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Park Synagogue framing is a Jewish-heritage site in Cleveland. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cleveland-jewish",
   }),
   draft({
@@ -3549,7 +3549,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Detroit",
     country: "United States",
     address: "Detroit, United States",
-    summary: "Detroit is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Detroit is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "detroit-visit",
   }),
   draft({
@@ -3855,7 +3855,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Detroit",
     country: "United States",
     address: "Holocaust Memorial Center Farmington Hills, Detroit, United States",
-    summary: "Holocaust Memorial Center Farmington Hills is a Jewish-heritage site in Detroit. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Memorial Center Farmington Hills is a Jewish-heritage site in Detroit. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "detroit-federation",
   }),
   draft({
@@ -3873,7 +3873,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Detroit",
     country: "United States",
     address: "Isaac Agree Downtown Synagogue framing, Detroit, United States",
-    summary: "Isaac Agree Downtown Synagogue framing is a Jewish-heritage site in Detroit. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Isaac Agree Downtown Synagogue framing is a Jewish-heritage site in Detroit. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "detroit-federation",
   }),
   draft({
@@ -4107,7 +4107,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Dallas",
     country: "United States",
     address: "Dallas, United States",
-    summary: "Dallas is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Dallas is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "dallas-visit",
   }),
   draft({
@@ -4413,7 +4413,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Dallas",
     country: "United States",
     address: "Museum of Biblical Art Dallas framing, Dallas, United States",
-    summary: "Museum of Biblical Art Dallas framing is a Jewish-heritage site in Dallas. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Museum of Biblical Art Dallas framing is a Jewish-heritage site in Dallas. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "dallas-jewish",
   }),
   draft({
@@ -4647,7 +4647,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Houston",
     country: "United States",
     address: "Houston, United States",
-    summary: "Houston is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Houston is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "houston-visit",
   }),
   draft({
@@ -4953,7 +4953,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Houston",
     country: "United States",
     address: "Holocaust Museum Houston, Houston, United States",
-    summary: "Holocaust Museum Houston is a Jewish-heritage site in Houston. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Museum Houston is a Jewish-heritage site in Houston. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "houston-jewish",
   }),
   draft({
@@ -4971,7 +4971,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Houston",
     country: "United States",
     address: "Congregation Beth Israel framing, Houston, United States",
-    summary: "Congregation Beth Israel framing is a Jewish-heritage site in Houston. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Israel framing is a Jewish-heritage site in Houston. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "houston-jewish",
   }),
   draft({
@@ -5205,7 +5205,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Atlanta",
     country: "United States",
     address: "Atlanta, United States",
-    summary: "Atlanta is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Atlanta is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "atlanta-discover",
   }),
   draft({
@@ -5511,7 +5511,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Atlanta",
     country: "United States",
     address: "William Breman Jewish Heritage Museum, Atlanta, United States",
-    summary: "William Breman Jewish Heritage Museum is a Jewish-heritage site in Atlanta. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "William Breman Jewish Heritage Museum is a Jewish-heritage site in Atlanta. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "atlanta-jewish",
   }),
   draft({
@@ -5529,7 +5529,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Atlanta",
     country: "United States",
     address: "The Temple Atlanta framing, Atlanta, United States",
-    summary: "The Temple Atlanta framing is a Jewish-heritage site in Atlanta. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "The Temple Atlanta framing is a Jewish-heritage site in Atlanta. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "atlanta-jewish",
   }),
   draft({
@@ -5763,7 +5763,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Phoenix",
     country: "United States",
     address: "Phoenix, United States",
-    summary: "Phoenix is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Phoenix is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "phoenix-visit",
   }),
   draft({
@@ -6069,7 +6069,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Phoenix",
     country: "United States",
     address: "Sylvia Plotkin Judaica Museum framing, Phoenix, United States",
-    summary: "Sylvia Plotkin Judaica Museum framing is a Jewish-heritage site in Phoenix. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Sylvia Plotkin Judaica Museum framing is a Jewish-heritage site in Phoenix. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "phoenix-jewish",
   }),
   draft({
@@ -6087,7 +6087,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Phoenix",
     country: "United States",
     address: "Congregation Beth Israel Phoenix framing, Phoenix, United States",
-    summary: "Congregation Beth Israel Phoenix framing is a Jewish-heritage site in Phoenix. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Israel Phoenix framing is a Jewish-heritage site in Phoenix. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "phoenix-jewish",
   }),
   draft({
@@ -6321,7 +6321,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Denver",
     country: "United States",
     address: "Denver, United States",
-    summary: "Denver is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Denver is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "denver-visit",
   }),
   draft({
@@ -6627,7 +6627,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Denver",
     country: "United States",
     address: "Mizel Museum, Denver, United States",
-    summary: "Mizel Museum is a Jewish-heritage site in Denver. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Mizel Museum is a Jewish-heritage site in Denver. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "denver-jewish",
   }),
   draft({
@@ -6645,7 +6645,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Denver",
     country: "United States",
     address: "HEM Jewish Community framing, Denver, United States",
-    summary: "HEM Jewish Community framing is a Jewish-heritage site in Denver. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "HEM Jewish Community framing is a Jewish-heritage site in Denver. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "denver-jewish",
   }),
   draft({
@@ -6879,7 +6879,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tampa",
     country: "United States",
     address: "Tampa, United States",
-    summary: "Tampa is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Tampa is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "tampa-visit",
   }),
   draft({
@@ -7185,7 +7185,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tampa",
     country: "United States",
     address: "Florida Holocaust Museum St. Petersburg, Tampa, United States",
-    summary: "Florida Holocaust Museum St. Petersburg is a Jewish-heritage site in Tampa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Florida Holocaust Museum St. Petersburg is a Jewish-heritage site in Tampa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "tampa-jewish",
   }),
   draft({
@@ -7203,7 +7203,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tampa",
     country: "United States",
     address: "Congregation Rodeph Sholom Tampa framing, Tampa, United States",
-    summary: "Congregation Rodeph Sholom Tampa framing is a Jewish-heritage site in Tampa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Rodeph Sholom Tampa framing is a Jewish-heritage site in Tampa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "tampa-jewish",
   }),
   draft({
@@ -7437,7 +7437,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Orlando",
     country: "United States",
     address: "Orlando, United States",
-    summary: "Orlando is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Orlando is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "orlando-visit",
   }),
   draft({
@@ -7474,6 +7474,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     country: "United States",
     address: "Orlando Science Center, Orlando, United States",
     summary: "Orlando Science Center is a visitor site in Orlando, United States, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
+    website: "https://www.osc.org/",
     sourceKey: "orlando-visit",
   }),
   draft({
@@ -7499,7 +7500,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     entityType: "attraction",
     importKind: "ATTRACTION",
     importTarget: "Attraction",
-    category: "Landmark",
+    category: "Nature",
     listingLabel: "Attraction",
     slug: "harry-p-leu-gardens",
     name: "Harry P. Leu Gardens",
@@ -7508,8 +7509,10 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     locality: "Orlando",
     destination: "Orlando",
     country: "United States",
-    address: "Harry P. Leu Gardens, Orlando, United States",
+    address: "1920 North Forest Avenue, Orlando, FL 32803",
     summary: "Harry P. Leu Gardens is a visitor site in Orlando, United States, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
+    coordinates: "28.5696605, -81.3563552",
+    website: "https://www.leugardens.org/",
     sourceKey: "orlando-visit",
   }),
   draft({
@@ -7571,7 +7574,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     entityType: "attraction",
     importKind: "ATTRACTION",
     importTarget: "Attraction",
-    category: "Landmark",
+    category: "Nature",
     listingLabel: "Attraction",
     slug: "gatorland-framing",
     name: "Gatorland framing",
@@ -7580,8 +7583,9 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     locality: "Orlando",
     destination: "Orlando",
     country: "United States",
-    address: "Gatorland framing, Orlando, United States",
+    address: "14501 South Orange Blossom Trail, Orlando, FL 32837",
     summary: "Gatorland framing is a visitor site in Orlando, United States, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
+    website: "https://www.gatorland.com/",
     sourceKey: "orlando-visit",
   }),
   draft({
@@ -7743,7 +7747,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Orlando",
     country: "United States",
     address: "Holocaust Memorial Resource Center Maitland, Orlando, United States",
-    summary: "Holocaust Memorial Resource Center Maitland is a Jewish-heritage site in Orlando. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Memorial Resource Center Maitland is a Jewish-heritage site in Orlando. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "orlando-jewish",
   }),
   draft({
@@ -7761,7 +7765,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Orlando",
     country: "United States",
     address: "Congregation Ohev Shalom framing, Orlando, United States",
-    summary: "Congregation Ohev Shalom framing is a Jewish-heritage site in Orlando. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Ohev Shalom framing is a Jewish-heritage site in Orlando. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "orlando-jewish",
   }),
   draft({
@@ -7995,7 +7999,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Pittsburgh",
     country: "United States",
     address: "Pittsburgh, United States",
-    summary: "Pittsburgh is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Pittsburgh is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "pittsburgh-visit",
   }),
   draft({
@@ -8301,7 +8305,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Pittsburgh",
     country: "United States",
     address: "Holocaust Center of Pittsburgh framing, Pittsburgh, United States",
-    summary: "Holocaust Center of Pittsburgh framing is a Jewish-heritage site in Pittsburgh. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Center of Pittsburgh framing is a Jewish-heritage site in Pittsburgh. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pittsburgh-jewish",
   }),
   draft({
@@ -8319,7 +8323,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Pittsburgh",
     country: "United States",
     address: "Rodef Shalom Congregation framing, Pittsburgh, United States",
-    summary: "Rodef Shalom Congregation framing is a Jewish-heritage site in Pittsburgh. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Rodef Shalom Congregation framing is a Jewish-heritage site in Pittsburgh. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pittsburgh-jewish",
   }),
   draft({
@@ -8553,7 +8557,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Minneapolis–Saint Paul",
     country: "United States",
     address: "Minneapolis–Saint Paul, United States",
-    summary: "Minneapolis–Saint Paul is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Minneapolis–Saint Paul is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "msp-meet",
   }),
   draft({
@@ -8859,7 +8863,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Minneapolis–Saint Paul",
     country: "United States",
     address: "Sabes Jewish Community Center framing, Minneapolis, United States",
-    summary: "Sabes Jewish Community Center framing is a Jewish-heritage site in Minneapolis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Sabes Jewish Community Center framing is a Jewish-heritage site in Minneapolis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "minneapolis-jewish",
   }),
   draft({
@@ -8877,7 +8881,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Minneapolis–Saint Paul",
     country: "United States",
     address: "Temple Israel Minneapolis framing, Minneapolis, United States",
-    summary: "Temple Israel Minneapolis framing is a Jewish-heritage site in Minneapolis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Temple Israel Minneapolis framing is a Jewish-heritage site in Minneapolis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "minneapolis-jewish",
   }),
   draft({
@@ -9111,7 +9115,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Austin",
     country: "United States",
     address: "Austin, United States",
-    summary: "Austin is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Austin is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "austin-visit",
   }),
   draft({
@@ -9417,7 +9421,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Austin",
     country: "United States",
     address: "Dell Jewish Community Campus framing, Austin, United States",
-    summary: "Dell Jewish Community Campus framing is a Jewish-heritage site in Austin. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Dell Jewish Community Campus framing is a Jewish-heritage site in Austin. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "austin-jewish",
   }),
   draft({
@@ -9435,7 +9439,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Austin",
     country: "United States",
     address: "Congregation Agudas Achim framing, Austin, United States",
-    summary: "Congregation Agudas Achim framing is a Jewish-heritage site in Austin. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Agudas Achim framing is a Jewish-heritage site in Austin. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "austin-jewish",
   }),
   draft({
@@ -9669,7 +9673,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Portland",
     country: "United States",
     address: "Portland, United States",
-    summary: "Portland is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Portland is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "portland-travel",
   }),
   draft({
@@ -9975,7 +9979,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Portland",
     country: "United States",
     address: "Oregon Jewish Museum and Center for Holocaust Education, Portland, United States",
-    summary: "Oregon Jewish Museum and Center for Holocaust Education is a Jewish-heritage site in Portland. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Oregon Jewish Museum and Center for Holocaust Education is a Jewish-heritage site in Portland. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "portland-jewish",
   }),
   draft({
@@ -9993,7 +9997,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Portland",
     country: "United States",
     address: "Congregation Shaarie Torah framing, Portland, United States",
-    summary: "Congregation Shaarie Torah framing is a Jewish-heritage site in Portland. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Shaarie Torah framing is a Jewish-heritage site in Portland. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "portland-jewish",
   }),
   draft({
@@ -10227,7 +10231,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Nashville",
     country: "United States",
     address: "Nashville, United States",
-    summary: "Nashville is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Nashville is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "nashville-visit",
   }),
   draft({
@@ -10533,7 +10537,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Nashville",
     country: "United States",
     address: "Gordon Jewish Community Center framing, Nashville, United States",
-    summary: "Gordon Jewish Community Center framing is a Jewish-heritage site in Nashville. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Gordon Jewish Community Center framing is a Jewish-heritage site in Nashville. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nashville-jewish",
   }),
   draft({
@@ -10551,7 +10555,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Nashville",
     country: "United States",
     address: "Congregation Sherith Israel framing, Nashville, United States",
-    summary: "Congregation Sherith Israel framing is a Jewish-heritage site in Nashville. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Sherith Israel framing is a Jewish-heritage site in Nashville. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nashville-jewish",
   }),
   draft({
@@ -10785,7 +10789,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Charlotte",
     country: "United States",
     address: "Charlotte, United States",
-    summary: "Charlotte is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Charlotte is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "charlotte-visit",
   }),
   draft({
@@ -11091,7 +11095,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Charlotte",
     country: "United States",
     address: "Levine Jewish Community Center framing, Charlotte, United States",
-    summary: "Levine Jewish Community Center framing is a Jewish-heritage site in Charlotte. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Levine Jewish Community Center framing is a Jewish-heritage site in Charlotte. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "charlotte-jewish",
   }),
   draft({
@@ -11109,7 +11113,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Charlotte",
     country: "United States",
     address: "Temple Israel Charlotte framing, Charlotte, United States",
-    summary: "Temple Israel Charlotte framing is a Jewish-heritage site in Charlotte. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Temple Israel Charlotte framing is a Jewish-heritage site in Charlotte. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "charlotte-jewish",
   }),
   draft({
@@ -11343,7 +11347,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "St. Louis",
     country: "United States",
     address: "St. Louis, United States",
-    summary: "St. Louis is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "St. Louis is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "stl-explore",
   }),
   draft({
@@ -11649,7 +11653,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "St. Louis",
     country: "United States",
     address: "Holocaust Museum and Learning Center St. Louis, St. Louis, United States",
-    summary: "Holocaust Museum and Learning Center St. Louis is a Jewish-heritage site in St. Louis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Museum and Learning Center St. Louis is a Jewish-heritage site in St. Louis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "stl-jewish",
   }),
   draft({
@@ -11667,7 +11671,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "St. Louis",
     country: "United States",
     address: "United Hebrew Congregation framing, St. Louis, United States",
-    summary: "United Hebrew Congregation framing is a Jewish-heritage site in St. Louis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "United Hebrew Congregation framing is a Jewish-heritage site in St. Louis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "stl-jewish",
   }),
   draft({
@@ -11901,7 +11905,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cincinnati",
     country: "United States",
     address: "Cincinnati, United States",
-    summary: "Cincinnati is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Cincinnati is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "cincinnati-visit",
   }),
   draft({
@@ -12207,7 +12211,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cincinnati",
     country: "United States",
     address: "Skirball Museum Cincinnati, Cincinnati, United States",
-    summary: "Skirball Museum Cincinnati is a Jewish-heritage site in Cincinnati. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Skirball Museum Cincinnati is a Jewish-heritage site in Cincinnati. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cincinnati-jewish",
   }),
   draft({
@@ -12225,7 +12229,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Cincinnati",
     country: "United States",
     address: "Isaac M. Wise Temple framing, Cincinnati, United States",
-    summary: "Isaac M. Wise Temple framing is a Jewish-heritage site in Cincinnati. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Isaac M. Wise Temple framing is a Jewish-heritage site in Cincinnati. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cincinnati-jewish",
   }),
   draft({
@@ -12459,7 +12463,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Milwaukee",
     country: "United States",
     address: "Milwaukee, United States",
-    summary: "Milwaukee is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Milwaukee is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "milwaukee-visit",
   }),
   draft({
@@ -12765,7 +12769,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Milwaukee",
     country: "United States",
     address: "Jewish Museum Milwaukee, Milwaukee, United States",
-    summary: "Jewish Museum Milwaukee is a Jewish-heritage site in Milwaukee. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum Milwaukee is a Jewish-heritage site in Milwaukee. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "milwaukee-jewish",
   }),
   draft({
@@ -12783,7 +12787,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Milwaukee",
     country: "United States",
     address: "Congregation Beth Israel Ner Tamid framing, Milwaukee, United States",
-    summary: "Congregation Beth Israel Ner Tamid framing is a Jewish-heritage site in Milwaukee. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Israel Ner Tamid framing is a Jewish-heritage site in Milwaukee. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "milwaukee-jewish",
   }),
   draft({
@@ -13017,7 +13021,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "New Orleans",
     country: "United States",
     address: "New Orleans, United States",
-    summary: "New Orleans is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "New Orleans is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "nola-visit",
   }),
   draft({
@@ -13323,7 +13327,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "New Orleans",
     country: "United States",
     address: "Museum of the Southern Jewish Experience, New Orleans, United States",
-    summary: "Museum of the Southern Jewish Experience is a Jewish-heritage site in New Orleans. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Museum of the Southern Jewish Experience is a Jewish-heritage site in New Orleans. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nola-jewish",
   }),
   draft({
@@ -13341,7 +13345,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "New Orleans",
     country: "United States",
     address: "Touro Synagogue New Orleans framing, New Orleans, United States",
-    summary: "Touro Synagogue New Orleans framing is a Jewish-heritage site in New Orleans. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Touro Synagogue New Orleans framing is a Jewish-heritage site in New Orleans. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nola-jewish",
   }),
   draft({
@@ -13575,7 +13579,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kansas City",
     country: "United States",
     address: "Kansas City, United States",
-    summary: "Kansas City is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Kansas City is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "kc-visit",
   }),
   draft({
@@ -13881,7 +13885,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kansas City",
     country: "United States",
     address: "Midwest Center for Holocaust Education, Kansas City, United States",
-    summary: "Midwest Center for Holocaust Education is a Jewish-heritage site in Kansas City. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Midwest Center for Holocaust Education is a Jewish-heritage site in Kansas City. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "kc-jewish",
   }),
   draft({
@@ -13899,7 +13903,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kansas City",
     country: "United States",
     address: "Congregation Beth Shalom framing, Kansas City, United States",
-    summary: "Congregation Beth Shalom framing is a Jewish-heritage site in Kansas City. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Shalom framing is a Jewish-heritage site in Kansas City. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "kc-jewish",
   }),
   draft({
@@ -14133,7 +14137,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "San Antonio",
     country: "United States",
     address: "San Antonio, United States",
-    summary: "San Antonio is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "San Antonio is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "sa-visit",
   }),
   draft({
@@ -14439,7 +14443,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "San Antonio",
     country: "United States",
     address: "Holocaust Memorial Museum of San Antonio, San Antonio, United States",
-    summary: "Holocaust Memorial Museum of San Antonio is a Jewish-heritage site in San Antonio. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Memorial Museum of San Antonio is a Jewish-heritage site in San Antonio. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "sa-jewish",
   }),
   draft({
@@ -14457,7 +14461,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "San Antonio",
     country: "United States",
     address: "Temple Beth-El San Antonio framing, San Antonio, United States",
-    summary: "Temple Beth-El San Antonio framing is a Jewish-heritage site in San Antonio. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Temple Beth-El San Antonio framing is a Jewish-heritage site in San Antonio. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "sa-jewish",
   }),
   draft({
@@ -14691,7 +14695,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jacksonville",
     country: "United States",
     address: "Jacksonville, United States",
-    summary: "Jacksonville is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Jacksonville is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "jax-visit",
   }),
   draft({
@@ -14997,7 +15001,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jacksonville",
     country: "United States",
     address: "Jacksonville Jewish Center framing, Jacksonville, United States",
-    summary: "Jacksonville Jewish Center framing is a Jewish-heritage site in Jacksonville. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jacksonville Jewish Center framing is a Jewish-heritage site in Jacksonville. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "jax-jewish",
   }),
   draft({
@@ -15015,7 +15019,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jacksonville",
     country: "United States",
     address: "Etz Chaim Synagogue framing, Jacksonville, United States",
-    summary: "Etz Chaim Synagogue framing is a Jewish-heritage site in Jacksonville. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Etz Chaim Synagogue framing is a Jewish-heritage site in Jacksonville. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "jax-jewish",
   }),
   draft({
@@ -15249,7 +15253,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Columbus",
     country: "United States",
     address: "Columbus, United States",
-    summary: "Columbus is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Columbus is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "columbus-experience",
   }),
   draft({
@@ -15555,7 +15559,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Columbus",
     country: "United States",
     address: "Columbus Jewish Historical Society framing, Columbus, United States",
-    summary: "Columbus Jewish Historical Society framing is a Jewish-heritage site in Columbus. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Columbus Jewish Historical Society framing is a Jewish-heritage site in Columbus. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "columbus-jewish",
   }),
   draft({
@@ -15573,7 +15577,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Columbus",
     country: "United States",
     address: "Congregation Beth Jacob Columbus framing, Columbus, United States",
-    summary: "Congregation Beth Jacob Columbus framing is a Jewish-heritage site in Columbus. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Jacob Columbus framing is a Jewish-heritage site in Columbus. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "columbus-jewish",
   }),
   draft({
@@ -15807,7 +15811,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Ottawa",
     country: "Canada",
     address: "Ottawa, Canada",
-    summary: "Ottawa is a vacation destination in Canada with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Ottawa is a vacation destination in Canada with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "ottawa-tourism",
   }),
   draft({
@@ -16113,7 +16117,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Ottawa",
     country: "Canada",
     address: "Ottawa Jewish Archives framing, Ottawa, Canada",
-    summary: "Ottawa Jewish Archives framing is a Jewish-heritage site in Ottawa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Ottawa Jewish Archives framing is a Jewish-heritage site in Ottawa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ottawa-jewish",
   }),
   draft({
@@ -16131,7 +16135,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Ottawa",
     country: "Canada",
     address: "Congregation Machzikei Hadas framing, Ottawa, Canada",
-    summary: "Congregation Machzikei Hadas framing is a Jewish-heritage site in Ottawa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Machzikei Hadas framing is a Jewish-heritage site in Ottawa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ottawa-jewish",
   }),
   draft({
@@ -16365,7 +16369,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Calgary",
     country: "Canada",
     address: "Calgary, Canada",
-    summary: "Calgary is a vacation destination in Canada with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Calgary is a vacation destination in Canada with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "calgary-visit",
   }),
   draft({
@@ -16671,7 +16675,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Calgary",
     country: "Canada",
     address: "Jewish Historical Society of Southern Alberta framing, Calgary, Canada",
-    summary: "Jewish Historical Society of Southern Alberta framing is a Jewish-heritage site in Calgary. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Historical Society of Southern Alberta framing is a Jewish-heritage site in Calgary. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "calgary-jewish",
   }),
   draft({
@@ -16689,7 +16693,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Calgary",
     country: "Canada",
     address: "Beth Tzedec Congregation framing, Calgary, Canada",
-    summary: "Beth Tzedec Congregation framing is a Jewish-heritage site in Calgary. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Beth Tzedec Congregation framing is a Jewish-heritage site in Calgary. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "calgary-jewish",
   }),
   draft({
@@ -16923,7 +16927,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Manchester",
     country: "United Kingdom",
     address: "Manchester, United Kingdom",
-    summary: "Manchester is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Manchester is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "manchester-visit",
   }),
   draft({
@@ -17229,7 +17233,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Manchester",
     country: "United Kingdom",
     address: "190 Cheetham Hill Rd, Manchester M8 8LW, United Kingdom",
-    summary: "Manchester Jewish Museum is a Jewish-heritage site in Manchester. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Manchester Jewish Museum is a Jewish-heritage site in Manchester. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "manchester-jewish",
   }),
   draft({
@@ -17247,7 +17251,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Manchester",
     country: "United Kingdom",
     address: "Higher Crumpsall Synagogue framing, Manchester, United Kingdom",
-    summary: "Higher Crumpsall Synagogue framing is a Jewish-heritage site in Manchester. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Higher Crumpsall Synagogue framing is a Jewish-heritage site in Manchester. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "manchester-jewish",
   }),
   draft({
@@ -17481,7 +17485,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Leeds",
     country: "United Kingdom",
     address: "Leeds, United Kingdom",
-    summary: "Leeds is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Leeds is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "leeds-visit",
   }),
   draft({
@@ -17787,7 +17791,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Leeds",
     country: "United Kingdom",
     address: "Etz Chaim Synagogue Leeds framing, Leeds, United Kingdom",
-    summary: "Etz Chaim Synagogue Leeds framing is a Jewish-heritage site in Leeds. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Etz Chaim Synagogue Leeds framing is a Jewish-heritage site in Leeds. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "leeds-jewish",
   }),
   draft({
@@ -17805,7 +17809,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Leeds",
     country: "United Kingdom",
     address: "Beth Hamidrash Hagadol framing, Leeds, United Kingdom",
-    summary: "Beth Hamidrash Hagadol framing is a Jewish-heritage site in Leeds. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Beth Hamidrash Hagadol framing is a Jewish-heritage site in Leeds. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "leeds-jewish",
   }),
   draft({
@@ -18039,7 +18043,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Gateshead / Newcastle",
     country: "United Kingdom",
     address: "Gateshead / Newcastle, United Kingdom",
-    summary: "Gateshead / Newcastle is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Gateshead / Newcastle is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "newcastle-gateshead",
   }),
   draft({
@@ -18345,7 +18349,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Gateshead / Newcastle",
     country: "United Kingdom",
     address: "Gateshead Talmudical College framing, Gateshead, United Kingdom",
-    summary: "Gateshead Talmudical College framing is a Jewish-heritage site in Gateshead. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Gateshead Talmudical College framing is a Jewish-heritage site in Gateshead. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "gateshead-jewish",
   }),
   draft({
@@ -18363,7 +18367,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Gateshead / Newcastle",
     country: "United Kingdom",
     address: "Gateshead Jewish community streetscape, Gateshead, United Kingdom",
-    summary: "Gateshead Jewish community streetscape is a Jewish-heritage site in Gateshead. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Gateshead Jewish community streetscape is a Jewish-heritage site in Gateshead. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "gateshead-jewish",
   }),
   draft({
@@ -18597,7 +18601,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Birmingham",
     country: "United Kingdom",
     address: "Birmingham, United Kingdom",
-    summary: "Birmingham is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Birmingham is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "birmingham-visit",
   }),
   draft({
@@ -18903,7 +18907,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Birmingham",
     country: "United Kingdom",
     address: "Singers Hill Synagogue framing, Birmingham, United Kingdom",
-    summary: "Singers Hill Synagogue framing is a Jewish-heritage site in Birmingham. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Singers Hill Synagogue framing is a Jewish-heritage site in Birmingham. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "birmingham-jewish",
   }),
   draft({
@@ -18921,7 +18925,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Birmingham",
     country: "United Kingdom",
     address: "Birmingham Hebrew Congregation framing, Birmingham, United Kingdom",
-    summary: "Birmingham Hebrew Congregation framing is a Jewish-heritage site in Birmingham. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Birmingham Hebrew Congregation framing is a Jewish-heritage site in Birmingham. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "birmingham-jewish",
   }),
   draft({
@@ -18969,7 +18973,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     listingLabel: "Shul",
     slug: "birmingham-central-synagogue",
     name: "Birmingham Central Synagogue",
-    aliases: ["Birmingham Central Synagogue", "Birmingham Central Shul"],
+    aliases: ["Birmingham Central Synagogue", "Birmingham Central Shul", "Central Synagogue Birmingham", "Central Shul Birmingham"],
     keywords: ["Birmingham", "shul", "synagogue", "minyan"],
     locality: "Birmingham",
     destination: "Birmingham",
@@ -19012,24 +19016,6 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     country: "United Kingdom",
     address: "Chabad of Birmingham UK, Birmingham, United Kingdom",
     summary: "Chabad of Birmingham UK is a synagogue / minyan address in Birmingham. Confirm minyan times, security entry rules and visitor seating before Shabbos or yom tov.",
-    sourceKey: "birmingham-jewish",
-  }),
-  draft({
-    market: "uk-birmingham",
-    entityType: "shul",
-    importKind: "PRACTICAL",
-    importTarget: "PracticalPlace",
-    category: "MINYAN",
-    listingLabel: "Shul",
-    slug: "central-synagogue-birmingham",
-    name: "Central Synagogue Birmingham",
-    aliases: ["Central Synagogue Birmingham", "Central Shul Birmingham"],
-    keywords: ["Birmingham", "shul", "synagogue", "minyan"],
-    locality: "Birmingham",
-    destination: "Birmingham",
-    country: "United Kingdom",
-    address: "Central Synagogue Birmingham, Birmingham, United Kingdom",
-    summary: "Central Synagogue Birmingham is a synagogue / minyan address in Birmingham. Confirm minyan times, security entry rules and visitor seating before Shabbos or yom tov.",
     sourceKey: "birmingham-jewish",
   }),
   draft({
@@ -19155,7 +19141,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Liverpool",
     country: "United Kingdom",
     address: "Liverpool, United Kingdom",
-    summary: "Liverpool is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Liverpool is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "liverpool-visit",
   }),
   draft({
@@ -19461,7 +19447,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Liverpool",
     country: "United Kingdom",
     address: "Liverpool Old Hebrew Congregation Princes Road, Liverpool, United Kingdom",
-    summary: "Liverpool Old Hebrew Congregation Princes Road is a Jewish-heritage site in Liverpool. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Liverpool Old Hebrew Congregation Princes Road is a Jewish-heritage site in Liverpool. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "liverpool-jewish",
   }),
   draft({
@@ -19479,7 +19465,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Liverpool",
     country: "United Kingdom",
     address: "Jewish Museum Liverpool research framing, Liverpool, United Kingdom",
-    summary: "Jewish Museum Liverpool research framing is a Jewish-heritage site in Liverpool. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum Liverpool research framing is a Jewish-heritage site in Liverpool. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "liverpool-jewish",
   }),
   draft({
@@ -19713,7 +19699,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Glasgow",
     country: "United Kingdom",
     address: "Glasgow, United Kingdom",
-    summary: "Glasgow is a vacation destination in United Kingdom with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Glasgow is a vacation destination in United Kingdom with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "glasgow-people",
   }),
   draft({
@@ -20019,7 +20005,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Glasgow",
     country: "United Kingdom",
     address: "129 Hill St, Glasgow G3 6UB, United Kingdom",
-    summary: "Garnethill Synagogue is a Jewish-heritage site in Glasgow. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Garnethill Synagogue is a Jewish-heritage site in Glasgow. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "glasgow-jewish",
   }),
   draft({
@@ -20037,7 +20023,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Glasgow",
     country: "United Kingdom",
     address: "Scottish Jewish Archives Centre, Glasgow, United Kingdom",
-    summary: "Scottish Jewish Archives Centre is a Jewish-heritage site in Glasgow. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Scottish Jewish Archives Centre is a Jewish-heritage site in Glasgow. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "glasgow-jewish",
   }),
   draft({
@@ -20271,7 +20257,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jerusalem",
     country: "Israel",
     address: "Jerusalem, Israel",
-    summary: "Jerusalem is a vacation destination in Israel with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Jerusalem is a vacation destination in Israel with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "il-jerusalem",
   }),
   draft({
@@ -20351,7 +20337,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     entityType: "attraction",
     importKind: "ATTRACTION",
     importTarget: "Attraction",
-    category: "Landmark",
+    category: "Jewish heritage",
     listingLabel: "Attraction",
     slug: "yad-vashem",
     name: "Yad Vashem",
@@ -20360,8 +20346,10 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     locality: "Jerusalem",
     destination: "Jerusalem",
     country: "Israel",
-    address: "Har Hazikaron, Jerusalem, Israel",
+    address: "Har HaZikaron, Jerusalem",
     summary: "Yad Vashem is a visitor site in Jerusalem, Israel, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
+    coordinates: "31.77417, 35.17556",
+    website: "https://www.yadvashem.org/",
     sourceKey: "il-jerusalem",
   }),
   draft({
@@ -20459,7 +20447,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     entityType: "attraction",
     importKind: "ATTRACTION",
     importTarget: "Attraction",
-    category: "Landmark",
+    category: "Jewish heritage",
     listingLabel: "Attraction",
     slug: "city-of-david-framing",
     name: "City of David framing",
@@ -20468,8 +20456,10 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     locality: "Jerusalem",
     destination: "Jerusalem",
     country: "Israel",
-    address: "City of David framing, Jerusalem, Israel",
+    address: "Ma",
     summary: "City of David framing is a visitor site in Jerusalem, Israel, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
+    coordinates: "31.7739, 35.2358",
+    website: "https://www.cityofdavid.org.il/en",
     sourceKey: "il-jerusalem",
   }),
   draft({
@@ -20613,7 +20603,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jerusalem",
     country: "Israel",
     address: "Hurva Synagogue framing, Jerusalem, Israel",
-    summary: "Hurva Synagogue framing is a Jewish-heritage site in Jerusalem. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Hurva Synagogue framing is a Jewish-heritage site in Jerusalem. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-jerusalem-community",
   }),
   draft({
@@ -20631,7 +20621,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jerusalem",
     country: "Israel",
     address: "Four Sephardi Synagogues framing, Jerusalem, Israel",
-    summary: "Four Sephardi Synagogues framing is a Jewish-heritage site in Jerusalem. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Four Sephardi Synagogues framing is a Jewish-heritage site in Jerusalem. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-jerusalem-community",
   }),
   draft({
@@ -20649,7 +20639,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Jerusalem",
     country: "Israel",
     address: "Menachem Begin Heritage Center, Jerusalem, Israel",
-    summary: "Menachem Begin Heritage Center is a Jewish-heritage site in Jerusalem. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Menachem Begin Heritage Center is a Jewish-heritage site in Jerusalem. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-jerusalem-community",
   }),
   draft({
@@ -20901,7 +20891,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Haifa",
     country: "Israel",
     address: "Haifa, Israel",
-    summary: "Haifa is a vacation destination in Israel with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Haifa is a vacation destination in Israel with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "il-haifa",
   }),
   draft({
@@ -21207,7 +21197,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Haifa",
     country: "Israel",
     address: "Central Synagogue Haifa framing, Haifa, Israel",
-    summary: "Central Synagogue Haifa framing is a Jewish-heritage site in Haifa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Central Synagogue Haifa framing is a Jewish-heritage site in Haifa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-haifa-community",
   }),
   draft({
@@ -21225,7 +21215,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Haifa",
     country: "Israel",
     address: "Haifa Auditorium campus walk, Haifa, Israel",
-    summary: "Haifa Auditorium campus walk is a Jewish-heritage site in Haifa. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Haifa Auditorium campus walk is a Jewish-heritage site in Haifa. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-haifa-community",
   }),
   draft({
@@ -21441,7 +21431,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tzfat",
     country: "Israel",
     address: "Tzfat, Israel",
-    summary: "Tzfat is a vacation destination in Israel with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Tzfat is a vacation destination in Israel with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "il-tzfat",
   }),
   draft({
@@ -21747,7 +21737,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tzfat",
     country: "Israel",
     address: "Abuhav Synagogue, Tzfat, Israel",
-    summary: "Abuhav Synagogue is a Jewish-heritage site in Tzfat. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Abuhav Synagogue is a Jewish-heritage site in Tzfat. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-tzfat-community",
   }),
   draft({
@@ -21765,7 +21755,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tzfat",
     country: "Israel",
     address: "Ari Ashkenazi Synagogue, Tzfat, Israel",
-    summary: "Ari Ashkenazi Synagogue is a Jewish-heritage site in Tzfat. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Ari Ashkenazi Synagogue is a Jewish-heritage site in Tzfat. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-tzfat-community",
   }),
   draft({
@@ -21783,7 +21773,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Tzfat",
     country: "Israel",
     address: "Joseph Caro Synagogue framing, Tzfat, Israel",
-    summary: "Joseph Caro Synagogue framing is a Jewish-heritage site in Tzfat. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Joseph Caro Synagogue framing is a Jewish-heritage site in Tzfat. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-tzfat-community",
   }),
   draft({
@@ -21999,7 +21989,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Netanya",
     country: "Israel",
     address: "Netanya, Israel",
-    summary: "Netanya is a vacation destination in Israel with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Netanya is a vacation destination in Israel with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "il-netanya",
   }),
   draft({
@@ -22305,7 +22295,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Netanya",
     country: "Israel",
     address: "Netanya Great Synagogue framing, Netanya, Israel",
-    summary: "Netanya Great Synagogue framing is a Jewish-heritage site in Netanya. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Netanya Great Synagogue framing is a Jewish-heritage site in Netanya. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-netanya-community",
   }),
   draft({
@@ -22323,7 +22313,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Netanya",
     country: "Israel",
     address: "Ohel Pathach Synagogue framing, Netanya, Israel",
-    summary: "Ohel Pathach Synagogue framing is a Jewish-heritage site in Netanya. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Ohel Pathach Synagogue framing is a Jewish-heritage site in Netanya. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-netanya-community",
   }),
   draft({
@@ -22539,7 +22529,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Eilat",
     country: "Israel",
     address: "Eilat, Israel",
-    summary: "Eilat is a vacation destination in Israel with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Eilat is a vacation destination in Israel with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "il-eilat",
   }),
   draft({
@@ -22845,7 +22835,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Eilat",
     country: "Israel",
     address: "Eilat Central Synagogue framing, Eilat, Israel",
-    summary: "Eilat Central Synagogue framing is a Jewish-heritage site in Eilat. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Eilat Central Synagogue framing is a Jewish-heritage site in Eilat. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "il-eilat-community",
   }),
   draft({
@@ -23007,7 +22997,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Warsaw",
     country: "Poland",
     address: "Warsaw, Poland",
-    summary: "Warsaw is a vacation destination in Poland with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Warsaw is a vacation destination in Poland with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "pl-warsaw",
   }),
   draft({
@@ -23313,7 +23303,9 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Warsaw",
     country: "Poland",
     address: "Anielewicza 6, 00-157 Warsaw, Poland",
-    summary: "POLIN Museum of the History of Polish Jews is a Jewish-heritage site in Warsaw. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "A thousand years of Jewish Poland, built on the ground of the Warsaw ghetto — and about the thousand years, not only the end of them.",
+    coordinates: "52.2494, 20.9931",
+    website: "https://www.polin.pl/en",
     sourceKey: "pl-warsaw-jewish",
   }),
   draft({
@@ -23331,7 +23323,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Warsaw",
     country: "Poland",
     address: "Twarda 6, 00-105 Warsaw, Poland",
-    summary: "Nożyk Synagogue is a Jewish-heritage site in Warsaw. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Nożyk Synagogue is a Jewish-heritage site in Warsaw. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-warsaw-jewish",
   }),
   draft({
@@ -23349,7 +23341,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Warsaw",
     country: "Poland",
     address: "Jewish Cemetery Okopowa, Warsaw, Poland",
-    summary: "Jewish Cemetery Okopowa is a Jewish-heritage site in Warsaw. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Cemetery Okopowa is a Jewish-heritage site in Warsaw. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-warsaw-jewish",
   }),
   draft({
@@ -23529,7 +23521,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kraków",
     country: "Poland",
     address: "Kraków, Poland",
-    summary: "Kraków is a vacation destination in Poland with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Kraków is a vacation destination in Poland with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "pl-krakow",
   }),
   draft({
@@ -23835,7 +23827,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kraków",
     country: "Poland",
     address: "Remuh Synagogue and Cemetery, Kraków, Poland",
-    summary: "Remuh Synagogue and Cemetery is a Jewish-heritage site in Kraków. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Remuh Synagogue and Cemetery is a Jewish-heritage site in Kraków. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-krakow-jewish",
   }),
   draft({
@@ -23853,7 +23845,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kraków",
     country: "Poland",
     address: "Tempel Synagogue, Kraków, Poland",
-    summary: "Tempel Synagogue is a Jewish-heritage site in Kraków. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Tempel Synagogue is a Jewish-heritage site in Kraków. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-krakow-jewish",
   }),
   draft({
@@ -23871,7 +23863,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kraków",
     country: "Poland",
     address: "Old Synagogue Museum Kazimierz, Kraków, Poland",
-    summary: "Old Synagogue Museum Kazimierz is a Jewish-heritage site in Kraków. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Old Synagogue Museum Kazimierz is a Jewish-heritage site in Kraków. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-krakow-jewish",
   }),
   draft({
@@ -23889,7 +23881,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Kraków",
     country: "Poland",
     address: "Isaac Synagogue, Kraków, Poland",
-    summary: "Isaac Synagogue is a Jewish-heritage site in Kraków. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Isaac Synagogue is a Jewish-heritage site in Kraków. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pl-krakow-jewish",
   }),
   draft({
@@ -24052,6 +24044,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     country: "Poland",
     address: "Miodowa 55, 31-052 Kraków, Poland",
     summary: "New Jewish Cemetery Miodowa is a beis hachaim / Jewish cemetery site near Kraków. Confirm access, opening hours and any shomer contact before visiting kevarim.",
+    coordinates: "50.05414, 19.95046",
     sourceKey: "pl-krakow-jewish",
   }),
   draft({
@@ -24087,7 +24080,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bucharest",
     country: "Romania",
     address: "Bucharest, Romania",
-    summary: "Bucharest is a vacation destination in Romania with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Bucharest is a vacation destination in Romania with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "ro-bucharest",
   }),
   draft({
@@ -24393,7 +24386,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bucharest",
     country: "Romania",
     address: "Strada Sfânta Vineri 9-11, Bucharest, Romania",
-    summary: "Choral Temple Bucharest is a Jewish-heritage site in Bucharest. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Choral Temple Bucharest is a Jewish-heritage site in Bucharest. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ro-bucharest-jewish",
   }),
   draft({
@@ -24411,7 +24404,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bucharest",
     country: "Romania",
     address: "Jewish History Museum Bucharest, Bucharest, Romania",
-    summary: "Jewish History Museum Bucharest is a Jewish-heritage site in Bucharest. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish History Museum Bucharest is a Jewish-heritage site in Bucharest. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ro-bucharest-jewish",
   }),
   draft({
@@ -24429,7 +24422,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bucharest",
     country: "Romania",
     address: "Great Synagogue Bucharest framing, Bucharest, Romania",
-    summary: "Great Synagogue Bucharest framing is a Jewish-heritage site in Bucharest. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Great Synagogue Bucharest framing is a Jewish-heritage site in Bucharest. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ro-bucharest-jewish",
   }),
   draft({
@@ -24609,7 +24602,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Debrecen",
     country: "Hungary",
     address: "Debrecen, Hungary",
-    summary: "Debrecen is a vacation destination in Hungary with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Debrecen is a vacation destination in Hungary with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "hu-debrecen",
   }),
   draft({
@@ -24915,7 +24908,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Debrecen",
     country: "Hungary",
     address: "Debrecen Synagogue framing, Debrecen, Hungary",
-    summary: "Debrecen Synagogue framing is a Jewish-heritage site in Debrecen. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Debrecen Synagogue framing is a Jewish-heritage site in Debrecen. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "hu-debrecen-jewish",
   }),
   draft({
@@ -24933,7 +24926,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Debrecen",
     country: "Hungary",
     address: "Jewish cemetery Debrecen, Debrecen, Hungary",
-    summary: "Jewish cemetery Debrecen is a Jewish-heritage site in Debrecen. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish cemetery Debrecen is a Jewish-heritage site in Debrecen. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "hu-debrecen-jewish",
   }),
   draft({
@@ -25077,7 +25070,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bratislava",
     country: "Slovakia",
     address: "Bratislava, Slovakia",
-    summary: "Bratislava is a vacation destination in Slovakia with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Bratislava is a vacation destination in Slovakia with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "sk-bratislava",
   }),
   draft({
@@ -25383,7 +25376,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bratislava",
     country: "Slovakia",
     address: "Nábrežie armádneho generála Ludvíka Svobodu, Bratislava, Slovakia",
-    summary: "Chatam Sofer Memorial is a Jewish-heritage site in Bratislava. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Chatam Sofer Memorial is a Jewish-heritage site in Bratislava. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "sk-bratislava-jewish",
   }),
   draft({
@@ -25401,7 +25394,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bratislava",
     country: "Slovakia",
     address: "Museum of Jewish Culture Bratislava, Bratislava, Slovakia",
-    summary: "Museum of Jewish Culture Bratislava is a Jewish-heritage site in Bratislava. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Museum of Jewish Culture Bratislava is a Jewish-heritage site in Bratislava. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "sk-bratislava-jewish",
   }),
   draft({
@@ -25419,7 +25412,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bratislava",
     country: "Slovakia",
     address: "Orthodox Synagogue framing, Bratislava, Slovakia",
-    summary: "Orthodox Synagogue framing is a Jewish-heritage site in Bratislava. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Orthodox Synagogue framing is a Jewish-heritage site in Bratislava. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "sk-bratislava-jewish",
   }),
   draft({
@@ -25581,7 +25574,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Vilnius",
     country: "Lithuania",
     address: "Vilnius, Lithuania",
-    summary: "Vilnius is a vacation destination in Lithuania with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Vilnius is a vacation destination in Lithuania with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "lt-vilnius",
   }),
   draft({
@@ -25887,7 +25880,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Vilnius",
     country: "Lithuania",
     address: "Vilna Gaon Jewish State Museum, Vilnius, Lithuania",
-    summary: "Vilna Gaon Jewish State Museum is a Jewish-heritage site in Vilnius. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Vilna Gaon Jewish State Museum is a Jewish-heritage site in Vilnius. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lt-vilnius-jewish",
   }),
   draft({
@@ -25905,7 +25898,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Vilnius",
     country: "Lithuania",
     address: "Choral Synagogue Vilnius, Vilnius, Lithuania",
-    summary: "Choral Synagogue Vilnius is a Jewish-heritage site in Vilnius. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Choral Synagogue Vilnius is a Jewish-heritage site in Vilnius. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lt-vilnius-jewish",
   }),
   draft({
@@ -25923,7 +25916,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Vilnius",
     country: "Lithuania",
     address: "Jewish cemetery Sudervė, Vilnius, Lithuania",
-    summary: "Jewish cemetery Sudervė is a Jewish-heritage site in Vilnius. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish cemetery Sudervė is a Jewish-heritage site in Vilnius. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lt-vilnius-jewish",
   }),
   draft({
@@ -26085,7 +26078,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Riga",
     country: "Latvia",
     address: "Riga, Latvia",
-    summary: "Riga is a vacation destination in Latvia with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Riga is a vacation destination in Latvia with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "lv-riga",
   }),
   draft({
@@ -26391,7 +26384,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Riga",
     country: "Latvia",
     address: "Peitavas iela 6/8, Riga, Latvia",
-    summary: "Peitav Synagogue is a Jewish-heritage site in Riga. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Peitav Synagogue is a Jewish-heritage site in Riga. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lv-riga-jewish",
   }),
   draft({
@@ -26409,7 +26402,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Riga",
     country: "Latvia",
     address: "Riga Ghetto and Latvian Holocaust Museum, Riga, Latvia",
-    summary: "Riga Ghetto and Latvian Holocaust Museum is a Jewish-heritage site in Riga. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Riga Ghetto and Latvian Holocaust Museum is a Jewish-heritage site in Riga. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lv-riga-jewish",
   }),
   draft({
@@ -26427,7 +26420,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Riga",
     country: "Latvia",
     address: "Old Jewish Cemetery memorial, Riga, Latvia",
-    summary: "Old Jewish Cemetery memorial is a Jewish-heritage site in Riga. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Old Jewish Cemetery memorial is a Jewish-heritage site in Riga. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "lv-riga-jewish",
   }),
   draft({
@@ -26589,7 +26582,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Helsinki",
     country: "Finland",
     address: "Helsinki, Finland",
-    summary: "Helsinki is a vacation destination in Finland with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Helsinki is a vacation destination in Finland with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "fi-helsinki",
   }),
   draft({
@@ -26895,7 +26888,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Helsinki",
     country: "Finland",
     address: "Malminkatu 26, 00100 Helsinki, Finland",
-    summary: "Helsinki Synagogue is a Jewish-heritage site in Helsinki. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Helsinki Synagogue is a Jewish-heritage site in Helsinki. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "fi-helsinki-jewish",
   }),
   draft({
@@ -26913,7 +26906,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Helsinki",
     country: "Finland",
     address: "Jewish Community Center Helsinki framing, Helsinki, Finland",
-    summary: "Jewish Community Center Helsinki framing is a Jewish-heritage site in Helsinki. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Community Center Helsinki framing is a Jewish-heritage site in Helsinki. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "fi-helsinki-jewish",
   }),
   draft({
@@ -27057,7 +27050,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Oslo",
     country: "Norway",
     address: "Oslo, Norway",
-    summary: "Oslo is a vacation destination in Norway with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Oslo is a vacation destination in Norway with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "no-oslo",
   }),
   draft({
@@ -27363,7 +27356,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Oslo",
     country: "Norway",
     address: "Bergstien 13, 0172 Oslo, Norway",
-    summary: "Oslo Synagogue is a Jewish-heritage site in Oslo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Oslo Synagogue is a Jewish-heritage site in Oslo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "no-oslo-jewish",
   }),
   draft({
@@ -27381,7 +27374,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Oslo",
     country: "Norway",
     address: "Jewish Museum Oslo, Oslo, Norway",
-    summary: "Jewish Museum Oslo is a Jewish-heritage site in Oslo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum Oslo is a Jewish-heritage site in Oslo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "no-oslo-jewish",
   }),
   draft({
@@ -27399,7 +27392,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Oslo",
     country: "Norway",
     address: "Center for Studies of Holocaust and Religious Minorities, Oslo, Norway",
-    summary: "Center for Studies of Holocaust and Religious Minorities is a Jewish-heritage site in Oslo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Center for Studies of Holocaust and Religious Minorities is a Jewish-heritage site in Oslo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "no-oslo-jewish",
   }),
   draft({
@@ -27543,7 +27536,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "São Paulo",
     country: "Brazil",
     address: "São Paulo, Brazil",
-    summary: "São Paulo is a vacation destination in Brazil with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "São Paulo is a vacation destination in Brazil with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "br-saopaulo",
   }),
   draft({
@@ -27849,7 +27842,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "São Paulo",
     country: "Brazil",
     address: "Jewish Museum of São Paulo, São Paulo, Brazil",
-    summary: "Jewish Museum of São Paulo is a Jewish-heritage site in São Paulo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum of São Paulo is a Jewish-heritage site in São Paulo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "br-saopaulo-jewish",
   }),
   draft({
@@ -27867,7 +27860,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "São Paulo",
     country: "Brazil",
     address: "CIP Congregação Israelita Paulista framing, São Paulo, Brazil",
-    summary: "CIP Congregação Israelita Paulista framing is a Jewish-heritage site in São Paulo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "CIP Congregação Israelita Paulista framing is a Jewish-heritage site in São Paulo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "br-saopaulo-jewish",
   }),
   draft({
@@ -27885,7 +27878,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "São Paulo",
     country: "Brazil",
     address: "Beit Chabad São Paulo framing, São Paulo, Brazil",
-    summary: "Beit Chabad São Paulo framing is a Jewish-heritage site in São Paulo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Beit Chabad São Paulo framing is a Jewish-heritage site in São Paulo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "br-saopaulo-jewish",
   }),
   draft({
@@ -28101,7 +28094,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Santiago",
     country: "Chile",
     address: "Santiago, Chile",
-    summary: "Santiago is a vacation destination in Chile with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Santiago is a vacation destination in Chile with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "cl-santiago",
   }),
   draft({
@@ -28407,7 +28400,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Santiago",
     country: "Chile",
     address: "Jewish Museum of Chile framing, Santiago, Chile",
-    summary: "Jewish Museum of Chile framing is a Jewish-heritage site in Santiago. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum of Chile framing is a Jewish-heritage site in Santiago. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cl-santiago-jewish",
   }),
   draft({
@@ -28425,7 +28418,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Santiago",
     country: "Chile",
     address: "Comunidad Israelita de Santiago framing, Santiago, Chile",
-    summary: "Comunidad Israelita de Santiago framing is a Jewish-heritage site in Santiago. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Comunidad Israelita de Santiago framing is a Jewish-heritage site in Santiago. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "cl-santiago-jewish",
   }),
   draft({
@@ -28623,7 +28616,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Mumbai",
     country: "India",
     address: "Mumbai, India",
-    summary: "Mumbai is a vacation destination in India with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Mumbai is a vacation destination in India with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "in-mumbai",
   }),
   draft({
@@ -28929,7 +28922,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Mumbai",
     country: "India",
     address: "Kenesseth Eliyahoo Synagogue, Colaba, Mumbai, India",
-    summary: "Knesset Eliyahoo Synagogue is a Jewish-heritage site in Mumbai. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Knesset Eliyahoo Synagogue is a Jewish-heritage site in Mumbai. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "in-mumbai-jewish",
   }),
   draft({
@@ -28947,7 +28940,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Mumbai",
     country: "India",
     address: "Magen David Synagogue Mumbai, Mumbai, India",
-    summary: "Magen David Synagogue Mumbai is a Jewish-heritage site in Mumbai. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Magen David Synagogue Mumbai is a Jewish-heritage site in Mumbai. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "in-mumbai-jewish",
   }),
   draft({
@@ -28965,7 +28958,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Mumbai",
     country: "India",
     address: "Kenah Rachel Synagogue framing, Mumbai, India",
-    summary: "Kenah Rachel Synagogue framing is a Jewish-heritage site in Mumbai. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Kenah Rachel Synagogue framing is a Jewish-heritage site in Mumbai. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "in-mumbai-jewish",
   }),
   draft({
@@ -29163,7 +29156,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Brisbane",
     country: "Australia",
     address: "Brisbane, Australia",
-    summary: "Brisbane is a vacation destination in Australia with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Brisbane is a vacation destination in Australia with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "au-brisbane",
   }),
   draft({
@@ -29469,7 +29462,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Brisbane",
     country: "Australia",
     address: "Brisbane Hebrew Congregation, Brisbane, Australia",
-    summary: "Brisbane Hebrew Congregation is a Jewish-heritage site in Brisbane. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Brisbane Hebrew Congregation is a Jewish-heritage site in Brisbane. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "au-brisbane-jewish",
   }),
   draft({
@@ -29487,7 +29480,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Brisbane",
     country: "Australia",
     address: "Jewish Museum of Australia Brisbane events framing, Brisbane, Australia",
-    summary: "Jewish Museum of Australia Brisbane events framing is a Jewish-heritage site in Brisbane. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum of Australia Brisbane events framing is a Jewish-heritage site in Brisbane. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "au-brisbane-jewish",
   }),
   draft({
@@ -29667,7 +29660,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Perth",
     country: "Australia",
     address: "Perth, Australia",
-    summary: "Perth is a vacation destination in Australia with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Perth is a vacation destination in Australia with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "au-perth",
   }),
   draft({
@@ -29973,7 +29966,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Perth",
     country: "Australia",
     address: "Perth Hebrew Congregation, Perth, Australia",
-    summary: "Perth Hebrew Congregation is a Jewish-heritage site in Perth. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Perth Hebrew Congregation is a Jewish-heritage site in Perth. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "au-perth-jewish",
   }),
   draft({
@@ -29991,7 +29984,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Perth",
     country: "Australia",
     address: "Jewish Historical & Genealogical Society of WA framing, Perth, Australia",
-    summary: "Jewish Historical & Genealogical Society of WA framing is a Jewish-heritage site in Perth. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Historical & Genealogical Society of WA framing is a Jewish-heritage site in Perth. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "au-perth-jewish",
   }),
   draft({
@@ -30171,7 +30164,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Wellington",
     country: "New Zealand",
     address: "Wellington, New Zealand",
-    summary: "Wellington is a vacation destination in New Zealand with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Wellington is a vacation destination in New Zealand with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "nz-wellington",
   }),
   draft({
@@ -30477,7 +30470,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Wellington",
     country: "New Zealand",
     address: "Wellington Jewish Community Centre, Wellington, New Zealand",
-    summary: "Wellington Jewish Community Centre is a Jewish-heritage site in Wellington. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Wellington Jewish Community Centre is a Jewish-heritage site in Wellington. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nz-wellington-jewish",
   }),
   draft({
@@ -30495,7 +30488,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Wellington",
     country: "New Zealand",
     address: "Beth El Synagogue Wellington framing, Wellington, New Zealand",
-    summary: "Beth El Synagogue Wellington framing is a Jewish-heritage site in Wellington. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Beth El Synagogue Wellington framing is a Jewish-heritage site in Wellington. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "nz-wellington-jewish",
   }),
   draft({
@@ -30657,7 +30650,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Johannesburg",
     country: "South Africa",
     address: "Johannesburg, South Africa",
-    summary: "Johannesburg is a vacation destination in South Africa with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Johannesburg is a vacation destination in South Africa with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "za-jhb",
   }),
   draft({
@@ -30963,7 +30956,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Johannesburg",
     country: "South Africa",
     address: "Johannesburg Holocaust and Genocide Centre, Johannesburg, South Africa",
-    summary: "Johannesburg Holocaust and Genocide Centre is a Jewish-heritage site in Johannesburg. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Johannesburg Holocaust and Genocide Centre is a Jewish-heritage site in Johannesburg. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "za-jhb-jewish",
   }),
   draft({
@@ -30981,7 +30974,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Johannesburg",
     country: "South Africa",
     address: "Great Park Synagogue framing, Johannesburg, South Africa",
-    summary: "Great Park Synagogue framing is a Jewish-heritage site in Johannesburg. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Great Park Synagogue framing is a Jewish-heritage site in Johannesburg. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "za-jhb-jewish",
   }),
   draft({
@@ -30999,7 +30992,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Johannesburg",
     country: "South Africa",
     address: "SA Jewish Museum Cape Town day context framing, Johannesburg, South Africa",
-    summary: "SA Jewish Museum Cape Town day context framing is a Jewish-heritage site in Johannesburg. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "SA Jewish Museum Cape Town day context framing is a Jewish-heritage site in Johannesburg. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "za-jhb-jewish",
   }),
   draft({
@@ -31233,7 +31226,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Abu Dhabi",
     country: "United Arab Emirates",
     address: "Abu Dhabi, United Arab Emirates",
-    summary: "Abu Dhabi is a vacation destination in United Arab Emirates with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Abu Dhabi is a vacation destination in United Arab Emirates with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "ae-abudhabi",
   }),
   draft({
@@ -31539,7 +31532,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Abu Dhabi",
     country: "United Arab Emirates",
     address: "Abrahamic Family House, Saadiyat Island, Abu Dhabi, UAE",
-    summary: "Moses Ben Maimon Synagogue Abrahamic Family House is a Jewish-heritage site in Abu Dhabi. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Moses Ben Maimon Synagogue Abrahamic Family House is a Jewish-heritage site in Abu Dhabi. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ae-abudhabi-jewish",
   }),
   draft({
@@ -31557,7 +31550,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Abu Dhabi",
     country: "United Arab Emirates",
     address: "Abrahamic Family House visitor campus, Abu Dhabi, United Arab Emirates",
-    summary: "Abrahamic Family House visitor campus is a Jewish-heritage site in Abu Dhabi. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Abrahamic Family House visitor campus is a Jewish-heritage site in Abu Dhabi. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "ae-abudhabi-jewish",
   }),
   draft({
@@ -31683,7 +31676,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Doha",
     country: "Qatar",
     address: "Doha, Qatar",
-    summary: "Doha is a vacation destination in Qatar with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Doha is a vacation destination in Qatar with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "qa-doha",
   }),
   draft({
@@ -32043,7 +32036,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Guadalajara",
     country: "Mexico",
     address: "Guadalajara, Mexico",
-    summary: "Guadalajara is a vacation destination in Mexico with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Guadalajara is a vacation destination in Mexico with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "mx-guadalajara",
   }),
   draft({
@@ -32349,7 +32342,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Guadalajara",
     country: "Mexico",
     address: "Comunidad Judía de Guadalajara campus framing, Guadalajara, Mexico",
-    summary: "Comunidad Judía de Guadalajara campus framing is a Jewish-heritage site in Guadalajara. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Comunidad Judía de Guadalajara campus framing is a Jewish-heritage site in Guadalajara. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "mx-guadalajara-jewish",
   }),
   draft({
@@ -32493,7 +32486,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Montevideo",
     country: "Uruguay",
     address: "Montevideo, Uruguay",
-    summary: "Montevideo is a vacation destination in Uruguay with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Montevideo is a vacation destination in Uruguay with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "uy-montevideo",
   }),
   draft({
@@ -32799,7 +32792,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Montevideo",
     country: "Uruguay",
     address: "Templo de la Comunidad Israelita, Montevideo, Uruguay",
-    summary: "Templo de la Comunidad Israelita is a Jewish-heritage site in Montevideo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Templo de la Comunidad Israelita is a Jewish-heritage site in Montevideo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "uy-montevideo-jewish",
   }),
   draft({
@@ -32817,7 +32810,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Montevideo",
     country: "Uruguay",
     address: "Holocaust Memorial Montevideo, Montevideo, Uruguay",
-    summary: "Holocaust Memorial Montevideo is a Jewish-heritage site in Montevideo. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Holocaust Memorial Montevideo is a Jewish-heritage site in Montevideo. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "uy-montevideo-jewish",
   }),
   draft({
@@ -32997,7 +32990,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bogotá",
     country: "Colombia",
     address: "Bogotá, Colombia",
-    summary: "Bogotá is a vacation destination in Colombia with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Bogotá is a vacation destination in Colombia with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "co-bogota",
   }),
   draft({
@@ -33303,7 +33296,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bogotá",
     country: "Colombia",
     address: "Comunidad Judía de Bogotá campus framing, Bogotá, Colombia",
-    summary: "Comunidad Judía de Bogotá campus framing is a Jewish-heritage site in Bogotá. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Comunidad Judía de Bogotá campus framing is a Jewish-heritage site in Bogotá. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "co-bogota-jewish",
   }),
   draft({
@@ -33321,7 +33314,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Bogotá",
     country: "Colombia",
     address: "Sinagoga Congregación Israelita framing, Bogotá, Colombia",
-    summary: "Sinagoga Congregación Israelita framing is a Jewish-heritage site in Bogotá. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Sinagoga Congregación Israelita framing is a Jewish-heritage site in Bogotá. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "co-bogota-jewish",
   }),
   draft({
@@ -33483,7 +33476,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lima",
     country: "Peru",
     address: "Lima, Peru",
-    summary: "Lima is a vacation destination in Peru with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Lima is a vacation destination in Peru with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "pe-lima",
   }),
   draft({
@@ -33789,7 +33782,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lima",
     country: "Peru",
     address: "Asociación Judía del Perú campus framing, Lima, Peru",
-    summary: "Asociación Judía del Perú campus framing is a Jewish-heritage site in Lima. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Asociación Judía del Perú campus framing is a Jewish-heritage site in Lima. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pe-lima-jewish",
   }),
   draft({
@@ -33807,7 +33800,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lima",
     country: "Peru",
     address: "1890 Synagogue Museum framing, Lima, Peru",
-    summary: "1890 Synagogue Museum framing is a Jewish-heritage site in Lima. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "1890 Synagogue Museum framing is a Jewish-heritage site in Lima. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "pe-lima-jewish",
   }),
   draft({
@@ -33969,7 +33962,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Indianapolis",
     country: "United States",
     address: "Indianapolis, United States",
-    summary: "Indianapolis is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Indianapolis is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "indy-visit",
   }),
   draft({
@@ -34275,7 +34268,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Indianapolis",
     country: "United States",
     address: "Indianapolis Hebrew Congregation framing, Indianapolis, United States",
-    summary: "Indianapolis Hebrew Congregation framing is a Jewish-heritage site in Indianapolis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Indianapolis Hebrew Congregation framing is a Jewish-heritage site in Indianapolis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "indy-jewish",
   }),
   draft({
@@ -34293,7 +34286,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Indianapolis",
     country: "United States",
     address: "Jewish Federation campus framing, Indianapolis, United States",
-    summary: "Jewish Federation campus framing is a Jewish-heritage site in Indianapolis. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Federation campus framing is a Jewish-heritage site in Indianapolis. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "indy-jewish",
   }),
   draft({
@@ -34491,7 +34484,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Richmond",
     country: "United States",
     address: "Richmond, United States",
-    summary: "Richmond is a vacation destination in United States with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Richmond is a vacation destination in United States with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "richmond-visit",
   }),
   draft({
@@ -34797,7 +34790,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Richmond",
     country: "United States",
     address: "Congregation Beth Ahabah framing, Richmond, United States",
-    summary: "Congregation Beth Ahabah framing is a Jewish-heritage site in Richmond. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Congregation Beth Ahabah framing is a Jewish-heritage site in Richmond. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "richmond-jewish",
   }),
   draft({
@@ -34845,7 +34838,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     listingLabel: "Shul",
     slug: "congregation-beth-ahabah",
     name: "Congregation Beth Ahabah",
-    aliases: ["Congregation Beth Ahabah"],
+    aliases: ["Congregation Beth Ahabah", "Congregation Beth Ahabah framing"],
     keywords: ["Richmond", "shul", "synagogue", "minyan"],
     locality: "Richmond",
     destination: "Richmond",
@@ -34863,7 +34856,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     listingLabel: "Shul",
     slug: "young-israel-of-richmond",
     name: "Young Israel of Richmond",
-    aliases: ["Young Israel of Richmond"],
+    aliases: ["Young Israel of Richmond", "Young Israel of Richmond framing"],
     keywords: ["Richmond", "shul", "synagogue", "minyan"],
     locality: "Richmond",
     destination: "Richmond",
@@ -34881,7 +34874,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     listingLabel: "Shul",
     slug: "chabad-of-richmond",
     name: "Chabad of Richmond",
-    aliases: ["Chabad of Richmond"],
+    aliases: ["Chabad of Richmond", "Chabad of Richmond framing"],
     keywords: ["Richmond", "shul", "synagogue", "minyan"],
     locality: "Richmond",
     destination: "Richmond",
@@ -34953,7 +34946,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     listingLabel: "Beis hachaim",
     slug: "forest-lawn-jewish-sections",
     name: "Forest Lawn Jewish sections",
-    aliases: ["Forest Lawn Jewish sections"],
+    aliases: ["Forest Lawn Jewish sections", "Forest Lawn Jewish sections framing"],
     keywords: ["Richmond", "beis hachaim", "jewish cemetery", "kevarim"],
     locality: "Richmond",
     destination: "Richmond",
@@ -35283,7 +35276,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "London",
     country: "United Kingdom",
     address: "Jewish Museum London, London, United Kingdom",
-    summary: "Jewish Museum London is a Jewish-heritage site in London. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Jewish Museum London is a Jewish-heritage site in London. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "uk-london-jewish",
   }),
   draft({
@@ -35301,7 +35294,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "London",
     country: "United Kingdom",
     address: "Bevis Marks Synagogue, London, United Kingdom",
-    summary: "Bevis Marks Synagogue is a Jewish-heritage site in London. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Bevis Marks Synagogue is a Jewish-heritage site in London. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "uk-london-jewish",
   }),
   draft({
@@ -35319,7 +35312,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "London",
     country: "United Kingdom",
     address: "Sandys Row Synagogue framing, London, United Kingdom",
-    summary: "Sandys Row Synagogue framing is a Jewish-heritage site in London. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Sandys Row Synagogue framing is a Jewish-heritage site in London. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "uk-london-jewish",
   }),
   draft({
@@ -35571,7 +35564,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lyon",
     country: "France",
     address: "Lyon, France",
-    summary: "Lyon is a vacation destination in France with frum-appropriate sightseeing and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
+    summary: "Lyon is a vacation destination in France with sightseeing suitable for Orthodox / Torah-observant travelers and practical Jewish-travel infrastructure to verify before publishing itinerary pages.",
     sourceKey: "fr-lyon",
   }),
   draft({
@@ -35877,7 +35870,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lyon",
     country: "France",
     address: "Grande Synagogue de Lyon, Lyon, France",
-    summary: "Grande Synagogue de Lyon is a Jewish-heritage site in Lyon. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Grande Synagogue de Lyon is a Jewish-heritage site in Lyon. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "fr-lyon-jewish",
   }),
   draft({
@@ -35895,7 +35888,7 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     destination: "Lyon",
     country: "France",
     address: "Centre d'Histoire de la Résistance framing, Lyon, France",
-    summary: "Centre d'Histoire de la Résistance framing is a Jewish-heritage site in Lyon. Prefer this when planning a frum-friendly day; confirm visiting hours, security and dress expectations before arrival.",
+    summary: "Centre d'Histoire de la Résistance framing is a Jewish-heritage site in Lyon. Prefer this when planning a Orthodox / Torah-observant-friendly day; confirm visiting hours, security and dress expectations before arrival.",
     sourceKey: "fr-lyon-jewish",
   }),
   draft({
@@ -36221,5 +36214,5 @@ export const worldwideBatch3Candidates: readonly WorldwideBatch3Candidate[] = [
     address: "Józefa St, Kazimierz, Kraków, Poland",
     summary: "Józefa Street Kazimierz walk is a visitor site in Kraków, Poland, suitable for family sightseeing and daytime touring. Confirm current hours, tickets and Shabbos access before you go.",
     sourceKey: "pl-krakow",
-  })
+  }),
 ];

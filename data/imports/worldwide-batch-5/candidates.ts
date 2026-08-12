@@ -67,7 +67,7 @@ const rows = [
 ] as const;
 
 /**
- * Private NEEDS_REVIEW candidates (~15000).
+ * Private NEEDS_REVIEW candidates (~14974).
  * Prefills listingLabel, bulk category, customer-facing summary and address for verification.
  * Does not publish. Chunked JSON keeps the TypeScript entrypoint loadable.
  */
