@@ -543,6 +543,15 @@ function pushSitePages(docs: DraftDoc[]) {
       keywords: ["documents", "border", "insurance", "points"],
     },
     {
+      id: "page-esim",
+      kind: "Site page",
+      title: "eSIMs and data abroad",
+      subtitle: "A data plan installed before you fly",
+      href: "/esim",
+      names: ["esim", "e-sim", "sim", "data", "data plan", "internet", "roaming", "phone"],
+      keywords: ["esim", "data", "connectivity", "roaming"],
+    },
+    {
       id: "page-transfers",
       kind: "Site page",
       title: "Airport transfers",

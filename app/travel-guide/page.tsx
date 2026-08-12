@@ -50,6 +50,10 @@ export default async function TravelGuidePage() {
             <a href="#advisories" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Safety advisories</a>
             <a href="#documents" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Documents &amp; visas</a>
             <a href="#paying" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Paying for the trip</a>
+            {/* Data abroad is the same kind of question as documents and money,
+                and this is the page somebody already thinking "before I
+                travel" is on. It had no link from here at all. */}
+            <Link href="/esim" className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">eSIMs &amp; data</Link>
           </nav>
         </div>
       </section>

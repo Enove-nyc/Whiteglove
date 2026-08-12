@@ -94,6 +94,7 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },
   { path: "/flight-booking-assistance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/transfers", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/lizensk", priority: 0.6, changeFrequency: "monthly" },
   // Who is behind the site. Indexed for the same reason /verification is: it

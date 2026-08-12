@@ -273,3 +273,30 @@ describe("more than one provider in a category", () => {
     assert.equal(cards[0].offer, 1);
   });
 });
+
+describe("a visitor can find the eSIM page", () => {
+  it("HAS LINKS A PERSON WOULD FOLLOW, not just a sitemap entry", () => {
+    // The hand-off was live for weeks and reachable only by scrolling past a
+    // search on another page. Being in the sitemap makes it findable by
+    // Google; these are what make it findable by somebody who wants one.
+    const footer = readFileSync("components/Footer.tsx", "utf8");
+    assert.match(footer, /href: "\/esim"/, "no footer link to the eSIM page");
+    assert.match(footer, /href: "\/transfers"/, "no footer link to transfers");
+    assert.match(footer, /href: "\/travel-insurance"/, "no footer link to insurance");
+    const guide = readFileSync("app/travel-guide/page.tsx", "utf8");
+    assert.match(guide, /href="\/esim"/, "the travel guide does not link to it");
+    const index = readFileSync("lib/site-search-index.ts", "utf8");
+    assert.match(index, /id: "page-esim"/, "site search cannot find it");
+    const map = readFileSync("lib/site-map.ts", "utf8");
+    assert.match(map, /path: "\/esim"/, "it is not in the sitemap");
+  });
+
+  it("SHOWS THE PROVIDERS WITHOUT A PAGE-TYPE CHECKBOX", () => {
+    // The transfers page shipped empty because its card was gated on a box the
+    // owner had not ticked. This page IS the offer, so it reads the category
+    // directly — the only question is whether a provider is live at all.
+    const page = readFileSync("components/EsimOffers.tsx", "utf8");
+    assert.match(page, /offersFor\(def, settings\.services\.esim\)/);
+    assert.doesNotMatch(page, /pageType/);
+  });
+});

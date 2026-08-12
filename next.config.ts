@@ -39,9 +39,10 @@ const nextConfig: NextConfig = {
       // Phone and hotspot RENTALS are not a business this site is in — they
       // need a physical counter somewhere, and the owner has decided against
       // it. The page claimed four services under "What we arrange" and none of
-      // them were arranged. The eSIM half is real and is a card on the pages
-      // that need it, so connectivity lands on the travel guide.
-      { source: "/phone-rentals", destination: "/travel-guide", permanent: true },
+      // them were arranged. The eSIM half is real and now has its own page, so
+      // that is where the address goes — the closest thing to what somebody
+      // following an old link was looking for.
+      { source: "/phone-rentals", destination: "/esim", permanent: true },
       { source: "/getaways", destination: "/destinations", permanent: true },
       // The vacation hub took the word "Destinations" in the navigation, so it
       // took the address to match. A visitor pressing an item called
