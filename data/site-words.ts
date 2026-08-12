@@ -193,7 +193,7 @@ export const BUILT_IN_WORDS: SiteWords = {
     "Discover where to go, build your itinerary, find kosher food and religious essentials, or let White Glove arrange the trip for you.",
   // No longer "a city, tzaddik, kever" — the same search still finds all three,
   // and the box no longer announces the heritage database on every page.
-  searchPlaceholder: "Search a destination, hotel, kosher restaurant, or kever…",
+  searchPlaceholder: "Destinations, places to stay, kosher food, activities, kevarim, cemeteries, towns…",
   contactEmail: "contact@whitegloveitineraries.com",
   replyPromise: "We’ll be in touch soon.",
   footerBlurb:

@@ -43,11 +43,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Search</p>
           <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-            {query ? `Results for “${query}”` : "Search the site"}
+            {query ? `Results for “${query}”` : "Search the entire White Glove site"}
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-            Vacation destinations first, then places to stay, things to do, kosher travel, guides and — when it fits —
-            heritage.
+            Search information already published across White Glove — vacation destinations, where to stay, things to do,
+            kosher food, guides and heritage.
           </p>
         </div>
       </section>

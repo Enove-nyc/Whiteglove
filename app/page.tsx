@@ -1,13 +1,12 @@
 import { readWords } from "@/lib/site-words-store";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
+import HomeDiscoveryTools from "@/components/HomeDiscoveryTools";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SectionHeading from "@/components/SectionHeading";
 import SearchMemory from "@/components/SearchMemory";
 import StartingPoints from "@/components/StartingPoints";
-import StaySearchForm from "@/components/StaySearchForm";
-import TravelAssistantBox from "@/components/TravelAssistantBox";
 import VacationCard from "@/components/VacationCard";
 import { getActivePromotions } from "@/lib/admin-content";
 import { getTopVisitedPaths } from "@/lib/site-analytics";
@@ -200,38 +199,23 @@ export default async function Home() {
       <SearchMemory />
       <Navbar />
 
-      {/* ---- 1. Vacation-first answer and hero ---------------------------
-          The assistant used to be the twelfth section, after a complete
-          discovery journey. It belongs beside the first proposition: visitors
-          with a specific kosher-travel question can act before they browse,
-          while the title stays first in the document so the heading order
-          remains meaningful. The compact section padding is normal flow below
-          the shared header, not a positional offset. */}
+      {/* ---- 1. Brand, then Search / Ask / Plan ---------------------------
+          Brand and the primary vacation-planning choice stay first. Search,
+          Ask and Plan are three labeled tools — only one expands at a time —
+          so the first viewport is not three competing forms. Sitewide search
+          also lives in the header; the Search tool here is the same index. */}
       <section className="relative border-b border-[var(--gold-light)] px-5 py-6 sm:px-8 sm:py-8">
         <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-[linear-gradient(135deg,transparent_0%,rgba(217,199,163,.38)_100%)] lg:block" />
         <div className="relative mx-auto max-w-7xl">
-          <div className="grid items-start gap-5 md:grid-cols-[minmax(0,7fr)_minmax(0,9fr)] md:gap-6 lg:gap-8">
-            <div className="max-w-4xl">
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-ink)]">{words.heroEyebrow}</p>
-              <h1 className="mt-3 font-[family-name:var(--font-display)] text-[2rem] leading-[1.08] text-[var(--navy)] sm:text-[clamp(2.5rem,7vw,4.5rem)] sm:leading-[1.04]">
-                {words.heroTitle}
-              </h1>
-            </div>
-
-            <div className="max-w-5xl">
-              <TravelAssistantBox />
-            </div>
+          <div className="max-w-4xl">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-ink)]">{words.heroEyebrow}</p>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-[2rem] leading-[1.08] text-[var(--navy)] sm:text-[clamp(2.5rem,7vw,4.5rem)] sm:leading-[1.04]">
+              {words.heroTitle}
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">{words.heroSubtitle}</p>
           </div>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">{words.heroSubtitle}</p>
-
-          {/* The first thing on the page you can act on. Nothing in it is
-              required — the visitor who has not chosen the month is exactly
-              the one this site is for, and a form that stops them at the first
-              field loses them. */}
-          <div className="mt-8 max-w-5xl">
-            <StaySearchForm id="hero" />
-          </div>
+          <HomeDiscoveryTools />
 
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
@@ -240,10 +224,6 @@ export default async function Home() {
             >
               Browse every destination →
             </Link>
-            {/* The heritage side, offered as a line rather than as half the
-                page. Somebody who came for it knows the word and will find
-                this; nobody else is asked to work out which of two journeys
-                they are on before they have read anything. */}
             <Link
               href="/heritage"
               className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"

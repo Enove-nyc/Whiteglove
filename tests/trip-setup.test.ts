@@ -253,4 +253,9 @@ describe("the assistant asks about holidays first", () => {
     const examples = ASSISTANT.slice(ASSISTANT.indexOf("const EXAMPLES"), ASSISTANT.indexOf("];", ASSISTANT.indexOf("const EXAMPLES")));
     assert.ok(examples.indexOf("heritage journey in Poland") > examples.indexOf("kosher summer vacation"));
   });
+
+  it("shows at most three examples until More examples is opened", () => {
+    assert.match(ASSISTANT, /VISIBLE_EXAMPLES = 3/);
+    assert.match(ASSISTANT, /More examples/);
+  });
 });

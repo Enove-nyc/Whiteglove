@@ -242,9 +242,15 @@ export default function Navbar() {
 
         {/* Always its own row at desktop: putting this beside the bar at 2xl
             squeezed Heritage Travel off the end and left the suggestions panel
-            only as wide as a 15rem field. */}
+            only as wide as a 15rem field. On phones the labeled Search button
+            expands to a full-width site search — distinct from the AI assistant. */}
         <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 sm:px-8">
-          <DestinationSearch compact />
+          <div className="md:hidden">
+            <DestinationSearch compact mobileCollapse />
+          </div>
+          <div className="hidden md:block">
+            <DestinationSearch compact />
+          </div>
         </div>
 
         {menuOpen && (

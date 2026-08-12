@@ -57,11 +57,10 @@ describe("the first five seconds", () => {
   });
 
   it("KEEPS THE SELF-SERVICE SEARCH IN THE HERO, not two invitations to read", () => {
-    // The assistant now serves a specific question first, but somebody
-    // arriving with dates and a family still needs a direct self-service
-    // search rather than two invitations to browse.
+    // Search / Ask / Plan live in HomeDiscoveryTools; Plan still mounts the
+    // self-service StaySearchForm rather than two invitations to browse.
     const hero = HOME.slice(at('<section className="relative border-b'), at("What kind of trip are you planning?"));
-    assert.match(hero, /<StaySearchForm id="hero" \/>/);
+    assert.match(hero, /<HomeDiscoveryTools/);
     assert.doesNotMatch(hero, /Start planning my trip/);
   });
 
@@ -75,10 +74,10 @@ describe("the first five seconds", () => {
   });
 
   it("carries the two hero links after it, in order", () => {
-    const search = at("<StaySearchForm id=\"hero\" />");
+    const tools = at("<HomeDiscoveryTools");
     const secondary = at("Browse every destination");
     const tertiary = at("Planning a heritage journey? Start here");
-    assert.ok(search < secondary, "a link comes before the search box");
+    assert.ok(tools < secondary, "a link comes before the discovery tools");
     assert.ok(secondary < tertiary, "the heritage link comes before the vacation one");
   });
 });
@@ -96,7 +95,7 @@ describe("the order of the page", () => {
     // `/plan?kind=heritage` stays: that is the heritage section's own button,
     // not a grid of trip types competing with the categories.
     assert.match(HOME, /Browse by holiday type/);
-    // The hero's search carries the way out for somebody who has not chosen
+    // The hero's planning tool carries the way out for somebody who has not chosen
     // a destination, which is what the trip-type grid was really for.
     assert.match(FORM, /helpHref = "\/plan"/);
     assert.match(FORM, /Not sure where/);
@@ -129,17 +128,25 @@ describe("the order of the page", () => {
     }
   });
 
-  it("offers the assistant before the longer hero journey", () => {
-    // A visitor with one specific question should not have to scan every
-    // discovery section before finding a way to ask it. The h1 stays first,
-    // then the assistant, then the supporting copy and destination search.
+  it("keeps brand first, then Search / Ask / Plan as one tool group", () => {
     const title = at("{words.heroTitle}");
-    const assistant = at("<TravelAssistantBox />");
     const subtitle = at("{words.heroSubtitle}");
-    const search = at('<StaySearchForm id="hero" />');
-    assert.ok(title < assistant, "the assistant has moved above the page title");
-    assert.ok(assistant < subtitle, "the supporting hero copy has moved above the assistant");
-    assert.ok(subtitle < search, "the destination search has moved above its supporting copy");
+    const tools = at("<HomeDiscoveryTools");
+    assert.ok(title < subtitle, "the supporting hero copy has moved above the title");
+    assert.ok(subtitle < tools, "Search / Ask / Plan has moved above the supporting copy");
+  });
+
+  it("does not put three competing hero forms on the page source", () => {
+    // Tools expand one at a time in HomeDiscoveryTools — StaySearchForm and
+    // the assistant are not both always-open neighbors in app/page.tsx.
+    assert.doesNotMatch(HOME, /<TravelAssistantBox/);
+    assert.doesNotMatch(HOME, /<StaySearchForm/);
+    assert.match(HOME, /<HomeDiscoveryTools/);
+    const tools = readFileSync("components/HomeDiscoveryTools.tsx", "utf8");
+    assert.match(tools, /StaySearchForm/);
+    assert.match(tools, /TravelAssistantBox/);
+    assert.match(tools, /DestinationSearch/);
+    assert.match(tools, /role="tablist"/);
   });
 
   it("MAKES SEEING THE HOTELS THE DOMINANT ACTION ON A DESTINATION CARD", () => {
@@ -195,11 +202,11 @@ describe("the order of the page", () => {
 
   it("STILL MAKES THE CLAIM, AND STILL LINKS TO WHAT TO CONFIRM", () => {
     // Qualified: not every detail is asserted as checked against the place.
-    // Where one has been checked, source and date are named; anything still
-    // needing confirmation is labelled. Link still goes to /verification.
+    // Where one has been checked, source and date are named. Link still goes
+    // to /verification.
     assert.match(HOME, /Where a practical detail has been checked/);
     assert.match(HOME, /names its source and when it was confirmed/);
-    assert.match(HOME, /still needing confirmation is labelled plainly/);
+    assert.match(HOME, /Confirm time-sensitive details directly before you travel/);
     assert.doesNotMatch(HOME, /checked against the place itself/);
     assert.match(HOME, /href="\/verification"/);
     assert.doesNotMatch(PROSE, /straight-line distance|road routing/);
@@ -234,11 +241,13 @@ describe("the order of the page", () => {
     assert.doesNotMatch(PROSE, /href="\/services"/);
   });
 
-  it("CARRIES ONE SEARCH BOX, not two", () => {
-    // The same StaySearchForm was in the hero and again at the bottom of the
-    // page. A visitor who has read the whole thing has usually stopped
-    // wondering where to go and started wondering how the site works.
-    assert.equal(HOME.match(/<StaySearchForm/g)?.length, 1, "the front page has more than one search form");
+  it("CARRIES ONE PLANNING FORM, via Search / Ask / Plan", () => {
+    // StaySearchForm lives once inside HomeDiscoveryTools (Plan), not twice on
+    // the page and not as a second copy at the bottom.
+    assert.equal(HOME.match(/<StaySearchForm/g)?.length ?? 0, 0, "StaySearchForm should live in HomeDiscoveryTools, not app/page");
+    assert.equal(HOME.match(/<HomeDiscoveryTools/g)?.length, 1);
+    const tools = readFileSync("components/HomeDiscoveryTools.tsx", "utf8");
+    assert.equal(tools.match(/<StaySearchForm/g)?.length, 1);
     assert.doesNotMatch(PROSE, /Start with a destination and a date/);
   });
 

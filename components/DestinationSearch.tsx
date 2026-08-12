@@ -4,7 +4,15 @@ import { BUILT_IN_WORDS } from "@/data/site-words";
 import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BilingualLabel from "@/components/BilingualLabel";
-import type { SearchResponse, SiteHit, SiteHitSection } from "@/lib/site-search-types";
+import {
+  heritageKindHeading,
+  kindLabel,
+  sectionHeading,
+  SITE_SEARCH_LABEL,
+  SITE_SEARCH_NOTE,
+  SITE_SEARCH_PLACEHOLDER,
+} from "@/lib/site-search-labels";
+import type { SearchResponse, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
 import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
 // The search bar in the navbar, on every page.
@@ -12,6 +20,7 @@ import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 // Asks /api/search on the server so the browser never downloads the cemetery
 // or content databases. Empty focus lists every published vacation destination
 // (editorial order). Typing searches the full public index with typo tolerance.
+// AI answers never appear here — this is published White Glove content only.
 
 type Suggestion = Pick<SiteHit, "id" | "kind" | "section" | "title" | "yiddish" | "subtitle" | "href" | "matchRank" | "fuzzy">;
 
@@ -36,6 +45,15 @@ function recordSelect(kind: string) {
   });
 }
 
+function SearchGlyph({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** Highlight the query (or close prefix) inside a title/subtitle for a11y. */
 function HighlightText({ text, query }: { text: string; query: string }) {
   const q = query.trim();
@@ -44,7 +62,6 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   const needle = q.toLowerCase();
   const index = lower.indexOf(needle);
   if (index < 0) {
-    // Try first token for multi-word queries.
     const token = needle.split(/\s+/)[0];
     const ti = token.length >= 2 ? lower.indexOf(token) : -1;
     if (ti < 0) return <>{text}</>;
@@ -65,41 +82,76 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   );
 }
 
-function groupSuggestions(matches: Suggestion[], emptyMode: boolean): Array<{ section: SiteHitSection | "Suggestions"; hits: Suggestion[] }> {
+type DisplayGroup = { key: string; heading: string; hits: Suggestion[] };
+
+function groupSuggestions(matches: Suggestion[], emptyMode: boolean): DisplayGroup[] {
   if (emptyMode) {
-    return matches.length ? [{ section: "Vacation", hits: matches }] : [];
+    return matches.length ? [{ key: "Vacation", heading: sectionHeading("Vacation"), hits: matches }] : [];
   }
-  return SITE_HIT_SECTIONS.map((section) => ({ section, hits: matches.filter((m) => m.section === section) })).filter(
-    (g) => g.hits.length > 0,
-  );
+
+  const groups: DisplayGroup[] = [];
+  for (const section of SITE_HIT_SECTIONS) {
+    const sectionHits = matches.filter((m) => m.section === section);
+    if (!sectionHits.length) continue;
+
+    if (section === "Heritage") {
+      const order: SiteHitKind[] = ["Kever or tzaddik", "Beis hachaim", "Heritage town"];
+      for (const kind of order) {
+        const hits = sectionHits.filter((h) => h.kind === kind);
+        if (!hits.length) continue;
+        groups.push({
+          key: `${section}-${kind}`,
+          heading: heritageKindHeading(kind) ?? sectionHeading(section),
+          hits,
+        });
+      }
+      const leftover = sectionHits.filter((h) => !order.includes(h.kind));
+      if (leftover.length) {
+        groups.push({ key: `${section}-other`, heading: sectionHeading(section), hits: leftover });
+      }
+      continue;
+    }
+
+    groups.push({ key: section, heading: sectionHeading(section), hits: sectionHits });
+  }
+  return groups;
 }
 
 export default function DestinationSearch({
   compact = false,
-  placeholder = BUILT_IN_WORDS.searchPlaceholder,
-  ariaLabel = "Search the site",
+  placeholder = SITE_SEARCH_PLACEHOLDER || BUILT_IN_WORDS.searchPlaceholder,
+  ariaLabel = SITE_SEARCH_LABEL,
+  /** When true, start collapsed on narrow screens behind a labeled Search button. */
+  mobileCollapse = false,
+  showChrome = true,
+  autoFocus = false,
+  id,
 }: {
   compact?: boolean;
   placeholder?: string;
   /**
    * What this particular box is for.
    *
-   * The header carries the site-wide one and is named "Search the site". A
-   * page that offers a second box — the heritage landing page, whose search is
-   * the whole point of it — must say what THAT one searches: two controls with
-   * the same accessible name on one page is a real problem for anybody
-   * navigating by them, and it is also how the audit tells an intentional
-   * second search from an accidental duplicate.
+   * The header carries the site-wide one and is named for the whole site. A
+   * page that offers a second box — the heritage landing page — must say what
+   * THAT one searches.
    */
   ariaLabel?: string;
+  mobileCollapse?: boolean;
+  /** Visible label + published-content note. Off when embedded inside another labeled panel. */
+  showChrome?: boolean;
+  autoFocus?: boolean;
+  id?: string;
 }) {
   const router = useRouter();
   const listId = `${useId()}-search-results`;
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [hits, setHits] = useState<{ query: string; response: SearchResponse } | null>(null);
   const [emptyHits, setEmptyHits] = useState<Suggestion[] | null>(null);
   const [active, setActive] = useState(-1);
+  const [mobileOpen, setMobileOpen] = useState(!mobileCollapse);
   const blurTimer = useRef<number | undefined>(undefined);
 
   const trimmed = query.trim();
@@ -112,7 +164,6 @@ export default function DestinationSearch({
 
   const emptyMode = !trimmed;
   const groups = useMemo(() => groupSuggestions(matches, emptyMode), [matches, emptyMode]);
-  // Visual order (sectioned) — keyboard nav follows this, not raw rank order.
   const orderedMatches = useMemo(() => groups.flatMap((group) => group.hits), [groups]);
 
   const footer: FooterAction | null = useMemo(() => {
@@ -127,7 +178,6 @@ export default function DestinationSearch({
     };
   }, [emptyMode, trimmed, searching]);
 
-  // Flat list for keyboard nav: results then optional footer.
   const navItems = useMemo(() => {
     const items: Array<{ type: "hit"; hit: Suggestion } | { type: "footer"; action: FooterAction }> = orderedMatches.map((hit) => ({
       type: "hit" as const,
@@ -137,7 +187,6 @@ export default function DestinationSearch({
     return items;
   }, [orderedMatches, footer]);
 
-  // Load vacation empty state once on first focus.
   useEffect(() => {
     if (!open || trimmed || emptyHits) return;
     const controller = new AbortController();
@@ -152,13 +201,11 @@ export default function DestinationSearch({
     return () => controller.abort();
   }, [open, trimmed, emptyHits]);
 
-  // Typed search: debounce + cancel stale requests. 2+ chars for full search;
-  // 1-char still queries (API returns vacation prefixes only).
   useEffect(() => {
     if (!trimmed) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=12`, { signal: controller.signal })
+      fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=24`, { signal: controller.signal })
         .then((res) => (res.ok ? res.json() : { results: [], query: trimmed, heritageIntent: false, mode: "search" as const }))
         .then((payload: SearchResponse) => setHits({ query: trimmed, response: payload }))
         .catch(() => {
@@ -176,6 +223,12 @@ export default function DestinationSearch({
     };
   }, [trimmed]);
 
+  useEffect(() => {
+    if (autoFocus || (mobileCollapse && mobileOpen)) {
+      window.setTimeout(() => inputRef.current?.focus(), 30);
+    }
+  }, [autoFocus, mobileCollapse, mobileOpen]);
+
   function go(hit: Suggestion) {
     recordSearch(query, orderedMatches.length);
     recordSelect(hit.kind);
@@ -191,7 +244,6 @@ export default function DestinationSearch({
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Never auto-navigate the first result while results are still loading.
     if (searching) {
       if (trimmed) {
         recordSearch(query, 0);
@@ -214,7 +266,6 @@ export default function DestinationSearch({
     }
 
     recordSearch(query, orderedMatches.length);
-    // One exact unambiguous match → open it; otherwise the results page.
     if (orderedMatches.length === 1 && (orderedMatches[0].matchRank ?? 99) <= 1) {
       recordSelect(orderedMatches[0].kind);
       router.push(orderedMatches[0].href);
@@ -227,6 +278,7 @@ export default function DestinationSearch({
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Escape") {
       setOpen(false);
+      if (mobileCollapse && mobileOpen) setMobileOpen(false);
       return;
     }
     if (!open || navItems.length === 0) return;
@@ -242,40 +294,84 @@ export default function DestinationSearch({
   const hitIndexById = useMemo(() => new Map(orderedMatches.map((hit, index) => [hit.id, index])), [orderedMatches]);
   const footerIndex = orderedMatches.length;
 
+  if (mobileCollapse && !mobileOpen) {
+    return (
+      <div className="w-full md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold)] bg-[#fcfaf6] px-4 text-sm font-semibold text-[var(--navy)] shadow-[0_8px_20px_rgba(23,45,82,.06)] transition hover:bg-[var(--cream-deep)]"
+        >
+          <SearchGlyph className="h-4 w-4 text-[var(--gold-ink)]" />
+          <span>{SITE_SEARCH_LABEL}</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={`relative ${compact ? "w-full max-w-full" : "mt-12 max-w-3xl"}`}>
+    <div
+      className={`relative ${compact ? "w-full max-w-full" : "mt-12 max-w-3xl"} ${mobileCollapse ? "md:block" : ""}`}
+      data-site-search=""
+    >
+      {showChrome ? (
+        <div className={`mb-2 ${compact ? "px-0.5" : ""}`}>
+          <label htmlFor={id ?? listId.replace("-search-results", "-input")} className="flex items-center gap-2 text-sm font-semibold text-[var(--navy)]">
+            <SearchGlyph className="h-4 w-4 shrink-0 text-[var(--gold-ink)]" />
+            <span>{SITE_SEARCH_LABEL}</span>
+          </label>
+          <p className="mt-1 text-xs leading-5 text-stone-500">{SITE_SEARCH_NOTE}</p>
+        </div>
+      ) : null}
+
       <form
-        className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
+        className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--navy)]/15 bg-white shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
         onSubmit={submitSearch}
       >
-        <input
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setActive(-1);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => {
-            blurTimer.current = window.setTimeout(() => setOpen(false), 150);
-          }}
-          onKeyDown={onKeyDown}
-          className={`min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-stone-400 ${compact ? "min-h-11 py-2 text-sm" : "min-h-11 py-3"}`}
-          aria-label={ariaLabel}
-          aria-expanded={open}
-          aria-autocomplete="list"
-          role="combobox"
-          aria-controls={listId}
-          aria-activedescendant={active >= 0 ? `${listId}-opt-${active}` : undefined}
-          placeholder={placeholder}
-          autoComplete="off"
-        />
-        <button
-          className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`}
-          type="submit"
-        >
-          {compact ? "Search" : "Explore"}
-        </button>
+        <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
+          {!showChrome ? <SearchGlyph className="ml-1 h-4 w-4 shrink-0 text-[var(--gold-ink)]" /> : null}
+          <input
+            ref={inputRef}
+            id={id ?? listId.replace("-search-results", "-input")}
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setActive(-1);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onBlur={() => {
+              blurTimer.current = window.setTimeout(() => setOpen(false), 150);
+            }}
+            onKeyDown={onKeyDown}
+            className={`min-w-0 flex-1 bg-transparent outline-none placeholder:text-stone-400 ${compact ? "min-h-11 py-2 text-sm" : "min-h-11 py-3"}`}
+            aria-label={ariaLabel}
+            aria-expanded={open}
+            aria-autocomplete="list"
+            role="combobox"
+            aria-controls={listId}
+            aria-activedescendant={active >= 0 ? `${listId}-opt-${active}` : undefined}
+            placeholder={placeholder}
+            autoComplete="off"
+          />
+        </div>
+        <div className="flex gap-2">
+          {mobileCollapse ? (
+            <button
+              type="button"
+              className="min-h-11 rounded-xl border border-[var(--gold-light)] px-3 text-sm font-semibold text-stone-600 transition hover:bg-[var(--cream-deep)] md:hidden"
+              onClick={() => setMobileOpen(false)}
+            >
+              Close
+            </button>
+          ) : null}
+          <button
+            className={`rounded-xl bg-[var(--navy)] text-sm font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[var(--gold)] ${compact ? "min-h-11 px-4 py-2 text-xs" : "min-h-11 px-7 py-3"}`}
+            type="submit"
+          >
+            Search
+          </button>
+        </div>
       </form>
 
       {open && (
@@ -295,49 +391,49 @@ export default function DestinationSearch({
           ) : matches.length > 0 ? (
             <>
               {groups.map((group) => (
-                <div key={group.section} role="group" aria-label={group.section}>
+                <div key={group.key} role="group" aria-label={group.heading}>
                   <p className="sticky top-0 border-b border-[var(--gold-light)] bg-[#f7f3eb] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-                    {group.section}
+                    {group.heading}
                   </p>
                   {group.hits.map((match) => {
                     const optionIndex = hitIndexById.get(match.id) ?? 0;
                     return (
-                    <button
-                      key={match.id}
-                      id={`${listId}-opt-${optionIndex}`}
-                      type="button"
-                      role="option"
-                      aria-selected={optionIndex === active}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        window.clearTimeout(blurTimer.current);
-                      }}
-                      onMouseEnter={() => setActive(optionIndex)}
-                      onClick={() => go(match)}
-                      className={`flex w-full max-w-full items-center justify-between gap-3 border-b border-[var(--gold-light)] px-5 py-3.5 text-left transition hover:bg-[var(--cream-deep)] sm:gap-5 sm:py-4 ${optionIndex === active ? "bg-[var(--cream-deep)]" : ""}`}
-                    >
-                      <div className="min-w-0">
-                        {match.yiddish ? (
-                          <BilingualLabel
-                            primary={match.yiddish}
-                            secondary={match.title}
-                            primaryClassName="text-2xl sm:text-3xl"
-                            secondaryClassName="text-base"
-                            compact
-                          />
-                        ) : (
-                          <p className="truncate text-base font-semibold text-[var(--navy)]">
-                            <HighlightText text={match.title} query={trimmed} />
+                      <button
+                        key={match.id}
+                        id={`${listId}-opt-${optionIndex}`}
+                        type="button"
+                        role="option"
+                        aria-selected={optionIndex === active}
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          window.clearTimeout(blurTimer.current);
+                        }}
+                        onMouseEnter={() => setActive(optionIndex)}
+                        onClick={() => go(match)}
+                        className={`flex w-full max-w-full items-center justify-between gap-3 border-b border-[var(--gold-light)] px-5 py-3.5 text-left transition hover:bg-[var(--cream-deep)] sm:gap-5 sm:py-4 ${optionIndex === active ? "bg-[var(--cream-deep)]" : ""}`}
+                      >
+                        <div className="min-w-0">
+                          {match.yiddish ? (
+                            <BilingualLabel
+                              primary={match.yiddish}
+                              secondary={match.title}
+                              primaryClassName="text-2xl sm:text-3xl"
+                              secondaryClassName="text-base"
+                              compact
+                            />
+                          ) : (
+                            <p className="truncate text-base font-semibold text-[var(--navy)]">
+                              <HighlightText text={match.title} query={trimmed} />
+                            </p>
+                          )}
+                          <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-stone-600">
+                            <HighlightText text={match.subtitle} query={trimmed} />
                           </p>
-                        )}
-                        <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-stone-600">
-                          <HighlightText text={match.subtitle} query={trimmed} />
-                        </p>
-                      </div>
-                      <span className="shrink-0 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)] sm:text-xs sm:tracking-[0.12em]">
-                        {match.kind}
-                      </span>
-                    </button>
+                        </div>
+                        <span className="shrink-0 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)] sm:text-xs sm:tracking-[0.12em]">
+                          {kindLabel(match.kind)}
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
@@ -346,7 +442,7 @@ export default function DestinationSearch({
           ) : (
             <p className="px-5 py-4 text-sm text-stone-600">
               {trimmed
-                ? "No match yet. Press Enter to open the full results page."
+                ? "No published match yet. Press Enter for the full results page, or try another spelling or a broader idea."
                 : emptyHits === null
                   ? "Loading destinations…"
                   : "No vacation destinations to show yet."}

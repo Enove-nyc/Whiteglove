@@ -18,7 +18,7 @@
 
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { getSearchIndex } from "@/lib/site-search-index";
-import { normalize } from "@/lib/site-search-match";
+import { normalize, queryTokens } from "@/lib/site-search-match";
 import {
   groupHits,
   hasHeritageIntent,
@@ -29,7 +29,7 @@ import {
   type ScoredHit,
 } from "@/lib/site-search-rank";
 import type { SearchResponse, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
-import { sectionForKind } from "@/lib/site-search-types";
+import { sectionForKind, SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
 
 export type { SiteHit, SiteHitKind, SiteHitSection, SearchResponse };
@@ -70,28 +70,19 @@ export async function searchSite(query: string, limit = 10): Promise<SearchRespo
   const heritageIntent = hasHeritageIntent(q);
   const index = await getSearchIndex();
   const scored: ScoredHit[] = [];
-  const nq = normalize(q);
-  const qTokens = nq.split(" ").filter(Boolean);
+  const qTokens = queryTokens(q);
 
   for (const doc of index) {
-    // Cheap gate before Damerau work: every query token must share a 2-letter
-    // prefix (or be a substring) with some indexed token, or the compact name
-    // must be within a plausible length of the query. Skips most tzaddikim.
+    // Cheap gate before Damerau work: every meaningful query token must share a
+    // 2-letter prefix (or be a substring) with some indexed token, or the compact
+    // name must be within a plausible length of the query. Skips most tzaddikim.
     if (!isPlausibleCandidate(qTokens, doc.normTokens, doc.normCompact)) continue;
     const hit = scoreDocument(q, doc, heritageIntent);
     if (hit) scored.push(hit);
   }
 
   const sorted = sortScored(scored);
-  const seen = new Set<string>();
-  const results: SiteHit[] = [];
-  for (const row of sorted) {
-    const key = `${row.hit.kind}:${normalize(row.hit.title)}:${row.hit.href}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    results.push(row.hit);
-    if (results.length >= limit) break;
-  }
+  const results = diversifyHits(sorted, limit);
 
   return {
     results,
@@ -100,6 +91,44 @@ export async function searchSite(query: string, limit = 10): Promise<SearchRespo
     heritageIntent,
     mode: "search",
   };
+}
+
+/**
+ * Prefer a useful mix of sections in the dropdown (and still honour limit).
+ *
+ * Without this, twelve Rome hotels can crowd out food, attractions and heritage
+ * that a broad query should surface under their own headings.
+ */
+function diversifyHits(sorted: ScoredHit[], limit: number): SiteHit[] {
+  const seen = new Set<string>();
+  const bySection = new Map<SiteHitSection, SiteHit[]>();
+  for (const row of sorted) {
+    const key = `${row.hit.kind}:${normalize(row.hit.title)}:${row.hit.href}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const list = bySection.get(row.hit.section) ?? [];
+    list.push(row.hit);
+    bySection.set(row.hit.section, list);
+  }
+
+  const results: SiteHit[] = [];
+  const order = SITE_HIT_SECTIONS.filter((section) => (bySection.get(section)?.length ?? 0) > 0);
+  // First pass: up to two from each section so categories appear.
+  const perSection = Math.max(2, Math.ceil(limit / Math.max(order.length, 1)));
+  for (const section of order) {
+    const list = bySection.get(section) ?? [];
+    for (const hit of list.slice(0, perSection)) {
+      if (results.length >= limit) return results;
+      if (!results.some((r) => r.id === hit.id)) results.push(hit);
+    }
+  }
+  // Fill remaining slots in overall rank order.
+  for (const row of sorted) {
+    if (results.length >= limit) break;
+    if (results.some((r) => r.id === row.hit.id)) continue;
+    results.push(row.hit);
+  }
+  return results;
 }
 
 /**

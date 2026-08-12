@@ -151,6 +151,53 @@ export function fuzzyAllowedForQuery(query: string): boolean {
   return q.replace(/\s+/g, "").length >= 3;
 }
 
+/**
+ * Words that describe a search without naming a place.
+ *
+ * “things to do in Rome” must not require every document to contain “to” /
+ * “in” / “do”. Keep them for display, drop them from match gates.
+ */
+const STOP_TOKENS = new Set([
+  "a",
+  "an",
+  "the",
+  "to",
+  "in",
+  "on",
+  "at",
+  "of",
+  "for",
+  "and",
+  "or",
+  "near",
+  "with",
+  "from",
+  "by",
+  "do",
+  "me",
+  "my",
+  "our",
+  "find",
+  "show",
+  "list",
+  "all",
+  "any",
+  "some",
+]);
+
+/** Meaningful tokens for matching — drops glue words, keeps Hebrew and names. */
+export function queryTokens(query: string): string[] {
+  const tokens = normalize(query)
+    .split(" ")
+    .filter(Boolean)
+    .filter((t) => !STOP_TOKENS.has(t));
+  // If the query was only stopwords, keep the raw tokens so we still search.
+  if (tokens.length === 0) {
+    return normalize(query).split(" ").filter(Boolean);
+  }
+  return tokens;
+}
+
 /** Conservative gate for 1-character queries: prefix of a name only. */
 export function isUsefulQuery(query: string): { useful: boolean; oneCharPrefix: boolean } {
   const q = normalize(query.trim());

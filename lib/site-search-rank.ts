@@ -29,7 +29,7 @@
  */
 
 import { normalize } from "@/lib/place-search";
-import { fuzzyAllowedForQuery, matchField } from "@/lib/site-search-match";
+import { fuzzyAllowedForQuery, matchField, queryTokens } from "@/lib/site-search-match";
 import type { SearchDocument, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
 import { SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
@@ -59,6 +59,30 @@ const HERITAGE_INTENT = [
   "nesios",
   "kivrei",
   "kivrei tzaddikim",
+];
+
+/** Category cues that should prefer a content kind without needing a place name. */
+const CATEGORY_INTENT: Array<{ phrases: string[]; kinds: SiteHitKind[] }> = [
+  {
+    phrases: ["where to stay", "places to stay", "hotel", "hotels", "kosher hotel", "kosher hotels", "lodging", "accommodation"],
+    kinds: ["Hotel or stay", "Neighborhood", "Site page"],
+  },
+  {
+    phrases: ["kosher food", "restaurant", "restaurants", "bakery", "bakeries", "grocery", "groceries", "eatery", "eateries"],
+    kinds: ["Kosher food", "Site page"],
+  },
+  {
+    phrases: ["thing to do", "things to do", "attraction", "attractions", "activity", "activities", "sightseeing", "museum", "museums"],
+    kinds: ["Thing to do", "Site page"],
+  },
+  {
+    phrases: ["mikvah", "mikvaos", "mikveh", "mikve", "tvilah"],
+    kinds: ["Practical travel", "Travel guide", "Site page"],
+  },
+  {
+    phrases: ["destination", "destinations", "vacation", "holiday", "getaway", "getaways"],
+    kinds: ["Vacation destination", "Site page"],
+  },
 ];
 
 /** Type priority for ordinary (vacation-first) travel. Lower wins. */
@@ -116,6 +140,18 @@ export function hasHeritageIntent(query: string): boolean {
   );
 }
 
+/** Preferred kinds when the query is a category phrase (hotels, food, …). */
+export function categoryIntentKinds(query: string): SiteHitKind[] | null {
+  const q = normalize(query);
+  if (!q) return null;
+  for (const rule of CATEGORY_INTENT) {
+    if (rule.phrases.some((phrase) => q === phrase || q.includes(phrase))) {
+      return rule.kinds;
+    }
+  }
+  return null;
+}
+
 /**
  * Score one document against the query.
  *
@@ -129,14 +165,15 @@ export function scoreDocument(query: string, doc: SearchDocument, heritageIntent
   const allowFuzzy = fuzzyAllowedForQuery(q);
   const oneChar = nq.length === 1;
   const twoChar = nq.length === 2;
-  const tokens = nq.split(" ").filter(Boolean);
+  const tokens = queryTokens(q);
+  const categoryKinds = categoryIntentKinds(q);
 
   // 1-char: only vacation (and non-heritage site) name prefixes — no noise.
   if (oneChar) {
     if (doc.heritage) return null;
     const titleHit = matchField(q, doc.title, { allowFuzzy: false, minPrefix: 1 });
     if (!titleHit.ok || titleHit.rank > 2) return null;
-    return toScored(doc, titleHit.rank, titleHit.rank, heritageIntent, false, doc.title);
+    return toScored(doc, titleHit.rank, titleHit.rank, heritageIntent, false, doc.title, categoryKinds);
   }
 
   const nameFields = [doc.title, ...doc.names];
@@ -144,7 +181,7 @@ export function scoreDocument(query: string, doc: SearchDocument, heritageIntent
   let bestLabel = doc.title;
   let fuzzy = false;
 
-  // Multi-token queries require every token to land on names/keywords.
+  // Multi-token queries require every meaningful token to land on names/keywords.
   // Otherwise “kosher hotle” would match every doc that merely says “kosher”.
   if (tokens.length > 1) {
     const hay = normalize([...doc.names, doc.title, ...doc.keywords, doc.city ?? "", doc.country ?? ""].join(" "));
@@ -222,7 +259,7 @@ export function scoreDocument(query: string, doc: SearchDocument, heritageIntent
   // Heritage-only towns (Lizhensk) still win because nothing vacation-side matches.
   const adjusted = !heritageIntent && doc.heritage ? bestRank + 3 : bestRank;
 
-  return toScored(doc, adjusted, bestRank, heritageIntent, fuzzy, bestLabel);
+  return toScored(doc, adjusted, bestRank, heritageIntent, fuzzy, bestLabel, categoryKinds);
 }
 
 function toScored(
@@ -232,8 +269,16 @@ function toScored(
   heritageIntent: boolean,
   fuzzy: boolean,
   matchedLabel: string,
+  categoryKinds: SiteHitKind[] | null = null,
 ): ScoredHit {
   const kindTable = heritageIntent ? HERITAGE_KIND_PRIORITY : VACATION_KIND_PRIORITY;
+  let kindRank = kindTable[doc.kind];
+  // Category phrases (“where to stay”, “kosher food”) lift matching kinds.
+  if (categoryKinds?.includes(doc.kind)) {
+    kindRank = Math.max(0, kindRank - 3);
+  } else if (categoryKinds && categoryKinds.length > 0 && !categoryKinds.includes(doc.kind)) {
+    kindRank += 2;
+  }
   return {
     hit: {
       id: doc.id,
@@ -248,7 +293,7 @@ function toScored(
       fuzzy,
     },
     matchRank,
-    kindRank: kindTable[doc.kind],
+    kindRank,
     rankWeight: doc.rankWeight,
     fuzzy,
     matchedLabel,

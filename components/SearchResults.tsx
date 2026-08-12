@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import BilingualLabel from "@/components/BilingualLabel";
+import {
+  heritageKindHeading,
+  kindLabel,
+  sectionHeading,
+} from "@/lib/site-search-labels";
 import type { SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
 import { SITE_HIT_KINDS, SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
@@ -15,6 +20,31 @@ const HERITAGE_FIRST: SiteHitSection[] = [
   "Kosher travel",
   "Guides and services",
 ];
+
+type DisplayGroup = { key: string; heading: string; hits: SiteHit[] };
+
+function buildGroups(hits: SiteHit[], order: SiteHitSection[]): DisplayGroup[] {
+  const groups: DisplayGroup[] = [];
+  for (const section of order) {
+    const sectionHits = hits.filter((h) => h.section === section);
+    if (!sectionHits.length) continue;
+    if (section === "Heritage") {
+      const kindOrder: SiteHitKind[] = ["Kever or tzaddik", "Beis hachaim", "Heritage town"];
+      for (const kind of kindOrder) {
+        const kindHits = sectionHits.filter((h) => h.kind === kind);
+        if (!kindHits.length) continue;
+        groups.push({
+          key: `${section}-${kind}`,
+          heading: heritageKindHeading(kind) ?? sectionHeading(section),
+          hits: kindHits,
+        });
+      }
+      continue;
+    }
+    groups.push({ key: section, heading: sectionHeading(section), hits: sectionHits });
+  }
+  return groups;
+}
 
 export default function SearchResults({
   query,
@@ -35,16 +65,15 @@ export default function SearchResults({
   );
 
   const order = heritageIntent ? HERITAGE_FIRST : SECTION_ORDER;
-  const groups = order
-    .map((section) => ({ section, hits: filtered.filter((h) => h.section === section) }))
-    .filter((g) => g.hits.length > 0);
-
+  const groups = buildGroups(filtered, order);
   const presentKinds = SITE_HIT_KINDS.filter((kind) => results.some((r) => r.kind === kind));
 
   if (!query) {
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10 text-center">
-        <p className="text-stone-600">Type a place, a hotel, a food stop or a topic to search the site.</p>
+        <p className="text-stone-600">
+          Search destinations, places to stay, kosher food, activities, kevarim, cemeteries or towns across White Glove.
+        </p>
         <Link href="/destinations" className="mt-6 inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
           Browse vacation destinations
         </Link>
@@ -55,9 +84,10 @@ export default function SearchResults({
   if (results.length === 0) {
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10">
-        <p className="text-lg text-[var(--navy)]">No results for “{query}”.</p>
+        <p className="text-lg text-[var(--navy)]">No published results for “{query}”.</p>
         <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-          Try another spelling, a city name, or a broader idea such as beach, mountains or kosher hotel.
+          Try another spelling, a city name, or a broader idea such as beach, mountains or where to stay. Site search only
+          covers information already published on White Glove — it does not invent answers.
         </p>
         <ul className="mt-8 space-y-3 text-sm font-semibold text-[var(--navy)]">
           <li>
@@ -83,6 +113,11 @@ export default function SearchResults({
               Open the kosher food finder
             </Link>
           </li>
+          <li>
+            <Link href="/hotels" className="text-stone-600 underline decoration-[var(--gold-light)] underline-offset-4">
+              Browse where to stay
+            </Link>
+          </li>
         </ul>
       </div>
     );
@@ -106,7 +141,7 @@ export default function SearchResults({
             const count = results.filter((r) => r.kind === kind).length;
             return (
               <FilterChip key={kind} active={kindFilter === kind} onClick={() => setKindFilter(kind)}>
-                {kind} ({count})
+                {kindLabel(kind)} ({count})
               </FilterChip>
             );
           })}
@@ -114,12 +149,12 @@ export default function SearchResults({
       ) : null}
 
       {groups.map((group) => (
-        <section key={group.section} aria-labelledby={`search-section-${group.section}`}>
+        <section key={group.key} aria-labelledby={`search-section-${group.key}`}>
           <h2
-            id={`search-section-${group.section}`}
+            id={`search-section-${group.key}`}
             className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]"
           >
-            {group.section}
+            {group.heading}
           </h2>
           <ul className="mt-4 divide-y divide-[var(--gold-light)] rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6]">
             {group.hits.map((hit) => (
@@ -145,7 +180,7 @@ export default function SearchResults({
                     <p className="mt-1.5 text-sm leading-6 text-stone-600">{hit.subtitle}</p>
                   </div>
                   <span className="shrink-0 pt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)] sm:text-xs">
-                    {hit.kind}
+                    {kindLabel(hit.kind)}
                   </span>
                 </Link>
               </li>

@@ -220,6 +220,22 @@ describe("typo tolerance", () => {
     const two = await searchEverything("zz", 20);
     assert.deepEqual(two, []);
   });
+
+  test("stopwords do not block place searches", async () => {
+    const hits = await searchEverything("things to do in Rome", 20);
+    assert.ok(
+      hits.some((h) => h.kind === "Thing to do" || h.kind === "Vacation destination" || /rome/i.test(h.title)),
+      "things to do in Rome should find Rome-related published content",
+    );
+  });
+
+  test("category phrase where to stay finds stays / hotels page", async () => {
+    const hits = await searchEverything("where to stay", 15);
+    assert.ok(
+      hits.some((h) => h.kind === "Hotel or stay" || h.href === "/hotels" || /where to stay/i.test(h.title)),
+      "where to stay should reach stays or the hotels page",
+    );
+  });
 });
 
 describe("results page helpers and safety", () => {
@@ -313,6 +329,14 @@ describe("folding a letter that has no accent to remove", () => {
   test("keeps Yiddish exactly as it is", () => {
     assert.equal(normalize("ליזענסק"), "ליזענסק");
     assert.equal(normalize("קראקא"), "קראקא");
+  });
+
+  test("Yiddish town name finds heritage when the data holds it", async () => {
+    const hits = await searchEverything("ליזענסק", 15);
+    assert.ok(
+      hits.some((h) => h.section === "Heritage" || /lizhensk|lizensk/i.test(h.title) || h.yiddish),
+      "Yiddish ליזענסק should reach Lizhensk heritage content when indexed",
+    );
   });
 
   test("never turns a word into nothing", () => {
