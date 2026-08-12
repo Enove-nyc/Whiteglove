@@ -158,32 +158,30 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["TRAVELPAYOUTS_MARKER"],
-    // NOT WHERE THE ROUTING IS SET, and this says so. A marker on its own earns
-    // nothing: Travelpayouts is paid by owning the redirect, so the search has
-    // to be sent through tp.media, not merely tagged. That is a pasted link per
-    // search, and it lives on a screen rather than in the environment — see
-    // /admin/settings/earnings. This variable is only the account number, kept
-    // for reference.
-    what: "Your Travelpayouts account number, for reference. The searches are routed on Settings → What the searches earn.",
+    // Deep links still earn through a pasted tp.media redirect on Settings →
+    // What the searches earn. The flight and car *widgets* on /book are
+    // different: the official script carries shmarker, and that is how those
+    // forms credit the account. Same number, two tools.
+    what: "Your Travelpayouts marker — on the flight and car search forms on Search booking partners, and the account number for pasted earning links.",
     without:
-      "Nothing changes either way. Whether a search earns depends on the link pasted on the earnings screen, not on this.",
-    weight: "nicety",
+      "The flight and car forms on /book do not load. Pasted earning links still work when they are set on Settings → What the searches earn.",
+    weight: "feature",
   },
   {
     vars: ["STAY22_AID"],
-    what: "Your Stay22 affiliate ID — tracked hotel links and Kayak flight searches.",
+    what: "Your Stay22 affiliate ID — tracked hotel links and Kayak flight and car searches.",
     without:
-      "Hotel and Kayak flight searches still open. They earn when this ID is set here or saved on the earnings screen; without either, Kayak flights only earn if a wrap is pasted there.",
+      "Hotel and Kayak flight and car searches still open. They earn when this ID is set here or saved on the earnings screen; without either, Kayak flights and cars only earn if a wrap is pasted there.",
     weight: "feature",
     where: "Stay22 hub — the same ID as the Stay22 ID field on Settings → What the site earns. A saved ID on that screen wins when both are set.",
   },
   {
     vars: ["TRAVELPAYOUTS_TOKEN"],
-    what: "Travelpayouts Data API token — optional live fare list on Search booking partners.",
+    what: "Travelpayouts Data API token — not used on the public flight search. Flights on /book use the Aviasales search form and the marker.",
     without:
-      "Flights still search on the page and open Kayak through Stay22. This token only adds priced rows from Travelpayouts; it is not required to earn.",
+      "Nothing changes on Search booking partners. The flight form earns through the marker, not this token.",
     weight: "nicety",
-    where: "Travelpayouts dashboard → API tools. Separate from the marker and from pasted redirect links.",
+    where: "Travelpayouts dashboard → API tools. Separate from the marker. Not required for /book.",
   },
   {
     vars: ["STAY22_API_KEY"],

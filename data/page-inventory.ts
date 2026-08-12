@@ -100,7 +100,7 @@ export const inventoryItems: InventoryItem[] = [
     title: "Book flights, hotels and cars",
     status: "partial",
     priority: "Medium",
-    missing: "Public /book hands off to Stay22 and Travelpayouts. Duffel is admin-only at /admin/duffel.",
+    missing: "Public /book uses Stay22 for places to stay and Travelpayouts search forms for flights and cars. Duffel is admin-only at /admin/duffel.",
     nextAction: "Keep partner search as the visitor path. Duffel search and ticketing stay in the admin.",
   },
   {
@@ -178,9 +178,9 @@ export const inventoryItems: InventoryItem[] = [
     area: "API route",
     route: "/api/hotels/search",
     title: "Hotel search API",
-    status: "broken",
+    status: "partial",
     priority: "Medium",
-    missing: "Admin-only Duffel Stays search. Public hotels go through Stay22.",
+    missing: "Admin-only Duffel Stays search at /admin/duffel. Public hotels go through Stay22.",
     nextAction: "Keep this endpoint gated to the admin. Visitors use /api/partners/hotels/search.",
   },
   {

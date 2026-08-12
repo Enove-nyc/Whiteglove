@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { partnerLiveCapabilities } from "@/lib/partner-live";
 import { stay22ApiConfigured } from "@/lib/stay22-api";
-import { travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
 import { readFileSync } from "node:fs";
 
 describe("partner live capabilities", () => {
@@ -11,10 +10,11 @@ describe("partner live capabilities", () => {
     assert.equal(caps.cars, false);
   });
 
-  it("reflects whether server tokens are present without reading their values into the API shape", () => {
+  it("reflects whether the Stay22 hotel API is configured, without a live flight or car inventory flag", () => {
     const caps = partnerLiveCapabilities();
     assert.equal(caps.hotels, stay22ApiConfigured());
-    assert.equal(caps.flights, travelpayoutsTokenConfigured());
+    assert.equal(caps.flights, false);
+    assert.equal(caps.cars, false);
   });
 });
 
@@ -48,20 +48,23 @@ describe("live partner search wiring", () => {
     assert.match(ui, /Where to stay/);
     assert.doesNotMatch(ui, /Hotels and stays/);
     assert.match(ui, /\/api\/partners\/hotels\/search/);
-    assert.match(ui, /\/api\/partners\/flights\/search/);
-    assert.match(ui, /\/api\/partners\/cars\/search/);
+    assert.doesNotMatch(ui, /\/api\/partners\/flights\/search/);
+    assert.doesNotMatch(ui, /\/api\/partners\/cars\/search/);
+    assert.match(ui, /flightsEmbedPath/);
+    assert.match(ui, /carsEmbedPath/);
     assert.match(ui, /View & book/);
     assert.match(ui, /AirportAutocomplete/);
     assert.match(ui, /Passengers/);
     assert.match(ui, /Driver age/);
   });
 
-  it("keeps one-way and round-trip flights on-site even when live prices are off", () => {
+  it("keeps one-way and round-trip flights on the partner form, not a White Glove fare list", () => {
     const ui = readFileSync("components/BookPartners.tsx", "utf8");
     assert.doesNotMatch(ui, /liveEnabled && wanted\.trip !== "multi-city"/);
     assert.match(ui, /wanted\.trip === "multi-city"/);
     assert.doesNotMatch(ui, /Live prices are not available/);
     assert.doesNotMatch(ui, /Live prices could not be loaded/);
-    assert.match(ui, /Compare fares with Kayak/);
+    assert.doesNotMatch(ui, /Compare fares with Kayak/);
+    assert.match(ui, /White Glove does not list a fare here/);
   });
 });
