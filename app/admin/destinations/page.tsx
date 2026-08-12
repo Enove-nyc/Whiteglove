@@ -123,26 +123,19 @@ export default async function AdminDestinationsPage({
               </div>
             </div>
 
-            <details className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-              <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
-                Re-import built-in content
-              </summary>
-              <p className="mt-3 text-sm leading-6 text-stone-600">
-                Reloads all destinations and the researched practical listings from the site&apos;s built-in data — use this after an update adds new content (e.g. the city-guide details). It refreshes the imported destinations, cemeteries, tzaddikim, contacts, and places.
-              </p>
-              <p className="mt-2 text-xs leading-5 text-amber-700">
-                This overwrites edits you made to an <strong>imported</strong> record — a phone number you corrected
-                on a built-in beis hachaim goes back to what ships in the site. Kevarim, contacts and listings you
-                added <strong>yourself</strong> are kept, and so are your pages and promotions.
-              </p>
-              <div className="mt-4">
-                <DbSetupButton
-                  label="Re-import content now"
-                  reimport
-                  confirmMessage="Re-import the built-in content? Records that ship with the site go back to their built-in version. Anything you added yourself is kept."
-                />
-              </div>
-            </details>
+            {/* NO RE-IMPORT BUTTON HERE, deliberately. It used to sit below in a
+                <details>, one press away from the safe button above it, and the
+                two read almost alike: both mention the database, both talk about
+                what is kept. The difference is that this one puts every imported
+                record back to what ships in the site, so a correction made to a
+                built-in phone number is gone. Collapsing it and asking for a
+                confirmation was not enough — the owner asked for it gone rather
+                than guarded, having come to this screen to fix a database error.
+
+                The capability is not lost: the first-run panel above still
+                imports the built-in content, which is the moment it is actually
+                for, and `npm run db:seed` does it from a terminal. What is gone
+                is the chance of pressing it while doing something else. */}
           </aside>
 
           <div>
