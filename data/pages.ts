@@ -242,6 +242,38 @@ export const editablePages: PageDef[] = [
     { id: "submit-hero", kind: "hero", eyebrow: "Help us get it right", heading: "Send in a kever, cemetery, or provider.", intro: "If you know a place we are missing, or something on the site is wrong, tell us. Every submission is read before anything changes." },
     ],
   },
+  {
+    slug: "privacy",
+    href: "/privacy",
+    label: "Privacy",
+    seoTitle: "Privacy Policy — White Glove Itineraries",
+    seoDescription: "How White Glove Itineraries collects, uses, and protects your information.",
+    blocks: [
+      {
+        id: "privacy-hero",
+        kind: "hero",
+        eyebrow: "White Glove Itineraries",
+        heading: "Privacy Policy",
+        intro: "Last updated: July 26, 2026.",
+      },
+    ],
+  },
+  {
+    slug: "terms",
+    href: "/terms",
+    label: "Terms",
+    seoTitle: "Terms of Use — White Glove Itineraries",
+    seoDescription: "The terms that govern your use of White Glove Itineraries.",
+    blocks: [
+      {
+        id: "terms-hero",
+        kind: "hero",
+        eyebrow: "White Glove Itineraries",
+        heading: "Terms of Use",
+        intro: "Last updated: August 10, 2026.",
+      },
+    ],
+  },
 ];
 
 export function getPageDef(slug: string): PageDef | undefined {

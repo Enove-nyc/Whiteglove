@@ -69,6 +69,7 @@ const PAGES = [
   ["/", "homepage"],
   ["/plan", "trip start flow"],
   ["/destinations", "destinations hub"],
+  ["/collections/summer", "summer collection"],
   ["/hotels", "hotels and stays"],
   // With a search in it, which is a different page: a summary line, a
   // prefilled form, and a filtered list rather than the whole directory.

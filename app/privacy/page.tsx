@@ -3,14 +3,19 @@ import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
+import { resolvePage } from "@/lib/pages";
 
-export const metadata = pageMetadata({
-  title: "Privacy Policy — White Glove Itineraries",
-  description: "How White Glove Itineraries collects, uses, and protects your information.",
-  path: "/privacy",
-});
+export const dynamic = "force-dynamic";
 
-const UPDATED = "July 26, 2026";
+export async function generateMetadata() {
+  const page = await resolvePage("privacy");
+  return pageMetadata({
+    title: page?.seoTitle ?? "Privacy Policy — White Glove Itineraries",
+    description: page?.seoDescription ?? "How White Glove Itineraries collects, uses, and protects your information.",
+    path: "/privacy",
+  });
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -22,17 +27,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function PrivacyPolicyPage() {
-  const { contactEmail } = await readWords();
+  const [{ contactEmail }, page] = await Promise.all([readWords(), resolvePage("privacy")]);
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Itineraries</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Privacy Policy</h1>
-          <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
-        </div>
-      </section>
+      {page ? <PageBlocks blocks={page.blocks} /> : null}
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">

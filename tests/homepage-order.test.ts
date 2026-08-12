@@ -177,7 +177,7 @@ describe("the order of the page", () => {
   it("OFFERS NO SEASON WITH NOTHING BEHIND IT", () => {
     const seasons = HOME.slice(at("When to go"), at("Food, Shabbos and the rest of it"));
     assert.match(seasons, /if \(count === 0\) return null/);
-    assert.match(seasons, /href=\{`\/destinations\?season=\$\{season\.value\}`\}/);
+    assert.match(seasons, /href=\{collectionPath\(season\.value\)\}/);
   });
 
   it("SHOWS THREE DESTINATIONS, ON THE SHORT CARD", () => {

@@ -1,4 +1,5 @@
 import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
+import { siteOrigin } from "@/lib/seo";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -364,6 +365,49 @@ export async function sendTripNoteEmail(
     },
     to,
     "trip note",
+  );
+  return result.ok;
+}
+
+/**
+ * A follow-up to somebody who asked for a topic.
+ *
+ * THE WORDS ARE THE OWNER'S. This will not invent a subject or a body — both
+ * have to be passed in, and lib/alert-followups.ts refuses the send when they
+ * are empty. The unsubscribe link is required; a follow-up without a way out
+ * is a blast.
+ */
+export async function sendAlertFollowup(
+  to: string,
+  opts: { subject: string; body: string; href?: string; unsubToken: string },
+): Promise<boolean> {
+  const origin = siteOrigin();
+  const unsubPath = `/api/alerts/unsubscribe?token=${encodeURIComponent(opts.unsubToken)}`;
+  const unsub = origin ? new URL(unsubPath, origin).toString() : unsubPath;
+  const href = opts.href?.trim()
+    ? origin
+      ? new URL(opts.href.trim(), origin).toString()
+      : opts.href.trim()
+    : "";
+  const body = escapeHtml(opts.body.trim()).replace(/\n/g, "<br>");
+  const result = await postResend(
+    {
+      to,
+      subject: opts.subject.trim(),
+      headers: { "List-Unsubscribe": `<${unsub}>` },
+      html:
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">${body}</p>` +
+        (href
+          ? `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${escapeHtml(href)}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open the page →</a></p>`
+          : "") +
+        `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">You asked for this kind of update. <a href="${escapeHtml(unsub)}">Unsubscribe</a>.</p>`,
+      text:
+        `${opts.body.trim()}` +
+        (href ? `\n\n${href}` : "") +
+        `\n\nUnsubscribe: ${unsub}`,
+    },
+    to,
+    "alert follow-up",
   );
   return result.ok;
 }

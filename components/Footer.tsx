@@ -43,6 +43,7 @@ const columnsFor = (
     links: [
       { label: "Start planning", href: "/plan" },
       { label: "Destinations", href: "/destinations" },
+      { label: "Holiday collections", href: "/collections" },
       { label: "Itinerary planner", href: "/itinerary" },
       { label: "Travel services", href: "/services" },
       { label: "A sample itinerary", href: "/sample-itinerary" },

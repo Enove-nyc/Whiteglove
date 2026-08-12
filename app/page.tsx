@@ -20,6 +20,7 @@ import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-dest
 import { getStayList } from "@/lib/attractions-view";
 import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
+import { collectionPath } from "@/lib/collections";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import { SUB_BRAND_HEBREW } from "@/components/SubBrand";
 import { readinessOf } from "@/lib/destination-readiness";
@@ -279,7 +280,7 @@ export default async function Home() {
               return (
                 <li key={theme.value}>
                   <Link
-                    href={`/destinations?kind=${theme.value}`}
+                    href={collectionPath(theme.value)}
                     className="wg-card flex h-full items-start justify-between gap-4 border border-[var(--gold-light)] bg-[var(--surface)] p-5"
                   >
                     <span>
@@ -411,7 +412,7 @@ export default async function Home() {
             return (
               <li key={season.value}>
                 <Link
-                  href={`/destinations?season=${season.value}`}
+                  href={collectionPath(season.value)}
                   className="wg-card flex h-full min-h-11 flex-col justify-between gap-3 border border-[var(--gold-light)] bg-[var(--surface)] p-5"
                 >
                   <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">

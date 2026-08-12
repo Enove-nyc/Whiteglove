@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminUnsubscribeButton from "@/components/AdminUnsubscribeButton";
+import AlertFollowupForm from "@/components/AlertFollowupForm";
 import { ALERT_TOPIC_LABELS, type AlertTopic } from "@/lib/email-alerts";
 import { alertsStoreAvailable, listAlertSignups } from "@/lib/email-alerts-store";
 import { emailConfigStatus } from "@/lib/email";
@@ -29,7 +30,8 @@ export default async function AdminAlertsPage() {
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Email alerts</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           People who asked to be told about new destinations, listings, seasonal programmes or a specific place. Consent
-          is required at signup. This screen does not send marketing blasts — it only holds who asked and for what.
+          is required at signup. A follow-up below goes only to the topic they ticked, in words you write — nothing is
+          generated.
         </p>
         <p className="mt-2">
           <Link href="/admin/growth" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
@@ -61,6 +63,15 @@ export default async function AdminAlertsPage() {
             {totalTracked > 0 ? ` · ${totalTracked} signup events counted in analytics` : ""}.
           </p>
         )}
+      </section>
+
+      <section className={`${card} mt-8`}>
+        <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Send a follow-up</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+          For a destination that is on the site, or a programme that is on record. The subject and the note are yours to
+          write. Unsubscribed addresses are left out.
+        </p>
+        <AlertFollowupForm />
       </section>
 
       <section className="mt-8">
