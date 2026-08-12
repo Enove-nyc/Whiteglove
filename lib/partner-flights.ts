@@ -11,6 +11,7 @@
  * Travelpayouts price with a Stay22 Kayak URL.
  */
 
+import { airlineHeading } from "@/lib/airline-names";
 import { goHref } from "@/lib/affiliate/request";
 import { describeSearch, type SearchShape } from "@/lib/kayak-search";
 import { searchTravelpayoutsFlights, travelpayoutsTokenConfigured, type TravelpayoutsFlightOption } from "@/lib/travelpayouts-api";
@@ -106,7 +107,7 @@ export function liveRowFromFare(flight: TravelpayoutsFlightOption): PartnerFligh
   } catch {
     return null;
   }
-  const title = flight.airlineName?.trim() || "Flight";
+  const title = airlineHeading(flight.airline, flight.airlineName);
   return {
     id: flight.id,
     title,
@@ -135,7 +136,7 @@ export async function searchPartnerFlights(search: PartnerFlightSearch): Promise
   if (!/^\d{4}-\d{2}-\d{2}$/.test(search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Choose a departure date." };
   }
-  if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate <= search.departDate)) {
+  if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate < search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Return date must be after departure." };
   }
 
@@ -155,7 +156,9 @@ export async function searchPartnerFlights(search: PartnerFlightSearch): Promise
           mode: "live",
           currency: live.currency,
           message: live.message,
-          detail: "A listed price opens that offer. Compare more fares on Kayak without a listed price.",
+          detail: live.nearbyReturn
+            ? "A listed price opens that offer — check the return date. Compare your exact dates on Kayak without a listed price."
+            : "A listed price opens that offer. Compare more fares on Kayak without a listed price.",
           flights: [...priced, kayakCompareRow(search, origin, destination)],
         };
       }

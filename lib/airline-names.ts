@@ -90,6 +90,18 @@ export function airlineName(value: string | undefined | null): string | undefine
   return code ? names.get(code) : undefined;
 }
 
+/**
+ * Heading for a priced row. Never the word "No" (Norse Atlantic is N0).
+ * A two-character code is fine next to a flight number, not as the title.
+ */
+export function airlineHeading(code?: string | null, name?: string | null): string {
+  const named = (name ?? "").trim();
+  if (named && !/^no$/i.test(named) && named.toUpperCase() !== "N0") return named;
+  const fallback = airlineName(code);
+  if (fallback && !/^no$/i.test(fallback)) return fallback;
+  return "Flight";
+}
+
 /** "N0 402" — the code stays a code, never a heading. */
 export function flightNumberLabel(code: string | undefined | null, number: string | undefined | null): string {
   const iata = airlineCode(code);
@@ -119,6 +131,9 @@ export function hydrateAirlineNames(): Promise<void> {
         const name = row.name?.trim();
         if (code && name) names.set(code, name);
       }
+      // Codes this site has already rendered badly keep our names, even if
+      // the public list is shorter or odd. N0 must not become "No".
+      for (const [known, label] of Object.entries(FALLBACK)) names.set(known, label);
     } catch {
       /* fallback map is enough to not print "No" */
     }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { airlineCode, airlineName, flightNumberLabel } from "@/lib/airline-names";
+import { airlineCode, airlineHeading, airlineName, flightNumberLabel } from "@/lib/airline-names";
 import { mapTravelpayoutsFlights, trackedAviasalesUrl } from "@/lib/travelpayouts-api";
 import { liveRowFromFare, kayakCompareRow } from "@/lib/partner-flights";
 
@@ -12,6 +12,9 @@ describe("airline codes that look like words", () => {
     assert.notEqual(airlineName("N0"), airlineName("NO"));
     assert.equal(airlineName("NO"), "Neos");
     assert.equal(flightNumberLabel("N0", "402"), "N0 402");
+    assert.equal(airlineHeading("N0"), "Norse Atlantic Airways");
+    assert.equal(airlineHeading("N0", "No"), "Norse Atlantic Airways");
+    assert.equal(airlineHeading("N0", "N0"), "Norse Atlantic Airways");
   });
 
   it("refuses a 3-letter ICAO or a boolean-looking value as a code", () => {
@@ -107,6 +110,56 @@ describe("Travelpayouts flight mapping", () => {
     assert.match(live.bookHref, /aviasales\.com/);
     assert.doesNotMatch(live.bookHref, /\/go\?/);
     assert.doesNotMatch(live.title, /^No$/i);
+  });
+
+  it("does not title a row No even if a bad airline name slipped in", () => {
+    const live = liveRowFromFare({
+      id: "x",
+      origin: "JFK",
+      destination: "TLV",
+      departDate: "2026-08-26",
+      airline: "N0",
+      airlineName: "No",
+      transfers: 1,
+      price: 562,
+      currency: "USD",
+      summary: "N0 402 · JFK → TLV",
+      bookUrl: "https://www.aviasales.com/search/JFK2608TLV1?marker=761677",
+    });
+    assert.ok(live);
+    assert.equal(live.title, "Norse Atlantic Airways");
+    assert.doesNotMatch(live.title, /^No$/i);
+  });
+
+  it("keeps a round-trip with a different return when asked to", () => {
+    const rows = mapTravelpayoutsFlights(
+      [
+        {
+          origin: "NYC",
+          destination: "TLV",
+          origin_airport: "JFK",
+          destination_airport: "TLV",
+          departure_at: "2026-08-26T17:30:00-04:00",
+          return_at: "2026-08-31T18:00:00+03:00",
+          airline: "AF",
+          flight_number: "011",
+          transfers: 2,
+          price: 1204,
+          link: "/search/JFK2608TLV31081?t=AF",
+        },
+      ],
+      { origin: "JFK", destination: "TLV", departDate: "2026-08-26", returnDate: "2026-09-02" },
+      "USD",
+      "761677",
+      "any-roundtrip",
+    );
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].returnDate, "2026-08-31");
+    assert.match(rows[0].summary, /return 31 Aug 2026/);
+    const live = liveRowFromFare(rows[0]);
+    assert.ok(live);
+    assert.match(live.bookHref, /aviasales\.com/);
+    assert.doesNotMatch(live.bookHref, /\/go\?/);
   });
 
   it("drops a one-way search row that came back with a return date", () => {

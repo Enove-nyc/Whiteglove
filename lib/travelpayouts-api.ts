@@ -5,18 +5,21 @@
  * account setup. The Aviasales Flight Search API (multiple real itineraries)
  * returns 403 on this account — it needs separate approval. What this token
  * can call is prices_for_dates: cheapest cached tickets, one per date when
- * one_way=true, plus a second call for the cheapest nonstop.
+ * one_way=true, plus a second call for the cheapest nonstop. Round-trip with
+ * no cache for the exact return retries without return_at and shows fares that
+ * leave on the asked day (actual return date on the row).
  *
  * Each priced row carries that ticket's `link`. View & book must open
  * https://www.aviasales.com{link} with TRAVELPAYOUTS_MARKER — never Stay22
  * Kayak. A Kayak compare row without a price is added separately.
  *
  * Auth: X-Access-Token. Env: TRAVELPAYOUTS_TOKEN. Marker is not the token.
+ * Requests use market=us (this site's travellers).
  *
  * Docs: https://support.travelpayouts.com/hc/en-us/articles/203956163
  */
 
-import { airlineCode, airlineName, flightNumberLabel, hydrateAirlineNames } from "@/lib/airline-names";
+import { airlineCode, airlineHeading, flightNumberLabel, hydrateAirlineNames } from "@/lib/airline-names";
 
 const PRICES_URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates";
 const CACHE_TTL_MS = 90_000;
@@ -44,8 +47,18 @@ export type TravelpayoutsFlightOption = {
 };
 
 export type TravelpayoutsFlightResult =
-  | { ok: true; mode: "live"; flights: TravelpayoutsFlightOption[]; currency: string; message: string }
+  | {
+      ok: true;
+      mode: "live";
+      flights: TravelpayoutsFlightOption[];
+      currency: string;
+      message: string;
+      /** True when rows leave on the asked day but come back on a different date. */
+      nearbyReturn?: boolean;
+    }
   | { ok: false; mode: "unavailable"; message: string; detail?: string };
+
+export type ReturnMatch = "match-search" | "any-roundtrip";
 
 type CacheEntry = { at: number; value: TravelpayoutsFlightResult };
 const memoryCache = new Map<string, CacheEntry>();
@@ -130,7 +143,8 @@ export function trackedAviasalesUrl(link: string | undefined, marker = travelpay
   return url.toString();
 }
 
-function sameReturn(rowReturn: string | undefined, wanted: string | undefined): boolean {
+function keepReturn(rowReturn: string | undefined, wanted: string | undefined, match: ReturnMatch): boolean {
+  if (match === "any-roundtrip") return Boolean(rowReturn);
   if (!wanted) return !rowReturn;
   return rowReturn === wanted;
 }
@@ -141,6 +155,7 @@ export function mapTravelpayoutsFlights(
   search: FlightPriceSearch,
   currency: string,
   marker = travelpayoutsMarker(),
+  returnMatch: ReturnMatch = "match-search",
 ): TravelpayoutsFlightOption[] {
   const origin = iata(search.origin);
   const destination = iata(search.destination);
@@ -152,7 +167,7 @@ export function mapTravelpayoutsFlights(
     if (!Number.isFinite(price)) continue;
     const depart = (row.departure_at ?? search.departDate).slice(0, 10);
     const ret = row.return_at ? String(row.return_at).slice(0, 10) : undefined;
-    if (!sameReturn(ret, search.returnDate)) continue;
+    if (!keepReturn(ret, search.returnDate, returnMatch)) continue;
     const transfers = Math.max(0, Number(row.transfers) || 0);
     const airline = airlineCode(row.airline) || undefined;
     const from = (row.origin_airport ?? row.origin ?? origin).toUpperCase();
@@ -180,7 +195,7 @@ export function mapTravelpayoutsFlights(
       departDate: depart,
       returnDate: ret,
       airline,
-      airlineName: airlineName(airline),
+      airlineName: airlineHeading(airline),
       flightNumber: flightNumber || undefined,
       departTime,
       transfers,
@@ -195,19 +210,27 @@ export function mapTravelpayoutsFlights(
   return flights;
 }
 
-async function fetchPricesForDates(search: FlightPriceSearch, origin: string, destination: string): Promise<RawTravelpayoutsFlight[]> {
+async function fetchPricesForDates(
+  search: FlightPriceSearch,
+  origin: string,
+  destination: string,
+  extras?: { omitReturnAt?: boolean },
+): Promise<RawTravelpayoutsFlight[]> {
   const key = token();
   const params = new URLSearchParams();
   params.set("origin", origin);
   params.set("destination", destination);
   params.set("departure_at", search.departDate);
-  if (search.returnDate) {
+  if (extras?.omitReturnAt) {
+    params.set("one_way", "false");
+  } else if (search.returnDate) {
     params.set("return_at", search.returnDate);
     params.set("one_way", "false");
   } else {
     params.set("one_way", "true");
   }
   params.set("currency", "usd");
+  params.set("market", "us");
   params.set("limit", String(MAX_RESULTS));
   params.set("sorting", "price");
   params.set("unique", "false");
@@ -224,14 +247,22 @@ async function fetchPricesForDates(search: FlightPriceSearch, origin: string, de
       cache: "no-store",
     });
   } catch {
+    console.warn("Travelpayouts prices_for_dates network error");
     return [];
   }
-  if (!response.ok) return [];
+  if (!response.ok) {
+    console.warn(`Travelpayouts prices_for_dates HTTP ${response.status}`);
+    return [];
+  }
   const body = (await response.json().catch(() => null)) as {
     success?: boolean;
     data?: RawTravelpayoutsFlight[];
+    error?: string;
   } | null;
-  if (!body || body.success === false || !Array.isArray(body.data)) return [];
+  if (!body || body.success === false || !Array.isArray(body.data)) {
+    if (body?.error) console.warn(`Travelpayouts prices_for_dates: ${body.error}`);
+    return [];
+  }
   return body.data;
 }
 
@@ -258,7 +289,7 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
   if (!/^\d{4}-\d{2}-\d{2}$/.test(search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Choose a departure date." };
   }
-  if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate <= search.departDate)) {
+  if (search.returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(search.returnDate) || search.returnDate < search.departDate)) {
     return { ok: false, mode: "unavailable", message: "Return date must be after departure." };
   }
 
@@ -273,20 +304,40 @@ export async function searchTravelpayoutsFlights(search: FlightPriceSearch): Pro
     ? [fetchPricesForDates(wanted, origin, destination)]
     : [fetchPricesForDates(wanted, origin, destination), fetchPricesForDates({ ...wanted, nonstop: true }, origin, destination)];
   const collected = (await Promise.all(batches)).flat();
-  const flights = mapTravelpayoutsFlights(collected, wanted, "USD").filter((flight) => flight.bookUrl);
+  let flights = mapTravelpayoutsFlights(collected, wanted, "USD").filter((flight) => flight.bookUrl);
   flights.sort((a, b) => a.price - b.price || a.transfers - b.transfers);
+
+  let nearbyReturn = false;
+  if (flights.length === 0 && wanted.returnDate) {
+    const loose = { ...wanted, returnDate: undefined };
+    const looseBatches = search.nonstop
+      ? [fetchPricesForDates(loose, origin, destination, { omitReturnAt: true })]
+      : [
+          fetchPricesForDates(loose, origin, destination, { omitReturnAt: true }),
+          fetchPricesForDates({ ...loose, nonstop: true }, origin, destination, { omitReturnAt: true }),
+        ];
+    const looseRows = (await Promise.all(looseBatches)).flat();
+    flights = mapTravelpayoutsFlights(looseRows, wanted, "USD", travelpayoutsMarker(), "any-roundtrip").filter(
+      (flight) => flight.bookUrl,
+    );
+    flights.sort((a, b) => a.price - b.price || a.transfers - b.transfers);
+    nearbyReturn = flights.length > 0;
+  }
 
   const result: TravelpayoutsFlightResult = {
     ok: true,
     mode: "live",
     flights,
     currency: "USD",
+    nearbyReturn: nearbyReturn || undefined,
     message:
       flights.length === 0
         ? "No priced flights for those dates. Try other dates, or compare on Kayak."
-        : flights.length === 1
-          ? "A recent fare for these dates."
-          : `${flights.length} recent fares for these dates.`,
+        : nearbyReturn
+          ? "No cached fare for that exact return date. These leave on your day — check the return, it may differ."
+          : flights.length === 1
+            ? "A recent fare for these dates."
+            : `${flights.length} recent fares for these dates.`,
   };
   memoryCache.set(memoKey, { at: Date.now(), value: result });
   return result;
