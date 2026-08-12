@@ -181,6 +181,22 @@ export const CONNECTIONS: Connection[] = [
     weight: "nicety",
   },
   {
+    vars: ["TRAVELPAYOUTS_TOKEN"],
+    what: "Travelpayouts Data API token — live flight prices on Search booking partners.",
+    without:
+      "Flight search still opens with the partner and still works. Live prices on the page simply stay off until this is set.",
+    weight: "feature",
+    where: "Travelpayouts dashboard → API tools. Separate from the marker and from pasted redirect links.",
+  },
+  {
+    vars: ["STAY22_API_KEY"],
+    what: "Stay22 Direct Travel API key — live places to stay and prices on Search booking partners.",
+    without:
+      "Where to stay still opens via the Stay22 ID on the earnings screen (or Booking.com). Live options on the page stay off until this is set.",
+    weight: "feature",
+    where: "hub.stay22.com → Settings → API. The AID on the earnings screen is separate and still required for tracked links.",
+  },
+  {
     vars: ["SITE_ACCESS_PASSWORD"],
     what: "The full code that gets somebody into the site while it is closed, and keeps them in.",
     without:

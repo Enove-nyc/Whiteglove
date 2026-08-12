@@ -32,15 +32,15 @@ import { pageMetadata } from "@/lib/seo";
 // comparison site does not — which quarter makes Shabbos walkable — so it is
 // the tab that earns the visit.
 export const metadata = pageMetadata({
-  title: "Book Flights, Hotels & Cars with Cash or Miles | White Glove",
+  title: "Search Booking Partners | White Glove",
   description:
-    "Search and book flights, hotels and rental cars for your kosher-travel journey — paying with cash, or with your miles and points — then keep the whole trip together in White Glove.",
+    "Search places to stay, flights and rental cars for your trip — with cash or miles — then keep the whole journey together in White Glove. Booking and payment happen with trusted partners.",
   path: "/book",
 });
 
 const COMPARISON: Array<[string, string, string]> = [
   [
-    "Hotels",
+    "Where to stay",
     "Compare places to stay for your dates — and check which quarter they are in before you book one.",
     "See which chains have a property in town, and whether the points beat the cash rate for that stay.",
   ],
@@ -176,7 +176,7 @@ export default async function BookPage({
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-10 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-6xl">
           <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.1] text-[var(--navy)]">
-            Flights, hotels and cars
+            Search booking partners
           </h1>
           <div className="mt-6">
             <BookPartners prefill={prefill} multiCity={multiCity} initialKind={initialKind} />

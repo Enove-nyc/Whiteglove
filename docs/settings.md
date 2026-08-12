@@ -124,10 +124,11 @@ a text — the trip is waiting when they next sign in.
 | --- | --- |
 | `BOOKING_AFFILIATE_ID` | Booking.com affiliate ID. Hotel searches carry it once set. |
 | `KAYAK_AFFILIATE_PARAMS` | Query string appended to Kayak links. |
-| `TRAVELPAYOUTS_MARKER` | Travelpayouts marker — one free account covering flights, hotels and insurance. |
+| `TRAVELPAYOUTS_MARKER` | Travelpayouts marker — account number for reference; earning routes are pasted on Settings → What the site earns. |
+| `TRAVELPAYOUTS_TOKEN` | Travelpayouts Data API token. Turns on live flight prices on `/book`. Without it, flights still hand off to the partner. |
+| `STAY22_API_KEY` | Stay22 Direct Travel API key (hub.stay22.com → Settings → API). Turns on live places to stay on `/book`. The Stay22 AID on the earnings screen remains for tracked Allez links when the API key is absent. |
 
-All optional: without them the Book page still works, the links just carry no
-tracking and earn nothing.
+All optional: without them the Book page still works. Missing API tokens simply keep the older partner hand-off (no live inventory panel). Missing affiliate IDs mean links carry no tracking and earn nothing.
 
 ## Services that are not open yet
 

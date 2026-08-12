@@ -94,6 +94,13 @@ export default async function EarningsSettings() {
           form, so the hotel search is built for Stay22 properly rather than wrapped — which means what a traveller
           typed survives the hand-off.
         </p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Live inventory on Search booking partners uses a server API key (
+          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">STAY22_API_KEY</code>
+          ), not this ID. Flights live prices use{" "}
+          <code className="rounded bg-[#fcfaf6] px-1.5 py-0.5 text-xs">TRAVELPAYOUTS_TOKEN</code>. Both belong in
+          environment settings / Connections — never in this form.
+        </p>
         <Stay22Form current={stay22} storeReady={travelpayoutsStoreAvailable()} />
       </section>
 
