@@ -361,7 +361,7 @@ describe("the services", () => {
       "/book",
       "/flight-booking-assistance",
       "/travel-guide",
-      "/phone-rentals",
+      "/travel-insurance",
       "/kosher-travel",
       "/heritage",
     ]);

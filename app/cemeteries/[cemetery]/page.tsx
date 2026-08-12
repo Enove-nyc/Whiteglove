@@ -143,6 +143,14 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                 {cemetery.accessContacts.map((contact) => (
                   <div key={`${contact.label}-${contact.phone ?? contact.email}`}>
                     <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{contact.label}</p>
+                    {/* Whose number it is. A traveller dialling a strange
+                        country has to open with a name, and a number with
+                        nobody attached to it is the reason he does not ring. */}
+                    {contact.name && (
+                      <p className="mt-1 inline-block rounded-full border border-[var(--gold)] px-3 py-0.5 text-xs font-bold tracking-[0.06em] text-[var(--navy)]">
+                        Ask for {contact.name}
+                      </p>
+                    )}
                     <p className="mt-1 text-sm leading-6 text-stone-600">{contact.note}</p>
                     <div className="mt-3 flex flex-wrap gap-3">
                       {contact.phone && <a href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {contact.phone}</a>}
@@ -155,8 +163,18 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           </aside>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who is buried here</p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
+            {/* A beis hachaim earns its page by existing — where the ground is,
+                how to reach it, who holds the key. Names are not the price of
+                entry, so this whole section stands down when there are none
+                rather than printing a heading over an empty space. It says
+                nothing in their place: a visitor is owed the place, not a note
+                about how far we have got with it. */}
+            {cemetery.burials.length > 0 && (
+              <>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who is buried here</p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Known kevarim</h2>
+              </>
+            )}
 
             <div className="mt-8 space-y-4">
               {cemetery.burials.map((burial) => (
