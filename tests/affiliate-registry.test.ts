@@ -111,6 +111,28 @@ describe("who pays and where the traveler lands", () => {
     assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/flights\/JFK-FCO\/2026-09-01\/2026-09-08/);
   });
 
+  it("sends Kayak cars through Stay22 from the ID, without a pasted wrap or Travelpayouts", () => {
+    const viaAid: AffiliateConfig = {
+      travelpayouts: {},
+      stay22: { aid: "whiteglove", provider: "roam" },
+      partners: { flights: "kayak", cars: "kayak" },
+    };
+    const route = routeFor("car", viaAid);
+    assert.equal(route.earns, true);
+    assert.equal(route.network, "stay22");
+    assert.equal(route.destinationLabel, "Kayak");
+    const resolved = resolveLink(
+      { product: "car", destination: "Rome", checkIn: "2026-09-01", checkOut: "2026-09-08" },
+      viaAid,
+    );
+    assert.ok(resolved);
+    const url = new URL(resolved!.url);
+    assert.equal(url.host, "www.stay22.com");
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "whiteglove");
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/cars\/Rome\/2026-09-01\/2026-09-08/);
+  });
+
   it("prefers Stay22 Kayak over a Travelpayouts wrap when the Stay22 ID is set", () => {
     const both: AffiliateConfig = {
       ...ON_KAYAK,

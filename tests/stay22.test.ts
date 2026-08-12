@@ -249,6 +249,14 @@ describe("Kayak flights use the Stay22 ID, not a pasted wrap", () => {
     assert.equal(url.searchParams.get("link"), search);
   });
 
+  it("wraps a Kayak cars search the same way", () => {
+    const search = "https://www.kayak.com/cars/Rome/2026-09-01/2026-09-08";
+    const url = new URL(stay22SearchUrl(search, kayakStay22Link(on())));
+    assert.equal(url.pathname, "/allez/kayak");
+    assert.equal(url.searchParams.get("aid"), "wg123");
+    assert.equal(url.searchParams.get("link"), search);
+  });
+
   it("reads STAY22_AID from an env object without needing Redis", () => {
     assert.equal(stay22FromEnv({ STAY22_AID: "wgenvaid" }).aid, "wgenvaid");
     assert.equal(stay22FromEnv({ STAY22_AID: "" }).aid, "");

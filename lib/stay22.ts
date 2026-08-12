@@ -310,5 +310,5 @@ export function describeStay22(settings: Stay22Settings): string {
     return "Not set. Hotel searches open Booking.com directly, which works and earns nothing — and Booking.com turned this site down for their own programme, so there is no way to earn on them without this.";
   }
   const provider = PROVIDERS.find((p) => p.key === settings.provider) ?? PROVIDERS[0];
-  return `Hotel searches go through Stay22 under ID ${settings.aid.trim()}. ${provider.note} Kayak flight searches use this same ID.`;
+  return `Hotel searches go through Stay22 under ID ${settings.aid.trim()}. ${provider.note} Kayak flight and car searches use this same ID.`;
 }

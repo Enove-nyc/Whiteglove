@@ -223,16 +223,16 @@ function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot, choices
 }
 
 /**
- * Stay22 Kayak wrap for flights: the Stay22 ID first, then a pasted Kayak
- * wrap. Travelpayouts is not required. Null when the flight partner is not
- * Kayak, or when neither an ID nor a Stay22 Kayak link is present.
+ * Stay22 Kayak wrap: the Stay22 ID first, then a pasted Kayak wrap.
+ * Travelpayouts is not required. Null when that slot's partner is not Kayak,
+ * or when neither an ID nor a Stay22 Kayak link is present.
  */
-function stay22KayakForFlights(config: AffiliateConfig): Stay22Link | null {
-  if (partnerFor("flights", config.partners).key !== "kayak") return null;
+function stay22KayakFor(config: AffiliateConfig, slot: "flights" | "cars"): Stay22Link | null {
+  if (partnerFor(slot, config.partners).key !== "kayak") return null;
   const fromAid = kayakStay22Link(config.stay22);
   if (fromAid) return fromAid;
-  const pasted = config.travelpayouts.flights?.trim() ?? "";
-  if (!pasted || linkProblem(pasted, "flights", config.partners)) return null;
+  const pasted = config.travelpayouts[slot]?.trim() ?? "";
+  if (!pasted || linkProblem(pasted, slot, config.partners)) return null;
   const link = readStay22Link(pasted);
   return link?.desk === "kayak" ? link : null;
 }
@@ -281,7 +281,7 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
 
   if (product === "flight") {
     const partner = partnerFor("flights", config.partners);
-    const stay22Kayak = stay22KayakForFlights(config);
+    const stay22Kayak = stay22KayakFor(config, "flights");
     if (stay22Kayak) {
       return {
         product,
@@ -305,16 +305,24 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
 
   if (product === "car") {
     const partner = partnerFor("cars", config.partners);
+    const stay22Kayak = stay22KayakFor(config, "cars");
+    if (stay22Kayak) {
+      return {
+        product,
+        destinationLabel: partner.label,
+        network: "stay22",
+        earns: true,
+        note: `Car searches go through Stay22, then on to ${partner.label}.`,
+      };
+    }
     const wrapped = travelpayoutsEarns(config.travelpayouts, "cars", config.partners);
-    const viaStay22 = wrapped ? readStay22Link(config.travelpayouts.cars ?? "") : null;
-    const network = wrapped ? (viaStay22 ? "stay22" : "travelpayouts") : "none";
     return {
       product,
       destinationLabel: partner.label,
-      network,
+      network: wrapped ? "travelpayouts" : "none",
       earns: wrapped,
       note: wrapped
-        ? `Car searches go through ${viaStay22 ? "Stay22" : "Travelpayouts"}, then on to ${partner.label}.`
+        ? `Car searches go through Travelpayouts, then on to ${partner.label}.`
         : `Car searches open ${partner.label} directly. They work, and they earn nothing.`,
     };
   }
@@ -509,7 +517,10 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   // the programme's own parameters.
   if (request.product === "hotel" && route.network === "stay22") return { url, route };
   if (request.product === "flight" && route.network === "stay22") {
-    return { url: stay22SearchUrl(url, stay22KayakForFlights(config)), route };
+    return { url: stay22SearchUrl(url, stay22KayakFor(config, "flights")), route };
+  }
+  if (request.product === "car" && route.network === "stay22") {
+    return { url: stay22SearchUrl(url, stay22KayakFor(config, "cars")), route };
   }
   if (isLandingProduct(request.product)) {
     return { url, route };

@@ -275,14 +275,14 @@ export function describeSlot(slot: SearchSlot, pasted: string | undefined, choic
 
 function slotEarns(slot: SearchSlot, links: TravelpayoutsLinks, choices?: PartnerChoices, stay22?: Stay22Settings): boolean {
   if (slot === "hotels" && stay22IsOn(stay22)) return true;
-  if (slot === "flights" && stay22IsOn(stay22) && partnerFor("flights", choices).key === "kayak") return true;
+  if ((slot === "flights" || slot === "cars") && stay22IsOn(stay22) && partnerFor(slot, choices).key === "kayak") return true;
   const pasted = (links[slot] ?? "").trim();
   return Boolean(pasted) && linkProblem(pasted, slot, choices) === null;
 }
 
 function slotNetwork(slot: SearchSlot, links: TravelpayoutsLinks, stay22?: Stay22Settings, choices?: PartnerChoices): "Stay22" | "Travelpayouts" {
   if (slot === "hotels" && stay22IsOn(stay22)) return "Stay22";
-  if (slot === "flights" && stay22IsOn(stay22) && partnerFor("flights", choices).key === "kayak") return "Stay22";
+  if ((slot === "flights" || slot === "cars") && stay22IsOn(stay22) && partnerFor(slot, choices).key === "kayak") return "Stay22";
   return readStay22Link(links[slot] ?? "") ? "Stay22" : "Travelpayouts";
 }
 

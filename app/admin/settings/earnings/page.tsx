@@ -142,6 +142,11 @@ export default async function EarningsSettings() {
             ? "Flight searches go through Stay22, then on to Kayak, using the ID above. Nothing pasted in this box is required."
             : undefined
         }
+        carsElsewhere={
+          stay22IsOn(stay22) && partnerFor("cars", affiliate.partners).key === "kayak"
+            ? "Car searches go through Stay22, then on to Kayak, using the ID above. Nothing pasted in this box is required."
+            : undefined
+        }
       />
 
       <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
