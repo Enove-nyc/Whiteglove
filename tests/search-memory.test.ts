@@ -185,7 +185,7 @@ describe("it is an enhancement, never a dependency", () => {
 
   it("is mounted where searches are made and answered", () => {
     // /cars and /flights carried it too and are gone — both searches are tabs
-    // on /book now, which keeps the trip in localStorage itself.
+    // on /book now. Search memory is form draft, not a saved trip.
     for (const page of ["app/page.tsx", "app/hotels/page.tsx"]) {
       assert.match(readFileSync(page, "utf8"), /<SearchMemory/, `${page} does not carry the search`);
     }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { PLACES_EVENT } from "@/lib/account-trip-client";
 import type { SavedPlace } from "@/data/route-utils";
 
 type AccountSnapshot = {
@@ -44,35 +45,14 @@ function tripDates(trip: Trip): string {
   return sameMonth ? `${from.getUTCDate()} – ${long(to)}` : `${long(from)} – ${long(to)}`;
 }
 
-const read = (key: string) => {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "[]") as SavedPlace[];
-  } catch {
-    return [];
-  }
-};
-
 export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boolean }) {
   const router = useRouter();
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
-  // Only read browser-local saves for the anonymous preview. When the user is
-  // logged in, their account (server) is the single source of truth — otherwise
-  // places saved while browsing anonymously would leak into a new account.
-  const [route, setRoute] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveMyRoute")));
-  const [favorites, setFavorites] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveFavorites")));
-  // Null until the answer is known — an account with no trips and an account
-  // that has not loaded yet are different things, and "0 itineraries" on a
-  // trip you spent an hour on would be alarming.
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const syncLocal = () => {
-      setRoute(read("whiteGloveMyRoute"));
-      setFavorites(read("whiteGloveFavorites"));
-    };
-
     const syncRemote = async () => {
       const response = await fetch("/api/account/me", { cache: "no-store" });
       const data = await response.json().catch(() => null) as { account?: { email?: string }; data?: { route?: SavedPlace[]; favorites?: SavedPlace[] } | null } | null;
@@ -87,24 +67,21 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
 
     const syncTrips = async () => {
       const response = await fetch("/api/account/trips", { cache: "no-store" });
-      if (!response.ok) return; // not signed in, or no account store connected
+      if (!response.ok) return;
       const data = await response.json().catch(() => null) as { trips?: Trip[] } | null;
       if (data?.trips) setTrips(data.trips);
     };
 
-    // Anonymous preview follows local storage; logged-in view follows the account.
-    if (!loggedIn) {
-      syncLocal();
-      window.addEventListener("whiteglove-route", syncLocal);
-    }
-    syncRemote().catch(() => undefined);
-    syncTrips().catch(() => undefined);
-    return () => window.removeEventListener("whiteglove-route", syncLocal);
+    const onPlaces = () => void syncRemote();
+    void syncRemote().catch(() => undefined);
+    void syncTrips().catch(() => undefined);
+    window.addEventListener(PLACES_EVENT, onPlaces);
+    return () => window.removeEventListener(PLACES_EVENT, onPlaces);
   }, [loggedIn]);
 
-  const activeRoute = loggedIn ? account?.route ?? [] : account?.route ?? route;
-  const activeFavorites = loggedIn ? account?.favorites ?? [] : account?.favorites ?? favorites;
-  const sourceLabel = account ? `Synced to ${account.email}` : loggedIn ? "Synced to your account" : "Saved in this browser";
+  const activeRoute = account?.route ?? [];
+  const activeFavorites = account?.favorites ?? [];
+  const sourceLabel = account ? `Saved to ${account.email}` : loggedIn ? "Saved to your account" : "Sign in to save trips";
 
   /**
    * Start a genuinely new trip, then open it.

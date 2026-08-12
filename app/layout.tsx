@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
+import SaveAuthProvider from "@/components/SaveAuthProvider";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import IdleLogout from "@/components/IdleLogout";
 import { readBookingLink } from "@/lib/booking-access-store";
@@ -9,6 +10,8 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
 import { getBetaNotice } from "@/lib/beta-notice-store";
+import { googleConfig } from "@/lib/google-signin";
+import { smsConfigured } from "@/lib/sms";
 import { siteOrigin } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -97,7 +100,14 @@ export default async function RootLayout({
             Without it the browser scrolls to the anchor and leaves the focus
             behind, and the next Tab starts at the header again. */}
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
-          <BookingLinkProvider value={booking}>{children}</BookingLinkProvider>
+          <BookingLinkProvider value={booking}>
+            <SaveAuthProvider
+              googleAvailable={Boolean(googleConfig({ GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET }))}
+              phoneSignupAvailable={smsConfigured()}
+            >
+              {children}
+            </SaveAuthProvider>
+          </BookingLinkProvider>
         </div>
       </body>
     </html>

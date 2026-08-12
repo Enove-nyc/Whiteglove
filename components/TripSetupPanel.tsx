@@ -7,6 +7,8 @@ import { vacationDestinations } from "@/data/vacation-destinations";
 import { hasAnswers, plannerSeed, readAnswers, summarize, TRIP_PLAN_KEY, type TripPlanAnswers } from "@/lib/trip-plan";
 import { destinationForTrip, setupProgress, setupSteps, tripIsUntouched, type TripTemplate } from "@/lib/trip-setup";
 import { destinationHref } from "@/lib/vacation-ideas";
+import { useSaveAuth } from "@/components/SaveAuthProvider";
+import { PLAN_THEN_SAVE } from "@/lib/save-copy";
 
 /**
  * The part in front of the planner.
@@ -71,6 +73,7 @@ export default function TripSetupPanel({
   onApply: (patch: Partial<Itinerary>, template?: TripTemplate) => void;
 }) {
   const [open, setOpen] = useState(true);
+  const { requireSave } = useSaveAuth();
   const answers = useSyncExternalStore(subscribe, storedAnswers, () => null);
 
   const steps = setupSteps(itin);
@@ -233,17 +236,14 @@ export default function TripSetupPanel({
             <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Where this trip is saved</h3>
             {signedIn === false ? (
               <>
-                <p className="mt-1.5 text-sm leading-6 text-stone-600">
-                  It saves as you type — <span className="font-semibold text-[var(--navy)]">in this browser only</span>.
-                  Clear your history, or pick up your phone, and it is not there. Signing in keeps it with your account
-                  instead, so it follows you between devices and you can share it with whoever is travelling with you.
-                </p>
-                <Link
-                  href="/login?next=%2Fitinerary"
+                <p className="mt-1.5 text-sm leading-6 text-stone-600">{PLAN_THEN_SAVE}</p>
+                <button
+                  type="button"
+                  onClick={() => requireSave({ type: "save-itinerary", itinerary: itin })}
                   className="mt-3 inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
                 >
                   Sign in or create an account
-                </Link>
+                </button>
               </>
             ) : signedIn ? (
               <p className="mt-1.5 text-sm leading-6 text-stone-600">

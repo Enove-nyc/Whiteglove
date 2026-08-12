@@ -49,7 +49,8 @@ export default async function ItineraryPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
             Dates, travelers, flights, hotels and stops — with the driving between them worked out on real roads, a
-            warning when a Friday runs late, and a printable copy for the car. Free to use, and yours to change.
+            warning when a Friday runs late, and a printable copy for the car. Start planning freely. Create an account
+            when you are ready to save your trip and access it on any device.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
             To start from a few answers instead of a blank page,{" "}

@@ -198,7 +198,8 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   coordinates: a.coordinates,
                   href: `/things-to-do#${a.slug}`,
                 }}
-                label="Add to my route"
+                label="Add to trip"
+                saveAs="trip"
               />
               <Link
                 href={staySearchHref({ destination: a.city })}

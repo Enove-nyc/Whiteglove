@@ -19,8 +19,6 @@ import { usePlannerAssumptions } from "@/components/usePlannerAssumptions";
 // never refused, and every failure on the way lets the copy through: being told
 // no at a printer because a store blinked is worse than one extra copy.
 
-const LS_KEY = "whiteGloveItinerary";
-
 // A stable empty array, so the burials hook does not re-fetch every render
 // while the itinerary is still loading.
 const EMPTY_ACTIVITIES: Itinerary["activities"] = [];
@@ -64,12 +62,7 @@ export default function PrintItineraryPage() {
         setItin(loaded);
         return;
       }
-      try {
-        const local = localStorage.getItem(LS_KEY);
-        setItin(local ? { ...emptyItinerary(), ...JSON.parse(local) } : emptyItinerary());
-      } catch {
-        setItin(emptyItinerary());
-      }
+      setItin(emptyItinerary());
     })();
   }, []);
 

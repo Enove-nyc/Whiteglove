@@ -68,6 +68,7 @@ export default function LoginForm({
   next,
   googleAvailable = false,
   googleProblem,
+  onSignedIn,
 }: {
   phoneSignupAvailable?: boolean;
   /** Where to go once they are in — set when they were sent here mid-task. */
@@ -76,6 +77,11 @@ export default function LoginForm({
   googleAvailable?: boolean;
   /** What went wrong last time, if they have just come back from Google. */
   googleProblem?: string;
+  /**
+   * Stay on this page after a password sign-in. The save-trip modal uses this
+   * so the pending add can finish without a redirect to /account.
+   */
+  onSignedIn?: () => void;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -92,6 +98,7 @@ export default function LoginForm({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (onSignedIn) return;
     let active = true;
     fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
@@ -102,7 +109,7 @@ export default function LoginForm({
     return () => {
       active = false;
     };
-  }, [router, next]);
+  }, [router, next, onSignedIn]);
 
   async function continueToAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -149,9 +156,17 @@ export default function LoginForm({
     }
 
     if (mode === "signup") {
-      if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); return; }
+      if (!agreed) {
+        setSaving(false);
+        setMessage("Please agree to the terms and the privacy policy to create an account.");
+        return;
+      }
       const problem = passwordProblem(password);
-      if (problem) { setMessage(problem); return; }
+      if (problem) {
+        setSaving(false);
+        setMessage(problem);
+        return;
+      }
     }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
     const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone } : { email, password };
@@ -174,6 +189,11 @@ export default function LoginForm({
       return;
     }
     forgetSignedIn();
+    if (onSignedIn) {
+      setSaving(false);
+      onSignedIn();
+      return;
+    }
     router.push(next ?? "/account");
     router.refresh();
   }

@@ -5,7 +5,7 @@ import StartingPoints from "@/components/StartingPoints";
 import TripStartFlow from "@/components/TripStartFlow";
 import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
-import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
+import { ANSWERS_ARE_TEMPORARY } from "@/lib/save-copy";
 
 export const metadata = pageMetadata({
   title: "Plan a kosher trip — start here | White Glove Itineraries",
@@ -57,7 +57,7 @@ export default async function PlanPage({
             destination at all.
           </p>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-            Your answers stay in this browser until you choose to send them.
+            {ANSWERS_ARE_TEMPORARY}
           </p>
         </div>
       </section>

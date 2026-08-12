@@ -483,7 +483,7 @@ export default function TripStartFlow({
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
               <p className="mt-2 leading-7 text-stone-600">
-                You can look around first and come back — your answers stay in this browser either way.
+                You can look around first and come back — your answers are temporary until you sign in and save your trip.
               </p>
               <button
                 type="button"

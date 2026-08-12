@@ -148,7 +148,7 @@ export default function SampleItineraryPage() {
             </div>
             <p className="mt-4 leading-7 text-stone-600">
               The planner that produced this is free and open to everybody — you can build the same document yourself,
-              for your own dates, without an account. Or answer the three short steps and we will build it for you.
+              for your own dates. Create an account when you are ready to save the trip and open it on any device.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link

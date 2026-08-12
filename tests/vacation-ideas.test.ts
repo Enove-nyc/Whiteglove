@@ -288,9 +288,9 @@ describe("filtering", () => {
 });
 
 describe("where the buttons go", () => {
-  it("sends “add to trip” into the guided flow with the destination named", () => {
-    // A destination is not a stop. Pressing this means "I want to go here",
-    // and the next question is when and with whom.
+  it("sends planning into the guided flow with the destination named", () => {
+    // "Plan this myself" / start from an outline still opens /plan. Saving
+    // the destination onto a trip is a separate account-gated button.
     assert.equal(addToTripHref(destination("rome")), "/plan?destination=rome");
   });
 });

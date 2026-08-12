@@ -16,6 +16,7 @@ import {
   tripIsUntouched,
 } from "@/lib/trip-setup";
 import type { VacationSources } from "@/lib/vacation-ideas";
+import { PLAN_THEN_SAVE } from "@/lib/save-copy";
 
 /**
  * Getting a trip started.
@@ -212,16 +213,20 @@ describe("the panel sits in front of the planner, not in its way", () => {
   });
 
   it("says where the trip is being kept, and tells the truth signed out", () => {
-    // The rule from lib/members-only.ts: the planner works signed out, so the
-    // note must not claim otherwise — it says what an account ADDS.
-    assert.match(PANEL, /in this browser only/);
-    assert.match(PANEL, /follows you between devices|between devices/);
+    // The planner can be used signed out. Saving needs an account — the note
+    // must not offer a browser-only trip.
+    assert.match(PANEL, /PLAN_THEN_SAVE/);
+    assert.match(PLAN_THEN_SAVE, /Start planning freely/);
+    assert.match(PLAN_THEN_SAVE, /save your trip and access it on any device/);
+    assert.doesNotMatch(PANEL, /in this browser only/);
     assert.doesNotMatch(PANEL, /you must (sign|log) in/i);
   });
 
-  it("keeps “have us plan it” visible without interrupting", () => {
-    assert.match(PANEL, /Have us plan it/);
-    // Not a dialog, not a takeover — a strip inside the panel.
+  it("keeps paid planning out of the setup strip", () => {
+    // The service is reachable from Contact. A strip in the planner read as
+    // the tool giving up. Comments may still name it; the live markup must not.
+    const live = PANEL.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(live, /Have us plan it/);
     assert.doesNotMatch(PANEL, /aria-modal/);
   });
 

@@ -11,17 +11,10 @@
  * SO THE BUTTONS ARE ALWAYS THERE. Pressing one signed out opens a note saying
  * what it is and what an account adds.
  *
- * AND THE NOTE HAS TO BE TRUE. "You need to be logged in for this" is the
- * natural thing to write and it would be **false for both of these**: the
- * planner and My Route work perfectly well signed out, keeping everything in
- * this browser. Saying otherwise would turn away the exact person it is meant
- * to attract, and the first time they found out it worked anyway, nothing else
- * the site said would be worth much either.
- *
- * So the note says the true thing — the trip lives only in this browser until
- * there is an account to keep it in — and offers to carry on without one.
- * `needsAccount` is here for the day something really cannot work without an
- * account; that one gets the blunt sentence, honestly.
+ * THEY CAN STILL OPEN THE PLANNER without an account and type into it. Saving
+ * the trip — adding a stop, keeping a route, coming back on another device —
+ * is what needs the account. The note used to say the trip lived in this
+ * browser; that is no longer offered, so the note says the true thing.
  */
 
 export type GatedFeature = {
@@ -31,7 +24,7 @@ export type GatedFeature = {
   href: string;
   /**
    * True only when the page can do NOTHING without an account. False means it
-   * works signed out and an account adds something — which is both of today's.
+   * can be opened and used; saving still needs an account.
    */
   needsAccount: boolean;
   /** What the feature is, for somebody who has never seen it. */
@@ -48,7 +41,7 @@ export const GATED_FEATURES: readonly GatedFeature[] = [
     needsAccount: false,
     what: "Build your trip day by day — flights, hotels and every stop — with driving times worked out and a printable copy at the end.",
     accountAdds:
-      "Without an account it is kept in this browser only: clear your history, or pick up your phone, and it is not there. Signed in, it follows you between devices and you can share it with whoever is travelling with you.",
+      "Start planning freely. Create an account when you are ready to save your trip and access it on any device.",
   },
   {
     key: "my-route",
@@ -57,7 +50,7 @@ export const GATED_FEATURES: readonly GatedFeature[] = [
     needsAccount: false,
     what: "The kevarim and places you have saved, in the order you will drive them, with the distance between each one.",
     accountAdds:
-      "Without an account the list is kept in this browser only. Signed in, it is on your phone when you are standing at the gate — which is the moment it is actually for.",
+      "Start planning freely. Create an account when you are ready to save your route and access it on any device.",
   },
 ] as const;
 
@@ -88,7 +81,7 @@ export function promptFor(feature: GatedFeature): Prompt {
     title: `${feature.label} — you can use this now`,
     body: [feature.what, feature.accountAdds],
     canContinue: true,
-    continueLabel: "Carry on without an account",
+    continueLabel: "Continue without saving",
   };
 }
 

@@ -11,8 +11,9 @@ import {
 } from "@/lib/curated-kosher";
 import HechsherBadge from "@/components/HechsherBadge";
 import { hechsherOf, useHechsherim } from "@/lib/use-hechsherim";
+import { useSaveAuth } from "@/components/SaveAuthProvider";
+import { ADD_TO_TRIP_LABEL } from "@/lib/save-copy";
 
-const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 function formatKm(km?: number) {
@@ -21,30 +22,16 @@ function formatKm(km?: number) {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km · ${Math.round(mi)} mi`;
 }
 
-function addKosherToTrip(place: CuratedKosherPlace) {
-  try {
-    const saved = localStorage.getItem(LS_KEY);
-    const itinerary = saved ? JSON.parse(saved) : { title: "My trip", startDate: "", endDate: "", flights: [], lodging: [], activities: [] };
-    const activity: ItinActivity = {
-      id: uid(),
-      name: place.name,
-      address: place.address,
-      coordinates: place.lat === undefined || place.lng === undefined ? undefined : `${place.lat}, ${place.lng}`,
-      date: itinerary.startDate || "",
-      notes: [place.category, place.diet].filter(Boolean).join(" · ") || "Kosher",
-      bookedOnSite: false,
-    };
-    itinerary.activities = [...(itinerary.activities ?? []), activity];
-    localStorage.setItem(LS_KEY, JSON.stringify(itinerary));
-    void fetch("/api/account/itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itinerary }),
-    }).catch(() => undefined);
-    return true;
-  } catch {
-    return false;
-  }
+function activityFromKosher(place: CuratedKosherPlace): ItinActivity {
+  return {
+    id: uid(),
+    name: place.name,
+    address: place.address,
+    coordinates: place.lat === undefined || place.lng === undefined ? undefined : `${place.lat}, ${place.lng}`,
+    date: "",
+    notes: [place.category, place.diet].filter(Boolean).join(" · ") || "Kosher",
+    bookedOnSite: false,
+  };
 }
 
 export default function KosherNearby({
@@ -54,6 +41,7 @@ export default function KosherNearby({
   limit = 12,
   showAddToTrip = false,
   heading = "Kosher food nearby",
+  onAddToTrip,
 }: {
   coordinates?: string;
   query?: string;
@@ -63,7 +51,10 @@ export default function KosherNearby({
   autoLoad?: boolean;
   showAddToTrip?: boolean;
   heading?: string;
+  /** When set (the planner), add to the trip already on screen rather than the account copy. */
+  onAddToTrip?: (activity: ItinActivity) => void;
 }) {
+  const { requireSave, busy } = useSaveAuth();
   const point = useMemo(() => coordinatesToPoint(coordinates), [coordinates]);
   const [added, setAdded] = useState<Record<string, boolean>>({});
   const places = useMemo<CuratedKosherPlaceNearby[]>(() => {
@@ -122,12 +113,19 @@ export default function KosherNearby({
                   {showAddToTrip && (
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => {
-                        if (addKosherToTrip(place)) setAdded((current) => ({ ...current, [place.id]: true }));
+                        const activity = activityFromKosher(place);
+                        if (onAddToTrip) {
+                          onAddToTrip(activity);
+                          setAdded((current) => ({ ...current, [place.id]: true }));
+                          return;
+                        }
+                        requireSave({ type: "add-activity-to-trip", activity });
                       }}
-                      className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                      className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 disabled:opacity-60"
                     >
-                      {added[place.id] ? "Added ✓" : "Add to my trip"}
+                      {added[place.id] ? "Added ✓" : ADD_TO_TRIP_LABEL}
                     </button>
                   )}
                 </div>

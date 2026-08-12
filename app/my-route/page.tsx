@@ -13,10 +13,8 @@ export const metadata = pageMetadata({
   noIndex: true,
 });
 
-// The route itself lives in the browser, but which crossings exist and what
-// was found at them does not — so it is read here and handed down. Today's
-// date comes from here too, because nothing should ask what day it is while
-// React is rendering.
+// The route itself lives on the signed-in account. Which crossings exist and
+// what was found at them does not — so it is read here and handed down.
 export const dynamic = "force-dynamic";
 
 export default async function MyRoutePage() {

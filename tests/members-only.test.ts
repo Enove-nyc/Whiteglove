@@ -38,10 +38,7 @@ describe("the buttons are there whoever is looking", () => {
 });
 
 describe("what the note says is true", () => {
-  it("DOES NOT CLAIM AN ACCOUNT IS NEEDED when it is not", () => {
-    // Both of these work signed out, keeping everything in the browser. "You
-    // need to be logged in" would be false, and would turn away the exact
-    // person it is meant to attract.
+  it("DOES NOT CLAIM AN ACCOUNT IS NEEDED to open the planner", () => {
     for (const feature of GATED_FEATURES) {
       if (feature.needsAccount) continue;
       const prompt = promptFor(feature);
@@ -50,7 +47,7 @@ describe("what the note says is true", () => {
     }
   });
 
-  it("offers to carry on without an account, because that works", () => {
+  it("offers to continue without saving, because the planner can still be opened", () => {
     for (const feature of GATED_FEATURES) {
       const prompt = promptFor(feature);
       assert.equal(prompt.canContinue, !feature.needsAccount, feature.key);
@@ -58,10 +55,11 @@ describe("what the note says is true", () => {
     }
   });
 
-  it("says what is lost without one, so signing in has a reason", () => {
+  it("says what signing in adds, without offering a browser-only trip", () => {
     for (const feature of GATED_FEATURES) {
       if (feature.needsAccount) continue;
-      assert.match(promptFor(feature).body[1], /this browser/i, feature.key);
+      assert.match(promptFor(feature).body[1], /save your (trip|route)/i, feature.key);
+      assert.doesNotMatch(promptFor(feature).body[1], /this browser only/i, feature.key);
     }
   });
 

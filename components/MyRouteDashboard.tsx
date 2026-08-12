@@ -3,10 +3,14 @@
 import DateField from "@/components/DateField";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSaveAuth } from "@/components/SaveAuthProvider";
 import { directionsUrl, movePlace, optimizeRoute, type SavedPlace } from "@/data/route-utils";
 import { type Crossing, describeCrossing } from "@/lib/border-crossings";
 import { borderCrossings } from "@/lib/borders";
+import { PLACES_EVENT } from "@/lib/account-trip-client";
+import { ADD_TO_ROUTE_LABEL, PLAN_THEN_SAVE } from "@/lib/save-copy";
 import { shabbosWarning } from "@/lib/shabbos";
+import { useSignedIn } from "@/lib/use-signed-in";
 
 type AccountSnapshot = {
   email: string;
@@ -14,35 +18,18 @@ type AccountSnapshot = {
   favorites: SavedPlace[];
 };
 
-const routeKey = "whiteGloveMyRoute";
-const favoritesKey = "whiteGloveFavorites";
-const read = (key: string) => {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "[]") as SavedPlace[];
-  } catch {
-    return [];
-  }
-};
-
 export default function MyRouteDashboard({
   crossings: known = [],
   today = "",
 }: {
-  /** Which crossings are on each border, and what has been checked on them. */
   crossings?: Crossing[];
-  /** Read on the server, so nothing asks what day it is mid-render. */
   today?: string;
 }) {
+  const signedIn = useSignedIn();
+  const { requireSave, busy } = useSaveAuth();
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
-  const [route, setRoute] = useState<SavedPlace[]>([]);
-  const [favorites, setFavorites] = useState<SavedPlace[]>([]);
 
   useEffect(() => {
-    const syncLocal = () => {
-      setRoute(read(routeKey));
-      setFavorites(read(favoritesKey));
-    };
-
     const syncRemote = async () => {
       const response = await fetch("/api/account/me", { cache: "no-store" });
       const data = await response.json().catch(() => null) as { account?: { email?: string }; data?: { route?: SavedPlace[]; favorites?: SavedPlace[] } | null } | null;
@@ -52,20 +39,20 @@ export default function MyRouteDashboard({
           route: data.data.route ?? [],
           favorites: data.data.favorites ?? [],
         });
+      } else {
+        setAccount(null);
       }
     };
 
-    syncLocal();
-    syncRemote().catch(() => undefined);
-    window.addEventListener("whiteglove-route", syncLocal);
-    return () => window.removeEventListener("whiteglove-route", syncLocal);
+    const onPlaces = () => void syncRemote();
+    void syncRemote().catch(() => undefined);
+    window.addEventListener(PLACES_EVENT, onPlaces);
+    return () => window.removeEventListener(PLACES_EVENT, onPlaces);
   }, []);
 
-  const activeRoute = account?.route ?? route;
-  const activeFavorites = account?.favorites ?? favorites;
+  const activeRoute = account?.route ?? [];
+  const activeFavorites = account?.favorites ?? [];
   const optimized = optimizeRoute(activeRoute);
-  // Worked out on the order that will actually be driven, not the order they
-  // happened to be saved in.
   const crossings = borderCrossings(optimized, today ? { crossings: known, today } : undefined);
   const shabbos = optimized
     .map((place) => (place.plannedDate ? shabbosWarning(place.plannedDate, undefined, place.coordinates, place.name) : null))
@@ -76,13 +63,8 @@ export default function MyRouteDashboard({
   };
 
   const save = (next: SavedPlace[]) => {
-    localStorage.setItem(routeKey, JSON.stringify(next));
-    window.dispatchEvent(new Event("whiteglove-route"));
-    void fetch("/api/account/places", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: "route", action: "replace", items: next }),
-    });
+    requireSave({ type: "replace-route", places: next });
+    if (account) setAccount({ ...account, route: next });
   };
 
   const remove = (id: string) => save(activeRoute.filter((place) => place.id !== id));
@@ -90,14 +72,6 @@ export default function MyRouteDashboard({
   const setPlannedDate = (id: string, plannedDate: string) =>
     save(activeRoute.map((place) => (place.id === id ? { ...place, plannedDate } : place)));
 
-  /**
-   * Moving a stop by hand.
-   *
-   * Buttons rather than dragging. Dragging is nice with a mouse and unusable
-   * with a keyboard or a screen reader, and this is a list somebody reorders
-   * standing in an airport on a phone. The order it moves within is the
-   * optimised one on screen, which is the order they are actually looking at.
-   */
   const move = (id: string, direction: -1 | 1) => save(movePlace(optimized, id, direction));
 
   return (
@@ -106,10 +80,14 @@ export default function MyRouteDashboard({
       <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Your journey, arranged with care.</h1>
       <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">Save the places that matter to you, set any kever you must reach on a specific date, then organize the flexible stops around it.</p>
 
+      {signedIn === false && (
+        <p className="mt-6 max-w-2xl text-sm leading-6 text-stone-600">{PLAN_THEN_SAVE}</p>
+      )}
+
       {activeRoute.length === 0 ? (
         <div className="wg-card mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your route is waiting.</h2>
-          <p className="mt-3 leading-7 text-stone-600">Open a destination or location and choose Add to My Route.</p>
+          <p className="mt-3 leading-7 text-stone-600">Open a destination or location and choose {ADD_TO_ROUTE_LABEL}.</p>
           <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Browse destinations</Link>
         </div>
       ) : (
@@ -151,7 +129,7 @@ export default function MyRouteDashboard({
                       <button
                         type="button"
                         onClick={() => move(place.id, -1)}
-                        disabled={index === 0 || Boolean(place.anchor) || Boolean(optimized[index - 1]?.anchor)}
+                        disabled={busy || index === 0 || Boolean(place.anchor) || Boolean(optimized[index - 1]?.anchor)}
                         aria-label={`Move ${place.name} earlier`}
                         className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:cursor-not-allowed disabled:opacity-35"
                       >
@@ -160,14 +138,14 @@ export default function MyRouteDashboard({
                       <button
                         type="button"
                         onClick={() => move(place.id, 1)}
-                        disabled={index === optimized.length - 1 || Boolean(place.anchor) || Boolean(optimized[index + 1]?.anchor)}
+                        disabled={busy || index === optimized.length - 1 || Boolean(place.anchor) || Boolean(optimized[index + 1]?.anchor)}
                         aria-label={`Move ${place.name} later`}
                         className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:cursor-not-allowed disabled:opacity-35"
                       >
                         ↓
                       </button>
                     </div>
-                    <button onClick={() => remove(place.id)} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-stone-500 hover:text-[var(--navy)]">Remove</button>
+                    <button type="button" disabled={busy} onClick={() => remove(place.id)} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-stone-500 hover:text-[var(--navy)] disabled:opacity-60">Remove</button>
                   </div>
                 </li>
               ))}
@@ -180,8 +158,6 @@ export default function MyRouteDashboard({
             <button type="button" disabled={activeRoute.length < 2} onClick={openDirections} className="mt-7 w-full bg-[var(--navy)] px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-50">Open optimized route in maps</button>
             <Link href="/itinerary" className="mt-3 block w-full border border-[var(--gold)] px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Build a full day-by-day itinerary →</Link>
 
-            {/* The two things a driving time does not tell you: the queue at
-                the border, and the deadline that cannot move. */}
             {(crossings.length > 0 || shabbos.length > 0) && (
               <div className="mt-7 border-t border-[var(--gold)] pt-6">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Before you fix these dates</p>
@@ -191,10 +167,6 @@ export default function MyRouteDashboard({
                       <span aria-hidden="true">{crossing.major ? "⚠" : "•"}</span>{" "}
                       <strong className="text-[var(--navy)]">{crossing.from} → {crossing.to}.</strong>{" "}
                       {crossing.message.replace(/^Border crossing between [^.]+\. /, "")}
-                      {/* Which crossings are actually on this border, and what
-                          was found at them the last time anybody looked. The
-                          sentence above never depends on this — a border takes
-                          hours whether or not somebody checked this week. */}
                       {crossing.advice?.latest && (
                         <span className="mt-1 block font-semibold text-[var(--navy)]">{crossing.advice.latest}</span>
                       )}

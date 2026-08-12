@@ -34,6 +34,9 @@ import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-as
 import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
 import StopAttachments from "@/components/StopAttachments";
 import { useViewer } from "@/lib/use-signed-in";
+import { useSaveAuth } from "@/components/SaveAuthProvider";
+import { saveAccountItinerary, TRIP_EVENT } from "@/lib/account-trip-client";
+import { PLAN_THEN_SAVE, SAVE_TRIP_LABEL } from "@/lib/save-copy";
 import { fetchRoadTimes } from "@/lib/road-times";
 import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
 import {
@@ -61,10 +64,6 @@ import {
   type TravelLeg,
   type DayAdjustment as ItinAdjustment,
 } from "@/data/itinerary";
-import type { SavedPlace } from "@/data/route-utils";
-
-const LS_KEY = "whiteGloveItinerary";
-const ROUTE_KEY = "whiteGloveMyRoute";
 
 const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
@@ -105,8 +104,11 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
   const [view, setView] = useState<ItineraryView>("days");
+  const signedInRef = useRef(false);
+  const { requireSave, busy: saveBusy } = useSaveAuth();
 
-  // Load: account first, then localStorage.
+  // Load from the account when there is one. Signed out, the working copy
+  // lives in memory for this visit — it is not written to this browser.
   useEffect(() => {
     let active = true;
     (async () => {
@@ -115,21 +117,12 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         if (res.ok) {
           const data = await res.json();
           if (!active) return;
-          // Signed in — the account is the answer, even when the answer is an
-          // empty trip. Falling through to localStorage here would drag the
-          // last trip's stops into a newly started one.
           setItin(data?.itinerary ? { ...emptyItinerary(), ...data.itinerary } : emptyItinerary());
           setLoaded(true);
           return;
         }
       } catch {
         /* not logged in / offline */
-      }
-      try {
-        const local = localStorage.getItem(LS_KEY);
-        if (active && local) setItin({ ...emptyItinerary(), ...JSON.parse(local) });
-      } catch {
-        /* ignore */
       }
       if (active) setLoaded(true);
     })();
@@ -138,20 +131,18 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     };
   }, [reloadKey]);
 
+  useEffect(() => {
+    const reload = () => setReloadKey((k) => k + 1);
+    window.addEventListener(TRIP_EVENT, reload);
+    return () => window.removeEventListener(TRIP_EVENT, reload);
+  }, []);
+
   function persist(next: Itinerary) {
     setItin(next);
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-    void fetch("/api/account/itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itinerary: next }),
-    })
-      .then((r) => {
-        if (r.ok) {
+    if (!signedInRef.current) return;
+    void saveAccountItinerary(next)
+      .then((ok) => {
+        if (ok) {
           setSavedNote("Saved to your account.");
           setTimeout(() => setSavedNote(""), 1500);
         }
@@ -185,16 +176,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const removeActivity = (id: string) => persist({ ...itin, activities: itin.activities.filter((x) => x.id !== id) });
 
   function importSavedRoute() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]") as SavedPlace[];
-      const existing = new Set(itin.activities.map((a) => a.name.toLowerCase()));
-      const additions: ItinActivity[] = saved
-        .filter((p) => !existing.has(p.name.toLowerCase()))
-        .map((p) => ({ id: uid(), name: p.name, yiddishName: p.yiddishName, address: p.address, coordinates: p.coordinates, href: p.href, date: p.plannedDate || itin.startDate || "", bookedOnSite: true }));
-      if (additions.length) persist({ ...itin, activities: [...itin.activities, ...additions] });
-    } catch {
-      /* ignore */
-    }
+    requireSave({ type: "import-route-into-trip", itinerary: itin });
   }
 
   // Time at a border is folded into the driving rather than mentioned beside
@@ -263,6 +245,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // Boarding passes need an account; without one there is nowhere to keep
   // them that survives closing the browser.
   const viewer = useViewer();
+  signedInRef.current = Boolean(viewer?.signedIn);
 
   // Somebody adding a place the site has not got is asked whether they would
   // send it in. Only when signed in — a suggestion needs a name to credit and
@@ -414,9 +397,20 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Stop</button>
           <button type="button" onClick={importSavedRoute} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Saved route</button>
           <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan my route"}</button>
+          {viewer?.signedIn === false && (
+            <button
+              type="button"
+              disabled={saveBusy}
+              onClick={() => requireSave({ type: "save-itinerary", itinerary: itin })}
+              className="rounded-full border border-[var(--gold)] bg-white px-5 py-2.5 text-xs font-bold text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60"
+            >
+              {saveBusy ? "Saving…" : SAVE_TRIP_LABEL}
+            </button>
+          )}
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
+        {viewer?.signedIn === false && <p className="mt-3 text-xs leading-5 text-stone-500">{PLAN_THEN_SAVE}</p>}
         {!hasDates && <p className="mt-3 text-xs font-semibold text-[var(--gold-ink)]">Choose start and end dates to begin.</p>}
 
         {tab === "flight" && (() => {
@@ -1192,7 +1186,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open/food:rotate-180">⌄</span>
           </summary>
           <div className="border-t border-[var(--gold-light)] p-3">
-            <KosherNearby coordinates={anchor.coordinates} radiusKm={12} showAddToTrip heading="Kosher food near this day's stops" />
+            <KosherNearby coordinates={anchor.coordinates} radiusKm={12} showAddToTrip heading="Kosher food near this day's stops" onAddToTrip={addActivity} />
           </div>
         </details>
       )}

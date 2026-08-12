@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
-import { SIGNAL_CLASSES, addToTripHref, destinationHref, type Signal, type VacationCardModel } from "@/lib/vacation-ideas";
+import AddDestinationToTrip from "@/components/AddDestinationToTrip";
+import { SIGNAL_CLASSES, destinationHref, type Signal, type VacationCardModel } from "@/lib/vacation-ideas";
 import { staySearchHref } from "@/lib/stay-search";
 import type { TripTheme } from "@/data/vacation-destinations";
 
@@ -149,12 +150,16 @@ export default function VacationCard({ card, compact = false }: { card: Vacation
               action when somebody is comparing a filtered list; on the front
               page it is a third button before they have read anything. */}
           {!compact && (
-            <Link
-              href={addToTripHref(destination)}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-            >
-              Add {destination.name} to a trip
-            </Link>
+            <AddDestinationToTrip
+              place={{
+                id: `destination-${destination.slug}`,
+                name: destination.name,
+                address: `${destination.name}, ${destination.country}`,
+                href: destinationHref(destination),
+              }}
+              label={`Add ${destination.name} to a trip`}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60"
+            />
           )}
         </div>
       </div>
