@@ -9,6 +9,7 @@ import { buildContentSnapshot, snapshotProblem, SNAPSHOT_SCHEMA_VERSION } from "
  * neither of which needs a real database to check.
  */
 function fakePrisma(rows: {
+  contactNames?: unknown[];
   cemeteries?: unknown[];
   attractions?: unknown[];
   stays?: unknown[];
@@ -23,6 +24,7 @@ function fakePrisma(rows: {
     },
   });
   const client = {
+    contact: table("contact", rows.contactNames ?? []),
     cemetery: table("cemetery", rows.cemeteries ?? []),
     attraction: table("attraction", rows.attractions ?? []),
     kosherStay: table("kosherStay", rows.stays ?? []),
@@ -80,6 +82,26 @@ describe("the snapshot of what the database says", () => {
     const { client, asked } = fakePrisma({ pages: [] });
     await buildContentSnapshot(client, TAKEN);
     assert.deepEqual((asked.page as { where?: unknown }).where, { status: "PUBLISHED" });
+  });
+
+  it("says whose number each one is", async () => {
+    const { client } = fakePrisma({
+      cemeteries: [{ ...CEMETERY, contacts: [{ id: "c1", ...CEMETERY.contacts[0] }] }],
+      contactNames: [{ id: "c1", name: "Reb Berel" }],
+    });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    assert.equal(snapshot.cemeteries[0]!.contacts[0]!.name, "Reb Berel");
+  });
+
+  it("still writes a snapshot when the name column is not there yet", async () => {
+    // The column is newer than the table. A snapshot missing the names is worth
+    // far more than a night with no snapshot at all, so the read is on its own
+    // and allowed to fail — which is what this fake does by having no contact
+    // table to ask.
+    const { client } = fakePrisma({ cemeteries: [{ ...CEMETERY, contacts: [{ id: "c1", ...CEMETERY.contacts[0] }] }] });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    assert.equal(snapshot.cemeteries[0]!.contacts[0]!.name, null);
+    assert.equal(snapshot.cemeteries[0]!.contacts[0]!.phone, "+380 50 000 0000");
   });
 
   it("stamps the time it was given rather than reading the clock", async () => {

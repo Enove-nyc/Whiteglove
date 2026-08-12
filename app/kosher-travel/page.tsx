@@ -94,8 +94,7 @@ const questions: Array<{
     href: "/zmanim",
     cta: "Open zmanim",
     body: "Halachic times calculated for a destination or coordinates: alos, sunrise, sof zman Shema, chatzos, mincha, sunset and tzeit.",
-    detail:
-      "Search any city, town or postcode in the world. Where Gra and Magen Avraham differ, both times are given.",
+    detail: "Search any city, town or postcode in the world.",
   },
   {
     title: "The hechsher on a listing",

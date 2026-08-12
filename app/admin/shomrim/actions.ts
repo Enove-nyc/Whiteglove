@@ -23,6 +23,7 @@ export async function saveShomerAction(_prev: ActionResult | null, formData: For
 
   const slug = str(formData, "slug");
   const label = str(formData, "label");
+  const name = str(formData, "name");
   const phone = str(formData, "phone");
   const email = str(formData, "email");
   const note = str(formData, "note");
@@ -45,7 +46,7 @@ export async function saveShomerAction(_prev: ActionResult | null, formData: For
   };
 
   try {
-    await saveCemeteryContact(slug, fallback, { label, phone: phone || null, email: email || null, note: note || null });
+    await saveCemeteryContact(slug, fallback, { label, name: name || null, phone: phone || null, email: email || null, note: note || null });
   } catch (error) {
     console.error("[shomrim] save failed:", error);
     return { ok: false, message: "Could not save. Check the database connection and try again." };
@@ -93,7 +94,9 @@ export async function retireShomerAction(_prev: ActionResult | null, formData: F
   };
 
   try {
-    await saveCemeteryContact(slug, fallback, { label, phone: null, email: null, note: "Retired — number no longer in service." });
+    // Retiring keeps the name: it is a record of whose number this was, and it
+    // costs nothing to leave standing if he ever puts the contact back.
+    await saveCemeteryContact(slug, fallback, { label, name: null, phone: null, email: null, note: "Retired — number no longer in service." });
   } catch (error) {
     console.error("[shomrim] retire failed:", error);
     return { ok: false, message: "Could not retire it. Try again." };

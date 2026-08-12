@@ -57,9 +57,6 @@ export default async function ZmanimPage({
             Halachic times for a place and date — sunrise, sof zman Shema, chatzos, mincha, sunset and nightfall.
             Search any city, town or postcode in the world, or enter your own coordinates.
           </p>
-          <p className="mt-4 max-w-3xl leading-7 text-stone-600">
-            Where Gra and Magen Avraham differ, both times are given, and each one says which opinion it follows.
-          </p>
         </div>
       </section>
 

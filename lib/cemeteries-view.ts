@@ -165,7 +165,7 @@ export function mergeBurials(builtIn: Cemetery["burials"], stored: StoredBurial[
   return [...merged, ...added];
 }
 
-type StoredContact = { label: string; phone: string | null; email: string | null; note: string | null };
+type StoredContact = { label: string; name?: string | null; phone: string | null; email: string | null; note: string | null };
 type ViewContact = NonNullable<Cemetery["accessContacts"]>[number];
 
 const contactKey = (label: string) => label.trim().toLowerCase();
@@ -194,7 +194,9 @@ function mergeContacts(builtIn: ViewContact[], stored: StoredContact[]): ViewCon
     const phone = override.phone?.trim() || undefined;
     const email = override.email?.trim() || undefined;
     if (!phone && !email) continue; // retired
-    out.push({ label: override.label, phone, email, note: override.note ?? contact.note });
+    // The stored name wins when there is one, and the built-in one stands when
+    // the owner has only corrected the number.
+    out.push({ label: override.label, name: override.name ?? contact.name, phone, email, note: override.note ?? contact.note });
   }
 
   // Anything stored that didn't match a built-in label is a new contact.
@@ -202,7 +204,7 @@ function mergeContacts(builtIn: ViewContact[], stored: StoredContact[]): ViewCon
     const phone = contact.phone?.trim() || undefined;
     const email = contact.email?.trim() || undefined;
     if (!phone && !email) continue;
-    out.push({ label: contact.label, phone, email, note: contact.note ?? "" });
+    out.push({ label: contact.label, name: contact.name ?? undefined, phone, email, note: contact.note ?? "" });
   }
   return out;
 }

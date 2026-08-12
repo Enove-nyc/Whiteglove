@@ -196,7 +196,23 @@ model Cemetery {
 // Shomer / access contact. Attaches to a destination or a cemetery.
 model Contact {
   id     String             @id @default(cuid())
+  /**
+   * What the contact IS — "Cemetery shomer", "Municipality", "Key-holder".
+   * Also the identity an edit matches on, so re-saving the same label corrects
+   * a number rather than adding a second one beside it.
+   */
   label  String
+  /**
+   * WHOSE NUMBER IT IS.
+   *
+   * A number with nobody attached is the reason a traveller does not ring it:
+   * the first thing he has to say into a phone, in a language he does not have,
+   * is a name. It used to be squeezed into the label — "מיקי · Cemetery shomer"
+   * — which put a person into the field an edit matches on, so correcting the
+   * number of a shomer whose name was spelled differently added a second
+   * contact instead of replacing the first.
+   */
+  name   String?
   phone  String?
   email  String?
   note   String?

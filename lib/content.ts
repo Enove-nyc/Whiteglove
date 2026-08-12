@@ -146,9 +146,26 @@ export async function getPublishedDestinationContent(
     );
     const checkedById = new Map(contactDates.map((row) => [row.id, row.lastVerified]));
 
+    // Whose number it is. Its own read, and its own permission to fail, for the
+    // reason written above the select: it is newer than the table, and reading
+    // it alongside anything else would take that something else down with it on
+    // a database the upgrade has not reached yet. Separate from the dates for
+    // the same reason — two new columns must not be able to fail each other.
+    const contactNames = await optionalRead(
+      `names on the contacts for ${slug}`,
+      async () =>
+        prisma.contact.findMany({
+          where: { destinationId: destination.id },
+          select: { id: true, name: true },
+        }),
+      [] as Array<{ id: string; name: string | null }>,
+    );
+    const nameById = new Map(contactNames.map((row) => [row.id, row.name]));
+
     return {
       contacts: destination.contacts.map((contact) => ({
         ...contact,
+        name: nameById.get(contact.id) ?? null,
         lastVerified: checkedById.get(contact.id) ?? null,
       })),
       places: destination.places.map((place) => ({ ...place, photos: byPlace.get(place.id) ?? [] })),

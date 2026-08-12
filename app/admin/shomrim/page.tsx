@@ -22,7 +22,7 @@ export default async function AdminShomrimPage() {
             city: c.city,
             country: c.country,
             name: c.name,
-            builtIn: (c.accessContacts ?? []).map((x) => ({ label: x.label, phone: x.phone, email: x.email, note: x.note })),
+            builtIn: (c.accessContacts ?? []).map((x) => ({ label: x.label, name: x.name, phone: x.phone, email: x.email, note: x.note })),
             stored: await listCemeteryContacts(c.slug),
           })),
       );

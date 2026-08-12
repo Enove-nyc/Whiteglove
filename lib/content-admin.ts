@@ -547,6 +547,8 @@ export async function listCemeteriesForAdmin() {
 
 export type CemeteryContactFields = {
   label: string;
+  /** Whose number it is — printed beside it as "Ask for —". */
+  name: string | null;
   phone: string | null;
   email: string | null;
   note: string | null;
@@ -576,13 +578,44 @@ async function cemeteryRowForSlug(slug: string, fallback: { city: string; yiddis
 }
 
 /** Contacts already stored for a cemetery slug (empty for an untouched one). */
-export async function listCemeteryContacts(slug: string) {
+export type StoredCemeteryContact = {
+  id: string;
+  label: string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  note: string | null;
+};
+
+/**
+ * The stored contacts for a beis hachaim.
+ *
+ * `name` is newer than the table, and on a database where the upgrade has not
+ * been pressed yet the column is not there — selecting it would throw and take
+ * every stored number down with it, on the one screen whose whole purpose is
+ * correcting them. So the read falls back to the older shape and reports the
+ * names as absent, which is exactly what they are until the column exists.
+ */
+export async function listCemeteryContacts(slug: string): Promise<StoredCemeteryContact[]> {
   const prisma = await db();
-  const row = await prisma.cemetery.findUnique({
-    where: { slug },
-    select: { contacts: { orderBy: { label: "asc" }, select: { id: true, label: true, phone: true, email: true, note: true } } },
-  });
-  return row?.contacts ?? [];
+  try {
+    const row = await prisma.cemetery.findUnique({
+      where: { slug },
+      select: {
+        contacts: {
+          orderBy: { label: "asc" },
+          select: { id: true, label: true, name: true, phone: true, email: true, note: true },
+        },
+      },
+    });
+    return row?.contacts ?? [];
+  } catch {
+    const row = await prisma.cemetery.findUnique({
+      where: { slug },
+      select: { contacts: { orderBy: { label: "asc" }, select: { id: true, label: true, phone: true, email: true, note: true } } },
+    });
+    return (row?.contacts ?? []).map((contact) => ({ ...contact, name: null }));
+  }
 }
 
 /**
@@ -602,6 +635,7 @@ export async function saveCemeteryContact(
   });
   const data = {
     label: fields.label.trim(),
+    name: fields.name?.trim() || null,
     phone: fields.phone?.trim() || null,
     email: fields.email?.trim() || null,
     note: fields.note?.trim() || null,

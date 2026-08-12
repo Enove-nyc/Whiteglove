@@ -33,6 +33,8 @@ export const SNAPSHOT_SCHEMA_VERSION = 1;
 
 export type SnapshotContact = {
   label: string;
+  /** Whose number it is. Absent until the database has the column. */
+  name: string | null;
   phone: string | null;
   email: string | null;
   note: string | null;
@@ -114,7 +116,18 @@ function iso(value: Date | null | undefined): string | null {
 export async function buildContentSnapshot(prisma: PrismaClient, takenAt: string): Promise<ContentSnapshot> {
   const [cemeteries, attractions, stays, areas, pages] = await Promise.all([
     prisma.cemetery.findMany({
-      include: { burials: { orderBy: { name: "asc" } }, contacts: { orderBy: { label: "asc" } } },
+      include: {
+        burials: { orderBy: { name: "asc" } },
+        // NAMED COLUMNS, for the reason written above the same select in
+        // lib/content.ts: `contacts: true` asks for every column the generated
+        // client knows about, so the day one is added to the schema this read
+        // starts failing against a database the upgrade has not reached — and
+        // a snapshot that fails is a night with no record of what changed.
+        contacts: {
+          orderBy: { label: "asc" },
+          select: { id: true, label: true, phone: true, email: true, note: true, lastVerified: true },
+        },
+      },
       orderBy: [{ country: "asc" }, { city: "asc" }, { slug: "asc" }],
     }),
     prisma.attraction.findMany({ orderBy: [{ country: "asc" }, { city: "asc" }, { slug: "asc" }] }),
@@ -124,6 +137,18 @@ export async function buildContentSnapshot(prisma: PrismaClient, takenAt: string
     // this file goes into a public repository.
     prisma.page.findMany({ where: { status: "PUBLISHED" }, orderBy: { slug: "asc" } }),
   ]);
+
+  // Whose number it is, read on its own and allowed to fail. It is the newest
+  // column here, and a snapshot without the names is worth far more than no
+  // snapshot at all.
+  const names = new Map<string, string | null>();
+  try {
+    for (const row of await prisma.contact.findMany({ select: { id: true, name: true } })) {
+      names.set(row.id, row.name);
+    }
+  } catch {
+    // The column is not there yet. Every name reads as absent, which it is.
+  }
 
   const snapshot: ContentSnapshot = {
     schemaVersion: SNAPSHOT_SCHEMA_VERSION,
@@ -158,6 +183,7 @@ export async function buildContentSnapshot(prisma: PrismaClient, takenAt: string
       // shows when one changed is worth having.
       contacts: row.contacts.map((contact) => ({
         label: contact.label,
+        name: names.get(contact.id) ?? null,
         phone: contact.phone,
         email: contact.email,
         note: contact.note,

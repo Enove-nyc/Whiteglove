@@ -110,11 +110,13 @@ CREATE TABLE "Cemetery" (
 CREATE TABLE "Contact" (
     "id" TEXT NOT NULL,
     "label" TEXT NOT NULL,
+    "name" TEXT,
     "phone" TEXT,
     "email" TEXT,
     "note" TEXT,
     "source" TEXT,
     "status" "VerificationStatus" NOT NULL DEFAULT 'NEEDS_VERIFICATION',
+    "lastVerified" TIMESTAMP(3),
     "destinationId" TEXT,
     "cemeteryId" TEXT,
 

@@ -85,4 +85,9 @@ DO $$ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+
+-- Whose number it is. A shomer's name used to have nowhere to go but the label,
+-- which is the field an edit matches on, so a name spelled two ways made two
+-- contacts out of one man.
+ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "name" TEXT;
 `;

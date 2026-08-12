@@ -9,8 +9,8 @@ export type ShomerCemetery = {
   city: string;
   country: string;
   name: string;
-  builtIn: Array<{ label: string; phone?: string; email?: string; note: string }>;
-  stored: Array<{ id: string; label: string; phone: string | null; email: string | null; note: string | null }>;
+  builtIn: Array<{ label: string; name?: string; phone?: string; email?: string; note: string }>;
+  stored: Array<{ id: string; label: string; name: string | null; phone: string | null; email: string | null; note: string | null }>;
 };
 
 const inputClass =
@@ -85,6 +85,7 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
                   <li key={row.label} className="border border-[var(--gold-light)] bg-white p-4">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <p className="font-semibold text-[var(--navy)]">{row.label}</p>
+                      {(live?.name ?? undefined) && <p className="text-xs text-stone-500">Ask for {live?.name}</p>}
                       <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-400">
                         {retired ? "hidden" : row.override ? (row.isNew ? "added by you" : "edited by you") : "built in"}
                       </span>
@@ -139,6 +140,13 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
               <option value="Local guide" />
               <option value="Caretaker" />
             </datalist>
+          </label>
+          <label className="block">
+            {/* Kept apart from the label on purpose: the label is what a save
+                matches on to correct an existing number, so a person's name in
+                it means one man spelled two ways becomes two contacts. */}
+            <span className={captionClass}>Who to ask for</span>
+            <input name="name" className={inputClass} placeholder="Reb Berel — the name, not the role" />
           </label>
           <label className="block">
             <span className={captionClass}>Phone</span>
