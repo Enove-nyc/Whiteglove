@@ -43,7 +43,7 @@ describe("every editable page ships with content", () => {
   });
 
   it("registers the remaining content pages", () => {
-    for (const slug of ["travel-guide", "map", "lizensk"]) {
+    for (const slug of ["travel-guide", "map", "lizensk", "esim"]) {
       assert.ok(getPageDef(slug), `${slug} is not in the registry`);
     }
   });

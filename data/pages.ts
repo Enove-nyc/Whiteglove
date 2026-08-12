@@ -328,6 +328,61 @@ export const editablePages: PageDef[] = [
       },
     ],
   },
+  {
+    slug: "esim",
+    href: "/esim",
+    label: "eSIMs",
+    seoTitle: "eSIMs and data abroad for a kosher trip | White Glove Itineraries",
+    seoDescription:
+      "What an eSIM is, what to check before you buy one, and where to get a data plan for the country you are going to.",
+    blocks: [
+      {
+        id: "esim-hero",
+        kind: "hero",
+        eyebrow: "Before you travel",
+        heading: "eSIMs and data abroad",
+        intro:
+          "A data plan you install on your phone before you fly, instead of hunting for a shop or paying your own network's roaming rate. It matters most on the day you land — finding the apartment, the shul, or the person meeting you.",
+      },
+      {
+        id: "esim-before",
+        kind: "cards",
+        heading: "Three things before you buy",
+        intro: "All three are quick, and all three are unpleasant to find out at the airport.",
+        items: [
+          {
+            title: "Your phone has to support one",
+            body: "Most phones from the last few years do, and most older ones do not. Search your model and “eSIM” before you buy a plan — the plan is not much use otherwise, and a refund is a conversation you do not want at an airport.",
+          },
+          {
+            title: "Buy for the country, not the continent",
+            body: "Plans are sold per country or per region, and the regions are not always the ones you would guess. Check the exact country is listed, and check any country you are only changing planes in if you need data there.",
+          },
+          {
+            title: "Install before you fly, switch on when you land",
+            body: "An eSIM is installed over wi-fi, which you have at home and may not have on arrival. Install it before you leave and turn it on once you are there.",
+          },
+        ],
+      },
+      {
+        id: "esim-landing",
+        kind: "cards",
+        heading: "Landing somewhere new",
+        items: [
+          {
+            title: "Getting from the airport",
+            body: "A transfer booked in advance meets you at arrivals, which matters most on the days either side of Shabbos.",
+            href: "/transfers",
+          },
+          {
+            title: "Documents and entry rules",
+            body: "What each country asks for, with the official source for every rule — because they change without warning.",
+            href: "/travel-guide",
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export function getPageDef(slug: string): PageDef | undefined {
