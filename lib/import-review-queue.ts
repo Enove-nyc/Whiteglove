@@ -274,7 +274,16 @@ function discoverUnregisteredPackDirs(): string[] {
 export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
   try {
     const dashboard = await getContentImportDashboard();
-    const dbCandidates = dashboard.candidates.filter((candidate) => !isDisallowedImportSource(candidate));
+    // ONLY when the database actually answered. `dashboard.candidates` carries
+    // the source-package PREVIEW when it did not, and the two must not be
+    // confused: a preview row has no database id, so treating it as staged
+    // labels it "database", sends its review link to /admin/imports/<a key that
+    // is in no table>, and suppresses the pack row that would have pointed
+    // somewhere real. That was invisible while the built-in package list was
+    // empty and the preview was always empty with it.
+    const dbCandidates = dashboard.databaseReady
+      ? dashboard.candidates.filter((candidate) => !isDisallowedImportSource(candidate))
+      : [];
     const stagedSourceIds = new Set(dbCandidates.map((candidate) => candidate.sourceId));
     const stagedBatchSlugs = new Set(dashboard.batches.filter((batch) => batch.stagedCandidates > 0).map((batch) => batch.slug));
 
