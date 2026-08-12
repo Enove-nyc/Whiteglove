@@ -28,12 +28,14 @@ function redisConfig() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function redis<T>(command: string) {
+async function redis<T>(command: string, body?: string) {
   const config = redisConfig();
   if (!config) return undefined;
   try {
     const response = await fetch(`${config.url}/${command}`, {
+      method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${config.token}` },
+      body,
       cache: "no-store",
     });
     if (!response.ok) return undefined;
@@ -134,8 +136,8 @@ export async function setAccessPassword(scope: Scope, newPassword: string) {
     return { ok: false as const, error: `Use a password of at least ${min} characters.` };
   }
   const salt = randomBytes(16).toString("hex");
-  const payload = encodeURIComponent(JSON.stringify({ salt, hash: hashPassword(newPassword.trim(), salt) }));
-  const response = await redis(`set/${encodeURIComponent(storageKey(scope))}/${payload}`);
+  const payload = JSON.stringify({ salt, hash: hashPassword(newPassword.trim(), salt) });
+  const response = await redis(`set/${encodeURIComponent(storageKey(scope))}`, payload);
   if (!response) return { ok: false as const, error: "Could not save the new password." };
   return { ok: true as const };
 }

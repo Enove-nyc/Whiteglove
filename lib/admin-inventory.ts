@@ -18,12 +18,14 @@ function redisConfig() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function redis<T>(command: string) {
+async function redis<T>(command: string, body?: string) {
   const config = redisConfig();
   if (!config) return undefined;
   try {
     const response = await fetch(`${config.url}/${command}`, {
+      method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${config.token}` },
+      body,
       cache: "no-store",
     });
     if (!response.ok) return undefined;
@@ -74,7 +76,6 @@ export async function saveInventoryOverride(id: string, override: InventoryOverr
       updatedAt: new Date().toISOString(),
     },
   };
-  const payload = encodeURIComponent(JSON.stringify(next));
-  const response = await redis(`set/${encodeURIComponent(overridesKey)}/${payload}`);
+  const response = await redis(`set/${encodeURIComponent(overridesKey)}`, JSON.stringify(next));
   return Boolean(response);
 }

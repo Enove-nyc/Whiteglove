@@ -31,12 +31,14 @@ function config() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function call<T>(command: string): Promise<{ result: T } | undefined> {
+async function call<T>(command: string, body?: string): Promise<{ result: T } | undefined> {
   const c = config();
   if (!c) return undefined;
   try {
     const res = await fetch(`${c.url}/${command}`, {
+      method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${c.token}` },
+      body,
       cache: "no-store",
     });
     if (!res.ok) return undefined;
@@ -51,7 +53,7 @@ export async function recordEmailAttempt(entry: EmailLogEntry): Promise<void> {
   try {
     const existing = await readLog();
     const next = [entry, ...existing].slice(0, KEEP);
-    await call(`set/${encodeURIComponent(KEY)}/${encodeURIComponent(JSON.stringify(next))}`);
+    await call(`set/${encodeURIComponent(KEY)}`, JSON.stringify(next));
   } catch {
     /* the message still went out (or didn't); the log is best-effort */
   }

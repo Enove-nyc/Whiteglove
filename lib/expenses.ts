@@ -54,9 +54,7 @@ export async function listExpenses(): Promise<Expense[]> {
 }
 
 async function writeExpenses(items: Expense[]) {
-  const payload = encodeURIComponent(JSON.stringify(items.slice(0, 10000)));
-  const res = await redis(`set/${encodeURIComponent(KEY)}/${payload}`);
-  return Boolean(res);
+  return redisSetBody(KEY, JSON.stringify(items.slice(0, 10000)));
 }
 
 export async function addExpense(input: Omit<Expense, "id" | "createdAt">): Promise<Expense | null> {

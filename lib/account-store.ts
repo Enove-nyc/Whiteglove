@@ -142,12 +142,14 @@ function redisConfig() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function redis<T>(command: string) {
+async function redis<T>(command: string, body?: string) {
   const config = redisConfig();
   if (!config) return undefined;
   try {
     const response = await fetch(`${config.url}/${command}`, {
+      method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${config.token}` },
+      body,
       cache: "no-store",
     });
     if (!response.ok) return undefined;
@@ -219,8 +221,7 @@ async function readJson<T>(key: string) {
 }
 
 async function writeJson(key: string, value: unknown) {
-  const payload = encodeURIComponent(JSON.stringify(value));
-  const response = await redis(`set/${encodeURIComponent(key)}/${payload}`);
+  const response = await redis(`set/${encodeURIComponent(key)}`, JSON.stringify(value));
   return Boolean(response);
 }
 
