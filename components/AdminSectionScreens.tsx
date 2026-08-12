@@ -28,7 +28,7 @@ export default function AdminSectionScreens({ sectionHref }: { sectionHref: stri
               <AdminNavLink
                 href={child.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex flex-col rounded-lg border px-4 py-3 transition ${`}
+                className={`flex flex-col rounded-lg border px-4 py-3 transition ${
                   current
                     ? "border-[var(--navy)] bg-[var(--navy)] text-white"
                     : "border-[var(--gold-light)] bg-[#fffdf9] hover:border-[var(--gold)]"
