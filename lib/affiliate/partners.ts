@@ -102,9 +102,16 @@ export type ProductRoute = {
   note: string;
 };
 
-/** Landing-page affiliate URLs for Travel Essentials (insurance, eSIM, …). */
+/**
+ * Landing-page affiliate URLs for Travel Essentials (insurance, eSIM, …).
+ *
+ * A LIST PER CATEGORY, because a category can hold more than one provider —
+ * two eSIM programmes shown side by side for the traveller to compare. The
+ * first entry is the one a request with no `offer` gets, so every link written
+ * before this existed resolves exactly as it did.
+ */
 export type EssentialsLandings = Partial<
-  Record<"transfer" | "activity" | "insurance" | "esim", { url: string; label?: string }>
+  Record<"transfer" | "activity" | "insurance" | "esim", ReadonlyArray<{ url: string; label?: string }>>
 >;
 
 /** Everything the site needs in order to build any booking link. */
@@ -151,6 +158,15 @@ export type AffiliateRequest = {
   legs?: Array<{ from: string; to: string; date: string }>;
   /** Nonstop only. Carried because the booking page asks for it. */
   nonstop?: boolean;
+  /**
+   * Which provider in a category, 0 for the first.
+   *
+   * An INDEX, never a URL, and that is the whole security of this endpoint: the
+   * destination is resolved server-side from the owner's own settings, so the
+   * worst a stranger can do by editing this number is reach a different link of
+   * the owner's, or none at all. See destinationUrl.
+   */
+  offer?: number;
   /** Where on the site this link was pressed. Reporting only. */
   page?: string;
   placement?: string;
@@ -238,7 +254,9 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
   }
 
   if (product === "transfer" || product === "activity" || product === "insurance" || product === "esim") {
-    const landing = config.essentialsLandings?.[product];
+    // The category's route is the first provider that can actually be used —
+    // "is this category connected at all", which is what the admin line asks.
+    const landing = (config.essentialsLandings?.[product] ?? []).find((entry) => entry.url.trim());
     const url = landing?.url?.trim() ?? "";
     if (!url || !landingUrlOk(url)) {
       return NOT_CONNECTED(
@@ -384,7 +402,11 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     request.product === "insurance" ||
     request.product === "esim"
   ) {
-    const url = config.essentialsLandings?.[request.product]?.url?.trim() ?? "";
+    // The provider asked for, or the first. An index rather than a URL: a
+    // stranger editing it reaches one of the owner's own links or nothing.
+    const list = config.essentialsLandings?.[request.product] ?? [];
+    const chosen = list[request.offer ?? 0] ?? list[0];
+    const url = chosen?.url?.trim() ?? "";
     if (!url || !landingUrlOk(url)) return null;
     // TOURS CARRY THE PLACE when the pasted link is a Stay22 GetYourGuide desk.
     // The visitor came from a page about somewhere; sending them to the same

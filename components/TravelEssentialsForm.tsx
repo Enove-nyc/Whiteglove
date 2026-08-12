@@ -6,6 +6,8 @@ import type { AffiliateConfig } from "@/lib/affiliate/partners";
 import {
   describeEssentialService,
   ESSENTIAL_SERVICES,
+  MAX_OFFERS_PER_SERVICE,
+  type EssentialOffer,
   type EssentialPageType,
   type EssentialServiceConfig,
   type EssentialServiceId,
@@ -49,6 +51,32 @@ export default function TravelEssentialsForm({
       ...prev,
       services: { ...prev.services, [id]: { ...prev.services[id], ...patch } },
     }));
+  };
+
+  const patchOffer = (id: EssentialServiceId, index: number, patch: Partial<EssentialOffer>) => {
+    setSettings((prev) => {
+      const extra = [...(prev.services[id].extra ?? [])];
+      extra[index] = { ...extra[index], ...patch };
+      return { ...prev, services: { ...prev.services, [id]: { ...prev.services[id], extra } } };
+    });
+  };
+
+  const addOffer = (id: EssentialServiceId) => {
+    setSettings((prev) => {
+      const extra = [...(prev.services[id].extra ?? [])];
+      if (extra.length >= MAX_OFFERS_PER_SERVICE - 1) return prev;
+      // Off until it is filled in, same rule as a category's first provider:
+      // nothing reaches a traveller because a row was created.
+      extra.push({ label: "", url: "", cta: "", blurb: "", enabled: false });
+      return { ...prev, services: { ...prev.services, [id]: { ...prev.services[id], extra } } };
+    });
+  };
+
+  const removeOffer = (id: EssentialServiceId, index: number) => {
+    setSettings((prev) => {
+      const extra = (prev.services[id].extra ?? []).filter((_, i) => i !== index);
+      return { ...prev, services: { ...prev.services, [id]: { ...prev.services[id], extra } } };
+    });
   };
 
   const move = (id: EssentialServiceId, direction: -1 | 1) => {
@@ -199,16 +227,109 @@ export default function TravelEssentialsForm({
           </div>
 
           {def.linkMode === "landing" && (
-            <label className="mt-3 block">
-              <span className={label}>Tracked affiliate URL / programme link</span>
-              <input
-                type="url"
-                value={cfg.url}
-                onChange={(e) => patchService(def.id, { url: e.target.value })}
-                placeholder="https://tp.media/r?marker=…&u=…"
-                className={`${input} font-mono text-xs`}
-              />
-            </label>
+            <>
+              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_2fr]">
+                <label className="block">
+                  {/* Only needed once there are two. Said so rather than
+                      marked required, because one provider is the normal case
+                      and the catalogue title is the right name for it. */}
+                  <span className={label}>Provider name</span>
+                  <input
+                    type="text"
+                    value={cfg.label ?? ""}
+                    onChange={(e) => patchService(def.id, { label: e.target.value })}
+                    placeholder={(cfg.extra ?? []).length > 0 ? "e.g. Airalo — needed, there are two" : "Optional while there is only one"}
+                    className={input}
+                  />
+                </label>
+                <label className="block">
+                  <span className={label}>Tracked affiliate URL / programme link</span>
+                  <input
+                    type="url"
+                    value={cfg.url}
+                    onChange={(e) => patchService(def.id, { url: e.target.value })}
+                    placeholder="https://tp.media/r?marker=…&u=…"
+                    className={`${input} font-mono text-xs`}
+                  />
+                </label>
+              </div>
+
+              {/* A SECOND PROVIDER IN THE SAME CATEGORY, shown beside the
+                  first for the traveller to compare. Each needs its own name,
+                  or the two cards are indistinguishable and neither gets
+                  pressed. */}
+              {(cfg.extra ?? []).map((offer, index) => (
+                <div key={index} className="mt-3 rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={label}>Also offer</span>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm text-[var(--navy)]">
+                        <input
+                          type="checkbox"
+                          checked={offer.enabled}
+                          onChange={(e) => patchOffer(def.id, index, { enabled: e.target.checked })}
+                        />
+                        Enabled
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => removeOffer(def.id, index)}
+                        className="border border-[var(--gold-light)] px-2 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_2fr]">
+                    <label className="block">
+                      <span className={label}>Provider name</span>
+                      <input
+                        type="text"
+                        value={offer.label}
+                        onChange={(e) => patchOffer(def.id, index, { label: e.target.value })}
+                        placeholder="e.g. Yesim"
+                        className={input}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={label}>Tracked affiliate URL</span>
+                      <input
+                        type="url"
+                        value={offer.url}
+                        onChange={(e) => patchOffer(def.id, index, { url: e.target.value })}
+                        placeholder="https://tp.media/r?marker=…&u=…"
+                        className={`${input} font-mono text-xs`}
+                      />
+                    </label>
+                  </div>
+                  <label className="mt-2 block">
+                    <span className={label}>Line under the title</span>
+                    <input
+                      type="text"
+                      value={offer.blurb}
+                      onChange={(e) => patchOffer(def.id, index, { blurb: e.target.value })}
+                      placeholder={def.blurb}
+                      className={input}
+                    />
+                  </label>
+                  {!offer.label.trim() && offer.url.trim() && (
+                    <p className="mt-2 text-xs leading-5 text-amber-800">
+                      Not shown — give it a name, or travellers cannot tell it from the first one.
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              {(cfg.extra ?? []).length < MAX_OFFERS_PER_SERVICE - 1 && (
+                <button
+                  type="button"
+                  onClick={() => addOffer(def.id)}
+                  className="mt-3 border border-[var(--gold)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]"
+                >
+                  Add another provider
+                </button>
+              )}
+            </>
           )}
 
           <fieldset className="mt-4">

@@ -22,7 +22,7 @@ const WITH_STAY22: AffiliateConfig = {
 const WITH_INSURANCE: AffiliateConfig = {
   ...NOTHING,
   essentialsLandings: {
-    insurance: { url: "https://tp.media/r?marker=761677&u=https%3A%2F%2Fexample-insurance.test", label: "Partner" },
+    insurance: [{ url: "https://tp.media/r?marker=761677&u=https%3A%2F%2Fexample-insurance.test", label: "Partner" }],
   },
 };
 
@@ -186,5 +186,90 @@ describe("Travel Essentials surfaces", () => {
       assert.doesNotMatch(prose, /\bOfficial Partner\b/);
       assert.doesNotMatch(prose, /Recommended by White Glove/i);
     }
+  });
+});
+
+describe("more than one provider in a category", () => {
+  const TWO_ESIMS = () => {
+    const settings = defaultTravelEssentials();
+    const esim = settings.services.esim;
+    esim.enabled = true;
+    esim.label = "Airalo";
+    esim.url = "https://tp.media/r?marker=761677&u=https%3A%2F%2Fairalo.com";
+    esim.extra = [
+      { label: "Yesim", url: "https://tp.media/r?marker=761677&u=https%3A%2F%2Fyesim.app", cta: "", blurb: "", enabled: true },
+    ];
+    return settings;
+  };
+  const CONFIG: AffiliateConfig = {
+    travelpayouts: {},
+    stay22: NO_STAY22,
+    essentialsLandings: {
+      esim: [
+        { url: "https://tp.media/r?marker=761677&u=https%3A%2F%2Fairalo.com", label: "Airalo" },
+        { url: "https://tp.media/r?marker=761677&u=https%3A%2F%2Fyesim.app", label: "Yesim" },
+      ],
+    },
+  };
+  const ctx = { pageType: "book" as const, page: "/book", placement: "book-essentials" };
+
+  it("SHOWS BOTH, SIDE BY SIDE, EACH NAMED", () => {
+    // The owner had two eSIM programmes and could only ever show one, because
+    // a category was a single slot. Two cards, as equals — there is no reason
+    // to push Airalo over Yesim.
+    const cards = essentialsForContext(TWO_ESIMS(), CONFIG, ctx).filter((c) => c.id === "esim");
+    assert.equal(cards.length, 2);
+    assert.deepEqual(cards.map((c) => c.name), ["Airalo", "Yesim"]);
+    // Each carries WHICH provider it is, as an index the server resolves.
+    assert.deepEqual(cards.map((c) => c.offer), [0, 1]);
+    assert.doesNotMatch(cards[1].href, /http/, "a destination URL is in the query string");
+    assert.match(cards[1].href, /offer=1/);
+  });
+
+  it("KEEPS THE CATEGORY TITLE while there is only one", () => {
+    // Nothing the owner already has may change appearance because this feature
+    // exists. One provider still reads as the catalogue's own card.
+    // Everything saved before this feature existed has no label at all, which
+    // is exactly this case — the card must read as it always did.
+    const settings = TWO_ESIMS();
+    settings.services.esim.extra = [];
+    settings.services.esim.label = "";
+    const cards = essentialsForContext(settings, CONFIG, ctx).filter((c) => c.id === "esim");
+    assert.equal(cards.length, 1);
+    assert.equal(cards[0].name, "Get an International eSIM");
+    assert.equal(cards[0].offer, 0);
+  });
+
+  it("DROPS AN UNNAMED SECOND rather than showing two identical cards", () => {
+    const settings = TWO_ESIMS();
+    settings.services.esim.extra = [
+      { label: "  ", url: "https://tp.media/r?marker=1&u=https%3A%2F%2Fx.test", cta: "", blurb: "", enabled: true },
+    ];
+    const cards = essentialsForContext(settings, CONFIG, ctx).filter((c) => c.id === "esim");
+    assert.equal(cards.length, 1);
+  });
+
+  it("resolves each provider to its own link, and never past the end", () => {
+    const first = resolveLink({ product: "esim", page: "/book", offer: 0 }, CONFIG);
+    const second = resolveLink({ product: "esim", page: "/book", offer: 1 }, CONFIG);
+    assert.match(first!.url, /airalo/);
+    assert.match(second!.url, /yesim/);
+    // An index a stranger invented falls back to the first of the owner's own
+    // links rather than reaching anything else.
+    const silly = resolveLink({ product: "esim", page: "/book", offer: 7 }, CONFIG);
+    assert.match(silly!.url, /airalo/);
+  });
+
+  it("stays live when the FIRST provider is switched off", () => {
+    // A category is available while any provider in it is — otherwise turning
+    // one off would silently take the other down with it.
+    const settings = TWO_ESIMS();
+    settings.services.esim.enabled = false;
+    const cards = essentialsForContext(settings, CONFIG, ctx).filter((c) => c.id === "esim");
+    assert.equal(cards.length, 1);
+    assert.equal(cards[0].name, "Yesim");
+    // And its index is still 1 — the positions must not shift, or a link
+    // already rendered on a cached page would point at the wrong company.
+    assert.equal(cards[0].offer, 1);
   });
 });
