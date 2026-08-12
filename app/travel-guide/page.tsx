@@ -4,6 +4,8 @@ import { readBookingLink } from "@/lib/booking-access-store";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
+import TravelExtras from "@/components/TravelExtras";
+import { readExtras } from "@/lib/travel-extras-store";
 import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-guide";
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
 
@@ -26,6 +28,7 @@ const TONE: Record<string, string> = {
 export default async function TravelGuidePage() {
   // Where the booking call to action may point today. See lib/booking-access.ts.
   const booking = await readBookingLink();
+  const extras = await readExtras();
   const feed = await fetchAdvisories();
   const rows = COUNTRY_DOCS.map((c) => ({
     ...c,
@@ -174,6 +177,16 @@ export default async function TravelGuidePage() {
           This guide is general information, not legal, financial or immigration advice. Entry requirements, safety conditions and program terms are set by governments and companies, and can change at any time — always confirm with the official source before you travel.
         </p>
       </section>
+
+      {/* THE THINGS THEMSELVES, under the guidance about them. This row lived
+          on /book alone, where somebody has just searched a flight — the wrong
+          moment for a travel hotplate. Anybody reading this page is already
+          thinking about what to take. */}
+      <TravelExtras
+        extras={extras}
+        heading="Worth taking with you"
+        intro="Bought from the seller, not from us. Nothing here is a recommendation about which to choose."
+      />
 
       <Footer />
     </main>
