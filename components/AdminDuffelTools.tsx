@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import AdminDuffelStays from "@/components/AdminDuffelStays";
 import BookingSearch from "@/components/BookingSearch";
 
 type Kind = "flights" | "hotels";
 
 /**
- * Admin-only Duffel search. Flights can continue to ticketing; stays are
- * search-only until Duffel Stays is approved on the account.
+ * Admin-only Duffel search. Flights can continue to ticketing; stays search
+ * Duffel's API from this screen and nowhere else. Visitors use Stay22 on /book.
  */
 export default function AdminDuffelTools() {
   const [kind, setKind] = useState<Kind>("flights");
@@ -35,8 +36,9 @@ export default function AdminDuffelTools() {
       </div>
       {kind === "hotels" ? (
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-          Stay search needs Duffel Stays enabled on the account. If Duffel has not approved it, the search is refused
-          and nothing is booked. There is no stay checkout here — only search.
+          Type a city or place. The search looks it up, then asks Duffel for stays nearby. If Stays is not enabled on
+          the account, Duffel refuses and nothing is invented. There is no stay checkout here — continue in the Duffel
+          dashboard.
         </p>
       ) : (
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
@@ -44,7 +46,11 @@ export default function AdminDuffelTools() {
         </p>
       )}
       <div className="mt-6">
-        <BookingSearch key={kind} only={kind} reviewHref="/admin/duffel/review" />
+        {kind === "hotels" ? (
+          <AdminDuffelStays />
+        ) : (
+          <BookingSearch only="flights" reviewHref="/admin/duffel/review" />
+        )}
       </div>
     </div>
   );

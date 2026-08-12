@@ -1,37 +1,158 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { duffelApiHeaders } from "@/lib/duffel-api";
 import { duffelRefusal } from "@/lib/duffel-guard";
+import {
+  DUFFEL_STAYS_SEARCH_URL,
+  explainDuffelStaysError,
+  mapStayResults,
+  parseCoordinateQuery,
+  parseCoordinates,
+  staysSearchBody,
+  validateStaySearchInput,
+  type StayPlaceMatch,
+} from "@/lib/duffel-stays";
 import { duffelBearer } from "@/lib/duffel-token";
-import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
-import { getDestinationRecord } from "@/data/destination-database";
+import { findPlaces } from "@/lib/place-lookup";
+import { redact } from "@/lib/redact";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * Admin-only Duffel Stays search.
+ *
+ * POST https://api.duffel.com/stays/search with Duffel-Version v2 and a Bearer
+ * token. The public site never calls this: visitors use Stay22 on /book.
+ * Taking the buttons off /book is not the same as closing the door — see
+ * lib/duffel-guard.ts.
+ */
 export async function POST(request: NextRequest) {
-  // ADMIN ONLY. Taking the buttons off the public page is not the same as
-  // closing the door: anybody who saw the site last month can still post here,
-  // and this endpoint reaches the White Glove Duffel account. See
-  // lib/duffel-guard.ts.
   const refused = duffelRefusal(request);
   if (refused) return NextResponse.json({ message: refused.error }, { status: refused.status });
-
 
   const access = duffelBearer();
   if (!access.ok) return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
   const token = access.token;
 
-  const { destination, guests, checkInDate, checkOutDate } = await request.json();
-  const slug = String(destination).trim().toLowerCase();
-  const guide = getCityGuide(slug) ?? cityGuides.find((item) => [item.slug, item.city, ...(item.aliases ?? [])].some((value) => value.toLowerCase() === slug));
-  const record = getDestinationRecord(slug);
-  const coordinateValue = guide?.graveCoordinates ?? record?.cemeteries[0]?.coordinates;
-  const coordinates = coordinateValue?.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
-  if (!coordinates || !/^\d{4}-\d{2}-\d{2}$/.test(String(checkInDate)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(checkOutDate))) return NextResponse.json({ message: "Choose one of the White Glove destinations and valid stay dates." }, { status: 400 });
-
-  const response = await fetch("https://api.duffel.com/stays/search", { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", "Duffel-Version": "v2", Authorization: `Bearer ${token}` }, body: JSON.stringify({ data: { check_in_date: checkInDate, check_out_date: checkOutDate, rooms: 1, guests: Array.from({ length: Math.max(1, Number(guests) || 1) }, () => ({ type: "adult" })), location: { geographic_coordinates: { latitude: Number(coordinates[1]), longitude: Number(coordinates[2]) }, radius: 25 } } }), cache: "no-store" });
-  if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    const detail = error?.errors?.[0]?.message ?? error?.message ?? (response.status === 401 || response.status === 403 ? "Duffel Stays access is not enabled for this token yet." : `Duffel returned an error (${response.status}).`);
-    return NextResponse.json({ message: "Duffel could not complete this hotel search right now.", detail }, { status: 502 });
+  let payload: Record<string, unknown>;
+  try {
+    payload = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ message: "The search could not be read." }, { status: 400 });
   }
-  const result = await response.json();
-  const hotels = (result.data?.results ?? []).slice(0, 12).map((item: { id: string; cheapest_rate_total_amount: string; cheapest_rate_currency: string; accommodation?: { name?: string; rating?: number; address?: { city_name?: string } } }) => ({ id: item.id, name: item.accommodation?.name ?? "Hotel", city: item.accommodation?.address?.city_name, rating: item.accommodation?.rating, totalAmount: item.cheapest_rate_total_amount, totalCurrency: item.cheapest_rate_currency }));
-  return NextResponse.json({ message: hotels.length ? `${hotels.length} hotel options found.` : "No hotel options were returned for those dates.", hotels });
+
+  const dates = validateStaySearchInput({
+    checkInDate: payload.checkInDate,
+    checkOutDate: payload.checkOutDate,
+    rooms: payload.rooms,
+    guests: payload.guests,
+  });
+  if (!dates.ok) return NextResponse.json({ message: dates.message }, { status: 400 });
+
+  const resolved = await resolveSearchPoint(payload);
+  if (resolved.kind === "error") {
+    return NextResponse.json({ message: resolved.message }, { status: 400 });
+  }
+  if (resolved.kind === "choices") {
+    return NextResponse.json({
+      message: "Several places match. Pick one, then search again.",
+      places: resolved.places,
+    });
+  }
+
+  const body = staysSearchBody({
+    checkInDate: dates.checkInDate,
+    checkOutDate: dates.checkOutDate,
+    rooms: dates.rooms,
+    guests: dates.guests,
+    latitude: resolved.latitude,
+    longitude: resolved.longitude,
+  });
+
+  let response: Response;
+  try {
+    response = await fetch(DUFFEL_STAYS_SEARCH_URL, {
+      method: "POST",
+      headers: duffelApiHeaders(token),
+      body: JSON.stringify(body),
+      cache: "no-store",
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (error) {
+    const message = redact(error instanceof Error ? error.message : String(error));
+    if (/aborted|timeout|timed out/i.test(message)) {
+      return NextResponse.json(
+        { message: "Duffel did not answer in time.", detail: "Stay searches can be slow. Try once more before assuming Stays is disabled." },
+        { status: 504 },
+      );
+    }
+    return NextResponse.json({ message: "The request to Duffel could not be completed.", detail: message }, { status: 502 });
+  }
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "");
+    const explained = explainDuffelStaysError(response.status, errorBody, response.headers.get("x-request-id"));
+    return NextResponse.json(
+      { message: redact(explained.message), detail: explained.detail ? redact(explained.detail) : undefined, hotels: [] },
+      { status: 502 },
+    );
+  }
+
+  const result = (await response.json()) as { data?: { results?: unknown } };
+  const hotels = mapStayResults(result.data?.results);
+  const where = resolved.label ? ` near ${resolved.label}` : "";
+  return NextResponse.json({
+    message: hotels.length
+      ? `${hotels.length} stay${hotels.length === 1 ? "" : "s"} found${where}. The total is Duffel's cheapest rate for the stay.`
+      : `Duffel returned no stays${where} for those dates.`,
+    hotels,
+    searched: { latitude: resolved.latitude, longitude: resolved.longitude, label: resolved.label },
+  });
+}
+
+async function resolveSearchPoint(payload: Record<string, unknown>): Promise<
+  | { kind: "point"; latitude: number; longitude: number; label: string }
+  | { kind: "choices"; places: StayPlaceMatch[] }
+  | { kind: "error"; message: string }
+> {
+  const given = parseCoordinates(payload.latitude, payload.longitude);
+  if (given) {
+    const label = String(payload.destination ?? payload.place ?? "").trim();
+    return { kind: "point", ...given, label };
+  }
+
+  const typedCoords = parseCoordinateQuery(payload.destination ?? payload.place);
+  if (typedCoords) {
+    return { kind: "point", ...typedCoords, label: String(payload.destination ?? "").trim() };
+  }
+
+  const query = String(payload.destination ?? payload.place ?? "").trim();
+  if (query.length < 3) {
+    return { kind: "error", message: "Type a city or place (at least three letters), then search." };
+  }
+
+  const found = await findPlaces(query);
+  if (found.length === 0) {
+    return { kind: "error", message: "Nothing matched that city or place. Try the town name and the country." };
+  }
+
+  const places: StayPlaceMatch[] = found.map((place) => ({
+    id: place.id,
+    name: place.name,
+    country: place.country,
+    latitude: place.latitude,
+    longitude: place.longitude,
+  }));
+
+  if (places.length > 1) {
+    return { kind: "choices", places };
+  }
+
+  const [only] = places;
+  return {
+    kind: "point",
+    latitude: only.latitude,
+    longitude: only.longitude,
+    label: only.country ? `${only.name}, ${only.country}` : only.name,
+  };
 }

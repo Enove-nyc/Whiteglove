@@ -8,8 +8,9 @@
  */
 
 import { cleanKey } from "@/lib/api-key";
+import { DUFFEL_DASHBOARD } from "@/lib/duffel-api";
 
-export const DUFFEL_DASHBOARD = "https://duffel.com";
+export { DUFFEL_DASHBOARD };
 
 export type DuffelTokenKind = "missing" | "placeholder" | "unrecognised" | "test" | "live";
 
