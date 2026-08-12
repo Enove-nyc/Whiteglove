@@ -3,12 +3,12 @@ import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
+import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import AlertSignup from "@/components/AlertSignup";
 import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
-import SponsoredSlot from "@/components/SponsoredSlot";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
@@ -584,12 +584,16 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             >
               See places to stay in {destination.name}
             </Link>
-            <Link
-              href={addToTripHref(destination)}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Add {destination.name} to a trip
-            </Link>
+            <AddDestinationToTrip
+              place={{
+                id: `destination-${destination.slug}`,
+                name: destination.name,
+                address: `${destination.name}, ${destination.country}`,
+                href: `/destinations/${destination.slug}`,
+              }}
+              label={`Add ${destination.name} to a trip`}
+              showBenefit
+            />
           </div>
         </div>
       </section>
@@ -792,8 +796,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           carsHref={bookingHref(booking, { type: "cars", destination: destination.name })}
         />
       </div>
-
-      <SponsoredSlot placement="destination-sponsor" />
 
       <DestinationBookingOptions destinationName={destination.name} destinationSlug={destination.slug} />
 
