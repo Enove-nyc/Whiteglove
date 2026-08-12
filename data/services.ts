@@ -248,9 +248,9 @@ export const services: readonly Service[] = [
     ],
     receive: ["A checklist for your own route", "Links to the official source for every rule, because they change"],
     action: { label: "Read the travel guide", href: "/travel-guide" },
-    secondary: { label: "Phones and connectivity", href: "/phone-rentals" },
+    secondary: { label: "Travel insurance", href: "/travel-insurance" },
     pricing:
-      "The guides are free. Phones and insurance are bought from the provider, not from us; where we link to one we may earn a commission, and it does not change your price.",
+      "The guides are free. Insurance and data plans are bought from the provider, not from us; where we link to one we may earn a commission, and it does not change your price.",
     deliverables: {
       format: "A checklist for your own route, with a link to the official source behind every rule on it.",
       revisions: "Ask again whenever the route or the paperwork changes.",

@@ -36,6 +36,12 @@ const nextConfig: NextConfig = {
       // The CMS still knows the page by the slug "getaways", deliberately:
       // renaming the key would have thrown away whatever the owner has
       // already written there, for a cosmetic tidy. See app/destinations.
+      // Phone and hotspot RENTALS are not a business this site is in — they
+      // need a physical counter somewhere, and the owner has decided against
+      // it. The page claimed four services under "What we arrange" and none of
+      // them were arranged. The eSIM half is real and is a card on the pages
+      // that need it, so connectivity lands on the travel guide.
+      { source: "/phone-rentals", destination: "/travel-guide", permanent: true },
       { source: "/getaways", destination: "/destinations", permanent: true },
       // The vacation hub took the word "Destinations" in the navigation, so it
       // took the address to match. A visitor pressing an item called
