@@ -1,4 +1,5 @@
-import Link from "next/link";
+import AdminNavLink from "@/components/AdminNavLink";
+import AdminSectionScreens from "@/components/AdminSectionScreens";
 import BlockEditor from "@/components/BlockEditor";
 import PageList from "@/components/PageList";
 import { isDbEnabled } from "@/lib/content-admin";
@@ -34,19 +35,22 @@ export default async function AdminPagesPage({
 
       {selected ? (
         <div className="mt-8">
-          <Link
+          <AdminNavLink
             href="/admin/pages"
             className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
           >
             ← All pages
-          </Link>
+          </AdminNavLink>
           <div className="mt-5">
             <BlockEditor page={selected} />
           </div>
         </div>
       ) : (
         <div className="mt-8">
-          <PageList pages={pages} />
+          <AdminSectionScreens sectionHref="/admin/pages" />
+          <div className="mt-8">
+            <PageList pages={pages} />
+          </div>
         </div>
       )}
     </>

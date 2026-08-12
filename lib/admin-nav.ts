@@ -158,13 +158,18 @@ export function activeSection(pathname: string): AdminSection {
   );
 }
 
+/** Screens inside a section, not including the section’s own front page. */
+export function sectionScreens(sectionHref: string): Array<{ href: string; label: string; blurb: string }> {
+  const section = ADMIN_SECTIONS.find((item) => item.href === sectionHref);
+  return (section?.children ?? []).filter((child) => child.href !== sectionHref);
+}
+
 /** Everything the "go to" box can jump to. */
 export function allAdminDestinations(): Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> {
   const out: Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> = [];
   for (const section of ADMIN_SECTIONS) {
     out.push({ href: section.href, label: section.label, blurb: section.blurb, section: section.label, keywords: section.keywords ?? "" });
-    for (const child of section.children ?? []) {
-      if (child.href === section.href) continue;
+    for (const child of sectionScreens(section.href)) {
       out.push({ href: child.href, label: child.label, blurb: child.blurb, section: section.label, keywords: section.keywords ?? "" });
     }
   }

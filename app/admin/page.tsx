@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AdminNavLink from "@/components/AdminNavLink";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
 import { readDestinationFacts } from "@/lib/completeness-source";
@@ -24,7 +24,7 @@ const cardClass =
 
 function QuickAction({ href, title, detail, number }: { href: string; title: string; detail: string; number: string }) {
   return (
-    <Link
+    <AdminNavLink
       href={href}
       className={`${cardClass} group flex min-h-44 flex-col justify-between p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]`}
     >
@@ -36,7 +36,7 @@ function QuickAction({ href, title, detail, number }: { href: string; title: str
         <span className="mt-2 block text-sm leading-6 text-stone-600">{detail}</span>
       </span>
       <span className="mt-5 text-sm font-semibold text-[var(--navy)]">Open <span aria-hidden="true">→</span></span>
-    </Link>
+    </AdminNavLink>
   );
 }
 
@@ -62,9 +62,9 @@ function WorkPanel({
         </span>
       </div>
       <div className="mt-3 flex-1 text-sm leading-6 text-stone-600">{children}</div>
-      <Link href={href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+      <AdminNavLink href={href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
         {hrefLabel} <span aria-hidden="true">→</span>
-      </Link>
+      </AdminNavLink>
     </section>
   );
 }
@@ -112,13 +112,13 @@ function TotalCard({
     <li className="min-w-0">
       {/* flex-col opts out of .wg-admin a[class*="border"] { inline-flex }, which
           otherwise lays the label beside the count and spills into the next tile. */}
-      <Link
+      <AdminNavLink
         href={href}
         className={`${totalCardClass} flex w-full min-w-0 flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
         aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
       >
         {body}
-      </Link>
+      </AdminNavLink>
     </li>
   );
 }
@@ -276,13 +276,13 @@ export default async function AdminHome() {
         <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add something</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {quickAdd.map((item) => (
-            <Link
+            <AdminNavLink
               key={item.href}
               href={item.href}
               className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--navy)] hover:bg-[var(--navy)] hover:text-white"
             >
               + {item.label}
-            </Link>
+            </AdminNavLink>
           ))}
         </div>
       </section>
@@ -298,9 +298,9 @@ export default async function AdminHome() {
             {visibleAlerts.map((alert) => (
               <li key={alert.href} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-6 text-amber-950">{alert.text}</p>
-                <Link href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
+                <AdminNavLink href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
                   {alert.label} →
-                </Link>
+                </AdminNavLink>
               </li>
             ))}
           </ul>
@@ -423,21 +423,21 @@ export default async function AdminHome() {
             <section key={section.href} className={`${cardClass} p-5`}>
               {/* A section whose own front page is closed still opens — to the
                   first screen inside it this person may use. */}
-              <Link href={may(section.href) ? section.href : section.children[0].href} className="group flex items-start gap-3">
+              <AdminNavLink href={may(section.href) ? section.href : section.children[0].href} className="group flex items-start gap-3">
                 <span aria-hidden="true" className="mt-0.5 text-lg text-[var(--gold-ink)]">{section.icon}</span>
                 <span>
                   <span className="block font-[family-name:var(--font-display)] text-2xl text-[var(--navy)] group-hover:underline group-hover:decoration-[var(--gold)] group-hover:underline-offset-4">{section.label}</span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">{section.blurb}</span>
                 </span>
-              </Link>
+              </AdminNavLink>
               {section.children.length > 0 && (
                 <ul className="mt-4 border-t border-[var(--gold-light)] pt-3">
                   {section.children.map((child) => (
                     <li key={child.href + child.label}>
-                      <Link href={child.href} className="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm text-stone-700 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
+                      <AdminNavLink href={child.href} className="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm text-stone-700 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
                         <span>{child.label}</span>
                         <span aria-hidden="true" className="text-[var(--gold-ink)]">→</span>
-                      </Link>
+                      </AdminNavLink>
                     </li>
                   ))}
                 </ul>

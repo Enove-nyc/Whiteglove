@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
-import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, toAdminPath } from "../lib/admin-nav";
+import { ADMIN_SECTIONS, activeSection, adminHref, allAdminDestinations, sectionScreens, toAdminPath } from "../lib/admin-nav";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -101,14 +101,18 @@ describe("the nav and the middleware agree about what a screen is", () => {
       allAdminDestinations().some((destination) => destination.href === "/admin/imports"),
       "allAdminDestinations() omits /admin/imports",
     );
+    assert.ok(
+      sectionScreens("/admin/directory").some((screen) => screen.href === "/admin/imports"),
+      "sectionScreens(Directory) omits /admin/imports",
+    );
   });
 });
 
 /**
  * Every static admin screen must be discoverable — either listed in
- * allAdminDestinations() (nav + home “Everything you can manage”), or linked
- * from a documented hub. Dynamic detail routes and login are excluded; flow
- * steps that only make sense after a parent screen are allowed when that
+ * allAdminDestinations() (left nav + home “Everything you can manage”), or
+ * linked from a documented hub. Dynamic detail routes and login are excluded;
+ * flow steps that only make sense after a parent screen are allowed when that
  * parent links them.
  */
 function listAdminPageRoutes(dir = join(process.cwd(), "app", "admin"), base = "/admin"): string[] {
@@ -133,11 +137,17 @@ function hrefsIn(source: string): Set<string> {
   return found;
 }
 
+function hubListsSection(source: string, sectionHref: string): boolean {
+  return source.includes("AdminSectionScreens") && source.includes(`sectionHref="${sectionHref}"`);
+}
+
 describe("every static admin page is reachable from nav or a hub", () => {
   test("no hidden screens outside nav, settings overview, or documented flow steps", () => {
     const destinations = new Set(allAdminDestinations().map((d) => d.href));
     const settingsOverview = hrefsIn(readFileSync(join(process.cwd(), "app", "admin", "settings", "page.tsx"), "utf8"));
     const home = hrefsIn(readFileSync(join(process.cwd(), "app", "admin", "page.tsx"), "utf8"));
+    const directoryHub = readFileSync(join(process.cwd(), "app", "admin", "directory", "page.tsx"), "utf8");
+    const pagesHub = readFileSync(join(process.cwd(), "app", "admin", "pages", "page.tsx"), "utf8");
 
     // Flow steps: only useful after the parent screen; parent must link them.
     const flowSteps = new Map<string, { parent: string; parentSource: string }>([
@@ -154,6 +164,12 @@ describe("every static admin page is reachable from nav or a hub", () => {
 
       if (destinations.has(route)) continue;
       if (settingsOverview.has(route) || home.has(route)) continue;
+      if (hubListsSection(directoryHub, "/admin/directory") && sectionScreens("/admin/directory").some((s) => s.href === route)) {
+        continue;
+      }
+      if (hubListsSection(pagesHub, "/admin/pages") && sectionScreens("/admin/pages").some((s) => s.href === route)) {
+        continue;
+      }
 
       const flow = flowSteps.get(route);
       if (flow) {
@@ -170,6 +186,64 @@ describe("every static admin page is reachable from nav or a hub", () => {
 
       assert.fail(
         `${route} is not in allAdminDestinations(), settings overview, home quick links, or a documented flow step`,
+      );
+    }
+  });
+
+  test("Directory hub mounts every Directory screen, including Bulk imports", () => {
+    const directoryHub = readFileSync(join(process.cwd(), "app", "admin", "directory", "page.tsx"), "utf8");
+    const screensSource = readFileSync(join(process.cwd(), "components", "AdminSectionScreens.tsx"), "utf8");
+    assert.ok(hubListsSection(directoryHub, "/admin/directory"), "Directory hub does not render AdminSectionScreens");
+    assert.match(screensSource, /sectionScreens/);
+    const hrefs = new Set(sectionScreens("/admin/directory").map((s) => s.href));
+    for (const required of [
+      "/admin/imports",
+      "/admin/imports/needs-review",
+      "/admin/imports/trello",
+      "/admin/mikvaos",
+      "/admin/countries",
+      "/admin/kevarim",
+      "/admin/hechsherim",
+      "/admin/airports",
+      "/admin/planner",
+      "/admin/recycle",
+    ]) {
+      assert.ok(hrefs.has(required), `Directory sectionScreens() omits ${required}`);
+    }
+  });
+
+  test("Pages hub mounts every Pages screen", () => {
+    const pagesHub = readFileSync(join(process.cwd(), "app", "admin", "pages", "page.tsx"), "utf8");
+    assert.ok(hubListsSection(pagesHub, "/admin/pages"), "Pages hub does not render AdminSectionScreens");
+    const hrefs = new Set(sectionScreens("/admin/pages").map((s) => s.href));
+    for (const required of ["/admin/photos", "/admin/ratings", "/admin/reports", "/admin/growth", "/admin/content"]) {
+      assert.ok(hrefs.has(required), `Pages sectionScreens() omits ${required}`);
+    }
+  });
+
+  test("Settings overview links every Settings child", () => {
+    const settingsOverview = hrefsIn(readFileSync(join(process.cwd(), "app", "admin", "settings", "page.tsx"), "utf8"));
+    for (const child of sectionScreens("/admin/settings")) {
+      assert.ok(settingsOverview.has(child.href), `Settings overview does not link ${child.href}`);
+    }
+  });
+
+  test("dashboard manage grid is drawn from ADMIN_SECTIONS", () => {
+    const home = readFileSync(join(process.cwd(), "app", "admin", "page.tsx"), "utf8");
+    assert.match(home, /ADMIN_SECTIONS/);
+    assert.match(home, /Everything you can manage/);
+    assert.match(home, /AdminNavLink/);
+  });
+
+  test("middleware lists every admin folder so the admin host serves it as a bare path", () => {
+    const middleware = readFileSync(join(process.cwd(), "middleware.ts"), "utf8");
+    const folders = readdirSync(join(process.cwd(), "app", "admin"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+    for (const folder of folders) {
+      assert.ok(
+        middleware.includes(`"${folder}"`),
+        `middleware ADMIN_SCREENS omits "${folder}", so admin.…/${folder} would leave the admin host`,
       );
     }
   });

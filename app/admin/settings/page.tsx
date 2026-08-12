@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AdminNavLink from "@/components/AdminNavLink";
 import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { teamStorageAvailable } from "@/lib/admin-roles";
 import { membershipPublicLabel } from "@/lib/growth-settings";
@@ -15,14 +15,14 @@ export const dynamic = "force-dynamic";
 
 function Card({ href, title, detail, state }: { href: string; title: string; detail: string; state?: string }) {
   return (
-    <Link
+    <AdminNavLink
       href={href}
       className="group flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6 transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
     >
       <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{title}</span>
       <span className="mt-2 text-sm leading-6 text-stone-600">{detail}</span>
       {state && <span className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{state}</span>}
-    </Link>
+    </AdminNavLink>
   );
 }
 
@@ -157,6 +157,7 @@ export default async function AdminSettingsPage() {
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card href="/admin/accounts" title="Visitor accounts" detail="Everyone who has signed up, and what they have saved." />
+          <Card href="/admin/messages" title="Messages sent in" detail="What people wrote from the contact page, a trip enquiry, or a flight request." />
         </div>
       </section>
 

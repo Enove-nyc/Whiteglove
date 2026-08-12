@@ -155,7 +155,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
       <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6">
         <aside
           id="admin-nav"
-          className={`${navOpen ? "block" : "hidden"} w-full shrink-0 lg:block lg:w-64`}
+          className={`${navOpen ? "block" : "hidden"} w-full shrink-0 lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:w-64 lg:overflow-y-auto`}
         >
           {navLinks}
         </aside>
