@@ -7,8 +7,8 @@ import type {
   ReviewQueueItem,
   ReviewQueueItemStatus,
   ReviewQueueKind,
-} from "@/lib/import-review-queue";
-import { isOpenReviewStatus, reviewQueueKindLabel, reviewQueueStatusLabel } from "@/lib/import-review-queue";
+} from "@/lib/review-queue";
+import { isOpenReviewStatus, reviewQueueKindLabel, reviewQueueStatusLabel } from "@/lib/review-queue";
 
 function Count({ label, value }: { label: string; value: number }) {
   return (

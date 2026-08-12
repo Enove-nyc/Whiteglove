@@ -17,6 +17,12 @@ export type CuratedKosherPlace = {
   hechsher: KosherEatery["hechsher"];
 };
 
+// A curated place as a list of them holds it, where that list may or may not
+// have been found from a centre. Distance is known only in the first case, and
+// the two screens that show these lists build them either way, so they hold
+// this rather than asking at read time whether a km is there.
+export type CuratedKosherPlaceNearby = CuratedKosherPlace & { km?: number };
+
 function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
   const radians = (value: number) => (value * Math.PI) / 180;
   const latitude = radians(b.lat - a.lat);

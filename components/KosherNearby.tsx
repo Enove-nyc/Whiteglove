@@ -7,6 +7,7 @@ import {
   curatedKosherPlacesNear,
   searchCuratedKosherPlaces,
   type CuratedKosherPlace,
+  type CuratedKosherPlaceNearby,
 } from "@/lib/curated-kosher";
 import HechsherBadge from "@/components/HechsherBadge";
 import { hechsherOf, useHechsherim } from "@/lib/use-hechsherim";
@@ -65,7 +66,7 @@ export default function KosherNearby({
 }) {
   const point = useMemo(() => coordinatesToPoint(coordinates), [coordinates]);
   const [added, setAdded] = useState<Record<string, boolean>>({});
-  const places = useMemo(() => {
+  const places = useMemo<CuratedKosherPlaceNearby[]>(() => {
     if (query?.trim()) return searchCuratedKosherPlaces(query);
     return point ? curatedKosherPlacesNear(point, radiusKm) : [];
   }, [point, query, radiusKm]);
@@ -96,7 +97,7 @@ export default function KosherNearby({
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                   <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{place.name}</span>
                   <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">
-                    {[place.category, place.diet, formatKm("km" in place ? place.km : undefined)].filter(Boolean).join(" · ")}
+                    {[place.category, place.diet, formatKm(place.km)].filter(Boolean).join(" · ")}
                   </span>
                 </div>
                 <p className="mt-0.5 text-sm text-stone-600">{[place.city, place.country, place.address].filter(Boolean).join(" — ")}</p>

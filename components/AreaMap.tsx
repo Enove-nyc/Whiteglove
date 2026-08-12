@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type * as L from "leaflet";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import CompassMark from "@/components/CompassMark";
-import { curatedKosherPlaces, curatedKosherPlacesNear } from "@/lib/curated-kosher";
+import { curatedKosherPlaces, curatedKosherPlacesNear, type CuratedKosherPlaceNearby } from "@/lib/curated-kosher";
 import { compassFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
 import {
@@ -78,7 +78,9 @@ export default function AreaMap({
 
   const kosherMarkers = useMemo<MapMarker[]>(() => {
     if (!loadKosher) return [];
-    const listings = center ? curatedKosherPlacesNear(center, radiusKm) : curatedKosherPlaces();
+    const listings: readonly CuratedKosherPlaceNearby[] = center
+      ? curatedKosherPlacesNear(center, radiusKm)
+      : curatedKosherPlaces();
     return listings.flatMap((listing) => {
       if (listing.lat === undefined || listing.lng === undefined) return [];
       return [{
@@ -89,7 +91,7 @@ export default function AreaMap({
         lng: listing.lng,
         address: listing.address,
         phone: listing.phone,
-        km: "km" in listing ? listing.km : undefined,
+        km: listing.km,
         kind: "kosher" as const,
       }];
     });
