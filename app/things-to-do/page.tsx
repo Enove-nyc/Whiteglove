@@ -5,7 +5,6 @@ import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
-import SponsoredSlot from "@/components/SponsoredSlot";
 import { getAttractionList } from "@/lib/attractions-view";
 
 // Rendered per request, not frozen at build time.
@@ -60,7 +59,6 @@ export default async function AttractionsPage() {
         <AttractionDirectory attractions={attractions} />
       </section>
 
-      <SponsoredSlot placement="things-to-do-featured" />
 
       {/* UNDER THE LIST, NOT OVER IT. Somebody who has read what a place is,
           how long to give it and what it does on Shabbos is the person ready to

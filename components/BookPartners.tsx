@@ -9,8 +9,7 @@ import DateField from "@/components/DateField";
 import type { AffiliateRequest } from "@/lib/affiliate/partners";
 import { goHref } from "@/lib/affiliate/request";
 import { useFocusTrap } from "@/components/useFocusTrap";
-import { useSaveAuth } from "@/components/SaveAuthProvider";
-import type { ItinActivity, ItinFlight, ItinLodging } from "@/data/itinerary";
+import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
 import PartnerSearchWidget from "@/components/PartnerSearchWidget";
@@ -67,6 +66,7 @@ function Field({ label, children, className = "" }: { label: string; children: R
   );
 }
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
+const LS_KEY = "whiteGloveItinerary";
 
 /**
  * Hand the traveller off, by asking /go for the partner rather than knowing one.
@@ -136,7 +136,6 @@ export default function BookPartners({
   const [pay, setPay] = useState<Pay>("cash");
   const [kind, setKind] = useState<Kind>(initialKind);
   const [pending, setPending] = useState<PendingBooking | null>(null);
-  const { requireSave } = useSaveAuth();
   const [live, setLive] = useState<PartnerLiveCapabilities>({ hotels: false, flights: false, cars: false });
 
   useEffect(() => {
@@ -159,9 +158,34 @@ export default function BookPartners({
   }, []);
 
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {
-    const successName =
-      patch.flights?.[0] ? `${patch.flights[0].from} → ${patch.flights[0].to}` : patch.lodging?.[0]?.name || patch.activities?.[0]?.name;
-    requireSave({ type: "merge-trip-patch", patch, successName });
+    let itin: Itinerary = emptyItinerary();
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) itin = { ...emptyItinerary(), ...JSON.parse(saved) };
+    } catch {
+      /* start fresh */
+    }
+    const next: Itinerary = {
+      ...itin,
+      flights: [...(itin.flights ?? []), ...(patch.flights ?? [])],
+      lodging: [...(itin.lodging ?? []), ...(patch.lodging ?? [])],
+      activities: [...(itin.activities ?? []), ...(patch.activities ?? [])],
+    };
+    const dates = (patch.dates ?? []).filter(Boolean).sort();
+    if (dates.length) {
+      if (!next.startDate || dates[0] < next.startDate) next.startDate = dates[0];
+      if (!next.endDate || dates[dates.length - 1] > next.endDate) next.endDate = dates[dates.length - 1];
+    }
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    void fetch("/api/account/itinerary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itinerary: next }),
+    }).catch(() => undefined);
   }
 
   // Whether the tab you are looking at searches here or hands off to a
