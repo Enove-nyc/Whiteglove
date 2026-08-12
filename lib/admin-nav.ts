@@ -87,7 +87,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       {
         href: "/admin/settings/earnings",
         label: "What the site earns",
-        blurb: "Searches, partner cards, free-form offers and destination placements.",
+        blurb: "Searches, partner cards, destination placements, and anything else you link to.",
       },
       { href: "/admin/settings/referral", label: "Referral programme", blurb: "Kept off until rewards are final." },
       { href: "/admin/settings/collaboration", label: "Group planning tools", blurb: "Voting, favorites and rooms." },

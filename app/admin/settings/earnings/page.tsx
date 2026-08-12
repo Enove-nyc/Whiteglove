@@ -46,7 +46,7 @@ export default async function EarningsSettings() {
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Everything on this site that hands a traveller to somebody else to pay, in one place: the three
-              searches, the cards on the pages, and the free-form offers. Routed through a partner, a booking made
+              searches, the cards on the pages, and anything else you link to. Routed through a partner, a booking made
               afterwards is credited to you. Left alone, each one works exactly the same and earns nothing.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners)}</p>
@@ -158,10 +158,12 @@ export default async function EarningsSettings() {
       </section>
 
       <section className="mt-14 border-t border-[var(--gold-light)] pt-10">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Custom free-form offers</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Anything else you link to</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Anything that does not fit the Travel Essentials catalogue — a one-off partner link with its own name and
-          blurb. These still show under the search on{" "}
+          Anything that is not one of the categories above — a travel blech, a book, a piece of kit, a one-off
+          partner link. Name it, paste the link, and write one line saying what it is; without that line it saves but
+          is not shown. Amazon links carry Amazon&rsquo;s own required wording automatically. These appear on the
+          kosher travel guide, the travel guide, and under the search on{" "}
           <Link href="/book" target="_blank" className="underline decoration-[var(--gold)] underline-offset-2">
             the booking page
           </Link>{" "}
