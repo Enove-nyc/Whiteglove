@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 import { deletePromotion, getAdminContent, saveSiteSettings, upsertAccommodation, upsertLocation, upsertLocations, upsertPromotion, reviewSuggestion } from "@/lib/admin-content";
+import { linkPromotion } from "@/lib/advertising-store";
 import { applyDirectorySuggestion } from "@/lib/directory-suggestions";
 import { reviewProblem, type ReviewDecision } from "@/lib/suggestions";
 
@@ -56,7 +57,9 @@ export async function POST(request: NextRequest) {
     if (saved === "missing") return NextResponse.json({ error: "That suggestion is no longer there." }, { status: 404 });
     if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "promotion") {
-    const saved = await upsertPromotion(body.data as Parameters<typeof upsertPromotion>[0]);
+    const incoming = body.data as Parameters<typeof upsertPromotion>[0];
+    const linked = await linkPromotion(incoming);
+    const saved = await upsertPromotion(linked);
     if (!saved) return NextResponse.json({ error: "The private store could not be reached. Nothing was changed — try again." }, { status: 503 });
   } else if (body.kind === "promotion-delete") {
     // This branch did not exist. The Delete button on the advertisements

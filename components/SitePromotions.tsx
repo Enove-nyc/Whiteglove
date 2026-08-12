@@ -59,7 +59,10 @@ export default function SitePromotions() {
     setClosedTop(false);
     setClosedBottom(false);
     setShowPopup(false);
-    fetch(`/api/promotions?path=${encodeURIComponent(pathname)}`, { cache: "no-store" })
+    const preview = new URLSearchParams(window.location.search).get("preview") || "";
+    const query = new URLSearchParams({ path: pathname });
+    if (preview) query.set("preview", preview);
+    fetch(`/api/promotions?${query.toString()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data: PromoSet) => {
         if (!active) return;

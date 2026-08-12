@@ -63,6 +63,12 @@ export const SPOTS_BY_KIND: Record<AdKind, AdSpot[]> = {
       label: "At the bottom of an itinerary",
       detail: "Including itineraries a traveler has shared with somebody else.",
     },
+    { value: "home-seasonal", label: "On the home page, with the seasonal stays", detail: "One card in the seasonal section." },
+    { value: "destination-sponsor", label: "On a destination page", detail: "Restrict the addresses under Advanced if it is for one place." },
+    { value: "hotels-featured", label: "On Where to stay", detail: "Above the partner search, labelled as a paid position." },
+    { value: "things-to-do-featured", label: "On Things to do", detail: "One position on the attractions page." },
+    { value: "before-you-go", label: "On insurance and eSIM pages", detail: "Beside the before-you-go tools." },
+    { value: "directory-enhanced", label: "On the partner directory", detail: "A labelled position on the directory." },
   ],
   fullpage: [
     { value: "homepage-promo", label: "When someone opens the home page", detail: "" },
@@ -79,6 +85,12 @@ export const LIVE_PLACEMENTS: PromotionPlacement[] = [
   "homepage-promo",
   "inline-content",
   "itinerary-footer",
+  "home-seasonal",
+  "destination-sponsor",
+  "hotels-featured",
+  "things-to-do-featured",
+  "before-you-go",
+  "directory-enhanced",
 ];
 
 /**

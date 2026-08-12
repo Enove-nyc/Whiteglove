@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import InsurancePanel from "@/components/InsurancePanel";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import { resolvePage } from "@/lib/pages";
 
 export async function generateMetadata() {
@@ -22,6 +23,7 @@ export default async function TravelInsurancePage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <PageBlocks blocks={page.blocks} />
+      <SponsoredSlot placement="before-you-go" />
       {/* The hand-off, under what cover means rather than over it — somebody
           who has just read which four things a policy usually covers is the
           person ready to compare them. Renders nothing until the insurance card

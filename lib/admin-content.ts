@@ -112,7 +112,13 @@ export type PromotionPlacement =
   | "accommodation-page"
   | "sponsored-listing"
   | "itinerary-footer"
-  | "full-page-takeover";
+  | "full-page-takeover"
+  | "home-seasonal"
+  | "destination-sponsor"
+  | "hotels-featured"
+  | "things-to-do-featured"
+  | "before-you-go"
+  | "directory-enhanced";
 
 export type PromotionDevice = "all" | "mobile" | "desktop";
 
@@ -136,6 +142,17 @@ export type Promotion = {
   advertiserName: string;
   advertiserPhone: string;
   advertiserEmail: string;
+  /** Joins this creative to lib/advertisers.ts. Empty on ads made before that existed. */
+  advertiserId: string;
+  /** Joins this creative to lib/campaigns.ts. */
+  campaignId: string;
+  /** Owner-facing name of the run; used to create the campaign on save. */
+  campaignName: string;
+  /**
+   * Lets a draft be shown on the live site with ?preview= this value.
+   * Empty on a plain draft. Never returned by the public promotions API.
+   */
+  previewToken: string;
   placements: PromotionPlacement[];
   targetPaths: string;
   device: PromotionDevice;
@@ -297,6 +314,10 @@ function defaultPromotions(): Promotion[] {
       advertiserName: "",
       advertiserPhone: "",
       advertiserEmail: "",
+      advertiserId: "",
+      campaignId: "",
+      campaignName: "",
+      previewToken: "",
       placements: ["homepage-promo", "inline-content"],
       targetPaths: "/",
       device: "all",
@@ -339,6 +360,10 @@ export function blankPromotion(now = new Date().toISOString()): Promotion {
     advertiserName: "",
     advertiserPhone: "",
     advertiserEmail: "",
+    advertiserId: "",
+    campaignId: "",
+    campaignName: "",
+    previewToken: "",
     placements: ["fixed-top-banner"],
     targetPaths: "",
     device: "all",
@@ -363,6 +388,19 @@ const defaultBundle = (): AdminContentBundle => ({
   updatedAt: new Date().toISOString(),
 });
 
+function withAdLinks(promotion: Promotion): Promotion {
+  return {
+    ...promotion,
+    advertiserName: promotion.advertiserName ?? "",
+    advertiserPhone: promotion.advertiserPhone ?? "",
+    advertiserEmail: promotion.advertiserEmail ?? "",
+    advertiserId: promotion.advertiserId ?? "",
+    campaignId: promotion.campaignId ?? "",
+    campaignName: promotion.campaignName ?? "",
+    previewToken: promotion.previewToken ?? "",
+  };
+}
+
 function parseBundle(value?: string): AdminContentBundle {
   if (!value) return defaultBundle();
   try {
@@ -372,7 +410,7 @@ function parseBundle(value?: string): AdminContentBundle {
       locations: Array.isArray(parsed.locations) ? parsed.locations : defaultLocations(),
       accommodations: Array.isArray(parsed.accommodations) ? parsed.accommodations : [],
       suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
-      promotions: Array.isArray(parsed.promotions) ? parsed.promotions : defaultPromotions(),
+      promotions: Array.isArray(parsed.promotions) ? parsed.promotions.map(withAdLinks) : defaultPromotions(),
       updatedAt: parsed.updatedAt,
     };
   } catch {
@@ -481,6 +519,12 @@ function placementLabels() {
     ["sponsored-listing", "Sponsored listing"],
     ["itinerary-footer", "Bottom of the itinerary"],
     ["full-page-takeover", "Full-page takeover"],
+    ["home-seasonal", "Home page seasonal section"],
+    ["destination-sponsor", "Destination page"],
+    ["hotels-featured", "Where to stay"],
+    ["things-to-do-featured", "Things to do"],
+    ["before-you-go", "Insurance and eSIM"],
+    ["directory-enhanced", "Partner directory"],
   ]);
 }
 
@@ -498,6 +542,10 @@ function normalizePromotion(promotion: Promotion): Promotion {
     advertiserName: (promotion.advertiserName ?? "").trim(),
     advertiserPhone: (promotion.advertiserPhone ?? "").trim(),
     advertiserEmail: (promotion.advertiserEmail ?? "").trim(),
+    advertiserId: (promotion.advertiserId ?? "").trim(),
+    campaignId: (promotion.campaignId ?? "").trim(),
+    campaignName: (promotion.campaignName ?? "").trim(),
+    previewToken: (promotion.previewToken ?? "").trim(),
     placements: Array.isArray(promotion.placements) ? promotion.placements.filter((placement): placement is PromotionPlacement => placementLabels().has(placement)) : ["homepage-promo"],
     targetPaths: promotion.targetPaths.trim(),
     device: promotion.device === "mobile" || promotion.device === "desktop" ? promotion.device : "all",
@@ -615,14 +663,67 @@ export async function restorePromotion(promotion: Promotion): Promise<{ ok: bool
   return { ok: true, message: `${promotion.title} is back.` };
 }
 
-export async function getActivePromotions(placement: PromotionPlacement, pathname: string, device: PromotionDevice) {
+/**
+ * Whether this creative may be shown on a public page.
+ *
+ * Published (`enabled`) always may. A draft with a preview token may only when
+ * the visitor arrived with that same token — so the owner can check a placement
+ * on the live site without it being live. An empty token never matches.
+ */
+export function promotionIsVisible(promotion: Pick<Promotion, "enabled" | "previewToken">, previewToken = ""): boolean {
+  if (promotion.enabled) return true;
+  const wanted = previewToken.trim();
+  const held = (promotion.previewToken ?? "").trim();
+  return Boolean(wanted && held && wanted === held);
+}
+
+/**
+ * The creative a visitor is allowed to see.
+ *
+ * Whose it is, how to preview it, and the report token never leave the owner
+ * side. The public endpoint used to return the whole record, which meant an
+ * advertiser's phone number was in every browser that loaded a banner.
+ */
+export function publicPromotion(promotion: Promotion) {
+  return {
+    id: promotion.id,
+    title: promotion.title,
+    description: promotion.description,
+    buttonText: promotion.buttonText,
+    targetHref: promotion.targetHref,
+    imageUrl: promotion.imageUrl,
+    pdfUrl: promotion.pdfUrl,
+    videoUrl: promotion.videoUrl,
+    placements: promotion.placements,
+    targetPaths: promotion.targetPaths,
+    device: promotion.device,
+    startDate: promotion.startDate,
+    endDate: promotion.endDate,
+    priority: promotion.priority,
+    maxViewsPerVisitor: promotion.maxViewsPerVisitor,
+    enabled: promotion.enabled,
+    impressions: promotion.impressions,
+    clicks: promotion.clicks,
+    createdAt: promotion.createdAt,
+    updatedAt: promotion.updatedAt,
+    lastShownAt: promotion.lastShownAt,
+    lastClickedAt: promotion.lastClickedAt,
+  };
+}
+
+export async function getActivePromotions(
+  placement: PromotionPlacement,
+  pathname: string,
+  device: PromotionDevice,
+  previewToken = "",
+) {
   const bundle = await readBundle();
   return bundle.promotions
-    .filter((promotion) => promotion.enabled)
+    .filter((promotion) => promotionIsVisible(promotion, previewToken))
     .filter((promotion) => promotion.placements.includes(placement))
     .filter((promotion) => matchesPromotionDevice(promotion, device))
     .filter((promotion) => matchesPromotionPath(promotion, pathname))
-    .filter(isPromotionActive)
+    .filter((promotion) => promotion.enabled ? isPromotionActive(promotion) : true)
     .sort((left, right) => right.priority - left.priority || right.updatedAt.localeCompare(left.updatedAt));
 }
 

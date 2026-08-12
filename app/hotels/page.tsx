@@ -7,6 +7,7 @@ import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
 import SearchMemory from "@/components/SearchMemory";
 import StayQuarters from "@/components/StayQuarters";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
 
@@ -89,7 +90,7 @@ export default async function KosherStaysPage({
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to sleep</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to stay</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
             {searching ? `Where to stay in ${heading}` : "Where to stay"}
           </h1>
@@ -116,6 +117,8 @@ export default async function KosherStaysPage({
           </div>
         </div>
       </section>
+
+      <SponsoredSlot placement="hotels-featured" />
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         {searching && kosherAreas.length === 0 && kosherStays.length === 0 ? (

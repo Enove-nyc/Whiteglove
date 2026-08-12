@@ -126,6 +126,10 @@ describe("what the bar leads with", () => {
       !whiteGlove.links.some((link) => link.href === "/directory"),
       "directory should not stay buried only under White Glove",
     );
+    assert.ok(
+      whiteGlove.links.some((link) => link.href === "/advertise"),
+      "Advertise with us belongs under White Glove",
+    );
   });
 });
 
@@ -314,7 +318,7 @@ describe("the footer says the vacation-neutral thing", () => {
     // you know it from.
     assert.doesNotMatch(FOOTER_PROSE, /"\/submit"/);
     assert.doesNotMatch(FOOTER_PROSE, /Submit an entry/);
-    assert.ok(FOOTER.includes('"/contact?reason=advertise"'));
+    assert.ok(FOOTER.includes('"/advertise"'));
   });
 
   it("DOES NOT POINT AT THE ADMIN DOOR FROM THREE HUNDRED PAGES", () => {
@@ -328,8 +332,8 @@ describe("the footer says the vacation-neutral thing", () => {
     assert.ok(FOOTER.includes('"/login"'));
   });
 
-  it("OFFERS ADVERTISING, at the reason on the contact page rather than as a page that is not built", () => {
-    assert.ok(FOOTER.includes('"/contact?reason=advertise"'));
+  it("OFFERS ADVERTISING, as a page of its own rather than only a contact reason", () => {
+    assert.ok(FOOTER.includes('"/advertise"'));
   });
 
   it("still offers flights and hotels, without typing the address in", () => {

@@ -4,6 +4,7 @@ import GloveMark from "@/components/GloveMark";
 import HomeDiscoveryTools from "@/components/HomeDiscoveryTools";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import SectionHeading from "@/components/SectionHeading";
 import SearchMemory from "@/components/SearchMemory";
 import StartingPoints from "@/components/StartingPoints";
@@ -390,6 +391,8 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <SponsoredSlot placement="home-seasonal" />
 
       {/* ---- 7. When in the year ------------------------------------------
           Four links and a count each, straight off the seasons written on the

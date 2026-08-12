@@ -75,7 +75,20 @@ export default function AdManager({ initial, configured, today }: { initial: Pro
       }
       const data = (await res.json()) as { promotions?: Promotion[] };
       if (data.promotions) setAds(data.promotions);
-      setMessage({ ok: true, text: remove ? "Deleted." : ad.enabled ? "Published — it is live now." : "Saved as a draft." });
+      const previewHint =
+        !ad.enabled && ad.previewToken
+          ? ` Preview it on the site with ?preview=${ad.previewToken} on the address.`
+          : "";
+      setMessage({
+        ok: true,
+        text: remove
+          ? "Deleted."
+          : ad.enabled
+            ? "Published — it is live now."
+            : ad.previewToken
+              ? `Saved as a preview.${previewHint}`
+              : "Saved as a draft.",
+      });
       setEditing(null);
     } catch {
       // Nothing came back at all — the request never completed.
@@ -208,7 +221,7 @@ export default function AdManager({ initial, configured, today }: { initial: Pro
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditing({ ...ad, id: "", title: `${ad.title} (copy)`, enabled: false, impressions: 0, clicks: 0 })}
+                    onClick={() => setEditing({ ...ad, id: "", title: `${ad.title} (copy)`, enabled: false, impressions: 0, clicks: 0, previewToken: "", campaignId: "" })}
                     className={buttonClass}
                   >
                     Duplicate

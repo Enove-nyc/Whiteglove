@@ -3,6 +3,7 @@ import EsimOffers from "@/components/EsimOffers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -73,6 +74,7 @@ export default async function EsimPage() {
 
       {/* The providers, side by side. Renders nothing until one is configured. */}
       <EsimOffers />
+      <SponsoredSlot placement="before-you-go" />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <SectionHeading

@@ -109,7 +109,7 @@ const utilityLinks = [
   { label: "Contact", href: "/contact" },
   { label: "Rate how it went", href: "/rate" },
   { label: "How we verify", href: "/verification" },
-  { label: "Advertise with us", href: "/contact?reason=advertise" },
+  { label: "Advertise with us", href: "/advertise" },
   { label: "Sign in", href: "/login" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },

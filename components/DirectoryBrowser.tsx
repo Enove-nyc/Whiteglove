@@ -84,7 +84,9 @@ export default function DirectoryBrowser({
           className="w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
         />
         <div className="flex flex-wrap gap-2">
-          {tabs.map((tab) => {
+          {tabs
+            .filter((tab) => tab.key === "ALL" || (counts[tab.key] ?? 0) > 0)
+            .map((tab) => {
             const active = category === tab.key;
             return (
               <button

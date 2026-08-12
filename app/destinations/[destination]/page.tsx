@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import AlertSignup from "@/components/AlertSignup";
 import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
@@ -791,6 +792,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           carsHref={bookingHref(booking, { type: "cars", destination: destination.name })}
         />
       </div>
+
+      <SponsoredSlot placement="destination-sponsor" />
 
       <DestinationBookingOptions destinationName={destination.name} destinationSlug={destination.slug} />
 

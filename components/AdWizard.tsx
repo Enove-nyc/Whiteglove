@@ -17,14 +17,14 @@ import type { Promotion, PromotionDevice, PromotionPlacement } from "@/lib/admin
 const PAGE_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Every page", value: "" },
   { label: "The home page", value: "/" },
-  { label: "Destinations", value: "/stops" },
-  { label: "Kosher getaways", value: "/getaways" },
+  { label: "Destinations", value: "/destinations" },
+  { label: "Where to stay", value: "/hotels" },
+  { label: "Things to do", value: "/things-to-do" },
   { label: "Batei hachaim", value: "/cemeteries" },
   { label: "Directory", value: "/directory" },
-  { label: "Services", value: "/services" },
-  { label: "Book flights, hotels & cars", value: "/book" },
-  { label: "Phone & SIM rentals", value: "/phone-rentals" },
+  { label: "Search booking partners", value: "/book" },
   { label: "Travel insurance", value: "/travel-insurance" },
+  { label: "eSIMs and data", value: "/esim" },
   { label: "Contact", value: "/contact" },
   { label: "The itinerary planner", value: "/itinerary" },
 ];
@@ -184,8 +184,19 @@ export default function AdWizard({
     }
   }
 
-  function finish(publish: boolean) {
-    onSave({ ...ad, placements: writeAd(kind, spot), enabled: publish }, publish);
+  function finish(mode: "draft" | "preview" | "publish") {
+    const previewToken =
+      mode === "preview" ? ad.previewToken.trim() || crypto.randomUUID().replace(/-/g, "") : ad.previewToken;
+    onSave(
+      {
+        ...ad,
+        placements: writeAd(kind, spot),
+        enabled: mode === "publish",
+        previewToken,
+        campaignName: ad.campaignName.trim() || ad.title.trim(),
+      },
+      mode === "publish",
+    );
   }
 
   return (
@@ -254,9 +265,21 @@ export default function AdWizard({
                 <span className={captionClass}>Telephone</span>
                 <input type="tel" value={ad.advertiserPhone} onChange={(e) => set({ advertiserPhone: e.target.value })} className={inputClass} placeholder="+44 …" />
               </label>
-              <label className="block">
+              <label className="block sm:col-span-2">
                 <span className={captionClass}>Email</span>
                 <input type="email" value={ad.advertiserEmail} onChange={(e) => set({ advertiserEmail: e.target.value })} className={inputClass} placeholder="name@company.com" />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className={captionClass}>Campaign name</span>
+                <input
+                  value={ad.campaignName}
+                  onChange={(e) => set({ campaignName: e.target.value })}
+                  className={inputClass}
+                  placeholder="Defaults to the headline"
+                />
+                <span className="mt-1 block text-xs text-stone-500">
+                  Groups this creative with others for the same business. Used on their report.
+                </span>
               </label>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -463,10 +486,13 @@ export default function AdWizard({
           </>
         ) : (
           <>
-            <button type="button" disabled={saving || problems.length > 0} onClick={() => finish(true)} className={primaryClass}>
+            <button type="button" disabled={saving || problems.length > 0} onClick={() => finish("publish")} className={primaryClass}>
               {saving ? "Saving…" : "Publish it"}
             </button>
-            <button type="button" disabled={saving} onClick={() => finish(false)} className={secondaryClass}>
+            <button type="button" disabled={saving || problems.length > 0} onClick={() => finish("preview")} className={secondaryClass}>
+              Save as a preview
+            </button>
+            <button type="button" disabled={saving} onClick={() => finish("draft")} className={secondaryClass}>
               Save as a draft
             </button>
           </>

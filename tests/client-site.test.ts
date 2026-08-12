@@ -125,7 +125,7 @@ describe("the site does not ask a customer to do our work", () => {
     assert.match(contact, /value: "correction"/);
     assert.match(contact, /value: "advertise"/);
     assert.match(readFileSync("lib/beta-notice.ts", "utf8"), /feedbackHref: "\/contact\?reason=correction"/);
-    assert.match(readFileSync("app/directory/page.tsx", "utf8"), /\/contact\?reason=advertise/);
+    assert.match(readFileSync("app/directory/page.tsx", "utf8"), /\/advertise/);
   });
 
   it("leaves the machinery that receives it alone", () => {

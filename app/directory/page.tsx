@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import DirectoryBrowser from "@/components/DirectoryBrowser";
+import SponsoredSlot from "@/components/SponsoredSlot";
 import { featuredDisclosure } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -22,8 +23,8 @@ import { getPublicProviders } from "@/lib/directory";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Directory — White Glove Itineraries",
-  description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
+  title: "Partner directory — White Glove Itineraries",
+  description: "A curated network of tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
   path: "/directory",
 });
 
@@ -36,17 +37,19 @@ export default async function DirectoryPage() {
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove directory</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Partner directory</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">
-            Find the people who make the trip happen.
+            People we would send you to.
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-            Look up tour operators, vacation planners, travel agencies, and private guides and drivers for kosher and Jewish heritage travel — search by name, region, or specialty.
+            A curated network of tour operators, vacation planners, travel agencies, and private guides and drivers —
+            search by name, region, or specialty. Empty categories stay off the page.
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
+        <SponsoredSlot placement="directory-enhanced" compact={false} />
         <DirectoryBrowser providers={providers} featuredNote={featuredDisclosure()} />
 
         {/* "Are you one of these businesses? Add your business" was a form
@@ -57,7 +60,7 @@ export default async function DirectoryPage() {
         <p className="mt-12 text-sm leading-6 text-stone-500">
           Businesses can ask to be listed.{" "}
           <Link
-            href="/contact?reason=advertise"
+            href="/advertise"
             className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
           >
             Ask about being listed

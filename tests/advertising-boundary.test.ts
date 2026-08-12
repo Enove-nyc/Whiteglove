@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { blankPromotion } from "@/lib/admin-content";
 import { adStatus } from "@/lib/ad-types";
@@ -125,14 +125,15 @@ describe("nothing goes live the moment it is made", () => {
 
   it("makes publishing a separate, explicit act", () => {
     const wizard = readFileSync("components/AdWizard.tsx", "utf8");
-    assert.match(wizard, /enabled: publish/, "the wizard cannot save without publishing");
+    assert.match(wizard, /enabled: mode === "publish"/, "the wizard cannot save without publishing");
     assert.match(wizard, /function Preview\(/, "there is no preview between drafting and publishing");
+    assert.match(wizard, /Save as a preview/, "Draft → Preview → Publish is missing the middle step");
   });
 });
 
 describe("a reader can always tell what is paid for", () => {
   it("LABELS EVERY ADVERTISEMENT SPONSORED", () => {
-    assert.match(BANNER, /Sponsored/);
+    assert.match(BANNER, /placementLabel/);
     // Three shapes render a promotion; a label on two of them is a label on
     // none, because the unlabelled one is the one somebody believes.
     const labels = SITE_PROMOTIONS.match(/Sponsored/g) ?? [];
@@ -162,7 +163,13 @@ describe("no traffic figure is published", () => {
     // real rather than invented, and they are still not a visitor's business —
     // and an /advertise page quoting them would be the first place a rounded-up
     // number appeared.
-    const publicFiles = ["app/page.tsx", "app/book/page.tsx", "app/directory/page.tsx", "components/PromotionBanner.tsx"];
+    const publicFiles = [
+      "app/page.tsx",
+      "app/book/page.tsx",
+      "app/directory/page.tsx",
+      "app/advertise/page.tsx",
+      "components/PromotionBanner.tsx",
+    ];
     for (const file of publicFiles) {
       const prose = readFileSync(file, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -170,5 +177,74 @@ describe("no traffic figure is published", () => {
       assert.doesNotMatch(prose, /\bimpressions\b/i, `${file} shows an impression count`);
       assert.doesNotMatch(prose, /visitors a month|monthly visitors|readers a month/i, `${file} quotes traffic`);
     }
+  });
+});
+
+describe("verification cannot see advertising", () => {
+  /**
+   * THE WALL IN CODE. A listing can buy a label, never a status. The only way
+   * that stays true under deadline pressure is if lib/verification.ts and
+   * lib/trust-status.ts have no import path — direct or transitive — into an
+   * advertising module. Wiring a promotion to a trust label is then a
+   * conversation this test forces, not a Tuesday afternoon shortcut.
+   */
+  const ADVERTISING = new Set([
+    "lib/advertisers.ts",
+    "lib/campaigns.ts",
+    "lib/advertising-store.ts",
+    "lib/advertising-boundary.ts",
+    "lib/ad-types.ts",
+    "lib/ad-performance.ts",
+    "lib/ad-placements.ts",
+    "lib/advertiser-report.ts",
+    "components/AdManager.tsx",
+    "components/AdWizard.tsx",
+    "components/AdvertiserDesk.tsx",
+    "components/PromotionBanner.tsx",
+    "components/SitePromotions.tsx",
+    "components/SponsoredSlot.tsx",
+    "app/advertise/page.tsx",
+  ]);
+
+  function resolveImport(spec: string): string | null {
+    if (!spec.startsWith("@/")) return null;
+    const rel = spec.slice(2);
+    for (const candidate of [`${rel}.ts`, `${rel}.tsx`, `${rel}/index.ts`, `${rel}/index.tsx`]) {
+      if (existsSync(candidate)) return candidate.replace(/\\/g, "/");
+    }
+    return null;
+  }
+
+  function localImports(file: string): string[] {
+    const src = readFileSync(file, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    return [...src.matchAll(/from\s+["'](@\/[^"']+)["']/g)]
+      .map((match) => resolveImport(match[1]))
+      .filter((path): path is string => Boolean(path));
+  }
+
+  function reachableFrom(entry: string): string[] {
+    const seen = new Set<string>();
+    const queue = [entry];
+    while (queue.length) {
+      const file = queue.pop()!;
+      if (seen.has(file)) continue;
+      seen.add(file);
+      if (!existsSync(file)) continue;
+      for (const next of localImports(file)) queue.push(next);
+    }
+    return [...seen];
+  }
+
+  it("HAS NO IMPORT PATH FROM VERIFICATION OR TRUST-STATUS INTO ADVERTISING", () => {
+    const crossed: string[] = [];
+    for (const entry of ["lib/verification.ts", "lib/trust-status.ts"]) {
+      for (const file of reachableFrom(entry)) {
+        const normalized = file.replace(/\\/g, "/");
+        if (ADVERTISING.has(normalized)) crossed.push(`${entry} → ${normalized}`);
+      }
+    }
+    assert.deepEqual(crossed, [], `advertising reached the trust wall:\n${crossed.join("\n")}`);
   });
 });

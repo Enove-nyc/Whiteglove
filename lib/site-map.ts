@@ -54,6 +54,8 @@ export const PRIVATE_PATHS = [
   "/book/review",
   "/i/",
   "/version",
+  // Token-gated advertiser report. The public /advertise page is listed below.
+  "/advertise/report",
 ] as const;
 
 /** Is this address one a crawler should be kept away from? */
@@ -103,6 +105,7 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   // Who is behind the site. Indexed for the same reason /verification is: it
   // is one of the two pages a cautious person reads before trusting the rest.
   { path: "/about", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/advertise", priority: 0.5, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.6, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.2, changeFrequency: "yearly" },

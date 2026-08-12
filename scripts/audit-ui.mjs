@@ -91,6 +91,7 @@ const PAGES = [
   // page would measure a form nobody is shown.
   ["/contact?reason=trip", "contact — trip"],
   ["/contact?reason=advertise", "contact — advertising"],
+  ["/advertise", "advertise with us"],
   ["/verification", "verification method"],
   ["/stops", "destination directory"],
   ["/cemeteries", "cemetery directory"],
