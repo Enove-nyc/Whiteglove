@@ -9,7 +9,6 @@ import {
   kindLabel,
   sectionHeading,
   SITE_SEARCH_LABEL,
-  SITE_SEARCH_NOTE,
   SITE_SEARCH_PLACEHOLDER,
 } from "@/lib/site-search-labels";
 import type { SearchResponse, SiteHit, SiteHitKind } from "@/lib/site-search-types";
@@ -123,7 +122,6 @@ export default function DestinationSearch({
   ariaLabel = SITE_SEARCH_LABEL,
   /** When true, start collapsed on narrow screens behind a labeled Search button. */
   mobileCollapse = false,
-  showChrome = true,
   autoFocus = false,
   id,
 }: {
@@ -138,13 +136,14 @@ export default function DestinationSearch({
    */
   ariaLabel?: string;
   mobileCollapse?: boolean;
-  /** Visible label + published-content note. Off when embedded inside another labeled panel. */
+  /** Ignored: heading and note are no longer shown on this control. */
   showChrome?: boolean;
   autoFocus?: boolean;
   id?: string;
 }) {
   const router = useRouter();
   const listId = `${useId()}-search-results`;
+  const inputId = id ?? listId.replace("-search-results", "-input");
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -300,10 +299,11 @@ export default function DestinationSearch({
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
+          aria-label={ariaLabel}
           className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold)] bg-[#fcfaf6] px-4 text-sm font-semibold text-[var(--navy)] shadow-[0_8px_20px_rgba(23,45,82,.06)] transition hover:bg-[var(--cream-deep)]"
         >
           <SearchGlyph className="h-4 w-4 text-[var(--gold-ink)]" />
-          <span>{SITE_SEARCH_LABEL}</span>
+          <span>Search</span>
         </button>
       </div>
     );
@@ -314,25 +314,19 @@ export default function DestinationSearch({
       className={`relative ${compact ? "w-full max-w-full" : "mt-12 max-w-3xl"} ${mobileCollapse ? "md:block" : ""}`}
       data-site-search=""
     >
-      {showChrome ? (
-        <div className={`mb-2 ${compact ? "px-0.5" : ""}`}>
-          <label htmlFor={id ?? listId.replace("-search-results", "-input")} className="flex items-center gap-2 text-sm font-semibold text-[var(--navy)]">
-            <SearchGlyph className="h-4 w-4 shrink-0 text-[var(--gold-ink)]" />
-            <span>{SITE_SEARCH_LABEL}</span>
-          </label>
-          <p className="mt-1 text-xs leading-5 text-stone-500">{SITE_SEARCH_NOTE}</p>
-        </div>
-      ) : null}
+      <label htmlFor={inputId} className="sr-only">
+        {ariaLabel}
+      </label>
 
       <form
         className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--navy)]/15 bg-white shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
         onSubmit={submitSearch}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-          {!showChrome ? <SearchGlyph className="ml-1 h-4 w-4 shrink-0 text-[var(--gold-ink)]" /> : null}
+          <SearchGlyph className="ml-1 h-4 w-4 shrink-0 text-[var(--gold-ink)]" />
           <input
             ref={inputRef}
-            id={id ?? listId.replace("-search-results", "-input")}
+            id={inputId}
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);

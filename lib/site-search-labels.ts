@@ -12,7 +12,7 @@ export const SITE_SEARCH_LABEL = "Search the entire White Glove site";
 export const SITE_SEARCH_NOTE = "Search information already published across White Glove.";
 
 export const SITE_SEARCH_PLACEHOLDER =
-  "Destinations, where to stay, kosher food, eSIM, zmanim, kevarim…";
+  "Search destinations, places to stay, food, and more…";
 
 /** Section headings on the dropdown and /search page. */
 export function sectionHeading(section: SiteHitSection): string {
