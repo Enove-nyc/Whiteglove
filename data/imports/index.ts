@@ -8,6 +8,8 @@ import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/cand
 import { sourceCatalog as worldwideSources } from "@/data/imports/worldwide-batch-2/sources";
 import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
 import { sourceCatalog as worldwideBatch3Sources } from "@/data/imports/worldwide-batch-3/sources";
+import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
+import { sourceCatalog as worldwideBatch4Sources } from "@/data/imports/worldwide-batch-4/sources";
 import type { BulkContentCandidateInput, BulkContentKind } from "@/lib/bulk-content";
 import { prefillBulkCandidateFromPack } from "@/lib/import-prefill";
 
@@ -198,6 +200,18 @@ export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPack
     ),
     generatedAt: "2026-08-12",
     candidates: worldwideBatch3Candidates.map((candidate) =>
+      candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
+    ),
+  },
+  {
+    schemaVersion: 1,
+    batch: batchFor(
+      "worldwide-batch-4",
+      "Worldwide editorial review pack 4",
+      Object.keys(worldwideBatch4Sources).length,
+    ),
+    generatedAt: "2026-08-12",
+    candidates: worldwideBatch4Candidates.map((candidate) =>
       candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
     ),
   },
