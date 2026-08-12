@@ -340,10 +340,22 @@ function getField(body, key) {
 }
 
 function getArrayField(body, key) {
-  const re = new RegExp(`${key}:\\s*\\[([^\\]]*)\\]`);
-  const m = body.match(re);
+  const m = body.match(new RegExp(`${key}:\\s*(\\[[\\s\\S]*?\\])`));
   if (!m) return [];
-  return [...m[1].matchAll(/["']([^"']*)["']/g)].map((x) => x[1]);
+  // Double-quoted entries are JSON, so Ra'anana / Be'er Sheva survive whole.
+  try {
+    const parsed = JSON.parse(m[1]);
+    if (Array.isArray(parsed)) return parsed.filter((value) => typeof value === "string");
+  } catch {
+    // Fall through to the tolerant scan below.
+  }
+  return [...m[1].matchAll(/"((?:\\.|[^"\\])*)"/g)].map((match) => {
+    try {
+      return JSON.parse(`"${match[1]}"`);
+    } catch {
+      return match[1];
+    }
+  });
 }
 
 /** Infer entity/import fields when the pack uses thin helpers (batch-2). */
@@ -1644,4 +1656,24 @@ function main() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-main();
+// Importable so the duplicate audit can reuse one matcher rather than keeping a
+// second copy of it. Rewriting packs still only happens when run directly.
+export {
+  PACKS,
+  IMPORTS,
+  parseTsCandidates,
+  parseJsonPack,
+  normalizeText,
+  placeKey,
+  metroPlaceKey,
+  exactPlaceNameKey,
+  shouldMerge,
+  namesNearDuplicate,
+  venueFamily,
+  coreName,
+  dedupeAll,
+};
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

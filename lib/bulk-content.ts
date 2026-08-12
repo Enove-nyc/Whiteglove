@@ -230,7 +230,7 @@ function locationKey(name: string, city: string, country: string): string {
  * (Sephardic Ari vs Ari Ashkenazi, District 1 vs District 3).
  */
 export function softListingName(name: string | null | undefined): string {
-  let soft = normalizeContentText(name)
+  return normalizeContentText(name)
     .replace(/\bheritage walking corridor\b/g, "heritage corridor")
     .replace(/\bcommunity heritage corridor\b/g, "heritage corridor")
     .replace(/\bjewish community heritage corridor\b/g, "jewish heritage corridor")
@@ -246,7 +246,6 @@ export function softListingName(name: string | null | undefined): string {
     )
     .replace(/\s+/g, " ")
     .trim();
-  return soft;
 }
 
 export function softLocationKey(name: string, city: string, country: string): string {
