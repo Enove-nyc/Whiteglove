@@ -1,10 +1,10 @@
+import PartnerWidgetEmbed from "@/components/PartnerWidgetEmbed";
 import { localrentWidgetSrc } from "@/lib/partner-widgets";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Travelpayouts car search form (Localrent). Native script tag — same reason
- * as /embed/flights: next/script left the iframe empty. Iframed from /book.
+ * Localrent car search form for the /book Cars iframe. Same loader as flights.
  */
 export default async function EmbedCarsPage() {
   const src = localrentWidgetSrc();
@@ -17,5 +17,10 @@ export default async function EmbedCarsPage() {
     );
   }
 
-  return <script id="tp-cars-search" src={src} async charSet="utf-8" />;
+  return (
+    <div className="w-full">
+      <h1 className="sr-only">Car search</h1>
+      <PartnerWidgetEmbed src={src} />
+    </div>
+  );
 }

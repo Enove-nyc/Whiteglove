@@ -131,12 +131,15 @@ describe("Travelpayouts widget scripts", () => {
 });
 
 describe("how the widgets are loaded", () => {
-  it("puts a native script tag on the embed pages, not next/script", () => {
+  it("loads Travelpayouts into a real slot on the embed pages, not next/script", () => {
     const flights = readFileSync("app/embed/flights/page.tsx", "utf8");
     const cars = readFileSync("app/embed/cars/page.tsx", "utf8");
-    assert.match(flights, /<script id="tp-aviasales-search"/);
-    assert.match(cars, /<script id="tp-cars-search"/);
-    for (const source of [flights, cars]) {
+    const loader = readFileSync("components/PartnerWidgetEmbed.tsx", "utf8");
+    assert.match(flights, /PartnerWidgetEmbed/);
+    assert.match(cars, /PartnerWidgetEmbed/);
+    assert.match(loader, /document\.createElement\("script"\)/);
+    assert.match(loader, /tp\.media\/content/);
+    for (const source of [flights, cars, loader]) {
       assert.doesNotMatch(source, /from "next\/script"/);
       assert.doesNotMatch(source, /strategy="afterInteractive"/);
       assert.doesNotMatch(source, /data-no-optimize|data-wp-|noptimize/i);
@@ -155,6 +158,7 @@ describe("how the widgets are loaded", () => {
   it("keeps the embed addresses out of the sitemap and robots list", () => {
     assert.equal(isPrivatePath("/embed"), true);
     assert.equal(isPrivatePath("/embed/flights"), true);
+    assert.match(readFileSync("app/embed/page.tsx", "utf8"), /Partner search forms/);
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 

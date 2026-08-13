@@ -1,12 +1,13 @@
+import PartnerWidgetEmbed from "@/components/PartnerWidgetEmbed";
 import { aviasalesWidgetSrc } from "@/lib/partner-widgets";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Aviasales search form. A real script tag, not next/script: Travelpayouts
- * inserts the form next to this element. next/script afterInteractive renders
- * null and appends to document.body, so the iframe on /book stayed empty.
- * Iframed from /book. No WordPress attributes.
+ * Aviasales search form for the /book Flights iframe.
+ *
+ * The form is injected next to a real script tag inside PartnerWidgetEmbed.
+ * next/script left this iframe empty (and looked like a missing page).
  */
 export default async function EmbedFlightsPage({
   searchParams,
@@ -40,5 +41,10 @@ export default async function EmbedFlightsPage({
     );
   }
 
-  return <script id="tp-aviasales-search" src={src} async charSet="utf-8" />;
+  return (
+    <div className="w-full">
+      <h1 className="sr-only">Flight search</h1>
+      <PartnerWidgetEmbed src={src} />
+    </div>
+  );
 }

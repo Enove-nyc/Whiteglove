@@ -3,10 +3,9 @@
 /**
  * White Glove frame around a partner search widget.
  *
- * The iframe loads our /embed pages, which put a native script tag in the
- * document. Travelpayouts inserts the form next to that tag; putting the
- * script on a same-origin embed page keeps it inside this panel instead of
- * at the bottom of /book. The marker never enters this file.
+ * The iframe loads our /embed pages, which insert the official script into a
+ * slot on that page. Travelpayouts then paints the form there. The marker
+ * never enters this file.
  */
 
 export default function PartnerSearchWidget({
