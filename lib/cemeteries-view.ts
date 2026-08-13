@@ -1,4 +1,3 @@
-import { CEMETERIES_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 // Public read layer for cemeteries that merges the built-in static list
 // (data/cemeteries.ts, which carries the rich arrival notes + nearby places)
 // with owner-added cemeteries and tzaddikim stored in the database.
@@ -6,6 +5,7 @@ import { CEMETERIES_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 // FAIL SAFE: with the DB off/unreachable it returns the static content only, so
 // the cemetery pages always work.
 
+import { cachedRead } from "@/lib/cache-tags";
 import { cemeteries as staticCemeteries, getCemetery as getStaticCemetery, type Cemetery } from "@/data/cemeteries";
 import type { GalleryPhoto } from "@/components/PhotoGallery";
 import { optionalRead } from "@/lib/db-optional";
@@ -52,17 +52,23 @@ function staticListItem(c: Cemetery): CemeteryListItem {
   };
 }
 
+/** Busted by every write that can change a beis hachaim or its kevarim. */
+export const CEMETERIES_PUBLIC_TAG = "cemeteries-public";
+
 /**
  * The same list, cached until a content write busts the tag.
  *
- * For the public pages. /heritage, /cemeteries and /stops were rendering this
- * whole list — 176 batei hachaim, and a burial-count query across all of them
- * — on every single request, which is most of what emptied the database's
- * transfer quota. getCemeteryList stays uncached for the admin, which has to
- * see a save before anything invalidates a tag. See lib/public-cache.ts.
+ * The heaviest read on the site — 176 batei hachaim plus a burial-count query
+ * across every one of them — and it feeds /heritage, /cemeteries and /stops.
+ * getCemeteryList stays uncached for the admin, which has to see a save before
+ * anything invalidates a tag.
+ *
+ * Goes through lib/cache-tags.ts rather than importing next/cache directly,
+ * for the reason at the top of that file: this module is imported by
+ * plain-Node tests with no Next.js runtime.
  */
 export async function getPublicCemeteryList(): Promise<CemeteryListItem[]> {
-  return cachedPublicRead(getCemeteryList, "cemetery-list", CEMETERIES_PUBLIC_TAG);
+  return cachedRead(getCemeteryList, ["cemetery-list"], [CEMETERIES_PUBLIC_TAG]);
 }
 
 /** The cemetery directory list: built-in cemeteries plus owner-added ones. */

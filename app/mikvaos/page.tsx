@@ -3,24 +3,15 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
-import { listPublicMikvaos } from "@/lib/mikvaos";
+import { listPublishedMikvaos } from "@/lib/mikvaos";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { placeMapUrl } from "@/data/route-utils";
 
-// NOT force-dynamic any more, and this needed a real fix rather than deleting
-// the line. A plain `revalidate` window was tried on pages like this before
-// and measured to not work: the reads mix Prisma with a `cache: "no-store"`
-// fetch to Redis, and that fetch leaves the page frozen at its build-time
-// render however long the window is. force-dynamic was the right answer to
-// that at the time — but it meant re-reading whole tables for every visit,
-// including every crawler, which is what emptied the database's monthly
-// transfer quota.
-//
-// The fix is in the read layer: the list is now a tagged cache busted by every
-// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
-// freshness, without a fresh database read per hit.
-
+// Not force-dynamic. listPublishedMikvaos (lib/mikvaos.ts) is a tagged
+// unstable_cache now, busted the moment a practical listing is actually
+// written, rather than this page running a real database read on every
+// visit.
 export const metadata = pageMetadata({
   title: "Mikvaos — source-backed listings for travel | White Glove Itineraries",
   description:
@@ -35,7 +26,7 @@ export const metadata = pageMetadata({
  * or the static seed catalog when the database is empty — never an OSM dump.
  */
 export default async function MikvaosPage() {
-  const listings = await listPublicMikvaos();
+  const listings = await listPublishedMikvaos();
   const byCountry = new Map<string, typeof listings>();
   for (const listing of listings) {
     const list = byCountry.get(listing.country) ?? [];

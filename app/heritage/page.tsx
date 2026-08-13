@@ -23,7 +23,7 @@ import { TRUST_LEVELS } from "@/lib/trust-status";
 // transfer quota.
 //
 // The fix is in the read layer: the list is now a tagged cache busted by every
-// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
+// write path the moment it saves (lib/cache-tags.ts). Same instant-on-save
 // freshness, without a fresh database read per hit.
 
 export const metadata = pageMetadata({

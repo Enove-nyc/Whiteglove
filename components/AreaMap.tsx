@@ -5,7 +5,8 @@ import type * as L from "leaflet";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import CompassMark from "@/components/CompassMark";
 import { curatedKosherPlaces, curatedKosherPlacesNear, type CuratedKosherPlaceNearby } from "@/lib/curated-kosher";
-import { compassFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { GLOVE_MARK_SRC, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { tintedMarkUrl } from "@/lib/tinted-mark";
 import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
 import {
   googleMaps,
@@ -228,25 +229,43 @@ export default function AreaMap({
       for (const marker of gmarkersRef.current) marker.setMap(null);
       gmarkersRef.current = [];
 
-      for (const item of visible) {
-        const pin = compassFor(item.kind, zoom);
-        const marker = new maps.Marker({
-          position: { lat: item.lat, lng: item.lng },
-          map,
-          title: item.name,
-          icon: {
-            url: pin.url,
-            scaledSize: new maps.Size(pin.width, pin.height),
-            anchor: new maps.Point(pin.anchorX, pin.anchorY),
-          },
-        });
-        marker.addListener("click", () => {
-          ginfoRef.current?.setContent(popupHtml(item, centerName));
-          ginfoRef.current?.open({ map, anchor: marker });
-        });
-        gmarkersRef.current.push(marker);
-      }
-      return;
+      void (async () => {
+        // Google's icon is a URL, so the mark arrives already tinted — the same
+        // MAP_STYLE colour the legend paints, drawn onto the same artwork. One
+        // image per kind however many markers there are; the untinted mark is
+        // the fallback if a browser will not give us a canvas, since gold line
+        // art still beats a red Google balloon.
+        const icons = {} as Record<MapKind, string>;
+        await Promise.all(
+          (Object.keys(MAP_STYLE) as MapKind[]).map(async (kind) => {
+            icons[kind] = await tintedMarkUrl(MAP_STYLE[kind].color).catch(() => GLOVE_MARK_SRC);
+          }),
+        );
+        if (cancelled || gmapRef.current !== map) return;
+
+        for (const item of visible) {
+          const pin = markPinFor(item.kind, zoom);
+          const marker = new maps.Marker({
+            position: { lat: item.lat, lng: item.lng },
+            map,
+            title: item.name,
+            icon: {
+              url: icons[item.kind],
+              scaledSize: new maps.Size(pin.width, pin.height),
+              anchor: new maps.Point(pin.anchorX, pin.anchorY),
+            },
+          });
+          marker.addListener("click", () => {
+            ginfoRef.current?.setContent(popupHtml(item, centerName));
+            ginfoRef.current?.open({ map, anchor: marker });
+          });
+          gmarkersRef.current.push(marker);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     const map = mapRef.current;
@@ -257,9 +276,14 @@ export default function AreaMap({
       for (const group of Object.values(layersRef.current)) group.clearLayers();
 
       for (const item of visible) {
-        const pin = compassFor(item.kind, zoom);
-        const icon = leaflet.icon({
-          iconUrl: pin.url,
+        // A div icon, not an image: Leaflet cannot tint an <img>, and the mark
+        // is coloured by masking the line art the legend chips use. Leaflet
+        // still puts the title, tabindex and role=button on whatever element
+        // the icon returns, so the pins stay reachable by keyboard.
+        const pin = markPinFor(item.kind, zoom);
+        const icon = leaflet.divIcon({
+          className: "wg-map-pin",
+          html: `<span class="wg-glove-mark" style="display:block;width:100%;height:100%;background-color:${pin.color}"></span>`,
           iconSize: [pin.width, pin.height],
           iconAnchor: [pin.anchorX, pin.anchorY],
           popupAnchor: [0, -pin.anchorY],

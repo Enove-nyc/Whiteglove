@@ -47,7 +47,7 @@ describe("DestinationSearch wiring", () => {
   });
 
   test("placeholder is one short line and does not list eSIM", () => {
-    assert.ok(LABELS.includes("Search destinations, places to stay, food, and more…"));
+    assert.ok(LABELS.includes("Search destinations, places to stay, kosher food, and more…"));
     assert.ok(!LABELS.includes("eSIM"));
     assert.ok(!LABELS.includes("esim"));
     assert.ok(SOURCE.includes("SITE_SEARCH_PLACEHOLDER"));

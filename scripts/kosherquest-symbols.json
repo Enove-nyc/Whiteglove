@@ -1,0 +1,2760 @@
+{
+  "source": "https://kosherquest.org/kosher-symbols/",
+  "fetchedAt": "2026-08-13T18:54:21.881Z",
+  "agencies": {
+    "1": {
+      "name": "Orthodox Union",
+      "desc": "The most widely recognized kosher certification",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/oulogobsvg-1781761039.png",
+      "web": "",
+      "region": "",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "2": {
+      "name": "OK Kosher",
+      "desc": "OK Kosher Certification",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/okkosher-1781761109.jpg",
+      "web": "",
+      "region": "",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "3": {
+      "name": "Kof-K",
+      "desc": "Kof-K Kosher Supervision",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/kof-k_symbol-1781641858.png",
+      "web": "",
+      "region": "",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "5": {
+      "name": "Chicago Rabbinical Council",
+      "desc": "Chicago Rabbinical Council",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/crc-1781760833.jpg",
+      "web": "",
+      "region": "National",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "6": {
+      "name": "Chaf-K",
+      "desc": "Chaf-K Kosher Supervision",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/kof-k_symbol-1781641858.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "7": {
+      "name": "Kehilla Kosher",
+      "desc": "Kehilla Kosher",
+      "logo": "https://kosherquest.org/uploads/images/2026/06/kehillah-ok-black-1781643997.webp",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "8": {
+      "name": "Tablet-K",
+      "desc": "Tablet-K Kosher Certification",
+      "logo": "",
+      "web": "",
+      "region": "",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "9": {
+      "name": "Chabad",
+      "desc": "Chabad of Scottsdale<br><br>10215 North Scottsdale Road<br><br>Scottsdale, AZ 85253<br><br>Tel: (480) 998-1410<br><br>E-mail: chabadscottsdale@gmail.com<br><br>chabadscottsdale@aol.com<br> <br>Website: www.chabadofscottsdale.org<br><br>Rabbi Yossi Levertov, Director<br><br>Certifies: The Scottsdale Cafe Deli & Market<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Chabbad-of-Scottsdale.jpg",
+      "web": "www.chabadofscottsdale.org",
+      "region": "Arizona",
+      "cardRegion": "arizona",
+      "rtype": "US"
+    },
+    "10": {
+      "name": "Congregation Chofetz Chayim Southwest Torah Institute",
+      "desc": "Congregation Chofetz Chayim<br><br>Southwest Torah Institute<br><br>Rabbi Israel Becker<br><br>5150 E. Fifth St.<br><br>Tuscon, AZ 85711<br><br>Cell: (520) 747-7780<br><br>Fax: (520) 745-6325<br><br>E-mail: yzbecker@me.com<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Chofetz-Chayim.jpg",
+      "web": "",
+      "region": "Arizona",
+      "cardRegion": "arizona",
+      "rtype": "US"
+    },
+    "11": {
+      "name": "Ches-K",
+      "desc": "Rabbi Zevulun Charlop (Ches K)<br><br>100 E. Mosholu Parkway South<br><br>Bronx, NY 10458<br><br>Phone: 216-407-7398<br><br>Rabbinic Administrator: Rabbi Zebulun Charlop<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/ches-k-2.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "12": {
+      "name": "KVH",
+      "desc": "KVH Kosher<br<<br>Rabbinical Council of New England <br><br>665 Beacon St Boston, MA 02215<br><br>Tel: (617) 426-2139<br><br>Fax: (617) 426-6268<br><br>Rabbi Zalman Krems<br>Kashrus Administrator",
+      "logo": "https://kosherquest.org/uploads/2015/11/KOSHER-logo.png",
+      "web": "",
+      "region": "Massachusetts",
+      "cardRegion": "massachusetts",
+      "rtype": "US"
+    },
+    "13": {
+      "name": "Federation of Synagogues",
+      "desc": "Federation of Synagogues<br>65 Watford Way London, NW4 3AQ<br>Tel (44208) 202 2263 Fax (44203) 0610<br>Director of Kashrus – Dayan M Elzas info@kfkosher.org",
+      "logo": "https://kosherquest.org/uploads/2015/12/KF-New-basic.pdf",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "14": {
+      "name": "Star-K",
+      "desc": "Star-K Kosher Certification (chalav Yisrael)<br><br> Star-D Certification (non-chalav Yisrael)<br><br>122 Slade Ave. #300, Baltimore, MD 21208<br><br>www.star-k.org<br><br>star-k@star-k.org<br><br>Phone: (410) 484-4110; Fax: (410) 653-9294 <br><br>Rabbinic Administrator:  Rabbi Moshe Heinemann<br>",
+      "logo": "https://kosherquest.org/uploads/2016/03/Star-K_logo-864x763.jpg",
+      "web": "",
+      "region": "Maryland",
+      "cardRegion": "maryland",
+      "rtype": "US"
+    },
+    "15": {
+      "name": "Kedassia",
+      "desc": "Kedassia, The Joint Kashrus Committee of England<br>140 Stamford Hill, London N16 6QT<br>Phone: (44208) 802-6226 Fax: (44208) 809-7092<br>Rabbinic Administrator:  Mr. Yitzchok Feldman",
+      "logo": "https://kosherquest.org/uploads/2015/12/Keddasia-Kosher.pdf",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "16": {
+      "name": "Arizona K ",
+      "desc": "Arizona K<br><br>2110 East Lincoln Drive<br> <br>Phoenix, AZ 85016<br><br>Tel: (602) 944-2753<br><br>Cell: (602) 540-5612<br><br>Fax: (602) 749-1131 <br><br>E-mail: chabadaz@cox.net<br><br>Web: www.chabadaz.com<br><br>Rabbi Zalman levertov, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/k.gif",
+      "web": "",
+      "region": "Arizona",
+      "cardRegion": "arizona",
+      "rtype": "US"
+    },
+    "17": {
+      "name": "Chabad of Tucson",
+      "desc": "Congregation Young Israel & Chabad<br><br>2443 East Street<br><br>Tuscon, AZ 85719<br><br>Tel: (520) 326-8362, 882-9422<br><br>Fax: (520) 327-3818<br><br>E-mail: yshemtov@aol.com<br><br>Website: www.chabadoftuscon.com<br><br>Rabbi Yossie Y. Shemtov<br><br>Certifies: Fifth Street Kosher Deli & Market,<br> Oy Vey Cafe <br>    ",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-12.31.33-PM.png",
+      "web": "",
+      "region": "Arizona",
+      "cardRegion": "arizona",
+      "rtype": "US"
+    },
+    "18": {
+      "name": "Chabad Lubavitch of Montana",
+      "desc": "Chabad Lubavitch of Montana<br><br>8755 Huffman Lane<br><br>Bozeman, MT 59715<br><br>Phone: 406-585-8770<br><br>www.JewishMontana.com<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/jpeg-file.jpg",
+      "web": "",
+      "region": "Montana",
+      "cardRegion": "montana",
+      "rtype": "US"
+    },
+    "19": {
+      "name": "Va'ad of Kashrus of Las Vegas",
+      "desc": "Va'ad of Kashrus of Las Vegas<br><br>1261 S. Arville St., Las Vegas NV 89102<br><br>Phone: (702) 635-1656<br><br>Office: (702) 259-0770<br><br>Fax: (702) 877-4700<br><br>E-mail: office@LVKosher.com<br><br>Web-site: http://www.LVKosher.com<br><br>Rabbinic Administrator:  Rabbi Shea Harlig<br><br>Rabbi Tzvi Bronchtain, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2016/04/VHKLV-Logo.jpg",
+      "web": "",
+      "region": "Nevada",
+      "cardRegion": "nevada",
+      "rtype": "US"
+    },
+    "20": {
+      "name": "OV - St. Louis",
+      "desc": "THE \"OV\" Kosher Inspection Service<br>of The Vaad Hoeir of St. Louis<br>Rabbi Sholom Rivkin (314) 569-2770",
+      "logo": "https://kosherquest.org/uploads/2018/10/Screen-Shot-2018-10-14-at-9.45.23-PM.png",
+      "web": "",
+      "region": "Missouri",
+      "cardRegion": "missouri",
+      "rtype": "US"
+    },
+    "21": {
+      "name": "Rabbi Aharon Simkin",
+      "desc": "Rabbi Aharon Simkin<br><br>Young Israel of Northridge<br><br>17511 Devonshire Street <br><br>Norhtridge, CA 91325<br><br>Tel: (818) 368-2254<br><br>Fax: (480) 393-5394<br><br>E-mail: kosher@mac.com<br><br>Website: www.yion.org<br><br>Certifies: Unique Bakery and Cafe,<br> Touro University Food Services, Vallejo, CA<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/8f0b084b.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "22": {
+      "name": "Central California Kosher",
+      "desc": "Central California Kosher (CCK)<br><br>Chabad of Fresno<br><br>1227 East Shepherd Ave.<br><br>Fresno, CA 93720<br><br>Tel: (559) 435-2770, 351-2222<br><br>Fax: (559) 435-0554<br><br>E-mail: Chabadfresno@sbcglobal.net<br><br>Web: www.chabadfresno.com<br><br>Rabbi Levy I. Zirkind, Rabbinic Adiministrator<br><br>Regional Agency, founded in 1990<br><br>Certifies: Seloh Wine by Kesser Winery<br>",
+      "logo": "https://kosherquest.org/uploads/2018/10/cck-logo-new-1-1-e1540941714721.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "23": {
+      "name": "KCL",
+      "desc": "Kashrus Council of Lakewood<br><br>750 Forest Ave. #66, Lakewood, NJ 08701<br> <br>Phone: (732) 901-1888; Fax: (732) 901-1833<br> <br>Rabbinic Administrator:  Rabbi Avrohom Moshe Weisner<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/KCL-Logo-11.jpg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "24": {
+      "name": "Double U Kashrus",
+      "desc": "Double U Kashrus Badatz Mehadrin USA<br><br>1140 Forest Ave., Lakewood, NJ 08701<br><br>Phone: (732) 363-7979<br> <br>Fax: (732) 363-5451 <br><br>Rabbinic Administrator:  Rabbi Y. Shain<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/doubleu.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "25": {
+      "name": "Chelkas HaKashrus of Zichron Yaakov",
+      "desc": "131 Iris Rd., Lakewood, NJ 08701<br><br>Phone: 732-901-6508<br><br>Rabbi Doniel Neustadt<br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/Screenshot-2023-08-10-at-3.51.48-PM.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "26": {
+      "name": "J.S.O.R.",
+      "desc": "Jersey Shore Orthodox Rabbinate (J.S.O.R.)<br><br>P.O. Box 213, Deal, NJ 07723<br><br>Phone: (732) 759-0388; Fax: (732) 531-9021<br> <br>Rabbinic Administrator:  Rabbi Yitzchak Farhi<br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/JSOR.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "27": {
+      "name": "KOF-K Los Angeles",
+      "desc": "KOF-K Los Angeles<br><br>516 N. Citrus Avenue<br><br>Los Angeles, CA 90036<br><br>Tel: (323) 933-3919<br><br>Rabbi Shaya Eichenblatt<br><br>[Main Office in New Jersey]<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Kof-K-kosher-certification.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "28": {
+      "name": "Kosher Certification Service",
+      "desc": "Kosher Certification Service<br><br>401 North Laurel Ave<br><br>Los Angeles, CA 90048<br><br>Tel: (323) 782-1433<br><br>Fax: (480) 651-0660<br><br>Email: kcs@easy-access.com<br><br>Web: www.easy-access.com/kcs<br><br>Rabbi Eli Frankel, Rabbinic Administrator<br><br>Rabbi Dr. Micheal Schick,Kashrus Consultant<br><br>International Agency, founded in 1989<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-8.46.18-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "29": {
+      "name": "Chabad of Hawaii",
+      "desc": "Chabad of Hawaii <br><br>410 Atkinson Drive<br><br>Ala Moana Hotel, Suite #451<br><br>Honolulu HI 96814<br><br>Tel 808-735-8161<br><br>Fax 808-998-1505<br><br>chabadhawaii@aol.com<br><br>www.chabadofhawaii.com<br><br>Rabbi Itchel Krasnjansky<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/kosherhechsher_Hawaii.jpg",
+      "web": "",
+      "region": "Hawaii",
+      "cardRegion": "hawaii",
+      "rtype": "US"
+    },
+    "30": {
+      "name": "Association of Kashrus Organizations - AKO 2701 W. Howard, Chicago, IL. 60645 Phone: (773) 465-3900 ",
+      "desc": "Association of Kashrus Organizations - AKO<br><br>2701 W. Howard, Chicago, IL. 60645<br><br>Phone: (773) 465-3900 x117<br><br>Fax: (773) 465-7219<br><br>info@akokosher.org<br><br>www.akokosher.org<br><br>Rabbi Sholem Fishbane, Executive Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/major-ako-kashrus-conference-delves-into-modern-challenges-of-technology-and-change-AKO_logo.jpg",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "31": {
+      "name": "Chabad at University of Illinois ",
+      "desc": "Chabad at University of Illinois and Champaign-Urbana<br><br>509 S. Fourth Street<br><br>Champaign IL 61820<br><br>Ph 217-355-8672<br><br>Fax 217-355-8652<br><br>Rabbi@uiuc.edu<br><br>www.JewishUIUC.org<br>Rabbi Dovid Tiechtel, Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Screen-Shot-2015-09-01-at-9.59.26-AM.png",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "32": {
+      "name": "KOF-K Chicago",
+      "desc": "KOF-K Chicago<br><br>2730 West Chase Avenue<br><br>Chicago, IL 60645<br><br>Ph 773-531-5899<br><br>Rabbi Sholom Gurewicz<br>",
+      "logo": "https://kosherquest.org/uploads/2016/03/Kof-K-kosher-certification-e1454912904607.jpg",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "33": {
+      "name": "Kosher Information Bureau",
+      "desc": "Kosher Information Bureau<br><br>12753 Chandler Blvd.<br><br>North Hollywood, California 91607<br><br>Tel: (818) 262-5351, 762-3197 <br>Fax: (818) 766-8537<br>E-mail: eeidlitz@kosherquest.org<br>Web site:www.kosherquest.org<br>Publication: Kashrus Conscience, a quarterly magazine, KIB Weekly Newsletter and Is It Kosher?<br>Rabbi Eliezer Eidlitz, Rabbinic Administrator & Kosher Food Consultant",
+      "logo": "https://kosherquest.org/uploads/2015/08/kiblogo.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "34": {
+      "name": "Orange-K",
+      "desc": "Orange-K - Rabbinical Council of Orange County & Long Beach (RCOC)<br><br>3505 Lime Ave.<br><br>Long Beach, CA 90807<br><br>Tel/Fax: (562) 426-4894<br><br>E-mail: rabbi@ocjewish.com<br><br>Rabbi David Eliezrie, President<br><br>Rabbi Binyomin Fajnland, Kashrus Administrator<br><br>Founded in 1994<br><br>Certifications Include: Orange County Kosher Market<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Rabbinical-Council-of-Orange-County-Long-Beach.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "35": {
+      "name": "Kosher Certification Service",
+      "desc": "Kosher Certification Service<br><br>401 North Laurel Ave., Los Angeles, CA 90048<br><br>Phone: (323) 782-1433; Fax: (323) 651-0660<br> <br>Rabbinic Administrator: Rabbi Eli Frankel<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/kcs1.gif",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "36": {
+      "name": "Vaad Harabanim of San Diego",
+      "desc": "Vaad Harabanim of San Diego<br><br>8625 La Jolla Scenic Dr. North<br><br>La Jolla, CA 92037 <br><br>Tel: (858) 535-1196<br><br>Cell: (619) 987-5613; 913-2696<br><br>Fax: ( 858) 535-0037<br><br>E-mail: elite@adatyeshurun.org<br><br>Web: www.adatyeshurun.org<br><br>Rabbi Jeffrey Wohlgelernter,<br> Rabbi Avram Bogopulsky, <br>Rabbi Moshe Leider, Rabbinic Administrator;<br> Annette Olson, Executive Administrator;<br> Eilite Saham, Executive Assistant<br><br>Local Agency, founded in 1988<br><br>Certifies: The Place La Jolla (Meat), Cozy Cafe, Lang's Bakery, La Cafe (Dairy)",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-12-at-2.00.22-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "37": {
+      "name": "Scroll-K",
+      "desc": "The Scroll K / Vaad Hakashrus of Denver<br><br>1350 Vrain St.<br><br>Denver, CO 80204<br><br>Tel: (303) 595-9349<br><br>Fax: (303) 629-5159<br><br>E-mail: yrosskamm@scrollk.org<br><br>Web: www.scrollk.org<br><br>Rabbi Moshe Heisler, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/kosher.jpg",
+      "web": "",
+      "region": "Colorado",
+      "cardRegion": "colorado",
+      "rtype": "US"
+    },
+    "38": {
+      "name": "UM Kosher - United Mehadrin Kosher",
+      "desc": "UM Kosher - United Mehadrin Kosher<br><br>Phone: (203) 376-7241 (Rabbi Piekarski)<br><br>E-mail: rabbi@umkosher.com<br><br>Web: www.umkosher.com<br><br>Rabbinic Coordinator:  Rabbi Asher Zellingold<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/umk-small-2.gif",
+      "web": "",
+      "region": "Minnesota",
+      "cardRegion": "minnesota",
+      "rtype": "US"
+    },
+    "39": {
+      "name": "FKK - Florida Keys Kosher",
+      "desc": "FKK - Florida Keys Kosher<br><br>Chabad of Keys<br><br>908 Trinity Drive<br><br>Key West, FL 33040<br><br>Mailing Address:<br>321 Grinnell Street<br><br>Key West, FL 33040<br><br>Tel: (305) 295-0013<br><br>Cell: (305) 304-7713<br><br>Fax: (305) 295-0017<br><br>E-mail: chabadkeys@aol.com<br><br>Web: www.chabadkeys.com<br><br>Rabbi Rabbi Yaakov Zucker<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-10.08.45-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "40": {
+      "name": "Chabad of Fresno",
+      "desc": "Chabad of Fresno<br><br>Rabbi L. Zirkind<br><br>1227 E. Shepherd Ave.<br><br>Fresno Ca. 93720<br><br>Tel. 559 432 2770<br><br>Fax: 559 435 0554<br><br>Cell. 559 351 2222<br><br>CHABADFRESNO@SBCGLOBAL.NET<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/cck-logo-new-1.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "41": {
+      "name": "ORV - Central Florida Orthodox Rabbinical Vaad of Kashrus",
+      "desc": "ORV - Central Florida Orthodox Rabbinical Vaad of Kashrus<br><br>8548 Palm Parkway<br><br>Orlando, FL 32836<br><br>Tel 407-238-7755, 465-0565<br><br>866-567-4376<br><br>Fax 407-238-6427<br><br>orlandoisus@earthlink.net<br><br>http://www.kosherorlando.com<br><br>Rabbi Oren Yachnes, Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/orv.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "42": {
+      "name": "Diamond K",
+      "desc": "\"Diamond K\" Kosher Supervisory Service<br><br>1425 SW 85th Ave<br><br>Miami, FL 33144<br><br>Tel: (305) 264-6488<br><br>Fax: (305) 269-8780<br><br>Rabbi Zevulun Y Glixman, z\"l<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/diamondk.gif",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "43": {
+      "name": "Chabad of South Orlando",
+      "desc": "Chabad of South Orlando<br><br>Po Box 690282<br><br>7508 Universal Boulevard<br><br>Orlando, FL 32819<br><br>Tel: (407) 354-3660<br><br>Fax: (877) 835-6090<br><br>E-mail: RabbiChabad@aol.com<br><br>Web: www.jewishorlando.com<br><br>Rabbi Yosef Konikov, Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-11.19.09-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "44": {
+      "name": "Chabad House Lubavitch of Palm Beach",
+      "desc": "Chabad House Lubavitch of Palm Beach<br><br>844 Prosperity Farms Road<br><br>North Palm Beach, Fl 33408<br><br>Tel: (561) 624-7004<br><br>E-mail: chabadpb@aol.com<br><br>rsEzagui@aol.com<br><br>Web: www.chabadcenterpalmbeach.com<br><br>Rabbi Shloime Ezagui<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-11.28.10-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "45": {
+      "name": "Chabad of Pinellas County ",
+      "desc": "Chabad of Pinellas County <br><br>3696 Fisher Road<br><br>Palm Harbor, FL 34683<br><br>Tel: (727) 789-0408<br><br>Fax: (727) 789-5378<br><br>E-mail: ASA18@msn.com<br><br>rabbi@yichabad.com<br><br>Web: www.yichabad.com<br><br>Rabbi Sholom Adler, Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-11.24.46-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "46": {
+      "name": "Hartford Kashrut Commission",
+      "desc": "The Hartford Kashrut Commission (HKC)<br><br>20 Dover Road<br><br>West Hartford, CT 06119<br><br>Tel: (860) 236-1241<br><br>Cell: (860) 798-9555<br><br>Fax: (860) 232-8272<br><br>E-mail: rabbiy@comcast.net<br><br>Web: www.hartfordkashrut.org<br><br>www.bethdavidwh.org<br><br>Rabbi Yitzchak Adler, Rabbinic Administrator",
+      "logo": "https://kosherquest.org/uploads/2015/08/118_orig.jpg",
+      "web": "",
+      "region": "Connecticut",
+      "cardRegion": "connecticut",
+      "rtype": "US"
+    },
+    "47": {
+      "name": "Chabad of Greater Daytona",
+      "desc": "Chabad of Greater Daytona<br><br>1079 W. Granada Blvd.<br><br>Ormond Beach, FL 32174<br><br>Tel: (386) 672-9300<br><br>E-mail: contact@chabaddaytona.org<br><br>Web: www.chabaddaytona.org<br><br>Rabbi Pinchas Ezagui<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "48": {
+      "name": "Rabbinical Council of Greater Washington",
+      "desc": "The Rabbinical Council of Greater Washington<br><br>Vaad Harabanim of Greater Washington<br><br>11161 New Hampshire Ave, Suite 402<br><br>Silver Spring, MD 20904<br><br>Tel: (301) 593-0336<br><br>Fax: (301) 593-1115<br><br>E-mail: capitolkdc@verizon.net<br><br>capitolkdc@aol.com<br><br>Web: www.capitolk.org<br><br>Rabbi Hillel Klavan, President<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/the-rabbinical-council-of-greater-washington-2.png",
+      "web": "",
+      "region": "Washington DC",
+      "cardRegion": "washington dc",
+      "rtype": "US"
+    },
+    "49": {
+      "name": "KA Kosher",
+      "desc": "Supervisores Kosher<BR><br>Acapulco 70, Roma Nte., 06700 Ciudad de México, CDMX<br><br> + 52 (55)Teléfonos +52 55 7030 9571 -  7030 9572<br><br>atencionclientes@kosheralef.com.mx<br><br>Rabbi Chaim Cohn",
+      "logo": "https://kosherquest.org/uploads/2022/03/Screen-Shot-2022-03-08-at-3.52.12-PM.png",
+      "web": "",
+      "region": "Mexico",
+      "cardRegion": "mexico",
+      "rtype": "International"
+    },
+    "50": {
+      "name": "MKI",
+      "desc": "Maritime Kosher International (MKI)<br><br>7055 Bonita Drive<br><br>Miami Beach, FL 33141<br><br>Tel 305-865-9851<br><br>Fax 305-866-7336<br><br>weberman@the-beach.net<br><br>Rabbi Pinchas Weberman, Rabbinic Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "51": {
+      "name": "Orthodox Rabbinical Board of Broward & Palm Beach Counties",
+      "desc": "Orthodox Rabbinical Board of Broward & Palm Beach Counties (ORB)<br><br>951 NE 167th Street, Suite 134<br><br>North Miami Beach, FL 33021<br><br>Tel 305-653-2110<br><br>Cell 305-206-1524<br><br>Fax 888-744-5254<br><br>Rabbi Pesach Weitz<br><br>pweitz@orbkosher.org<br><br>http://www.orbkosher.org<br><br>Rabbi Aaron A. Lieberman, Co-Founder and President<br><br>Rabbi Edward Davis, Co-Founder & President, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/orb2.gif",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "52": {
+      "name": "Kosher Miami - KM",
+      "desc": "Kosher Miami – KM <br><br>The Vaad Hakashrus of Miami-Dade<br><br>PO Box 403225<br> Miami<br>FL 33140-1225<br><br>Tel: (786) 463-9931<br><br>Cell: (786) 390-6620<br><br>Fax: (305) 937-2437<br><br>E-mail: info@koshermiami.org<br><br>RabbiFried@koshermiami.org<br><br>Web: www.koshermiami.org<br><br>Rabbi Mordechai Fried, Rabbinic Administrator<br><br>Rabbi Meir Shaffren, Rabbinic Coordinator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-23-at-1.18.22-PM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "53": {
+      "name": "Kosher Organics Council",
+      "desc": "Kosher Organics Council<br><br>Kosher certification for organic and natural products<br><br>Worldwide Services, FL<br><br>Symbol: The \"Kosher Organics\" Symbol with the \"Natural\" or \"Organic\" label.<br><br>Website: www.kosherorganics.com<br><br>800-630-6137<br><br>Fax 305-868-6137<br><br>E-mail: info@kosherorganics.com<br><br>Rabbi Yehuda Greenberg :Director / Development, USA and Israel<br><br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Kosher_ORGANICS_LOGO.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "54": {
+      "name": "HKK",
+      "desc": "HKK Kosher Service (Hong Kong)<br><br>18/Floor, V. Heun Building, 138 Queen's Road Central, Hong Kong<br><br>www.hongkongkosher.com<br><br>Rabbi David Zadok<br>",
+      "logo": "https://kosherquest.org/uploads/2016/02/Logo-HKK.jpg",
+      "web": "",
+      "region": "Hong Kong",
+      "cardRegion": "hong kong",
+      "rtype": "International"
+    },
+    "55": {
+      "name": "Chabad Lubavitch of Southwest Florida",
+      "desc": "Orthodox Rabbinate of Southwest Florida-Chabad Lubavitch of Southwest Florida<br><br>5620 Winkler Road<br><br>Fort Myers, FL 33919<br><br>Tel 239-433-7708<br><br>Fax 239-481-9109<br><br>Rabbi@Chabadswf.org<br><br>www.Chabadswf.org<br><br>Rabbi Yitzchok Minkowicz, Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "56": {
+      "name": "Chabad Lubavitch of Sarasota & Manatee Counties",
+      "desc": "Chabad Lubavitch of Sarasota & Manatee Counties<br><br>7700 Beneva Road<br><br>Sarasota, FL 34238<br><br>Tel: (941) 925-0770<br><br>Fax: (941) 925-0771<br><br>E-mail: rabbi@chabadofsarasota.com<br><br>Web: www.chabadofsarasota.com<br><br>Rabbi Chaim S. Steinmetz, Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-11.21.42-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "57": {
+      "name": "Chabad of Northeast Florida",
+      "desc": "Chabad of Northeast Florida<br><br>10129 Haley Road<br><br>Jacksonville, Fl 32257<br><br>Tel: (904) 262-6641<br>Fax: (904) 880-0787<br>E-mail: rabbi@chabadjacksonville.org<br>Web: www.chabadjacksonville.org<br>Rabbi Yosef Kahanov",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "58": {
+      "name": "Florida K and Florida Kashrus Services",
+      "desc": "Florida K and Florida Kashrus Services<br><br>Vaad HaKashrus of Orlando<br><br>708 Lake Howell Road  <br><br>Maitland, FL 32751<br><br>Tel: (407) 644-2500<br><br>Fax: (866) 379-4913<br><br>(407) 644-0545<br><br>E-mail: rabbi@flkosher.com<br><br>rabbidubov@aol.com<br><br>Web: www.flkosher.com<br><br>Rabbi Sholom B. Dubov, Executive Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/floridak.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "59": {
+      "name": "VKFC - Vaad HaKashrus of Fairfield County",
+      "desc": "VKFC - Vaad HaKashrus of Fairfield County<br><br>Vaad HaKashrus for Connecticut<br><br>301 Strawberry Hill Ave<br><br>Stamford, CT 06902<br><br>Tel: (203) 358-2200<br><br>Cell: (203) 358-2323<br><br>E-mail: info@vaadct.org <br><br>rabbicohen@agudathsholom.org <br><br>strauchler@hotmail.com; <br><br>rabbi@yistamford.org<br><br>iebbin@hotmail.com<br><br>Web: www.vaadct.org<br><br>Rabbi Daniel Cohen<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Bu8dGP9IQAA_zCU.jpg",
+      "web": "",
+      "region": "Connecticut",
+      "cardRegion": "connecticut",
+      "rtype": "US"
+    },
+    "60": {
+      "name": "UM Kosher - United Mehadrin Kosher",
+      "desc": "UM Kosher - United Mehadrin Kosher<br><br>Phone: (203) 376-7241 (Rabbi Piekarski)<br><br>E-mail: rabbi@umkosher.com<br><br>Web: www.umkosher.com<br><br>Rabbinic Coordinator:  Rabbi Asher Zellingold<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-23-at-1.41.13-PM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "61": {
+      "name": "Kehilla",
+      "desc": "Kehilla Kosher<br><br>(Igud Hakashrus of Los Angeles)<br><br>345 North La Brea Ave<br><br>Suite 204<br><br>Tel: (323) 935-8383<br><br>Fax: (480) 393-4655<br><br>Email: office@kehillakosher.org<br><br>mail@kehillakosher.org<br><br>Web: www.kehillakosher.org<br><br>Rabbi Avraham Teichman, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/heart2.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "62": {
+      "name": "Irvine Vaad Hakashrus",
+      "desc": "Irvine Vaad Hakashrus (\"IVK\")<br><br>3900 Michelson Drive<br><br>Irvine, CA 92612<br><br>Tel: (949) 786-5230<br><br>Fax: (949) 786-5371<br><br>Email: rabbic@bethjacobirvine.org<br><br>Web: www.bethjacobirvine.org<br><br>Rabbi Yisroel Ciner, Rabbinic Administrator<br><br>Amram Steve Phelps, Kashrus Administrator<br>/Director<br><br>Certifies: Blueberry Hill @ the J<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-30-at-5.31.21-AM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "63": {
+      "name": "Chabad of the Conejo",
+      "desc": "Chabad of the Conejo<br><br>Chabad of Agoura Hills<br><br>30345 Canwood Street<br><br>Agoura Hills, CA  91301<br><br>Tel: (818) 991-0991<br><br>Fax: (818) 707-1190<br><br>Email:rabbibryski@chabadofconejo.com<br><br>Web: www.chabadofconejo.com<br><br>Rabbi Moshe D. Bryski, Director<br><br>Certifies: Pizza Nosh <br>      ",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-10.05.13-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "64": {
+      "name": "Chabad of Greater South Bay",
+      "desc": "Beis Din of San Jose, Chabad of Greater South Bay<br><br>3070 Louis Road<br><br>Palo Alto, CA 94303<br><br>Tel: (650) 493-3425<br><br>E-mail: chabad@Jewish.org<br><br>Web: www.chabadgsb.com<br><br>Rabbi Yosef Levin, Executive Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-10.07.19-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "65": {
+      "name": "CRC",
+      "desc": "Chicago Rabbinical Council (cRc)<br><br>2701 W. Howard, Chicago, IL. 60645<br><br>Phone: (773) 465-3900; Fax: (773) 465-6632<br><br>info@crcweb.org<br><br>www.crcweb.org<br><br>HaRav Gedalia Dov Schwartz, Av Bais Din<br><br>Rabbi Sholem Fishbane, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/crc1.bmp",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "66": {
+      "name": "Florida K and Florida Kashrus Services",
+      "desc": "Florida K and Florida Kashrus Services<br><br>Vaad HaKashrus of Orlando<br><br>708 Lake Howell Road  <br><br>Maitland, FL 32751<br><br>Tel: (407) 644-2500<br><br>Fax: (866) 379-4913<br><br>(407) 644-0545<br><br>E-mail: rabbi@flkosher.com<br><br>rabbidubov@aol.com<br><br>Web: www.flkosher.com<br><br>Rabbi Sholom B. Dubov, Executive Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Reliab20.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "67": {
+      "name": "Kosher Dairy Miami",
+      "desc": "Kosher Dairy Miami<br><br>(A division of Kosher Miami)<br><br>PO BOX 403225<br><br>Miami, FL 33140<br><br>Phone 786-390-6620<br><br>Fax 305-937-2437, 437-8107<br><br>info@koshermiami.org<br><br>www.KosherMiami.org<br><br>Rabbi Moredechai Fried, Rabbinic Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-23-at-1.18.05-PM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "68": {
+      "name": "RCF - Rabbinate of Central North Florida",
+      "desc": "RCF - Rabbinate of Central North Florida<br><br>708 Lake Howell Road<br><br>Maitland, FL 32751<br><br>Tel 877-435-0200<br><br>contact@vaadrcf.org<br><br>www.vaadRCF.com<br><br>Rabbi Sholom Dubov, President<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/logo.gif",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "69": {
+      "name": "Orthodox Rabbinate of North Dade (",
+      "desc": "Orthodox Rabbinate of North Dade (\"ORD\")<br><br>1870 NE 187th Street<br><br>North Miami Beach, FL 33179<br><br>Tel 305-931-6204<br><br>Cell 305-778-0051<br><br>Rabbi Avrohom Yeshaya Gronder, Rabbinic Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/ord.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "70": {
+      "name": "Rabbi Manish Spitz",
+      "desc": "Rabbi Manish Spitz<br><br>4510 Post Avenue<br><br>Miami Beach FL 33140<br><br>Tel 305-672-1240<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "71": {
+      "name": "Kosher Savannah",
+      "desc": "Kosher Savannah<br>100 Atlas Street<br>Savannah GA 31405",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-1.48.03-PM.png",
+      "web": "",
+      "region": "Georgia",
+      "cardRegion": "georgia",
+      "rtype": "US"
+    },
+    "72": {
+      "name": "Chabad Lubavitch of Georgia",
+      "desc": "Chabad Lubavitch of Georgia<br>(Congregation Beth Tefillah)<br>5065 Highpoint Road<br>Atlanta GA 30342<br>Ph. 404-843-2464<br>Fax 404-257-9306<br>admin@bethtefillah.org<br>rabbinew@aol.com<br>http://www.chabadofgeorgia.com<br>http://www.bethtefillah.org<br>Rabbi Yossi New",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-13-at-1.46.21-PM.png",
+      "web": "",
+      "region": "Georgia",
+      "cardRegion": "georgia",
+      "rtype": "US"
+    },
+    "73": {
+      "name": "Atlanta Kashrus Commission 1855 La Vista Rd. Atlanta, GA 30329",
+      "desc": "Atlanta Kashrus Commission<br>1855 La Vista Rd.<br>Atlanta, GA 30329",
+      "logo": "https://kosherquest.org/uploads/2019/12/AKC.png",
+      "web": "",
+      "region": "Georgia",
+      "cardRegion": "georgia",
+      "rtype": "US"
+    },
+    "74": {
+      "name": "RCC-Rabbinical Council of California",
+      "desc": "Rabbinical Council of California (RCC)<br><br>3780 Wilshire Blvd., #420<br><br>Los Angeles, CA 90010<br><br>Tel: (213) 389-3382<br><br>Fax: (213) 234-4558<br><br>E-mail: info@rccvaad.org<br><br>Rabbi Nissim Davidi, Kashrus Administrator<br>Rabbi Yaakov Vann, Director of Kashrus<br>Publication: Kosher Directory<br>Local Agency, founded in 1967<br>Staff Size: 25+<br>Number of Companies Certified: 150+<br>Companies Include: Du Pont, Simplot, Huy Fong Foods- Sriracha Hot Sauce, Gill's Onions<br> ",
+      "logo": "https://kosherquest.org/uploads/2015/08/rcc_logo.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "75": {
+      "name": "Sunrise Kosher/Vaad Hakashrus of Northern California",
+      "desc": "SUNRISE KOSHER / VAAD HAKASHRUS OF NORTHERN CALIFORNIA<br><br>Vaad Hakashrus of Northern California<br><br>Administrative Office<br><br>3316 Mayfair Dr. Sacramento, CA 95864<br><br>Tel: (510) 843-8223<br><br>Cell: (510) 812-7000<br><br>Fax: (510) 849-0536<br><br>E-mail: info@SunriseKosher.org<br><br>Web: www.SunriseKosher.org<br><br>Rabbi BenTzion Welton, Executive Director<br><br>Rabbi Avi Lebowitz, JSN, Rabbinic Administrator<br> ",
+      "logo": "https://kosherquest.org/uploads/2019/02/logo-edited.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "76": {
+      "name": "Midwest Kosher",
+      "desc": "Midwest Kosher<br><br>2857 West Pratt Blvd<br><br>Chigago, IL 60645<br><br>Tel (773) 761-4878<br><br>Cell (773) 251-4529<br><br>Fax (773) 764-8098<br><br>E-mail: mtarkieltaub@yahoo.com<br><br>Rabbonim Hamachshirim:<br><br>Rabbi Yehoshua Heschel Eichenstein<br><br>Rabbi Chaim Tzvi Goldzweig<br><br>Rabbinic Administrator:<br><br>Rabbi Mordechai Tarkieltaub<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Agency-Midwest-Kosher.gif",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "77": {
+      "name": "Org. of Orthodox Kashrus Supervision",
+      "desc": "Org. of Orthodox Kashrus Supervision<br><br>Phone: (773) 539-8049<br><br>Rabbinic Administrator:  Rabbi Moshe Soloveichik, Chicago<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Oks-Chicago.jpg",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "78": {
+      "name": "Rabbi Chaim Goldzweig",
+      "desc": "Rabbi Chaim Goldzweig<br><br>Congregation Tifereth Moshe<br><br>6308 N. Francisco Avenue<br><br>Chicago, IL 60659<br><br>Ph. 773-764-5322/35<br><br>Fax. 773-764-5501<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "79": {
+      "name": "Beth Din Lubavitch of Indiana",
+      "desc": "Indianapolis Beth Din Lubavitch of Indiana<br><br>1037 Golf Lane<br><br>Indianapolis IN 46260<br><br>Ph. 317-251-5573<br><br>Fax 317-251-5510<br><br>indyrabbi@comcast.net<br><br>agrossbaum@hotmail.com<br><br>www.lubavitchindiana.com<br><br>Rabbi Avraham Grossbaum, Executive Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/dqDX2344070.jpg",
+      "web": "",
+      "region": "Indiana",
+      "cardRegion": "indiana",
+      "rtype": "US"
+    },
+    "80": {
+      "name": "Indianapolis Orthodox Board of Kashrus ",
+      "desc": "Indianapolis Orthodox Board of Kashrus (IOBK)<br><br>Congregation B'nai Torah<br><br>6510 Hoover Road<br><br>Indianapolis, IN 46260<br><br>Tel. 317-253-5253<br><br>Fax. 317-253-5459<br><br>Cell. 317-777-5061<br><br>iobkkosher@yahoo.com<br><br>rabbi@btorah.org<br><br>www.btorah.org<br><br>Rabbi Yisrael Gettinger, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/boik_kosher_badge.png",
+      "web": "",
+      "region": "Indiana",
+      "cardRegion": "indiana",
+      "rtype": "US"
+    },
+    "81": {
+      "name": "Chai-K",
+      "desc": "Iowa \"Chai-K\" Kosher Supervision<br><br>Lubavitch of Iowa<br><br>943 Cummins Parkway<be><br>Des Moines, IA 50312<br><br>Tel. 515-227-1718<br><br>Fax. 515-277-1624<br><br>jrcpark@msn.com<br><br>Rabbi Yossi Jacobson, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/12b69557.jpg",
+      "web": "",
+      "region": "Iowa",
+      "cardRegion": "iowa",
+      "rtype": "US"
+    },
+    "82": {
+      "name": "Vaad Hakashruth of Kansas City",
+      "desc": "Vaad Hakashruth of Kansas City<br><br>9900 Antioch Road<br><br>Overland Park KS 66212<br><br>Tel. 913-341-2444, 649-4300<br><br>Cell. 913-207-3232<br><br>Fax 913-341-2467, 381-1159<br><br>vaadkc@kc.rr.com<br><br>rabbirockoff@biav.org<br><br>www.vaadkc.org<br><br>Rabbi Daniel Rockoff, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/vaad.jpg",
+      "web": "",
+      "region": "Kansas",
+      "cardRegion": "kansas",
+      "rtype": "US"
+    },
+    "83": {
+      "name": "Louisiana Kashrut Committee",
+      "desc": "Louisiana Kashrut Committee<br><br>4141 West Esplanade Ave.<br><br>Metairie, Louisiana 70002<br><br>Ph 504-454-2910, 957-4986<br><br>Fax 504-456-9770, 456-9770<br><br>rabbi@louisianakosher.com<br><br>www.louisianakosher.com<br><br>Rabbi Yossie Nemes, Rabbinic Coordinator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/lkc.gif",
+      "web": "",
+      "region": "Louisiana",
+      "cardRegion": "louisiana",
+      "rtype": "US"
+    },
+    "84": {
+      "name": "Star-D",
+      "desc": "Star-K Kosher Certification (chalav Yisrael)<br><br> Star-D Certification (non-chalav Yisrael)<br><br>122 Slade Ave. #300, Baltimore, MD 21208<br><br>www.star-k.org<br><br>star-k@star-k.org<br><br>Phone: (410) 484-4110; Fax: (410) 653-9294 <br><br>Rabbinic Administrator:  Rabbi Moshe Heinemann<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/star_d.gif",
+      "web": "",
+      "region": "Maryland",
+      "cardRegion": "maryland",
+      "rtype": "US"
+    },
+    "85": {
+      "name": "Capitol K",
+      "desc": "Vaad Harabanim of Greater Washington<br><br>Rabbi Hillel Klavan, President<br><br>Rabbi Dovid Rosenbaum, President<br><br>Rabbi Moshe Walters, Director<br><br>13217 New Hampshire Ave, Suite 10142<br><br>Silver Spring, MD 20914<br><br>Phone: 301-770-0078<br><br>Fax: 301-770-1117<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/1a4700c2.jpg",
+      "web": "",
+      "region": "Maryland",
+      "cardRegion": "maryland",
+      "rtype": "US"
+    },
+    "86": {
+      "name": "Diamond K",
+      "desc": "The Diamond K<br><br>100 Woodcliff Rd., Brookline, MA 02467<br><br>Phone: (617) 469- 5000<br> <br>Fax: (617) 469-0089<br> <br>Rabbinic Administrator:  Rabbi Mordechai Eckhaus<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Dimond-K-01.jpg",
+      "web": "",
+      "region": "Massachusetts",
+      "cardRegion": "massachusetts",
+      "rtype": "US"
+    },
+    "87": {
+      "name": "Chabad House of Western Michigan",
+      "desc": "Chabad House of Western Michigan Kashrus Division<br><br>2615 Michigan NE, Grand Rapids, MI 19506<br><br>Phone: (616) 957-0770<br><br>Fax: (616) 957-2368 <br><br>Rabbinic Administrator:  Rabbi Yosef Weingarten<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/dxVZ7793946.jpg.png",
+      "web": "",
+      "region": "Michigan",
+      "cardRegion": "michigan",
+      "rtype": "US"
+    },
+    "88": {
+      "name": "K-COR",
+      "desc": "Council of Orthodox Rabbis of Greater Detroit (K-COR)<br><br>16947 West Ten Mile Rd., Southfield, MI 48075<br><br>Phone: (248) 559-5005<br> <br>Fax: (248) 559-5202<br> <br>Rabbinic Administrator:  Rabbi B. Broyde<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Division-K-COR.png",
+      "web": "",
+      "region": "Michigan",
+      "cardRegion": "michigan",
+      "rtype": "US"
+    },
+    "89": {
+      "name": "Blue Ribbon Kosher",
+      "desc": "Blue Ribbon Kosher<br><br>2716 Kipling Ave. South, Minneapolis, MN 55416<br><br>Phone: (952) 925-3651<br><br>Fax: (952) 925-3059 <br><br>Rabbinic Administrator:  Rabbi Baruch Clein<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/kosher-symbol.jpg",
+      "web": "",
+      "region": "Minnesota",
+      "cardRegion": "minnesota",
+      "rtype": "US"
+    },
+    "90": {
+      "name": "Minnesota Kosher",
+      "desc": "Rabbi Aryeh Geretz<br><br>Director, Minnesota Kosher<br><br>(952) 922-0522<br><br>(612) 865-3030 CELL<br><br>AGeretz@MinnesotaKosher.org<br><br>www.MinnesotaKosher.org<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/mnkosher.gif",
+      "web": "",
+      "region": "Minnesota",
+      "cardRegion": "minnesota",
+      "rtype": "US"
+    },
+    "91": {
+      "name": "Coordinated Kosher Supervision",
+      "desc": "Coordinated Kosher Supervision<br><br>2716 Kipling Avenue South, Minneapolis MN <br><br>Phone: (952) 925-3651<br><br>Fax: (952) 925-3059 <br><br>Rabbinic Administrator:  Rabbi Baruch Clein<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/coordinated.gif",
+      "web": "",
+      "region": "Minnesota",
+      "cardRegion": "minnesota",
+      "rtype": "US"
+    },
+    "92": {
+      "name": "UM Kosher",
+      "desc": "UM Kosher - United Mehadrin Kosher<br><br>Phone: (203) 376-7241 (Rabbi Piekarski)<br><br>E-mail: rabbi@umkosher.com<br><br>Web: www.umkosher.com<br><br>Rabbinic Coordinator: Rabbi Asher Zellingold<br><br>",
+      "logo": "https://kosherquest.org/uploads/EidlitzForPosts/umk-small-2.gif",
+      "web": "www.umkosher.com",
+      "region": "Minnesota",
+      "cardRegion": "minnesota",
+      "rtype": "US"
+    },
+    "93": {
+      "name": "KSA",
+      "desc": "Kosher Supervision of America – KSA<br><br>PO Box 35721 <br><br>1801 South La Cienega Blvd,<br><br>Los Angeles, CA 90035<br><br>Tel: (310) 282-0444<br><br>Cell: (310) 331-7955<br><br>Fax: (310) 282-0505 <br><br>Web: www.ksakosher.com<br><br>Email: info@ksakosher.com<br>Rabbi Yechezkel Auerbach, Rav HaMachshir",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-10.10.19-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "94": {
+      "name": "Kehilla",
+      "desc": "Kehilla Kosher<br><br>(Igud Hakashrus of Los Angeles)<br><br>345 North La Brea Ave<br>Suite 204<br><br>Tel: (323) 935-8383<br><br>Fax: (480) 393-4655<br><br>Email: office@kehillakosher.org<br><br>mail@kehillakosher.org<br><br>Web: www.kehillakosher.org<br><br>Rabbi Avraham Teichman, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/C-K_JPEG.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "95": {
+      "name": "Half Moon K (OU)",
+      "desc": "KOAOA-Kosher OverseersO(Half Moon K)<br><br>A division of the Union of the Orthodox Jewish Congregations of America (\"OU\")<br><br>The Union of Orthodox Jewish Congregations (OU)<br><br>11 Broadway, New York, NY 10004<br><br>Phone; (212) 613-8241; Fax: (212) 564-9058<br> <br>Rabbinic Administrator:  Rabbi Menachem Genack<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/half-moon-k.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "96": {
+      "name": "Rabbi Baruch Lederman",
+      "desc": "Rabbi Baruch Lederman<br><br>Congregation Kehillas Torah<br><br>14133 Via Alisal<br><br>San Diego, CA 92128<br><br>Tel: (858) 613-0222<br><br>Email: RBL@Kehillastorah.org<br><br>Web: www.kehillastorah.org<br><br>Companies Include: Some Carvels in San Diego & Cold Stone Creamery in San Marcos",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-8.33.59-PM1.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "97": {
+      "name": "KCA Kosher",
+      "desc": "Kosher Certification of America- KCA Kosher<br><br>PO Box 515381 #30965<br> <br>LOS ANGELES, CA 90051-6681<br><br>Other Address<br><br>30557 Canwood Street<br><br>Agoura Hills, CA 91301<br><br>Tel/Fax: 1-877-770-KOSHER (5674)<br><br>Cell: (818) 371-6386<br><br>Email: kcakosher@gmail.com<br><br>info@kcakosher.com<br><br>Web: www.kcakosher.com<br><br>Rabbi Amiram Markel, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Screen-Shot-2015-08-11-at-2.08.30-PM1.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "98": {
+      "name": "Kof-K",
+      "desc": "Kof-K Kosher Supervision<br><br>201 The Plaza, Teaneck, NJ 07666<br><br>Phone: (201) 837-0500; Fax: (201) 837-0126<br> <br>Rabbinic Administrator:  Rabbi Aharon Felder<br>",
+      "logo": "https://kosherquest.org/uploads/2016/03/Kof-K-kosher-certification-e1454912904607.jpg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "99": {
+      "name": "Vaad Hakashrus of Raritan Valley",
+      "desc": "Vaad Hakashrus of Raritan Valley<br><br>P.O. Box 4119, Highland Park, NJ 08904<br><br>Rabbinic Administrator:  Rabbi Reuven Drucker<br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/images.jpeg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "100": {
+      "name": "EarthKosher Kosher Certification Agency",
+      "desc": "EarthKosher Kosher Certification Agency<br><br>137 Midwood Rd<br><br>Teaneck, New Jersey 07666<br><br>(201) 574-3883<br><br>www.earthkosher.com<br><br><br>Rabbi Zecharyah Tzvi Goldman<br><br>Rabbinic Administrator<br><br><br>Rabbi Zushe Yosef Blech<br><br>Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Earth_Kosher_globe_logo_tiny_large.jpg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "101": {
+      "name": "Association for Reliable Kashrus",
+      "desc": "The Association for Reliable Kashrus<br><br>104 Cumberland Place, Lawrence, NY 11559<br><br>Phone: (516) 239-5306; Fax: (845) 352-3847<br><br>Rabbinic Administrator:  Rabbi Shlomo Ullman<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Reliab10.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "102": {
+      "name": "Crown Heights Vaad Hakashrus",
+      "desc": "Beis Din of Crown Heights Vaad Hakashrus<br><br>512 Montgomery St., Brooklyn, NY 11225<br><br>Phone: (718) 604-2500; Fax: (718) 221-0103 <br><br>Rabbinic Administrator:  Rabbi Yossi Brook<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/chk1.gif",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "103": {
+      "name": "Certified Kosher Underwriters",
+      "desc": "Certified Kosher Underwriters<br><br>1310 48th St.,<br> <br>Phone: (718) 436-7373; Fax: (718) 436-3115<br> <br>Rabbinic Administrator:  Rabbi Pinchos Horowitz<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/11783c94.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "104": {
+      "name": "Chabad Lubavitch Arizona",
+      "desc": "Chabad Lubavitch Arizona<br><br>2110 East Lincoln Dr., Brooklyn, NY 11219<br><br>Phone: (602) 944-2753; Fax: (602) 749-1131<br> <br>Rabbinic Administrator:  Rabbi Zalman Levertov<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "105": {
+      "name": "Congregation Arugas Habosem ",
+      "desc": "Congregation Arugas Habosem <br><br>Tzelemer Rav <br><br>Phone; (718) 387–9079<br><br>Rabbinic Administrator:  Rabbi Yosef Moshe Grunwald<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "106": {
+      "name": "Yetev Lev D’Satmar",
+      "desc": "Congregation Yetev Lev D’Satmar<br><br>150 Rodney St., P.O. Box 506, Brooklyn, NY 11211<br><br>Phone: (718) 384-7449; Fax: (718) 384-7455<br> <br>Rabbinic Administrator:  Rabbi Yisroel Chaim Friedman<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/KehalYetevLev.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "107": {
+      "name": "Central Rabbinical Congress",
+      "desc": "Central Rabbinical Congress (Hisachdus Harabanim)<br><br>85 Division Ave., Brooklyn, NY 11211<br><br>Phone: (718) 384-6765; Fax: (718) 486-5574<br> <br>Rabbinic Administrator:  Rabbi Yitzchak Glick<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Reliab17.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "108": {
+      "name": "Central Rabbinical Congress",
+      "desc": "Central Rabbinical Congress (Hisachdus Harabanim)<br><br>85 Division Ave., Brooklyn, NY 11211<br><br>Phone: (718) 384-6765; Fax: (718) 486-5574<br> <br>Rabbinic Administrator:  Rabbi Yitzchak Glick<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Central-Rabbinical-Congress.gif",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "109": {
+      "name": "Debracin (Rabbi Shlomo Stern)",
+      "desc": "Debracin (Rabbi Shlomo Stern)<br><br>1641 56th St., Brooklyn, NY 11204<br><br>Phone: (718) 853–9623<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/Rabbi-Shlomo-Stern.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "110": {
+      "name": "Rabbi Binyamin Gruber",
+      "desc": "Rabbi Binyamin Gruber<br><br>122 Adar Ct., Monsey, NY 10952<br><br>Phone: (845) 425–7516<br>",
+      "logo": "https://kosherquest.org/uploads/2015/09/gruber-hash.gif",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "111": {
+      "name": "KAJ",
+      "desc": "K’hal Adas Jeshurun (Breuer’s) (KAJ)<br><br>85-93 Bennett Ave, New York, NY 10033<br><br>Phone: (212) 923-3582; Fax: (212) 781-4275<br> <br>Rabbinic Administrator:  Rav Zachariah Gelley<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Khal-Adath-Jeshurun-KAJ.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "112": {
+      "name": "K'hal Adat Vishnitz",
+      "desc": "K’hal Adas Vishnitz<br><br>186 Hooper St., Brooklyn, NY 11211<br><br>Phone: (718) 387-1871<br><br>Rabbinic Administrator:  Rabbi Fishel Sanderowitz<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Khal-Adas-Vishnitz-Rabbi-Fishel-Sanderowitz.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "113": {
+      "name": "Rabbi Gornish",
+      "desc": "K’hal Chizuk Hadas of Flatbush<br><br>1421 Avenue O, Brooklyn, NY 11230<br> <br>Phone: (718) 376-3755; Fax: (718) 375-2340<br<<br>Rabbinic Administrator:  Rabbi Yisroel Gornish<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/0e7008a6.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "114": {
+      "name": "Rabbi Benjamin Kaplinsky",
+      "desc": "Rabbi Benjamin Kaplinsky<br>802 Roosevelt Court, Far Rockaway, NY  11691<br>Phone: (718) 327-3238; Fax: (718) 327-6529  ",
+      "logo": "https://kosherquest.org/uploads/2015/10/Screen-Shot-2015-10-07-at-1.25.37-PM1.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "115": {
+      "name": "Udvarer Rav",
+      "desc": "Rabbi Shmuel Dovid Krausz (Udvarer Rav)<br><br>227 Rutledge St., Brooklyn, NY 11211<br><br>Phone: (718) 387-2289  <br><br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-29-at-9.40.11-PM.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "116": {
+      "name": "New Square Kosher Council ",
+      "desc": "New Square Kosher Council <br>21 Truman Ave.<br>New Square, N.Y. 10977<br>Rabbi C.M. Wagshal, Rabbinic Administrator<br><br>Phone: 845 354-5120<br><br>Email: NSKOSHER@THEJNET.COM<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/newsquare.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "117": {
+      "name": "National Kashrus",
+      "desc": "National Kashrus (NK)<br><br>101 Route 306, Monsey, NY 10952<br><br>Phone: (845) 352-4448; Fax: (845) 356-9756<br><br>Rabbinic Administrator:  Rabbi Yaakov Lipschitz<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/image.php_.gif",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "118": {
+      "name": "OK",
+      "desc": "The Organized Kashrus Laboratories (O/K)<br><br>391 Troy Ave., Brooklyn, NY 11213<br><br>Phone: (718) 756-7500; Fax: (718) 756-7503<br> <br>Rabbinic Administrator:  Rabbi Don Yoel Levy<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/kosher-symbol-usa15-ok-kosher-certification-e1452220742815.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "119": {
+      "name": "OU",
+      "desc": "The Union of Orthodox Jewish Congregations (OU)<br><br>11 Broadway, New York, NY 10004<br><br>Phone; (212) 613-8241; Fax: (212) 564-9058<br> <br>Rabbinic Administrator:  Rabbi Menachem Genack<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/240px-Ou_kosher.svg_-e1452222111299.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "120": {
+      "name": "Pupa",
+      "desc": "Kehillas Yaakov Pupa, Monsey <br><br>Phone: (845) 425-1260<br><br>Rabbinic Administrator:  Rabbi Moshe Rosner<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Pupa.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "121": {
+      "name": "Nirbater Rav",
+      "desc": "Rabbi Aaron Teitelbaum (Nirbater Rav)<br><br>1617 46th St., Brooklyn, NY 11204<br><br>Phone: (718) 851-1221; Fax: (718) 436-4505<br>  ",
+      "logo": "https://kosherquest.org/uploads/2015/10/NirbaterRav.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "122": {
+      "name": "Volover Rav",
+      "desc": "Rabbi Nuchem Efraim Teitelbaum (Volover Rav)<br><br>5808 11th Ave., Brooklyn, NY 11219<br><br>Phone: (718) 436-4685<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/116.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "123": {
+      "name": "Belz",
+      "desc": "Vaad Hakashrus of K’hal Machzikei Hadas of Belz<br><br>P.O. Box 190728, Brooklyn, NY 11219<br><br>Phone; (718) 854-3711; Fax: (718) 854-0838<br> <br>Rabbinic Administrator: Rabbi U. Eckstein<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Reliab48.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "124": {
+      "name": "Vaad Hakashrus of Buffalo",
+      "desc": "Vaad Hakashrus of Buffalo<br><br>P.O. Box 755, Williamsville, NY 14231<br><br>Phone: (716) 634-3990; Fax: (716) 634-0212<br> <br>Rabbinic Administrator:  Rabbi Taub<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/886cd7_4105d3bb3e07453db18a322de9e0c83c.jpg_srz_525_525_85_22_0.50_1.20_0.00_jpg_srz.jpeg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "125": {
+      "name": "Vaad Hakashrus of the Capital District",
+      "desc": "Vaad Hakashrus of the Capital District<br><br>877 Madison Avenue<br><br>Albany, NY 12208<br><br>Phone: & Fax: 518-489-1530<br><br>Rabbi Moshe E. Bomzer, Rav HaMachshir<br><br>Rabbi Moshe Berger, Coordinator of Supervisions<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/27b3bedc1345272f130abaf3d8629873.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "126": {
+      "name": "Vaad Hakashrus of Kiryas Yoel",
+      "desc": "Vaad Hakashrus of Kiryat Yoel<br><br>Monroe, NY 10950<br><br>Phone: (845) 783-7408<br><br>Rabbinic Administrator:  Rabbi Beresh Kaufman<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/ddkt4Z-1.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "127": {
+      "name": "Vaad Hakashrus of Mechon L’Hoyroa",
+      "desc": "Vaad Hakashrus of Mechon L’Hoyroa<br><br>168 Maple Ave., Monsey, NY 10952 <br><br>Phone: (845) 425-9565 (ext. 101); Fax: (845) 425-2094<br> <br>Rabbinic Administrator: Rabbi Y. Tauber<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/fc2b291e.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "128": {
+      "name": "VKR",
+      "desc": "Vaad Hakashrus of Rochester (VKR)<br><br>1161 Monroe Ave.<br><br>Phone: (716) 473–1625; fax: (716) 473–0614 <br><br>Rabbinic Administrator:  Rabbi S. Kilimnick<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/VKR-01.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "129": {
+      "name": "Vaad Harabanim of the Five Towns and Far Rockaway",
+      "desc": "Vaad Harabanim of the Five Towns and Far Rockaway<br><br>597 Willow Ave., Cedarhurst, NY 11516<br><br>Phone: (516) 569-4536; Fax: (516) 569-4565<br><br>Email: vaha2002@aol.com",
+      "logo": "https://kosherquest.org/uploads/2015/12/Screen-Shot-2015-12-08-at-9.27.05-PM.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "130": {
+      "name": "Vaad HaKashrus of Flatbush",
+      "desc": "Vaad HaKashrus of Flatbush<br><br>1575 Coney Island Ave., Brooklyn, NY 11230<br><br>Phone: (718) 951-8585; Fax: (718) 951-8510 <br><br>Rabbinic Administrator:  Rabbi Meir Goldberg<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Vaad-Hakashrus-of-Flatbush.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "131": {
+      "name": "Natural Food Certifiers",
+      "desc": "Natural Food Certifiers<br><br>648 Central Park Ave., Scarsdale, NY 10583 <br><br>Phone: (888) 422-4NFC; Fax: (914) 426-0897 <br><br>Rabbinic Administrator:  Rabbi Reuven Flamer<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/AppleK-NFCsmall.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "132": {
+      "name": "Vaad Harabonim of Queens",
+      "desc": "Vaad Harabonim of Queens<br><br>141-49 73rd Ave.<br><br>Flushing, NY 11367<br><br>(718) 520-9060<br><br>info@queensvaad.org / http://www.queensvaad.org<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/vhq-logo-2.gif",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "133": {
+      "name": "Machon L'Kashrus Rabbi Unger",
+      "desc": "Machon L'Kashrus<br><br>Rabbi Unger",
+      "logo": "https://kosherquest.org/uploads/2015/10/machon.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "134": {
+      "name": "Oregon Kosher",
+      "desc": "Oregon Kosher<br><br>Office:<br><br>6698 SW Capitol Highway<br><br>Portland, OR 97219<br><br>Phone: (503) 343-3497 ext 103,<br><br>Fax: (503) 226-0241, 343-3318<br><br>E-mail: info@oregonkosher.org<br><br>Web: www.oregonkosher.org<br><br>Rabbi Dov Chastain, Rabbinic Administrator<br>  <br>Rabbi Tzvi Fischer, Rabbinic Administrator ",
+      "logo": "https://kosherquest.org/uploads/2015/10/5443670.jpg",
+      "web": "",
+      "region": "Oregon",
+      "cardRegion": "oregon",
+      "rtype": "US"
+    },
+    "135": {
+      "name": "Oregon Kosher",
+      "desc": "Oregon Kosher<br><br>Office:<br><br>6698 SW Capitol Highway<br><br>Portland, OR 97219<br><br>Phone: (503) 343-3497 ext 103,<br><br>Fax: (503) 226-0241, 343-3318<br><br>E-mail: info@oregonkosher.org<br><br>Web: www.oregonkosher.org<br><br>Rabbi Dov Chastain, Rabbinic Administrator<br>  <br>Rabbi Tzvi Fischer, Rabbinic Administrator ",
+      "logo": "https://kosherquest.org/uploads/2015/10/Oregon_Kosher_logo.png",
+      "web": "",
+      "region": "Oregon",
+      "cardRegion": "oregon",
+      "rtype": "US"
+    },
+    "136": {
+      "name": "Community Kashrus of Greater Philadelphia",
+      "desc": "Community Kashrus of Greater Philadelphia<br><br>7505 Brookhaven Rd., Philadelphia, PA 19151<br><br>Phone: (610) 658-1967; Fax: (215) 473-6220 <br><br>Rabbinic Administrator:  Rabbi Shlomo Caplan<br><br>Rabbi Dov Brisman<br>Rabbi Avraham Shmidman<br>Rabbi Mordechai Terebelo<br>Rabbi Yonah Gross",
+      "logo": "https://kosherquest.org/uploads/2015/10/seal_community-kashrus.png",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "137": {
+      "name": "Rabbi Yitzchok M. Leizerowski",
+      "desc": "Rabbi Yitzchok M. Leizerowski<br><br>Phone: (215) 342-7414<br><br>Philadelphia <br><br>Rabbinic Administrator:  Rabbi Dov Brisbane<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Leizerowski.jpg",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "138": {
+      "name": "Vaad of Lancaster",
+      "desc": "Vaad of Lancaster / Cong. Hegel Israel<br><br>1120 Columbia Ave., Lancaster, PA 17603<br><br>Phone: (717) 397-0183; Fax: (717) 509-6188<br><br>Rabbinic Administrator:  Rabbi Shaya Sackett<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Reliab59.jpg",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "139": {
+      "name": "LVKC",
+      "desc": "The Lehigh Valley Kashrus Commission (LVKC)<br><br>702 N. 22nd St., Allentown, PA 18104 <br><br>Phone: (610) 434-3109; Fax: (610) 435-2859<br> <br>Rabbinic Administrator:  Rabbi Mitchell Raven<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/6b832be7.jpg",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "140": {
+      "name": "Vaad Hakehilot of Memphis",
+      "desc": "Vaad Hakehilot of Memphis<br><br>5449 Pecan Grove Road, Memphis, TN 38120<br><br>Phone (901) 767-2263; Fax: (901) 761-3788<br><br>Rabbi Nathan Greenblatt, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/Screen-Shot-2022-03-08-at-10.17.27-AM.png",
+      "web": "",
+      "region": "Tennessee",
+      "cardRegion": "tennessee",
+      "rtype": "US"
+    },
+    "141": {
+      "name": "Houston Kashruth Association ",
+      "desc": "The Houston Kashruth Association <br><br>Rabbi Yehoshua Wender<br><br>713-398-0267<br><br>P.O. Box 35225<br><br>Houston, TX 77235<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/7.png",
+      "web": "",
+      "region": "Texas",
+      "cardRegion": "texas",
+      "rtype": "US"
+    },
+    "142": {
+      "name": "Texas K",
+      "desc": "International Kosher Supervision/Texas “K” Chicago Rabbinical Council<br><br>Phone: (773) 465-3900; Fax: (773) 465-6929<br><br>Rabbinic Administrator:  Rabbi Sholem Fishbane<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/TexasKInternationalLogo.jpg",
+      "web": "",
+      "region": "Texas",
+      "cardRegion": "texas",
+      "rtype": "US"
+    },
+    "143": {
+      "name": "Dallas Kosher ",
+      "desc": "Dallas Kosher (Vaad Hakashrus of Dallas)<br><br>7800 Northaven Rd., Dallas, TX 75230<br> <br>Phone: (214) 739-6535; Fax: (214) 739-4635<br> <br>Rabbinic Administrator:  Rabbi S. Klein<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/Untitled-2.jpg",
+      "web": "",
+      "region": "Texas",
+      "cardRegion": "texas",
+      "rtype": "US"
+    },
+    "144": {
+      "name": "Vaad Hakashrus of Tidewater",
+      "desc": "Vaad Hakashrus of Tidewater<br><br>420 Spotswood Avenue, Norfolk, VA 23517<br> <br>Tel : (757) 572-6344; Fax: (757) 627-8544<br> <br>Rabbinic Administrator:  Sholom Mostofsky<br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/Screen-Shot-2022-03-08-at-10.19.01-AM.png",
+      "web": "",
+      "region": "Virginia",
+      "cardRegion": "virginia",
+      "rtype": "US"
+    },
+    "145": {
+      "name": "Vaad Harabanim of Greater Seattle",
+      "desc": "Vaad Harabanim of Greater Seattle<br><br>5305 52nd Ave S.<br><br>Seattle, WA 98118<br> <br>Phone: (206) 760-0805; Fax: (206) 725-0347<br> <br>Rabbi Moshe Kletenik, Av Beit Din<br><br>Chasya Sarah Walsh, Administrator <br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/Screen-Shot-2022-03-08-at-10.20.35-AM.png",
+      "web": "",
+      "region": "Washington State",
+      "cardRegion": "washington state",
+      "rtype": "US"
+    },
+    "146": {
+      "name": "Wisconsin-K",
+      "desc": "Wisconsin-K<br>Kosher Supervisors Of Wisconsin<br><br>7020 N. Green Bay Avenue<br><br>Glendale, WI 53209<br><br>Phone: (414) 573-9353; Fax: (414) 228-8933<br><br>Rabbinic Administrator: Rabbi Benzion Twerski, Rav Hamachshir<br><br>Rabbi Akiva Freilich, Rabbinic Administrator<br> <br>Rabbi Tuvia Torem, Rabbinic Supervisor<br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/16dd2e_364e37a5cce04f7bbc08bbfc04ff9835mv2.jpg.webp",
+      "web": "",
+      "region": "Wisconsin",
+      "cardRegion": "wisconsin",
+      "rtype": "US"
+    },
+    "147": {
+      "name": "Alaska Kosher",
+      "desc": "Alaska Kosher - Chabad of Alaska<br>   <br>Congregation Shomrei Ohr<br><br>1117 East 35th Avenue<br><br>Anchorage, Ak 99508<br><br>Tel: (907) 279-1200<br><br>Fax: (907) 279-7890<br><br>E-mail: info@alaskajewishcampus.org<br><br>Website: www.lubavitchjewishcenter.org<br><br>Rabbi Yosef Greenberg<br>",
+      "logo": "https://kosherquest.org/uploads/2015/05/alaska_kosher.jpg",
+      "web": "",
+      "region": "Alaska",
+      "cardRegion": "alaska",
+      "rtype": "US"
+    },
+    "148": {
+      "name": "Machzikei Hadas Manchester",
+      "desc": "Machzikei Haas Manchester<br><br>17 Northumberland St., Salford M7FH<br><br>Phone: (44161) 792-1313<br><br>Fax: (44161) 792-8592<br><br>Rabbinic Administrator:  Rabbi M.M. Schneebalg<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/showadimage.php_.jpeg",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "149": {
+      "name": "Machzikei Hadas Edgeware",
+      "desc": "K’hal Machzikei Haas Edgeware<br><br>7 The Rise, Edgeware, Middlesex HABBNS<br><br>Phone: (44208) 958-1030<br><br>Fax: (44208) 958-3036<br><br>Rabbinic Administrator: Rabbi Eliezer Schneebalg<br> ",
+      "logo": "https://kosherquest.org/uploads/2015/11/KhalMachzikeiHadasEdgeware.jpg",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "150": {
+      "name": "London Beth Din",
+      "desc": "London Beth Din Kashrut Division<br><br>735 High Road, London N12 0US<br><br>Phone: (44208) 343-6253<br><br>Fax: (44208) 343-6254<br><br>Email: gita@kosher.org.uk<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-09-at-5.51.56-AM.png",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "151": {
+      "name": "Manchester Beis Din",
+      "desc": "Manchester Beis Din<br><br>435 Cheetham Hill Rd., Manchester 8<br><br>Phone: (44161) 740-9711<br><br>Fax: (44161) 721-4249<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/ManchesterBethDin.png",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "152": {
+      "name": "",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2015/08/Image_needed_LHB.png",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "153": {
+      "name": "Rabbi Aaron Mendelson",
+      "desc": "120 Melville Ave. <br)<br>Lakewood, NJ <br><br><br>Phone: 718-730-0224<br><br><br>Rav HaMachshir: Rabbi Aaron Mendelson <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/0753Rabbi-Aaron-Mendelson-e1691706794503.jpg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "154": {
+      "name": "Gateshead Kashrus Authority",
+      "desc": "Gateshead Kashrus Authority<br><br>Address: 37 Grasser Street<br> <br>West Gateshead, NE8 1TS, United Kingdom<br><br>Phone: (+44) 0191 477-1598<br> <br>Rabbinic Administrator: HaRav Elozor Lieberman<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-02-at-5.47.22-AM.png",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "155": {
+      "name": "Badatz Agudas Yisroel ",
+      "desc": "Badatz Agudath Israel<br><br>Yeshayahu Street 18<br><br>P.O.B. 513<br><br>Jerusalem, Israel<br><br>Tel. 972 –2-5421228<br><br>Fax. 972-2-5385080<br><br>Email: info@badatzai.co.il<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/image_10090_2012-11-18_10-39-05.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "156": {
+      "name": "Rav Rubin",
+      "desc": "Badatz Mehadrin<br><br>Fax: (9728) 939-0818<b><br>Rabbinic Administrator:  Rabbi Avraham Rubin<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/R-Rubin-symbol-Hebrew2.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "157": {
+      "name": "Eidah Hachareidis",
+      "desc": "The Beis Din Tzedek of the Eidah Hachareidis of <br>Jerusalem Binyanei Zupnick<br><br>26A Rechov Strauss, Jerusalem<br><br>Phone: (9722) 624-6935; Fax: (9722) 625-4975<br><br>Rabbinic Administrator:  Rabbi Naftali Halberstam<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/111.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "158": {
+      "name": "Belz",
+      "desc": "The Beis Din Tzedek of K’hal Machzikei Hadas<br> <br>Maareches Hakashrus<br><br>P.O. Box 41109, Jerusalem 91410<br><br>Phone: (9722) 538-5832; Fax: (9722) 537-4001<br><br>Rabbinic Administrator:  Rabbi Mordechai Brisk<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/חותמת-הבדצ.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "159": {
+      "name": "Chasam Sofer",
+      "desc": "Chug Chasm Sofer<br><br>18 Maimon St., P.O. Box 426, Bnei Brak 51273<br><br>Phone: (9723) 618-8596; Fax: (9723) 579-5175<br><br>Rabbinic Administrator:  Rabbi Shmuel Eliezer Stern<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/chugchsofer.gif",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "160": {
+      "name": "Rav Landau",
+      "desc": "Rabbi Moshe Yehudah Leib Landau<br><br>Beni Brak<br><br>Phone: (9723) 618-2647; Fax: (9723) 579-8967<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/3548572.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "161": {
+      "name": "OU",
+      "desc": "“OU” in Israel OU Israel Center<br><br>22 Keren Hayesod St., P.O. Box 37015, Jerusalem 91370<br><br>Phone: (9722) 560-9121; Fax: (9722) 563-0061<br><br>Rabbinic Administrator:  Rabbi Mordechai Kuber<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/240px-Ou_kosher.svg_.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "162": {
+      "name": "Rabanut Hareishit Rechovot",
+      "desc": "Rabanut Hareishit Rechovot<br><br>2 Goldberg St., Rechovot<br><br>Phone: (9728) 936–2682; Fax: (9728) 936–2755<br><br>Rabbinic Administrator:  Rabbi Avraham Rubin<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/RabanotRechovot.svg_.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "163": {
+      "name": "Rabanut Yerushalayim Mehadrin",
+      "desc": "Rabanut Yerushalayim Mehadrin<br><br>Fax: (9722) 623-6816<br><br>Rabbinic Administrator:  Rabbi Adler<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/image_10095_2012-11-18_10-39-41.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "164": {
+      "name": "Shearis Yisrael",
+      "desc": "Shears Yisrael<br><br>Phone: (9723) 579-8631; Fax: (9723) 579-8633<br><br>Rabbinic Administrator:  Rabbi Michael Hoffman<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/SheeritIsraelLogo.svg_.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "165": {
+      "name": "Vaad Harabonim of Metrowest NJ",
+      "desc": "Vaad Harabonim of Metrowest NJ <br><br>293 Eisenhower Parkway, Suite 120 <br><br>Livingston, New Jersey 07039 <br><br>Phone (1) 973-850-9144 <br><br>Fax (1) 973-356-0035  <br><br>www.metrowestvaad.org <br><br>rabbis@metrowestvaad.org<br><br>Rabbi Yakov Teichman <br><br>Rabbinic Administrator <br><br><br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/Screenshot-2023-08-10-at-3.47.45-PM.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "166": {
+      "name": "Kosher Check",
+      "desc": "Orthodox Rabbinical Council of British Columbia<br> <br>(Kosher Check / BCK)<br><br>401 - 1037 West Broadway, Vancouver, BC V6H 1E3<br><br>Phone: (604) 731-1803<br><br>Fax: (604) 731-1804<br> <br>Email: info@koshercheck.org<br><br>Director, Kashrus & Operations:  Rabbi Mendy Feigelstock<br><br> ",
+      "logo": "https://kosherquest.org/uploads/2015/12/KosherCheck-tag_3c_300.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "167": {
+      "name": "COR",
+      "desc": "Kashrus Council of Canada (COR)<br><br>4600 Bathurst St. #240, Toronto, Ontario M2R 3V2<br><br>Phone: (416) 635-9550; Fax: (416) 635-8760<br> <br>Rabbinic Administrator:  Rabbi Mordechai Levin<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Large-COR-Plain.pdf",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "168": {
+      "name": "BCK (Kosher Check)",
+      "desc": "Orthodox Rabbinical Council of British Columbia<br> <br>(Kosher Check / BCK)<br><br>401 - 1037 West Broadway, Vancouver, BC V6H 1E3<br><br>Phone: (604) 731-1803<br><br>Fax: (604) 731-1804<br> <br>Email: info@koshercheck.org<br><br>Director, Kashrus & Operations:  Rabbi Mendy Feigelstock<br><br> ",
+      "logo": "https://kosherquest.org/uploads/2015/12/BCK-LOGO.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "169": {
+      "name": "Badatz Toronto",
+      "desc": "Badatz Toronto<br><br>Rabbi Moshe Bensalmon<br><br>Tel: 647-831-4916<br><br>Email: info@badatz.ca<br><br>Kashrut Administrator<br><br>Rabbi Amram Assayag<br><br>Tel: 905-669-7600 Ext 220<br><br>Email: assayag@badatz.ca<br><br>Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/badatz.png",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "170": {
+      "name": "Montreal Vaad Hair",
+      "desc": "Montreal Vaad Hair<br><br>6825 Decarie Blvd., Montreal, Quebec H3W3E4<br><br>Phone: (514) 739-6363; Fax: (514) 739-7024<br> <br>Rabbinic Administrator:  Rabbi Jaffe<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/mk-logo-canadas-kosher-certifier.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "171": {
+      "name": "Ajdut Israel",
+      "desc": "Ajdut Israel Kosher<br><br>Rabbi Oppenheimer<br><br>Ajdut Israel Kosher<br><br>155-426-1255<br><br>nextel 260*199<br><br>www.kosher.org.ar<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Kosher.jpg",
+      "web": "",
+      "region": "Argentina",
+      "cardRegion": "argentina",
+      "rtype": "International"
+    },
+    "172": {
+      "name": "U-K Kashrus",
+      "desc": "U-K Kashrus Organization<br><br>Rabbi Gabriel Yabra<br><br>Address: Uriburu 774 4°B,<br><br>Capital Federal, Argentina,<br><br>Tel: +54 11 4951 8366.<br><br>Fax:+54 11 4952 9422.<br><br>Email: uk@ukkosher.org<br><br>www.ukkosher.org<br><br>www.kosher.org.ar<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/CHpRYE6WgAAOckz.jpg",
+      "web": "",
+      "region": "Argentina",
+      "cardRegion": "argentina",
+      "rtype": "International"
+    },
+    "173": {
+      "name": "KM",
+      "desc": "Kosher Miami – KM <br><br>The Vaad Hakashrus of Miami-Dade<br><br>PO Box 403225<br> Miami<br>FL 33140-1225<br><br>Tel: (786) 463-9931<br><br>Cell: (786) 390-6620<br><br>Fax: (305) 937-2437<br><br>E-mail: info@koshermiami.org<br><br>RabbiFried@koshermiami.org<br><br>Web: www.koshermiami.org<br><br>Rabbi Mordechai Fried, Rabbinic Administrator<br><br>Rabbi Meir Shaffren, Rabbinic Coordinator<br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Screen-Shot-2015-11-23-at-1.17.33-PM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "174": {
+      "name": "South Tampa Chabad",
+      "desc": "Chabad of South Tampa<br><br>2511 W Swann Ave #201<br><br>Tampa, FL 33609<br><br>813-922-1723<br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/Screen-Shot-2022-03-08-at-10.14.08-AM.png",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "175": {
+      "name": "RCBC",
+      "desc": "Va'ad Harabanim-Rabbinical Council of Bergen County <br><br>Phone 201-287-9292 Cell 201-655-9109<br> <br>E-mail: rcbc18@aol.com<br><br>Rabbi Meier Brueckheimer <br>",
+      "logo": "https://kosherquest.org/uploads/2015/11/Logo-with-Hebrew-Kosher.jpeg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "176": {
+      "name": "OU",
+      "desc": "The Union of Orthodox Jewish Congregations (OU)<br><br>11 Broadway, New York, NY 10004<br><br>Phone; (212) 613-8241; Fax: (212) 564-9058<br> <br>Rabbinic Administrator:  Rabbi Menachem Genack<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/240px-Ou_kosher.svg_-e1452222111299.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "177": {
+      "name": "Half Moon-K",
+      "desc": "The Union of Orthodox Jewish Congregations (OU)<br><br>11 Broadway, New York, NY 10004<br><br>Phone; (212) 613-8241; Fax: (212) 564-9058<br> <br>Rabbinic Administrator:  Rabbi Menachem Genack<br>",
+      "logo": "https://kosherquest.org/uploads/2015/08/half-moon-k.jpg",
+      "web": "",
+      "region": "OU+",
+      "cardRegion": "ou+",
+      "rtype": "US"
+    },
+    "178": {
+      "name": "KAJ",
+      "desc": "K’hal Adas Jeshurun (Breuer’s) (KAJ)<br><br>85-93 Bennett Ave, New York, NY 10033<br><br>Phone: (212) 923-3582; Fax: (212) 781-4275<br> <br>Rabbinic Administrator:  Rav Zachariah Gelley<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Screen-Shot-2015-12-08-at-9.25.08-PM.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "179": {
+      "name": "Rohr Chabad",
+      "desc": "Rohr Chabad of Lancaster & York  <br><br>1024 Harrisburg Avenue, Lancaster, PA 17603<br><br>t. 717-723-8783<br><br>rabbi@jewishenrichment.com<br>  <br>f.610-340-9087 <br><br>Web: www.JewishEnrichment.com",
+      "logo": "https://kosherquest.org/uploads/2015/12/Screen-Shot-2015-12-07-at-9.42.03-PM.png",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "180": {
+      "name": "WKS",
+      "desc": "Whole Kosher Services<br><br>10101 Fondren Rd #515, Houston, TX 77096 United States<br><br>Call: (210) 913-1836 (USA)<br><br>Fax: (713) 721-6900<br><br>Email: rabbicohen@wholekosher.com<br><br>Rabbi Yaakov Cohen – Kosher Administrator<br><br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Whole-transparent.png",
+      "web": "",
+      "region": "Texas",
+      "cardRegion": "texas",
+      "rtype": "US"
+    },
+    "181": {
+      "name": "CCK",
+      "desc": "Chabad of Charleston & the Low Country <br><br>734 York Street, Mt Pleasant, SC 29464<br><br>o 843.884.2323 | m 843.884.0055 | h 843.884.8881<br><br>e Rabbi@southernspirit.org | w Southernspirit.org<br><br>Rabbi Yossi Reason<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/CCK-Logo-JPEG.jpg",
+      "web": "",
+      "region": "South Carolina",
+      "cardRegion": "south carolina",
+      "rtype": "US"
+    },
+    "182": {
+      "name": "Vaad Hakashrus of Kiryat Yoel",
+      "desc": "Vaad Hakashrus of Kiryat Yoel<br><br>Monroe, NY 10950<br><br>Phone: (845) 783-7408<br><br>Rabbinic Administrator:  Rabbi Beresh Kaufman<br>",
+      "logo": "https://kosherquest.org/uploads/2015/10/40a22be5.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "183": {
+      "name": "Earth Kosher ",
+      "desc": "EarthKosher Kosher Certification Agency<br><br>Phone: 415-363-0093<br><br>Fax: 718-416-6360<br><br>Email: ygoldman@earthkosher.com<br><br>Website: www.earthkosher.com<br><br>Rabbi Yehuda Goldman  <br><br>Chief Operating Officer<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/EK-Logo.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "184": {
+      "name": "Hisachdus",
+      "desc": "Hisachdus<br>Rabbi Moshe Bressler<br>Phone: 732-804-1089<br>Email: moshebresler@gmail.com",
+      "logo": "https://kosherquest.org/uploads/2015/12/Screen-Shot-2015-12-10-at-1.28.58-PM.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "185": {
+      "name": "Pevzner, Rabbi",
+      "desc": "Marc en Ciel <br><br>3 rue Esther Cuvier<br><br>93260 LES LILAS<br><br>06 03 96 83 00<br><br>Aflalomarc@gmail.com<br><br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Screen-Shot-2015-12-31-at-1.52.38-PM.png",
+      "web": "",
+      "region": "France",
+      "cardRegion": "france",
+      "rtype": "International"
+    },
+    "186": {
+      "name": "London Beth Din",
+      "desc": "London Beth Din Kashrut Division<br><br>735 High Road, London N12 0US<br><br>Phone: (44208) 343-6253<br><br>Fax: (44208) 343-6254<br><br>Email: gita@kosher.org.uk<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/KLBD-Full.jpg",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "187": {
+      "name": "KosherMex",
+      "desc": "KOSHERMEX<br><br>Hashgoche Charedis of Mexico<br><br>Oficina (+52) 55-1055-7150/ 51<br><br>R. Abraham Resnicoff Kashrus Director<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/LOGO-Koshermex-MR-IMPI.jpg",
+      "web": "",
+      "region": "Mexico",
+      "cardRegion": "mexico",
+      "rtype": "International"
+    },
+    "188": {
+      "name": "American Kosher",
+      "desc": "Chabad House and Jewish community, cozumel, México<br><br>5ta Avenida  y 1er calle, Plaza Del Sol, segundo piso, col. Centro,<br> Cozumel, Mexico, 77600.<br><br>U.S line   +1 347-770-1413<br><br>R. Shalom Peleg +521 9871119715<br><br>R. David Caplin +972 546312770<br><br>www.ChabadCozumel.com<br><br>www.JerusalemCozumel.com<br> ",
+      "logo": "https://kosherquest.org/uploads/2015/12/image1.png",
+      "web": "",
+      "region": "Mexico",
+      "cardRegion": "mexico",
+      "rtype": "International"
+    },
+    "189": {
+      "name": "R' Shlomo Machpud",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2016/01/Screen-Shot-2016-01-01-at-5.07.48-AM.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "190": {
+      "name": "IGB",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2024/03/switz032224b.png",
+      "web": "",
+      "region": "Switzerland",
+      "cardRegion": "switzerland",
+      "rtype": "International"
+    },
+    "191": {
+      "name": "IGB",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2024/03/switz032224.png",
+      "web": "",
+      "region": "Switzerland",
+      "cardRegion": "switzerland",
+      "rtype": "International"
+    },
+    "192": {
+      "name": "Beit Yosef - בית יוסף",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2015/12/לוגו-בסיסי.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "193": {
+      "name": "Hager Kashrus",
+      "desc": "Rabbi P.A. Meyers<br><br>Hager Kashrus Committee Antwerp<br><br>Rabbinical Board for Kosher Certification<br><br>www.koshercertification.eu<br><br>Tel: (323) 213-2363<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Hechser-01.jpg",
+      "web": "",
+      "region": "Belgium",
+      "cardRegion": "belgium",
+      "rtype": "International"
+    },
+    "194": {
+      "name": "Kosher-KCS",
+      "desc": "Rabbi Pinchas Padua<br><br>http://kosher-kcs.com<br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/Screen-Shot-2015-12-31-at-7.38.06-PM.png",
+      "web": "",
+      "region": "Netherlands",
+      "cardRegion": "netherlands",
+      "rtype": "International"
+    },
+    "195": {
+      "name": "Kiwi Kosher",
+      "desc": "Auckland Hebrew Congregation<br><br>P.O. Box: 68-224, Newton, 1145<br><br>108 Grey's Ave, Auckland<br><br>NEW ZEALAND<br><br>O: (09) 373 2908<br><br>M: (021) 038 5311<br><br>F:  (09) 303 2147<br><br>www.kosher.co.nz<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/kosher-kiwi-logo.pdf",
+      "web": "",
+      "region": "New Zealand",
+      "cardRegion": "new zealand",
+      "rtype": "International"
+    },
+    "196": {
+      "name": "KLF",
+      "desc": "Rav Yossef Haouzi<br><br>Directeur de la Cacheront<br><br>Rabbinat Loubavitch de France<br><br>110, boulevard de Ménilmontant - 75020 Paris<br><br>Tél: +33 (0)1 40 33 88 52<br><br>Fax: +33 (0)1 43 15 07 90<br><br>Portable: +33 (0)6 14 31 29 11<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/KLF-JPEG.jpg",
+      "web": "",
+      "region": "France",
+      "cardRegion": "france",
+      "rtype": "International"
+    },
+    "197": {
+      "name": "KLF",
+      "desc": "Rav Yossef Haouzi<br><br>Directeur de la Cacheront<br><br>Rabbinat Loubavitch de France<br><br>110, boulevard de Ménilmontant - 75020 Paris<br><br>Tél: +33 (0)1 40 33 88 52<br><br>Fax: +33 (0)1 43 15 07 90<br><br>Portable: +33 (0)6 14 31 29 11<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/VAAD-NSNST.jpg",
+      "web": "",
+      "region": "France",
+      "cardRegion": "france",
+      "rtype": "International"
+    },
+    "198": {
+      "name": "Peru Beit Chabad",
+      "desc": "Beit Chabad Peru<br><br>Rabino S. Zalman Blumenfeld <br><br>chabadperu@gmail.com<br>",
+      "logo": "https://kosherquest.org/uploads/2024/03/peru_chabad.png",
+      "web": "",
+      "region": "Peru",
+      "cardRegion": "peru",
+      "rtype": "International"
+    },
+    "199": {
+      "name": "Manchester Beis Din",
+      "desc": "Manchester Beis Din<br><br>435 Cheetham Hill Rd., Manchester 8<br><br>Phone: (44161) 740-9711<br><br>Fax: (44161) 721-4249<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/mbd_hechshers_dayansteiner_apr13-1.pdf",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "200": {
+      "name": "Rabbi Yagod",
+      "desc": "Rabbi Yitzchok I Yagod<br><br>Kashruth Hotline :(24x6)<br><br>610-905-2166 /207-217-1094 / rabbiyagod1@gmail.com<br><br>Congregation Tiferes Israel, Moncton, NB, Canada<br><br>Congregation Beth Avraham, Easton, PA<br><br>Beth Medrash of Maine  ",
+      "logo": "https://kosherquest.org/uploads/2015/12/EK2.jpg",
+      "web": "",
+      "region": "England",
+      "cardRegion": "england",
+      "rtype": "International"
+    },
+    "201": {
+      "name": "Bistritzky",
+      "desc": "Rabbiner Shlomo Bistritzky<br><br>Landesrabbiner der Freien und Hansestadt Hamburg<br><br>Büro im Jüdischen Bildungszentrum<br><br>Chabad Lubawitsch Hamburg<br><br>Rothenbaumchaussee 19<br><br>20148 Hamburg<br><br>Telefon: +49/40/41 42 41 90 <br><br>Mobil: +49/178/710 81 23<br><br>eMail: chabadhamburg@t-online.de<br><br>www.ChabadHamburg.de<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/Kosher-Hamburg.png",
+      "web": "",
+      "region": "Germany",
+      "cardRegion": "germany",
+      "rtype": "International"
+    },
+    "202": {
+      "name": "COR",
+      "desc": "Kashrus Council of Canada (COR)<br><br>4600 Bathurst St. #240, Toronto, Ontario M2R 3V2<br><br>Phone: (416) 635-9550; Fax: (416) 635-8760<br> <br>Rabbinic Administrator:  Rabbi Mordechai Levin<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/COR-Certified-Kosher-hi-res.pdf",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "203": {
+      "name": "Keystone K",
+      "desc": "Rabbi Naftoli Eisemann<br><br>Kashrus Administrator<br> <br>Keystone-K<br><br>Community Kashrus of Greater Philadelphia<br><br>2014 Upland Way<br><br>Philadelphia, PA 19131<br><br>Phone: 347-927-5742<br><br>FAX: 267-507-1866<br><br>Ck.rabbi.ne@gmail.com<br><br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/Screen-Shot-2015-12-31-at-8.04.38-PM.png",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "204": {
+      "name": "Chabad Marbella",
+      "desc": "Chabad Marbella, Costa del Sol, Spain<br><br>www.ChabadMarbella.es<br><br>+34 951 406 602<br><br>Rabbi Cheski Goldstein<br><br><br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/Screen-Shot-2015-12-31-at-8.09.51-PM.png",
+      "web": "",
+      "region": "Spain",
+      "cardRegion": "spain",
+      "rtype": "International"
+    },
+    "205": {
+      "name": "Kosher Uruguay",
+      "desc": "Kosher Uruguay al Mundo<br><br>GUANA 2233 bis<br><br>C.P: 11200<br><br>TEL.: (00598) 27055107 - (00598) 94916314<br><br>Montevideo - Uruguay<br><br>Sudamérica<br>",
+      "logo": "https://kosherquest.org/uploads/2015/12/KU.jpg",
+      "web": "",
+      "region": "Uruguay",
+      "cardRegion": "uruguay",
+      "rtype": "International"
+    },
+    "206": {
+      "name": "OVO",
+      "desc": "Orthodox Vaad of Orlando - (OVO)<br>www.orlandovaad.org<br>407-538-1254<br>rabbi@orlandovaad.org<br> <br>Rabbi Dovid Yachnes - President<br>Rabbi Michoel Rennert - Rabbinic Administrator<br>President - Rabbi Dovid Yachnes<br>VP - Rabbi Avraham Wachsman<br>Rabbinic Administrator - Rabbi Michoel Rennert",
+      "logo": "https://kosherquest.org/uploads/2015/12/Vaad-Orlando-Blue-1.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "207": {
+      "name": "EuroKosher",
+      "desc": "EUROKOCHER  SRL<br><br>Via Cellini, 2<br><br>20129 Milan, Italy<br><br> Tel: +39 02 29414170<br><br>Cell: +39 335 6174532<br><br>Email: ravhazan@eu-k.org<br><br>Rabbi Avraham Hazan<br><br>Badatz Mehadrin Milan<br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/EUK-logo.jpg",
+      "web": "",
+      "region": "Italy",
+      "cardRegion": "italy",
+      "rtype": "International"
+    },
+    "208": {
+      "name": "Kosher Australia",
+      "desc": "Kosher Australia<br><br>Web: www.kosher.org.au<br><br>Direct: 0433 147 718<br><br>Reception: 1300KOSHER<br><br>Email: wajsbortj@kosher.org.au<br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/Kosher-clean-high-res.-image.jpg",
+      "web": "",
+      "region": "Australia",
+      "cardRegion": "australia",
+      "rtype": "International"
+    },
+    "209": {
+      "name": "Cape Town Beth Din",
+      "desc": "Cape Town Beth Din<br><br>Union of Orthodox Synagogues of South Africa<br><br>191 Buitenkant Street <br><br>Cape Town 8001<br><br>PO Box 543<br><br>Cape Town 8000<br><br>Tel: (27-21)461-6310<br><br>Fax:(27-21)461-8320<br><br>Email: kashrut@uoscape.co.za<br><br>Website: www.os.co.za<br><br>Rabbi Moshe Kurtstag, Av Beth Din<br><br>Rabbi Desmond Maizels, Rav Hamachshir<br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/230x180_bdLogoNew.gif",
+      "web": "",
+      "region": "South Africa",
+      "cardRegion": "south africa",
+      "rtype": "International"
+    },
+    "210": {
+      "name": "Johannesburg Beth Din",
+      "desc": "Johannesburg Beth Din<br><br>Union of Orthodox Synagogues of South Africa<br><br>58 Oaklands Road<br><br>Orchards 2192<br><br>Johannesburg, South Africa<br><br>Phone:  010 214-2600\t<br><br>Fax:\t086 610 3464<br><br>Website: www.os.co.za<br>",
+      "logo": "https://kosherquest.org/uploads/2016/01/230x180_bdLogoNew.gif",
+      "web": "",
+      "region": "South Africa",
+      "cardRegion": "south africa",
+      "rtype": "International"
+    },
+    "211": {
+      "name": "EK",
+      "desc": "Eastern Canada and Maine Kosher<br>18 Mill Street <br>Mars Hill, ME 04758<br>Phone: 610-905-2166<br>             207-217-1094<br>Email: rabbiyagod1@gmail.com<br>Web: http://www.easternkosher.com<br>Rabbi Yitzchok Isaac Yagod - Moncton, NB <br>Rav Pinchas E. Juravel <br>Rabbi Ari Sherbill",
+      "logo": "https://kosherquest.org/uploads/2016/02/EK2-2.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "212": {
+      "name": "Pittsburgh Vaad Harabanim",
+      "desc": "Vaad Harabanim of Greater Pittsburgh<br><br>2319 Murray Avenue<br><br>Pittsburgh, PA 15217<br><br>412-421-1437<br>",
+      "logo": "https://kosherquest.org/uploads/2016/02/Screen-Shot-2016-02-15-at-5.36.32-AM.png",
+      "web": "",
+      "region": "Pennsylvania",
+      "cardRegion": "pennsylvania",
+      "rtype": "US"
+    },
+    "213": {
+      "name": "OVO",
+      "desc": "Orthodox Vaad of Orlando - (OVO)<br><br>8591 Banyan Blvd, Orlando, FL 32819<br><br>www.orlandovaad.org<br><br>407-538-1254<br><br>rabbi@orlandovaad.org<br><br> Rabbi Dovid Yachnes - President<br><br>Rabbi Michoel Rennert - Rabbinic Administrator<br><br> <br>Establishments under the Vaad<br><br>Kosher Grill Orlando<br><br>www.koshergrillorlando.com<br><br>5615 International Dr, Orlando, FL 32819<br>",
+      "logo": "https://kosherquest.org/uploads/2016/02/Vaad-Orlando-Blue-1-2.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "214": {
+      "name": "KMD",
+      "desc": "Kosher Maguen David<br>52- (55) 3872-5050",
+      "logo": "https://kosherquest.org/uploads/2016/03/Screen-Shot-2016-03-14-at-5.33.15-AM.png",
+      "web": "",
+      "region": "Mexico",
+      "cardRegion": "mexico",
+      "rtype": "International"
+    },
+    "215": {
+      "name": "Star-S",
+      "desc": "Star-S Catering to the specific needs of Sefardim<br>Star-K Kosher Certification (chalav Yisrael)<br><br>Star-D Certification (non-chalav Yisrael)<br><br>122 Slade Ave. #300, Baltimore, MD 21208<br><br>www.star-k.org<br><br>star-k@star-k.org<br><br>Phone: (410) 484-4110; Fax: (410) 653-9294 <br><br>Rabbinic Administrator:  Rabbi Moshe Heinemann<br>",
+      "logo": "https://kosherquest.org/uploads/2016/03/Star-S.jpg",
+      "web": "",
+      "region": "Maryland",
+      "cardRegion": "maryland",
+      "rtype": "US"
+    },
+    "216": {
+      "name": "North American Kosher",
+      "desc": "North American Kosher Supervision (Flag K)<br><br>Rabbi Aharon Simkin<br><br>21363 Lassen St., Suite 200<br><br>Chatsworth CA 91311-4289<br><br>USA<br><br>Office: 1-818-629-2770<br><br>Fax:    1-818-629-2771<br><br>Email: office@northamericankosher.com<br><br>Webpage: www.northamericankosher.com<br><br>",
+      "logo": "https://kosherquest.org/uploads/2016/04/North-American-striped-flag-logo-plus-name.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "217": {
+      "name": "Adas Yereim",
+      "desc": "Rabbi Yaakov Frankfurter<br>Cell Israël : + 972 52 76 16 381<br>Cell France : + 33 6 14 51 72 73  <br>Tel direct : + 33 1 42 00 06 50<br>Fax : + 33 1 42 00 06 53 <br>E-mail : kosher@ravfrankforter.org",
+      "logo": "https://kosherquest.org/uploads/2016/05/logo-kosher-5763.bmp",
+      "web": "",
+      "region": "France",
+      "cardRegion": "france",
+      "rtype": "International"
+    },
+    "224": {
+      "name": "Kosher Information Bureau",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2016/06/kib-logo.jpg",
+      "web": "",
+      "region": "National",
+      "cardRegion": "national",
+      "rtype": "US"
+    },
+    "225": {
+      "name": "North American Kosher LLC",
+      "desc": "North American Kosher Supervision (Flag K) Rabbi Aharon Simkin 21363 Lassen St., Suite 200. Chatsworth CA 91311-4289. USA",
+      "logo": "https://kosherquest.org/uploads/2016/05/Screen-Shot-2016-05-27-at-5.00.22-PM.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "228": {
+      "name": "Cleveland Kosher",
+      "desc": "Cleveland Kosher<br><br>POB 181476<br><br>Cleveland Hts, Ohio 44118<br><br>Telephone: 440 347-0264<br><br>Fax: 440 347-0876<br><br>Rabbi Gutman",
+      "logo": "https://kosherquest.org/uploads/2016/08/Cleveland_Kosher.jpg",
+      "web": "",
+      "region": "Ohio",
+      "cardRegion": "ohio",
+      "rtype": "US"
+    },
+    "229": {
+      "name": "Phoenix Va'ad Hakashruth",
+      "desc": "Phoenix Vaad Hakashruth<br><br>515 E. Bethany Home Road<br><br>Phoenix, AZ 85012<br><br>602-277-8858<br><br>info@KosherPhoenix.org<br>",
+      "logo": "https://kosherquest.org/uploads/2024/01/AZ.jpeg",
+      "web": "",
+      "region": "Arizona",
+      "cardRegion": "arizona",
+      "rtype": "US"
+    },
+    "230": {
+      "name": "Peoria Kosher",
+      "desc": "Peoria Kosher<br><br>Chabad Jewish Center<br><br>804 Country Meadows Lane<br><br>Peoria, Illinois 61614<br><br>P: 309-863-5613<br><br>C: 309-370-7701<br><br>Email: rabbi@jewishbradley.com<br><br>Rabbi Eli Langsam<br>",
+      "logo": "https://kosherquest.org/uploads/2016/12/Screenshot-2016-12-20-10.01.24.png",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "231": {
+      "name": "South Bend Kosher",
+      "desc": "South Bend Kosher<br><br>3207 South High Street<br><br>South Bend, Indiana 46614<br><br>Tel: 574-291-9014<br><br>Cell: 574-360-3382<br><br>rabbinebel@midwesttorah.org<br><br>www.midwesttorah.org<br><br>Rabbi Meir Bulman",
+      "logo": "https://kosherquest.org/uploads/2017/07/koshersymbol-southbend.png",
+      "web": "",
+      "region": "Indiana",
+      "cardRegion": "indiana",
+      "rtype": "US"
+    },
+    "232": {
+      "name": "Rabbi Sholom Salfer",
+      "desc": "Rabbi Sholom Salfer<br>Winands Road Synagogue Center<br>8701 Winands Road<br>Randellstown, MD 21133<br>Tel: 410-655-1353",
+      "logo": "https://kosherquest.org/uploads/2017/07/Screenshot-2017-07-24-13.46.48.png",
+      "web": "",
+      "region": "Maryland",
+      "cardRegion": "maryland",
+      "rtype": "US"
+    },
+    "233": {
+      "name": "New England Kashrus LeMehadrin",
+      "desc": "New England Kashrus LeMehadrin<br><br>75 Wellington Road<br><br>Brighton, MA 02135<br><br>Tel: 617-789-4343<br><br>Tel: 617-232-7979<br><br>Email: ahhamaoui@msn.com<br><br>Website: www.sephardicboston.org<br><br>Rabbi Aaron Hamaoui<br>",
+      "logo": "https://kosherquest.org/uploads/2017/07/crown-k.gif",
+      "web": "",
+      "region": "Massachusetts",
+      "cardRegion": "massachusetts",
+      "rtype": "US"
+    },
+    "234": {
+      "name": "Chabad Hebrew Center",
+      "desc": "Chabad Hebrew Center<br><br>8540 Lake Mead Blvd #130<br><br>Las Vegas, NV 89128<br><br>Tel: 702-271-8025<br><br>Fax: 702-877-4700<br><br>www.chabadhebrewcenter.com <br><br>Rabbi Shmuel Attal",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "Nevada",
+      "cardRegion": "nevada",
+      "rtype": "US"
+    },
+    "236": {
+      "name": "Bais Din Zedek D'Sanz Klausenberg",
+      "desc": "Bais Din Zedek D'Sanz Klausenberg<br><br>Tel: 201-348-6069<br><br>Rabbi Fishel Hershkowitz, Sanz-Klausenberg Dayan",
+      "logo": "https://kosherquest.org/uploads/2017/07/Screenshot-2017-07-27-13.00.57.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "237": {
+      "name": "Chabad of South Brunswick",
+      "desc": "Chabad of South Brunswick<br><br>1 Riva Ave. <br><br>North Brunswick, NJ 08902 <br><br>Tel: 732-398-9492<br><br>Fax: 732-398-9282<br><br>rabbi@chabadsouthbrunswick.com<br><br>www.chabadsouthbrunswick.com<br><br>Rabbi Levi Azimov<br>",
+      "logo": "https://kosherquest.org/uploads/2017/07/Screenshot-2017-07-27-13.11.26.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "238": {
+      "name": "Global Kosher",
+      "desc": "Global Kosher<br><br>79 Meade Ave<br><br>Passiac, NJ 07055<br><br>Tel: 973-907-6770<br><br>Fax: 973-345-0657<br><br>info@globalk.org<br><br>www.globalk.org<br><br>Rabbi Dovid Jenkins<br>",
+      "logo": "https://kosherquest.org/uploads/2017/07/Screenshot-2017-07-27-13.15.49.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "239": {
+      "name": "Rabbi Shmuel Meir Katz",
+      "desc": "Rabbi Shmuel Meir Katz<br><br>614 6th Street<br><br>Lakewood, NJ 09701<br><br>Tel: 732-367-3069",
+      "logo": "https://kosherquest.org/uploads/2017/07/Screenshot-2017-07-27-13.28.08.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "240": {
+      "name": "Rabbi Mordechai Betzael Klein",
+      "desc": "Rabbi Mordechai Betzael Klein <br><br>Satmar Dayan of Lakewood <br><br>307 6th Street <br><br>Lakewood, NJ 08701 <br><br>Tel: 732-370-1753",
+      "logo": "https://kosherquest.org/uploads/2017/07/klein.gif",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "241": {
+      "name": "Vaad Harabanim of Elizabeth/Hillside",
+      "desc": "Vaad Harabanim of Elizabeth/Hillside<br><br>330 Elmora Ave. <br><br>Elizabeth, NJ 07208<br><br>Tel: 908-355-4850 Ext. 111 <br><br>Fax: 908-289-5245<br><br>Email: ravteitz@thejec.org<br><br>Mara D'asra Rabbi Elazer Meir Teitz <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "242": {
+      "name": "Cherry-K ",
+      "desc": "Cherry-K Vaad HaKashrus <br><br>720 Cooper Landing Road <br><br>Cherry Hill, NJ 08002 <br><br>Tel: 856-667-9700 <br><br>Fax: 856-667-9765 <br><br>Email: rabbiepstein@sonsofisrael.org <br><br>Rabbi Ephraim Epstein, Rav Hamachshir <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/image.php_.jpeg",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "243": {
+      "name": "Chabad at the Shore",
+      "desc": "Chabad at the Shore <br><br>6412 Ventor Ave <br><br>Ventnor, NJ 08406 <br><br>Tel: 609-992-4100 <br><br>Email: chabadac@gmail.com <br><br>Website: www.chabadac.com <br><br>Rabbi Avraham Rapoport<br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "244": {
+      "name": "Chabad of New Mexico",
+      "desc": "Chabad of New Mexico <br><br>4000 San Pedro Northeast <br><br>Albuquerque, NM 87110 <br><br>Tel: 505-880-1181 <br><br>Fax: 505-880-9722 <br><br>Email: chaim@chabadnm.org <br><br>www.chabadnm.org <br><br>Rabbi Chaim Schmukler <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-03-12.42.26.png",
+      "web": "",
+      "region": "New Mexico",
+      "cardRegion": "new mexico",
+      "rtype": "US"
+    },
+    "245": {
+      "name": "Kashou Dayan",
+      "desc": "Rabbi Levi Yitzchok Abraham<br><br>Kashou Dayan of Williamsburg <br><br>398 Marcy Ave <br><br>Brooklyn, NY 11211 <br><br>Tel: 718-782-7656",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "246": {
+      "name": "Tartikover Rav",
+      "desc": "Rabbi Yechiel Babad <br><br>Tartikover Rav <br><br>5207 19th Ave. <br><br>Brooklyn, NY 11204 <br><br>Tel: 718-951-0952 <br><br>Fax: 718-951-2134 <br><br>Email: ybab@thejnet.com",
+      "logo": "https://kosherquest.org/uploads/2017/08/teaserbox_3489829.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "247": {
+      "name": "Rabbi Shmuel Dovid Beck",
+      "desc": "Rabbi Shmuel Dovid Beck <br><br>Apsher Rav<br><br>Congregation Ahavas Dovid <br><br>924 East 10th Street <br><br>Brooklyn, NY 11230 <br><br>Tel: 718-692-1945 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-03-13.13.34.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "248": {
+      "name": "Rav Shmiel Berger",
+      "desc": "Rav Shmiel Berger <br><br>Av Bais Din Mishkoltz <br><br>16 Juliana Place <br><br>Brooklyn, NY 11211 <br><br>Tel: 718-782-4541 <br><br>Cell: 917-613-8003 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-03-13.20.22.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "249": {
+      "name": "Rabbi Avraham Y. Bick",
+      "desc": "Rabbi Avraham Y. Bick <br><br>1547 55th Street <br><br>Brooklyn, NY 11219<br><br>Tel: 718-854-2617 <br><br>Fax: 718-851-6111 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "250": {
+      "name": "Rav Usher Anshel Eckstein",
+      "desc": "Rav Usher Anshel Eckstein <br><br>Belzer Dayan <br><br>1435 51st St. <br><br>Brooklyn, NY 11219 <br><br>Tel: 718-854-3030 Ext 204 <br><br>Cell: 917-514-8028 <br><br>Fax 718-854-0838 <br><br>Email: rabbieckstein@gmail.com <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/a20e550c.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "251": {
+      "name": "Rav Avraham Y. H. Friedlander (KHC)",
+      "desc": "Rav Avraham Y. H. Friedlander <Br><br>Rav Kahal D'Hivnov <br><br>1157 51st St. <br><br>Brooklyn, NY 11219 <br><br>Tel: 718-436-1089 <br><br>Cell: 347-436-6220 <br><br>Fax: 718-283-6500 <br><br>Email: raf@khckosher.org",
+      "logo": "https://kosherquest.org/uploads/2023/08/Masbia_of_Boro_Park_KHC_Rabbi_Avrohom_Friedlander_Kosher_Certification.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "252": {
+      "name": "Kosover Rebbe",
+      "desc": "Rabbi Shraga Feivel Hager<br><br>Kosover Rebbe <br><br>1248 53rd St. <br><br>Brooklyn, NY 11219 <br><br>Tel: 718-851-2266 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "253": {
+      "name": "Rav Avraham Dov Aurbach",
+      "desc": "Rabbi Avrohom Dov Auerbach <br>20 Shdairat Hertzl <br>Teveria <br>Tel: 9724-672-0092",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-11-1.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "254": {
+      "name": "BIR",
+      "desc": "Badatz Igud Rabbonim <br>Rabbi Meir 12 <br>Elad 48900 <br>Tel: (9723) 909-5848<br>Fax: (9723) 909-5877<br>Email: info@badatz.org",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-08-12.20.47-1.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "255": {
+      "name": "Badatz Viznitz",
+      "desc": "Badatz Viznitz <br>Toras Chaim 6 <br>Bnei Brak 51608 <br>Tel: (9723) 574-2346 <br>Cell: (972-50) 410-1130 <br>Cell: (972-52) 761-2988 (R' Weinberger) <br>Rav Shraga Faivel Weinberger ",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "256": {
+      "name": "Komemius ",
+      "desc": "Komemius <br>Bais Din L'inyanei Shmittah <br>Moshav Komemiut 130 <br>D.N. Sdei Gat <br>Tel: (9728) 688-0488 <br>Rabbi Yisroel Yitzchok Mendelson ",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "257": {
+      "name": "Rabbi Yosef Efrati ",
+      "desc": "Rabbi Yosef Efrati <br>Beit Midrash Gavoha for Halacha in Agricultural Settlements <br>46 Arznei Habirah <br>Jerusalem <br>Tel: (9722) 538-3123 <br>Fax: (9722) 581-5174 ",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-13-1.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "258": {
+      "name": "Chabad of Lod ",
+      "desc": "Chabad of Lod <br>Beit Kneset - Beit Aryeh <br>Shikun Chabad 1/25 <br>Lod 71321 <br>Tel: (9728) 925-6070<br>Fax:(9728) 920-4770 ",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-12-1.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "259": {
+      "name": "Chug Chosam Sofer - Petach Tikva ",
+      "desc": "Chug Chosam Sofer - Petach Tikva <br>21 Ichilov Street <br>P.O. Box 906 <br>Petach Tikvah 49109<br>Tel: (9723) 931-7040 ",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-08-12.45.18-1.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "260": {
+      "name": "ECK",
+      "desc": "European Central Kashrut Authority <br>P.O. Box 9624, Bait Vegan 51 <br>Jerusalem 90152 <br>Tel: (9722) 652-6566 <br>Fax: (9722) 651-2289 <br>Email: lev580@012.net.il ",
+      "logo": "https://kosherquest.org/uploads/2017/08/ECK-logo-1.gif",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "261": {
+      "name": "London Beth Din ",
+      "desc": "London Beth Din <br>6 Reines Street <br>Jerusalem 95427 <br>Tel: (9722) 651-3688<br>Cell: (972-52) 660-2772 ",
+      "logo": "https://kosherquest.org/uploads/2015/11/764s.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "262": {
+      "name": "Rabbi Moshe Shoul Klein ",
+      "desc": "Rabbi Moshe Shoul Klein <br>Noam EliMelech 14/a <br>Bnei Brak 51546 <br>Tel: (9723) 579-4946 ",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "263": {
+      "name": "Kof-K Israel",
+      "desc": "Kof-K Israel <br>P.O. Box 1528 <br>Efrat 90435 <br>Tel: (9722) 930-9715 <br>Cell (972-50) 547-7004 <br>Email: ahochstead@kof-k.org",
+      "logo": "https://kosherquest.org/uploads/2016/03/Kof-K-kosher-certification-e1454912904607.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "264": {
+      "name": "Rabbi Dr. Israel Meir Levinger ",
+      "desc": "Rabbi Dr. Israel Meir Levinger <br>Bait Vegan 51 <br>Jerusalem <br>Tel: (9722) 642-8483 <br>Fax: (9722) 651-2289 <br>Email: lev580@012.net.il",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-14-1.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "265": {
+      "name": "Rabbi Chaim Yaakov Horowitz ",
+      "desc": "Rabbi Chaim Yaakov Horowitz <br><br>Cong. Bais Yisroel (Monsey, NY) <br><br>908 46th St. <br><br>Brooklyn, NY 11219<br><br>Tel 718-871-2903<br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "266": {
+      "name": "Rabbi Nussen Naftoli Horowitz",
+      "desc": "Rabbi Nussen Naftoli Horowitz <br><br>1712 57th St. <br><br>Brooklyn, NY 11204 <br><br>Tel: 718-234-9514 <br><br>Rabbi Benzion Halberstam<br><br>Email: nhorowitz@yeshivanet.com<br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-16-12.29.28.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "267": {
+      "name": "Rabbi Mordechai Seckbach ",
+      "desc": "Rabbi Mordechai Seckbach <br>Av Bais Din Strasbourg <br>Noda Biyehuda Street 5/2 <br>Modiin Illit (Kiryat Sefer) 71919 <br>Tel: (9728) 974-4410 <br>Fax: (9728) 974-4420 <br>Email: mseckbach@bezeqint.net ",
+      "logo": "https://kosherquest.org/uploads/2017/08/528-1.jpg",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "268": {
+      "name": "Vaad Hakashrut of Kiryat Sanz ",
+      "desc": "Vaad Hakashrut of Kiryat Sanz <br>5 Divrei Chaim Street <br>Kiryat Sanz, Netanya <br>Tel: (9729) 861-6116 <br>www.sanz.org.il ",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "269": {
+      "name": "Nikolsburg Rebbe ",
+      "desc": "Nikolsburg Rebbe <br><br>Rabbi Mordechai Zev Jungreis<br> <br>1607 49th St. <br><br>Brooklyn, NY 11204<br> <br>Tel: 718-853-9826 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "270": {
+      "name": "KIC",
+      "desc": "Kosher Information Center <br><br>1466 East 14th St. <br><br>Brooklyn, NY 11230 <br><br>Tel: 718-375-0505<br><br>Cell: 917-562-2712 <br><br>Email: weinerbubby2001@aol.com<br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-16-12.36.37.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "271": {
+      "name": "Rabbi Yehoshua Katz ",
+      "desc": "Rabbi Yehoshua Katz <br><br>K'hal Magrov <br><br>1069 East 4th St. <br><br>Brooklyn, NY 11230 <br><br>Tel: 718-338-4925 <br><br>Fax: 718-421-2733 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-16-12.40.10.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "272": {
+      "name": "Kehilah - Flatbush Community Kashrus Organization ",
+      "desc": "Kehilah Kashrus <br><br>1294 East 8th St. <br><br>Brooklyn, NY 11230 <br><br>Tel: 718-951-0481 <br><br>Email: kehilahkashrus@hotmail.com<br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-07-13.06.18-1.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "273": {
+      "name": "Kehilath Yakov of Pupa",
+      "desc": "Rabbi Aron Grunwald <br><br>Pupa Dayan <br><br>654 Bedford Ave.<br> <br>Brooklyn, NY 11211 <br><br>Tel: 718-643-6313 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "274": {
+      "name": "Yoka Rav",
+      "desc": "Rabbi Chaim Y. Koenig <br><br>Cheshek Shlomo <br><br>1243 55th St. <br><br>Brooklyn, NY 11219<br> <br>Tel: 718-853-0070 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/Screenshot-2017-08-16-12.48.52.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "275": {
+      "name": "Rabbi Shlomo Koenig ",
+      "desc": "Rabbi Shlomo Koenig <br><br>1247 51st St. <br><br>Brooklyn, NY 11219<br> <br>Tel: 718-755-8725 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "276": {
+      "name": "Mechon L'Bidikas Tolaim",
+      "desc": "Mechon L'bdikas Tolaim <br><br>59 Lorimer St. #1D <br><br>Brooklyn, NY 11206 <br><br>Tel: 718-963-1611 <br><br>A Clearing House for information on infestation in food. <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "277": {
+      "name": "Kehal Machzikei Hadas of Belz ",
+      "desc": "Kehal Machzikei Hadas of Belz <br><br>1435 51st St. <br><br>Brooklyn, NY 11206<br> <br>Tel: 718-854-3030 <br><br>Fax: 718-854-0838 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/f17572dd-1.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "278": {
+      "name": "Rabbi Chaim Eliezer Meisels ",
+      "desc": "Rabbi Chaim Eliezer Meisels <br><br>226 Hooper Street <br><br>Brooklyn, NY 11211 <br><br>Tel: 563-380-4666 <br><br>Fax: 563-864-6004 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "279": {
+      "name": "Badatz Mishmeres L'Mishmeres ",
+      "desc": "Badatz Mishmeres L'Mishmeres <br><br>1157 42nd Street <br><br>Brooklyn, NY 11219 <br><br>Tel: 718-305-7970 <br><br>Fax: 718-436-0846 <br><br>Cell: 718-305-9790 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-15-1.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "280": {
+      "name": "Chuster Rav",
+      "desc": "Chuster Rav <br><br>Rabbi Fishel Sanderowitz <br><br>K'hal Adas Vishnitz <br><br>186 Hooper Street Apt. 16 <br><br>Brooklyn, NY 11211 <br><br>Tel: 718-387-1871 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/300px-No_image_available.svg.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "281": {
+      "name": "Rabbi Mayer Schnebalg ",
+      "desc": "Rabbi Mayer Schnebalg <br><br>Av Bais Din Hanipoly <br><br>725 Bedford Ave. <br><br>Brooklyn, NY 11205 <br><br>Tel: 718-855-4697 <br>",
+      "logo": "https://kosherquest.org/uploads/2017/08/FullSizeRender-16-1.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "282": {
+      "name": "Ottawa Vaad HaKashrut",
+      "desc": "Ottawa Vaad HaKashrut <br><br>21 Nadolny Sachs Private <br><br>Ottawa, ON K2A 1R9<br><br>(613) 255-5829 <br><br>Rabbi Levy Teitlbaum<r><br>RTeitlebaum@jewishottawa.com<br>",
+      "logo": "https://kosherquest.org/uploads/2017/09/IMG_1216.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "283": {
+      "name": "",
+      "desc": "",
+      "logo": "https://kosherquest.org/uploads/2017/09/IMG_1216.jpg",
+      "web": "",
+      "region": "Canada",
+      "cardRegion": "canada",
+      "rtype": "International"
+    },
+    "284": {
+      "name": "TKC Kosher",
+      "desc": "Truly Kosher Certification <br><br>TKC Kosher<br><br>15016 Ventura Blvd., #10 <br> <br>Sherman Oaks, CA, 91403<br><br>Phone: 310-622-2930<br><br>Cell: 818-445-4843<br><br>www.tkkosher.com <br><br>Rabbi Yosef Teitelbaum<br>",
+      "logo": "https://kosherquest.org/uploads/2017/09/TKK-logo-blk-outline.jpg",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "285": {
+      "name": "IKO",
+      "desc": "Main Kosher Certification Office <br><br>International Kosher Organisation, Israel <br> <br>39/12 Nachal Dolev <br><br>Ramat Bet Shemesh <br><br>Israel<br><br>Tel +9722 566 7778 (24 hrs) <br> <br>Mobile +9725 247 31860 (24 hrs) <br><br>gf@ikokosher.com <br><br><br>England Main Administrative Office<br><br>The International Kosher Organisation<br><br>162 Preston Road<br><br>Wembley, Middx, HA9-8NJ<br> <br>Tel +44 203 371 8274<br><br>info@ikokosher.com<br>",
+      "logo": "https://kosherquest.org/uploads/2017/12/logo.png",
+      "web": "",
+      "region": "Israel",
+      "cardRegion": "israel",
+      "rtype": "International"
+    },
+    "286": {
+      "name": "Rabbi Eliezer Wolff",
+      "desc": "Rabbi Eliezer Wolff<br><br>Rav & Av Beth Din<br><br>Amsterdam<be><br>Netherlands<br><br>+31629099235<br><br>rav.wolff@gmail.com<br><br>www.top-k.net<br>",
+      "logo": "https://kosherquest.org/uploads/2017/12/image2-3.jpg",
+      "web": "",
+      "region": "Netherlands",
+      "cardRegion": "netherlands",
+      "rtype": "International"
+    },
+    "287": {
+      "name": "Rabbi Eliezer Wolff",
+      "desc": "Rabbi Eliezer Wolff<br><br>Rav & Av Beth Din<br><br>Amsterdam<be><br>Netherlands<br><br>+31629099235<br><br>rav.wolff@gmail.com<br><br>www.top-k.net<br>",
+      "logo": "https://kosherquest.org/uploads/2017/12/image1-2.jpg",
+      "web": "",
+      "region": "Netherlands",
+      "cardRegion": "netherlands",
+      "rtype": "International"
+    },
+    "288": {
+      "name": "Central States Kosher",
+      "desc": "Central States Kosher<br><br>(Under the auspices of Kosher WI) <br><br>Kosher Supervisors Of Wisconsin<br><br>7020 N. Green Bay Avenue<br><br>Glendale, WI 53209<br><br>Phone: (414) 573-9353; Fax: (414) 228-8933<br><br>Rabbinic Administrator: Rabbi Benzion Twerski, Rav Hamachshir<br><br>Rabbi Akiva Freilich, Rabbinic Administrator<br> <br>Rabbi Tuvia Torem, Rabbinic Supervisor<br>",
+      "logo": "https://kosherquest.org/uploads/2018/02/cKS-1.jpg",
+      "web": "",
+      "region": "Wisconsin",
+      "cardRegion": "wisconsin",
+      "rtype": "US"
+    },
+    "289": {
+      "name": "1-K Kosher",
+      "desc": "1-K Kosher<br>Rue du Relais 34 1170 Bruxelles Belgium<br>+32 475 28 59 67<br>Rabbi Menachem Hadad",
+      "logo": "https://kosherquest.org/uploads/2018/10/kos.png",
+      "web": "",
+      "region": "Belgium",
+      "cardRegion": "belgium",
+      "rtype": "International"
+    },
+    "290": {
+      "name": "Blue Ribbon (CRC)",
+      "desc": "Chicago Rabbinical Council (cRc)<br><br>2701 W. Howard, Chicago, IL. 60645<br><br>Phone: (773) 465-3900; Fax: (773) 465-6632<br><br>info@crcweb.org<br><br>www.crcweb.org<br><br>HaRav Gedalia Dov Schwartz, Av Bais Din<br><br>Rabbi Sholem Fishbane, Kashrus Administrator<br>",
+      "logo": "https://kosherquest.org/uploads/2018/10/Blue-ribbon.jpg",
+      "web": "",
+      "region": "Illinois",
+      "cardRegion": "illinois",
+      "rtype": "US"
+    },
+    "291": {
+      "name": "Kosher East",
+      "desc": "Rabbi Yosef Levy <br><br>2862 E. Zobel Street<br><br>Makati, City, Manila <br><br>Philippines 1210<br><br>Phone: 632-622-2666",
+      "logo": "https://kosherquest.org/uploads/2019/12/Kosher-East.png",
+      "web": "",
+      "region": "Asia - Pacific",
+      "cardRegion": "asia - pacific",
+      "rtype": "International"
+    },
+    "292": {
+      "name": "Singapore Kashruth - Asia Kosher",
+      "desc": "Rabbi Mordechai Abergel<br><br>19 Oxley Walk #03-02<br><br>Singapore, Singapre 238592<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Singapore.jpg",
+      "web": "",
+      "region": "Asia - Pacific",
+      "cardRegion": "asia - pacific",
+      "rtype": "International"
+    },
+    "293": {
+      "name": "Guadalajara - Chabad",
+      "desc": "Rabbi Abraham Srugo <br><br>Domingo Sarmiento #3043 <br><br>Guadalajara, Jal 44630 <br><br>Mexico <br><br>Office: 52-331-812-9410<br><br>Cell: 52-333-146-1880<br><br>US: 718-395-2566<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Chabad_Guadalajara.jpg",
+      "web": "",
+      "region": "Mexico",
+      "cardRegion": "mexico",
+      "rtype": "International"
+    },
+    "294": {
+      "name": "Machsike Hadass",
+      "desc": "Rabbi Eliyahu Sternbuch <br><br>Jacob Jacobstratt 22 <br><br>Antwerp 2018 <br><br>323-233-5567<br><br>Belgium",
+      "logo": "https://kosherquest.org/uploads/2019/12/Machsike_Haddass_Antwerp_15.gif",
+      "web": "",
+      "region": "Belgium",
+      "cardRegion": "belgium",
+      "rtype": "International"
+    },
+    "295": {
+      "name": "Shomre Hadas",
+      "desc": "Rabbi Y. Schmahl <br><br>Terlistraat 35 <br><br>Antwerp 2018<br><br>323-232-0187<br><br>Belgium",
+      "logo": "https://kosherquest.org/uploads/2019/12/images.png",
+      "web": "",
+      "region": "Belgium",
+      "cardRegion": "belgium",
+      "rtype": "International"
+    },
+    "296": {
+      "name": "Communidade Ortodoxa Israelita Kehillas Hacharedim",
+      "desc": "Rabbi A. M. Iliovits<br><br>Rua Haddock Lobo 1091<br><br>S. Paulo-SP, 01414-003<br><br>Brazil<br><br>Ph: 5511-3082-1562<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Kehilas-hachardim-brazil.jpg",
+      "web": "",
+      "region": "Brazil",
+      "cardRegion": "brazil",
+      "rtype": "International"
+    },
+    "297": {
+      "name": "Caribbean Kosher",
+      "desc": "Division of Chabad Lubavitch of Puerto Rico<br><br>Rabbi Mendel Zarchi<br><br>18 Calle Rosa<br><br>Carolina, PR 00979<br><br>Ph:787-253-0894",
+      "logo": "https://kosherquest.org/uploads/2019/12/Puerto-Rico.png",
+      "web": "",
+      "region": "Puerto Rico",
+      "cardRegion": "puerto rico",
+      "rtype": "US"
+    },
+    "298": {
+      "name": "Rhode Island Kosher",
+      "desc": "Rabbi Shaul Gallor<br><br>401 Elgrove Ave. <br><br>Providence, RI 02901<br><br>Ph: 401-830-3570<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Rhode-island-kosher.png",
+      "web": "",
+      "region": "Rhode Island",
+      "cardRegion": "rhode island",
+      "rtype": "US"
+    },
+    "299": {
+      "name": "Central States Kosher",
+      "desc": "Central States Kosher<br><br>(Under the auspices of Kosher WI) <br><br>Kosher Supervisors Of Wisconsin<br><br>7020 N. Green Bay Avenue<br><br>Glendale, WI 53209<br><br>Phone: (414) 573-9353; Fax: (414) 228-8933<br><br>Rabbinic Administrator: Rabbi Benzion Twerski, Rav Hamachshir<br><br>Rabbi Akiva Freilich, Rabbinic Administrator<br> <br>Rabbi Tuvia Torem, Rabbinic Supervisor<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Wisconsin.jpg",
+      "web": "",
+      "region": "Wisconsin",
+      "cardRegion": "wisconsin",
+      "rtype": "US"
+    },
+    "300": {
+      "name": "OV - St. Louis",
+      "desc": "THE \"OV\" Kosher Inspection Service<br>of The Vaad Hoeir of St. Louis<br>Rabbi Sholom Rivkin (314) 569-2770",
+      "logo": "https://kosherquest.org/uploads/2019/12/CircleV.jpg",
+      "web": "",
+      "region": "Missouri",
+      "cardRegion": "missouri",
+      "rtype": "US"
+    },
+    "301": {
+      "name": "Kentucky Kosher International",
+      "desc": "Rabbi Avrohom Litvin<br><br>455 South Fourth St. Suite 10<br><br>Louisville, KY 40202<br><br>502-235-5770<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/kosherky.png",
+      "web": "",
+      "region": "Kentucky",
+      "cardRegion": "kentucky",
+      "rtype": "US"
+    },
+    "302": {
+      "name": "Sunshine State Kosher",
+      "desc": "Rabbi Moshe Berger<br><br>4700 Sheridan Rd Suite J<br><br>Hollywood, FL 33021<br><br>Ph: 954-312-3785<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/45636859_119034788982495_8172199660404867072_n.jpg",
+      "web": "",
+      "region": "Florida",
+      "cardRegion": "florida",
+      "rtype": "US"
+    },
+    "303": {
+      "name": "Rabbi Yosef Feiglestock",
+      "desc": "Ecuador 821<br><br>Buenos Aires<br><br>Capital 1214<br><br>Argentina<br><br>Ph: 54114-961-9613<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/argentina1.jpg",
+      "web": "",
+      "region": "Argentina",
+      "cardRegion": "argentina",
+      "rtype": "International"
+    },
+    "304": {
+      "name": "Rabbi Yosef Feiglestock",
+      "desc": "Ecuador 821<br><br>Buenos Aires<br><br>Capital 1214<br><br>Argentina<br><br>Ph: 54114-961-9613<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/argentina2.jpg",
+      "web": "",
+      "region": "Argentina",
+      "cardRegion": "argentina",
+      "rtype": "International"
+    },
+    "306": {
+      "name": "Tartikov - Minchas Chinuch",
+      "desc": "Beth Din Minchas Chinuch Tartikov<br><br>Rabbi Shmuel Teitelbaum<br><br>5014 16th Ave. #115<br><br>Brooklyn, NY 11204<br><br>718-972-3508<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Tartikov-Beth-Din-1.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "307": {
+      "name": "Tarnopol Kashrus",
+      "desc": "Rabbi Naftali Meir Babad<br><br>163 Parkville Ave. <br><br>Brooklyn, NY 11230<br><br>Ph: 718-437-2000<br><br>tarnopol.org<br>",
+      "logo": "https://kosherquest.org/uploads/2019/12/Tarnopol-scaled.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "308": {
+      "name": "Valley Kosher",
+      "desc": "Valley Kosher - Rabbi Yitzchak Feiglin <br><br>818-966-0502 <br><br>valleykosher@gmail.com <br><br><br>Supervises:<br><br>La Pizza (Valley Village)<br><br>Abyss Market (Frozen Yogurt and Slushies) <br><br>Kosher Breakfast @ Abyss <br><br>Meshuga Express Sushi (located in Abyss Market)<br><br>Stewish (Rabbi Samuels’ Cholent)<br><br>Sharabi - Baraka Grill (food truck)<br>",
+      "logo": "https://kosherquest.org/uploads/2022/03/Valley-Kosher-Logo.png",
+      "web": "",
+      "region": "California",
+      "cardRegion": "california",
+      "rtype": "US"
+    },
+    "309": {
+      "name": "Vaad Kashrus Mehadrin (VKM)",
+      "desc": "1776 Avenue of the States, Suite 301 <br><br>Lakewood, NJ <br>Phone: 732-856-8085<br><br>Rav HaMachshir: Rabbi Chaim Steier <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/LogoVKM-black-back-transparent-e1691707049686.png",
+      "web": "https://www.koshervaad.com",
+      "region": "New Jersey",
+      "cardRegion": "new jersey",
+      "rtype": "US"
+    },
+    "310": {
+      "name": "Tarnopol Kashrus",
+      "desc": "Rabbi Naftali Meir Babad<br><br>163 Parkville Ave. <br><br>Brooklyn, NY 11230<br><br>Ph: 718-437-2000<br><br>tarnopol.org<br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/Screenshot-2023-08-10-at-4.02.56-PM-e1691708648517.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "311": {
+      "name": "Nitra Monsey",
+      "desc": "Ph: 845-371-6019<br><br>Rabbi Menachem Meir Weissmandel<br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/rabbi-m-weissmandl-rav-of-nitra-monsey-kashrus-symbol-large-doctorvicks-e1691708825624.jpg",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "312": {
+      "name": "Rabbi Chaim Meir Wagshal",
+      "desc": "25 Monsey Blvd. Monsey NY <br><br>Phone: 845-721-4798<br><br>Rabbi Chaim Meir Wagshal <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/images-2.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "313": {
+      "name": "Vaad Kashrus Mehadrin (VKM)",
+      "desc": "Queens, NY <br><br>Phone: 917-207-2131<br><br>Rabbi Tzvi Altusky <br><br>koshervaad.com <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/LogoVKM-black-back-transparent-e1691707049686.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "314": {
+      "name": "Rabbi Yitzchok Lebovitz - K'hal Yeriem",
+      "desc": "P.O Box 939, 25 Highland Ave. <br><br>Woodridge, NY <br><br>Phone: 845-434-3060<br><br>Rabbi Yitzchok Lebovitz <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/Screenshot-2023-08-10-at-4.19.32-PM-1-e1691709765517.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "315": {
+      "name": "Cincinnati Kosher/Central Kosher",
+      "desc": "2455A Section Road <br><br>Cincinnati, Ohio 45237 <br><br>(513) 532-3800<br><br>Info@CincinnatiKosher.org<br><br>Rabbi Avraham Weinrib<br><br>https://cincinnatikosher.org <br>",
+      "logo": "https://kosherquest.org/uploads/2023/08/cropped-ck-logos-black-e1691710092225.jpg",
+      "web": "",
+      "region": "Ohio",
+      "cardRegion": "ohio",
+      "rtype": "US"
+    },
+    "316": {
+      "name": "Apple K (NFC)",
+      "desc": "80 Broad Street, 5th Floor, NY. NY <br><br>Phone: 888-422 4632 <br><br>Email: info@nfccertification.com <br>",
+      "logo": "https://kosherquest.org/uploads/2023/10/NFC-Kosher-color-1.png",
+      "web": "",
+      "region": "New York",
+      "cardRegion": "new york",
+      "rtype": "US"
+    },
+    "319": {
+      "name": "Kosher Authority of Australia and NZ",
+      "desc": "Phone: 612-9365-2933 <br><br>Website: www.ka.org.au",
+      "logo": "https://kosherquest.org/uploads/2024/06/Unknown.png",
+      "web": "",
+      "region": "Australia",
+      "cardRegion": "australia",
+      "rtype": "International"
+    }
+  }
+}

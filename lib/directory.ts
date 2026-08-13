@@ -12,6 +12,7 @@ import {
   type ProviderCat,
   type PublicProvider,
 } from "@/data/directory";
+import { cachedRead } from "@/lib/cache-tags";
 import { listStoredProviders } from "@/lib/directory-store";
 import { publishableContact } from "@/lib/provider-contact";
 
@@ -209,22 +210,15 @@ export async function readProviders(): Promise<ProviderReading> {
  * directly — it has to see a save immediately, before anything invalidates
  * a tag.
  *
- * `next/cache` is imported dynamically, not at module scope, for the same
- * reason the Prisma client is below: this file is imported directly by
- * plain-Node tests that never touch a Next.js request context, and a
- * top-level `unstable_cache` import breaks module resolution for all of
- * them even when nothing calls this function.
+ * Goes through lib/cache-tags.ts's cachedRead rather than importing
+ * `unstable_cache` directly — see that file for why: `next/cache` genuinely
+ * does not resolve outside a Next.js runtime, and this file is imported
+ * directly by plain-Node tests that have none. cachedRead falls back to an
+ * uncached call there, which is the right answer for a test anyway.
  */
 export async function getPublicProviders(): Promise<PublicProvider[]> {
-  const { unstable_cache } = await import("next/cache");
-  const cachedReading = unstable_cache(readProviders, ["directory-public-reading"], {
-    tags: [DIRECTORY_PUBLIC_TAG],
-    // A safety net, not the mechanism: every write path calls updateTag, so
-    // in practice this window is never what makes an edit appear. It only
-    // matters if a write path is ever added that forgets to.
-    revalidate: 3600,
-  });
-  return (await cachedReading()).providers;
+  const reading = await cachedRead(readProviders, ["directory-public-reading"], [DIRECTORY_PUBLIC_TAG]);
+  return reading.providers;
 }
 
 /**

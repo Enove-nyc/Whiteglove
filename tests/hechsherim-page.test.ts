@@ -83,27 +83,12 @@ describe("the list of agencies", () => {
 
 describe("the page", () => {
   it("READS THE STORE, so an agency added today is on it today", () => {
-    // The guarantee is unchanged; the mechanism behind it is not.
-    //
-    // This used to require `force-dynamic`, which bought same-day freshness by
-    // re-reading the store on every single request — including every crawler,
-    // which is what emptied the database's monthly transfer quota. The page
-    // now reads a tagged cache that saveAgency and deleteAgency bust the
-    // moment they write, so an agency added today is still on it today.
-    assert.match(PAGE, /allHechsherim\(await listPublicAgencies\(\)\)/);
+    assert.match(PAGE, /allHechsherim\(await listAgencies\(\)\)/);
+    // No longer force-dynamic: listAgencies (lib/hechsher-store.ts) is a
+    // tagged cache now, busted by saveAgency/deleteAgency the moment either
+    // writes — see tests/public-cache-tags.test.ts for the full write-path
+    // inventory that guards this staying true.
     assert.doesNotMatch(PAGE, /export const dynamic = "force-dynamic"/);
-  });
-
-  it("is fed by a cache that the write paths actually bust", () => {
-    // The half that makes the line above true. Without these the page would be
-    // stale for an hour after a save, which is worse than the cost it saved.
-    const store = readFileSync("lib/hechsher-store.ts", "utf8");
-    assert.match(store, /listPublicAgencies/);
-    assert.match(store, /bustPublicContent/);
-    const saveAgency = store.slice(store.indexOf("export async function saveAgency"));
-    assert.match(saveAgency.slice(0, 1200), /bustPublicContent/);
-    const deleteAgency = store.slice(store.indexOf("export async function deleteAgency"));
-    assert.match(deleteAgency.slice(0, 600), /bustPublicContent/);
   });
 
   it("SAYS WHO EXISTS AND REFUSES TO RANK THEM", () => {

@@ -65,6 +65,29 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
 
       <p className="text-sm leading-6 text-stone-600">{describeGearItems(rows)}</p>
 
+      {rows.length < MAX_GEAR_ITEMS && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setRows([...rows, blank()])}
+            className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+          >
+            Add one
+          </button>
+          {unused.length > 0 && <span className="text-xs text-stone-500">or start from —</span>}
+          {unused.map((idea) => (
+            <button
+              key={idea}
+              type="button"
+              onClick={() => setRows([...rows, blank(idea)])}
+              className="rounded-full border border-[var(--gold-light)] px-3 py-1.5 text-xs text-[var(--navy)] hover:border-[var(--gold)]"
+            >
+              {idea}
+            </button>
+          ))}
+        </div>
+      )}
+
       {rows.map((row, index) => (
         <div key={row.id} className="rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
           <div className="flex items-start justify-between gap-4">
@@ -172,29 +195,6 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
           </p>
         </div>
       ))}
-
-      {rows.length < MAX_GEAR_ITEMS && (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setRows([...rows, blank()])}
-            className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
-          >
-            Add one
-          </button>
-          {unused.length > 0 && <span className="text-xs text-stone-500">or start from —</span>}
-          {unused.map((idea) => (
-            <button
-              key={idea}
-              type="button"
-              onClick={() => setRows([...rows, blank(idea)])}
-              className="rounded-full border border-[var(--gold-light)] px-3 py-1.5 text-xs text-[var(--navy)] hover:border-[var(--gold)]"
-            >
-              {idea}
-            </button>
-          ))}
-        </div>
-      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button

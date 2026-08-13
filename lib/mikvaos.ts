@@ -1,4 +1,3 @@
-import { MIKVAOS_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 /**
  * Published mikvah listings for the public site and admin overview.
  *
@@ -13,9 +12,23 @@ import { practicalContent } from "@/data/practical-content";
 import { destinations as heritageDestinations, destinationHref as heritageDestinationHref } from "@/data/destinations";
 import { getBulkDestination } from "@/data/destinations-bulk";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
+import { cachedRead } from "@/lib/cache-tags";
 import { heritageTownHref } from "@/lib/route-migration";
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
+
+/**
+ * Busted by every PracticalPlace write, of any category, not only MIKVAH —
+ * createPlace/updatePlace/deletePlace (lib/content-admin.ts, the shared
+ * editor behind every practical-listing category), the bulk-import publish
+ * step (lib/content-imports.ts, which writes PracticalPlace directly rather
+ * than through those functions), and the bulk re-import (lib/db-setup.ts).
+ * A slightly wider tag than listPublishedMikvaos strictly needs — busting it
+ * on an unrelated category's edit is a harmless extra cache miss, and it is
+ * the only tag any future PracticalPlace-reading page needs to reuse rather
+ * than inventing its own.
+ */
+export const PRACTICAL_PLACES_PUBLIC_TAG = "practical-places-public";
 
 export type MikvahListing = {
   id: string;
@@ -166,16 +179,7 @@ export function mikvahListingFromDbRow(row: DbMikvahRow): MikvahListing | null {
   };
 }
 
-/**
- * Public mikvaos: published DB rows when available, otherwise the static
- * source-backed catalog. Never mixes drafts into the public list.
- */
-/** The published listings, cached until a content write busts the tag. */
-export async function listPublicMikvaos(): Promise<MikvahListing[]> {
-  return cachedPublicRead(listPublishedMikvaos, "mikvaos-published", MIKVAOS_PUBLIC_TAG);
-}
-
-export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
+async function listPublishedMikvaosUncached(): Promise<MikvahListing[]> {
   if (!process.env.DATABASE_URL) return staticMikvahListings();
   try {
     const { prisma } = await import("@/lib/prisma");
@@ -202,6 +206,19 @@ export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
     console.error("[mikvaos] DB read failed — using static catalog", error);
   }
   return staticMikvahListings();
+}
+
+/**
+ * Public mikvaos: published DB rows when available, otherwise the static
+ * source-backed catalog. Never mixes drafts into the public list.
+ *
+ * Cached and tagged rather than read fresh on /mikvaos's every visit — see
+ * PRACTICAL_PLACES_PUBLIC_TAG for every write path that busts it. Goes
+ * through lib/cache-tags.ts's cachedRead rather than importing
+ * `unstable_cache` directly — see that file for why.
+ */
+export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
+  return cachedRead(listPublishedMikvaosUncached, ["published-mikvaos"], [PRACTICAL_PLACES_PUBLIC_TAG]);
 }
 
 /** Admin overview: every MIKVAH row including drafts that still need work. */

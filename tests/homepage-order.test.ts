@@ -221,6 +221,11 @@ describe("the order of the page", () => {
     assert.doesNotMatch(categories, /\{count\}/);
     // …but a category with nothing behind it is still not offered at all.
     assert.match(categories, /if \(count === 0\) return null/);
+    // The same cards on /destinations used to print "3 destinations" next to
+    // Beach and resort — the same comparison the front page already refused.
+    const hub = readFileSync("app/destinations/(hub)/page.tsx", "utf8");
+    const hubCards = hub.slice(hub.indexOf("Browse by holiday type"), hub.indexOf("id=\"browse\""));
+    assert.doesNotMatch(hubCards, /\{count\} destination/);
   });
 
   it("does not explain kosher food and Shabbos twice on one page", () => {
@@ -239,6 +244,18 @@ describe("the order of the page", () => {
     assert.doesNotMatch(PROSE, /Tell us about the trip/);
     assert.doesNotMatch(PROSE, /href="\/contact"/);
     assert.doesNotMatch(PROSE, /href="\/services"/);
+  });
+
+  it("keeps Search / Ask / Plan above the panel on a narrow screen", () => {
+    const tools = readFileSync("components/HomeDiscoveryTools.tsx", "utf8");
+    const tablist = tools.indexOf('role="tablist"');
+    const panel = tools.indexOf("id={`home-tool-${id}`}");
+    assert.ok(tablist >= 0 && panel > tablist, "the three options must render before the selected panel");
+    // One row at every width — stacking the cards on a phone put Plan between
+    // a tap on Ask and TravelAssistantBox.
+    assert.match(tools, /grid grid-cols-3/);
+    assert.match(tools, /sticky/);
+    assert.match(tools, /hidden[^"]*sm:block/);
   });
 
   it("CARRIES ONE PLANNING FORM, via Search / Ask / Plan", () => {

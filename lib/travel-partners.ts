@@ -32,6 +32,7 @@
 
 import type { SearchShape } from "@/lib/kayak-search";
 import { usableBookingDate } from "@/lib/date-range";
+import { isAviasalesHref } from "@/lib/flight-book-href";
 
 /** The three searches that hand off to somebody else. */
 export type SearchSlot = "flights" | "hotels" | "cars";
@@ -116,9 +117,9 @@ export function partnersFor(slot: SearchSlot): TravelPartner[] {
 
 /** Which partner is used when the owner has not chosen one. */
 export const DEFAULT_PARTNERS: Record<SearchSlot, PartnerKey> = {
-  // Kayak via Stay22 is the programme that works and can earn. Aviasales deep
-  // links 302 to aviasales.ru and discard the search; EconomyBookings carries
-  // no dates. The owner can still override at /admin/settings/earnings.
+  // Kayak via Stay22 is the programme that works and can earn; EconomyBookings
+  // carries no dates. The owner can still override at /admin/settings/earnings,
+  // and a link may name its own partner for one press — see /go.
   flights: "kayak",
   cars: "kayak",
   hotels: "booking",
@@ -170,7 +171,67 @@ export type FlightQuery = {
   shape: SearchShape;
   adults?: number;
   children?: number;
+  /**
+   * TRAVELPAYOUTS_MARKER, passed in rather than read here.
+   * Aviasales credits the account from the marker on its own address; nothing
+   * in this module knows what the number is.
+   */
+  marker?: string;
 };
+
+function marked(url: URL, marker: string | undefined): string {
+  const value = (marker ?? "").trim();
+  if (/^\d{4,}$/.test(value)) url.searchParams.set("marker", value);
+  return url.toString();
+}
+
+/** Day and month, the two-digit pair Aviasales puts in a search path. */
+function ddmm(isoDate: string): string {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  return parts ? `${parts[3]}${parts[2]}` : "";
+}
+
+/**
+ * The Aviasales RESULTS page for one journey, with the marker on it.
+ *
+ * NOT `search.aviasales.com/flights/?origin_iata=…`, which is the format their
+ * help centre documents and which does not work: requested with a route, dates
+ * and a marker it answers 302 to `aviasales.ru/?refhost=search.aviasales.com`
+ * and every one of the three is gone — the traveller lands on a Russian front
+ * page and searches again by hand, and nothing anywhere reports a fault.
+ * Measured against the live host, which is the only way that shows.
+ *
+ * This is the address Travelpayouts' own Data API hands back for a fare
+ * (`link: "/search/JFK2608TLV1?…"`, see lib/travelpayouts-api.ts) and the one
+ * View & book has been opening in production: origin, day and month,
+ * destination, the return day and month when there is one, then passengers.
+ * It answers 200 on aviasales.com and keeps the marker.
+ */
+export function aviasalesResultsUrl(query: {
+  from: string;
+  to: string;
+  depart: string;
+  ret?: string;
+  adults?: number;
+  marker?: string;
+}): string | null {
+  const from = query.from.trim().toUpperCase();
+  const to = query.to.trim().toUpperCase();
+  const out = ddmm(query.depart);
+  if (!/^[A-Z]{3}$/.test(from) || !/^[A-Z]{3}$/.test(to) || !out) return null;
+  const back = query.ret ? ddmm(query.ret) : "";
+  // One digit is all the path can hold, so a party larger than nine is capped
+  // rather than written as two characters the parser would read as a date.
+  const passengers = Math.max(1, Math.min(9, count(query.adults, 1)));
+  const url = new URL(`/search/${from}${out}${to}${back}${passengers}`, "https://www.aviasales.com");
+  const href = marked(url, query.marker);
+  return isAviasalesHref(href) ? href : null;
+}
+
+/** Aviasales itself, marked, for a request with no route to search on. */
+export function aviasalesHomeUrl(marker?: string): string {
+  return marked(new URL("https://www.aviasales.com/"), marker);
+}
 
 export type CarQuery = {
   /** A city name, or an airport code. */
@@ -187,11 +248,10 @@ export type CarQuery = {
  * a one-way — what they accept — rather than inventing a combined fare.
  * Kayak Compare still carries every leg via /go.
  *
- * Sources, both Travelpayouts' own help centre:
- *   search.aviasales.com/flights/?origin_iata=&destination_iata=&depart_date=
- *     &return_date=&adults=&children=&infants=&one_way=
- *   https://support.travelpayouts.com/hc/en-us/articles/5711895629714
- *   https://support.travelpayouts.com/hc/en-us/articles/360007365071
+ * Kiwi is the format in Travelpayouts' help centre
+ * (https://support.travelpayouts.com/hc/en-us/articles/360007365071). Aviasales
+ * is NOT: the one that article documents is dead on arrival, and what replaces
+ * it is at aviasalesResultsUrl above.
  */
 export function flightUrl(partner: TravelPartner, query: FlightQuery): string | null {
   let shape = query.shape;
@@ -213,17 +273,8 @@ export function flightUrl(partner: TravelPartner, query: FlightQuery): string | 
   const children = count(query.children, 0);
 
   if (partner.key === "aviasales") {
-    const params = new URLSearchParams({
-      origin_iata: from,
-      destination_iata: to,
-      depart_date: depart,
-      adults: String(adults),
-      one_way: back ? "false" : "true",
-      locale: "en",
-    });
-    if (back) params.set("return_date", back);
-    if (children) params.set("children", String(children));
-    return `https://search.aviasales.com/flights/?${params.toString()}`;
+    // Children are not in the path format, so they are not invented into it.
+    return aviasalesResultsUrl({ from, to, depart, ret: back, adults, marker: query.marker });
   }
 
   if (partner.key === "kiwi") {

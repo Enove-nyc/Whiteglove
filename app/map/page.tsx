@@ -5,35 +5,13 @@ import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type M
 import Navbar from "@/components/Navbar";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
-import { getPublicAttractionList, getPublicStayList } from "@/lib/attractions-view";
+import { getAttractionList, getStayList } from "@/lib/attractions-view";
 import { pointFrom } from "@/lib/map-markers";
 
-// Rendered per request, not frozen at build time.
-//
-// This page reads content the owner adds in the admin. Prerendered, it is
-// built once when the site is deployed and never again — a listing added on
-// Tuesday is still absent on Friday. The admin saves it, the store holds it,
-// and the page keeps serving the snapshot taken at build. The whole point of
-// the owner being able to add things is that they appear.
-//
-// `revalidate` was tried first and measured: with a 60-second window the page
-// still never re-read the store, because the reads are `cache: "no-store"`
-// fetches that a prerender does not re-run. Per-request is what actually
-// works, and it is what /stops and the admin pages already do. These pages are
-// small, so the cost is a cheap render rather than a cached file.
-// NOT force-dynamic any more, and this needed a real fix rather than deleting
-// the line. A plain `revalidate` window was tried on pages like this before
-// and measured to not work: the reads mix Prisma with a `cache: "no-store"`
-// fetch to Redis, and that fetch leaves the page frozen at its build-time
-// render however long the window is. force-dynamic was the right answer to
-// that at the time — but it meant re-reading whole tables for every visit,
-// including every crawler, which is what emptied the database's monthly
-// transfer quota.
-//
-// The fix is in the read layer: the list is now a tagged cache busted by every
-// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
-// freshness, without a fresh database read per hit.
-
+// Not force-dynamic. getAttractionList/getStayList (lib/attractions-view.ts)
+// are a tagged unstable_cache now, busted the moment an attraction or stay is
+// actually written, rather than this page running three real reads (this one
+// plots both lists plus static airports and cemeteries) on every visit.
 export const metadata = pageMetadata({
   title: "Map — everywhere we know, on one map | White Glove Itineraries",
   description: "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
@@ -43,7 +21,7 @@ export const metadata = pageMetadata({
 export default async function MapPage() {
   // Read through the view so anything the owner adds appears here without a
   // redeploy, the same as on the directories.
-  const [attractionList, stayList] = await Promise.all([getPublicAttractionList(), getPublicStayList()]);
+  const [attractionList, stayList] = await Promise.all([getAttractionList(), getStayList()]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
   const kevarim: MapKever[] = plottableCemeteries.map((c) => ({

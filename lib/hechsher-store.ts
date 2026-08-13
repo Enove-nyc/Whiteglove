@@ -1,4 +1,3 @@
-import { HECHSHERIM_PUBLIC_TAG, bustPublicContent, cachedPublicRead } from "@/lib/public-cache";
 // What the owner has confirmed about each place's hechsher.
 //
 // Nothing is inferred here. The store accepts statuses only for White Glove's
@@ -6,6 +5,7 @@ import { HECHSHERIM_PUBLIC_TAG, bustPublicContent, cachedPublicRead } from "@/li
 // the public card.
 
 import { UNVERIFIED, type HechsherStatus } from "@/data/hechsherim";
+import { bustTag, cachedRead } from "@/lib/cache-tags";
 import { isCuratedKosherPlaceId } from "@/lib/curated-kosher";
 
 const KEY = "white-glove:hechsherim";
@@ -13,6 +13,9 @@ const KEY = "white-glove:hechsherim";
 export function hechsherStoreAvailable() {
   return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
 }
+
+/** Busted by saveAgency and deleteAgency — the only two writers. */
+export const HECHSHER_AGENCIES_TAG = "hechsher-agencies-public";
 
 async function redis<T>(path: string, body?: string): Promise<T | null> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -198,14 +201,22 @@ async function writeAgencies(all: Record<string, StoredAgency>): Promise<boolean
   return res !== null;
 }
 
-/** Everything the owner has added or changed. Empty without a store, which reads as "only the built-in list". */
-/** The agencies, cached until a write busts the tag. For /hechsherim. */
-export async function listPublicAgencies(): Promise<StoredAgency[]> {
-  return cachedPublicRead(listAgencies, "hechsher-agencies", HECHSHERIM_PUBLIC_TAG);
+async function listAgenciesUncached(): Promise<StoredAgency[]> {
+  return Object.values(await readAgencies());
 }
 
+/**
+ * Everything the owner has added or changed. Empty without a store, which
+ * reads as "only the built-in list".
+ *
+ * Cached and tagged rather than read fresh on /hechsherim's every visit —
+ * saveAgency and deleteAgency below both bust HECHSHER_AGENCIES_TAG the
+ * moment they write, so this stays exactly as current as a fresh read while
+ * costing nothing between edits. Goes through lib/cache-tags.ts's cachedRead
+ * rather than importing `unstable_cache` directly — see that file for why.
+ */
 export async function listAgencies(): Promise<StoredAgency[]> {
-  return Object.values(await readAgencies());
+  return cachedRead(listAgenciesUncached, ["hechsher-agencies"], [HECHSHER_AGENCIES_TAG]);
 }
 
 /** An id from a name: "Vaad of Golders Green" → "vaad-of-golders-green". */
@@ -230,9 +241,7 @@ export async function saveAgency(agency: StoredAgency): Promise<{ ok: boolean; m
   const existing = all[id];
   all[id] = { ...existing, ...agency, id, logo: agency.logo ?? existing?.logo };
   const ok = await writeAgencies(all);
-  // /hechsherim reads a cached copy now, so a save that does not say so is a
-  // save nobody sees for an hour.
-  if (ok) await bustPublicContent();
+  if (ok) await bustTag(HECHSHER_AGENCIES_TAG);
   return ok
     ? { ok: true, message: `Saved ${agency.name ?? id}.` }
     : { ok: false, message: "Could not save it. The private store may not be connected." };
@@ -250,6 +259,6 @@ export async function deleteAgency(id: string): Promise<boolean> {
   if (!(id in all)) return true;
   delete all[id];
   const ok = await writeAgencies(all);
-  if (ok) await bustPublicContent();
+  if (ok) await bustTag(HECHSHER_AGENCIES_TAG);
   return ok;
 }

@@ -185,7 +185,9 @@ describe("how the widgets are loaded", () => {
 
   it("keeps the marker off the public booking panel", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
-    assert.match(panel, /\/embed\/flights|flightsEmbedPath/);
+    // Flights hand off through /go, which builds the marked address on the
+    // server; cars still embed on our own origin. Neither carries the marker.
+    assert.match(panel, /goHref\(/);
     assert.match(panel, /\/embed\/cars|carsEmbedPath/);
     assert.doesNotMatch(panel, /tp\.media|shmarker|TRAVELPAYOUTS_MARKER/);
     assert.match(panel, /\/api\/partners\/flights\/search/);
@@ -199,11 +201,15 @@ describe("how the widgets are loaded", () => {
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 
-  it("shows the partner widget as fallback after search, with trip type on the White Glove form", () => {
+  it("hands cash flights off to Aviasales/Kayak from one White Glove form; cars keep the partner widget", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
     const flights = panel.slice(panel.indexOf("function FlightsForm"), panel.indexOf("function HotelsForm"));
     const cars = panel.slice(panel.indexOf("function CarsForm"), panel.indexOf("function BookedPrompt"));
-    assert.match(flights, /PartnerSearchWidget/);
+    assert.doesNotMatch(flights, /PartnerSearchWidget/);
+    assert.doesNotMatch(flights, /flightsEmbedPath/);
+    assert.match(flights, /flightHandoff\("aviasales"\)/);
+    assert.match(flights, /Open Aviasales/);
+    assert.match(flights, /Compare on Kayak/);
     assert.match(flights, /AirportAutocomplete|DateField/);
     assert.match(flights, /round-trip/);
     assert.match(flights, /one-way/);

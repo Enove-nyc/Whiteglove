@@ -14,6 +14,7 @@
 import { airlineHeading, airlineLogoUrl } from "@/lib/airline-names";
 import { goHref } from "@/lib/affiliate/request";
 import { flightDateProblem } from "@/lib/date-range";
+import { isPricedFlightHref } from "@/lib/flight-book-href";
 import { describeSearch, searchProblem, type Leg, type SearchShape } from "@/lib/kayak-search";
 import { travelpayoutsTokenConfigured, type TravelpayoutsFlightOption } from "@/lib/travelpayouts-api";
 import { searchLiveAviasalesFlights } from "@/lib/travelpayouts-search";
@@ -88,6 +89,9 @@ function compareHref(search: PartnerFlightSearch, origin: string, destination: s
   const legs = codedLegs(search, origin, destination);
   return goHref({
     product: "flight",
+    // Named, because /book offers two flight buttons at once and the other one
+    // names the other partner. A row that says Kayak has to open Kayak.
+    partner: "kayak",
     legs,
     checkOut: isMultiCity(search) ? "" : returnDate || "",
     adults,
@@ -142,25 +146,15 @@ function compareResult(search: PartnerFlightSearch, origin: string, destination:
     ok: true,
     mode: "compare",
     message: "No priced flights for those dates on White Glove.",
-    detail: "Nothing is invented here. Compare on Kayak without a listed price, or search in the partner form.",
+    detail: "Nothing is invented here — search on Aviasales or compare on Kayak.",
     flights: [],
     kayakHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
   };
 }
 
-function isLiveBookHref(url: string): boolean {
-  if (url.startsWith("/api/partners/flights/offer?")) return true;
-  if (!url.startsWith("https://")) return false;
-  try {
-    return new URL(url).hostname.replace(/^www\./, "").toLowerCase() === "aviasales.com";
-  } catch {
-    return false;
-  }
-}
-
 /** A priced Travelpayouts fare, or null when it has no matching booking URL. */
 export function liveRowFromFare(flight: TravelpayoutsFlightOption): PartnerFlightOption | null {
-  if (!flight.bookUrl || !isLiveBookHref(flight.bookUrl)) return null;
+  if (!isPricedFlightHref(flight.bookUrl)) return null;
   const title = airlineHeading(flight.airline, flight.airlineName);
   const logoUrl = airlineLogoUrl(flight.airline);
   const stopDetail = flight.stopDetail?.trim() || stopDetailFromFare(flight.transfers, flight.durationMinutes);
@@ -183,7 +177,7 @@ export function liveRowFromFare(flight: TravelpayoutsFlightOption): PartnerFligh
 /**
  * Live fares from the Flight Search API. The cheapest-cache dump is not the
  * board — that is why Aviasales can show 50+ and this page used to show 2.
- * A gated or empty search is an honest miss (widget / Kayak), never invented rows.
+ * A gated or empty search is an honest miss (Aviasales / Kayak), never invented rows.
  */
 export async function searchPartnerFlights(search: PartnerFlightSearch): Promise<PartnerFlightResult> {
   const origin = iata(search.origin);

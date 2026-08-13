@@ -6,13 +6,15 @@
 // message instead of a stack trace.
 
 import { randomUUID } from "node:crypto";
-import { updateTag } from "next/cache";
 import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
+import { ATTRACTIONS_PUBLIC_TAG } from "@/lib/attractions-view";
+import { bustTag } from "@/lib/cache-tags";
 import { DIRECTORY_PUBLIC_TAG } from "@/lib/directory";
+import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 import { remember } from "@/lib/recycle-store";
 import { recordChange } from "@/lib/changes-store";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
-import { bustPublicContent } from "@/lib/public-cache";
+import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -403,9 +405,19 @@ export async function deletePhoto(id: string) {
  * fix, so the call goes in the write functions themselves rather than in the
  * server actions — a new action added later cannot forget it.
  */
+/**
+ * Content a visitor is meant to see has changed.
+ *
+ * Built on lib/cache-tags.ts like every other invalidation here. The precise
+ * per-table busts (ATTRACTIONS_PUBLIC_TAG, PRACTICAL_PLACES_PUBLIC_TAG) sit on
+ * the writes that touch only those tables; this is for the writes behind the
+ * batei hachaim list, which one edit can change in two places at once — a
+ * kever added to a cemetery changes the burial count on its directory card as
+ * well as the page.
+ */
 async function contentChanged(): Promise<void> {
   invalidateSiteSearchIndex();
-  await bustPublicContent();
+  await bustTag(CEMETERIES_PUBLIC_TAG);
 }
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {
@@ -413,7 +425,7 @@ export async function createPlace(destinationId: string, fields: PlaceFields) {
   const row = await prisma.practicalPlace.create({
     data: { ...fields, lastVerified: new Date(), destinationId },
   });
-  await contentChanged();
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   return row;
 }
 
@@ -431,7 +443,7 @@ export async function updatePlace(id: string, fields: PlaceFields) {
     before: before as unknown as Record<string, unknown> | null,
     after: fields as unknown as Record<string, unknown>,
   });
-  await contentChanged();
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   return row;
 }
 
@@ -442,6 +454,7 @@ export async function deletePlace(id: string) {
     include: { destination: { select: { city: true } } },
   });
   const gone = await prisma.practicalPlace.delete({ where: { id } });
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   if (row) {
     const { destination, ...record } = row;
     await remember({
@@ -601,7 +614,7 @@ export async function createProvider(fields: ProviderFields, slug?: string) {
   const row = await prisma.directoryProvider.create({
     data: { slug: slug?.trim() || providerSlug(fields.name), ...fields },
   });
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return row;
 }
 
@@ -616,7 +629,7 @@ export async function updateProvider(slug: string, fields: ProviderFields) {
     before: before as unknown as Record<string, unknown> | null,
     after: fields as unknown as Record<string, unknown>,
   });
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return row;
 }
 
@@ -633,7 +646,7 @@ export async function deleteProvider(slug: string) {
       payload: row as unknown as Record<string, unknown>,
     });
   }
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return gone;
 }
 
@@ -1069,7 +1082,8 @@ export async function createAttraction(fields: NewAttractionFields) {
     },
     select: { slug: true, name: true },
   });
-  await contentChanged();
+  invalidateSiteSearchIndex();
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
   return row;
 }
 
@@ -1111,6 +1125,7 @@ export async function createKosherStay(fields: NewStayFields) {
     },
     select: { slug: true, name: true },
   });
-  await contentChanged();
+  invalidateSiteSearchIndex();
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
   return row;
 }

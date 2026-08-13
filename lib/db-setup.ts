@@ -3,11 +3,13 @@
 // runtime — so setup needs no terminal. Safe to re-run: it recreates the
 // imported content tables from the static data each time.
 
-import { updateTag } from "next/cache";
-import { bustPublicContent } from "@/lib/public-cache";
 import { recordChange } from "@/lib/changes-store";
 import type { PrismaClient } from "@prisma/client";
+import { ATTRACTIONS_PUBLIC_TAG } from "@/lib/attractions-view";
+import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
+import { bustTag } from "@/lib/cache-tags";
 import { DIRECTORY_PUBLIC_TAG } from "@/lib/directory";
+import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 import { INIT_SQL } from "@/lib/init-sql";
 import { UPGRADE_SQL } from "@/lib/upgrade-sql";
 import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data";
@@ -348,13 +350,18 @@ export async function seedDatabase(prisma: PrismaClient) {
     create: DEFAULT_SETTINGS,
   });
 
-  // The re-import writes directory rows directly through Prisma rather than
-  // createProvider, so it is the one write path that does not already bust
-  // the tag by calling that function — done here instead, or a re-import
-  // would go stale on the public page the same way it used to.
-  updateTag(DIRECTORY_PUBLIC_TAG);
-  // The import rewrites every public list, so every cached one is now wrong.
-  await bustPublicContent();
+  // The re-import writes directory, attraction, kosherStay and kosherArea
+  // rows directly through Prisma rather than createProvider/createAttraction/
+  // createKosherStay, so it is the one write path that does not already bust
+  // these tags by calling those functions — done here instead, or a
+  // re-import would go stale on the public pages the same way it used to.
+  // kosherArea in particular has no other writer at all.
+  await bustTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
+  // Cemeteries and their kevarim are rewritten too, and each directory card
+  // prints a burial count read through that cache.
+  await bustTag(CEMETERIES_PUBLIC_TAG);
 
   // The count of businesses whose own wording this import has just replaced,
   // alongside the row counts. Silence here is what made a re-import feel like

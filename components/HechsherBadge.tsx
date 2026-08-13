@@ -30,17 +30,26 @@ export default function HechsherBadge({
   /** The full list, including any the owner has added. Defaults to the built-in one. */
   agencies?: Hechsher[];
 }) {
+  // If a mark image is missing or fails to load we fall back to the letters
+  // rather than leaving a broken image in the circle.
+  //
+  // THIS HOOK RUNS BEFORE THE BADGE DECIDES IT HAS NOTHING TO DRAW, and has to.
+  // A hook after an early return is a hook that runs on some renders and not
+  // others, which is the one thing React cannot cope with: the same component
+  // going from "unverified" to a real status, or back, would have shifted every
+  // later hook by one. There are none after it today, so nothing was visibly
+  // broken — it was a trap set for whoever added the next one.
+  const [logoFailed, setLogoFailed] = useState(false);
+
   if (status.state === "unverified") return null;
 
-  // Most agencies have no logo file yet. The letters are shown until one
-  // appears, and if a file is added but fails to load we fall back to them
-  // rather than leaving a broken image in the circle.
-  const [logoFailed, setLogoFailed] = useState(false);
   const hechsher = getHechsher(status.hechsherId, agencies);
   const title = describeHechsher(status, agencies);
   const label = hechsherLabel(status, agencies);
   // An uploaded picture wins over the file that ships with the site, so
-  // replacing a mark does not mean editing the repository.
+  // replacing a mark does not mean editing the repository. Either way it is
+  // loaded lazily: /hechsherim draws every agency at once, and that is a few
+  // hundred of these circles on one screen.
   const logoSrc = hechsher ? (hechsher.logo ?? `/hechsherim/${hechsher.id}.svg`) : null;
   const px = size === "sm" ? 28 : 36;
   const markSize = size === "sm" ? 9 : 11;
@@ -73,11 +82,14 @@ export default function HechsherBadge({
       >
         {hechsher && (confirmed || reported) && !logoFailed ? (
           /* eslint-disable-next-line @next/next/no-img-element -- a plain img
-             so onError can fall back to the letters; these are tiny local SVGs
-             with nothing for the image optimizer to do. */
+             so onError can fall back to the letters; these are tiny local
+             files, already sized for the circle, with nothing for the image
+             optimizer to do. */
           <img
             src={logoSrc ?? ""}
             alt=""
+            loading="lazy"
+            decoding="async"
             onError={() => setLogoFailed(true)}
             style={{ maxWidth: "72%", maxHeight: "72%" }}
           />
