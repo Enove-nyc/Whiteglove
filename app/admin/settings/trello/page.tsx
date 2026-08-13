@@ -14,7 +14,7 @@ export default async function TrelloSettings() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Cards on your Trello board
+              Trello
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               When somebody sends in a picture, asks to be listed, reports something wrong or asks about a Pro account,

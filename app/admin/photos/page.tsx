@@ -48,15 +48,12 @@ export default async function AdminPhotosPage() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Pictures people sent in
+              Photos
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Visitors can no longer send pictures in. Anything still waiting below arrived before that closed, and
-              stays a draft until you put it up or decline it. New photographs are added only from a town or listing
-              editor. {submissions.length > 0 && (
-                <strong className="font-semibold text-[var(--navy)]">
-                  {submissions.length} waiting.
-                </strong>
+              Pictures waiting to be published or declined. New ones are added from a town or listing editor.
+              {submissions.length > 0 && (
+                <strong className="font-semibold text-[var(--navy)]"> {submissions.length} waiting.</strong>
               )}
             </p>
           </div>

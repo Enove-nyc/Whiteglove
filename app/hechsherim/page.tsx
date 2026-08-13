@@ -72,12 +72,7 @@ export default async function HechsherimPage() {
             The marks, and who is behind them
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            {agencies.length} certifying bodies, with the mark each one uses and where it certifies. Where a listing on
-            this site names a hechsher, this is the agency it means.
-          </p>
-          <p className="mt-4 max-w-3xl leading-7 text-stone-600">
-            Which hechsherim to rely on is a question for your rov. This page says who exists and where to reach them;
-            it does not rank them and it does not say who certifies what.
+            {agencies.length} certifying bodies, with the mark each one uses. Which to rely on is a question for your rov.
           </p>
         </div>
       </section>

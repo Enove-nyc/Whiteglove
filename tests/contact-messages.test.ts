@@ -249,7 +249,7 @@ describe("what the connections screen promises", () => {
     // This line was untrue for the whole of the site's life: it said contact
     // messages were "still saved to the admin" without the email, and nothing
     // saved them anywhere. It is true now, and says where they are.
-    assert.match(CONNECTIONS, /Messages sent in/);
+    assert.match(CONNECTIONS, /Settings → Messages/);
     assert.doesNotMatch(CONNECTIONS, /Contact messages and suggestions are still saved to the admin/);
   });
 

@@ -62,7 +62,7 @@ export async function undoChange(change: Change): Promise<UndoResult> {
     if (code === "P2025" || /no record was found for an update/i.test(said)) {
       return {
         ok: false,
-        message: `${change.title} has been deleted since. Look in Recently deleted — if it is there, put it back first.`,
+        message: `${change.title} has been deleted since. Look in Deleted — if it is there, put it back first.`,
       };
     }
     console.error("[changes] could not undo", change.id, error);

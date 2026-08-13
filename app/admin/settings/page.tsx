@@ -40,7 +40,7 @@ export default async function AdminSettingsPage() {
       <header>
         <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Settings</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Who can get in, what the website costs and earns, and the services it depends on. You need these rarely.
+          Access, money, and the services the site depends on.
         </p>
       </header>
 
@@ -49,44 +49,44 @@ export default async function AdminSettingsPage() {
         <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Card
             href="/admin/settings/words"
-            title="The website’s words"
-            detail="The headline on the front page, the address people write to, pricing answers, the line in the footer."
+            title="Words"
+            detail="Headline, contact line and footer."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/about"
-            title="About — who you are"
-            detail="Name, photograph, location, experience, languages, and why White Glove exists. Blank fields stay hidden."
+            title="About"
+            detail="Optional fields. Blank stays hidden."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/proof"
             title="Case studies"
-            detail="Genuine trip outcomes with permission. Nothing public until complete and approved. No invented reviews."
+            detail="Trip outcomes with permission."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/limits"
-            title="What a free account gets"
-            detail="How many trips a Traveler can plan, and how many printable copies a week."
+            title="Limits"
+            detail="Trip and print limits."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/earnings"
-            title="What the searches earn"
-            detail="Partners for flights, hotels and cars, travel extras, and which booking options show on destination pages."
+            title="Earnings"
+            detail="Partners, extras and destination placements."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/travel-essentials"
             title="Travel Essentials"
-            detail="Enable insurance, eSIM, transfers, tours and seasonal programmes — with URLs, placements and order."
+            detail="Insurance, eSIM, transfers and tours."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/settings/travel-gear"
             title="Travel gear"
-            detail="A blech, a hotplate, a plug adapter — your Amazon shelf, at its own page."
+            detail="The Amazon shelf."
             state={stats.configured ? undefined : "Needs the private store"}
           />
         </div>
@@ -95,31 +95,31 @@ export default async function AdminSettingsPage() {
       <section className="mt-8">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Growth programmes</h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-stone-600">
-          Customer updates and programmes that stay off until you approve them. Demand numbers live under Pages.
+          Off until you turn them on.
         </p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Card
             href="/admin/alerts"
-            title="Email alerts"
-            detail="Who asked for destination, seasonal and listing updates — consent and unsubscribe."
+            title="Alerts"
+            detail="Destination and seasonal signups."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
             href="/admin/growth"
-            title="Search and bookings"
-            detail="Common searches, empty results, affiliate clicks and alert signup counts."
+            title="Growth"
+            detail="Searches, empty results and clicks."
             state={stats.configured ? "Open the dashboard" : "Needs the private store"}
           />
           <Card
             href="/admin/settings/referral"
-            title="Referral programme"
-            detail="Unique links and attribution. Disabled until reward rules are final — no invented amounts."
+            title="Referrals"
+            detail="Off until reward rules are final."
             state={referralStatus.open ? "On for visitors" : "Disabled by default"}
           />
           <Card
             href="/admin/settings/collaboration"
-            title="Group planning tools"
-            detail="Voting, shared favorites and room groupings on shared itineraries."
+            title="Collaboration"
+            detail="Voting, favorites and rooms."
             state={
               collaboration.votingEnabled || collaboration.sharedFavoritesEnabled || collaboration.roomGroupsEnabled
                 ? "Tools available"
@@ -129,7 +129,7 @@ export default async function AdminSettingsPage() {
           <Card
             href="/admin/settings/membership"
             title="White Glove Plus"
-            detail="Planned membership foundation only. Not priced, advertised or sold."
+            detail="Planned only. Not sold."
             state={membershipPublicLabel(membership)}
           />
         </div>
@@ -146,8 +146,8 @@ export default async function AdminSettingsPage() {
           />
           <Card
             href="/admin/team"
-            title="People with access"
-            detail="Let someone see the site while it is closed, or help you run it."
+            title="Team"
+            detail="Who else can get in."
             state={teamStorageAvailable() ? undefined : "Needs the private store"}
           />
           <Card
@@ -158,12 +158,12 @@ export default async function AdminSettingsPage() {
           />
           <Card
             href="/admin/settings/trello"
-            title="Cards on your Trello board"
-            detail="Send pictures, listing requests and reports to your team's board, with a link back to the screen that handles each one."
+            title="Trello"
+            detail="Pictures, listings and reports."
             state={stats.configured ? undefined : "Needs the private store"}
           />
-          <Card href="/admin/accounts" title="Visitor accounts" detail="Everyone who has signed up, and what they have saved." />
-          <Card href="/admin/messages" title="Messages sent in" detail="What people wrote from the contact page, a trip enquiry, or a flight request." />
+          <Card href="/admin/accounts" title="Accounts" detail="People who signed up." />
+          <Card href="/admin/messages" title="Messages" detail="What people wrote from the site." />
         </div>
       </section>
 
@@ -177,8 +177,7 @@ export default async function AdminSettingsPage() {
       <section className="mt-10">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Advanced</h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-stone-600">
-          The outside services the website uses. If something on the site has stopped working, the answer is usually
-          here — but nothing here needs your attention day to day.
+          Email, maps and the assistant.
         </p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Card

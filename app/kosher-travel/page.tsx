@@ -43,70 +43,54 @@ const questions: Array<{
   href: string;
   cta: string;
   body: string;
-  detail: string;
 }> = [
   {
-    title: "Kosher food, wherever you go",
+    title: "Kosher food",
     href: "/kosher",
     cta: "Open the kosher food finder",
-    body: "White Glove's curated kosher restaurants, bakeries and groceries, searchable by place or listing name.",
-    detail:
-      "Each listing is part of White Glove&apos;s curated collection. Confirm current supervision directly before you go.",
+    body: "Restaurants, bakeries and groceries, by place or name.",
   },
   {
-    title: "Which part of town to stay in",
+    title: "Where to stay",
     href: "/hotels",
     cta: "Compare places to stay",
-    body: "Kosher hotels, seasonal programmes, and the Jewish quarters themselves — measured from the shul, not from the middle of the city.",
-    detail:
-      "The quarter usually matters more than the hotel. Distances here are measured from a quarter's own published position, which is something we can stand behind, rather than from a hotel coordinate we would have had to guess at.",
+    body: "Kosher hotels, seasonal programmes, and the Jewish quarters.",
   },
   {
     title: "Shabbos away from home",
     href: "/destinations",
-    cta: "See Shabbos practicality by destination",
-    body: "Every vacation destination on the site says whether Shabbos works on foot there, and what has to be arranged if it does not.",
-    detail:
-      "The planner also warns when a day's driving runs into candle-lighting — computed from the sun rather than fetched, and never a substitute for the town's own zman.",
+    cta: "See Shabbos by destination",
+    body: "Whether Shabbos works on foot, and what to arrange if it does not.",
   },
   {
-    title: "Local drivers, guides and contacts",
+    title: "Drivers, guides and contacts",
     href: "/directory",
     cta: "Open the provider directory",
-    body: "Drivers who know the roads, guides, agencies and local contacts, with what each is said to do and who says so.",
-    detail:
-      "Some listings are featured because we have found their service consistently good and some because the placement is sponsored. The directory says so plainly rather than leaving you to guess.",
+    body: "Local services, with what each is said to do.",
   },
   {
-    title: "Documents and border crossings",
+    title: "Documents and borders",
     href: "/travel-guide",
     cta: "Read the travel guide",
-    body: "Entry documents, passport validity, and paying for the trip — with each country's own official page rather than rules restated second-hand.",
-    detail:
-      "Entry rules change constantly and depend on the passport you hold, so this site does not state them. It gives you the official source and the questions to ask it.",
+    body: "Entry documents, insurance, transfers and eSIMs.",
   },
   {
     title: "Mikvaos",
     href: "/mikvaos",
     cta: "Browse mikvah listings",
-    body: "Source-backed mikvah listings White Glove holds for travel — address, contact and the source behind each one.",
-    detail:
-      "Hours and access change. Confirm with the community for your dates before you rely on a listing.",
+    body: "Address, contact and the source behind each listing.",
   },
   {
-    title: "Zmanim for the place you are going",
+    title: "Zmanim",
     href: "/zmanim",
     cta: "Open zmanim",
-    body: "Halachic times calculated for a destination or coordinates: alos, sunrise, sof zman Shema, chatzos, mincha, sunset and tzeit.",
-    detail: "Search any city, town or postcode in the world.",
+    body: "Halachic times for a destination or coordinates.",
   },
   {
-    title: "The hechsher on a listing",
+    title: "Hechsherim",
     href: "/hechsherim",
     cta: "See the certification marks",
-    body: `The ${HECHSHERIM.length} certifying bodies the site knows by name, so a mark on a listing means something specific.`,
-    detail:
-      "Nothing researched from a directory is ever published as certified. That word is reserved for the owner having confirmed it with the certifying body itself.",
+    body: `The ${HECHSHERIM.length} certifying bodies the site knows by name.`,
   },
 ];
 
@@ -135,8 +119,7 @@ export default async function KosherTravelPage() {
             The part of a trip nobody else plans for you.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Food, Shabbos, a minyan, a mikvah, and somebody local to ask. Every travel site can book you a hotel; this
-            is the half of the trip that decides whether the hotel was the right one.
+            Food, Shabbos, a minyan, a mikvah, and somebody local to ask.
           </p>
 
           <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -172,9 +155,7 @@ export default async function KosherTravelPage() {
                 {question.title}
               </h2>
               <p className="mt-3 leading-7 text-stone-600">{question.body}</p>
-              <p className="mt-3 flex-1 border-l-2 border-[var(--gold-light)] pl-4 text-sm leading-6 text-stone-500">
-                {question.detail}
-              </p>
+              <span className="flex-1" />
               <Link
                 href={question.href}
                 className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
@@ -242,11 +223,10 @@ export default async function KosherTravelPage() {
         <div className="grid gap-8 rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-8 sm:p-12 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Or let us work the kosher side out for you.
+              Pick a destination
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Tell us where you are going and your kosher standards and religious needs, and we will tell you what there is — including where the honest answer is “not much” —
-              before you book anything.
+              Get destinations that fit, or ask about a place.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -254,7 +234,7 @@ export default async function KosherTravelPage() {
               href="/plan"
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              Start planning a trip
+              Get recommendations
             </Link>
             <Link
               href="/contact"

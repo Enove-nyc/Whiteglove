@@ -44,7 +44,7 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cemetery directory</p>
             <h1 lang="he" dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Open a cemetery page to see the known kevarim, direct navigation, and arrival notes. Each list is researched and will grow as more records are verified.
+              Known kevarim, navigation and arrival notes for each beis hachaim.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 sm:block" />

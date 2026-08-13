@@ -82,16 +82,7 @@ export default async function HeritagePage() {
               Kevarim, batei hachaim, and the towns they are in.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-              The heritage side of White Glove: who is buried where, how to reach the kever, who holds the key, and what
-              is around it — kosher food, a minyan, a mikvah, and a driver who knows the road. Practical details are
-              published only once they have been checked, and each one says how far.
-            </p>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-              A section of White Glove Itineraries, not a separate company. The{" "}
-              <Link href="/destinations" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-                vacation side of the site
-              </Link>{" "}
-              is planned by the same people, and a trip can be both.
+              Who is buried where, how to reach the kever, who holds the key, and what is around it.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 lg:block" />

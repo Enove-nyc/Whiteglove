@@ -47,7 +47,7 @@ export default async function AdminGrowthPage() {
     <div className="pb-12">
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Demand &amp; conversion</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Search and bookings</h1>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Growth</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{report.says}</p>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
           <Link href="/admin/reports" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">

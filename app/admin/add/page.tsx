@@ -27,7 +27,7 @@ export default async function AdminAddPage({ searchParams }: { searchParams: Pro
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Add a new entry</h1>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Add</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Add a cemetery, a tzadik, or a new page — save what you have now and fill in the rest later. Your additions are kept even when built-in content is re-imported.
             </p>

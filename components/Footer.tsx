@@ -41,12 +41,12 @@ const columnsFor = (
   {
     title: "Plan a trip",
     links: [
-      { label: "Start planning", href: "/plan" },
+      { label: "Get recommendations", href: "/plan" },
       { label: "Destinations", href: "/destinations" },
       { label: "Itinerary planner", href: "/itinerary" },
-      { label: "Travel services", href: "/services" },
       { label: "A sample itinerary", href: "/sample-itinerary" },
       { label: booking.label, href: booking.href },
+      { label: "Travel services", href: "/services" },
     ],
   },
   {
@@ -107,7 +107,7 @@ const utilityLinks = [
   // asks before they read the method.
   { label: "About us", href: "/about" },
   { label: "Contact", href: "/contact" },
-  { label: "Rate how it went", href: "/rate" },
+  { label: "Rate a trip", href: "/rate" },
   { label: "How we verify", href: "/verification" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },
@@ -150,9 +150,7 @@ export default async function Footer() {
                   details name a source and date; anything still needing
                   confirmation is labelled. */}
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Vacations, family trips and heritage journeys. Destination pages answer what there is to eat and how
-                Shabbos works there. Where a detail has been checked, the page names its source and when it was
-                confirmed.
+                Vacations, family trips and heritage journeys.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/destinations" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">
@@ -165,7 +163,7 @@ export default async function Footer() {
             </div>
           </div>
 
-          <nav className="grid min-w-0 gap-8 sm:grid-cols-3" aria-label="Footer navigation">
+          <nav className="grid min-w-0 gap-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Footer navigation">
             {columns.map((column) => (
               <div key={column.title} className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-light)]">{column.title}</h2>

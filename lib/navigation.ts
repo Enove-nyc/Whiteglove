@@ -74,7 +74,7 @@ export type NavItem = {
 export const BOOKING_NAV: NavItem = {
   label: "Search hotels, flights & cars",
   href: BOOKING_SEARCH_PATH,
-  description: "Search and book your own travel, with cash or with points.",
+  description: "Hotels, flights and cars — cash or points.",
 };
 
 /**
@@ -94,24 +94,24 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   {
     label: "Destinations",
     href: "/destinations",
-    description: "Where to go: beaches, cities, mountains, family trips and short breaks, with the kosher and Shabbos answer on each one.",
+    description: "Beaches, cities, mountains and family trips.",
   },
   {
     label: "Things to Do",
     href: "/things-to-do",
-    description: "What to do on the days between — and what each one does on Shabbos.",
+    description: "What to do, including on Shabbos.",
   },
   {
     label: "Kosher Travel",
     shortLabel: "Kosher",
     href: "/kosher-travel",
-    description: "Food, Shabbos, minyanim, mikvaos, hechsherim and the practical side of travelling kosher.",
+    description: "Food, Shabbos, minyanim and mikvaos.",
   },
   {
     label: "Heritage Travel",
     shortLabel: "Heritage",
     href: "/heritage",
-    description: "שתוליכנו לשלום — kevarim, batei hachaim and Jewish heritage journeys.",
+    description: "Kevarim, batei hachaim and heritage journeys.",
   },
   {
     // ONE NAME FOR ONE PAGE. The bar called /itinerary "My Trips" while the
@@ -121,7 +121,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
     label: "Itinerary planner",
     shortLabel: "Itinerary",
     href: "/itinerary",
-    description: "Build the trip day by day, and keep the ones you have saved.",
+    description: "Build the trip day by day.",
   },
 ] as const;
 
@@ -137,7 +137,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const PRIMARY_CTA: NavItem = {
   label: "Search & Book",
   href: BOOKING_SEARCH_PATH,
-  description: "Search hotels, flights and cars for your dates.",
+  description: "Hotels, flights and cars for your dates.",
 };
 
 export function primaryCtaFor(booking: BookingLink): NavItem {
@@ -147,7 +147,7 @@ export function primaryCtaFor(booking: BookingLink): NavItem {
 export const SIGN_IN: NavItem = {
   label: "Sign in",
   href: "/login",
-  description: "Reach your saved trips from any device.",
+  description: "Your saved trips, on any device.",
 };
 
 /**
@@ -163,24 +163,26 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     title: "Where to go",
     links: [
       PRIMARY_NAV[0],
-      { label: "Kosher food", href: "/kosher", description: "Restaurants, bakeries and groceries, live, anywhere in the world." },
-      { label: "Map", href: "/map", description: "Everything the site knows, plotted in one place." },
+      { label: "Where to stay", href: "/hotels", description: "Kosher hotels, quarters and seasonal programmes." },
+      { label: "Kosher food finder", href: "/kosher", description: "Restaurants, bakeries and groceries by place." },
+      { label: "Map", href: "/map", description: "Everything on the site, on one map." },
     ],
   },
   {
     title: "Book the trip",
     links: [
+      { label: "Get recommendations", href: "/plan", description: "Three short steps to destinations that fit." },
       // One entry for the unified search — not Hotels, Flights, Cars and
       // "Search hotels…" as four near-duplicates of Search & Book.
       BOOKING_NAV,
-      { label: "Before you go", href: "/travel-guide", description: "Documents, entry rules, insurance and connectivity." },
+      { label: "Before you go", href: "/travel-guide", description: "Documents, insurance, transfers and eSIMs." },
     ],
   },
   {
     title: "While you are there",
     links: [
       PRIMARY_NAV[1],
-      { label: "A sample itinerary", href: "/sample-itinerary", description: "What a planned trip actually looks like when it arrives." },
+      { label: "A sample itinerary", href: "/sample-itinerary", description: "What a finished trip looks like." },
       // Discoverable here rather than buried under White Glove; not in the bar.
       { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
     ],
@@ -189,24 +191,22 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     title: "Heritage travel",
     links: [
       PRIMARY_NAV[3],
-      { label: "Towns and guides", href: "/stops", description: "Every town and kever on the site, searchable in English or יידיש." },
-      { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records with kevarim, access notes and shomer contacts." },
-      { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by the name he is known by." },
+      { label: "Towns and guides", href: "/stops", description: "Towns and kevarim, in English or Yiddish." },
+      { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records, access notes and shomrim." },
+      { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by name." },
     ],
   },
   {
     title: "White Glove",
     links: [
-      { label: "Home", href: "/", description: "The front page, and everything the site can do, in one screen." },
-      { label: "How we verify", href: "/verification", description: "What Verified, Reported and Being checked mean here." },
+      { label: "Home", href: "/", description: "The front page of the site." },
+      { label: "About us", href: "/about", description: "What this site is for." },
+      { label: "How we verify", href: "/verification", description: "What to confirm before you travel." },
       // Travel Services is OUT OF THE BAR (rule 4) and still reachable. What it
       // offers commercially has moved into the journeys; what it offers
       // personally is inside Contact.
-      { label: "Travel services", href: "/services", description: "What we do, and what to expect about price." },
-      // Case studies are linked from homepage/About when content exists; the
-      // dedicated page 404s until enough approved studies are published, so it
-      // is not hard-wired into this static menu.
-      { label: "Contact", href: "/contact", description: "Ask a question, report a correction, or talk about advertising." },
+      { label: "Travel services", href: "/services", description: "Have White Glove plan the trip." },
+      { label: "Contact", href: "/contact", description: "A question, a correction, or advertising." },
     ],
   },
 ] as const;

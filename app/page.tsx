@@ -73,20 +73,15 @@ export const metadata = pageMetadata({
 const HOW_IT_WORKS: Array<[string, string]> = [
   [
     "Say where and when",
-    "A city, a region, or nothing at all if the month is as far as you have got.",
+    "A city, a region, or just the month.",
   ],
   [
     "See what is actually there",
-    "The quarter to be in, what is walkable for Shabbos, and where the food comes from — before any price is quoted.",
+    "The quarter to be in, Shabbos on foot, and where the food comes from.",
   ],
-  // NOT "book it where it is cheapest", which is what this said. The site
-  // opens a search with the partners it is signed up to; it does not read the
-  // whole market and it cannot show that the rate in front of you is the
-  // lowest one anywhere. A promise a page cannot keep is the one thing that
-  // costs a traveller their trust in everything else on it.
   [
-    "Compare your options and book with a trusted partner",
-    "Rooms and prices come from our booking partners, and you pay them directly. The planner keeps the whole trip in one place, and it is free.",
+    "Book with a trusted partner",
+    "Rooms and prices come from our partners. You pay them. The planner is free.",
   ],
 ];
 
@@ -94,8 +89,8 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
   {
     title: "Kosher food finder",
     href: "/kosher",
-    body: "White Glove's curated kosher restaurants, bakeries and groceries.",
-    cta: "Browse the kosher food finder",
+    body: "Restaurants, bakeries and groceries.",
+    cta: "Find kosher food",
   },
   {
     title: "Where to stay",
@@ -106,13 +101,13 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
   {
     title: "Things to do",
     href: "/things-to-do",
-    body: "What to do on the days between — and what each one does on Shabbos.",
+    body: "What to do on the days between — including Shabbos.",
     cta: "Browse things to do",
   },
   {
-    title: "The whole kosher side",
+    title: "Kosher travel",
     href: "/kosher-travel",
-    body: "Shabbos away from home, minyanim, mikvaos, hechsherim and documents.",
+    body: "Shabbos, minyanim, mikvaos and hechsherim.",
     cta: "Open the kosher travel guide",
   },
 ];
@@ -269,7 +264,6 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Where to go"
             title="Browse by holiday type"
-            description="Each one filters the same list of destinations."
           />
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TRIP_THEMES.map((theme) => {
@@ -317,7 +311,6 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Destinations"
           title="Where to go"
-          description="Each of these answers the same three questions before you book: where the kosher food is, how Shabbos works, and where to sleep so it is walkable."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((card) => (
@@ -348,7 +341,6 @@ export default async function Home() {
             <SectionHeading
               eyebrow="Where to stay"
               title="Kosher hotels and programmes"
-              description="Some of these run for a few weeks a year rather than all year. The season is on the card."
             />
             <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {featuredStays.map((stay) => (
@@ -399,7 +391,6 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Season"
           title="When to go"
-          description="Alpine kosher programmes run for weeks, not months. Rome in August is thirty-eight degrees and half shut."
         />
         <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {SEASONS.map((season) => {
@@ -429,7 +420,6 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Kosher travel"
           title="Food, Shabbos and the rest of it"
-          description="Free to use, whether or not you book anything here."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {RESOURCES.map((resource) => (
@@ -565,7 +555,7 @@ export default async function Home() {
         <StartingPoints
           omit={["/services"]}
           heading="Three ways to start"
-          intro="Most people end up using two of them. This is what each one is for, and all three are free."
+          intro="All three are free."
         />
       </section>
 

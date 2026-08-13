@@ -30,7 +30,7 @@ export default function StartingPoints({
   omit = [],
   includePlanning = false,
   heading = "Ways to start",
-  intro = "Most people end up using two of them. This is what each one is for.",
+  intro = "What each one is for.",
 }: {
   omit?: string[];
   /** Only the services page, which is listing what you could do instead. */

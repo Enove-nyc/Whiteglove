@@ -40,7 +40,7 @@ export default async function DirectoryPage() {
             Find the people who make the trip happen.
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-            Look up tour operators, vacation planners, travel agencies, and private guides and drivers for kosher and Jewish heritage travel — search by name, region, or specialty.
+            Tour operators, planners, agencies, guides and drivers — by name, region or specialty.
           </p>
         </div>
       </section>

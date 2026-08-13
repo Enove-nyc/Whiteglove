@@ -10,7 +10,7 @@ describe("admin chrome search", () => {
     const search = readFileSync("components/AdminSearch.tsx", "utf8");
     assert.match(shell, /AdminSearch/);
     assert.match(search, /Search listings, candidates and admin screens/);
-    assert.match(search, /Search admin/);
+    assert.match(search, /Find a page/);
     assert.doesNotMatch(search, /Search the entire White Glove site/);
     assert.match(search, /ArrowDown/);
     assert.match(search, /role="listbox"/);

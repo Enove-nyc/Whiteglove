@@ -68,8 +68,7 @@ export default function VerificationPage() {
             A few details are always worth checking twice.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Restaurants change hands, schedules move and entry rules are updated. Use our guides to plan the trip, then
-            confirm the details that matter most with the business, the community or the official source.
+            Confirm hours, certification and Shabbos arrangements directly before you travel.
           </p>
         </div>
       </section>

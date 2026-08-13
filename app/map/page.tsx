@@ -67,8 +67,7 @@ export default async function MapPage() {
             Everywhere we know, on one map
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Batei hachaim, places worth the half day, kosher hotels and the airports you would fly into — all of it at
-            once. Search a town to narrow it down and see what is around that place, kosher food included.
+            Batei hachaim, things to do, places to stay and airports. Search a town to narrow it.
           </p>
         </div>
       </section>

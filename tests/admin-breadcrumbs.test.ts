@@ -24,7 +24,7 @@ describe("the admin trail", () => {
 
   it("names the section and the screen", () => {
     assert.deepEqual(labels("/admin/kevarim"), ["Dashboard", "Directory", "Kevarim"]);
-    assert.deepEqual(labels("/admin/shomrim"), ["Dashboard", "Directory", "Shomer numbers"]);
+    assert.deepEqual(labels("/admin/shomrim"), ["Dashboard", "Directory", "Shomrim"]);
   });
 
   it("links every crumb except the last", () => {
@@ -48,7 +48,7 @@ describe("the admin trail", () => {
 
 describe("naming a screen", () => {
   it("gives the screen's own name, not the section's", () => {
-    assert.equal(adminLabelFor("/admin/shomrim"), "Shomer numbers");
+    assert.equal(adminLabelFor("/admin/shomrim"), "Shomrim");
     assert.equal(adminLabelFor("/admin"), "Dashboard");
   });
 });

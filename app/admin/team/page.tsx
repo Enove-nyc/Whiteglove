@@ -11,10 +11,9 @@ export default async function AdminTeamPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">People with access</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Team</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Let someone see the site while it is closed, or let them help you run it. Access follows their own account,
-          so nobody has to be given a shared password.
+          Let someone see the site while it is closed, or help you run it.
         </p>
       </header>
 

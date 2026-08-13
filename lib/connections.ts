@@ -105,7 +105,7 @@ export const CONNECTIONS: Connection[] = [
   {
     vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
     what: "Where messages to you are sent.",
-    without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages sent in, and counted on the dashboard — but nothing lands in your inbox.",
+    without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages, and counted on the dashboard — but nothing lands in your inbox.",
     weight: "feature",
   },
   {
@@ -173,7 +173,7 @@ export const CONNECTIONS: Connection[] = [
     without:
       "Hotel and Kayak flight and car searches still open. They earn when this ID is set here or saved on the earnings screen; without either, Kayak flights and cars only earn if a wrap is pasted there.",
     weight: "feature",
-    where: "Stay22 hub — the same ID as the Stay22 ID field on Settings → What the site earns. A saved ID on that screen wins when both are set.",
+    where: "Stay22 hub — the same ID as the Stay22 ID field on Settings → Earnings. A saved ID on that screen wins when both are set.",
   },
   {
     vars: ["TRAVELPAYOUTS_TOKEN"],

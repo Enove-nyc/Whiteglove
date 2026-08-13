@@ -35,8 +35,7 @@ export default async function AttractionsPage() {
                 family this page is written for. The point it was making is
                 worth keeping and is made below it. */}
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              A meaningful trip still leaves plenty of time to explore. This is the rest of it — with the two things a
-              guidebook never tells you: how far it is from the kosher food, and what it does on Shabbos.
+              How far it is from the kosher food, and what it does on Shabbos.
             </p>
             <ListingAudienceNote />
           </div>

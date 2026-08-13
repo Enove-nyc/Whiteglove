@@ -63,13 +63,12 @@ export default async function AdminKevarimPage() {
               Kevarim
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Two ways in, depending on what you know. Add a person to a beis hachaim that is already on the site, or
-              start from the person and create the beis hachaim around him.
+              Add a person to a beis hachaim, or start from the person.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/admin" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Dashboard</Link>
-            <Link href="/admin/shomrim" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Shomer numbers</Link>
+            <Link href="/admin/shomrim" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Shomrim</Link>
             <Link href="/cemeteries" className="border border-[var(--gold-light)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">The directory</Link>
           </div>
         </div>

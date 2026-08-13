@@ -24,14 +24,9 @@ export default async function AdminRecyclePage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Recently deleted</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Deleted</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Everything removed in the last 30 days, newest first. Put anything back exactly as it was — the same record,
-          not a copy.
-        </p>
-        <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-500">
-          Pictures are not kept here. A photograph is stored as the picture itself, and a month of deleted ones would
-          fill the private store — so delete a picture only when you mean it.
+          Removed in the last 30 days. Put anything back as it was.
         </p>
       </header>
 

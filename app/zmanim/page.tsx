@@ -54,8 +54,7 @@ export default async function ZmanimPage({
             Zmanim
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            Halachic times for a place and date — sunrise, sof zman Shema, chatzos, mincha, sunset and nightfall.
-            Search any city, town or postcode in the world, or enter your own coordinates.
+            Halachic times for a place and date. Search a city or enter coordinates.
           </p>
         </div>
       </section>
