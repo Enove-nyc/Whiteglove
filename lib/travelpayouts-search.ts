@@ -253,7 +253,7 @@ async function startSearch(search: LiveFlightSearch, apiToken: string, partnerMa
   const data = (await response.json().catch(() => null)) as { search_id?: string; results_url?: string } | null;
   const searchId = data?.search_id?.trim();
   if (!searchId) return null;
-  const resultsUrl = (data.results_url?.trim() || SEARCH_API).replace(/\/$/, "");
+  const resultsUrl = (data?.results_url?.trim() || SEARCH_API).replace(/\/$/, "");
   rememberSearch(searchId, resultsUrl);
   return { searchId, resultsUrl };
 }
