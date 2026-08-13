@@ -6,13 +6,15 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormDraft } from "@/components/useFormDraft";
 import { describeDraft, draftKey, worthOffering } from "@/lib/drafts";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import type { Contact, Destination, Photo, PracticalPlace } from "@prisma/client";
+import type { Contact, Destination, DestinationLink, Photo, PracticalPlace } from "@prisma/client";
 import {
   type ActionResult,
   deleteContactAction,
+  deleteLinkAction,
   deletePlaceAction,
   saveContactAction,
   saveDestinationAction,
+  saveLinkAction,
   savePlaceAction,
 } from "@/app/admin/destinations/actions";
 import { sectionLabel, sectionOptions } from "@/lib/destination-sections";
@@ -388,9 +390,46 @@ function ContactFields({ contact }: { contact?: Contact }) {
   );
 }
 
+/**
+ * One useful link.
+ *
+ * The label is required and the URL is normalised on save — see
+ * saveLinkAction. "Order" is a plain number because these are hand-ranked:
+ * the most useful link for a town is rarely the one added first.
+ */
+function LinkFields({ link }: { link?: DestinationLink }) {
+  return (
+    <>
+      <Group label="Link">
+        <Field
+          label="What it says on the page"
+          name="label"
+          defaultValue={link?.label}
+          placeholder="e.g. Uman Info — getting there"
+          hint="Never leave this as the bare address"
+        />
+        <Field label="Web address" name="url" defaultValue={link?.url} placeholder="umaninfo.com/ways" hint="https is added for you" />
+        <Field label="Order" name="position" defaultValue={link ? String(link.position) : "0"} placeholder="0" hint="Lower shows first" />
+      </Group>
+      <div className="mt-4">
+        <TextArea label="Note" name="note" defaultValue={link?.note} placeholder="One line on what is over there" rows={2} />
+      </div>
+    </>
+  );
+}
+
 /* ---- main ------------------------------------------------------------- */
 
-export default function DestinationEditor({ destination }: { destination: EditorDestination }) {
+export default function DestinationEditor({
+  destination,
+  links = [],
+}: {
+  destination: EditorDestination;
+  // Read separately from the destination, so a database without the
+  // DestinationLink migration gives an empty list instead of taking the whole
+  // editor down. See app/admin/destinations/page.tsx.
+  links?: DestinationLink[];
+}) {
   const slug = destination.slug;
   const base = { slug, destinationId: destination.id };
 
@@ -439,6 +478,37 @@ export default function DestinationEditor({ destination }: { destination: Editor
           <Card title="Add a contact" accent>
             <ActionForm action={saveContactAction} submitLabel="Add contact" hidden={base} draftName="new-contact">
               <ContactFields />
+            </ActionForm>
+          </Card>
+        </div>
+      </section>
+
+      {/* Somewhere else worth reading about this town — umaninfo.com for
+          Uman, lizansk.com for Lizhensk. Not a source (that is the field at
+          the top) and not a listing (those have addresses). */}
+      <section>
+        <SectionHeader
+          eyebrow="Useful links"
+          title="Other websites about this town"
+          hint="Sites that know more about this town than we do. They open in a new tab, and the page says where each one goes."
+          count={links.length}
+        />
+        <div className="space-y-4">
+          {links.map((link) => (
+            <Card
+              key={link.id}
+              title={link.label || "Link"}
+              badge="Link"
+              footer={<DeleteForm action={deleteLinkAction} hidden={{ slug, linkId: link.id }} label="Delete link" />}
+            >
+              <ActionForm action={saveLinkAction} submitLabel="Save link" hidden={{ ...base, linkId: link.id }} draftName="link">
+                <LinkFields link={link} />
+              </ActionForm>
+            </Card>
+          ))}
+          <Card title="Add a link" accent>
+            <ActionForm action={saveLinkAction} submitLabel="Add link" hidden={base} draftName="new-link">
+              <LinkFields />
             </ActionForm>
           </Card>
         </div>

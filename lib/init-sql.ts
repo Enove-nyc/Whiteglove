@@ -62,6 +62,22 @@ CREATE TABLE "Destination" (
 );
 
 -- CreateTable
+CREATE TABLE "DestinationLink" (
+    "id" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "note" TEXT,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "lastVerified" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "destinationId" TEXT NOT NULL,
+
+    CONSTRAINT "DestinationLink_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Tzaddik" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -455,6 +471,9 @@ CREATE INDEX "Destination_kind_idx" ON "Destination"("kind");
 CREATE INDEX "Destination_country_idx" ON "Destination"("country");
 
 -- CreateIndex
+CREATE INDEX "DestinationLink_destinationId_position_idx" ON "DestinationLink"("destinationId", "position");
+
+-- CreateIndex
 CREATE INDEX "Tzaddik_destinationId_idx" ON "Tzaddik"("destinationId");
 
 -- CreateIndex
@@ -512,6 +531,12 @@ CREATE INDEX "ContentImportCandidate_kind_status_idx" ON "ContentImportCandidate
 CREATE INDEX "ContentImportCandidate_country_city_idx" ON "ContentImportCandidate"("country", "city");
 
 -- CreateIndex
+CREATE INDEX "ContentImportCandidate_normalizedLocation_idx" ON "ContentImportCandidate"("normalizedLocation");
+
+-- CreateIndex
+CREATE INDEX "ContentImportCandidate_sourceId_idx" ON "ContentImportCandidate"("sourceId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "TrelloCandidateReviewCard_candidateId_key" ON "TrelloCandidateReviewCard"("candidateId");
 
 -- CreateIndex
@@ -555,6 +580,9 @@ CREATE INDEX "ExperienceRating_kind_ref_idx" ON "ExperienceRating"("kind", "ref"
 
 -- CreateIndex
 CREATE INDEX "ExperienceRating_createdAt_idx" ON "ExperienceRating"("createdAt");
+
+-- AddForeignKey
+ALTER TABLE "DestinationLink" ADD CONSTRAINT "DestinationLink_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Tzaddik" ADD CONSTRAINT "Tzaddik_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;

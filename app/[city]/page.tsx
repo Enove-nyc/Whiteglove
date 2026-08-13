@@ -16,6 +16,7 @@ import { getPublishedDestinationContent } from "@/lib/content";
 import { checkedOn } from "@/lib/trust-status";
 import { nearbyKevarim } from "@/lib/nearby-kevarim";
 import { otherBurials, townQuestions } from "@/lib/town-questions";
+import { publishableLinks } from "@/lib/useful-links";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, faqPage, touristAttraction } from "@/lib/structured-data";
@@ -123,6 +124,10 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
   const nearby = nearbyKevarim(guide.slug, { from: rankingPoint });
   const questions = townQuestions(guide, cemetery, airports);
   const stayDestination = encodeURIComponent(`${guide.city}, ${guide.country}`);
+  // Owner-managed in the admin, with the built-in ones from the guide record
+  // behind them. Anything that is not an http(s) address is dropped rather
+  // than printed into an href — see lib/useful-links.ts.
+  const usefulLinks = publishableLinks([...(dbContent?.links ?? []), ...(guide.usefulLinks ?? [])]);
   // Only the sections that exist get a jump link, so the bar never points at
   // nothing.
   const jumpLinks = [
@@ -316,6 +321,35 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
             ))}
           </div>
           <Link href="/stops" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Browse every kever on the site →</Link>
+        </section>
+      )}
+
+      {usefulLinks.length > 0 && (
+        <section className="border-t border-[var(--gold-light)] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Useful links"
+              title="Elsewhere on this town."
+              description="Sites that know this town better than we do. They open in a new tab, and are not ours."
+            />
+            <div className="mt-12 grid gap-5 md:grid-cols-2">
+              {usefulLinks.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer nofollow"
+                  className="block border border-[var(--gold-light)] bg-[#fcfaf6] p-7 transition hover:border-[var(--gold)]"
+                >
+                  {/* The host, said out loud. A link that leaves the site
+                      should say where it goes before it is clicked. */}
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">{link.host}</p>
+                  <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{link.label}</h3>
+                  {link.note && <p className="mt-3 leading-7 text-stone-600">{link.note}</p>}
+                </a>
+              ))}
+            </div>
+          </div>
         </section>
       )}
 

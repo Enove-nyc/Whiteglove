@@ -67,6 +67,19 @@ export type CityGuide = {
     yahrzeit?: string;
     note?: string;
   }>;
+  /**
+   * Somewhere else worth reading about this town.
+   *
+   * NOT `sourceUrl` — that is a footnote for somebody checking us. These are
+   * for the traveller: umaninfo.com knows more about getting to Uman than this
+   * site ever will, and a page that offered only "Read source information" was
+   * never going to send anybody there.
+   *
+   * The ones here ship with the site. The owner adds and edits his own at
+   * /admin/destinations, and both are shown together — see the DestinationLink
+   * model, and lib/useful-links.ts for what makes a URL printable.
+   */
+  usefulLinks?: Array<{ label: string; url: string; note?: string }>;
   sourceUrl: string;
 };
 
@@ -99,6 +112,10 @@ export const cityGuides: CityGuide[] = [
         knownAs: "More than twenty thousand murdered in 1768",
         note: "Killed on 5–7 Tammuz 1768 by Gonta's Haidamaks, who offered them their lives to convert and were refused. They are buried in this ground, and Rebbe Nachman asked to be buried among them — he had passed through Uman and said of it, this is a good place to be buried.",
       },
+    ],
+    usefulLinks: [
+      { label: "Uman Info", url: "https://www.umaninfo.com/", note: "A standing guide to the town kept by people who are there." },
+      { label: "Uman Info — ways to get there", url: "https://www.umaninfo.com/ways", note: "Routes in, which change more often than anything else about this trip." },
     ],
     sourceUrl: "https://www.breslov.com/center/article_rebyahrzeit.html",
   },
@@ -529,6 +546,13 @@ export const cityGuides: CityGuide[] = [
         label: "Ohel & cemetery",
         phone: "+48 735 250 505",
         note: "The number published for the ohel at Górna 16. Confirm before travelling, particularly around Shabbos and the yahrzeit.",
+      },
+    ],
+    usefulLinks: [
+      {
+        label: "Lizansk.com — Hachnasas Orchim",
+        url: "https://lizansk.com/en/lizhensk/",
+        note: "Meals and lodging beside the kever, booked directly. The town has no Jewish community of its own, so this is arranged in advance.",
       },
     ],
     sourceUrl: "https://sztetl.org.pl/en/node/188/114-cemeteries/19248-cmentarz-zydowski-w-lezajsku-ul-gorna",

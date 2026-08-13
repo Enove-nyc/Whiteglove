@@ -18,7 +18,7 @@
  * out by looking for one.
  */
 
-export const RECYCLE_KINDS = ["contact", "cemetery-contact", "burial", "listing", "business", "advertisement"] as const;
+export const RECYCLE_KINDS = ["contact", "cemetery-contact", "burial", "listing", "business", "link", "advertisement"] as const;
 export type RecycleKind = (typeof RECYCLE_KINDS)[number];
 
 export const KIND_WORDS: Record<RecycleKind, { one: string; where: string }> = {
@@ -27,6 +27,7 @@ export const KIND_WORDS: Record<RecycleKind, { one: string; where: string }> = {
   burial: { one: "Kever", where: "on a beis hachaim" },
   listing: { one: "Listing", where: "on a town" },
   business: { one: "Business", where: "in the directory" },
+  link: { one: "Useful link", where: "on a town" },
   advertisement: { one: "Advertisement", where: "" },
 };
 
@@ -44,6 +45,7 @@ export const KIND_AREA: Record<RecycleKind, "directory" | "advertisements"> = {
   burial: "directory",
   listing: "directory",
   business: "directory",
+  link: "directory",
   advertisement: "advertisements",
 };
 

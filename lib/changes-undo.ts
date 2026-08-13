@@ -47,6 +47,9 @@ export async function undoChange(change: Change): Promise<UndoResult> {
       case "business":
         await prisma.directoryProvider.update({ where: { slug: change.rowId }, data: values as never });
         break;
+      case "link":
+        await prisma.destinationLink.update({ where: { id: change.rowId }, data: values as never });
+        break;
       default:
         return { ok: false, message: "That is not something this can put back." };
     }

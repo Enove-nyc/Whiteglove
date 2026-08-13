@@ -15,13 +15,17 @@ import {
   type PhotoOwner,
   createContact,
   createDestination,
+  createLink,
   createPlace,
   deleteContact,
+  deleteLink,
   deletePlace,
   updateContact,
   updateDestinationFields,
+  updateLink,
   updatePlace,
 } from "@/lib/content-admin";
+import { safeExternalUrl } from "@/lib/useful-links";
 import { slugify } from "@/lib/admin-content";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -232,6 +236,64 @@ export async function savePlaceAction(
     }
     revalidateDestination(slug);
     return { ok: true, message: placeId ? "Listing updated." : "Listing added." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/**
+ * Add or change a useful link on a town.
+ *
+ * The URL is put through safeExternalUrl rather than stored as typed: a bare
+ * "umaninfo.com" becomes https, and anything that is not an http(s) address is
+ * refused here rather than being printed into an href later.
+ */
+export async function saveLinkAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const slug = str(formData, "slug");
+  const destinationId = str(formData, "destinationId");
+  const linkId = str(formData, "linkId");
+  const label = str(formData, "label");
+  const url = safeExternalUrl(str(formData, "url"));
+  if (!label) return { ok: false, message: "Give the link a name — what it says on the page." };
+  if (!url) return { ok: false, message: "That does not look like a web address. Use something like umaninfo.com." };
+  const position = Number.parseInt(str(formData, "position"), 10);
+  const fields = {
+    label,
+    url,
+    note: nullable(formData, "note"),
+    position: Number.isFinite(position) ? position : 0,
+    status: (str(formData, "status") as ContentStatus) || "PUBLISHED",
+  };
+  try {
+    if (linkId) {
+      await updateLink(linkId, fields);
+    } else {
+      if (!destinationId) return { ok: false, message: "Missing destination." };
+      await createLink(destinationId, fields);
+    }
+    revalidateDestination(slug);
+    return { ok: true, message: linkId ? "Link updated." : "Link added." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function deleteLinkAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const linkId = str(formData, "linkId");
+  const slug = str(formData, "slug");
+  if (!linkId) return { ok: false, message: "Missing link." };
+  try {
+    await deleteLink(linkId);
+    revalidateDestination(slug);
+    return { ok: true, message: "Link removed." };
   } catch (error) {
     return fail(error);
   }

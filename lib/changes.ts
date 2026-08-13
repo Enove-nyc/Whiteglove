@@ -17,7 +17,7 @@
  * typing anything is not history; a log full of those is a log nobody reads.
  */
 
-export const CHANGE_KINDS = ["town", "page", "listing", "contact", "cemetery-contact", "burial", "business"] as const;
+export const CHANGE_KINDS = ["town", "page", "listing", "contact", "cemetery-contact", "burial", "business", "link"] as const;
 export type ChangeKind = (typeof CHANGE_KINDS)[number];
 
 export const CHANGE_WORDS: Record<ChangeKind, string> = {
@@ -28,6 +28,7 @@ export const CHANGE_WORDS: Record<ChangeKind, string> = {
   "cemetery-contact": "Shomer or contact",
   burial: "Kever",
   business: "Business",
+  link: "Useful link",
 };
 
 /** Which part of the admin each kind belongs to, so the log can be narrowed. */
@@ -39,6 +40,7 @@ export const CHANGE_AREA: Record<ChangeKind, "content" | "directory"> = {
   "cemetery-contact": "directory",
   burial: "directory",
   business: "directory",
+  link: "directory",
 };
 
 /** How long a change is kept, and how many at once. */

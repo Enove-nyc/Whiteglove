@@ -436,6 +436,68 @@ export async function deletePlace(id: string) {
   return gone;
 }
 
+// ---- Useful links on a destination -----------------------------------
+//
+// A link out to somewhere that knows more about this town than we do. The URL
+// is normalised on the way in by lib/useful-links.ts — an owner typing a
+// domain from memory should not have to remember the https.
+
+export type LinkFields = {
+  label: string;
+  url: string;
+  note: string | null;
+  position: number;
+  status: ContentStatus;
+};
+
+export async function listLinksForAdmin(destinationId: string) {
+  const prisma = await db();
+  return prisma.destinationLink.findMany({
+    where: { destinationId },
+    orderBy: [{ position: "asc" }, { label: "asc" }],
+  });
+}
+
+export async function createLink(destinationId: string, fields: LinkFields) {
+  const prisma = await db();
+  const row = await prisma.destinationLink.create({ data: { destinationId, ...fields } });
+  return row;
+}
+
+export async function updateLink(id: string, fields: LinkFields) {
+  const prisma = await db();
+  const before = await prisma.destinationLink.findUnique({ where: { id } });
+  const row = await prisma.destinationLink.update({ where: { id }, data: fields });
+  await recordChange({
+    kind: "link",
+    rowId: id,
+    title: fields.label,
+    before: before as unknown as Record<string, unknown> | null,
+    after: fields as unknown as Record<string, unknown>,
+  });
+  return row;
+}
+
+export async function deleteLink(id: string) {
+  const prisma = await db();
+  const row = await prisma.destinationLink.findUnique({
+    where: { id },
+    include: { destination: { select: { city: true } } },
+  });
+  const gone = await prisma.destinationLink.delete({ where: { id } });
+  if (row) {
+    const { destination, ...record } = row;
+    await remember({
+      kind: "link",
+      rowId: id,
+      title: row.label,
+      detail: [destination?.city, row.url].filter(Boolean).join(" · ") || undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
+  return gone;
+}
+
 // ---- Editable general pages (heading + intro text) -------------------
 
 export type PageFields = {

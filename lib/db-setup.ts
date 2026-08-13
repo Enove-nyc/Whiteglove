@@ -235,6 +235,14 @@ export async function seedDatabase(prisma: PrismaClient) {
       name: { in: rows.places.map((p) => p.name) },
     },
   });
+  // Same rule as the listings above: refresh the links that ship with a guide,
+  // by URL, and leave every link the owner added alone.
+  await prisma.destinationLink.deleteMany({
+    where: {
+      destination: { slug: { in: destinationSlugs } },
+      url: { in: rows.links.map((l) => l.url) },
+    },
+  });
   // These four have no children, so replacing them outright costs nothing.
   //
   // EXCEPT THAT IT COSTS THE OWNER'S EDITS, and that is the whole point of the
@@ -322,6 +330,7 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.tzaddik.createMany({ data: rows.tzaddikim.map(remap) });
   await prisma.contact.createMany({ data: rows.contacts.map(remap) });
   await prisma.practicalPlace.createMany({ data: rows.places.map(remap) });
+  await prisma.destinationLink.createMany({ data: rows.links.map(remap) });
   // THIS LINE WAS MISSING, and it is the bug behind "my whole directory got
   // lost". The re-import deleted all thirty built-in businesses and never wrote
   // them back — while countSeedRows still reported "imported 30 directory
