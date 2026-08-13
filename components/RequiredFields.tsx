@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { looksUnanswered, unansweredMessage, type FieldLike } from "@/lib/required-fields";
 
 /**
@@ -42,7 +43,12 @@ function describe(control: Control): FieldLike {
 }
 
 export default function RequiredFields() {
+  const path = usePathname() ?? "/";
   useEffect(() => {
+    // Partner widgets inside /embed have their own required fields. Intercepting
+    // submit here blocked Aviasales search and threw into the Next.js overlay.
+    if (path.startsWith("/embed")) return;
+
     function onSubmit(event: SubmitEvent) {
       const form = event.target;
       if (!(form instanceof HTMLFormElement) || form.noValidate) return;
@@ -89,7 +95,7 @@ export default function RequiredFields() {
       document.removeEventListener("submit", onSubmit, true);
       document.removeEventListener("input", onInput, true);
     };
-  }, []);
+  }, [path]);
 
   return null;
 }

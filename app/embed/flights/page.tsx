@@ -1,11 +1,13 @@
-import Script from "next/script";
+import PartnerWidgetEmbed from "@/components/PartnerWidgetEmbed";
 import { aviasalesWidgetSrc } from "@/lib/partner-widgets";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Aviasales search form, loaded with next/script so Travelpayouts can insert
- * the form next to the tag. Iframed from /book. No WordPress attributes.
+ * Aviasales search form for the /book Flights iframe.
+ *
+ * The form is injected next to a real script tag inside PartnerWidgetEmbed.
+ * next/script left this iframe empty (and looked like a missing page).
  */
 export default async function EmbedFlightsPage({
   searchParams,
@@ -39,5 +41,10 @@ export default async function EmbedFlightsPage({
     );
   }
 
-  return <Script id="tp-aviasales-search" src={src} strategy="afterInteractive" charSet="utf-8" />;
+  return (
+    <div className="w-full">
+      <h1 className="sr-only">Flight search</h1>
+      <PartnerWidgetEmbed src={src} />
+    </div>
+  );
 }

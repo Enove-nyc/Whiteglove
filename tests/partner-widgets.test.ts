@@ -51,6 +51,20 @@ describe("same-origin widget paths", () => {
     assert.match(path, /depart=2026-09-19/);
     assert.doesNotMatch(path, /return=/);
   });
+
+  it("puts one-way and nonstop on the embed address", () => {
+    const path = flightsEmbedPath({
+      origin: "JFK",
+      destination: "FCO",
+      departDate: "2026-09-12",
+      returnDate: "2026-09-19",
+      oneWay: true,
+      nonstop: true,
+    });
+    assert.match(path, /one_way=true/);
+    assert.match(path, /nonstop=true/);
+    assert.doesNotMatch(path, /return=/);
+  });
 });
 
 describe("Travelpayouts widget scripts", () => {
@@ -74,8 +88,31 @@ describe("Travelpayouts widget scripts", () => {
       assert.equal(url.searchParams.get("destination"), "TLV");
       assert.equal(url.searchParams.get("depart_date"), "2026-09-12");
       assert.equal(url.searchParams.get("return_date"), "2026-09-19");
-      assert.match(url.searchParams.get("searchUrl") ?? "", /aviasales\.com/);
+      assert.match(url.searchParams.get("searchUrl") ?? "", /^https:\/\/www\.aviasales\.com\/search$/);
       assert.equal(url.searchParams.get("show_hotels"), "false");
+      assert.equal(url.searchParams.get("one_way"), "false");
+    } finally {
+      if (previous === undefined) delete process.env.TRAVELPAYOUTS_MARKER;
+      else process.env.TRAVELPAYOUTS_MARKER = previous;
+    }
+  });
+
+  it("puts one-way and nonstop on the Aviasales widget", () => {
+    const previous = process.env.TRAVELPAYOUTS_MARKER;
+    process.env.TRAVELPAYOUTS_MARKER = "761677";
+    try {
+      const src = aviasalesWidgetSrc({
+        origin: "JFK",
+        destination: "TLV",
+        departDate: "2026-09-12",
+        returnDate: "2026-09-19",
+        oneWay: true,
+        nonstop: true,
+      });
+      const url = new URL(src);
+      assert.equal(url.searchParams.get("one_way"), "true");
+      assert.equal(url.searchParams.get("only_direct"), "true");
+      assert.equal(url.searchParams.get("return_date"), null);
     } finally {
       if (previous === undefined) delete process.env.TRAVELPAYOUTS_MARKER;
       else process.env.TRAVELPAYOUTS_MARKER = previous;
@@ -131,14 +168,17 @@ describe("Travelpayouts widget scripts", () => {
 });
 
 describe("how the widgets are loaded", () => {
-  it("uses next/script on the embed pages, without WordPress attributes", () => {
+  it("loads Travelpayouts into a real slot on the embed pages, not next/script", () => {
     const flights = readFileSync("app/embed/flights/page.tsx", "utf8");
     const cars = readFileSync("app/embed/cars/page.tsx", "utf8");
-    assert.match(flights, /from "next\/script"/);
-    assert.match(cars, /from "next\/script"/);
-    assert.match(flights, /strategy="afterInteractive"/);
-    assert.match(cars, /strategy="afterInteractive"/);
-    for (const source of [flights, cars]) {
+    const loader = readFileSync("components/PartnerWidgetEmbed.tsx", "utf8");
+    assert.match(flights, /PartnerWidgetEmbed/);
+    assert.match(cars, /PartnerWidgetEmbed/);
+    assert.match(loader, /document\.createElement\("script"\)/);
+    assert.match(loader, /tp\.media\/content/);
+    for (const source of [flights, cars, loader]) {
+      assert.doesNotMatch(source, /from "next\/script"/);
+      assert.doesNotMatch(source, /strategy="afterInteractive"/);
       assert.doesNotMatch(source, /data-no-optimize|data-wp-|noptimize/i);
     }
   });
@@ -148,22 +188,26 @@ describe("how the widgets are loaded", () => {
     assert.match(panel, /\/embed\/flights|flightsEmbedPath/);
     assert.match(panel, /\/embed\/cars|carsEmbedPath/);
     assert.doesNotMatch(panel, /tp\.media|shmarker|TRAVELPAYOUTS_MARKER/);
-    assert.doesNotMatch(panel, /\/api\/partners\/flights\/search/);
+    assert.match(panel, /\/api\/partners\/flights\/search/);
     assert.doesNotMatch(panel, /\/api\/partners\/cars\/search/);
   });
 
   it("keeps the embed addresses out of the sitemap and robots list", () => {
     assert.equal(isPrivatePath("/embed"), true);
     assert.equal(isPrivatePath("/embed/flights"), true);
+    assert.match(readFileSync("components/RequiredFields.tsx", "utf8"), /path\.startsWith\("\/embed"\)/);
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 
-  it("shows the partner widget as the only cash flight and car search", () => {
+  it("shows the partner widget as fallback after search, with trip type on the White Glove form", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
     const flights = panel.slice(panel.indexOf("function FlightsForm"), panel.indexOf("function HotelsForm"));
     const cars = panel.slice(panel.indexOf("function CarsForm"), panel.indexOf("function BookedPrompt"));
     assert.match(flights, /PartnerSearchWidget/);
-    assert.doesNotMatch(flights, /AirportAutocomplete|DateField/);
+    assert.match(flights, /AirportAutocomplete|DateField/);
+    assert.match(flights, /round-trip/);
+    assert.match(flights, /one-way/);
+    assert.match(flights, /Nonstop only/);
     assert.match(cars, /PartnerSearchWidget/);
     assert.doesNotMatch(cars, /AddressAutocomplete|DateField|Driver age/);
     assert.match(panel, /\/api\/partners\/hotels\/search/);

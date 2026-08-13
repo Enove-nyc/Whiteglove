@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { duffelRefusal } from "@/lib/duffel-guard";
 import { duffelBearer } from "@/lib/duffel-token";
+import { flightDateProblem } from "@/lib/date-range";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
 import { redact } from "@/lib/redact";
 
@@ -97,6 +98,10 @@ export async function POST(request: NextRequest) {
   if (multiCitySlices && (multiCitySlices.length < 2 || !multiCitySlices.every((slice: { origin: string; destination: string; departure_date: string }) => /^[A-Z]{3}$/.test(slice.origin) && /^[A-Z]{3}$/.test(slice.destination) && /^\d{4}-\d{2}-\d{2}$/.test(slice.departure_date)))) return NextResponse.json({ message: "Complete each multi-city flight with airports from the list and a departure date." }, { status: 400 });
   if (!multiCitySlices && (![origin, destination].every((value) => /^[A-Z]{3}$/.test(value)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(departureDate)))) return NextResponse.json({ message: "Choose an airport from the list, or enter a valid three-letter airport code." }, { status: 400 });
   if (!multiCitySlices && returnDate && (!/^\d{4}-\d{2}-\d{2}$/.test(String(returnDate)) || returnDate <= departureDate)) return NextResponse.json({ message: "Your return date must be after your departure date." }, { status: 400 });
+  const past = multiCitySlices
+    ? multiCitySlices.map((slice: { departure_date: string }) => flightDateProblem(slice.departure_date)).find(Boolean)
+    : flightDateProblem(String(departureDate), returnDate ? String(returnDate) : undefined);
+  if (past) return NextResponse.json({ message: past }, { status: 400 });
 
   const slices = multiCitySlices ?? [{ origin, destination, departure_date: departureDate }, ...(returnDate ? [{ origin: destination, destination: origin, departure_date: returnDate }] : [])];
   const response = await fetch(duffelUrl, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", "Duffel-Version": "v2", Authorization: `Bearer ${token}` }, body: JSON.stringify({ data: { slices, passengers: [{ type: "adult" }], cabin_class: ["economy", "premium_economy", "business", "first"].includes(cabin) ? cabin : "economy", max_connections: [0, 1, 2].includes(Number(maxConnections)) ? Number(maxConnections) : 2, return_offers: true } }), cache: "no-store" });
