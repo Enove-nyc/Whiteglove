@@ -15,6 +15,15 @@ import {
 import { listStoredProviders } from "@/lib/directory-store";
 import { publishableContact } from "@/lib/provider-contact";
 
+/**
+ * Every place a provider can change calls `updateTag(DIRECTORY_PUBLIC_TAG)`
+ * after it writes — the Redis-backed quick-add route, the Prisma-backed
+ * admin editor, and the bulk re-import. Miss one and that path goes stale
+ * silently, which is exactly the failure `force-dynamic` was protecting
+ * against before this file existed. See getPublicProviders below.
+ */
+export const DIRECTORY_PUBLIC_TAG = "directory-public";
+
 export { PROVIDER_CATEGORY_LABELS, PROVIDER_CATEGORY_ORDER };
 export type { ProviderCat };
 
@@ -182,9 +191,40 @@ export async function readProviders(): Promise<ProviderReading> {
   }
 }
 
-/** All published providers. For the public pages, which show what there is. */
+/**
+ * All published providers. For the public pages, which show what there is.
+ *
+ * CACHED, WITH EXPLICIT INVALIDATION — not a time-based `revalidate` on the
+ * page. `revalidate` was tried on /directory itself and measured to not
+ * work: this function mixes a Prisma read with a `cache: "no-store"` fetch
+ * to Redis (inside fromStore, via listStoredProviders), and a no-store fetch
+ * inside a page left the page frozen at its build-time render regardless of
+ * the revalidate window. Caching the DATA here instead, tagged, and busting
+ * that tag the moment a write actually happens (see DIRECTORY_PUBLIC_TAG),
+ * gives the same instant-on-save freshness as force-dynamic did — but reuses
+ * the render for every visit in between, which is what force-dynamic was
+ * spending real compute on for no reason.
+ *
+ * `readProviders` itself stays uncached and is what the admin screen calls
+ * directly — it has to see a save immediately, before anything invalidates
+ * a tag.
+ *
+ * `next/cache` is imported dynamically, not at module scope, for the same
+ * reason the Prisma client is below: this file is imported directly by
+ * plain-Node tests that never touch a Next.js request context, and a
+ * top-level `unstable_cache` import breaks module resolution for all of
+ * them even when nothing calls this function.
+ */
 export async function getPublicProviders(): Promise<PublicProvider[]> {
-  return (await readProviders()).providers;
+  const { unstable_cache } = await import("next/cache");
+  const cachedReading = unstable_cache(readProviders, ["directory-public-reading"], {
+    tags: [DIRECTORY_PUBLIC_TAG],
+    // A safety net, not the mechanism: every write path calls updateTag, so
+    // in practice this window is never what makes an edit appear. It only
+    // matters if a write path is ever added that forgets to.
+    revalidate: 3600,
+  });
+  return (await cachedReading()).providers;
 }
 
 /**

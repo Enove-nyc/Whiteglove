@@ -6,21 +6,20 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { getPublicProviders } from "@/lib/directory";
 
-// Rendered per request, not frozen at build time.
+// Not force-dynamic, and this needed a real fix rather than deleting that
+// line — a plain `revalidate` window was tried on this page before and
+// measured to not work, because getPublicProviders mixes a Prisma read with
+// a `cache: "no-store"` fetch to Redis, and that fetch left the page frozen
+// at its build-time render no matter the window. force-dynamic was the
+// correct answer to that at the time: an owner's listing has to appear the
+// moment it's saved, and per-request rendering guaranteed it, at the cost of
+// running a real database read for every visit — including every crawler.
 //
-// This page reads content the owner adds in the admin. Prerendered, it is
-// built once when the site is deployed and never again — a listing added on
-// Tuesday is still absent on Friday. The admin saves it, the store holds it,
-// and the page keeps serving the snapshot taken at build. The whole point of
-// the owner being able to add things is that they appear.
-//
-// `revalidate` was tried first and measured: with a 60-second window the page
-// still never re-read the store, because the reads are `cache: "no-store"`
-// fetches that a prerender does not re-run. Per-request is what actually
-// works, and it is what /stops and the admin pages already do. These pages are
-// small, so the cost is a cheap render rather than a cached file.
-export const dynamic = "force-dynamic";
-
+// The actual fix is in lib/directory.ts: getPublicProviders is now a tagged
+// `unstable_cache`, busted by every write path the moment it saves
+// (DIRECTORY_PUBLIC_TAG). That gives the same instant freshness without
+// paying for a fresh render on every hit — the page can go back to being an
+// ordinary cached render.
 export const metadata = pageMetadata({
   title: "Directory — White Glove Itineraries",
   description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
