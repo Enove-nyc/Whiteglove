@@ -298,6 +298,14 @@ type ExtraLeg = { from: string; to: string; date: string };
 const blankLeg = (): ExtraLeg => ({ from: "", to: "", date: "" });
 const MAX_FLIGHT_LEGS = 6;
 
+/**
+ * What a search with no fare of ours says. Two lines, and the same words the
+ * server uses — kept here as well so a failed request says the honest thing
+ * rather than nothing.
+ */
+const NO_PRICED_FLIGHTS = "No priced flights for those dates on White Glove.";
+const SEARCH_WITH_A_PARTNER = "Nothing is invented here — search on Aviasales or compare on Kayak.";
+
 function FlightsForm({
   onAdd,
   onOpened,
@@ -492,12 +500,16 @@ function FlightsForm({
           return;
         }
       }
-      // Usual case: Search API has nothing. The Aviasales tab already opened.
-      setLiveMessage("");
-      setLiveDetail("");
+      // Usual case: the Search API has no fare for these dates. One line
+      // saying so, and nothing else — the Aviasales tab is already open behind
+      // this page and Kayak is one press away. There is no second search form
+      // to point at, which is what the old wording did.
+      const compare = data?.ok && data.mode === "compare";
+      setLiveMessage(compare && typeof data.message === "string" ? data.message : NO_PRICED_FLIGHTS);
+      setLiveDetail(compare && typeof data.detail === "string" ? data.detail : SEARCH_WITH_A_PARTNER);
     } catch {
-      setLiveMessage("");
-      setLiveDetail("");
+      setLiveMessage(NO_PRICED_FLIGHTS);
+      setLiveDetail(SEARCH_WITH_A_PARTNER);
     }
     setLoading(false);
   }

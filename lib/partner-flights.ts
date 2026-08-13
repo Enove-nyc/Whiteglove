@@ -143,7 +143,7 @@ function compareResult(search: PartnerFlightSearch, origin: string, destination:
     ok: true,
     mode: "compare",
     message: "No priced flights for those dates on White Glove.",
-    detail: "Nothing is invented here. Search opens with Aviasales; compare more on Kayak.",
+    detail: "Nothing is invented here — search on Aviasales or compare on Kayak.",
     flights: [],
     kayakHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
   };
