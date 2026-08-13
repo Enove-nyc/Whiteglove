@@ -417,6 +417,8 @@ model ContentImportCandidate {
   @@index([batchId, status])
   @@index([kind, status])
   @@index([country, city])
+  @@index([normalizedLocation])
+  @@index([sourceId])
 }
 
 // Non-secret Trello scope for private bulk-candidate review. API credentials
