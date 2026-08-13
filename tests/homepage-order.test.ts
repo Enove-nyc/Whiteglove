@@ -221,6 +221,11 @@ describe("the order of the page", () => {
     assert.doesNotMatch(categories, /\{count\}/);
     // …but a category with nothing behind it is still not offered at all.
     assert.match(categories, /if \(count === 0\) return null/);
+    // The same cards on /destinations used to print "3 destinations" next to
+    // Beach and resort — the same comparison the front page already refused.
+    const hub = readFileSync("app/destinations/(hub)/page.tsx", "utf8");
+    const hubCards = hub.slice(hub.indexOf("Browse by holiday type"), hub.indexOf("id=\"browse\""));
+    assert.doesNotMatch(hubCards, /\{count\} destination/);
   });
 
   it("does not explain kosher food and Shabbos twice on one page", () => {

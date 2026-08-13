@@ -97,15 +97,15 @@ export default async function VacationIdeasPage({
                     </span>
                     <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
                   </span>
-                  <span className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                      {count} destination{count === 1 ? "" : "s"}
-                    </span>
+                  <span className="flex flex-wrap items-center justify-end gap-2">
                     {selected && (
                       <span className="rounded-full bg-[var(--navy)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
                         Selected
                       </span>
                     )}
+                    <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold-ink)]">
+                      →
+                    </span>
                   </span>
                 </Link>
               </li>
