@@ -17,6 +17,7 @@ import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherStays } from "@/data/kosher-stays";
 import {
   bulkContentKindLabel,
+  contentImportCandidatePath,
   findBulkContentDuplicate,
   isDisallowedImportSource,
   prepareBulkContentCandidate,
@@ -447,14 +448,22 @@ export async function stageBuiltInContentBatch(slug: string): Promise<{ created:
   return { created: result.count, total: rows.length };
 }
 
-export async function getContentImportCandidate(id: string): Promise<ContentImportCandidateView | null> {
+export async function getContentImportCandidate(routeKey: string): Promise<ContentImportCandidateView | null> {
   if (!isDbEnabled()) return null;
   try {
     const prisma = await db();
-    const row = await prisma.contentImportCandidate.findUnique({
-      where: { id },
+    const byId = await prisma.contentImportCandidate.findUnique({
+      where: { id: routeKey },
       include: { batch: { select: { slug: true, name: true } } },
     });
+    const sourceMatches = byId ? [] : await prisma.contentImportCandidate.findMany({
+      where: { sourceId: routeKey },
+      include: { batch: { select: { slug: true, name: true } } },
+      take: 2,
+    });
+    // Source IDs are intended to be stable candidate identities. Fail closed
+    // if a legacy import reused one instead of opening an arbitrary row.
+    const row = byId ?? (sourceMatches.length === 1 ? sourceMatches[0] : null);
     if (!row) return null;
     const candidate = viewFromStored(row as unknown as StorageCandidate);
     return isDisallowedImportSource(candidate) ? null : candidate;
@@ -548,6 +557,7 @@ export async function updateContentImportCandidate(id: string, input: BulkConten
       sourceName: prepared.sourceName,
       attribution: prepared.attribution,
       license: prepared.license,
+      sourceEvidence: rawSourceEvidence(prepared.sourceEvidence),
       normalizedName: prepared.normalizedName,
       normalizedLocation: prepared.normalizedLocation,
       dedupeKey: prepared.dedupeKey,
@@ -585,7 +595,7 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
   const candidate = viewFromStored(stored as unknown as StorageCandidate);
   const prepared = prepareBulkContentCandidate(storedInput(candidate));
   if (!prepared.canPublish) throw new Error(prepared.publishBlockers.join(" "));
-  const duplicate = await ownedDuplicateFor(prepared);
+  const duplicate = await ownedDuplicateFor(prepared, id);
   if (duplicate) throw new Error(`This appears to duplicate ${duplicate.id}. Resolve it in the review queue instead of publishing another listing.`);
 
   let published: { kind: string; id: string };
@@ -707,7 +717,7 @@ export async function listStagedCandidatesForAdminSearch(): Promise<
         country: row.country,
         status: row.status,
         sourceId: row.sourceId,
-        href: `/admin/imports/${row.id}`,
+        href: contentImportCandidatePath(row.sourceId),
         batchName: row.batch.name,
       }));
   } catch {

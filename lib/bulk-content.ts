@@ -154,6 +154,11 @@ export function isUsableSourceUrl(value: string | null | undefined): boolean {
   return Boolean(normalizeSourceUrl(value));
 }
 
+/** Human-readable admin route for a source-backed candidate. */
+export function contentImportCandidatePath(sourceId: string): string {
+  return `/admin/imports/${encodeURIComponent(sourceId.trim())}`;
+}
+
 const DISALLOWED_IMPORT_HOSTS = new Set([
   "openstreetmap.org",
   "overpass-api.de",
