@@ -206,6 +206,11 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
               Save and publish
             </button>
           )}
+          {kind === "KOSHER_FOOD" && (candidate.status === "NEEDS_REVIEW" || candidate.status === "DUPLICATE") && (
+            <button type="submit" name="intent" value="confirm-linked" disabled={pending} className="min-h-11 border border-emerald-700 bg-emerald-700 px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50">
+              Link verified public listing
+            </button>
+          )}
           {candidate.status === "REJECTED" ? (
             <button type="submit" name="intent" value="reopen" disabled={pending} className="min-h-11 border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-50">
               Return to review
