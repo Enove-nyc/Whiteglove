@@ -74,6 +74,55 @@ export type DestinationFields = {
   status: ContentStatus;
 };
 
+export type NewDestinationFields = {
+  slug: string;
+  city: string;
+  yiddishCity: string;
+  country: string;
+  sourceUrl: string | null;
+};
+
+/** Create a private destination shell without silently duplicating a town. */
+export async function createDestination(fields: NewDestinationFields) {
+  const prisma = await db();
+  const duplicate = await prisma.destination.findFirst({
+    where: {
+      OR: [
+        { slug: fields.slug },
+        {
+          city: { equals: fields.city, mode: "insensitive" },
+          country: { equals: fields.country, mode: "insensitive" },
+        },
+      ],
+    },
+    select: { slug: true, city: true, country: true },
+  });
+  if (duplicate) {
+    throw new Error(`${duplicate.city}, ${duplicate.country} already exists as ${duplicate.slug}.`);
+  }
+
+  const row = await prisma.destination.create({
+    data: {
+      slug: fields.slug,
+      city: fields.city,
+      yiddishCity: fields.yiddishCity || fields.city,
+      country: fields.country,
+      sourceUrl: fields.sourceUrl,
+      status: "NEEDS_REVIEW",
+      verification: "NEEDS_VERIFICATION",
+    },
+  });
+  await recordChange({
+    kind: "town",
+    rowId: row.slug,
+    title: row.city,
+    before: null,
+    after: { city: row.city, country: row.country, status: row.status },
+  });
+  await invalidateSiteSearchIndex();
+  return row;
+}
+
 export async function updateDestinationFields(slug: string, fields: DestinationFields) {
   const prisma = await db();
   // Read what it says before writing over it. A shorter overview pasted over a
