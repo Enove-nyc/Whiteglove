@@ -89,3 +89,42 @@ describe("the links that ship with the site", () => {
     }
   });
 });
+
+describe("the same link from two places", () => {
+  /**
+   * THE BUG THIS CATCHES. Every link that ships in a guide is also seeded into
+   * the database, so the moment the owner presses "Set up database" the page
+   * has both copies. Nothing deduped them, so Uman would quietly list
+   * umaninfo.com twice — and only after a button press unrelated to links.
+   */
+  it("shows a seeded link once, not twice", () => {
+    const out = publishableLinks([
+      { label: "Uman Info (his edit)", url: "https://www.umaninfo.com/" },
+      { label: "Uman Info", url: "https://www.umaninfo.com/" },
+    ]);
+    assert.equal(out.length, 1);
+  });
+
+  it("keeps the first — callers pass the database rows first, so his edit wins", () => {
+    const [only] = publishableLinks([
+      { label: "His own wording", url: "https://www.umaninfo.com/" },
+      { label: "The shipped wording", url: "https://www.umaninfo.com/" },
+    ]);
+    assert.equal(only.label, "His own wording");
+  });
+
+  it("treats a trailing slash and a bare domain as the same link", () => {
+    // He types "umaninfo.com"; the seed holds "https://www.umaninfo.com/".
+    // Only one of those was ever typed that way, and neither is a difference
+    // anybody means.
+    assert.equal(publishableLinks([{ label: "a", url: "https://umaninfo.com" }, { label: "b", url: "https://umaninfo.com/" }]).length, 1);
+  });
+
+  it("still keeps genuinely different pages on the same site", () => {
+    const out = publishableLinks([
+      { label: "Uman Info", url: "https://www.umaninfo.com/" },
+      { label: "Ways to get there", url: "https://www.umaninfo.com/ways" },
+    ]);
+    assert.equal(out.length, 2);
+  });
+});

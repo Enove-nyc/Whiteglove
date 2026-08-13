@@ -57,11 +57,27 @@ export function linkHost(url: string): string {
  * A link with no label falls back to its host rather than being hidden: an
  * owner who pasted a URL and tabbed away should see the link on the page, not
  * wonder where it went.
+ *
+ * DEDUPED BY ADDRESS, FIRST ONE WINS. The links that ship with a guide are
+ * also seeded into the database, so the moment the owner presses "Set up
+ * database" the same link exists twice — once as a row he can edit, once in
+ * the data file. Callers pass the database rows FIRST, so his edited version
+ * is the one shown and the built-in copy falls away. Without this, pressing
+ * that button silently listed every seeded link twice.
+ *
+ * Compared on the normalised URL rather than the raw string, so
+ * "umaninfo.com" and "https://www.umaninfo.com/" are recognised as one link
+ * even though only one of them was ever typed that way.
  */
 export function publishableLinks(links: UsefulLink[]): Array<UsefulLink & { url: string; host: string }> {
+  const seen = new Set<string>();
   return links.flatMap((link) => {
     const url = safeExternalUrl(link.url);
     if (!url) return [];
+    // Trailing slash and case of the host are not a difference anybody means.
+    const key = url.replace(/\/$/, "").toLowerCase();
+    if (seen.has(key)) return [];
+    seen.add(key);
     const host = linkHost(url);
     return [{ ...link, url, host, label: link.label?.trim() || host }];
   });
