@@ -14,6 +14,7 @@ import {
   updatePhoto,
   type PhotoOwner,
   createContact,
+  createDestination,
   createPlace,
   deleteContact,
   deletePlace,
@@ -21,6 +22,7 @@ import {
   updateDestinationFields,
   updatePlace,
 } from "@/lib/content-admin";
+import { slugify } from "@/lib/admin-content";
 
 export type ActionResult = { ok: boolean; message: string };
 
@@ -56,6 +58,32 @@ function nullable(formData: FormData, key: string): string | null {
 
 function fail(error: unknown): ActionResult {
   return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
+}
+
+export async function createDestinationAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  const city = str(formData, "city");
+  const country = str(formData, "country");
+  if (!city) return { ok: false, message: "City name is required." };
+  if (!country) return { ok: false, message: "Country is required." };
+  const slug = slugify(str(formData, "slug") || city);
+  if (!slug) return { ok: false, message: "Enter a city name that can be used in a URL." };
+  try {
+    await createDestination({
+      slug,
+      city,
+      yiddishCity: str(formData, "yiddishCity"),
+      country,
+      sourceUrl: nullable(formData, "sourceUrl"),
+    });
+    revalidateDestination(slug);
+    return { ok: true, message: `Destination created. Open ${city} from the list to add verified listings.` };
+  } catch (error) {
+    return fail(error);
+  }
 }
 
 export async function saveDestinationAction(

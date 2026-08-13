@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import type { ContentImportDashboard, ContentImportCandidateView, ContentImportStatus } from "@/lib/content-imports";
 import { stageBuiltInContentBatchAction } from "@/app/admin/imports/actions";
+import { contentImportCandidatePath } from "@/lib/bulk-content";
 
 const statusLabel: Record<ContentImportStatus, string> = {
   NEEDS_REVIEW: "Needs review",
@@ -176,7 +177,7 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
                   </td>
                   <td className="px-3 py-4">
                     {dashboard.databaseReady ? (
-                      <Link href={`/admin/imports/${candidate.id}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">Open review →</Link>
+                      <Link href={contentImportCandidatePath(candidate.sourceId, candidate.id)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">Open review →</Link>
                     ) : (
                       <span className="text-xs text-stone-500">Stage first</span>
                     )}

@@ -16,7 +16,7 @@ import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/cand
 import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
 import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
 import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
-import { isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
+import { contentImportCandidatePath, isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
 import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
   isOpenReviewStatus,
@@ -292,7 +292,7 @@ function fromDatabase(candidate: ContentImportCandidateView): ReviewQueueItem {
     batchSlug: candidate.batchSlug,
     batchName: candidate.batchName,
     origin: "database",
-    href: `/admin/imports/${candidate.id}`,
+    href: contentImportCandidatePath(candidate.sourceId, candidate.id),
     publishBlockers: candidate.publishBlockers.length,
   };
 }

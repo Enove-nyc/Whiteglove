@@ -1,14 +1,23 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import ContentImportCandidateEditor from "@/components/ContentImportCandidateEditor";
+import { contentImportCandidatePath } from "@/lib/bulk-content";
 import { getContentImportCandidate } from "@/lib/content-imports";
 
 export const dynamic = "force-dynamic";
 
-export default async function ContentImportCandidatePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ContentImportCandidatePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ candidate?: string }>;
+}) {
   const { id } = await params;
-  const candidate = await getContentImportCandidate(id);
+  const { candidate: candidateId } = await searchParams;
+  const candidate = await getContentImportCandidate(id, candidateId);
   if (!candidate) notFound();
+  if (id === candidate.id) permanentRedirect(contentImportCandidatePath(candidate.sourceId, candidate.id));
 
   return (
     <>
