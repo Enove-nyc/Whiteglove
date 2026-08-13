@@ -6,9 +6,11 @@
 // message instead of a stack trace.
 
 import { randomUUID } from "node:crypto";
-import { updateTag } from "next/cache";
 import type { ContentStatus, Photo, PlaceCategory, VerificationStatus, ProviderCategory } from "@prisma/client";
+import { ATTRACTIONS_PUBLIC_TAG } from "@/lib/attractions-view";
+import { bustTag } from "@/lib/cache-tags";
 import { DIRECTORY_PUBLIC_TAG } from "@/lib/directory";
+import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 import { remember } from "@/lib/recycle-store";
 import { recordChange } from "@/lib/changes-store";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
@@ -394,9 +396,11 @@ export async function deletePhoto(id: string) {
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {
   const prisma = await db();
-  return prisma.practicalPlace.create({
+  const row = await prisma.practicalPlace.create({
     data: { ...fields, lastVerified: new Date(), destinationId },
   });
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
+  return row;
 }
 
 export async function updatePlace(id: string, fields: PlaceFields) {
@@ -413,6 +417,7 @@ export async function updatePlace(id: string, fields: PlaceFields) {
     before: before as unknown as Record<string, unknown> | null,
     after: fields as unknown as Record<string, unknown>,
   });
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   return row;
 }
 
@@ -423,6 +428,7 @@ export async function deletePlace(id: string) {
     include: { destination: { select: { city: true } } },
   });
   const gone = await prisma.practicalPlace.delete({ where: { id } });
+  await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   if (row) {
     const { destination, ...record } = row;
     await remember({
@@ -506,7 +512,7 @@ export async function createProvider(fields: ProviderFields) {
   const row = await prisma.directoryProvider.create({
     data: { slug: providerSlug(fields.name), ...fields },
   });
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return row;
 }
 
@@ -521,7 +527,7 @@ export async function updateProvider(slug: string, fields: ProviderFields) {
     before: before as unknown as Record<string, unknown> | null,
     after: fields as unknown as Record<string, unknown>,
   });
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return row;
 }
 
@@ -538,7 +544,7 @@ export async function deleteProvider(slug: string) {
       payload: row as unknown as Record<string, unknown>,
     });
   }
-  updateTag(DIRECTORY_PUBLIC_TAG);
+  await bustTag(DIRECTORY_PUBLIC_TAG);
   return gone;
 }
 
@@ -963,6 +969,7 @@ export async function createAttraction(fields: NewAttractionFields) {
     select: { slug: true, name: true },
   });
   invalidateSiteSearchIndex();
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
   return row;
 }
 
@@ -1005,5 +1012,6 @@ export async function createKosherStay(fields: NewStayFields) {
     select: { slug: true, name: true },
   });
   invalidateSiteSearchIndex();
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
   return row;
 }

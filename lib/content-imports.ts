@@ -26,7 +26,9 @@ import {
   type KnownContentRecord,
   type PreparedBulkContentCandidate,
 } from "@/lib/bulk-content";
+import { bustTag } from "@/lib/cache-tags";
 import { createAttraction, createKosherStay, isDbEnabled } from "@/lib/content-admin";
+import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
 
 const DB_OFF_MESSAGE = "Connect the private content database before staging source candidates.";
@@ -661,6 +663,7 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
       select: { id: true },
     });
     invalidateSiteSearchIndex();
+    await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
     published = { kind: "practical", id: row.id };
   }
 

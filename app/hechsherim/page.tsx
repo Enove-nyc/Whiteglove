@@ -9,10 +9,9 @@ import { listAgencies } from "@/lib/hechsher-store";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
-// Read per request, so an agency the owner adds in the admin is here the same
-// day rather than at the next deploy — the same rule as /hotels and /stops.
-export const dynamic = "force-dynamic";
-
+// Not force-dynamic. listAgencies (lib/hechsher-store.ts) is a tagged
+// unstable_cache now, busted by saveAgency/deleteAgency the moment either
+// actually writes, rather than this page reading Redis on every visit.
 export const metadata = pageMetadata({
   title: "Kosher certification marks and the agencies behind them | White Glove Itineraries",
   description:

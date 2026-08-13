@@ -7,21 +7,9 @@ import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
 
-// Rendered per request, not frozen at build time.
-//
-// This page reads content the owner adds in the admin. Prerendered, it is
-// built once when the site is deployed and never again — a listing added on
-// Tuesday is still absent on Friday. The admin saves it, the store holds it,
-// and the page keeps serving the snapshot taken at build. The whole point of
-// the owner being able to add things is that they appear.
-//
-// `revalidate` was tried first and measured: with a 60-second window the page
-// still never re-read the store, because the reads are `cache: "no-store"`
-// fetches that a prerender does not re-run. Per-request is what actually
-// works, and it is what /stops and the admin pages already do. These pages are
-// small, so the cost is a cheap render rather than a cached file.
-export const dynamic = "force-dynamic";
-
+// Not force-dynamic. getAttractionList (lib/attractions-view.ts) is a tagged
+// unstable_cache now, busted the moment an attraction is actually written,
+// rather than this page running a real database read on every visit.
 export const metadata = pageMetadata({
   title: "Things to do — White Glove Itineraries",
   description: "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",

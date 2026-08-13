@@ -19,8 +19,18 @@
 import { attractions as staticAttractions, type Attraction } from "@/data/attractions";
 import { kosherAreas as staticAreas, kosherStays as staticStays, type KosherStay } from "@/data/kosher-stays";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
+import { cachedRead } from "@/lib/cache-tags";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
+
+/**
+ * Every place an attraction, stay or quarter can be written busts this tag —
+ * createAttraction/createKosherStay in lib/content-admin.ts (which covers
+ * both the admin's own "add" form and the import-review publish step) and
+ * the bulk re-import in lib/db-setup.ts, the only path that writes a
+ * KosherArea at all. Miss one and that path goes stale silently.
+ */
+export const ATTRACTIONS_PUBLIC_TAG = "attractions-public";
 
 export type KosherAreaItem = (typeof staticAreas)[number] & { ownerAdded: boolean };
 export type AttractionItem = Attraction & { ownerAdded: boolean };
@@ -75,7 +85,7 @@ function isAllowedPublicSource(sourceUrl: string | null): boolean {
  * the row from it. Asking the database for rows whose slug ships in the file
  * would just return a stale duplicate of what we already have.
  */
-export async function getAttractionList(cities?: CityFilter): Promise<AttractionItem[]> {
+async function attractionListUncached(cities?: CityFilter): Promise<AttractionItem[]> {
   const base: AttractionItem[] = onlyIn(staticAttractions, cities).map((a) => ({ ...a, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
@@ -108,7 +118,7 @@ export async function getAttractionList(cities?: CityFilter): Promise<Attraction
   }
 }
 
-export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]> {
+async function stayListUncached(cities?: CityFilter): Promise<KosherStayItem[]> {
   const base: KosherStayItem[] = onlyIn(staticStays, cities).map((s) => ({ ...s, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
@@ -142,7 +152,7 @@ export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]
   }
 }
 
-export async function getAreaList(cities?: CityFilter): Promise<KosherAreaItem[]> {
+async function areaListUncached(cities?: CityFilter): Promise<KosherAreaItem[]> {
   const base: KosherAreaItem[] = onlyIn(staticAreas, cities).map((a) => ({ ...a, ownerAdded: false }));
   if (!DB_ENABLED) return base;
   try {
@@ -164,4 +174,43 @@ export async function getAreaList(cities?: CityFilter): Promise<KosherAreaItem[]
   } catch {
     return base;
   }
+}
+
+/**
+ * The three lists above, cached and tagged instead of read fresh on every
+ * call. /map and /things-to-do used to be force-dynamic specifically because
+ * of this — a real database read (three of them, on /map) on every visit,
+ * crawlers included. /hotels reads searchParams and has to stay dynamic as a
+ * page regardless, but the expensive part was always these three reads, not
+ * the page shell around them, so caching here is still a real saving there.
+ *
+ * Goes through lib/cache-tags.ts's cachedRead rather than importing
+ * `unstable_cache` directly — see that file for why. `cities` has to be
+ * folded into the cache key by hand here, unlike a direct `unstable_cache`
+ * call: cachedRead wraps a plain no-argument closure, so the unfiltered call
+ * (/map, /things-to-do, /hotels) and a destination page's filtered call need
+ * their own key or they would collide.
+ */
+export async function getAttractionList(cities?: CityFilter): Promise<AttractionItem[]> {
+  return cachedRead(
+    () => attractionListUncached(cities),
+    ["attraction-list", cities ? cities.join(",") : "*"],
+    [ATTRACTIONS_PUBLIC_TAG],
+  );
+}
+
+export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]> {
+  return cachedRead(
+    () => stayListUncached(cities),
+    ["stay-list", cities ? cities.join(",") : "*"],
+    [ATTRACTIONS_PUBLIC_TAG],
+  );
+}
+
+export async function getAreaList(cities?: CityFilter): Promise<KosherAreaItem[]> {
+  return cachedRead(
+    () => areaListUncached(cities),
+    ["area-list", cities ? cities.join(",") : "*"],
+    [ATTRACTIONS_PUBLIC_TAG],
+  );
 }

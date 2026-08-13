@@ -8,8 +8,10 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { placeMapUrl } from "@/data/route-utils";
 
-export const dynamic = "force-dynamic";
-
+// Not force-dynamic. listPublishedMikvaos (lib/mikvaos.ts) is a tagged
+// unstable_cache now, busted the moment a practical listing is actually
+// written, rather than this page running a real database read on every
+// visit.
 export const metadata = pageMetadata({
   title: "Mikvaos — source-backed listings for travel | White Glove Itineraries",
   description:

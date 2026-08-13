@@ -84,7 +84,11 @@ describe("the list of agencies", () => {
 describe("the page", () => {
   it("READS THE STORE, so an agency added today is on it today", () => {
     assert.match(PAGE, /allHechsherim\(await listAgencies\(\)\)/);
-    assert.match(PAGE, /export const dynamic = "force-dynamic"/);
+    // No longer force-dynamic: listAgencies (lib/hechsher-store.ts) is a
+    // tagged cache now, busted by saveAgency/deleteAgency the moment either
+    // writes — see tests/public-cache-tags.test.ts for the full write-path
+    // inventory that guards this staying true.
+    assert.doesNotMatch(PAGE, /export const dynamic = "force-dynamic"/);
   });
 
   it("SAYS WHO EXISTS AND REFUSES TO RANK THEM", () => {
