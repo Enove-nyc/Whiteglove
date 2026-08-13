@@ -2,9 +2,34 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { AIRPORT_MINIMUM_RADIUS_KM, areaLabel, boundsOf, countByKind, kmBetween, pointFrom, withinArea, type MapMarker } from "@/lib/map-markers";
-import { compassFor, GLOVE_MARK_SRC, GLOVE_PIN_INTRINSIC, glovePinSrc, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { GLOVE_MARK_INTRINSIC, GLOVE_MARK_SRC, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 
 const KRAKOW = { lat: 50.0619, lng: 19.9369 };
+
+function channels(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/** Relative luminance, the WCAG one: how light a colour reads. */
+function luminance(hex: string): number {
+  const [r, g, b] = channels(hex).map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Hue in degrees — which colour it is, apart from how dark it is. */
+function hue(hex: string): number {
+  const [r, g, b] = channels(hex).map((c) => c / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  if (max === min) return 0;
+  const span = max - min;
+  const raw = max === r ? (g - b) / span : max === g ? 2 + (b - r) / span : 4 + (r - g) / span;
+  return ((raw * 60) + 360) % 360;
+}
 
 function marker(over: Partial<MapMarker> & Pick<MapMarker, "id" | "kind">): MapMarker {
   return { name: over.id, lat: KRAKOW.lat, lng: KRAKOW.lng, ...over };
@@ -138,38 +163,30 @@ describe("saying where you are looking", () => {
 });
 
 describe("the glove marker", () => {
-  it("serves a baked PNG per kind to Google, which cannot tint an image", () => {
-    const pin = compassFor("kever");
-    assert.equal(pin.url, glovePinSrc("kever"));
-    assert.equal(pin.url, "/map-pins/kever.png");
-  });
-
-  it("anchors at the cuff, not the centre of the disc", () => {
-    const pin = compassFor("stay", 11);
-    assert.ok(pin.anchorY > pin.height * 0.8, "the tip that touches the map is near the bottom");
-    assert.equal(pin.anchorX, pin.width / 2);
-  });
-
-  it("gives the markers the bare mark, so nothing draws a disc round them", () => {
+  it("draws every marker from the one piece of artwork, on no disc", () => {
     // The owner asked for the legend's treatment on the map: the line art
-    // tinted in the kind's colour, no cream circle behind it.
+    // tinted in the kind's colour, no cream circle behind it. The pre-tinted
+    // pins that carried that circle are gone, and so is their colour table.
     const pin = markPinFor("airport", 11);
     assert.equal(pin.url, GLOVE_MARK_SRC);
     assert.equal(pin.url, "/map-glove-pin.png");
-    assert.ok(!pin.url.includes("/map-pins/"), "a baked pin carries the disc with it");
+    for (const file of ["../lib/map-icons.ts", "../lib/tinted-mark.ts", "../components/AreaMap.tsx", "../components/CompassMark.tsx", "../app/globals.css"]) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8");
+      assert.ok(!source.includes("/map-pins/"), `${file} still reaches for a baked pin`);
+    }
   });
 
-  it("keeps the tinted mark the same size, and its tip on the coordinate", () => {
+  it("anchors at the cuff, and keeps the artwork's proportions at every zoom", () => {
     for (const zoom of [4, 7, 11]) {
-      const baked = compassFor("kosher", zoom);
-      const mark = markPinFor("kosher", zoom);
-      assert.equal(mark.width, baked.width, "the marker must not change size to lose the disc");
-      assert.equal(mark.height, baked.height);
-      assert.equal(mark.anchorX, mark.width / 2, "the cuff is centred across the icon");
-      assert.ok(mark.anchorY > mark.height * 0.9, "the coordinate sits at the tip of the cuff");
-      assert.ok(mark.anchorY <= mark.height, "and not below the artwork");
-      assert.ok(mark.anchorY >= baked.anchorY, "the mask fills the air the baked pin left under the cuff");
+      const pin = markPinFor("stay", zoom);
+      assert.equal(pin.anchorX, pin.width / 2, "the cuff is centred across the icon");
+      assert.ok(pin.anchorY > pin.height * 0.9, "the coordinate sits at the tip of the cuff");
+      assert.ok(pin.anchorY <= pin.height, "and not below the artwork");
+      const ratio = pin.width / pin.height;
+      const intrinsic = GLOVE_MARK_INTRINSIC.width / GLOVE_MARK_INTRINSIC.height;
+      assert.ok(Math.abs(ratio - intrinsic) < 0.03, "a stretched glove is a different mark");
     }
+    assert.ok(markPinFor("kever", 4).height < markPinFor("kever", 11).height, "continent zoom shrinks the pins so they do not become texture");
   });
 
   it("colours map and legend from one place", () => {
@@ -178,6 +195,37 @@ describe("the glove marker", () => {
       assert.equal(markPinFor(kind).color, MAP_STYLE[kind].color);
       assert.equal(markPinFor(kind).url, markPinFor("center").url, "one piece of artwork for every kind");
     }
+    const chip = readFileSync(new URL("../components/CompassMark.tsx", import.meta.url), "utf8");
+    assert.match(chip, /MAP_STYLE\[kind\]\.color/, "the legend swatch reads the shared table, so it darkens with the pins");
+  });
+
+  it("keeps the kinds deep enough to mark a place on light terrain", () => {
+    // Pale line art has no fill to carry the colour, so it washed out over
+    // sunlit map tiles and stopped saying where anything was.
+    for (const [kind, style] of Object.entries(MAP_STYLE)) {
+      assert.ok(luminance(style.color) < 0.12, `${kind} at ${style.color} is too light to read over terrain`);
+    }
+  });
+
+  it("keeps the kinds far enough apart to tell one from another", () => {
+    const hues = Object.entries(MAP_STYLE).map(([kind, style]) => ({ kind, hue: hue(style.color) }));
+    for (const a of hues) {
+      for (const b of hues) {
+        if (a.kind === b.kind) continue;
+        const apart = Math.min(Math.abs(a.hue - b.hue), 360 - Math.abs(a.hue - b.hue));
+        assert.ok(apart >= 20, `${a.kind} and ${b.kind} are ${apart.toFixed(0)}° apart, which is one colour at pin size`);
+      }
+    }
+  });
+
+  it("hands Google the same mark tinted, rather than a second set of pins", () => {
+    // Google's marker icon is a URL, so it cannot mask the artwork in CSS. It
+    // gets the same artwork painted in the same colour instead.
+    const tint = readFileSync(new URL("../lib/tinted-mark.ts", import.meta.url), "utf8");
+    assert.match(tint, /GLOVE_MARK_SRC/, "the tint starts from the shared artwork");
+    assert.match(tint, /source-in/, "keeping the alpha is what makes it a tint and not a box");
+    const map = readFileSync(new URL("../components/AreaMap.tsx", import.meta.url), "utf8");
+    assert.match(map, /tintedMarkUrl\(MAP_STYLE\[kind\]\.color\)/, "Google's icons come from the shared colour table");
   });
 
   it("masks the legend chip and the map marker through the same rule", () => {
@@ -203,26 +251,15 @@ describe("the glove marker", () => {
     assert.match(css, /\.wg-map-pin:focus-visible\s*\{[\s\S]*?outline:/, "Leaflet markers are tabbable");
   });
 
-  it("keeps the baked pin's proportions when it scales with zoom", () => {
-    const pin = compassFor("kever", 11);
-    const ratio = pin.width / pin.height;
-    const intrinsic = GLOVE_PIN_INTRINSIC.width / GLOVE_PIN_INTRINSIC.height;
-    assert.ok(Math.abs(ratio - intrinsic) < 0.02);
-    const far = compassFor("kever", 4);
-    assert.ok(far.height < pin.height, "continent zoom shrinks the pins so they do not become texture");
-  });
-
   it("tells kinds apart by the mark colour carried on each pin", () => {
-    // Kind identity is the tint of the hand+compass artwork itself (baked into
-    // /map-pins/{kind}.png), not a coloured ring around a shared gold mark.
+    // Kind identity is the tint of the hand+compass artwork itself, not a
+    // coloured ring around a shared gold mark.
     const colours = new Set(Object.values(MAP_STYLE).map((s) => s.color));
     assert.equal(colours.size, Object.keys(MAP_STYLE).length, "two kinds sharing a colour would be unreadable");
     for (const kind of Object.keys(MAP_STYLE) as (keyof typeof MAP_STYLE)[]) {
-      const pin = compassFor(kind);
+      const pin = markPinFor(kind);
       assert.ok(MAP_STYLE[kind].label.trim().length > 0);
       assert.equal(pin.color, MAP_STYLE[kind].color);
-      assert.equal(pin.url, `/map-pins/${kind}.png`);
-      assert.equal(glovePinSrc(kind), pin.url);
     }
   });
 

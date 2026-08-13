@@ -9,39 +9,38 @@ import type { MapKind } from "@/lib/map-markers";
  * is the glove with the compass in its palm.
  *
  * Kind is told by the colour of the mark itself (and by the legend and popup),
- * not by a coloured ring or a disc around the pin. Anything that can tint the
- * artwork in the browser — the legend chips and the Leaflet markers — masks
- * the line art in `GLOVE_MARK_SRC` and paints a `MAP_STYLE` colour through it.
- * Google Maps takes a plain image URL and cannot tint one, so it is served the
- * baked PNGs under /map-pins (scripts/build-map-pins.mjs), which carry the same
- * colours already burnt in.
+ * not by a ring or a disc around the pin. Every renderer paints the same line
+ * art in `GLOVE_MARK_SRC` with the same `MAP_STYLE` colour: the legend chips
+ * and the Leaflet markers mask it in CSS, and Google Maps — which will only
+ * take an image URL — is handed that artwork tinted into a data URI
+ * (lib/tinted-mark.ts). Nothing is baked ahead of time, so this table is the
+ * only place a kind's colour is written and no two of them can disagree.
  */
 
 export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin height in CSS pixels at full zoom. */ size: number }> = {
-  center: { color: "#172d52", label: "What you searched for", size: 44 },
-  kever: { color: "#aa8b52", label: "Kevarim", size: 36 },
-  attraction: { color: "#b4472a", label: "Things to do", size: 36 },
-  stay: { color: "#2b6d80", label: "Places to stay", size: 36 },
-  kosher: { color: "#2f7d54", label: "Kosher food", size: 34 },
-  airport: { color: "#7a6a92", label: "Airports", size: 34 },
+  // Deep and saturated, one hue apart. Line art has no fill to carry a pale
+  // colour, so mid-tone gold and dusty purple washed out over light terrain and
+  // stopped marking anything; these hold their own against a sunlit map.
+  center: { color: "#0d1f3d", label: "What you searched for", size: 44 },
+  kever: { color: "#6d4a11", label: "Kevarim", size: 36 },
+  attraction: { color: "#8e2c11", label: "Things to do", size: 36 },
+  stay: { color: "#0d4c5e", label: "Places to stay", size: 36 },
+  kosher: { color: "#125c37", label: "Kosher food", size: 34 },
+  airport: { color: "#4c2a7d", label: "Airports", size: 34 },
 };
 
-/** Intrinsic pixel size of each file in /map-pins (scripts/build-map-pins.mjs). */
-export const GLOVE_PIN_INTRINSIC = { width: 56, height: 78 };
-
 /**
- * The bare line-art mark, to be masked and tinted in CSS.
+ * The bare line-art mark, to be tinted per kind.
  *
- * One file, one path: the legend chips (components/CompassMark.tsx) and the map
- * markers both mask this, through the `.wg-glove-mark` rule in globals.css, so
- * the pins on the map and the pins in the legend cannot come apart.
+ * One file, one path: the legend chips (components/CompassMark.tsx), the
+ * Leaflet markers (through the `.wg-glove-mark` rule in globals.css) and the
+ * Google markers (lib/tinted-mark.ts) all draw this, so the pins on the map and
+ * the pins in the legend cannot come apart.
  */
 export const GLOVE_MARK_SRC = "/map-glove-pin.png";
 
-/** Public path for one kind's baked map pin (tinted mark on a cream disc). */
-export function glovePinSrc(kind: MapKind): string {
-  return `/map-pins/${kind}.png`;
-}
+/** Intrinsic pixel size of the artwork in `GLOVE_MARK_SRC`. */
+export const GLOVE_MARK_INTRINSIC = { width: 62, height: 96 };
 
 /**
  * How big a pin should be at a given zoom.
@@ -64,6 +63,7 @@ export function pinScale(zoom: number): number {
 }
 
 export type GlovePin = {
+  /** The artwork every renderer starts from, before it is tinted. */
   url: string;
   /** Drawn width in CSS pixels. */
   width: number;
@@ -78,43 +78,28 @@ export type GlovePin = {
 };
 
 /**
- * The baked pin for one kind at the current zoom — Google Maps' icon.
+ * The pin for one kind at the current zoom, whichever engine draws the map.
  *
- * The cuff is the tip that sits on the coordinate — not the centre of the disc
- * — so a place's marker reads as "here" rather than floating above it.
+ * The box is the shape of the artwork, so the mark fills it rather than sitting
+ * letterboxed inside a wider frame, and the cuff is the tip that sits on the
+ * coordinate — not the middle of the pin — so a place's marker reads as "here"
+ * rather than floating above it.
  */
-export function compassFor(kind: MapKind, zoom = 11): GlovePin {
+export function markPinFor(kind: MapKind, zoom = 11): GlovePin {
   const style = MAP_STYLE[kind];
   const height = Math.max(14, Math.round(style.size * pinScale(zoom)));
-  const width = Math.max(10, Math.round((height * GLOVE_PIN_INTRINSIC.width) / GLOVE_PIN_INTRINSIC.height));
+  const width = Math.max(10, Math.round((height * GLOVE_MARK_INTRINSIC.width) / GLOVE_MARK_INTRINSIC.height));
   return {
-    url: glovePinSrc(kind),
+    url: GLOVE_MARK_SRC,
     width,
     height,
     anchorX: width / 2,
-    // Slightly above the very bottom so anti-aliasing on the cuff tip does not
+    // A hair above the very bottom, so anti-aliasing on the cuff tip does not
     // leave a gap between the pin and the map.
-    anchorY: height * 0.92,
+    anchorY: height * 0.97,
     color: style.color,
     label: style.label,
   };
-}
-
-/**
- * The same pin as bare line art, for a renderer that can tint it in CSS.
- *
- * Leaflet is given a div rather than an image, so the mark can be masked and
- * painted in the kind's colour — the treatment the legend chips already use.
- * No cream disc: it was only ever contrast on dark tiles, and it read as a
- * badge drawn around the mark.
- *
- * The mask fills the icon box where the baked PNG left a few pixels of air
- * under the cuff, so the anchor sits that much lower to keep the tip of the
- * cuff on the coordinate.
- */
-export function markPinFor(kind: MapKind, zoom = 11): GlovePin {
-  const pin = compassFor(kind, zoom);
-  return { ...pin, url: GLOVE_MARK_SRC, anchorY: pin.height * 0.97 };
 }
 
 /** The kinds a visitor can switch on and off, in the order they are offered. */

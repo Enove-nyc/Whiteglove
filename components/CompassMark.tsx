@@ -1,4 +1,4 @@
-import { MAP_STYLE } from "@/lib/map-icons";
+import { GLOVE_MARK_INTRINSIC, MAP_STYLE } from "@/lib/map-icons";
 import type { MapKind } from "@/lib/map-markers";
 
 /**
@@ -16,7 +16,7 @@ export default function CompassMark({ kind, size = 18, muted = false, className 
 }) {
   // Height matches the pin aspect; width follows so the cuff stays sharp.
   const height = size;
-  const width = Math.round((size * 56) / 78);
+  const width = Math.round((size * GLOVE_MARK_INTRINSIC.width) / GLOVE_MARK_INTRINSIC.height);
   const color = muted ? "#a8a29e" : MAP_STYLE[kind].color;
   return (
     <span
