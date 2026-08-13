@@ -25,6 +25,8 @@ export type DestinationContent = {
   places: PublicPlace[];
   /** Published pictures only — a draft is one nobody has credited yet. */
   photos: Photo[];
+  /** Somewhere else worth reading about this town. Owner-managed. */
+  links: Array<{ id: string; label: string; url: string; note: string | null }>;
 };
 
 import { DESTINATION_SECTIONS } from "@/lib/destination-sections";
@@ -162,7 +164,23 @@ export async function getPublishedDestinationContent(
     );
     const nameById = new Map(contactNames.map((row) => [row.id, row.name]));
 
+    // The useful links, separately and allowed to fail — the same rule as the
+    // pictures and the contact dates above, and for the same reason: this
+    // table is newer than most databases this runs against, and a page must
+    // not lose every listing on it because one new table is missing.
+    const links = await optionalRead(
+      `useful links for ${slug}`,
+      async () =>
+        prisma.destinationLink.findMany({
+          where: { destinationId: destination.id, status: "PUBLISHED" },
+          orderBy: [{ position: "asc" }, { label: "asc" }],
+          select: { id: true, label: true, url: true, note: true },
+        }),
+      [] as Array<{ id: string; label: string; url: string; note: string | null }>,
+    );
+
     return {
+      links,
       contacts: destination.contacts.map((contact) => ({
         ...contact,
         name: nameById.get(contact.id) ?? null,

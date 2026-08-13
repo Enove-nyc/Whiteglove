@@ -25,6 +25,7 @@ export type SeedRows = {
   tzaddikim: Prisma.TzaddikCreateManyInput[];
   contacts: Prisma.ContactCreateManyInput[];
   places: Prisma.PracticalPlaceCreateManyInput[];
+  links: Prisma.DestinationLinkCreateManyInput[];
   directory: Prisma.DirectoryProviderCreateManyInput[];
   attractions: Prisma.AttractionCreateManyInput[];
   stays: Prisma.KosherStayCreateManyInput[];
@@ -39,6 +40,10 @@ export function buildSeedRows(): SeedRows {
   const places: Prisma.PracticalPlaceCreateManyInput[] = [];
 
   const slugToDestId = new Map<string, string>();
+  // Useful links that ship with a guide. Seeded so they arrive as editable
+  // rows rather than staying locked in the data file — which is the whole
+  // point of the DestinationLink table.
+  const links: Prisma.DestinationLinkCreateManyInput[] = [];
 
   // City guides — rich records with a primary tzaddik + access contacts.
   for (const { guide: g } of guidedDestinations()) {
@@ -57,6 +62,17 @@ export function buildSeedRows(): SeedRows {
       safetyNote: g.safetyNote ?? null,
       sourceUrl: g.sourceUrl,
       status: "PUBLISHED",
+    });
+    (g.usefulLinks ?? []).forEach((link, index) => {
+      links.push({
+        id: randomUUID(),
+        destinationId: id,
+        label: link.label,
+        url: link.url,
+        note: link.note ?? null,
+        position: index,
+        status: "PUBLISHED",
+      });
     });
     tzaddikim.push({
       id: randomUUID(),
@@ -272,6 +288,7 @@ export function buildSeedRows(): SeedRows {
     tzaddikim,
     contacts,
     places,
+    links,
     directory,
     attractions: attractionRows,
     stays: stayRows,
@@ -298,6 +315,7 @@ export function countSeedRows(rows: SeedRows) {
     tzaddikim: rows.tzaddikim.length,
     contacts: rows.contacts.length,
     places: rows.places.length,
+    links: rows.links.length,
     directory: rows.directory.length,
     attractions: rows.attractions.length,
     stays: rows.stays.length,

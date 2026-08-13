@@ -80,6 +80,13 @@ const nextConfig: NextConfig = {
       // the links that had it. See app/book/page.tsx.
       { source: "/cars", destination: "/book?type=cars", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
+      // Lizhensk was a hand-built page at /lizensk while every other guided
+      // town rendered from the shared route at /uman, /belz, /sanz. It is an
+      // ordinary town guide now, at the spelling the cemetery listing, the
+      // destination record and the search aliases have always used — so
+      // /lizhensk stops 404ing and /lizensk keeps working for the sitemap
+      // entry, any bookmark and whatever ranking it had.
+      { source: "/lizensk", destination: "/lizhensk", permanent: true },
     ];
   },
 };

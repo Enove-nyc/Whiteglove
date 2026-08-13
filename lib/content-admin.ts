@@ -14,6 +14,7 @@ import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 import { remember } from "@/lib/recycle-store";
 import { recordChange } from "@/lib/changes-store";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
+import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -123,7 +124,7 @@ export async function createDestination(fields: NewDestinationFields) {
     before: null,
     after: { city: row.city, country: row.country, status: row.status },
   });
-  await invalidateSiteSearchIndex();
+  await contentChanged();
   return row;
 }
 
@@ -149,6 +150,7 @@ export async function updateDestinationFields(slug: string, fields: DestinationF
     data: { ...data, lastVerified: new Date() },
   });
   await recordChange({ kind: "town", rowId: slug, title: fields.city || slug, before, after: data });
+  await contentChanged();
   return row;
 }
 
@@ -394,6 +396,30 @@ export async function deletePhoto(id: string) {
   return prisma.photo.delete({ where: { id } });
 }
 
+/**
+ * Every mutation below ends by saying content changed.
+ *
+ * The public lists are cached now rather than re-read on every request, so a
+ * save that does not bust the tag is a save the visitor does not see for an
+ * hour. That is a worse failure than the transfer cost the cache was added to
+ * fix, so the call goes in the write functions themselves rather than in the
+ * server actions — a new action added later cannot forget it.
+ */
+/**
+ * Content a visitor is meant to see has changed.
+ *
+ * Built on lib/cache-tags.ts like every other invalidation here. The precise
+ * per-table busts (ATTRACTIONS_PUBLIC_TAG, PRACTICAL_PLACES_PUBLIC_TAG) sit on
+ * the writes that touch only those tables; this is for the writes behind the
+ * batei hachaim list, which one edit can change in two places at once — a
+ * kever added to a cemetery changes the burial count on its directory card as
+ * well as the page.
+ */
+async function contentChanged(): Promise<void> {
+  invalidateSiteSearchIndex();
+  await bustTag(CEMETERIES_PUBLIC_TAG);
+}
+
 export async function createPlace(destinationId: string, fields: PlaceFields) {
   const prisma = await db();
   const row = await prisma.practicalPlace.create({
@@ -439,6 +465,72 @@ export async function deletePlace(id: string) {
       payload: record as unknown as Record<string, unknown>,
     });
   }
+  await contentChanged();
+  return gone;
+}
+
+// ---- Useful links on a destination -----------------------------------
+//
+// A link out to somewhere that knows more about this town than we do. The URL
+// is normalised on the way in by lib/useful-links.ts — an owner typing a
+// domain from memory should not have to remember the https.
+
+export type LinkFields = {
+  label: string;
+  url: string;
+  note: string | null;
+  position: number;
+  status: ContentStatus;
+};
+
+export async function listLinksForAdmin(destinationId: string) {
+  const prisma = await db();
+  return prisma.destinationLink.findMany({
+    where: { destinationId },
+    orderBy: [{ position: "asc" }, { label: "asc" }],
+  });
+}
+
+export async function createLink(destinationId: string, fields: LinkFields) {
+  const prisma = await db();
+  const row = await prisma.destinationLink.create({ data: { destinationId, ...fields } });
+  await contentChanged();
+  return row;
+}
+
+export async function updateLink(id: string, fields: LinkFields) {
+  const prisma = await db();
+  const before = await prisma.destinationLink.findUnique({ where: { id } });
+  const row = await prisma.destinationLink.update({ where: { id }, data: fields });
+  await recordChange({
+    kind: "link",
+    rowId: id,
+    title: fields.label,
+    before: before as unknown as Record<string, unknown> | null,
+    after: fields as unknown as Record<string, unknown>,
+  });
+  await contentChanged();
+  return row;
+}
+
+export async function deleteLink(id: string) {
+  const prisma = await db();
+  const row = await prisma.destinationLink.findUnique({
+    where: { id },
+    include: { destination: { select: { city: true } } },
+  });
+  const gone = await prisma.destinationLink.delete({ where: { id } });
+  if (row) {
+    const { destination, ...record } = row;
+    await remember({
+      kind: "link",
+      rowId: id,
+      title: row.label,
+      detail: [destination?.city, row.url].filter(Boolean).join(" · ") || undefined,
+      payload: record as unknown as Record<string, unknown>,
+    });
+  }
+  await contentChanged();
   return gone;
 }
 
@@ -459,7 +551,7 @@ export async function upsertPage(slug: string, fields: PageFields) {
     create: { slug, ...fields },
   });
   await recordChange({ kind: "page", rowId: slug, title: fields.title || slug, before, after: fields as unknown as Record<string, unknown> });
-  invalidateSiteSearchIndex();
+  await contentChanged();
   return row;
 }
 
@@ -507,10 +599,20 @@ export async function getProviderForAdmin(slug: string) {
   return prisma.directoryProvider.findUnique({ where: { slug } });
 }
 
-export async function createProvider(fields: ProviderFields) {
+/**
+ * @param slug Force the new row's slug instead of generating one.
+ *
+ * Only for promoting a built-in provider to an editable row. The public
+ * directory merges the built-in list with the database and lets the owner's
+ * row win a collision BY SLUG (lib/directory.ts:185) — so an edited built-in
+ * has to keep the seed's slug or it does not replace anything, and the
+ * business is listed twice. providerSlug() appends a random suffix, which
+ * would guarantee exactly that.
+ */
+export async function createProvider(fields: ProviderFields, slug?: string) {
   const prisma = await db();
   const row = await prisma.directoryProvider.create({
-    data: { slug: providerSlug(fields.name), ...fields },
+    data: { slug: slug?.trim() || providerSlug(fields.name), ...fields },
   });
   await bustTag(DIRECTORY_PUBLIC_TAG);
   return row;
@@ -571,7 +673,7 @@ export type NewCemeteryFields = {
  *  NEEDS_VERIFICATION so the owner can fill details in later. */
 export async function createCemetery(fields: NewCemeteryFields) {
   const prisma = await db();
-  return prisma.cemetery.create({
+  const created = await prisma.cemetery.create({
     data: {
       slug: newSlug(fields.name, "cemetery"),
       name: fields.name,
@@ -586,6 +688,8 @@ export async function createCemetery(fields: NewCemeteryFields) {
       status: "NEEDS_VERIFICATION",
     },
   });
+  await contentChanged();
+  return created;
 }
 
 /** Cemeteries that have a database row — the owner-added ones, plus any
@@ -711,9 +815,12 @@ export async function saveCemeteryContact(
       before: existing as unknown as Record<string, unknown>,
       after: data as unknown as Record<string, unknown>,
     });
+    await contentChanged();
     return row;
   }
-  return prisma.contact.create({ data: { ...data, cemeteryId: cemetery.id } });
+  const created = await prisma.contact.create({ data: { ...data, cemeteryId: cemetery.id } });
+  await contentChanged();
+  return created;
 }
 
 /** Remove a stored contact. The built-in one, if any, reappears. */
@@ -734,6 +841,7 @@ export async function deleteCemeteryContact(id: string) {
       payload: record as unknown as Record<string, unknown>,
     });
   }
+  await contentChanged();
 }
 
 // ---- Tzaddikim on a beis hachaim --------------------------------------
@@ -838,9 +946,12 @@ export async function saveCemeteryBurial(
       before: existing as unknown as Record<string, unknown>,
       after: data as unknown as Record<string, unknown>,
     });
+    await contentChanged();
     return row;
   }
-  return prisma.tzaddik.create({ data: { ...data, isPrimary: false, cemeteryId: cemetery.id } });
+  const created = await prisma.tzaddik.create({ data: { ...data, isPrimary: false, cemeteryId: cemetery.id } });
+  await contentChanged();
+  return created;
 }
 
 /** Take a person off a beis hachaim. Built-in burials are in code and untouched. */
@@ -861,6 +972,7 @@ export async function deleteCemeteryBurial(id: string) {
       payload: record as unknown as Record<string, unknown>,
     });
   }
+  await contentChanged();
 }
 
 /**
@@ -870,7 +982,7 @@ export async function deleteCemeteryBurial(id: string) {
  */
 export async function createCemeteryWithBurial(cemetery: NewCemeteryFields, burial: BurialFields) {
   const prisma = await db();
-  return prisma.cemetery.create({
+  const created = await prisma.cemetery.create({
     data: {
       slug: newSlug(cemetery.city || cemetery.name, "cemetery"),
       name: cemetery.name,
@@ -900,6 +1012,8 @@ export async function createCemeteryWithBurial(cemetery: NewCemeteryFields, buri
     },
     select: { slug: true, name: true, city: true },
   });
+  await contentChanged();
+  return created;
 }
 
 export type NewPageFields = {
@@ -919,7 +1033,7 @@ export async function createInfoPage(fields: NewPageFields) {
       status: fields.status,
     },
   });
-  invalidateSiteSearchIndex();
+  await contentChanged();
   return row;
 }
 

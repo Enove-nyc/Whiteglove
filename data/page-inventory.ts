@@ -56,12 +56,12 @@ export const inventoryItems: InventoryItem[] = [
   {
     id: "page-lizensk",
     area: "Public page",
-    route: "/lizensk",
-    title: "Lizhensk legacy route",
-    status: "broken",
+    route: "/lizhensk",
+    title: "Lizhensk town guide",
+    status: "complete",
     priority: "High",
-    missing: "Route spelling and consolidation with /lizhensk search behavior.",
-    nextAction: "Add redirects or aliases so all common spellings land on the correct guide.",
+    missing: "",
+    nextAction: "Lizhensk is an ordinary city guide now: /lizensk redirects permanently, its listings are seeded and editable at /admin/destinations.",
   },
   {
     id: "page-research-destination",

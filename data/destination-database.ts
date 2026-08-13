@@ -107,29 +107,11 @@ const cityGuideRecords: DestinationRecord[] = guidedDestinations().map(({ guide 
   };
 });
 
-const lizhenskCemetery = cemeteryBySlug.get("lizhensk");
-const lizhenskRecord: DestinationRecord = {
-  id: "lizhensk",
-  city: "Lizhensk (Leżajsk)",
-  yiddishCity: "ליזענסק",
-  country: "Poland",
-  aliases: ["Lizensk", "Lezajsk", "Leżajsk", "ליז'ענסק"],
-  cemeteries: lizhenskCemetery ? [{
-    id: lizhenskCemetery.slug,
-    yiddishName: lizhenskCemetery.yiddishName,
-    name: lizhenskCemetery.name,
-    address: lizhenskCemetery.address,
-    coordinates: lizhenskCemetery.coordinates,
-    arrivalNotes: lizhenskCemetery.arrivalNotes,
-    shomerContacts: [],
-    burials: lizhenskCemetery.burials.map((burial) => ({ ...burial, source: lizhenskCemetery.sourceUrl, status: "verified" as const })),
-    status: "verified",
-    sourceUrl: lizhenskCemetery.sourceUrl,
-  }] : [],
-  ...standardEssentials(),
-  notes: ["A focused guide to the Noam Elimelech and the Lizhensk Jewish cemetery."],
-};
-
+// Lizhensk used to be hand-assembled here, ahead of the generated records and
+// with empty shomerContacts, because it was the one guided town with no entry
+// in cityGuides — it had a bespoke page at /lizensk instead. It is an ordinary
+// city guide now, so cityGuideRecords builds it like every other town and this
+// special case would only shadow it with a worse copy.
 const bulkRecords: DestinationRecord[] = unguidedDestinations().map((destination) => ({
   id: destination.slug,
   city: destination.city,
@@ -142,7 +124,6 @@ const bulkRecords: DestinationRecord[] = unguidedDestinations().map((destination
 }));
 
 export const destinationDatabase: DestinationRecord[] = [
-  lizhenskRecord,
   ...cityGuideRecords,
   ...bulkRecords,
 ];
