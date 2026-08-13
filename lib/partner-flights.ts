@@ -41,8 +41,8 @@ export type PartnerFlightSearch = {
 };
 
 export type PartnerFlightResult =
-  | { ok: true; mode: "live"; flights: PartnerFlightOption[]; currency: string; message: string; detail?: string }
-  | { ok: true; mode: "compare"; flights: PartnerFlightOption[]; message: string; detail?: string }
+  | { ok: true; mode: "live"; flights: PartnerFlightOption[]; currency: string; message: string; detail?: string; kayakHref: string }
+  | { ok: true; mode: "compare"; flights: PartnerFlightOption[]; message: string; detail?: string; kayakHref: string }
   | { ok: false; mode: "unavailable"; message: string; detail?: string };
 
 function iata(value: string): string {
@@ -93,9 +93,10 @@ function compareResult(search: PartnerFlightSearch, origin: string, destination:
   return {
     ok: true,
     mode: "compare",
-    message: "Compare fares with Kayak.",
-    detail: "Prices and booking are on the partner site.",
-    flights: [kayakCompareRow(search, origin, destination)],
+    message: "No priced flights for those dates on White Glove.",
+    detail: "Nothing is invented here. Compare on Kayak without a listed price, or search in the partner form.",
+    flights: [],
+    kayakHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
   };
 }
 
@@ -162,7 +163,8 @@ export async function searchPartnerFlights(search: PartnerFlightSearch): Promise
           detail: live.nearbyReturn
             ? "A listed price opens that offer — check the return date. Compare your exact dates on Kayak without a listed price."
             : "A listed price opens that offer. Compare more fares on Kayak without a listed price.",
-          flights: [...priced, kayakCompareRow(search, origin, destination)],
+          flights: priced,
+          kayakHref: compareHref(search, origin, destination, search.departDate, search.returnDate),
         };
       }
     }

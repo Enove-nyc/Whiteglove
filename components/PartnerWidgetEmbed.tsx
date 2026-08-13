@@ -17,14 +17,14 @@ export default function PartnerWidgetEmbed({ src }: { src: string }) {
     const root = slot.current;
     if (!root) return;
     if (!src.startsWith("https://tp.media/content?")) return;
+    if (root.dataset.tpSrc === src) return;
+    root.replaceChildren();
+    root.dataset.tpSrc = src;
     const script = document.createElement("script");
     script.src = src;
     script.async = true;
     script.setAttribute("charset", "utf-8");
     root.appendChild(script);
-    return () => {
-      root.replaceChildren();
-    };
   }, [src]);
 
   return <div ref={slot} className="min-h-[28rem] w-full" />;

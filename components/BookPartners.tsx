@@ -283,11 +283,10 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 // ---- Cash --------------------------------------------------------------
 
 /**
- * Cash flights — the Aviasales widget is the search.
+ * Cash flights — one form, then real fares if Travelpayouts has them.
  *
- * A White Glove from/to/dates form in front of this widget made people type
- * the same trip twice. Dates the planner already knows are passed into the
- * widget; everything else is filled once, in their form.
+ * Trip type and nonstop sit on this form and are passed into the partner
+ * widget when live cache has nothing. From/to/dates are typed once.
  */
 function FlightsForm({
   onAdd,
@@ -298,22 +297,70 @@ function FlightsForm({
   onOpened: (b: PendingBooking) => void;
   prefill?: Prefill;
 }) {
-  const origin = airportCode(prefill?.from ?? "");
-  const destination = airportCode(prefill?.to ?? "");
+  const [from, setFrom] = useState(prefill?.from ?? "");
+  const [to, setTo] = useState(prefill?.to ?? "");
+  const [depart, setDepart] = useState(prefill?.depart ?? "");
+  const [ret, setRet] = useState(prefill?.ret ?? "");
+  const [trip, setTrip] = useState<"round-trip" | "one-way">("round-trip");
+  const [nonstop, setNonstop] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [liveMessage, setLiveMessage] = useState("");
+  const [liveDetail, setLiveDetail] = useState("");
+  const [rows, setRows] = useState<PartnerResultRow[]>([]);
+  const [kayakHref, setKayakHref] = useState("");
+  const [showWidget, setShowWidget] = useState(false);
+
+  const origin = airportCode(from);
+  const destination = airportCode(to);
+  const oneWay = trip === "one-way";
   const widgetSrc = flightsEmbedPath({
     origin,
     destination,
-    departDate: prefill?.depart,
-    returnDate: prefill?.ret,
+    departDate: depart,
+    returnDate: oneWay ? "" : ret,
+    oneWay,
+    nonstop,
   });
   const summary = [origin, destination].filter(Boolean).join(" → ") || "Flight";
 
+  function validate() {
+    if (!origin || !destination) {
+      setError("Choose both airports from the list, or type a code like JFK.");
+      return false;
+    }
+    if (!depart) {
+      setError("Choose a departure date.");
+      return false;
+    }
+    if (depart < today()) {
+      setError("Departure cannot be in the past.");
+      return false;
+    }
+    if (!oneWay) {
+      if (!ret) {
+        setError("Choose a return date, or switch to one-way.");
+        return false;
+      }
+      if (ret < today()) {
+        setError("Return date cannot be in the past.");
+        return false;
+      }
+      if (ret < depart) {
+        setError("Return date must be after departure.");
+        return false;
+      }
+    }
+    setError("");
+    return true;
+  }
+
   function addToTrip(confirmation?: string) {
-    const date = prefill?.depart ?? "";
+    const date = depart || "";
     if (origin && destination && date) {
       const flights: ItinFlight[] = [{ id: uid(), from: origin, to: destination, date, bookedOnSite: false, confirmation }];
-      if (prefill?.ret) {
-        flights.push({ id: uid(), from: destination, to: origin, date: prefill.ret, bookedOnSite: false, confirmation });
+      if (!oneWay && ret) {
+        flights.push({ id: uid(), from: destination, to: origin, date: ret, bookedOnSite: false, confirmation });
       }
       onAdd({ flights, dates: flights.map((f) => f.date) });
       return;
@@ -323,7 +370,7 @@ function FlightsForm({
         {
           id: uid(),
           name: summary,
-          date: date || prefill?.ret || "",
+          date: date || ret || "",
           notes: confirmation ? `Reference ${confirmation}` : "",
           bookedOnSite: false,
         },
@@ -331,12 +378,166 @@ function FlightsForm({
     });
   }
 
+  function openKayak() {
+    if (!validate()) return;
+    const href = kayakHref || goHref({
+      product: "flight",
+      legs: [{ from: origin, to: destination, date: depart }],
+      checkOut: oneWay ? "" : ret,
+      nonstop,
+      page: "/book",
+      placement: "book-flights",
+    });
+    if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
+    onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
+  }
+
+  async function search() {
+    if (!validate()) return;
+    setLoading(true);
+    setRows([]);
+    setLiveMessage("");
+    setLiveDetail("");
+    setShowWidget(false);
+    try {
+      const response = await fetch("/api/partners/flights/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: from,
+          destination: to,
+          departDate: depart,
+          returnDate: oneWay ? undefined : ret,
+          nonstop,
+        }),
+      });
+      const data = await response.json();
+      setKayakHref(typeof data?.kayakHref === "string" ? data.kayakHref : "");
+      if (data?.ok && data.mode === "live" && Array.isArray(data.flights) && data.flights.length > 0) {
+        const priced = data.flights.filter(
+          (flight: { network?: string; bookHref?: string; price?: number }) =>
+            flight.network === "travelpayouts" && typeof flight.price === "number" && String(flight.bookHref ?? "").includes("aviasales.com"),
+        );
+        if (priced.length > 0) {
+          setLiveMessage(data.message ?? "");
+          setLiveDetail(data.detail ?? "");
+          setRows(
+            priced.map(
+              (flight: {
+                id: string;
+                title: string;
+                subtitle?: string;
+                meta?: string;
+                price?: number;
+                currency?: string;
+                bookHref: string;
+              }) => ({
+                id: flight.id,
+                title: flight.title,
+                subtitle: flight.subtitle,
+                meta: flight.meta,
+                priceLabel: moneyLabel(flight.price, flight.currency ?? "USD"),
+                ctaLabel: "View & book",
+                onOpen: () => {
+                  if (typeof window !== "undefined") window.open(flight.bookHref, "_blank", "noopener,noreferrer");
+                  onOpened({ kind: "flight", summary: flight.title, save: (confirmation) => addToTrip(confirmation) });
+                },
+              }),
+            ),
+          );
+          setLoading(false);
+          return;
+        }
+      }
+      setLiveMessage(data?.ok ? data.message : "No priced flights for those dates on White Glove.");
+      setLiveDetail(data?.detail ?? "Nothing is invented here. Compare on Kayak, or search in the partner form.");
+      setShowWidget(true);
+    } catch {
+      setLiveMessage("No priced flights for those dates on White Glove.");
+      setLiveDetail("Nothing is invented here. Compare on Kayak, or search in the partner form.");
+      setShowWidget(true);
+    }
+    setLoading(false);
+  }
+
   return (
     <div>
-      <p className="text-sm leading-6 text-stone-600">
-        Search and prices are in the form below. White Glove does not list a fare here.
-      </p>
-      <PartnerSearchWidget src={widgetSrc} title="Flight search" minHeight={520} />
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3" data-choice-row="trip type">
+        {(["round-trip", "one-way"] as const).map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => {
+              setTrip(type);
+              setRows([]);
+              setShowWidget(false);
+            }}
+            className={`min-h-11 w-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] sm:w-auto ${trip === type ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}
+          >
+            {type.replace("-", " ")}
+          </button>
+        ))}
+        <label className="col-span-2 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
+          <input
+            type="checkbox"
+            checked={nonstop}
+            onChange={(event) => setNonstop(event.target.checked)}
+            className="h-4 w-4 accent-[var(--navy)]"
+          />
+          Nonstop only
+        </label>
+      </div>
+      <SearchGrid className="mt-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1fr]">
+        <Field label="From">
+          <AirportAutocomplete value={from} onChange={setFrom} className={bareInput} />
+        </Field>
+        <Field label="To">
+          <AirportAutocomplete value={to} onChange={setTo} className={bareInput} />
+        </Field>
+        <Field label="Departure">
+          <DateField
+            ariaLabel="Departure date"
+            value={depart}
+            min={today()}
+            onChange={(v) => {
+              setDepart(v);
+              if (!oneWay) setRet((current) => correctedEnd(v, current, "inclusive"));
+            }}
+            className={bareInput}
+          />
+        </Field>
+        {!oneWay ? (
+          <Field label="Return">
+            <DateField
+              ariaLabel="Return date"
+              value={ret}
+              min={notBefore(today(), depart)}
+              onChange={(v) => setRet(correctedEnd(depart, v, "inclusive"))}
+              className={bareInput}
+            />
+          </Field>
+        ) : (
+          <Field label="Return">
+            <span className="mt-1 block min-h-11 text-sm text-stone-400">One-way</span>
+          </Field>
+        )}
+      </SearchGrid>
+      {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      <ActionRow
+        onSearch={search}
+        searchLabel="Search flights"
+        busy={loading}
+        secondary={{ label: "Compare on Kayak", onClick: openKayak }}
+      />
+      <PartnerResultsPanel loading={loading} message={liveMessage} detail={liveDetail} rows={rows} />
+      {showWidget ? (
+        <>
+          <p className="mt-6 text-sm leading-6 text-stone-600">
+            Search and prices are in the form below. White Glove does not list a fare here.
+          </p>
+          <PartnerSearchWidget src={widgetSrc} title="Flight search" minHeight={520} />
+        </>
+      ) : null}
       <button
         type="button"
         onClick={() => onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) })}

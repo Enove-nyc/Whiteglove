@@ -17,16 +17,14 @@ describe("on-site flight compare rows", () => {
       assert.equal(result.ok, true);
       if (!result.ok) return;
       assert.equal(result.mode, "compare");
-      assert.equal(result.flights.length, 1);
-      assert.match(result.message, /Kayak/i);
+      assert.equal(result.flights.length, 0);
+      assert.match(result.message, /No priced flights/i);
       assert.doesNotMatch(result.message, /unavailable|not available|could not be loaded/i);
-      assert.equal(result.flights[0].price, undefined);
-      assert.equal(result.flights[0].network, "stay22");
-      assert.match(result.flights[0].bookHref, /^\/go\?/);
-      assert.match(result.flights[0].bookHref, /product=flight/);
-      assert.match(result.flights[0].bookHref, /legs=JFK-FCO-2026-09-12/);
-      assert.match(result.flights[0].bookHref, /out=2026-09-19/);
-      assert.doesNotMatch(result.flights[0].bookHref, /aid=|marker|kayak\.com|stay22|TRAVELPAYOUTS/i);
+      assert.match(result.kayakHref, /^\/go\?/);
+      assert.match(result.kayakHref, /product=flight/);
+      assert.match(result.kayakHref, /legs=JFK-FCO-2026-09-12/);
+      assert.match(result.kayakHref, /out=2026-09-19/);
+      assert.doesNotMatch(result.kayakHref, /aid=|marker|kayak\.com|stay22|TRAVELPAYOUTS/i);
     } finally {
       if (previous !== undefined) process.env.TRAVELPAYOUTS_TOKEN = previous;
     }
