@@ -270,7 +270,7 @@ function fromDatabase(candidate: ContentImportCandidateView): ReviewQueueItem {
     batchSlug: candidate.batchSlug,
     batchName: candidate.batchName,
     origin: "database",
-    href: contentImportCandidatePath(candidate.sourceId),
+    href: contentImportCandidatePath(candidate.sourceId, candidate.id),
     publishBlockers: candidate.publishBlockers.length,
   };
 }

@@ -159,9 +159,13 @@ describe("bulk content publication boundaries", () => {
 
 describe("bulk content deduplication", () => {
   it("uses the stable source identity in readable admin URLs", () => {
-    assert.equal(
+  assert.equal(
       contentImportCandidatePath("official:228 peace park"),
       "/admin/imports/official%3A228%20peace%20park",
+    );
+    assert.equal(
+      contentImportCandidatePath("official:228 peace park", "candidate-1"),
+      "/admin/imports/official%3A228%20peace%20park?candidate=candidate-1",
     );
   });
   it("prefers a stable source URL and source ID match", () => {

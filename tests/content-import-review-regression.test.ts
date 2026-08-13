@@ -22,7 +22,7 @@ describe("content import review regressions", () => {
     const route = readFileSync("app/admin/imports/[id]/page.tsx", "utf8");
     const queue = readFileSync("lib/import-review-queue.ts", "utf8");
 
-    assert.match(route, /permanentRedirect\(contentImportCandidatePath\(candidate\.sourceId\)\)/);
-    assert.match(queue, /contentImportCandidatePath\(candidate\.sourceId\)/);
+    assert.match(route, /permanentRedirect\(contentImportCandidatePath\(candidate\.sourceId, candidate\.id\)\)/);
+    assert.match(queue, /contentImportCandidatePath\(candidate\.sourceId, candidate\.id\)/);
   });
 });

@@ -448,14 +448,18 @@ export async function stageBuiltInContentBatch(slug: string): Promise<{ created:
   return { created: result.count, total: rows.length };
 }
 
-export async function getContentImportCandidate(routeKey: string): Promise<ContentImportCandidateView | null> {
+export async function getContentImportCandidate(routeKey: string, candidateId?: string): Promise<ContentImportCandidateView | null> {
   if (!isDbEnabled()) return null;
   try {
     const prisma = await db();
     const byId = await prisma.contentImportCandidate.findUnique({
-      where: { id: routeKey },
+      where: { id: candidateId || routeKey },
       include: { batch: { select: { slug: true, name: true } } },
     });
+    // A readable route may carry the database id only to disambiguate legacy
+    // imports that reused a source id. Never let that id open a different
+    // source record than the path says it represents.
+    if (candidateId && byId?.sourceId !== routeKey) return null;
     const sourceMatches = byId ? [] : await prisma.contentImportCandidate.findMany({
       where: { sourceId: routeKey },
       include: { batch: { select: { slug: true, name: true } } },
@@ -717,7 +721,7 @@ export async function listStagedCandidatesForAdminSearch(): Promise<
         country: row.country,
         status: row.status,
         sourceId: row.sourceId,
-        href: contentImportCandidatePath(row.sourceId),
+        href: contentImportCandidatePath(row.sourceId, row.id),
         batchName: row.batch.name,
       }));
   } catch {
