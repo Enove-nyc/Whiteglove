@@ -21,6 +21,8 @@ describe("import needs-review queue", () => {
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-fill-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-europe-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-global-batch"));
+      assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch"));
+      assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch" && item.kind === "food"));
       assert.ok(queue.packs.every((pack) => pack.path.startsWith("data/imports/")));
       const europePack = queue.packs.find((pack) => pack.slug === "white-glove-europe-batch");
       const globalPack = queue.packs.find((pack) => pack.slug === "white-glove-global-batch");

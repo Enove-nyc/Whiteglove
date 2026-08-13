@@ -143,6 +143,7 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             <p className="text-sm leading-6 text-amber-950">
               This queue can preserve an official directory source, but it cannot publish a kosher claim. Confirm it in the destination editor before it becomes public.
             </p>
+            <input type="hidden" name="kosherClaim" value={candidate.kosherClaim === "reported" ? "reported" : "none"} />
             <label className={`${labelClass} mt-4`}>
               Official community or certification source
               <input type="url" name="kosherSourceUrl" defaultValue={candidate.kosherSourceUrl ?? ""} className={fieldClass} />

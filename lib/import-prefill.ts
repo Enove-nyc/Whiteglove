@@ -39,6 +39,8 @@ export type PrefillablePackFields = {
   website?: string | null;
   destinationSlug?: string | null;
   keywords?: readonly string[];
+  kosherClaim?: string | null;
+  kosherSourceUrl?: string | null;
 };
 
 type KnownPlace = {
@@ -189,5 +191,7 @@ export function prefillBulkCandidateFromPack(
     attribution: (pack.attribution ?? pack.sourceAttribution ?? "").trim(),
     license: pack.license?.trim() || pack.sourceRights?.trim() || licenseFallback,
     sourceEvidence: pack.sourceEvidence,
+    kosherClaim: pack.kosherClaim?.trim() || null,
+    kosherSourceUrl: pack.kosherSourceUrl?.trim() || null,
   };
 }
