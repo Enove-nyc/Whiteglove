@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { AIRPORT_MINIMUM_RADIUS_KM, areaLabel, boundsOf, countByKind, kmBetween, pointFrom, withinArea, type MapMarker } from "@/lib/map-markers";
-import { compassFor, GLOVE_PIN_INTRINSIC, glovePinSrc, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { compassFor, GLOVE_MARK_SRC, GLOVE_PIN_INTRINSIC, glovePinSrc, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 
 const KRAKOW = { lat: 50.0619, lng: 19.9369 };
 
@@ -137,9 +138,7 @@ describe("saying where you are looking", () => {
 });
 
 describe("the glove marker", () => {
-  it("serves a public PNG per kind for the map markers", () => {
-    // Legend chips paint the same MAP_STYLE colours onto the bare mark; the
-    // map keeps the disc PNG for contrast on dark tiles.
+  it("serves a baked PNG per kind to Google, which cannot tint an image", () => {
     const pin = compassFor("kever");
     assert.equal(pin.url, glovePinSrc("kever"));
     assert.equal(pin.url, "/map-pins/kever.png");
@@ -149,6 +148,59 @@ describe("the glove marker", () => {
     const pin = compassFor("stay", 11);
     assert.ok(pin.anchorY > pin.height * 0.8, "the tip that touches the map is near the bottom");
     assert.equal(pin.anchorX, pin.width / 2);
+  });
+
+  it("gives the markers the bare mark, so nothing draws a disc round them", () => {
+    // The owner asked for the legend's treatment on the map: the line art
+    // tinted in the kind's colour, no cream circle behind it.
+    const pin = markPinFor("airport", 11);
+    assert.equal(pin.url, GLOVE_MARK_SRC);
+    assert.equal(pin.url, "/map-glove-pin.png");
+    assert.ok(!pin.url.includes("/map-pins/"), "a baked pin carries the disc with it");
+  });
+
+  it("keeps the tinted mark the same size, and its tip on the coordinate", () => {
+    for (const zoom of [4, 7, 11]) {
+      const baked = compassFor("kosher", zoom);
+      const mark = markPinFor("kosher", zoom);
+      assert.equal(mark.width, baked.width, "the marker must not change size to lose the disc");
+      assert.equal(mark.height, baked.height);
+      assert.equal(mark.anchorX, mark.width / 2, "the cuff is centred across the icon");
+      assert.ok(mark.anchorY > mark.height * 0.9, "the coordinate sits at the tip of the cuff");
+      assert.ok(mark.anchorY <= mark.height, "and not below the artwork");
+      assert.ok(mark.anchorY >= baked.anchorY, "the mask fills the air the baked pin left under the cuff");
+    }
+  });
+
+  it("colours map and legend from one place", () => {
+    // A second colour table is how the chips and the pins would come apart.
+    for (const kind of TOGGLEABLE_KINDS) {
+      assert.equal(markPinFor(kind).color, MAP_STYLE[kind].color);
+      assert.equal(markPinFor(kind).url, markPinFor("center").url, "one piece of artwork for every kind");
+    }
+  });
+
+  it("masks the legend chip and the map marker through the same rule", () => {
+    // The chip and the marker are different elements in different renderers;
+    // they share the mask so neither can be restyled without the other.
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const rule = css.match(/\.wg-glove-mark\s*\{([^}]*)\}/);
+    assert.ok(rule, ".wg-glove-mark is missing from globals.css");
+    assert.match(rule![1], /mask-image:\s*url\(\/map-glove-pin\.png\)/);
+    assert.match(rule![1], /-webkit-mask-image:\s*url\(\/map-glove-pin\.png\)/);
+    assert.match(rule![1], /mask-size:\s*contain/);
+    assert.match(rule![1], /mask-repeat:\s*no-repeat/);
+    assert.match(rule![1], /mask-position:\s*center/);
+
+    const chip = readFileSync(new URL("../components/CompassMark.tsx", import.meta.url), "utf8");
+    assert.match(chip, /wg-glove-mark/, "the legend chip masks the shared artwork");
+    const map = readFileSync(new URL("../components/AreaMap.tsx", import.meta.url), "utf8");
+    assert.match(map, /wg-glove-mark/, "the map marker masks the same artwork");
+    assert.match(map, /divIcon/, "an <img> marker cannot be tinted");
+
+    // Bare line art on pale tiles, and a ring for whoever is on a keyboard.
+    assert.match(css, /\.wg-map-pin\s*\{[\s\S]*?drop-shadow/, "the marker needs an edge now the disc is gone");
+    assert.match(css, /\.wg-map-pin:focus-visible\s*\{[\s\S]*?outline:/, "Leaflet markers are tabbable");
   });
 
   it("keeps the baked pin's proportions when it scales with zoom", () => {

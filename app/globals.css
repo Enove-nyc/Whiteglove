@@ -88,6 +88,49 @@
   margin: 10px !important;
 }
 
+/* The glove mark, ready to be painted in a kind's colour: the legend chips
+ * (components/CompassMark.tsx) and the markers on the Leaflet map both mask
+ * this artwork and set their own background-color from MAP_STYLE, so the map
+ * and its legend cannot drift apart. No disc behind the mark — that backing was
+ * tile contrast only, and it read as a badge. */
+.wg-glove-mark {
+  -webkit-mask-image: url(/map-glove-pin.png);
+  mask-image: url(/map-glove-pin.png);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* A marker on the Leaflet map. It is a div because Leaflet cannot tint an
+ * <img>, and the wrapper — not the masked mark inside it — carries the shadow
+ * and the hover growth: a filter on the masked element would be clipped away
+ * with everything outside the mask, and a transform on the wrapper would
+ * overwrite the transform Leaflet positions the marker with. */
+.wg-map-pin {
+  /* Bare line art on pale tiles needs an edge of its own now the disc is gone. */
+  filter: drop-shadow(0 1px 1px rgba(23, 45, 82, 0.5));
+}
+.wg-map-pin > span {
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease-out;
+}
+.wg-map-pin:hover > span,
+.wg-map-pin:focus > span {
+  transform: scale(1.14);
+}
+/* Leaflet makes every marker tabbable with role=button; keep a ring that tells
+ * a keyboard visitor which pin they are on. Plain :focus as well as
+ * :focus-visible — the mark is line art with no fill to darken instead, and a
+ * pin nobody can see the focus on is a pin nobody can reach. */
+.wg-map-pin:focus,
+.wg-map-pin:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -5,7 +5,7 @@ import type * as L from "leaflet";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import CompassMark from "@/components/CompassMark";
 import { curatedKosherPlaces, curatedKosherPlacesNear, type CuratedKosherPlaceNearby } from "@/lib/curated-kosher";
-import { compassFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
+import { compassFor, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
 import {
   googleMaps,
@@ -257,9 +257,14 @@ export default function AreaMap({
       for (const group of Object.values(layersRef.current)) group.clearLayers();
 
       for (const item of visible) {
-        const pin = compassFor(item.kind, zoom);
-        const icon = leaflet.icon({
-          iconUrl: pin.url,
+        // A div icon, not an image: Leaflet cannot tint an <img>, and the mark
+        // is coloured by masking the line art the legend chips use. Leaflet
+        // still puts the title, tabindex and role=button on whatever element
+        // the icon returns, so the pins stay reachable by keyboard.
+        const pin = markPinFor(item.kind, zoom);
+        const icon = leaflet.divIcon({
+          className: "wg-map-pin",
+          html: `<span class="wg-glove-mark" style="display:block;width:100%;height:100%;background-color:${pin.color}"></span>`,
           iconSize: [pin.width, pin.height],
           iconAnchor: [pin.anchorX, pin.anchorY],
           popupAnchor: [0, -pin.anchorY],

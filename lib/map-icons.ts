@@ -2,17 +2,19 @@ import type { MapKind } from "@/lib/map-markers";
 
 /**
  * The logo mark as a map pin: a hand holding a compass, tinted in the kind's
- * colour and seated on a neutral cream disc for contrast on dark tiles.
+ * colour.
  *
  * The markers used to be a simplified compass rose drawn in SVG. That kept the
  * colours clear at twenty-six pixels, but it was not the site's mark — the mark
- * is the glove with the compass in its palm. The artwork is baked into small
- * PNGs under /map-pins (see scripts/build-map-pins.mjs) so Google Maps can
- * show a sharp pin without resampling a full-size logo into mush.
+ * is the glove with the compass in its palm.
  *
  * Kind is told by the colour of the mark itself (and by the legend and popup),
- * not by a coloured ring around the pin. The cream disc is map-tile contrast
- * only; filter chips paint the same colours onto the bare line-art mark.
+ * not by a coloured ring or a disc around the pin. Anything that can tint the
+ * artwork in the browser — the legend chips and the Leaflet markers — masks
+ * the line art in `GLOVE_MARK_SRC` and paints a `MAP_STYLE` colour through it.
+ * Google Maps takes a plain image URL and cannot tint one, so it is served the
+ * baked PNGs under /map-pins (scripts/build-map-pins.mjs), which carry the same
+ * colours already burnt in.
  */
 
 export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin height in CSS pixels at full zoom. */ size: number }> = {
@@ -27,7 +29,16 @@ export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin 
 /** Intrinsic pixel size of each file in /map-pins (scripts/build-map-pins.mjs). */
 export const GLOVE_PIN_INTRINSIC = { width: 56, height: 78 };
 
-/** Public path for one kind's map pin (tinted mark on a cream disc). */
+/**
+ * The bare line-art mark, to be masked and tinted in CSS.
+ *
+ * One file, one path: the legend chips (components/CompassMark.tsx) and the map
+ * markers both mask this, through the `.wg-glove-mark` rule in globals.css, so
+ * the pins on the map and the pins in the legend cannot come apart.
+ */
+export const GLOVE_MARK_SRC = "/map-glove-pin.png";
+
+/** Public path for one kind's baked map pin (tinted mark on a cream disc). */
 export function glovePinSrc(kind: MapKind): string {
   return `/map-pins/${kind}.png`;
 }
@@ -67,7 +78,7 @@ export type GlovePin = {
 };
 
 /**
- * The pin for one kind at the current zoom.
+ * The baked pin for one kind at the current zoom — Google Maps' icon.
  *
  * The cuff is the tip that sits on the coordinate — not the centre of the disc
  * — so a place's marker reads as "here" rather than floating above it.
@@ -87,6 +98,23 @@ export function compassFor(kind: MapKind, zoom = 11): GlovePin {
     color: style.color,
     label: style.label,
   };
+}
+
+/**
+ * The same pin as bare line art, for a renderer that can tint it in CSS.
+ *
+ * Leaflet is given a div rather than an image, so the mark can be masked and
+ * painted in the kind's colour — the treatment the legend chips already use.
+ * No cream disc: it was only ever contrast on dark tiles, and it read as a
+ * badge drawn around the mark.
+ *
+ * The mask fills the icon box where the baked PNG left a few pixels of air
+ * under the cuff, so the anchor sits that much lower to keep the tip of the
+ * cuff on the coordinate.
+ */
+export function markPinFor(kind: MapKind, zoom = 11): GlovePin {
+  const pin = compassFor(kind, zoom);
+  return { ...pin, url: GLOVE_MARK_SRC, anchorY: pin.height * 0.97 };
 }
 
 /** The kinds a visitor can switch on and off, in the order they are offered. */
