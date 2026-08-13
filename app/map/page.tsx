@@ -5,7 +5,7 @@ import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type M
 import Navbar from "@/components/Navbar";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
-import { getAttractionList, getStayList } from "@/lib/attractions-view";
+import { getPublicAttractionList, getPublicStayList } from "@/lib/attractions-view";
 import { pointFrom } from "@/lib/map-markers";
 
 // Rendered per request, not frozen at build time.
@@ -21,7 +21,18 @@ import { pointFrom } from "@/lib/map-markers";
 // fetches that a prerender does not re-run. Per-request is what actually
 // works, and it is what /stops and the admin pages already do. These pages are
 // small, so the cost is a cheap render rather than a cached file.
-export const dynamic = "force-dynamic";
+// NOT force-dynamic any more, and this needed a real fix rather than deleting
+// the line. A plain `revalidate` window was tried on pages like this before
+// and measured to not work: the reads mix Prisma with a `cache: "no-store"`
+// fetch to Redis, and that fetch leaves the page frozen at its build-time
+// render however long the window is. force-dynamic was the right answer to
+// that at the time — but it meant re-reading whole tables for every visit,
+// including every crawler, which is what emptied the database's monthly
+// transfer quota.
+//
+// The fix is in the read layer: the list is now a tagged cache busted by every
+// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
+// freshness, without a fresh database read per hit.
 
 export const metadata = pageMetadata({
   title: "Map — everywhere we know, on one map | White Glove Itineraries",
@@ -32,7 +43,7 @@ export const metadata = pageMetadata({
 export default async function MapPage() {
   // Read through the view so anything the owner adds appears here without a
   // redeploy, the same as on the directories.
-  const [attractionList, stayList] = await Promise.all([getAttractionList(), getStayList()]);
+  const [attractionList, stayList] = await Promise.all([getPublicAttractionList(), getPublicStayList()]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
   const kevarim: MapKever[] = plottableCemeteries.map((c) => ({

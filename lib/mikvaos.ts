@@ -1,3 +1,4 @@
+import { MIKVAOS_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 /**
  * Published mikvah listings for the public site and admin overview.
  *
@@ -169,6 +170,11 @@ export function mikvahListingFromDbRow(row: DbMikvahRow): MikvahListing | null {
  * Public mikvaos: published DB rows when available, otherwise the static
  * source-backed catalog. Never mixes drafts into the public list.
  */
+/** The published listings, cached until a content write busts the tag. */
+export async function listPublicMikvaos(): Promise<MikvahListing[]> {
+  return cachedPublicRead(listPublishedMikvaos, "mikvaos-published", MIKVAOS_PUBLIC_TAG);
+}
+
 export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
   if (!process.env.DATABASE_URL) return staticMikvahListings();
   try {

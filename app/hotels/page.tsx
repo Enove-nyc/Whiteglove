@@ -7,7 +7,7 @@ import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
 import SearchMemory from "@/components/SearchMemory";
 import StayQuarters from "@/components/StayQuarters";
-import { getAreaList, getStayList } from "@/lib/attractions-view";
+import { getPublicAreaList, getPublicStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
 
 // Rendered per request, not frozen at build time.
@@ -24,7 +24,12 @@ import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/li
 // works, and it is what /stops and the admin pages already do. These pages are
 // small, so the cost is a cheap render rather than a cached file.
 //
-// It now also answers a search, which is a second reason for the same setting.
+// IT STAYS PER-REQUEST, but for the second reason only: this page answers a
+// search, and a search result cannot be a cached file. The freshness argument
+// above no longer needs it — the lists are read through getPublicStayList and
+// getPublicAreaList, which are tagged caches busted by every write
+// (lib/public-cache.ts). So the render is per request; the database read
+// behind it is not, which is where the cost actually was.
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
@@ -65,7 +70,7 @@ export default async function KosherStaysPage({
 
   // Read through the view so owner-added stays and quarters appear here and in
   // every search without a redeploy.
-  const [allAreas, allStays] = await Promise.all([getAreaList(), getStayList()]);
+  const [allAreas, allStays] = await Promise.all([getPublicAreaList(), getPublicStayList()]);
   const kosherAreas = searching ? inDestination(allAreas, search.destination) : allAreas;
   const kosherStays = searching ? inDestination(allStays, search.destination) : allStays;
 

@@ -5,13 +5,24 @@ import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import { allHechsherim } from "@/data/hechsherim";
-import { listAgencies } from "@/lib/hechsher-store";
+import { listPublicAgencies } from "@/lib/hechsher-store";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 // Read per request, so an agency the owner adds in the admin is here the same
 // day rather than at the next deploy — the same rule as /hotels and /stops.
-export const dynamic = "force-dynamic";
+// NOT force-dynamic any more, and this needed a real fix rather than deleting
+// the line. A plain `revalidate` window was tried on pages like this before
+// and measured to not work: the reads mix Prisma with a `cache: "no-store"`
+// fetch to Redis, and that fetch leaves the page frozen at its build-time
+// render however long the window is. force-dynamic was the right answer to
+// that at the time — but it meant re-reading whole tables for every visit,
+// including every crawler, which is what emptied the database's monthly
+// transfer quota.
+//
+// The fix is in the read layer: the list is now a tagged cache busted by every
+// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
+// freshness, without a fresh database read per hit.
 
 export const metadata = pageMetadata({
   title: "Kosher certification marks and the agencies behind them | White Glove Itineraries",
@@ -42,7 +53,7 @@ export const metadata = pageMetadata({
  * on a kashrus page is worse than an absent one.
  */
 export default async function HechsherimPage() {
-  const agencies = allHechsherim(await listAgencies());
+  const agencies = allHechsherim(await listPublicAgencies());
 
   // Grouped by where each one certifies, in the order the list is written, so
   // somebody looking at a package in Antwerp is not reading down the American

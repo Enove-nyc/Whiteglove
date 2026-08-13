@@ -5,7 +5,7 @@ import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
-import { getAttractionList } from "@/lib/attractions-view";
+import { getPublicAttractionList } from "@/lib/attractions-view";
 
 // Rendered per request, not frozen at build time.
 //
@@ -20,7 +20,18 @@ import { getAttractionList } from "@/lib/attractions-view";
 // fetches that a prerender does not re-run. Per-request is what actually
 // works, and it is what /stops and the admin pages already do. These pages are
 // small, so the cost is a cheap render rather than a cached file.
-export const dynamic = "force-dynamic";
+// NOT force-dynamic any more, and this needed a real fix rather than deleting
+// the line. A plain `revalidate` window was tried on pages like this before
+// and measured to not work: the reads mix Prisma with a `cache: "no-store"`
+// fetch to Redis, and that fetch leaves the page frozen at its build-time
+// render however long the window is. force-dynamic was the right answer to
+// that at the time — but it meant re-reading whole tables for every visit,
+// including every crawler, which is what emptied the database's monthly
+// transfer quota.
+//
+// The fix is in the read layer: the list is now a tagged cache busted by every
+// write path the moment it saves (lib/public-cache.ts). Same instant-on-save
+// freshness, without a fresh database read per hit.
 
 export const metadata = pageMetadata({
   title: "Things to do — White Glove Itineraries",
@@ -31,7 +42,7 @@ export const metadata = pageMetadata({
 export default async function AttractionsPage() {
   // Read through the view, not the data file, so anything the owner adds in the
   // admin appears here and in every search without a redeploy.
-  const attractions = await getAttractionList();
+  const attractions = await getPublicAttractionList();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />

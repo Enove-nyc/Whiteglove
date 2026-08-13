@@ -1,3 +1,4 @@
+import { CEMETERIES_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 // Public read layer for cemeteries that merges the built-in static list
 // (data/cemeteries.ts, which carries the rich arrival notes + nearby places)
 // with owner-added cemeteries and tzaddikim stored in the database.
@@ -49,6 +50,19 @@ function staticListItem(c: Cemetery): CemeteryListItem {
     burials: c.burials.map((b) => [b.knownAs, b.name, b.yiddishName].filter(Boolean).join(" ")),
     ownerAdded: false,
   };
+}
+
+/**
+ * The same list, cached until a content write busts the tag.
+ *
+ * For the public pages. /heritage, /cemeteries and /stops were rendering this
+ * whole list — 176 batei hachaim, and a burial-count query across all of them
+ * — on every single request, which is most of what emptied the database's
+ * transfer quota. getCemeteryList stays uncached for the admin, which has to
+ * see a save before anything invalidates a tag. See lib/public-cache.ts.
+ */
+export async function getPublicCemeteryList(): Promise<CemeteryListItem[]> {
+  return cachedPublicRead(getCemeteryList, "cemetery-list", CEMETERIES_PUBLIC_TAG);
 }
 
 /** The cemetery directory list: built-in cemeteries plus owner-added ones. */

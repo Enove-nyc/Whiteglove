@@ -5,7 +5,7 @@ import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SectionHeading from "@/components/SectionHeading";
 import { destinations } from "@/data/destinations";
 import { searchAreas, searchAttractions, searchEateries, searchStays } from "@/lib/attraction-search";
-import { getCemeteryList } from "@/lib/cemeteries-view";
+import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import DestinationDirectory from "@/components/DestinationDirectory";
 import { buildDirectoryIndex } from "@/lib/directory-browse";
 import { publishedCategoriesBySlug } from "@/lib/content";
@@ -27,7 +27,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
   // second, older list that duplicated the same fifteen places under their
   // modern names — and still carried a Lizhensk coordinate that had already
   // been corrected in the real database.
-  const allCemeteries = await getCemeteryList();
+  const allCemeteries = await getPublicCemeteryList();
   // One compact index for the browser to filter, instead of three walls of
   // server-rendered cards. The second query is what makes the "has kosher
   // food" style filters tell the truth about owner-added listings.

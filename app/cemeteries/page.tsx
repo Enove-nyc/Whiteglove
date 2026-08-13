@@ -2,7 +2,7 @@ import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
-import { getCemeteryList } from "@/lib/cemeteries-view";
+import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -15,7 +15,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function CemeteriesPage({ searchParams }: { searchParams: Promise<{ country?: string }> }) {
-  const [{ country }, cemeteries] = await Promise.all([searchParams, getCemeteryList()]);
+  const [{ country }, cemeteries] = await Promise.all([searchParams, getPublicCemeteryList()]);
   // Only a country we actually hold records for. A made-up one would silently
   // filter the list down to nothing and read as a broken page.
   const initialCountry = cemeteries.some((entry) => entry.country === country) ? (country as string) : "";

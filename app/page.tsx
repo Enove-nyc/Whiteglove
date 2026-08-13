@@ -16,7 +16,7 @@ import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { website } from "@/lib/structured-data";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
-import { getStayList } from "@/lib/attractions-view";
+import { getPublicStayList } from "@/lib/attractions-view";
 import { staySearchHref } from "@/lib/stay-search";
 import { cardModels, destinationHref } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
@@ -139,7 +139,7 @@ export default async function Home() {
     loadVacationSources(),
     // Read through the view, so a stay the owner adds today is on the front
     // page today rather than at the next deploy.
-    getStayList(),
+    getPublicStayList(),
     // Genuine, permitted, approved only — section renders nothing when empty.
     readPublicCaseStudies(),
   ]);

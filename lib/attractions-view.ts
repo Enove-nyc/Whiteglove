@@ -1,3 +1,4 @@
+import { ATTRACTIONS_PUBLIC_TAG, cachedPublicRead } from "@/lib/public-cache";
 // Public read layer for the non-kever half of a trip: things to do, places to
 // stay, and the Jewish quarters they are measured from.
 //
@@ -106,6 +107,27 @@ export async function getAttractionList(cities?: CityFilter): Promise<Attraction
   } catch {
     return base;
   }
+}
+
+/**
+ * The unfiltered lists, cached until a content write busts the tag.
+ *
+ * Unfiltered only, deliberately: the filtered calls come from a town page that
+ * asks about one city, and giving every city filter its own cache entry would
+ * trade one problem for a cache with hundreds of keys in it. The pages that
+ * were expensive — /map, /things-to-do, /hotels, /destinations — all ask for
+ * everything.
+ */
+export async function getPublicAttractionList(): Promise<AttractionItem[]> {
+  return cachedPublicRead(() => getAttractionList(), "attraction-list", ATTRACTIONS_PUBLIC_TAG);
+}
+
+export async function getPublicStayList(): Promise<KosherStayItem[]> {
+  return cachedPublicRead(() => getStayList(), "stay-list", ATTRACTIONS_PUBLIC_TAG);
+}
+
+export async function getPublicAreaList(): Promise<KosherAreaItem[]> {
+  return cachedPublicRead(() => getAreaList(), "area-list", ATTRACTIONS_PUBLIC_TAG);
 }
 
 export async function getStayList(cities?: CityFilter): Promise<KosherStayItem[]> {

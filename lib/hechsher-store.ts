@@ -1,3 +1,4 @@
+import { HECHSHERIM_PUBLIC_TAG, bustPublicContent, cachedPublicRead } from "@/lib/public-cache";
 // What the owner has confirmed about each place's hechsher.
 //
 // Nothing is inferred here. The store accepts statuses only for White Glove's
@@ -198,6 +199,11 @@ async function writeAgencies(all: Record<string, StoredAgency>): Promise<boolean
 }
 
 /** Everything the owner has added or changed. Empty without a store, which reads as "only the built-in list". */
+/** The agencies, cached until a write busts the tag. For /hechsherim. */
+export async function listPublicAgencies(): Promise<StoredAgency[]> {
+  return cachedPublicRead(listAgencies, "hechsher-agencies", HECHSHERIM_PUBLIC_TAG);
+}
+
 export async function listAgencies(): Promise<StoredAgency[]> {
   return Object.values(await readAgencies());
 }
@@ -224,6 +230,9 @@ export async function saveAgency(agency: StoredAgency): Promise<{ ok: boolean; m
   const existing = all[id];
   all[id] = { ...existing, ...agency, id, logo: agency.logo ?? existing?.logo };
   const ok = await writeAgencies(all);
+  // /hechsherim reads a cached copy now, so a save that does not say so is a
+  // save nobody sees for an hour.
+  if (ok) await bustPublicContent();
   return ok
     ? { ok: true, message: `Saved ${agency.name ?? id}.` }
     : { ok: false, message: "Could not save it. The private store may not be connected." };
@@ -240,5 +249,7 @@ export async function deleteAgency(id: string): Promise<boolean> {
   const all = await readAgencies();
   if (!(id in all)) return true;
   delete all[id];
-  return writeAgencies(all);
+  const ok = await writeAgencies(all);
+  if (ok) await bustPublicContent();
+  return ok;
 }
