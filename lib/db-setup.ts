@@ -3,8 +3,10 @@
 // runtime — so setup needs no terminal. Safe to re-run: it recreates the
 // imported content tables from the static data each time.
 
+import { updateTag } from "next/cache";
 import { recordChange } from "@/lib/changes-store";
 import type { PrismaClient } from "@prisma/client";
+import { DIRECTORY_PUBLIC_TAG } from "@/lib/directory";
 import { INIT_SQL } from "@/lib/init-sql";
 import { UPGRADE_SQL } from "@/lib/upgrade-sql";
 import { buildSeedRows, countSeedRows, DEFAULT_SETTINGS } from "@/lib/seed-data";
@@ -335,6 +337,12 @@ export async function seedDatabase(prisma: PrismaClient) {
     update: {},
     create: DEFAULT_SETTINGS,
   });
+
+  // The re-import writes directory rows directly through Prisma rather than
+  // createProvider, so it is the one write path that does not already bust
+  // the tag by calling that function — done here instead, or a re-import
+  // would go stale on the public page the same way it used to.
+  updateTag(DIRECTORY_PUBLIC_TAG);
 
   // The count of businesses whose own wording this import has just replaced,
   // alongside the row counts. Silence here is what made a re-import feel like
