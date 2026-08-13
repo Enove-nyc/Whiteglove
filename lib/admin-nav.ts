@@ -82,7 +82,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, passwords, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "The website’s words", blurb: "Headline, contact line and footer." },
@@ -99,6 +99,11 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       // same question — is this site earning, and where — so whichever one you
       // opened looked complete on its own. It is a section of this page now,
       // and its old address redirects to it.
+      {
+        href: "/admin/settings/travel-gear",
+        label: "Travel gear",
+        blurb: "The Amazon shelf — a blech, a hotplate, an adapter, and its own page.",
+      },
       {
         href: "/admin/settings/earnings",
         label: "What the site earns",

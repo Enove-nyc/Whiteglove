@@ -123,6 +123,7 @@ function adminHrefForPublicDoc(doc: SearchDocument): { href: string; kind: strin
   if (doc.href === "/esim" || doc.href === "/transfers" || doc.href === "/travel-insurance" || doc.href === "/book") {
     return { href: "/admin/settings/earnings", kind: "Travel Essentials" };
   }
+  if (doc.href === "/travel-gear") return { href: "/admin/settings/travel-gear", kind: "Travel gear" };
   if (doc.href === "/about") return { href: "/admin/settings/about", kind: "Site page" };
   if (doc.href === "/rate") return { href: "/admin/ratings", kind: "Site page" };
   if (doc.href === "/hechsherim") return { href: "/admin/hechsherim", kind: "Site page" };

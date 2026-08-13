@@ -6,6 +6,8 @@ import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import TravelExtras from "@/components/TravelExtras";
 import { readExtras } from "@/lib/travel-extras-store";
+import { gearShownToVisitors } from "@/lib/travel-gear";
+import { readGear } from "@/lib/travel-gear-store";
 import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-guide";
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
 
@@ -29,6 +31,7 @@ export default async function TravelGuidePage() {
   // Where the booking call to action may point today. See lib/booking-access.ts.
   const booking = await readBookingLink();
   const extras = await readExtras();
+  const gearAvailable = gearShownToVisitors(await readGear()).length > 0;
   const feed = await fetchAdvisories();
   const rows = COUNTRY_DOCS.map((c) => ({
     ...c,
@@ -187,6 +190,13 @@ export default async function TravelGuidePage() {
         heading="Worth taking with you"
         intro="Bought from the seller, not from us. Nothing here is a recommendation about which to choose."
       />
+      {gearAvailable && (
+        <p className="px-5 pb-12 text-center text-sm sm:px-8">
+          <Link href="/travel-gear" className="font-semibold text-[var(--gold-ink)] underline">
+            See the full travel gear shelf →
+          </Link>
+        </p>
+      )}
 
       <Footer />
     </main>
