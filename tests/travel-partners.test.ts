@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  aviasalesHomeUrl,
+  aviasalesResultsUrl,
   carUrl,
   DEFAULT_PARTNERS,
   flightUrl,
@@ -10,6 +12,7 @@ import {
   partnersFor,
   TRAVEL_PARTNERS,
 } from "@/lib/travel-partners";
+import { isAviasalesHref } from "@/lib/flight-book-href";
 
 /**
  * Which partner each search opens.
@@ -42,8 +45,8 @@ const roundTrip = {
 
 describe("the default partner is Kayak, which works and can earn via Stay22", () => {
   it("defaults flights and cars to Kayak", () => {
-    // Aviasales deep links discard the search; EconomyBookings carries no
-    // dates. Kayak via Stay22 was traced live with route and dates intact.
+    // EconomyBookings carries no dates. Kayak via Stay22 was traced live with
+    // route and dates intact. A link may still name Aviasales for one press.
     assert.equal(DEFAULT_PARTNERS.flights, "kayak");
     assert.equal(DEFAULT_PARTNERS.cars, "kayak");
   });
@@ -75,33 +78,63 @@ describe("the default partner is Kayak, which works and can earn via Stay22", ()
 });
 
 describe("the flight address", () => {
-  it("carries the route and the date Aviasales documents", () => {
+  /**
+   * THE DOCUMENTED AVIASALES DEEP LINK DOES NOT WORK, which is why none of
+   * these assertions is about it. Requested live with a route, dates and a
+   * marker, `search.aviasales.com/flights/?origin_iata=…` answers 302 to
+   * `aviasales.ru/?refhost=search.aviasales.com` and all three are discarded.
+   * What is asserted instead is the `/search/` path Travelpayouts' own Data API
+   * hands back for a fare, which answers 200 and keeps the marker.
+   */
+  it("lands on the Aviasales results list for the route and the date", () => {
     const url = new URL(flightUrl(flights("aviasales"), journey)!);
-    assert.equal(url.host, "search.aviasales.com");
-    assert.equal(url.pathname, "/flights/");
-    assert.equal(url.searchParams.get("origin_iata"), "JFK");
-    assert.equal(url.searchParams.get("destination_iata"), "KRK");
-    assert.equal(url.searchParams.get("depart_date"), "2026-09-01");
-    assert.equal(url.searchParams.get("one_way"), "true");
+    assert.equal(url.host, "www.aviasales.com");
+    // JFK, 01 September, KRK, one passenger.
+    assert.equal(url.pathname, "/search/JFK0109KRK1");
+    assert.notEqual(url.host, "search.aviasales.com");
   });
 
-  it("says round trip and carries the return date when there is one", () => {
+  it("carries the return date, as the second day-and-month pair", () => {
     const url = new URL(flightUrl(flights("aviasales"), roundTrip)!);
-    assert.equal(url.searchParams.get("return_date"), "2026-09-08");
-    assert.equal(url.searchParams.get("one_way"), "false");
+    assert.equal(url.pathname, "/search/JFK0109KRK08091");
   });
 
   it("does not send a return date on a one-way, which would book the wrong trip", () => {
     const url = new URL(flightUrl(flights("aviasales"), journey)!);
-    assert.equal(url.searchParams.has("return_date"), false);
+    assert.equal(url.pathname, "/search/JFK0109KRK1");
   });
 
-  it("defaults to one adult rather than inventing a party", () => {
-    assert.equal(new URL(flightUrl(flights("aviasales"), journey)!).searchParams.get("adults"), "1");
-    assert.equal(
-      new URL(flightUrl(flights("aviasales"), { ...journey, adults: 3 })!).searchParams.get("adults"),
-      "3",
-    );
+  it("carries the marker it is given, and nothing when it is given nothing", () => {
+    // The commission is the marker on this address. Passed in from the config
+    // rather than read here, so there is no second place a number could rot.
+    const marked = new URL(flightUrl(flights("aviasales"), { ...journey, marker: "761677" })!);
+    assert.equal(marked.searchParams.get("marker"), "761677");
+    assert.equal(marked.pathname, "/search/JFK0109KRK1");
+    assert.equal(new URL(flightUrl(flights("aviasales"), journey)!).searchParams.has("marker"), false);
+    // A script tag or a stray word pasted where the number goes is not written
+    // on to a traveller's link.
+    assert.equal(new URL(flightUrl(flights("aviasales"), { ...journey, marker: "<script>" })!).searchParams.has("marker"), false);
+  });
+
+  it("defaults to one passenger rather than inventing a party", () => {
+    assert.equal(new URL(flightUrl(flights("aviasales"), journey)!).pathname, "/search/JFK0109KRK1");
+    assert.equal(new URL(flightUrl(flights("aviasales"), { ...journey, adults: 3 })!).pathname, "/search/JFK0109KRK3");
+    // One digit is all the path holds, so a coach party is capped rather than
+    // written as two characters the parser would read as part of a date.
+    assert.equal(new URL(flightUrl(flights("aviasales"), { ...journey, adults: 14 })!).pathname, "/search/JFK0109KRK9");
+  });
+
+  it("hands out an address the priced-fare allowlist already trusts", () => {
+    // One list, in lib/flight-book-href.ts. A search link the browser would
+    // refuse to paint a price on is a link built on the wrong host.
+    assert.equal(isAviasalesHref(flightUrl(flights("aviasales"), journey)!), true);
+    assert.equal(isAviasalesHref(aviasalesHomeUrl("761677")), true);
+    assert.equal(new URL(aviasalesHomeUrl("761677")).searchParams.get("marker"), "761677");
+  });
+
+  it("refuses to build a results path out of a broken date", () => {
+    assert.equal(aviasalesResultsUrl({ from: "JFK", to: "KRK", depart: "soon" }), null);
+    assert.equal(aviasalesResultsUrl({ from: "New York", to: "KRK", depart: "2026-09-01" }), null);
   });
 
   it("builds Kiwi on its own host, with the path joined properly", () => {
@@ -123,10 +156,9 @@ describe("the flight address", () => {
       },
     };
     const aviasales = new URL(flightUrl(flights("aviasales"), multi)!);
-    assert.equal(aviasales.searchParams.get("origin_iata"), "JFK");
-    assert.equal(aviasales.searchParams.get("destination_iata"), "KRK");
-    assert.equal(aviasales.searchParams.get("one_way"), "true");
-    assert.equal(aviasales.searchParams.has("return_date"), false);
+    // The first leg, one-way. Not the first leg with the second leg's date
+    // stuck on the end of it, which would be a different journey entirely.
+    assert.equal(aviasales.pathname, "/search/JFK0109KRK1");
     const kiwi = new URL(flightUrl(flights("kiwi"), multi)!);
     assert.match(kiwi.pathname, /\/search\/results\/JFK\/KRK\/2026-09-01$/);
     assert.doesNotMatch(kiwi.pathname, /FCO/);

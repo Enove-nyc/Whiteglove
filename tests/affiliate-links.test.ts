@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { resolveLink } from "@/lib/affiliate/partners";
 import { goHref, readAffiliateRequest } from "@/lib/affiliate/request";
 import { airportCode } from "@/lib/kayak-search";
+import { isAviasalesHref } from "@/lib/flight-book-href";
 import { NO_STAY22 } from "@/lib/stay22";
 
 /**
@@ -91,24 +92,28 @@ describe("no hand-off goes out unnamed", () => {
     assert.deepEqual(unnamed, [], `a hand-off /go cannot route: ${unnamed.join(" | ")}`);
   });
 
-  it("hotels hand off on-site; cash flights open Aviasales/Kayak; cars keep the partner form", () => {
-    // Hotels show Stay22 results on this site, then /go. Flights keep one
-    // White Glove form and hand off (Aviasales via /embed, Kayak via /go).
-    // Cars still use the Localrent widget on the page.
+  it("hotels hand off on-site; both cash flight buttons go through /go; cars keep the partner form", () => {
+    // Hotels show Stay22 results on this site, then /go. Flights keep one White
+    // Glove form and BOTH of its buttons name their partner to /go, which is
+    // the only way two peer buttons can open two different partners without a
+    // partner address being written here. Cars still use the Localrent widget.
     assert.match(SOURCE, /product: "hotel"/);
     assert.match(SOURCE, /product: "flight"/);
-    assert.match(SOURCE, /flightsEmbedPath/);
     assert.match(SOURCE, /carsEmbedPath/);
     assert.match(SOURCE, /PartnerSearchWidget/);
     const flights = SOURCE.slice(SOURCE.indexOf("function FlightsForm"), SOURCE.indexOf("function HotelsForm"));
     const cars = SOURCE.slice(SOURCE.indexOf("function CarsForm"), SOURCE.indexOf("function BookedPrompt"));
     assert.doesNotMatch(flights, /PartnerSearchWidget/);
+    // No second search form: the hand-off is a named partner, not an embed.
+    assert.doesNotMatch(flights, /flightsEmbedPath/);
+    assert.match(flights, /flightHandoff\("aviasales"\)/);
+    assert.match(flights, /flightHandoff\("kayak"\)/);
     assert.match(flights, /Open Aviasales/);
     assert.match(flights, /Compare on Kayak/);
     assert.match(cars, /PartnerSearchWidget/);
   });
 
-  it("goes out through /go, a live tracked link, or the same-origin Aviasales hand-off", () => {
+  it("goes out through /go or a live tracked link, and nothing else", () => {
     assert.match(SOURCE, /goHref\(/);
     for (const call of SOURCE.match(/window\.open\([^;]*?\);/g) ?? []) {
       const ok =
@@ -183,6 +188,94 @@ describe("the whole journey survives the hand-off", () => {
     assert.deepEqual(parsed?.legs, []);
     const href = goHref({ product: "hotel", destination: "https://evil.example.com" });
     assert.doesNotMatch(resolveLink(readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)))!, config)?.url ?? "", /^https:\/\/evil/);
+  });
+});
+
+/**
+ * TWO FLIGHT BUTTONS, TWO PARTNERS, ONE ROUTER.
+ *
+ * /book shows a button that says it opens Aviasales next to one that says it
+ * opens Kayak, so "the flight partner" — a single setting — cannot answer both.
+ * A link may name its own partner, and these hold the three things that makes
+ * fragile: that the name reaches a results list rather than an empty search
+ * box, that the marker is still on it, and that a stranger editing the name
+ * cannot reach anywhere but one of the owner's own partners.
+ */
+describe("a link that names its own partner", () => {
+  const MARKER = "761677";
+  const kayakConfig = { travelpayouts: {}, stay22: NO_STAY22, marker: MARKER, partners: { flights: "kayak" } as never };
+  const legs = [{ from: "JFK", to: "PRG", date: "2026-08-25" }];
+  const resolve = (href: string, config = kayakConfig) =>
+    resolveLink(readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)))!, config);
+
+  it("lands on the Aviasales results list for the route and dates, with the marker", () => {
+    // The failure this replaces: the button opened a second, empty search form
+    // and the traveller retyped the trip they had just typed.
+    const href = goHref({ product: "flight", partner: "aviasales", legs, checkOut: "2026-09-01" });
+    assert.match(href, /partner=aviasales/);
+    const resolved = resolve(href);
+    const url = new URL(resolved!.url);
+    assert.equal(url.hostname, "www.aviasales.com");
+    assert.equal(url.pathname, "/search/JFK2508PRG01091");
+    assert.equal(url.searchParams.get("marker"), MARKER);
+    assert.equal(isAviasalesHref(resolved!.url), true, "the search link is not on the host the fare rows are held to");
+    // Recorded as earning, or the owner cannot tell this from a link that works
+    // and pays nothing — the car-hire failure at the top of this file.
+    assert.equal(resolved!.route.earns, true);
+    assert.equal(resolved!.route.network, "travelpayouts");
+    assert.equal(resolved!.route.destinationLabel, "Aviasales");
+  });
+
+  it("says so rather than silently earning nothing when no marker is configured", () => {
+    const resolved = resolve(
+      goHref({ product: "flight", partner: "aviasales", legs }),
+      { ...kayakConfig, marker: "" },
+    );
+    assert.match(resolved!.url, /^https:\/\/www\.aviasales\.com\/search\//);
+    assert.doesNotMatch(resolved!.url, /marker/);
+    assert.equal(resolved!.route.earns, false);
+  });
+
+  it("keeps the Kayak peer button on Kayak, and priceless", () => {
+    const resolved = resolve(goHref({ product: "flight", partner: "kayak", legs, checkOut: "2026-09-01" }));
+    assert.match(resolved!.url, /^https:\/\/www\.kayak\.com\/flights\/JFK-PRG\/2026-08-25\/2026-09-01/);
+    assert.equal(resolved!.route.destinationLabel, "Kayak");
+    // Even when the owner's own setting is the other partner: a button that
+    // says Kayak has to open Kayak.
+    const flipped = resolve(goHref({ product: "flight", partner: "kayak", legs }), {
+      ...kayakConfig,
+      partners: { flights: "aviasales" } as never,
+    });
+    assert.match(flipped!.url, /^https:\/\/www\.kayak\.com\/flights\//);
+  });
+
+  it("ignores a name that is not one of the owner's partners for this search", () => {
+    // The whole security of naming a partner: it is a NAME, checked against the
+    // registry, so the worst an edited query string reaches is another of the
+    // owner's partners or his setting — never an address of the sender's.
+    for (const name of ["evil.example.com", "https://evil.example.com", "expedia", "economybookings"]) {
+      const resolved = resolve(goHref({ product: "flight", partner: name as never, legs }));
+      assert.match(resolved!.url, /^https:\/\/www\.kayak\.com\//, `${name} was obeyed`);
+    }
+  });
+
+  it("leaves a link that names nobody on the owner's setting", () => {
+    assert.doesNotMatch(goHref({ product: "flight", legs }), /partner=/);
+    assert.match(resolve(goHref({ product: "flight", legs }))!.url, /^https:\/\/www\.kayak\.com\//);
+    const onAviasales = resolve(goHref({ product: "flight", legs }), {
+      ...kayakConfig,
+      partners: { flights: "aviasales" } as never,
+    });
+    assert.match(onAviasales!.url, /^https:\/\/www\.aviasales\.com\/search\//);
+  });
+
+  it("does not let a flight partner be named on a hotel or a car link", () => {
+    const hotel = resolve(goHref({ product: "hotel", partner: "aviasales" as never, destination: "Prague" }));
+    assert.match(hotel!.url, /^https:\/\/www\.booking\.com\//);
+    const car = resolve(
+      goHref({ product: "car", partner: "aviasales" as never, destination: "Prague", checkIn: "2026-08-25", checkOut: "2026-09-01" }),
+    );
+    assert.match(car!.url, /^https:\/\/www\.kayak\.com\/cars\//);
   });
 });
 

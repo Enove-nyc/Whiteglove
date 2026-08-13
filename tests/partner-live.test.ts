@@ -50,7 +50,7 @@ describe("live partner search wiring", () => {
     assert.match(ui, /\/api\/partners\/hotels\/search/);
     assert.match(ui, /\/api\/partners\/flights\/search/);
     assert.doesNotMatch(ui, /\/api\/partners\/cars\/search/);
-    assert.match(ui, /flightsEmbedPath/);
+    assert.match(ui, /goHref\(/);
     assert.match(ui, /carsEmbedPath/);
     assert.match(ui, /View & book/);
     assert.match(ui, /PartnerSearchWidget/);
@@ -66,7 +66,11 @@ describe("live partner search wiring", () => {
     const flights = ui.slice(ui.indexOf("function FlightsForm"), ui.indexOf("function HotelsForm"));
     const cars = ui.slice(ui.indexOf("function CarsForm"), ui.indexOf("function BookedPrompt"));
     assert.doesNotMatch(flights, /PartnerSearchWidget/);
-    assert.match(flights, /flightsEmbedPath/);
+    // Both buttons hand off through /go by naming their partner. No second
+    // search form, and no partner address written in the browser.
+    assert.doesNotMatch(flights, /flightsEmbedPath/);
+    assert.match(flights, /flightHandoff\("aviasales"\)/);
+    assert.match(flights, /flightHandoff\("kayak"\)/);
     assert.match(flights, /AirportAutocomplete/);
     assert.match(flights, /DateField/);
     assert.match(flights, /round-trip/);

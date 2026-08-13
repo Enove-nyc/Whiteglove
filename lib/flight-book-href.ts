@@ -24,15 +24,24 @@ const OFFER_PATH = "/api/partners/flights/offer?";
 const FARE_HOST = "aviasales.com";
 const FARE_NETWORK = "travelpayouts";
 
-export function isPricedFlightHref(url: unknown): url is string {
-  if (typeof url !== "string" || url.length === 0) return false;
-  if (url.startsWith(OFFER_PATH)) return true;
-  if (!url.startsWith("https://")) return false;
+/**
+ * An https address on the fare host. The one place that host is written down —
+ * the /go builder checks the search link it hands out against this too, so the
+ * results page a button opens and the offer a price opens are held to the same
+ * rule rather than to two copies of it.
+ */
+export function isAviasalesHref(url: unknown): url is string {
+  if (typeof url !== "string" || !url.startsWith("https://")) return false;
   try {
     return new URL(url).hostname.replace(/^www\./, "").toLowerCase() === FARE_HOST;
   } catch {
     return false;
   }
+}
+
+export function isPricedFlightHref(url: unknown): url is string {
+  if (typeof url !== "string" || url.length === 0) return false;
+  return url.startsWith(OFFER_PATH) || isAviasalesHref(url);
 }
 
 /** A row the page may show a price on: the right network, a number, a real offer. */

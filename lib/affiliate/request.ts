@@ -19,6 +19,7 @@
  */
 
 import { TRAVEL_PRODUCTS, type AffiliateRequest, type TravelProduct } from "@/lib/affiliate/partners";
+import { isPartnerKey } from "@/lib/travel-partners";
 
 /** Free text, capped. Nothing here is ever interpolated into HTML. */
 function text(value: string | null, max = 80): string {
@@ -95,8 +96,13 @@ function legs(value: string | null): Array<{ from: string; to: string; date: str
 export function readAffiliateRequest(params: URLSearchParams): AffiliateRequest | null {
   const product = text(params.get("product"), 20) as TravelProduct;
   if (!TRAVEL_PRODUCTS.some((entry) => entry.value === product)) return null;
+  // A NAME, not an address, which is the same rule as everything else here: an
+  // unknown one is dropped and the link falls back to the owner's setting, so
+  // editing it reaches one of his partners or none.
+  const named = text(params.get("partner"), 20);
   return {
     product,
+    partner: isPartnerKey(named) ? named : undefined,
     destination: text(params.get("destination")),
     destinationSlug: slug(params.get("slug")),
     checkIn: date(params.get("in")),
@@ -125,6 +131,7 @@ export function goHref(request: AffiliateRequest): string {
     if (value === undefined || value === "" || value === 0) return;
     query.set(key, String(value));
   };
+  put("partner", request.partner);
   put("destination", request.destination);
   put("slug", request.destinationSlug);
   put("in", request.checkIn);

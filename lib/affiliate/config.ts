@@ -13,6 +13,7 @@ import { readTravelpayouts } from "@/lib/travelpayouts-store";
 import { stay22FromEnv } from "@/lib/stay22";
 import { LANDING_PRODUCTS, type AffiliateConfig, type EssentialsLandings } from "@/lib/affiliate/partners";
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
+import { travelpayoutsMarker } from "@/lib/travelpayouts-api";
 import { landingUrlProblem } from "@/lib/travel-essentials";
 
 export const AFFILIATE_CONFIG_TAG = "affiliate-config";
@@ -52,6 +53,7 @@ const cached = unstable_cache(
       partners: travelpayouts.partners,
       stay22: await readStay22(),
       kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
+      marker: travelpayoutsMarker(),
       essentialsLandings: await loadEssentialsLandings(),
     };
   },
@@ -61,7 +63,12 @@ const cached = unstable_cache(
 
 export async function readAffiliateConfig(): Promise<AffiliateConfig> {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return { travelpayouts: {}, stay22: stay22FromEnv(), kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "" };
+    return {
+      travelpayouts: {},
+      stay22: stay22FromEnv(),
+      kayakParams: process.env.KAYAK_AFFILIATE_PARAMS?.trim() || "",
+      marker: travelpayoutsMarker(),
+    };
   }
   return cached();
 }

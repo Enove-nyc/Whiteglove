@@ -14,7 +14,7 @@ import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, t
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
 import PartnerSearchWidget from "@/components/PartnerSearchWidget";
-import { carsEmbedPath, flightsEmbedPath } from "@/lib/partner-widget-paths";
+import { carsEmbedPath } from "@/lib/partner-widget-paths";
 import type { PartnerLiveCapabilities } from "@/lib/partner-live";
 
 // Unified "Book" experience. The traveler makes two choices, in order:
@@ -354,15 +354,26 @@ function FlightsForm({
     return { trip: "round-trip", legs: [legs[0]], ret };
   }
 
-  /** Same-origin Aviasales hand-off with the typed trip (marker stays server-side). */
-  function aviasalesHref() {
-    return flightsEmbedPath({
-      origin,
-      destination,
-      departDate: depart,
-      returnDate: oneWay || multiCity ? "" : ret,
-      oneWay: oneWay || multiCity,
+  /**
+   * The hand-off for the typed trip, through /go so the click is recorded and
+   * the address is built on the server.
+   *
+   * The partner is NAMED because this form shows two of them side by side: one
+   * button says it opens Aviasales and the other says Kayak, and a single
+   * "the flight partner" setting cannot answer both. What the name buys is a
+   * results list — the traveller lands on the fares for the route and dates
+   * they just typed, rather than on a second empty search box, which is what
+   * the page did before.
+   */
+  function flightHandoff(partner: "aviasales" | "kayak") {
+    return goHref({
+      product: "flight",
+      partner,
+      legs: codedLegs(),
+      checkOut: oneWay || multiCity ? "" : ret,
       nonstop,
+      page: "/book",
+      placement: "book-flights",
     });
   }
   const summary = describeSearch(searchShape()) || "Flight";
@@ -414,14 +425,7 @@ function FlightsForm({
 
   function openKayak() {
     if (!validate()) return;
-    const href = kayakHref || goHref({
-      product: "flight",
-      legs: codedLegs(),
-      checkOut: oneWay || multiCity ? "" : ret,
-      nonstop,
-      page: "/book",
-      placement: "book-flights",
-    });
+    const href = kayakHref || flightHandoff("kayak");
     if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
     onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
   }
@@ -432,7 +436,7 @@ function FlightsForm({
    */
   function openAviasales() {
     if (!validate()) return;
-    const href = aviasalesHref();
+    const href = flightHandoff("aviasales");
     if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
     onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
     void loadLiveFares();

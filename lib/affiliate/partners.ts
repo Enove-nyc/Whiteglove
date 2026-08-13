@@ -34,8 +34,16 @@
 import { allezUrl, kayakStay22Link, readStay22Link, stay22IsOn, stay22SearchUrl, tourSearchUrl, type Stay22Link, type Stay22Settings } from "@/lib/stay22";
 import { kayakUrl, withAffiliate, type SearchShape } from "@/lib/kayak-search";
 import { usableBookingDate, usableFlightDates } from "@/lib/date-range";
-import { carUrl, flightUrl, partnerFor, type PartnerChoices } from "@/lib/travel-partners";
-import { linkProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
+import {
+  aviasalesHomeUrl,
+  carUrl,
+  flightUrl,
+  isPartnerKey,
+  partnerFor,
+  type PartnerChoices,
+  type PartnerKey,
+} from "@/lib/travel-partners";
+import { linkProblem, markerProblem, throughTravelpayouts, type SearchSlot, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 import { looksTracked } from "@/lib/travel-extras";
 
 /** HTTPS landing URL usable for Travel Essentials — shared rule with lib/travel-essentials. */
@@ -157,6 +165,17 @@ export type AffiliateConfig = {
   stay22: Stay22Settings;
   /** KAYAK_AFFILIATE_PARAMS. Legacy, and only additive — Travelpayouts is the earner. */
   kayakParams?: string;
+  /**
+   * TRAVELPAYOUTS_MARKER, read where the config is assembled.
+   *
+   * A marker is not a key you sprinkle on a link — see lib/travelpayouts.ts —
+   * and on kayak.com it does nothing at all. On Aviasales it is the whole of
+   * the tracking: their own address takes `marker` and credits it, which is how
+   * every priced fare on /book already earns. So it is carried here for the one
+   * partner it means something to, from the same variable that partner's other
+   * links are built from.
+   */
+  marker?: string;
   /** Products the owner has switched off entirely. */
   paused?: readonly TravelProduct[];
   /**
@@ -170,6 +189,17 @@ export type AffiliateConfig = {
 
 export type AffiliateRequest = {
   product: TravelProduct;
+  /**
+   * The partner THIS link asks for, when the page has a reason to name one.
+   *
+   * /book shows two flight buttons at once — one that opens Aviasales and one
+   * that opens Kayak — and they cannot both be "the flight partner". So a link
+   * may name its own, and the owner's setting is what a link that does not name
+   * one still gets. Ignored unless the name is a partner that really serves
+   * this search, so a stranger editing the query string reaches one of the
+   * owner's own partners or the default, never an address of their choosing.
+   */
+  partner?: PartnerKey;
   /** Free text as the visitor typed it, or a destination's name. */
   destination?: string;
   /** The vacation destination slug, for reporting. Never sent to the partner. */
@@ -218,6 +248,30 @@ export type AffiliateRequest = {
  * search and earns nothing. Reporting `earns: true` for it would be the exact
  * blindness this module exists to end.
  */
+/** Which search a product hands off through. */
+function slotOf(product: TravelProduct): SearchSlot | null {
+  return product === "hotel" ? "hotels" : product === "flight" ? "flights" : product === "car" ? "cars" : null;
+}
+
+/**
+ * The owner's partner choices with this link's named one laid over the top.
+ *
+ * Generic on purpose: the override is a slot key like any other, so partnerFor
+ * applies its own rule — a name that does not serve this search falls back to
+ * the setting rather than throwing or being obeyed.
+ */
+function choicesFor(product: TravelProduct, config: AffiliateConfig, wanted?: PartnerKey): PartnerChoices | undefined {
+  const slot = slotOf(product);
+  if (!slot || !isPartnerKey(wanted)) return config.partners;
+  return { ...config.partners, [slot]: wanted };
+}
+
+/** The Travelpayouts marker, when one usable for a partner link is configured. */
+function markerOn(config: AffiliateConfig): string {
+  const value = config.marker?.trim() ?? "";
+  return value && markerProblem(value) === null ? value : "";
+}
+
 function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot, choices?: PartnerChoices): boolean {
   const pasted = links[slot]?.trim();
   return Boolean(pasted) && linkProblem(pasted!, slot, choices) === null;
@@ -228,12 +282,16 @@ function travelpayoutsEarns(links: TravelpayoutsLinks, slot: SearchSlot, choices
  * Travelpayouts is not required. Null when that slot's partner is not Kayak,
  * or when neither an ID nor a Stay22 Kayak link is present.
  */
-function stay22KayakFor(config: AffiliateConfig, slot: "flights" | "cars"): Stay22Link | null {
-  if (partnerFor(slot, config.partners).key !== "kayak") return null;
+function stay22KayakFor(
+  config: AffiliateConfig,
+  slot: "flights" | "cars",
+  choices: PartnerChoices | undefined = config.partners,
+): Stay22Link | null {
+  if (partnerFor(slot, choices).key !== "kayak") return null;
   const fromAid = kayakStay22Link(config.stay22);
   if (fromAid) return fromAid;
   const pasted = config.travelpayouts[slot]?.trim() ?? "";
-  if (!pasted || linkProblem(pasted, slot, config.partners)) return null;
+  if (!pasted || linkProblem(pasted, slot, choices)) return null;
   const link = readStay22Link(pasted);
   return link?.desk === "kayak" ? link : null;
 }
@@ -253,10 +311,11 @@ const NOT_CONNECTED = (product: TravelProduct, what: string): ProductRoute => ({
  * whether to offer the action at all. A product with no route is not rendered
  * as a broken button — it is not rendered.
  */
-export function routeFor(product: TravelProduct, config: AffiliateConfig): ProductRoute {
+export function routeFor(product: TravelProduct, config: AffiliateConfig, wanted?: PartnerKey): ProductRoute {
   if (config.paused?.includes(product)) {
     return { ...NOT_CONNECTED(product, product), note: "Paused by the owner." };
   }
+  const choices = choicesFor(product, config, wanted);
 
   if (product === "hotel") {
     if (stay22IsOn(config.stay22)) {
@@ -268,7 +327,7 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
         note: `Hotel searches go through Stay22 under ID ${config.stay22.aid.trim()}.`,
       };
     }
-    const wrapped = travelpayoutsEarns(config.travelpayouts, "hotels", config.partners);
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "hotels", choices);
     return {
       product,
       destinationLabel: "Booking.com",
@@ -281,8 +340,8 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
   }
 
   if (product === "flight") {
-    const partner = partnerFor("flights", config.partners);
-    const stay22Kayak = stay22KayakFor(config, "flights");
+    const partner = partnerFor("flights", choices);
+    const stay22Kayak = stay22KayakFor(config, "flights", choices);
     if (stay22Kayak) {
       return {
         product,
@@ -292,21 +351,27 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
         note: `Flight searches go through Stay22, then on to ${partner.label}.`,
       };
     }
-    const wrapped = travelpayoutsEarns(config.travelpayouts, "flights", config.partners);
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "flights", choices);
+    // Aviasales is the one partner whose own address carries the marker, so it
+    // earns without a pasted redirect. Reported as Travelpayouts because that
+    // is whose dashboard the booking turns up in.
+    const marked = partner.key === "aviasales" && Boolean(markerOn(config));
     return {
       product,
       destinationLabel: partner.label,
-      network: wrapped ? "travelpayouts" : "none",
-      earns: wrapped,
+      network: wrapped || marked ? "travelpayouts" : "none",
+      earns: wrapped || marked,
       note: wrapped
         ? `Flight searches go through Travelpayouts, then on to ${partner.label}.`
-        : `Flight searches open ${partner.label} directly. They work, and they earn nothing.`,
+        : marked
+          ? `Flight searches open ${partner.label} with marker ${markerOn(config)} on the link itself.`
+          : `Flight searches open ${partner.label} directly. They work, and they earn nothing.`,
     };
   }
 
   if (product === "car") {
-    const partner = partnerFor("cars", config.partners);
-    const stay22Kayak = stay22KayakFor(config, "cars");
+    const partner = partnerFor("cars", choices);
+    const stay22Kayak = stay22KayakFor(config, "cars", choices);
     if (stay22Kayak) {
       return {
         product,
@@ -316,7 +381,7 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig): Produ
         note: `Car searches go through Stay22, then on to ${partner.label}.`,
       };
     }
-    const wrapped = travelpayoutsEarns(config.travelpayouts, "cars", config.partners);
+    const wrapped = travelpayoutsEarns(config.travelpayouts, "cars", choices);
     return {
       product,
       destinationLabel: partner.label,
@@ -397,6 +462,7 @@ function people(value: number | undefined, fallback: number): number {
  */
 function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): string | null {
   const where = (request.destination ?? "").trim();
+  const choices = choicesFor(request.product, config, request.partner);
 
   if (request.product === "hotel") {
     if (stay22IsOn(config.stay22)) {
@@ -421,7 +487,8 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     // leg — the traveller would get a working search for the wrong journey and
     // nothing would look broken.
     const many = (request.legs ?? []).filter((l) => l.from && l.to && isoDate(l.date));
-    const partner = partnerFor("flights", config.partners);
+    const partner = partnerFor("flights", choices);
+    const marker = markerOn(config);
     if (many.length > 1) {
       // A past date on any leg would otherwise be dropped and the rest sent
       // as a different journey. Skip the dated search rather than shorten it.
@@ -430,7 +497,7 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
         if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
         // Aviasales/Kiwi take one journey. flightUrl sends the first leg as
         // one-way. Kayak Compare still carries every leg.
-        return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+        return flightUrl(partner, { shape, adults: request.adults, children: request.children, marker });
       }
     } else {
       const only = many[0];
@@ -450,7 +517,7 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
         // keeps its own builder because it handles multi-city and carries the
         // legacy affiliate params; everything else comes from the registry.
         if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
-        return flightUrl(partner, { shape, adults: request.adults, children: request.children });
+        return flightUrl(partner, { shape, adults: request.adults, children: request.children, marker });
       }
     }
 
@@ -460,13 +527,13 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     // not a landing page.
     if (!where) return null;
     if (partner.key === "kayak") return withAffiliate("https://www.kayak.com/flights", config.kayakParams);
-    if (partner.key === "aviasales") return "https://search.aviasales.com/flights/";
+    if (partner.key === "aviasales") return aviasalesHomeUrl(marker);
     if (partner.key === "kiwi") return "https://www.kiwi.com/en/";
     return null;
   }
 
   if (request.product === "car") {
-    const partner = partnerFor("cars", config.partners);
+    const partner = partnerFor("cars", choices);
     const built = carUrl(partner, { where, pickup: isoDate(request.checkIn), dropoff: isoDate(request.checkOut) });
     if (!built) return null;
     return partner.key === "kayak" ? withAffiliate(built, config.kayakParams) : built;
@@ -508,11 +575,13 @@ export type ResolvedLink = {
  * than a search of the codebase.
  */
 export function resolveLink(request: AffiliateRequest, config: AffiliateConfig): ResolvedLink | null {
-  const route = routeFor(request.product, config);
+  const route = routeFor(request.product, config, request.partner);
   if (route.network === "none" && !route.destinationLabel) return null;
 
   const url = destinationUrl(request, config);
   if (!url) return null;
+
+  const choices = choicesFor(request.product, config, request.partner);
 
   // The hotel search through Stay22 is BUILT with the aid already in it, so
   // there is nothing left to wrap. Landing-page essentials are already full
@@ -520,10 +589,10 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   // the programme's own parameters.
   if (request.product === "hotel" && route.network === "stay22") return { url, route };
   if (request.product === "flight" && route.network === "stay22") {
-    return { url: stay22SearchUrl(url, stay22KayakFor(config, "flights")), route };
+    return { url: stay22SearchUrl(url, stay22KayakFor(config, "flights", choices)), route };
   }
   if (request.product === "car" && route.network === "stay22") {
-    return { url: stay22SearchUrl(url, stay22KayakFor(config, "cars")), route };
+    return { url: stay22SearchUrl(url, stay22KayakFor(config, "cars", choices)), route };
   }
   if (isLandingProduct(request.product)) {
     return { url, route };
@@ -531,7 +600,10 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
 
   if (route.network === "travelpayouts" || route.network === "stay22") {
     const slot: SearchSlot = request.product === "hotel" ? "hotels" : request.product === "flight" ? "flights" : "cars";
-    return { url: throughTravelpayouts(url, config.travelpayouts[slot], slot, config.partners), route };
+    // A pasted redirect built for a different partner is refused inside, and
+    // the search goes out as it was built — which for Aviasales still carries
+    // the marker on its own address.
+    return { url: throughTravelpayouts(url, config.travelpayouts[slot], slot, choices), route };
   }
   return { url, route };
 }

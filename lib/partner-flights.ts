@@ -89,6 +89,9 @@ function compareHref(search: PartnerFlightSearch, origin: string, destination: s
   const legs = codedLegs(search, origin, destination);
   return goHref({
     product: "flight",
+    // Named, because /book offers two flight buttons at once and the other one
+    // names the other partner. A row that says Kayak has to open Kayak.
+    partner: "kayak",
     legs,
     checkOut: isMultiCity(search) ? "" : returnDate || "",
     adults,
