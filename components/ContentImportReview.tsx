@@ -177,7 +177,7 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
                   </td>
                   <td className="px-3 py-4">
                     {dashboard.databaseReady ? (
-                      <Link href={contentImportCandidatePath(candidate.sourceId)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">Open review →</Link>
+                      <Link href={contentImportCandidatePath(candidate.sourceId, candidate.id)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">Open review →</Link>
                     ) : (
                       <span className="text-xs text-stone-500">Stage first</span>
                     )}

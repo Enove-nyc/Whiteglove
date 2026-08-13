@@ -155,8 +155,9 @@ export function isUsableSourceUrl(value: string | null | undefined): boolean {
 }
 
 /** Human-readable admin route for a source-backed candidate. */
-export function contentImportCandidatePath(sourceId: string): string {
-  return `/admin/imports/${encodeURIComponent(sourceId.trim())}`;
+export function contentImportCandidatePath(sourceId: string, candidateId?: string): string {
+  const path = `/admin/imports/${encodeURIComponent(sourceId.trim())}`;
+  return candidateId ? `${path}?candidate=${encodeURIComponent(candidateId)}` : path;
 }
 
 const DISALLOWED_IMPORT_HOSTS = new Set([
