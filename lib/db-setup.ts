@@ -6,6 +6,7 @@
 import { recordChange } from "@/lib/changes-store";
 import type { PrismaClient } from "@prisma/client";
 import { ATTRACTIONS_PUBLIC_TAG } from "@/lib/attractions-view";
+import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
 import { bustTag } from "@/lib/cache-tags";
 import { DIRECTORY_PUBLIC_TAG } from "@/lib/directory";
 import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
@@ -237,6 +238,14 @@ export async function seedDatabase(prisma: PrismaClient) {
       name: { in: rows.places.map((p) => p.name) },
     },
   });
+  // Same rule as the listings above: refresh the links that ship with a guide,
+  // by URL, and leave every link the owner added alone.
+  await prisma.destinationLink.deleteMany({
+    where: {
+      destination: { slug: { in: destinationSlugs } },
+      url: { in: rows.links.map((l) => l.url) },
+    },
+  });
   // These four have no children, so replacing them outright costs nothing.
   //
   // EXCEPT THAT IT COSTS THE OWNER'S EDITS, and that is the whole point of the
@@ -324,6 +333,7 @@ export async function seedDatabase(prisma: PrismaClient) {
   await prisma.tzaddik.createMany({ data: rows.tzaddikim.map(remap) });
   await prisma.contact.createMany({ data: rows.contacts.map(remap) });
   await prisma.practicalPlace.createMany({ data: rows.places.map(remap) });
+  await prisma.destinationLink.createMany({ data: rows.links.map(remap) });
   // THIS LINE WAS MISSING, and it is the bug behind "my whole directory got
   // lost". The re-import deleted all thirty built-in businesses and never wrote
   // them back — while countSeedRows still reported "imported 30 directory
@@ -349,6 +359,9 @@ export async function seedDatabase(prisma: PrismaClient) {
   await bustTag(DIRECTORY_PUBLIC_TAG);
   await bustTag(ATTRACTIONS_PUBLIC_TAG);
   await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
+  // Cemeteries and their kevarim are rewritten too, and each directory card
+  // prints a burial count read through that cache.
+  await bustTag(CEMETERIES_PUBLIC_TAG);
 
   // The count of businesses whose own wording this import has just replaced,
   // alongside the row counts. Silence here is what made a re-import feel like

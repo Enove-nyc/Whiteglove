@@ -7,7 +7,9 @@ import {
   getDestinationForAdmin,
   isDbEnabled,
   listDestinationsForAdmin,
+  listLinksForAdmin,
 } from "@/lib/content-admin";
+import { optionalRead } from "@/lib/db-optional";
 
 // Admin data must always reflect the latest DB state.
 export const dynamic = "force-dynamic";
@@ -34,6 +36,14 @@ export default async function AdminDestinationsPage({
   }
   const selected =
     dbReady && !needsSetup && slug ? await getDestinationForAdmin(slug) : null;
+  // READ SEPARATELY, AND ALLOWED TO FAIL — the same rule lib/content.ts
+  // follows for anything newer than the database it may be talking to. Folding
+  // this into getDestinationForAdmin's include would mean that on a database
+  // without the DestinationLink migration the whole editor throws P2022 and
+  // the owner loses every screen for that town, not just the links.
+  const links = selected
+    ? await optionalRead(`useful links for ${selected.slug}`, () => listLinksForAdmin(selected.id), [])
+    : [];
 
   return (
     <>
@@ -142,7 +152,7 @@ export default async function AdminDestinationsPage({
 
           <div>
             {selected ? (
-              <DestinationEditor destination={selected} />
+              <DestinationEditor destination={selected} links={links} />
             ) : (
               <div className="border border-dashed border-[var(--gold-light)] p-10 text-center">
                 <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Pick a destination to start editing.</p>

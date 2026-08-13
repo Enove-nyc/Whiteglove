@@ -52,6 +52,10 @@ export async function saveProviderAction(
 ): Promise<ActionResult> {
   if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
   const slug = str(formData, "slug");
+  // Set only when the form was opened on one of the built-in providers, which
+  // has no database row yet. Saving creates the row under the SAME slug so it
+  // replaces the built-in rather than sitting beside it as a duplicate.
+  const builtInSlug = str(formData, "builtInSlug");
   const name = str(formData, "name");
   if (!name) return { ok: false, message: "A business name is required." };
   const categoryValue = str(formData, "category");
@@ -85,10 +89,17 @@ export async function saveProviderAction(
     if (slug) {
       await updateProvider(slug, fields);
     } else {
-      await createProvider(fields);
+      await createProvider(fields, builtInSlug || undefined);
     }
     revalidateDirectory();
-    return { ok: true, message: slug ? "Provider updated." : "Provider added." };
+    return {
+      ok: true,
+      message: slug
+        ? "Provider updated."
+        : builtInSlug
+          ? "Saved as yours. Your version now replaces the built-in one."
+          : "Provider added.",
+    };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
   }

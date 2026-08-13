@@ -47,6 +47,11 @@ export async function restoreDeleted(entry: Deleted): Promise<RestoreResult> {
         await prisma.directoryProvider.create({ data: entry.payload as never });
         return { ok: true, message: `${entry.title} is back.` };
       }
+      case "link": {
+        const prisma = await prismaClient();
+        await prisma.destinationLink.create({ data: entry.payload as never });
+        return { ok: true, message: `${entry.title} is back.` };
+      }
       case "advertisement":
         return restorePromotion(entry.payload as unknown as Promotion);
       default:

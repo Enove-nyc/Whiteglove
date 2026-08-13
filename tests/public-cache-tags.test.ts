@@ -268,3 +268,67 @@ describe("/search stays force-dynamic on purpose, but the index it searches is n
     assert.match(body(SITE_SEARCH_INDEX, "invalidateSiteSearchIndex"), /bustTag\(SEARCH_INDEX_TAG\)/);
   });
 });
+
+describe("/heritage, /cemeteries and /stops — CEMETERIES_PUBLIC_TAG", () => {
+  /**
+   * The fourth list, added after the three above.
+   *
+   * getCemeteryList is the heaviest read on the site — 176 batei hachaim plus
+   * a burial-count query across every one of them — and it feeds three public
+   * pages. /heritage was still force-dynamic, a full re-read on every visit
+   * including every crawler, after the others had been fixed.
+   */
+  const CEMETERIES_VIEW = readFileSync("lib/cemeteries-view.ts", "utf8");
+
+  it("the tag is exported so every write path can import the same one", () => {
+    assert.match(CEMETERIES_VIEW, /export const CEMETERIES_PUBLIC_TAG = "cemeteries-public"/);
+  });
+
+  it("getPublicCemeteryList goes through cachedRead, tagged", () => {
+    const fn = body(CEMETERIES_VIEW, "getPublicCemeteryList");
+    assert.match(fn, /cachedRead/);
+    assert.match(fn, /CEMETERIES_PUBLIC_TAG/);
+  });
+
+  it("getCemeteryList — what the admin reads — is never wrapped, so a save shows at once", () => {
+    assert.doesNotMatch(body(CEMETERIES_VIEW, "getCemeteryList"), /cachedRead/);
+  });
+
+  it("no module-scope next/cache import", () => {
+    assert.doesNotMatch(CEMETERIES_VIEW, /^import .*from "next\/cache"/m);
+  });
+
+  for (const fnName of [
+    "createCemetery",
+    "createCemeteryWithBurial",
+    "saveCemeteryBurial",
+    "deleteCemeteryBurial",
+    "saveCemeteryContact",
+    "deleteCemeteryContact",
+  ]) {
+    it(`content-admin.ts's ${fnName} busts CEMETERIES_PUBLIC_TAG`, () => {
+      assert.match(body(CONTENT_ADMIN, fnName), /contentChanged\(\)/);
+    });
+  }
+
+  it("contentChanged is what busts it, and does not call itself", () => {
+    // A sweep that replaced every invalidateSiteSearchIndex() with
+    // contentChanged() once rewrote the call inside this helper too. That
+    // type-checks, lints and builds — and hangs every admin save.
+    const fn = body(CONTENT_ADMIN, "contentChanged");
+    assert.match(fn, /bustTag\(CEMETERIES_PUBLIC_TAG\)/);
+    assert.doesNotMatch(fn, /await contentChanged\(\)/);
+  });
+
+  it("the bulk re-import busts CEMETERIES_PUBLIC_TAG — it rewrites the cemeteries too", () => {
+    assert.match(body(DB_SETUP, "seedDatabase"), /bustTag\(CEMETERIES_PUBLIC_TAG\)/);
+  });
+
+  it("all three pages read the cached list, and none is force-dynamic", () => {
+    for (const page of ["app/heritage/page.tsx", "app/cemeteries/page.tsx", "app/stops/page.tsx"]) {
+      const source = readFileSync(page, "utf8");
+      assert.match(source, /getPublicCemeteryList/, page);
+      assert.doesNotMatch(source, /export const dynamic = "force-dynamic"/, page);
+    }
+  });
+});

@@ -107,6 +107,26 @@ export function collectionPage(input: { name: string; description: string; path:
   };
 }
 
+/**
+ * Questions a page actually answers, in the form a search engine reads.
+ *
+ * The rule from the top of this file applies with unusual force here: every
+ * question must be answered in the visible text of the page, in words a
+ * visitor can read. Marking up an answer the page does not give is how a site
+ * loses its rich results, so callers pass the same strings they render.
+ */
+export function faqPage(questions: Array<{ question: string; answer: string }>): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: questions.map((entry) => ({
+      "@type": "Question",
+      name: entry.question,
+      acceptedAnswer: { "@type": "Answer", text: entry.answer },
+    })),
+  };
+}
+
 /** The site itself, declared once on the front page. */
 export function website(): Json {
   return {

@@ -11,7 +11,25 @@ export type CityGuide = {
   yahrzeit: string;
   niftar: string;
   graveAddress?: string;
+  /**
+   * The kever itself. What "Navigate to the kever" sends somebody to.
+   *
+   * Absent unless a source gives the grave pin. Nothing is estimated into
+   * this field — a coordinate a traveller drives to has to be the real one.
+   */
   graveCoordinates?: string;
+  /**
+   * The TOWN, not the grave. Never navigated to.
+   *
+   * Same idea as `airportRef` on a cemetery listing, and it exists for the
+   * same reason: ranking the nearest airports and working out which other
+   * kevarim are within reach needs a point, and a town centre answers both
+   * questions perfectly well. Lelov, Ropshitz and Rymanów had no grave pin
+   * published anywhere, so those pages had no nearby list and their airport
+   * panel fell back to "the main airports of Poland" — a town coordinate
+   * fixes both without anybody inventing a grave location.
+   */
+  townCoordinates?: string;
   findingNotes?: string[];
   accessContact?: {
     label: string;
@@ -49,6 +67,19 @@ export type CityGuide = {
     yahrzeit?: string;
     note?: string;
   }>;
+  /**
+   * Somewhere else worth reading about this town.
+   *
+   * NOT `sourceUrl` — that is a footnote for somebody checking us. These are
+   * for the traveller: umaninfo.com knows more about getting to Uman than this
+   * site ever will, and a page that offered only "Read source information" was
+   * never going to send anybody there.
+   *
+   * The ones here ship with the site. The owner adds and edits his own at
+   * /admin/destinations, and both are shown together — see the DestinationLink
+   * model, and lib/useful-links.ts for what makes a URL printable.
+   */
+  usefulLinks?: Array<{ label: string; url: string; note?: string }>;
   sourceUrl: string;
 };
 
@@ -81,6 +112,10 @@ export const cityGuides: CityGuide[] = [
         knownAs: "More than twenty thousand murdered in 1768",
         note: "Killed on 5–7 Tammuz 1768 by Gonta's Haidamaks, who offered them their lives to convert and were refused. They are buried in this ground, and Rebbe Nachman asked to be buried among them — he had passed through Uman and said of it, this is a good place to be buried.",
       },
+    ],
+    usefulLinks: [
+      { label: "Uman Info", url: "https://www.umaninfo.com/", note: "A standing guide to the town kept by people who are there." },
+      { label: "Uman Info — ways to get there", url: "https://www.umaninfo.com/ways", note: "Routes in, which change more often than anything else about this trip." },
     ],
     sourceUrl: "https://www.breslov.com/center/article_rebyahrzeit.html",
   },
@@ -169,7 +204,13 @@ export const cityGuides: CityGuide[] = [
     seforim: "תורות וסיפורים של בית לעלוב",
     yahrzeit: "ז׳ שבט",
     niftar: "תקע״ד / 1814",
-    sourceUrl: "https://hasidut.herzog.ac.il/en/story/rabbi-david-of-lelov-cannot-answer-the-lubliner/",
+    graveAddress: "Ogrodowa 7, 42-235 Lelów, Poland",
+    townCoordinates: "50.785600, 19.640800",
+    findingNotes: [
+      "Navigate to Ogrodowa 7. The ohel stands on the site of the old Jewish cemetery, in the town itself rather than outside it.",
+      "The cemetery around it no longer exists. It was levelled in 1956 and a shop built over the ground; the kever was located again in 1988 and the present ohel put up in 2012–13 after that building was demolished.",
+    ],
+    sourceUrl: "https://pl.wikipedia.org/wiki/Ohel_Dawida_Bidermana_w_Lelowie",
   },
   {
     slug: "ropshitz",
@@ -183,7 +224,13 @@ export const cityGuides: CityGuide[] = [
     seforim: "זרע קודש · אילה שלוחה · אמרי שפר",
     yahrzeit: "י״א אייר",
     niftar: "תקפ״ז / 1827",
-    sourceUrl: "https://nertzaddik.com/tzadik-info?id=3506",
+    graveAddress: "Old Jewish cemetery, Moniuszki Street, 37-100 Łańcut, Poland",
+    townCoordinates: "50.068600, 22.229700",
+    findingNotes: [
+      "The kever is in Łańcut, not in Ropczyce. The Ropshitzer Rov was niftar in 1827 on the road from Ropczyce to Lublin and was buried here; navigating to Ropczyce is the usual way people miss him.",
+      "The old cemetery is on Moniuszki Street. There are two ohels: the Ropshitzer Rov in the first, and Reb Elazar Shapiro of Łańcut in the second.",
+    ],
+    sourceUrl: "https://sztetl.org.pl/en/towns/l/186-lancut/114-cemeteries/20208-cemetary",
   },
   {
     slug: "preshburg",
@@ -306,6 +353,7 @@ export const cityGuides: CityGuide[] = [
     yahrzeit: "י״ט אייר",
     niftar: "תקע״ה / 1815",
     graveAddress: "Słowackiego Street, 38-480 Rymanów, Poland",
+    townCoordinates: "49.574700, 21.861900",
     findingNotes: [
       "The Jewish cemetery is at the end of Słowackiego Street; use the map link rather than only the city center.",
       "The tziyun is in the cemetery with other historic kevarim of Rymanów.",
@@ -463,6 +511,51 @@ export const cityGuides: CityGuide[] = [
       "Confirm current entry arrangements before setting out, particularly around י״ד אב.",
     ],
     sourceUrl: "https://encyclopedia.yivo.org/article.aspx/Friedman_Tsevi_Hirsh",
+  },
+  {
+    // Lizhensk was the one guided town without a guide record. It had a
+    // hand-written page of its own at /lizensk, spelled unlike every other
+    // Lizhensk identifier in the codebase, linked to from nowhere, editable by
+    // nobody, while /lizhensk — the spelling the cemetery listing, the
+    // destination record and the search aliases all use — returned a 404.
+    // Everything below was on that page; it is here so the town is an ordinary
+    // town.
+    slug: "lizhensk",
+    city: "Lizhensk (Leżajsk)",
+    yiddishCity: "ליזענסק",
+    country: "Poland",
+    tzaddik: "Rabbi Elimelech Weisblum of Lizhensk",
+    yiddishTzaddik: "רבי אלימלך מליזענסק",
+    aliases: ["Lizensk", "Lezajsk", "Leżajsk", "Noam Elimelech", "ליז'ענסק"],
+    overview:
+      "Reb Elimelech of Lizhensk was a central early Chassidic leader whose seforim and talmidim shaped generations. Much of what became Polish and Galician chassidus runs through his beis midrash — the Chozeh of Lublin, Reb Mendele of Rymanów, the Maggid of Kozhnitz and Reb Dovid of Lelov were among his talmidim — which is why a visit here is so often the first stop of a longer route rather than a trip of its own.",
+    seforim: "נועם אלימלך",
+    yahrzeit: "כ״א אדר",
+    niftar: "תקמ״ז / 1787",
+    graveAddress: "Górna 16, 37-300 Leżajsk, Poland",
+    // Owner-verified ohel location: 50°15'04.1"N 22°25'21.4"E
+    graveCoordinates: "50.251139, 22.422611",
+    findingNotes: [
+      "Navigate to Górna 16, the Jewish cemetery on the edge of the town.",
+      "The ohel is the focal point of the cemetery; the kever of Reb Elimelech is inside it.",
+      "Graves of his family are recorded in and around the ohel, and Reb Zelig Shapira lies in a second, larger ohel in the same cemetery.",
+      "For כ״א אדר, thousands come to a town of some fourteen thousand people: access to the ohel, parking, road closures around Górna, meals and every bed for miles are arranged specially for that week and differ from year to year. Work backwards from the yahrzeit rather than forwards from your flights.",
+    ],
+    accessContacts: [
+      {
+        label: "Ohel & cemetery",
+        phone: "+48 735 250 505",
+        note: "The number published for the ohel at Górna 16. Confirm before travelling, particularly around Shabbos and the yahrzeit.",
+      },
+    ],
+    usefulLinks: [
+      {
+        label: "Lizansk.com — Hachnasas Orchim",
+        url: "https://lizansk.com/en/lizhensk/",
+        note: "Meals and lodging beside the kever, booked directly. The town has no Jewish community of its own, so this is arranged in advance.",
+      },
+    ],
+    sourceUrl: "https://sztetl.org.pl/en/node/188/114-cemeteries/19248-cmentarz-zydowski-w-lezajsku-ul-gorna",
   },
 ];
 

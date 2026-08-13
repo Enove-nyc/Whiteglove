@@ -131,9 +131,44 @@ model Destination {
   contacts   Contact[]
   places     PracticalPlace[]
   photos     Photo[]
+  links      DestinationLink[]
 
   @@index([kind])
   @@index([country])
+}
+
+// Somewhere else worth reading about this town.
+//
+// NOT a source and not a listing. `Destination.sourceUrl` and `sources[]` are
+// where our information came from — a footnote, aimed at somebody checking us.
+// A PracticalPlace is a thing with an address you go to. This is the third
+// kind: a site that knows more about this town than we do and that a traveller
+// should have open in another tab. Uman has umaninfo.com; Lizhensk has
+// lizansk.com. Nobody was going to find those from a page that only ever
+// offered "Read source information".
+//
+// Owner-managed, because a link is the fastest-rotting record on a travel site
+// and fixing a dead one should not need a deploy.
+model DestinationLink {
+  id    String @id @default(cuid())
+  // What the link says on the page. Never the bare URL — "umaninfo.com/ways"
+  // tells a visitor nothing about why they would click it.
+  label String
+  url   String
+  // One line on what is over there, when the label cannot carry it alone.
+  note  String?
+  // Hand-ordered: the most useful link for this town is rarely the one that
+  // happened to be added first.
+  position     Int           @default(0)
+  status       ContentStatus @default(PUBLISHED)
+  lastVerified DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String
+
+  @@index([destinationId, position])
 }
 
 // A tzaddik, either the primary one featured on a city page
