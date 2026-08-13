@@ -585,6 +585,71 @@ export async function setContentImportCandidateStatus(id: string, status: Extrac
   });
 }
 
+function linkedText(value: string | null | undefined): string {
+  return (value ?? "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("en").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function linkedUrl(value: string | null | undefined): string {
+  return (value ?? "").trim().replace(/\/+$/, "").toLocaleLowerCase("en");
+}
+
+/**
+ * Close a kosher import row only after the corresponding destination listing
+ * has already been checked and published by an editor. This records the link;
+ * it never creates a kosher claim from the import directory itself.
+ */
+export async function confirmLinkedKosherImportCandidate(id: string): Promise<{ kind: string; id: string }> {
+  const prisma = await db();
+  const stored = await prisma.contentImportCandidate.findUnique({
+    where: { id },
+    include: { batch: { select: { slug: true, name: true } } },
+  });
+  if (!stored) throw new Error("That import candidate no longer exists.");
+  if (stored.kind !== "KOSHER_FOOD") throw new Error("Only kosher-food imports use the verified destination-link workflow.");
+  if (stored.status !== "NEEDS_REVIEW" && stored.status !== "DUPLICATE") {
+    throw new Error("Only a candidate still waiting for review can be linked.");
+  }
+  if (!stored.destinationSlug) throw new Error("Choose an existing destination before linking this verified listing.");
+
+  const destination = await prisma.destination.findUnique({
+    where: { slug: stored.destinationSlug },
+    select: {
+      places: {
+        where: {
+          category: { in: ["KOSHER_FOOD", "GROCERY"] },
+          status: "PUBLISHED",
+          verification: "VERIFIED",
+        },
+        select: { id: true, name: true, sourceUrl: true },
+      },
+    },
+  });
+  if (!destination) throw new Error("That destination does not exist.");
+
+  const candidateName = linkedText(stored.name);
+  const evidenceUrls = new Set([linkedUrl(stored.kosherSourceUrl), linkedUrl(stored.sourceUrl)].filter(Boolean));
+  const place = destination.places.find((item) =>
+    linkedText(item.name) === candidateName && evidenceUrls.has(linkedUrl(item.sourceUrl)),
+  );
+  if (!place) {
+    throw new Error("No published, verified destination listing has the same name and certification source URL.");
+  }
+
+  await prisma.contentImportCandidate.update({
+    where: { id },
+    data: {
+      status: "PUBLISHED",
+      publishedKind: "food",
+      publishedId: place.id,
+      publishedAt: new Date(),
+      reviewedAt: new Date(),
+      validationErrors: [],
+      duplicateOf: null,
+    },
+  });
+  return { kind: "food", id: place.id };
+}
+
 /**
  * Publish one reviewed candidate, never a whole batch. Kosher food remains a
  * deliberate exception: a source directory can create a review lead but may

@@ -9,6 +9,7 @@ import {
   type BulkContentKind,
 } from "@/lib/bulk-content";
 import {
+  confirmLinkedKosherImportCandidate,
   publishContentImportCandidate,
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
@@ -123,6 +124,15 @@ export async function reviewContentImportCandidateAction(
     }
 
     const updated = await updateContentImportCandidate(id, candidateInput(formData));
+    if (intent === "confirm-linked") {
+      const linked = await confirmLinkedKosherImportCandidate(id);
+      revalidatePublishedTripContent();
+      revalidatePath("/admin/imports");
+      revalidatePath("/admin/imports/needs-review");
+      revalidatePath(`/admin/imports/${id}`);
+      revalidatePath(contentImportCandidatePath(updated.sourceId, updated.id));
+      return { ok: true, message: `Linked to the verified public ${linked.kind} listing. This import row is complete.` };
+    }
     if (intent === "publish") {
       const published = await publishContentImportCandidate(id);
       revalidatePublishedTripContent();

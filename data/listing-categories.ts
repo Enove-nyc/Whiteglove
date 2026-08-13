@@ -67,12 +67,12 @@ export const LISTING_CATEGORY_PRESETS: readonly ListingCategoryOption[] = [
   { value: "Ordinary hotel, well placed", label: "Ordinary hotel, well placed", group: "where-to-stay" },
 
   // Kosher food finder kinds (destination editor confirms before public food claims)
-  { value: "Restaurant", label: "Restaurant", group: "kosher-food" },
-  { value: "Bakery", label: "Bakery", group: "kosher-food" },
-  { value: "Butcher", label: "Butcher", group: "kosher-food" },
-  { value: "Grocery", label: "Grocery / kosher shop", group: "kosher-food" },
-  { value: "Takeaway", label: "Takeaway", group: "kosher-food" },
-  { value: "Cafe", label: "Cafe", group: "kosher-food" },
+  { value: "Restaurant", label: "Kosher restaurant", group: "kosher-food" },
+  { value: "Bakery", label: "Kosher bakery", group: "kosher-food" },
+  { value: "Butcher", label: "Kosher butcher", group: "kosher-food" },
+  { value: "Grocery", label: "Kosher grocery / shop", group: "kosher-food" },
+  { value: "Takeaway", label: "Kosher takeaway", group: "kosher-food" },
+  { value: "Cafe", label: "Kosher cafe", group: "kosher-food" },
 
   // PracticalPlace PlaceCategory values (store the enum token)
   { value: "MINYAN", label: "Shul / minyan", group: "practical" },

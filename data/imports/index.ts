@@ -12,6 +12,9 @@ import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/cand
 import { sourceCatalog as worldwideBatch4Sources } from "@/data/imports/worldwide-batch-4/sources";
 import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
 import { sourceCatalog as worldwideBatch5Sources } from "@/data/imports/worldwide-batch-5/sources";
+import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
+import { sourceCatalog as kosherFoodSources } from "@/data/imports/kosher-food-batch/sources";
+import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage-batch/candidates";
 import type { BulkContentCandidateInput, BulkContentKind } from "@/lib/bulk-content";
 import { prefillBulkCandidateFromPack } from "@/lib/import-prefill";
 
@@ -76,6 +79,8 @@ type SharedPackFields = {
   coordinates?: string | null;
   website?: string | null;
   destinationSlug?: string | null;
+  kosherClaim?: string | null;
+  kosherSourceUrl?: string | null;
 };
 
 /**
@@ -228,5 +233,39 @@ export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPack
     candidates: worldwideBatch5Candidates.map((candidate) =>
       candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
     ),
+  },
+  {
+    schemaVersion: 1,
+    batch: {
+      slug: "kosher-food-batch",
+      name: "Kosher food finder review pack",
+      sourceName: `${Object.keys(kosherFoodSources).length} official community and certifier food directories`,
+      sourceUrl: "",
+      attribution: "Compiled by White Glove; every candidate carries its own source and attribution.",
+      license: RESEARCH_ONLY,
+    },
+    generatedAt: "2026-08-13",
+    candidates: kosherFoodBatchCandidates.map((candidate) =>
+      candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
+    ),
+  },
+  {
+    schemaVersion: 1,
+    batch: {
+      slug: "nesiyatova-heritage-batch",
+      name: "Nesiya Tova beis hachaim, mikvah and hachnasas orchim pack",
+      sourceName: "Nesiya Tova",
+      sourceUrl: "https://app.nesiyatova.com/",
+      attribution: "Nesiya Tova public place directory; every candidate carries its own listing URL.",
+      license: "Nesiya Tova listing URLs and listed contact numbers only — verify before any public use.",
+    },
+    generatedAt: "2026-08-13",
+    candidates: nesiyatovaHeritageCandidates.map((candidate) => ({
+      ...candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
+      // Prefill may attach a destination slug; leaving it off keeps bulk-publish
+      // blocked so these stay Needs review until the owner uses the kevarim /
+      // practical editors.
+      destinationSlug: null,
+    })),
   },
 ];

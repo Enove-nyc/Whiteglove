@@ -143,6 +143,7 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             <p className="text-sm leading-6 text-amber-950">
               This queue can preserve an official directory source, but it cannot publish a kosher claim. Confirm it in the destination editor before it becomes public.
             </p>
+            <input type="hidden" name="kosherClaim" value={candidate.kosherClaim === "reported" ? "reported" : "none"} />
             <label className={`${labelClass} mt-4`}>
               Official community or certification source
               <input type="url" name="kosherSourceUrl" defaultValue={candidate.kosherSourceUrl ?? ""} className={fieldClass} />
@@ -203,6 +204,11 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
           {candidate.status === "NEEDS_REVIEW" && (
             <button type="submit" name="intent" value="publish" disabled={pending} className="min-h-11 border border-emerald-700 bg-emerald-700 px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50">
               Save and publish
+            </button>
+          )}
+          {kind === "KOSHER_FOOD" && (candidate.status === "NEEDS_REVIEW" || candidate.status === "DUPLICATE") && (
+            <button type="submit" name="intent" value="confirm-linked" disabled={pending} className="min-h-11 border border-emerald-700 bg-emerald-700 px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50">
+              Link verified public listing
             </button>
           )}
           {candidate.status === "REJECTED" ? (

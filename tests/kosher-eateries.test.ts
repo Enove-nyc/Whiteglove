@@ -96,6 +96,14 @@ describe("an eatery can be reached and checked", () => {
     assert.equal(new Set(slugs).size, slugs.length);
   });
 
+  test("does not list kosher-style or Israeli-style as a stand-in for kosher", () => {
+    for (const e of kosherEateries) {
+      const text = [e.name, e.summary, e.kind, ...(e.notes ?? [])].join(" ");
+      assert.doesNotMatch(text, /kosher-style/i, `${e.slug} uses kosher-style`);
+      assert.doesNotMatch(text, /israeli-style/i, `${e.slug} uses Israeli-style`);
+    }
+  });
+
   test("an entry that names a quarter names one that exists", async () => {
     // The tie back to the stays data is what lets somebody choose a hotel by
     // where the food is, so a broken reference quietly costs that.

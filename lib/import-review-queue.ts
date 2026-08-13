@@ -15,6 +15,8 @@ import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/cand
 import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
 import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
 import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
+import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
+import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage-batch/candidates";
 import { contentImportCandidatePath, isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
 import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
@@ -94,6 +96,48 @@ function emptyCounts(): ImportReviewQueueCounts {
 }
 
 const KNOWN_PACKS: readonly KnownPack[] = [
+  {
+    slug: "nesiyatova-heritage-batch",
+    name: "Nesiya Tova beis hachaim, mikvah and hachnasas orchim pack",
+    path: "data/imports/nesiyatova-heritage-batch",
+    href: "/admin/imports",
+    note: "Private heritage / practical leads from Nesiya Tova — open Bulk imports to stage. Nothing publishes until you verify each one.",
+    loadCandidates: () =>
+      nesiyatovaHeritageCandidates.map((candidate) => ({
+        sourceId: candidate.sourceId,
+        name: candidate.name,
+        kind: kindFromImportKind(candidate.importKind),
+        market: candidate.market,
+        destination: candidate.destination || candidate.locality,
+        city: candidate.locality,
+        country: candidate.country,
+        status: "NEEDS_REVIEW",
+        sourceUrl: candidate.sourceUrl,
+        sourceName: candidate.sourceName,
+        attribution: candidate.sourceAttribution,
+      })),
+  },
+  {
+    slug: "kosher-food-batch",
+    name: "Kosher food finder review pack",
+    path: "data/imports/kosher-food-batch",
+    href: "/admin/imports",
+    note: "Private kosher food leads — open Bulk imports to stage. Nothing publishes until you verify each one.",
+    loadCandidates: () =>
+      kosherFoodBatchCandidates.map((candidate) => ({
+        sourceId: candidate.sourceId,
+        name: candidate.name,
+        kind: kindFromImportKind(candidate.importKind),
+        market: candidate.market,
+        destination: candidate.destination || candidate.locality,
+        city: candidate.locality,
+        country: candidate.country,
+        status: "NEEDS_REVIEW",
+        sourceUrl: candidate.sourceUrl,
+        sourceName: candidate.sourceName,
+        attribution: candidate.sourceAttribution,
+      })),
+  },
   {
     slug: "worldwide-batch-5",
     name: "Worldwide editorial review pack 5",

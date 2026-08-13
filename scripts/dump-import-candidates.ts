@@ -12,6 +12,7 @@ import { worldwideBatch2Candidates } from "../data/imports/worldwide-batch-2/can
 import { worldwideBatch3Candidates } from "../data/imports/worldwide-batch-3/candidates";
 import { worldwideBatch4Candidates } from "../data/imports/worldwide-batch-4/candidates";
 import { worldwideBatch5Candidates } from "../data/imports/worldwide-batch-5/candidates";
+import { kosherFoodBatchCandidates } from "../data/imports/kosher-food-batch/candidates";
 
 function slim(pack: string, row: Record<string, unknown>) {
   return {
@@ -50,6 +51,7 @@ const packs: Array<{ slug: string; rows: readonly Record<string, unknown>[] }> =
   { slug: "worldwide-batch-3", rows: worldwideBatch3Candidates as unknown as Record<string, unknown>[] },
   { slug: "worldwide-batch-4", rows: worldwideBatch4Candidates as unknown as Record<string, unknown>[] },
   { slug: "worldwide-batch-5", rows: worldwideBatch5Candidates as unknown as Record<string, unknown>[] },
+  { slug: "kosher-food-batch", rows: kosherFoodBatchCandidates as unknown as Record<string, unknown>[] },
 ];
 
 const all = [];
