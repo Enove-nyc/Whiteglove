@@ -244,9 +244,27 @@ describe("/mikvaos — PRACTICAL_PLACES_PUBLIC_TAG", () => {
   });
 });
 
-describe("/search stays force-dynamic on purpose", () => {
+describe("/search stays force-dynamic on purpose, but the index it searches is now cached", () => {
   it("it reads searchParams (the typed query), which Next.js forces dynamic regardless of any cache config — no page-level fix is possible here", () => {
     const search = readFileSync("app/search/page.tsx", "utf8");
     assert.match(search, /searchParams/);
+  });
+
+  const SITE_SEARCH_INDEX = readFileSync("lib/site-search-index.ts", "utf8");
+
+  it("getSearchIndex goes through cachedRead, tagged with SEARCH_INDEX_TAG", () => {
+    const fn = body(SITE_SEARCH_INDEX, "getSearchIndex");
+    assert.match(fn, /cachedRead/);
+    assert.match(fn, /SEARCH_INDEX_TAG/);
+  });
+
+  it("buildSearchIndex — the pure builder tests call directly — never wraps itself in the cache", () => {
+    // If this ever changed, buildSearchIndex would stop being the "always
+    // fresh" function its own tests rely on.
+    assert.doesNotMatch(body(SITE_SEARCH_INDEX, "buildSearchIndex"), /cachedRead/);
+  });
+
+  it("invalidateSiteSearchIndex busts SEARCH_INDEX_TAG — every one of its six existing call sites relies on this", () => {
+    assert.match(body(SITE_SEARCH_INDEX, "invalidateSiteSearchIndex"), /bustTag\(SEARCH_INDEX_TAG\)/);
   });
 });

@@ -18,6 +18,7 @@ import { services } from "@/data/services";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
+import { bustTag, cachedRead } from "@/lib/cache-tags";
 import { staticMikvahListings } from "@/lib/mikvaos";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
@@ -40,29 +41,44 @@ function finalize(doc: Omit<SearchDocument, "normTokens" | "normCompact">): Sear
   return { ...doc, normTokens, normCompact };
 }
 
-let cached: SearchDocument[] | null = null;
-let building: Promise<SearchDocument[]> | null = null;
+/**
+ * Busted by invalidateSiteSearchIndex — every one of its six existing
+ * call sites (content-admin.ts, content-imports.ts) already fires the
+ * moment real content is published, so nothing else needed to change to
+ * wire this up.
+ */
+const SEARCH_INDEX_TAG = "site-search-index";
 
-/** Drop the in-memory index so the next search rebuilds from current data. */
-export function invalidateSiteSearchIndex(): void {
-  cached = null;
-  building = null;
+/**
+ * invalidateSiteSearchIndex is async now — every existing call site already
+ * either awaits it or doesn't, and both keep working unchanged: an
+ * unawaited call to an async function is not an error, it just fires and
+ * moves on, which is exactly what the five bare `invalidateSiteSearchIndex();`
+ * call sites were already doing.
+ */
+export async function invalidateSiteSearchIndex(): Promise<void> {
+  await bustTag(SEARCH_INDEX_TAG);
 }
 
+/**
+ * /search reads searchParams and has to stay a dynamic page regardless —
+ * Next.js forces that the moment a page reads the query string, no cache
+ * config changes that. But every visit was rebuilding this whole index from
+ * scratch: static destinations, cemeteries, tzaddikim and hechsherim, plus
+ * two real database reads (pushPublishedPracticalPlaces,
+ * pushPublishedInfoPages), regardless of what was typed. cachedRead makes
+ * the expensive part — building the index — shared across every visitor and
+ * every crawler hitting /search with a different query, busted the moment
+ * invalidateSiteSearchIndex actually fires rather than rebuilt per request.
+ *
+ * Replaces the old module-level `cached`/`building` variables, which only
+ * ever helped within one warm serverless instance and did nothing for a
+ * cold one. unstable_cache's own request deduping covers what `building`
+ * was doing by hand — a second concurrent call while the first is still
+ * building does not trigger a second build.
+ */
 export async function getSearchIndex(): Promise<SearchDocument[]> {
-  if (cached) return cached;
-  if (building) return building;
-  building = buildSearchIndex()
-    .then((docs) => {
-      cached = docs;
-      building = null;
-      return docs;
-    })
-    .catch((error) => {
-      building = null;
-      throw error;
-    });
-  return building;
+  return cachedRead(buildSearchIndex, ["site-search-index"], [SEARCH_INDEX_TAG]);
 }
 
 type DraftDoc = Omit<SearchDocument, "normTokens" | "normCompact">;
@@ -81,7 +97,7 @@ export type PublishedPracticalPlaceSearchRow = {
   };
 };
 
-/** Pure builder for tests — does not touch the module cache. */
+/** Pure builder for tests — always rebuilds; getSearchIndex is the cached, tagged entry point that wraps this. */
 export async function buildSearchIndex(): Promise<SearchDocument[]> {
   const docs: DraftDoc[] = [];
 
