@@ -464,6 +464,44 @@ export const cityGuides: CityGuide[] = [
     ],
     sourceUrl: "https://encyclopedia.yivo.org/article.aspx/Friedman_Tsevi_Hirsh",
   },
+  {
+    // Lizhensk was the one guided town without a guide record. It had a
+    // hand-written page of its own at /lizensk, spelled unlike every other
+    // Lizhensk identifier in the codebase, linked to from nowhere, editable by
+    // nobody, while /lizhensk — the spelling the cemetery listing, the
+    // destination record and the search aliases all use — returned a 404.
+    // Everything below was on that page; it is here so the town is an ordinary
+    // town.
+    slug: "lizhensk",
+    city: "Lizhensk (Leżajsk)",
+    yiddishCity: "ליזענסק",
+    country: "Poland",
+    tzaddik: "Rabbi Elimelech Weisblum of Lizhensk",
+    yiddishTzaddik: "רבי אלימלך מליזענסק",
+    aliases: ["Lizensk", "Lezajsk", "Leżajsk", "Noam Elimelech", "ליז'ענסק"],
+    overview:
+      "Reb Elimelech of Lizhensk was a central early Chassidic leader whose seforim and talmidim shaped generations. Much of what became Polish and Galician chassidus runs through his beis midrash — the Chozeh of Lublin, Reb Mendele of Rymanów, the Maggid of Kozhnitz and Reb Dovid of Lelov were among his talmidim — which is why a visit here is so often the first stop of a longer route rather than a trip of its own.",
+    seforim: "נועם אלימלך",
+    yahrzeit: "כ״א אדר",
+    niftar: "תקמ״ז / 1787",
+    graveAddress: "Górna 16, 37-300 Leżajsk, Poland",
+    // Owner-verified ohel location: 50°15'04.1"N 22°25'21.4"E
+    graveCoordinates: "50.251139, 22.422611",
+    findingNotes: [
+      "Navigate to Górna 16, the Jewish cemetery on the edge of the town.",
+      "The ohel is the focal point of the cemetery; the kever of Reb Elimelech is inside it.",
+      "Graves of his family are recorded in and around the ohel, and Reb Zelig Shapira lies in a second, larger ohel in the same cemetery.",
+      "For כ״א אדר, thousands come to a town of some fourteen thousand people: access to the ohel, parking, road closures around Górna, meals and every bed for miles are arranged specially for that week and differ from year to year. Work backwards from the yahrzeit rather than forwards from your flights.",
+    ],
+    accessContacts: [
+      {
+        label: "Ohel & cemetery",
+        phone: "+48 735 250 505",
+        note: "The number published for the ohel at Górna 16. Confirm before travelling, particularly around Shabbos and the yahrzeit.",
+      },
+    ],
+    sourceUrl: "https://sztetl.org.pl/en/node/188/114-cemeteries/19248-cmentarz-zydowski-w-lezajsku-ul-gorna",
+  },
 ];
 
 export function getCityGuide(slug: string) {

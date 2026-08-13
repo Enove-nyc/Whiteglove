@@ -6,6 +6,16 @@
 // confirmed by the owner before travelers rely on it (access, hours, and phone
 // numbers change). Each entry carries its source.
 
+/**
+ * The full PlaceCategory enum, not a subset of it.
+ *
+ * This list held seven of the thirteen sections a destination page has. The
+ * missing six were the ones lib/destination-sections.ts was written to fix —
+ * Tefillos, Shabbos, Hospital, Emergency, Grocery, Parking — so researched
+ * content for any of them had nowhere to be seeded from and quietly went into
+ * a hand-written page instead. Keep this equal to `PlaceCategory` in
+ * prisma/schema.prisma and to DESTINATION_SECTIONS.
+ */
 export type PlaceCat =
   | "ACCOMMODATION"
   | "KOSHER_FOOD"
@@ -13,7 +23,13 @@ export type PlaceCat =
   | "MIKVAH"
   | "TRANSPORT"
   | "AIRPORT"
-  | "DRIVER";
+  | "DRIVER"
+  | "TEFILLOS"
+  | "SHABBOS"
+  | "HOSPITAL"
+  | "EMERGENCY"
+  | "GROCERY"
+  | "PARKING";
 
 export type ContentPlace = {
   category: PlaceCat;
@@ -619,6 +635,67 @@ export const practicalContent: Record<string, DestinationContent> = {
         website: "https://www.chabadkrakow.org/templates/articlecco_cdo/aid/1257635/jewish/Tours-and-drivers.htm",
         notes: "Chabad Kraków publishes a page recommending local drivers for visiting Jewish heritage/kever sites; arrange via Chabad Kraków. No specific driver phone is published.",
         source: "https://www.chabadkrakow.org/templates/articlecco_cdo/aid/1257635/jewish/Tours-and-drivers.htm",
+      },
+    ],
+  },
+  // Lizhensk. These were hardcoded into a bespoke page at /lizensk, which is
+  // why the owner could not edit any of them. Seeded here, they become
+  // ordinary listings on the town page and ordinary rows in the admin.
+  lizhensk: {
+    places: [
+      {
+        category: "ACCOMMODATION",
+        name: "Hachnasas Orchim · Studzienna 2",
+        address: "Studzienna 2, 37-300 Leżajsk, Poland",
+        website: "https://lizansk.com/en/lizhensk/",
+        notes:
+          "Guest rooms, a beis midrash and a mikveh, serving the kever. Leżajsk has no standing Jewish community of its own, so meals and rooms are arranged here in advance rather than found on arrival. The organisation's site publishes meal and lodging reservations.",
+        source: "https://lizansk.com/en/lizhensk/",
+      },
+      {
+        category: "ACCOMMODATION",
+        name: "Hachnasas Orchim · Building A",
+        address: "Plac Targowy 6B, 37-300 Leżajsk, Poland",
+        notes:
+          "A second facility opposite the kever. Public travel information describes guest rooms, a beis midrash, a mikveh, hot drinks and light refreshments; its current contact and booking arrangements need reconfirming.",
+        source: "https://lizansk.com/en/lizhensk/",
+      },
+      {
+        category: "MIKVAH",
+        name: "Mikveh at the Hachnasas Orchim",
+        address: "Studzienna 2, 37-300 Leżajsk, Poland",
+        notes: "Part of the Hachnasas Orchim serving the kever. Confirm access with them before travelling.",
+        source: "https://lizansk.com/en/lizhensk/",
+      },
+      {
+        category: "TEFILLOS",
+        name: "Beis midrash at the Hachnasas Orchim",
+        address: "Studzienna 2, 37-300 Leżajsk, Poland",
+        notes: "A beis midrash beside the guest rooms. There is no permanent minyan in the town outside visiting groups and the yahrzeit.",
+        source: "https://lizansk.com/en/lizhensk/",
+      },
+      {
+        category: "HOSPITAL",
+        name: "Leżajsk Hospital (SP ZOZ)",
+        address: "Leśna 22, 37-300 Leżajsk, Poland",
+        phone: "+48 17 240 49 00",
+        notes: "Main line +48 17 240 49 00. Emergency department desk +48 17 240 49 07.",
+        source: "https://spzoz-lezajsk.pl/",
+      },
+      {
+        category: "EMERGENCY",
+        name: "Poland emergency services — 112",
+        phone: "112",
+        notes: "Police, fire and medical. Free throughout Poland and reachable from a mobile with no SIM card.",
+        source: "https://www.gov.pl/web/numer-alarmowy-112",
+      },
+      {
+        category: "AIRPORT",
+        name: "Rzeszów–Jasionka (RZE)",
+        address: "Jasionka 942, 36-002 Jasionka, Poland",
+        notes:
+          "The closest airport, under an hour away by road. Its route map is small — most travellers from abroad arrive on a connection through Warsaw or a European hub, or fly into Kraków and drive.",
+        source: "https://www.rzeszowairport.pl/en/",
       },
     ],
   },

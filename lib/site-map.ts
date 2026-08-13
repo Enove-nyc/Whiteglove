@@ -99,7 +99,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/transfers", priority: 0.5, changeFrequency: "monthly" },
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/lizensk", priority: 0.6, changeFrequency: "monthly" },
   // Who is behind the site. Indexed for the same reason /verification is: it
   // is one of the two pages a cautious person reads before trusting the rest.
   { path: "/about", priority: 0.6, changeFrequency: "monthly" },
@@ -127,8 +126,9 @@ export type SitemapEntry = {
 export function publicPaths(): SitemapEntry[] {
   const entries: SitemapEntry[] = [...STATIC_PAGES];
 
-  // The detailed city guides live at the root: /uman, /lizensk. Deliberately,
-  // because that is what somebody types.
+  // The detailed city guides live at the root: /uman, /lizhensk. Deliberately,
+  // because that is what somebody types. Lizhensk is in this loop now rather
+  // than hardcoded above it under a second spelling.
   for (const guide of cityGuides) {
     entries.push({ path: `/${guide.slug}`, priority: 0.8, changeFrequency: "monthly" });
   }
