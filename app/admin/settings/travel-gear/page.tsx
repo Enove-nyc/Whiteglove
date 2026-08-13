@@ -34,6 +34,14 @@ export default async function TravelGearSettings() {
           (eSIM, insurance, transfers) — this one is its own page, <code>/travel-gear</code>, built to hold a whole shelf
           rather than three cards under a search.
         </p>
+        <p className="mt-3">
+          <a
+            href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/travel-gear`}
+            className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+          >
+            View the public page
+          </a>
+        </p>
         <p className="mt-3 max-w-2xl rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] p-3 text-xs leading-5 text-stone-600">
           The picture, description and price are typed in by hand for now — Amazon only hands those over automatically
           through its Product Advertising API, and it does not grant that until an Associates account has 3 qualifying

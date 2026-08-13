@@ -178,17 +178,16 @@ export default async function HeritagePage() {
           <SectionHeading
             eyebrow="Browse by country"
             title="By country"
-            description="Counted from the cemetery records themselves, so a country cannot appear here with nothing behind it."
+            description="Open a country to see the batei hachaim there."
           />
           <ul className="mt-8 flex flex-wrap gap-2">
-            {countries.map(([country, count]) => (
+            {countries.map(([country]) => (
               <li key={country}>
                 <Link
                   href={`/cemeteries?country=${encodeURIComponent(country)}`}
                   className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)]"
                 >
                   {country}
-                  <span className="ml-2 font-normal text-stone-500">{count}</span>
                 </Link>
               </li>
             ))}

@@ -247,4 +247,10 @@ describe("every static admin page is reachable from nav or a hub", () => {
       );
     }
   });
+
+  test("left nav lists every screen without waiting for you to open its section", () => {
+    const shell = readFileSync(join(process.cwd(), "components", "AdminShell.tsx"), "utf8");
+    assert.doesNotMatch(shell, /current && s\.children/);
+    assert.match(shell, /s\.children\.length > 1/);
+  });
 });

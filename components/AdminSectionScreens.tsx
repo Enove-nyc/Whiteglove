@@ -7,8 +7,8 @@ import { ADMIN_SECTIONS, sectionScreens, toAdminPath } from "@/lib/admin-nav";
 /**
  * Every screen in this section, as a grid on the section’s hub.
  *
- * Left nav only lists children once you are already inside the section. The
- * hub has to show the same list or a screen exists only as a typed URL.
+ * Left nav lists every screen in every section, so a page is not only a
+ * typed URL. The hub repeats the same list as a grid.
  */
 export default function AdminSectionScreens({ sectionHref }: { sectionHref: string }) {
   const pathname = usePathname();

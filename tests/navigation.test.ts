@@ -127,6 +127,14 @@ describe("what the bar leads with", () => {
       "directory should not stay buried only under White Glove",
     );
   });
+
+  it("puts travel gear with the rest of before you go", () => {
+    const before = MENU_GROUPS.find((group) => group.title === "Before you go");
+    assert.ok(before);
+    for (const href of ["/travel-guide", "/travel-gear", "/transfers", "/esim", "/travel-insurance"]) {
+      assert.ok(before.links.some((link) => link.href === href), `${href} missing from Before you go`);
+    }
+  });
 });
 
 describe("what the bar may not do", () => {
@@ -326,6 +334,12 @@ describe("the footer says the vacation-neutral thing", () => {
     // "Sign in" stays: that one is for travellers, whose account holds their
     // own trips.
     assert.ok(FOOTER.includes('"/login"'));
+  });
+
+  it("keeps admin out of the visitor menu as well", () => {
+    for (const item of ALL_ITEMS) {
+      assert.ok(!item.href.startsWith("/admin"), `${item.label} mixes the admin into the public site`);
+    }
   });
 
   it("OFFERS ADVERTISING, at the reason on the contact page rather than as a page that is not built", () => {

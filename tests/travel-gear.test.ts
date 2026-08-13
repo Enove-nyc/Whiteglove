@@ -109,8 +109,8 @@ describe("the shelf as a whole", () => {
     assert.match(gearListProblem(rows)!, /more than/);
   });
 
-  it("describeGearItems says the page is hidden when nothing is finished", () => {
-    assert.match(describeGearItems([item()]), /hidden/);
+  it("describeGearItems says the shelf is empty when nothing is finished", () => {
+    assert.match(describeGearItems([item()]), /Nothing is on the shelf/);
   });
 
   it("describeGearItems counts what is actually shown", () => {
@@ -162,6 +162,17 @@ describe("reachable from the site", () => {
 
   it("has an admin nav entry", () => {
     assert.match(adminNav, /\/admin\/settings\/travel-gear/);
+  });
+
+  it("is in the public menu and the footer — not only search", () => {
+    assert.match(readFileSync("lib/navigation.ts", "utf8"), /href: "\/travel-gear"/);
+    assert.match(readFileSync("components/Footer.tsx", "utf8"), /href: "\/travel-gear"/);
+  });
+
+  it("the public page exists even when the shelf is empty", () => {
+    const page = readFileSync("app/travel-gear/page.tsx", "utf8");
+    assert.doesNotMatch(page, /notFound/);
+    assert.match(readFileSync("lib/site-map.ts", "utf8"), /path: "\/travel-gear"/);
   });
 
   it("is in global site search", () => {

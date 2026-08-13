@@ -58,6 +58,7 @@ const columnsFor = (
     title: "Before you go",
     links: [
       { label: "Travel guide", href: "/travel-guide" },
+      { label: "Travel gear", href: "/travel-gear" },
       { label: "Airport transfers", href: "/transfers" },
       { label: "eSIMs and data", href: "/esim" },
       { label: "Travel insurance", href: "/travel-insurance" },

@@ -175,7 +175,20 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       // One entry for the unified search — not Hotels, Flights, Cars and
       // "Search hotels…" as four near-duplicates of Search & Book.
       BOOKING_NAV,
-      { label: "Before you go", href: "/travel-guide", description: "Documents, insurance, transfers and eSIMs." },
+    ],
+  },
+  {
+    // THESE FIVE LIVED ONLY IN THE FOOTER, except the travel guide which sat
+    // as one line under Book the trip. Travel gear had no menu or footer
+    // entry at all — only a link that appeared after the shelf already had
+    // items, on two other pages — so the page itself could not be found.
+    title: "Before you go",
+    links: [
+      { label: "Travel guide", href: "/travel-guide", description: "Documents, insurance, transfers and eSIMs." },
+      { label: "Travel gear", href: "/travel-gear", description: "A blech, a hotplate, adapters and the rest of the shelf." },
+      { label: "Airport transfers", href: "/transfers", description: "Cars between the airport and where you are staying." },
+      { label: "eSIMs and data", href: "/esim", description: "A data plan for the country you are going to." },
+      { label: "Travel insurance", href: "/travel-insurance", description: "Cover for the trip, from the partners we point to." },
     ],
   },
   {
@@ -185,6 +198,9 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a finished trip looks like." },
       // Discoverable here rather than buried under White Glove; not in the bar.
       { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
+      { label: "Certification marks", href: "/hechsherim", description: "Who certifies the kosher places on this site." },
+      { label: "Mikvaos", href: "/mikvaos", description: "Mikvah listings, with the source behind each one." },
+      { label: "Zmanim", href: "/zmanim", description: "Halachic times for the place you are staying." },
     ],
   },
   {
