@@ -223,6 +223,61 @@ function locationKey(name: string, city: string, country: string): string {
   return `${normalizeContentText(name)}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
 }
 
+/**
+ * Same place under any kinds (Attraction vs Practical, stay anchors, heritage
+ * corridors, "X" vs "X framing", etc.) must collapse in the review queue.
+ * Strip editorial suffixes only — keep words that distinguish real neighbours
+ * (Sephardic Ari vs Ari Ashkenazi, District 1 vs District 3).
+ */
+export function softListingName(name: string | null | undefined): string {
+  return normalizeContentText(name)
+    .replace(/\bheritage walking corridor\b/g, "heritage corridor")
+    .replace(/\bcommunity heritage corridor\b/g, "heritage corridor")
+    .replace(/\bjewish community heritage corridor\b/g, "jewish heritage corridor")
+    .replace(/\bjewish visitor heritage orientation\b/g, "jewish visitor orientation")
+    .replace(/\bjewish community visitor orientation\b/g, "jewish visitor orientation")
+    .replace(/\bvisitor heritage orientation\b/g, "visitor orientation")
+    .replace(/\bcommunity visitor orientation\b/g, "visitor orientation")
+    .replace(/\bstaying near historic center\b/g, "staying near city center")
+    .replace(/\bstaying near city(?! center)\b/g, "staying near city center")
+    .replace(
+      /\b(framing|daytime|courtyard|outdoor|approach|orientation|historic|visitor resource|tradition site|listing|candidate|stub|placeholder|exterior|walking|metro)\b/g,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function softLocationKey(name: string, city: string, country: string): string {
+  let soft = softListingName(name);
+  if (!soft) return "";
+  // City is already part of the key — drop city tokens from the name so
+  // "Staying near Florence city center" and "Staying near Historic Center Florence"
+  // land on the same place without merging District 1 with District 3.
+  const cityNorm = normalizeContentText(city);
+  for (const tok of cityNorm.split(" ").filter((part) => part.length >= 3)) {
+    soft = soft.replace(new RegExp(`(^|\\s)${tok}(\\s|$)`, "g"), " ");
+  }
+  soft = soft
+    // Re-apply synonym collapses after city tokens are removed ("Jewish community
+    // Dubai heritage corridor" → "jewish community heritage corridor").
+    .replace(/\bjewish community heritage corridor\b/g, "jewish heritage corridor")
+    .replace(/\bcommunity heritage corridor\b/g, "heritage corridor")
+    .replace(/\bjewish visitor heritage orientation\b/g, "jewish visitor orientation")
+    .replace(/\bjewish community visitor orientation\b/g, "jewish visitor orientation")
+    .replace(/\bvisitor heritage orientation\b/g, "visitor orientation")
+    .replace(/\bcommunity visitor orientation\b/g, "visitor orientation")
+    .replace(/\bstaying near\b/g, "stay")
+    .replace(/\bcity center\b/g, "center")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter((tok, index, parts) => tok && tok !== parts[index - 1])
+    .join(" ");
+  if (!soft) return "";
+  return `${soft}|${cityNorm}|${normalizeContentText(country)}`;
+}
+
 function isPracticalCategory(value: string | null): boolean {
   return Boolean(value && (PRACTICAL_CATEGORIES as readonly string[]).includes(value));
 }
@@ -345,7 +400,8 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
  * Finds a duplicate by stable source identity first, then the deliberately
  * conservative normalized name + city + country fallback. The fallback makes a
  * new source record visible to an editor rather than silently creating a
- * second public listing for the same place.
+ * second public listing for the same place. Soft name matching also catches the
+ * Attraction vs Practical / framing pairs that share one place (Abuhav, etc.).
  */
 export function findBulkContentDuplicate(
   candidate: PreparedBulkContentCandidate,
@@ -353,6 +409,7 @@ export function findBulkContentDuplicate(
 ): DuplicateMatch | null {
   const normalizedSource = normalizeSourceUrl(candidate.sourceUrl);
   const location = locationKey(candidate.name, candidate.city, candidate.country);
+  const softLocation = softLocationKey(candidate.name, candidate.city, candidate.country);
 
   for (const item of existing) {
     const sameSourceUrl = normalizedSource && normalizeSourceUrl(item.sourceUrl) === normalizedSource;
@@ -368,8 +425,41 @@ export function findBulkContentDuplicate(
     if (location === locationKey(item.name, item.city, item.country)) {
       return { id: item.id, reason: "name-and-location" };
     }
+    if (
+      softLocation &&
+      softLocation === softLocationKey(item.name, item.city, item.country)
+    ) {
+      return { id: item.id, reason: "name-and-location" };
+    }
   }
   return null;
+}
+
+/**
+ * While staging one package, later rows must see earlier rows from the same
+ * batch. createMany cannot do that on its own because Attraction and Practical
+ * for the same place use different dedupeKeys.
+ */
+export function annotateBatchDuplicates(
+  candidates: readonly PreparedBulkContentCandidate[],
+  alreadyKnown: readonly KnownContentRecord[] = [],
+): Array<PreparedBulkContentCandidate & { duplicateOf: string | null }> {
+  const known: KnownContentRecord[] = [...alreadyKnown];
+  return candidates.map((candidate) => {
+    const duplicate = findBulkContentDuplicate(candidate, known);
+    if (!duplicate) {
+      known.push({
+        id: `batch:${candidate.dedupeKey}`,
+        kind: candidate.kind,
+        name: candidate.name,
+        city: candidate.city,
+        country: candidate.country,
+        sourceUrl: candidate.sourceUrl,
+        sourceId: candidate.sourceId,
+      });
+    }
+    return { ...candidate, duplicateOf: duplicate?.id ?? null };
+  });
 }
 
 export function bulkContentKindLabel(kind: BulkContentKind): string {

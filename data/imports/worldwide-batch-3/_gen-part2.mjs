@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dropShulDoubles } from "./_drop-shul-doubles.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -826,5 +827,5 @@ const CITIES = [
   },
 ];
 
-fs.writeFileSync(path.join(__dirname, "_cities-part2.json"), JSON.stringify(CITIES, null, 2));
+fs.writeFileSync(path.join(__dirname, "_cities-part2.json"), JSON.stringify(dropShulDoubles(CITIES), null, 2));
 console.log("Wrote part2", CITIES.length);

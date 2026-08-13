@@ -158,6 +158,43 @@ function placeKey(row) {
   return `${city}::${country}`;
 }
 
+/** Adjacent cities that often host the same venue under two locality labels. */
+const METRO_PLACE_ALIASES = {
+  "hollywood::united states": "hollywood-fort-lauderdale::united states",
+  "fort lauderdale::united states": "hollywood-fort-lauderdale::united states",
+  "scottsdale::united states": "phoenix-scottsdale::united states",
+  "phoenix::united states": "phoenix-scottsdale::united states",
+};
+
+function metroPlaceKey(row) {
+  const pk = placeKey(row);
+  return METRO_PLACE_ALIASES[pk] || pk;
+}
+
+/**
+ * Stable key for known same-venue spelling / branding variants that do not share
+ * a near-duplicate token core (Sant Pau, Malecón Miraflores, Mini-Europe, etc.).
+ */
+function knownVenueAliasKey(name) {
+  const n = normalizeText(name);
+  if (!n) return null;
+  if (/\bsant antoni\b/.test(n)) return null;
+  if (
+    /\brecinte modernista de sant pau\b/.test(n) ||
+    /\bsant pau art nouveau\b/.test(n) ||
+    /\bhospital de sant pau\b/.test(n) ||
+    /^sant pau$/.test(n)
+  ) {
+    return "sant-pau";
+  }
+  if (/\bmalecon miraflores\b/.test(n) || /\bmiraflores boardwalk\b/.test(n)) {
+    return "malecon-miraflores";
+  }
+  if (/^mini europe\b/.test(n)) return "mini-europe";
+  if (/\bjewish cultural quarter\b/.test(n)) return "jewish-cultural-quarter";
+  return null;
+}
+
 function stripPlaceFromName(name, locality, country) {
   let n = normalizeText(name);
   const loc = normalizeText(locality);
@@ -303,10 +340,22 @@ function getField(body, key) {
 }
 
 function getArrayField(body, key) {
-  const re = new RegExp(`${key}:\\s*\\[([^\\]]*)\\]`);
-  const m = body.match(re);
+  const m = body.match(new RegExp(`${key}:\\s*(\\[[\\s\\S]*?\\])`));
   if (!m) return [];
-  return [...m[1].matchAll(/["']([^"']*)["']/g)].map((x) => x[1]);
+  // Double-quoted entries are JSON, so Ra'anana / Be'er Sheva survive whole.
+  try {
+    const parsed = JSON.parse(m[1]);
+    if (Array.isArray(parsed)) return parsed.filter((value) => typeof value === "string");
+  } catch {
+    // Fall through to the tolerant scan below.
+  }
+  return [...m[1].matchAll(/"((?:\\.|[^"\\])*)"/g)].map((match) => {
+    try {
+      return JSON.parse(`"${match[1]}"`);
+    } catch {
+      return match[1];
+    }
+  });
 }
 
 /** Infer entity/import fields when the pack uses thin helpers (batch-2). */
@@ -692,7 +741,7 @@ function enrichRow(row, known) {
 
 function exactPlaceNameKey(row) {
   const folded = foldTranslit(stripEditorial(row.name || ""));
-  return `${folded}::${placeKey(row)}`;
+  return `${folded}::${metroPlaceKey(row)}`;
 }
 
 function idKey(row) {
@@ -923,6 +972,9 @@ function shouldMerge(a, b) {
       looksLikeCemetery(b.name);
     if (!cemeteryBridge) return false;
   }
+  const aliasA = knownVenueAliasKey(a.name);
+  const aliasB = knownVenueAliasKey(b.name);
+  if (aliasA && aliasB && aliasA === aliasB) return true;
   const loc = a.locality || a.city || b.locality || "";
   const country = a.country || b.country || "";
   const stemA = orgStem(a.name);
@@ -1457,6 +1509,17 @@ function selfCheck() {
     "Field Museum vs Wrigley Field (must be false)": shouldMerge(R("Field Museum", "Chicago", "United States", "attraction", "ATTRACTION"), R("Wrigley Field framing", "Chicago", "United States", "attraction", "ATTRACTION")),
     "Texas Capitol vs Bullock Museum (must be false)": shouldMerge(R("Texas State Capitol grounds", "Austin", "United States", "attraction", "ATTRACTION"), R("Bullock Texas State History Museum", "Austin", "United States", "attraction", "ATTRACTION")),
     "Casa Batllo vs Casa Mila (must be false)": shouldMerge(R("Casa Batlló", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Casa Milà", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+    "Sant Pau hospital vs art nouveau site": shouldMerge(R("Hospital de Sant Pau", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Sant Pau Art Nouveau Site", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+    "Sant Pau vs Recinte Modernista": shouldMerge(R("Sant Pau Art Nouveau Site", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Recinte Modernista de Sant Pau", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+    "Sant Pau vs Sant Antoni (must be false)": shouldMerge(R("Hospital de Sant Pau", "Barcelona", "Spain", "attraction", "ATTRACTION"), R("Mercat de Sant Antoni", "Barcelona", "Spain", "attraction", "ATTRACTION")),
+    "Malecon vs Miraflores boardwalk": shouldMerge(R("Malecón Miraflores", "Lima", "Peru", "attraction", "ATTRACTION"), R("Miraflores boardwalk", "Lima", "Peru", "attraction", "ATTRACTION")),
+    "Mini-Europe vs framing variant": shouldMerge(R("Mini-Europe", "Brussels", "Belgium", "attraction", "ATTRACTION"), R("Mini-Europe outdoor daytime family framing", "Brussels", "Belgium", "attraction", "ATTRACTION")),
+    "Anne Kolb Hollywood vs Fort Lauderdale exact key":
+      exactPlaceNameKey(R("Anne Kolb Nature Center", "Hollywood", "United States", "attraction", "ATTRACTION")) ===
+      exactPlaceNameKey(R("Anne Kolb Nature Center", "Fort Lauderdale", "United States", "attraction", "ATTRACTION")),
+    "Grant Park Chicago vs Atlanta keep separate exact keys":
+      exactPlaceNameKey(R("Grant Park", "Chicago", "United States", "attraction", "ATTRACTION")) !==
+      exactPlaceNameKey(R("Grant Park", "Atlanta", "United States", "attraction", "ATTRACTION")),
   };
   console.log("Matcher self-check:", checks);
   const failed = Object.entries(checks).filter(([k, v]) => (k.includes("must be false") ? v !== false : v !== true));
@@ -1593,4 +1656,24 @@ function main() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-main();
+// Importable so the duplicate audit can reuse one matcher rather than keeping a
+// second copy of it. Rewriting packs still only happens when run directly.
+export {
+  PACKS,
+  IMPORTS,
+  parseTsCandidates,
+  parseJsonPack,
+  normalizeText,
+  placeKey,
+  metroPlaceKey,
+  exactPlaceNameKey,
+  shouldMerge,
+  namesNearDuplicate,
+  venueFamily,
+  coreName,
+  dedupeAll,
+};
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

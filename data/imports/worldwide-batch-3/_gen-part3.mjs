@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dropShulDoubles } from "./_drop-shul-doubles.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -130,8 +131,6 @@ const CITIES = [
     attractions: [
       "Tzfat Old City artists' quarter daytime",
       "Citadel Hill lookout",
-      "Abuhav Synagogue courtyard framing",
-      "Ari Ashkenazi Synagogue framing",
       "Tzfat Candle Factory framing",
       "Biblical Museum of Natural History framing",
       "Gan HaMetsuda",
@@ -145,7 +144,9 @@ const CITIES = [
       "Biriya Forest trails framing",
       "Hula Valley day-trip framing",
     ],
-    heritage: ["Abuhav Synagogue", "Ari Ashkenazi Synagogue", "Joseph Caro Synagogue framing"],
+    // Abuhav / Ari Ashkenazi stay on shuls only — listing them again under
+    // heritage or attractions staged Attraction + Practical doubles.
+    heritage: ["Joseph Caro Synagogue framing"],
     stays: ["Staying near Old City Tzfat", "Staying near Canaan neighbourhood"],
     shuls: ["Abuhav Synagogue", "Ari Ashkenazi Synagogue", "Beirav Synagogue", "Chabad of Tzfat"],
     mikvaos: ["Tzfat Community Mikvah", "Ari Mikvah tradition site framing"],
@@ -1234,7 +1235,7 @@ const CITIES = [
   },
 ];
 
-fs.writeFileSync(path.join(__dirname, "_cities-part3.json"), JSON.stringify(CITIES, null, 2));
+fs.writeFileSync(path.join(__dirname, "_cities-part3.json"), JSON.stringify(dropShulDoubles(CITIES), null, 2));
 const n = CITIES.reduce(
   (t, c) =>
     t +

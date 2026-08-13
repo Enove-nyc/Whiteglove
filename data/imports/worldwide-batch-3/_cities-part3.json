@@ -40,7 +40,6 @@
       "Hebrew University Givat Ram framing"
     ],
     "heritage": [
-      "Hurva Synagogue framing",
       "Four Sephardi Synagogues framing",
       "Menachem Begin Heritage Center"
     ],
@@ -155,8 +154,6 @@
     "attractions": [
       "Tzfat Old City artists' quarter daytime",
       "Citadel Hill lookout",
-      "Abuhav Synagogue courtyard framing",
-      "Ari Ashkenazi Synagogue framing",
       "Tzfat Candle Factory framing",
       "Biblical Museum of Natural History framing",
       "Gan HaMetsuda",
@@ -171,8 +168,6 @@
       "Hula Valley day-trip framing"
     ],
     "heritage": [
-      "Abuhav Synagogue",
-      "Ari Ashkenazi Synagogue",
       "Joseph Caro Synagogue framing"
     ],
     "stays": [
@@ -236,7 +231,6 @@
       "Netanya Cultural Center plaza"
     ],
     "heritage": [
-      "Netanya Great Synagogue framing",
       "Ohel Pathach Synagogue framing"
     ],
     "stays": [
@@ -299,9 +293,7 @@
       "Dekel Beach promenade",
       "Peace Park Eilat"
     ],
-    "heritage": [
-      "Eilat Central Synagogue framing"
-    ],
+    "heritage": [],
     "stays": [
       "Staying near North Beach",
       "Staying near hotel zone promenade"
@@ -361,7 +353,6 @@
     ],
     "heritage": [
       "POLIN Museum of the History of Polish Jews",
-      "Nożyk Synagogue",
       "Jewish Cemetery Okopowa"
     ],
     "stays": [
@@ -424,9 +415,7 @@
     ],
     "heritage": [
       "Remuh Synagogue and Cemetery",
-      "Tempel Synagogue",
-      "Old Synagogue Museum Kazimierz",
-      "Isaac Synagogue"
+      "Old Synagogue Museum Kazimierz"
     ],
     "stays": [
       "Staying near Kazimierz",
@@ -489,8 +478,7 @@
     ],
     "heritage": [
       "Choral Temple Bucharest",
-      "Jewish History Museum Bucharest",
-      "Great Synagogue Bucharest framing"
+      "Jewish History Museum Bucharest"
     ],
     "stays": [
       "Staying near Old Town Bucharest",
@@ -551,7 +539,6 @@
       "Small Church Debrecen exterior"
     ],
     "heritage": [
-      "Debrecen Synagogue framing",
       "Jewish cemetery Debrecen"
     ],
     "stays": [
@@ -735,7 +722,6 @@
       "St. Peter's Church tower framing"
     ],
     "heritage": [
-      "Peitav Synagogue",
       "Riga Ghetto and Latvian Holocaust Museum",
       "Old Jewish Cemetery memorial"
     ],
@@ -797,7 +783,6 @@
       "Porvoo day-trip framing"
     ],
     "heritage": [
-      "Helsinki Synagogue",
       "Jewish Community Center Helsinki framing"
     ],
     "stays": [
@@ -857,7 +842,6 @@
       "Island hopping Oslofjord framing"
     ],
     "heritage": [
-      "Oslo Synagogue",
       "Jewish Museum Oslo",
       "Center for Studies of Holocaust and Religious Minorities"
     ],
@@ -919,8 +903,7 @@
     ],
     "heritage": [
       "Jewish Museum of São Paulo",
-      "CIP Congregação Israelita Paulista framing",
-      "Beit Chabad São Paulo framing"
+      "CIP Congregação Israelita Paulista framing"
     ],
     "stays": [
       "Staying near Higienópolis",
@@ -983,8 +966,7 @@
       "Vitacura parks walk"
     ],
     "heritage": [
-      "Jewish Museum of Chile framing",
-      "Comunidad Israelita de Santiago framing"
+      "Jewish Museum of Chile framing"
     ],
     "stays": [
       "Staying near Las Condes",
@@ -1046,7 +1028,6 @@
       "Worli Sea Face"
     ],
     "heritage": [
-      "Knesset Eliyahoo Synagogue",
       "Magen David Synagogue Mumbai",
       "Kenah Rachel Synagogue framing"
     ],
@@ -1110,7 +1091,6 @@
       "Shorncliffe pier framing"
     ],
     "heritage": [
-      "Brisbane Hebrew Congregation",
       "Jewish Museum of Australia Brisbane events framing"
     ],
     "stays": [
@@ -1172,7 +1152,6 @@
       "Northbridge daytime walk"
     ],
     "heritage": [
-      "Perth Hebrew Congregation",
       "Jewish Historical & Genealogical Society of WA framing"
     ],
     "stays": [
@@ -1233,10 +1212,7 @@
       "Matiu/Somes Island framing",
       "Freyberg Beach"
     ],
-    "heritage": [
-      "Wellington Jewish Community Centre",
-      "Beth El Synagogue Wellington framing"
-    ],
+    "heritage": [],
     "stays": [
       "Staying near Te Aro",
       "Staying near Thorndon"
@@ -1296,7 +1272,6 @@
     ],
     "heritage": [
       "Johannesburg Holocaust and Genocide Centre",
-      "Great Park Synagogue framing",
       "SA Jewish Museum Cape Town day context framing"
     ],
     "stays": [
@@ -1485,9 +1460,7 @@
     "cemeteries": [
       "Panteón Israelita Guadalajara"
     ],
-    "communityResources": [
-      "Comunidad Judía de Guadalajara"
-    ]
+    "communityResources": []
   },
   {
     "market": "uruguay-montevideo",
@@ -1547,9 +1520,7 @@
       "Cementerio Israelita del Uruguay",
       "La Paz Jewish Cemetery"
     ],
-    "communityResources": [
-      "Comunidad Israelita del Uruguay"
-    ]
+    "communityResources": []
   },
   {
     "market": "colombia-bogota",
@@ -1669,8 +1640,6 @@
     "cemeteries": [
       "Cementerio Judío de Lima"
     ],
-    "communityResources": [
-      "Asociación Judía del Perú"
-    ]
+    "communityResources": []
   }
 ]

@@ -9,6 +9,7 @@ import {
 } from "@/lib/bulk-content";
 import {
   publishContentImportCandidate,
+  reconcileOpenImportDuplicates,
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
   updateContentImportCandidate,
@@ -82,6 +83,7 @@ export async function stageBuiltInContentBatchAction(
   try {
     const result = await stageBuiltInContentBatch(text(formData, "batchSlug", 160));
     revalidatePath("/admin/imports");
+    revalidatePath("/admin/imports/needs-review");
     return {
       ok: true,
       message: result.created
@@ -90,6 +92,28 @@ export async function stageBuiltInContentBatchAction(
     };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "The source batch could not be staged." };
+  }
+}
+
+export async function reconcileImportDuplicatesAction(
+  _previous: ContentImportActionResult | null,
+  _formData: FormData,
+): Promise<ContentImportActionResult> {
+  if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
+  try {
+    const result = await reconcileOpenImportDuplicates();
+    revalidatePath("/admin/imports");
+    revalidatePath("/admin/imports/needs-review");
+    return {
+      ok: true,
+      message: result.marked
+        ? `Marked ${result.marked} same-place doubles across ${result.groups} places. The stronger listing stays in Needs review.`
+        : result.groups
+          ? "Same-place doubles were already marked."
+          : "No same-place doubles found in the open review queue.",
+    };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "The duplicate scan could not finish." };
   }
 }
 

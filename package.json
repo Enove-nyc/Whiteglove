@@ -21,6 +21,7 @@
     "audit:destinations": "node scripts/audit-destinations.mjs",
     "audit:pipeline": "node scripts/audit-pipeline.mjs",
     "audit:flows": "node scripts/audit-flows.mjs",
+    "audit:imports": "node scripts/audit-import-duplicates.mjs",
     "trello:checklist": "node scripts/trello-checklist.mjs"
   },
   "dependencies": {
