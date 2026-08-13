@@ -1,0 +1,20 @@
+{
+  "raw": 2823,
+  "wanted": 2162,
+  "drafted": 2162,
+  "kept": 2033,
+  "dropped": 129,
+  "byReason": {
+    "same-phone": 29,
+    "same-coordinates": 20,
+    "same-address": 10,
+    "same-name-place": 70
+  },
+  "byLabel": {
+    "Beis hachaim": 1953,
+    "Hachnasas orchim": 26,
+    "Mikvah": 54
+  },
+  "withPhones": 298,
+  "published": 0
+}
