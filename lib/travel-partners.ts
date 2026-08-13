@@ -182,10 +182,10 @@ export type CarQuery = {
 /**
  * The flight search address for a partner, or null when it cannot express it.
  *
- * NULL IS A REAL ANSWER. Aviasales and Kiwi are given one journey; a
- * multi-city itinerary is a shape their documented link format does not
- * carry, and the honest response is to say so rather than quietly send
- * somebody the first leg of a five-leg trip. The caller renders the refusal.
+ * Aviasales and Kiwi are given one journey. A multi-city itinerary is a shape
+ * their documented link format does not carry, so this sends the first leg as
+ * a one-way — what they accept — rather than inventing a combined fare.
+ * Kayak Compare still carries every leg via /go.
  *
  * Sources, both Travelpayouts' own help centre:
  *   search.aviasales.com/flights/?origin_iata=&destination_iata=&depart_date=
@@ -194,8 +194,13 @@ export type CarQuery = {
  *   https://support.travelpayouts.com/hc/en-us/articles/360007365071
  */
 export function flightUrl(partner: TravelPartner, query: FlightQuery): string | null {
-  const { shape } = query;
-  if (shape.trip === "multi-city" && partner.key !== "kayak") return null;
+  let shape = query.shape;
+  if (shape.trip === "multi-city") {
+    if (partner.key === "kayak") return null;
+    const first = shape.legs[0];
+    if (!first) return null;
+    shape = { trip: "one-way", legs: [first] };
+  }
 
   const leg = shape.legs[0];
   if (!leg) return null;

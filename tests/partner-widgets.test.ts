@@ -207,6 +207,7 @@ describe("how the widgets are loaded", () => {
     assert.match(flights, /AirportAutocomplete|DateField/);
     assert.match(flights, /round-trip/);
     assert.match(flights, /one-way/);
+    assert.match(flights, /multi-city/);
     assert.match(flights, /Nonstop only/);
     assert.match(cars, /PartnerSearchWidget/);
     assert.doesNotMatch(cars, /AddressAutocomplete|DateField|Driver age/);

@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { airlineCode, airlineHeading, airlineName, flightNumberLabel } from "@/lib/airline-names";
+import { airlineCode, airlineHeading, airlineLogoUrl, airlineName, flightNumberLabel } from "@/lib/airline-names";
 import { mapTravelpayoutsFlights, trackedAviasalesUrl } from "@/lib/travelpayouts-api";
-import { liveRowFromFare, kayakCompareRow } from "@/lib/partner-flights";
+import { liveRowFromFare, kayakCompareRow, stopDetailFromFare } from "@/lib/partner-flights";
+import { readFileSync } from "node:fs";
 
 describe("airline codes that look like words", () => {
   it("names Norse Atlantic for N0 (N-zero), not the word No", () => {
@@ -11,6 +12,8 @@ describe("airline codes that look like words", () => {
     assert.equal(airlineName("N0"), "Norse Atlantic Airways");
     assert.notEqual(airlineName("N0"), airlineName("NO"));
     assert.equal(airlineName("NO"), "Neos");
+    assert.match(airlineLogoUrl("NO"), /^https:\/\/pics\.avs\.io\/al_square\/64\/64\/NO\.png$/);
+    assert.equal(airlineLogoUrl(""), "");
     assert.equal(flightNumberLabel("N0", "402"), "N0 402");
     assert.equal(airlineHeading("N0"), "Norse Atlantic Airways");
     assert.equal(airlineHeading("N0", "No"), "Norse Atlantic Airways");
@@ -105,6 +108,9 @@ describe("Travelpayouts flight mapping", () => {
     assert.ok(live);
     assert.equal(live.title, "Norse Atlantic Airways");
     assert.equal(live.meta, "1 stop");
+    assert.match(live.stopDetail ?? "", /not in this dump/i);
+    assert.doesNotMatch(live.stopDetail ?? "", /somewhere|FCO|AMS|CDG/i);
+    assert.match(live.logoUrl ?? "", /pics\.avs\.io\/al_square\/64\/64\/N0\.png/);
     assert.equal(live.price, 562);
     assert.equal(live.network, "travelpayouts");
     assert.match(live.bookHref, /aviasales\.com/);
@@ -221,5 +227,34 @@ describe("Travelpayouts flight mapping", () => {
       }),
       null,
     );
+  });
+
+  it("keeps every distinct cached fare up to 20, not a pair", () => {
+    const source = readFileSync("lib/travelpayouts-api.ts", "utf8");
+    assert.doesNotMatch(source, /slice\(0,\s*2\)/);
+    assert.match(source, /MAX_RESULTS = 20/);
+    const rows = mapTravelpayoutsFlights(
+      Array.from({ length: 15 }, (_, i) => ({
+        origin: "TLV",
+        destination: "JFK",
+        departure_at: "2026-08-25T10:00:00Z",
+        airline: "NO",
+        flight_number: String(1380 + i),
+        transfers: 1,
+        price: 700 + i,
+        link: `/search/TLV2508JFK${i}`,
+      })),
+      { origin: "TLV", destination: "JFK", departDate: "2026-08-25" },
+      "USD",
+      "761677",
+    );
+    assert.equal(rows.length, 15);
+  });
+
+  it("does not invent a layover city when the dump has only a stop count", () => {
+    assert.equal(stopDetailFromFare(0), "");
+    assert.match(stopDetailFromFare(1), /not in this dump/i);
+    assert.doesNotMatch(stopDetailFromFare(1), /somewhere|FCO|AMS/i);
+    assert.match(stopDetailFromFare(1, 725), /12h 5m/);
   });
 });

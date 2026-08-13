@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
-import { airportCode } from "@/lib/kayak-search";
+import { airportCode, describeSearch, searchProblem, type SearchShape } from "@/lib/kayak-search";
 import { hotelButtonLabel } from "@/lib/stay22";
 import DateField from "@/components/DateField";
 import type { AffiliateRequest } from "@/lib/affiliate/partners";
@@ -288,6 +288,11 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
  * Trip type and nonstop sit on this form and are passed into the partner
  * widget when live cache has nothing. From/to/dates are typed once.
  */
+type TripKind = "round-trip" | "one-way" | "multi-city";
+type ExtraLeg = { from: string; to: string; date: string };
+const blankLeg = (): ExtraLeg => ({ from: "", to: "", date: "" });
+const MAX_FLIGHT_LEGS = 6;
+
 function FlightsForm({
   onAdd,
   onOpened,
@@ -301,7 +306,8 @@ function FlightsForm({
   const [to, setTo] = useState(prefill?.to ?? "");
   const [depart, setDepart] = useState(prefill?.depart ?? "");
   const [ret, setRet] = useState(prefill?.ret ?? "");
-  const [trip, setTrip] = useState<"round-trip" | "one-way">("round-trip");
+  const [trip, setTrip] = useState<TripKind>("round-trip");
+  const [extraLegs, setExtraLegs] = useState<ExtraLeg[]>([blankLeg()]);
   const [nonstop, setNonstop] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -314,42 +320,47 @@ function FlightsForm({
   const origin = airportCode(from);
   const destination = airportCode(to);
   const oneWay = trip === "one-way";
+  const multiCity = trip === "multi-city";
+
+  function codedLegs() {
+    const first = { from: origin, to: destination, date: depart };
+    if (!multiCity) return [first];
+    return [
+      first,
+      ...extraLegs.map((leg) => ({
+        from: airportCode(leg.from),
+        to: airportCode(leg.to),
+        date: leg.date,
+      })),
+    ];
+  }
+
+  function searchShape(): SearchShape {
+    const legs = codedLegs();
+    if (multiCity) return { trip: "multi-city", legs };
+    if (oneWay) return { trip: "one-way", legs: [legs[0]] };
+    return { trip: "round-trip", legs: [legs[0]], ret };
+  }
+
   const widgetSrc = flightsEmbedPath({
     origin,
     destination,
     departDate: depart,
-    returnDate: oneWay ? "" : ret,
-    oneWay,
+    returnDate: oneWay || multiCity ? "" : ret,
+    oneWay: oneWay || multiCity,
     nonstop,
   });
-  const summary = [origin, destination].filter(Boolean).join(" → ") || "Flight";
+  const summary = describeSearch(searchShape()) || "Flight";
 
   function validate() {
-    if (!origin || !destination) {
-      setError("Choose both airports from the list, or type a code like JFK.");
+    const problem = searchProblem(searchShape());
+    if (problem) {
+      setError(problem);
       return false;
     }
-    if (!depart) {
-      setError("Choose a departure date.");
+    if (!oneWay && !multiCity && ret && ret < today()) {
+      setError("Return date cannot be in the past.");
       return false;
-    }
-    if (depart < today()) {
-      setError("Departure cannot be in the past.");
-      return false;
-    }
-    if (!oneWay) {
-      if (!ret) {
-        setError("Choose a return date, or switch to one-way.");
-        return false;
-      }
-      if (ret < today()) {
-        setError("Return date cannot be in the past.");
-        return false;
-      }
-      if (ret < depart) {
-        setError("Return date must be after departure.");
-        return false;
-      }
     }
     setError("");
     return true;
@@ -357,9 +368,17 @@ function FlightsForm({
 
   function addToTrip(confirmation?: string) {
     const date = depart || "";
-    if (origin && destination && date) {
-      const flights: ItinFlight[] = [{ id: uid(), from: origin, to: destination, date, bookedOnSite: false, confirmation }];
-      if (!oneWay && ret) {
+    const legs = codedLegs().filter((leg) => leg.from && leg.to && leg.date);
+    if (legs.length) {
+      const flights: ItinFlight[] = legs.map((leg) => ({
+        id: uid(),
+        from: leg.from,
+        to: leg.to,
+        date: leg.date,
+        bookedOnSite: false,
+        confirmation,
+      }));
+      if (!oneWay && !multiCity && ret) {
         flights.push({ id: uid(), from: destination, to: origin, date: ret, bookedOnSite: false, confirmation });
       }
       onAdd({ flights, dates: flights.map((f) => f.date) });
@@ -382,8 +401,8 @@ function FlightsForm({
     if (!validate()) return;
     const href = kayakHref || goHref({
       product: "flight",
-      legs: [{ from: origin, to: destination, date: depart }],
-      checkOut: oneWay ? "" : ret,
+      legs: codedLegs(),
+      checkOut: oneWay || multiCity ? "" : ret,
       nonstop,
       page: "/book",
       placement: "book-flights",
@@ -407,7 +426,8 @@ function FlightsForm({
           origin: from,
           destination: to,
           departDate: depart,
-          returnDate: oneWay ? undefined : ret,
+          returnDate: oneWay || multiCity ? undefined : ret,
+          legs: multiCity ? codedLegs() : undefined,
           nonstop,
         }),
       });
@@ -416,7 +436,9 @@ function FlightsForm({
       if (data?.ok && data.mode === "live" && Array.isArray(data.flights) && data.flights.length > 0) {
         const priced = data.flights.filter(
           (flight: { network?: string; bookHref?: string; price?: number }) =>
-            flight.network === "travelpayouts" && typeof flight.price === "number" && String(flight.bookHref ?? "").includes("aviasales.com"),
+            flight.network === "travelpayouts" &&
+            typeof flight.price === "number" &&
+            (String(flight.bookHref ?? "").includes("aviasales.com") || String(flight.bookHref ?? "").startsWith("/api/partners/flights/offer?")),
         );
         if (priced.length > 0) {
           setLiveMessage(data.message ?? "");
@@ -428,6 +450,8 @@ function FlightsForm({
                 title: string;
                 subtitle?: string;
                 meta?: string;
+                stopDetail?: string;
+                logoUrl?: string;
                 price?: number;
                 currency?: string;
                 bookHref: string;
@@ -436,6 +460,9 @@ function FlightsForm({
                 title: flight.title,
                 subtitle: flight.subtitle,
                 meta: flight.meta,
+                stopDetail: flight.stopDetail,
+                logoUrl: flight.logoUrl,
+                logoAlt: flight.title,
                 priceLabel: moneyLabel(flight.price, flight.currency ?? "USD"),
                 ctaLabel: "View & book",
                 onOpen: () => {
@@ -462,8 +489,8 @@ function FlightsForm({
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3" data-choice-row="trip type">
-        {(["round-trip", "one-way"] as const).map((type) => (
+      <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3" data-choice-row="trip type">
+        {(["round-trip", "one-way", "multi-city"] as const).map((type) => (
           <button
             key={type}
             type="button"
@@ -471,13 +498,14 @@ function FlightsForm({
               setTrip(type);
               setRows([]);
               setShowWidget(false);
+              if (type === "multi-city") setExtraLegs((current) => (current.length ? current : [blankLeg()]));
             }}
-            className={`min-h-11 w-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] sm:w-auto ${trip === type ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}
+            className={`min-h-11 w-full border px-2 py-2 text-xs font-bold uppercase tracking-[0.1em] sm:w-auto sm:px-3 ${trip === type ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}
           >
             {type.replace("-", " ")}
           </button>
         ))}
-        <label className="col-span-2 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
+        <label className="col-span-3 flex min-h-11 items-center gap-2 text-xs font-semibold text-[var(--navy)] sm:ml-auto sm:min-h-0">
           <input
             type="checkbox"
             checked={nonstop}
@@ -488,25 +516,39 @@ function FlightsForm({
         </label>
       </div>
       <SearchGrid className="mt-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1fr]">
-        <Field label="From">
+        <Field label={multiCity ? "From — flight 1" : "From"}>
           <AirportAutocomplete value={from} onChange={setFrom} className={bareInput} />
         </Field>
-        <Field label="To">
+        <Field label={multiCity ? "To — flight 1" : "To"}>
           <AirportAutocomplete value={to} onChange={setTo} className={bareInput} />
         </Field>
-        <Field label="Departure">
+        <Field label={multiCity ? "Date — flight 1" : "Departure"}>
           <DateField
-            ariaLabel="Departure date"
+            ariaLabel={multiCity ? "Flight 1 date" : "Departure date"}
             value={depart}
             min={today()}
             onChange={(v) => {
               setDepart(v);
-              if (!oneWay) setRet((current) => correctedEnd(v, current, "inclusive"));
+              if (!oneWay && !multiCity) setRet((current) => correctedEnd(v, current, "inclusive"));
+              if (multiCity) {
+                setExtraLegs((current) => {
+                  let prev = v;
+                  return current.map((leg) => {
+                    const date = correctedEnd(prev, leg.date, "inclusive");
+                    prev = date || prev;
+                    return { ...leg, date };
+                  });
+                });
+              }
             }}
             className={bareInput}
           />
         </Field>
-        {!oneWay ? (
+        {multiCity ? (
+          <Field label="Return">
+            <span className="mt-1 block min-h-11 text-sm text-stone-400">Multi-city</span>
+          </Field>
+        ) : !oneWay ? (
           <Field label="Return">
             <DateField
               ariaLabel="Return date"
@@ -522,6 +564,78 @@ function FlightsForm({
           </Field>
         )}
       </SearchGrid>
+      {multiCity
+        ? extraLegs.map((leg, index) => {
+            const prevDate = index === 0 ? depart : extraLegs[index - 1]?.date;
+            return (
+              <SearchGrid key={index} className="mt-2 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1fr]">
+                <Field label={`From — flight ${index + 2}`}>
+                  <AirportAutocomplete
+                    value={leg.from}
+                    onChange={(value) =>
+                      setExtraLegs((current) => current.map((item, i) => (i === index ? { ...item, from: value } : item)))
+                    }
+                    className={bareInput}
+                  />
+                </Field>
+                <Field label={`To — flight ${index + 2}`}>
+                  <AirportAutocomplete
+                    value={leg.to}
+                    onChange={(value) =>
+                      setExtraLegs((current) => current.map((item, i) => (i === index ? { ...item, to: value } : item)))
+                    }
+                    className={bareInput}
+                  />
+                </Field>
+                <Field label={`Date — flight ${index + 2}`}>
+                  <DateField
+                    ariaLabel={`Flight ${index + 2} date`}
+                    value={leg.date}
+                    min={notBefore(today(), prevDate)}
+                    onChange={(value) =>
+                      setExtraLegs((current) => {
+                        const next = current.map((item, i) => (i === index ? { ...item, date: value } : item));
+                        let prev = value;
+                        return next.map((item, i) => {
+                          if (i <= index) return item;
+                          const date = correctedEnd(prev, item.date, "inclusive");
+                          prev = date || prev;
+                          return { ...item, date };
+                        });
+                      })
+                    }
+                    className={bareInput}
+                  />
+                </Field>
+                <div className="flex items-end bg-[#fcfaf6] px-4 py-2.5">
+                  {extraLegs.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setExtraLegs((current) => current.filter((_, i) => i !== index))}
+                      className="min-h-11 text-xs font-bold uppercase tracking-[0.1em] text-stone-600"
+                    >
+                      Remove flight
+                    </button>
+                  ) : (
+                    <span className="mt-1 block min-h-11 text-sm text-stone-400"> </span>
+                  )}
+                </div>
+              </SearchGrid>
+            );
+          })
+        : null}
+      {multiCity && extraLegs.length + 1 < MAX_FLIGHT_LEGS ? (
+        <button
+          type="button"
+          onClick={() => {
+            const lastTo = extraLegs.length ? extraLegs[extraLegs.length - 1].to : to;
+            setExtraLegs((current) => [...current, { from: lastTo, to: "", date: "" }]);
+          }}
+          className="mt-3 min-h-11 border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)]"
+        >
+          + Add flight
+        </button>
+      ) : null}
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow
         onSearch={search}

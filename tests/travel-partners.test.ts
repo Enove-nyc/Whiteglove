@@ -112,7 +112,7 @@ describe("the flight address", () => {
     assert.equal(url.pathname, "/search/results/JFK/KRK/2026-09-01/2026-09-08");
   });
 
-  it("REFUSES MULTI-CITY IT CANNOT EXPRESS rather than sending the first leg", () => {
+  it("sends Aviasales and Kiwi the first leg of a multi-city, which is what they accept", () => {
     const multi = {
       shape: {
         trip: "multi-city" as const,
@@ -122,8 +122,14 @@ describe("the flight address", () => {
         ],
       },
     };
-    assert.equal(flightUrl(flights("aviasales"), multi), null);
-    assert.equal(flightUrl(flights("kiwi"), multi), null);
+    const aviasales = new URL(flightUrl(flights("aviasales"), multi)!);
+    assert.equal(aviasales.searchParams.get("origin_iata"), "JFK");
+    assert.equal(aviasales.searchParams.get("destination_iata"), "KRK");
+    assert.equal(aviasales.searchParams.get("one_way"), "true");
+    assert.equal(aviasales.searchParams.has("return_date"), false);
+    const kiwi = new URL(flightUrl(flights("kiwi"), multi)!);
+    assert.match(kiwi.pathname, /\/search\/results\/JFK\/KRK\/2026-09-01$/);
+    assert.doesNotMatch(kiwi.pathname, /FCO/);
   });
 
   it("refuses a journey with a piece missing", () => {

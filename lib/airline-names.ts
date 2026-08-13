@@ -102,6 +102,15 @@ export function airlineHeading(code?: string | null, name?: string | null): stri
   return "Flight";
 }
 
+/**
+ * Square airline mark from the Aviasales / Travelpayouts CDN (pics.avs.io).
+ * Empty when there is no IATA code — never a decorative placeholder.
+ */
+export function airlineLogoUrl(code: string | undefined | null): string {
+  const iata = airlineCode(code);
+  return iata ? `https://pics.avs.io/al_square/64/64/${encodeURIComponent(iata)}.png` : "";
+}
+
 /** "N0 402" — the code stays a code, never a heading. */
 export function flightNumberLabel(code: string | undefined | null, number: string | undefined | null): string {
   const iata = airlineCode(code);

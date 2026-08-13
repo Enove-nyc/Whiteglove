@@ -177,11 +177,11 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["TRAVELPAYOUTS_TOKEN"],
-    what: "Travelpayouts Data API token — not used on the public flight search. Flights on /book use the Aviasales search form and the marker.",
+    what: "Travelpayouts token for the Flight Search API (live Aviasales offers on /book) and the Data API.",
     without:
-      "Nothing changes on Search booking partners. The flight form earns through the marker, not this token.",
-    weight: "nicety",
-    where: "Travelpayouts dashboard → API tools. Separate from the marker. Not required for /book.",
+      "Flight search on /book still opens the Aviasales form and Kayak Compare. Live priced rows stay off until this token and the marker are both set and the Search API is approved.",
+    weight: "feature",
+    where: "Travelpayouts dashboard → API token. Separate from the marker.",
   },
   {
     vars: ["STAY22_API_KEY"],

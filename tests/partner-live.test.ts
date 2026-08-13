@@ -25,7 +25,7 @@ describe("live partner search wiring", () => {
     assert.match(hotels, /searchStay22Accommodations/);
     assert.match(flights, /searchPartnerFlights/);
     const helper = readFileSync("lib/partner-flights.ts", "utf8");
-    assert.match(helper, /searchTravelpayoutsFlights/);
+    assert.match(helper, /searchLiveAviasalesFlights/);
     assert.match(helper, /Stay22's Direct Travel API is accommodations only/);
     assert.doesNotMatch(helper, /bookHref:\s*compareHref\(search, flight/);
     assert.match(helper, /liveRowFromFare/);
@@ -70,6 +70,7 @@ describe("live partner search wiring", () => {
     assert.match(flights, /DateField/);
     assert.match(flights, /round-trip/);
     assert.match(flights, /one-way/);
+    assert.match(flights, /multi-city/);
     assert.match(flights, /Nonstop only/);
     assert.match(flights, /\/api\/partners\/flights\/search/);
     assert.match(flights, /Compare on Kayak/);
@@ -81,5 +82,13 @@ describe("live partner search wiring", () => {
     assert.doesNotMatch(ui, /Live prices could not be loaded/);
     assert.doesNotMatch(ui, /Compare fares with Kayak/);
     assert.match(ui, /White Glove does not list a fare here/);
+  });
+
+  it("puts a real airline mark and expandable stop copy on priced rows", () => {
+    const panel = readFileSync("components/PartnerResultsPanel.tsx", "utf8");
+    assert.match(panel, /logoUrl/);
+    assert.match(panel, /stopDetail/);
+    assert.match(panel, /<details/);
+    assert.doesNotMatch(panel, /pics\.avs\.io\/placeholder|somewhere/i);
   });
 });

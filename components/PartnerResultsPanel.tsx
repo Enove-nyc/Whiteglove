@@ -22,6 +22,11 @@ export type PartnerResultRow = {
   title: string;
   subtitle?: string;
   meta?: string;
+  /** Expandable stop/layover copy from the offer. Never invented cities. */
+  stopDetail?: string;
+  /** Small airline mark. Distinct from hotel `imageUrl` thumbnails. */
+  logoUrl?: string | null;
+  logoAlt?: string;
   priceLabel?: string;
   priceNote?: string;
   imageUrl?: string | null;
@@ -70,9 +75,24 @@ export function PartnerResultsPanel({
               <img src={row.imageUrl} alt="" className="h-20 w-28 shrink-0 rounded-xl object-cover sm:h-24 sm:w-32" loading="lazy" />
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{row.title}</p>
+              <div className="flex items-center gap-3">
+                {row.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- Aviasales airline CDN, not local assets
+                  <img src={row.logoUrl} alt={row.logoAlt || ""} className="h-9 w-9 shrink-0 object-contain" loading="lazy" />
+                ) : null}
+                <p className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{row.title}</p>
+              </div>
               {row.subtitle ? <p className="mt-1 text-sm leading-5 text-stone-600">{row.subtitle}</p> : null}
-              {row.meta ? <p className="mt-1 text-xs leading-5 text-stone-500">{row.meta}</p> : null}
+              {row.stopDetail ? (
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-xs leading-5 text-stone-500 underline decoration-[var(--gold-light)] underline-offset-2">
+                    {row.meta ?? "Stops"}
+                  </summary>
+                  <p className="mt-1 text-xs leading-5 text-stone-500">{row.stopDetail}</p>
+                </details>
+              ) : row.meta ? (
+                <p className="mt-1 text-xs leading-5 text-stone-500">{row.meta}</p>
+              ) : null}
             </div>
             <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
               {row.priceLabel ? (

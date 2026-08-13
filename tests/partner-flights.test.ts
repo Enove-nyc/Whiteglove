@@ -48,4 +48,29 @@ describe("on-site flight compare rows", () => {
     assert.equal(result.ok, false);
     if (!result.ok) assert.match(result.message, /past/);
   });
+
+  it("puts every multi-city leg on the Kayak /go link and does not invent a priced row", async () => {
+    const previous = process.env.TRAVELPAYOUTS_TOKEN;
+    process.env.TRAVELPAYOUTS_TOKEN = "test-token-not-used";
+    try {
+      const result = await searchPartnerFlights({
+        origin: "JFK",
+        destination: "FCO",
+        departDate: "2026-09-12",
+        legs: [
+          { from: "JFK", to: "FCO", date: "2026-09-12" },
+          { from: "FCO", to: "TLV", date: "2026-09-18" },
+        ],
+      });
+      assert.equal(result.ok, true);
+      if (!result.ok) return;
+      assert.equal(result.mode, "compare");
+      assert.equal(result.flights.length, 0);
+      assert.match(result.kayakHref, /legs=JFK-FCO-2026-09-12_FCO-TLV-2026-09-18/);
+      assert.doesNotMatch(result.kayakHref, /out=/);
+    } finally {
+      if (previous === undefined) delete process.env.TRAVELPAYOUTS_TOKEN;
+      else process.env.TRAVELPAYOUTS_TOKEN = previous;
+    }
+  });
 });

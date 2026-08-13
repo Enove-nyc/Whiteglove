@@ -4,10 +4,12 @@
  * Hotels stay on Stay22. Cars have no comparable public inventory API in this
  * account setup. The Aviasales Flight Search API (multiple real itineraries)
  * returns 403 on this account — it needs separate approval. What this token
- * can call is prices_for_dates: cheapest cached tickets, one per date when
- * one_way=true, plus a second call for the cheapest nonstop. Round-trip with
- * no cache for the exact return retries without return_at and shows fares that
- * leave on the asked day (actual return date on the row).
+ * can call is prices_for_dates: cheapest cached tickets. unique=false asks for
+ * every cached ticket for that date, not one cheapest. A second call adds the
+ * cheapest nonstop. Round-trip with no cache
+ * for the exact return retries without return_at and shows fares that leave on
+ * the asked day (actual return date on the row). This is still a dump, not a
+ * GDS matrix — two rows means two cached offers, not a hidden cap of two.
  *
  * Each priced row carries that ticket's `link`. View & book must open
  * https://www.aviasales.com{link} with TRAVELPAYOUTS_MARKER — never Stay22
@@ -24,7 +26,8 @@ import { flightDateProblem } from "@/lib/date-range";
 
 const PRICES_URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates";
 const CACHE_TTL_MS = 90_000;
-const MAX_RESULTS = 12;
+/** Ask for every cached offer the dump has, up to this. Not a GDS page size. */
+const MAX_RESULTS = 20;
 
 export type TravelpayoutsFlightOption = {
   id: string;
@@ -37,6 +40,8 @@ export type TravelpayoutsFlightOption = {
   flightNumber?: string;
   departTime?: string;
   transfers: number;
+  /** Total journey minutes from the dump, when present. Not a layover. */
+  durationMinutes?: number;
   price: number;
   currency: string;
   /** Human line for the results list — no stop count (that lives on `transfers`). */
@@ -45,6 +50,8 @@ export type TravelpayoutsFlightOption = {
   offerPath?: string;
   /** Tracked Aviasales URL for this fare, or "" when it cannot be built. */
   bookUrl: string;
+  /** Layover city and times from a live itinerary, when the offer has them. */
+  stopDetail?: string;
 };
 
 export type TravelpayoutsFlightResult =
@@ -104,6 +111,8 @@ export type RawTravelpayoutsFlight = {
   transfers?: number;
   price?: number;
   flight_number?: string | number;
+  /** Total journey minutes when the dump includes it. Not segment times. */
+  duration?: number;
   /** Relative Aviasales search path for this cached fare. */
   link?: string;
 };
@@ -174,6 +183,7 @@ export function mapTravelpayoutsFlights(
     const from = (row.origin_airport ?? row.origin ?? origin).toUpperCase();
     const to = (row.destination_airport ?? row.destination ?? destination).toUpperCase();
     const flightNumber = row.flight_number != null ? String(row.flight_number).trim() : "";
+    const durationMinutes = Number.isFinite(Number(row.duration)) && Number(row.duration) > 0 ? Math.round(Number(row.duration)) : undefined;
     const departTime = clock(row.departure_at);
     const offerPath = row.link?.trim() || undefined;
     const bookUrl = trackedAviasalesUrl(offerPath, marker);
@@ -200,6 +210,7 @@ export function mapTravelpayoutsFlights(
       flightNumber: flightNumber || undefined,
       departTime,
       transfers,
+      durationMinutes,
       price,
       currency,
       summary,

@@ -428,8 +428,8 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
       if (many.every((l) => usableBookingDate(l.date))) {
         const shape: SearchShape = { trip: "multi-city", legs: many };
         if (partner.key === "kayak") return kayakUrl(shape, { nonstop: request.nonstop, affiliate: config.kayakParams });
-        // Everything else returns null for a shape it cannot express, rather
-        // than quietly sending one leg of the journey.
+        // Aviasales/Kiwi take one journey. flightUrl sends the first leg as
+        // one-way. Kayak Compare still carries every leg.
         return flightUrl(partner, { shape, adults: request.adults, children: request.children });
       }
     } else {
