@@ -3,6 +3,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import TravelExtras from "@/components/TravelExtras";
 import { readExtras } from "@/lib/travel-extras-store";
+import { gearShownToVisitors } from "@/lib/travel-gear";
+import { readGear } from "@/lib/travel-gear-store";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import VerificationBadge from "@/components/VerificationBadge";
@@ -110,6 +112,7 @@ const questions: Array<{
 
 export default async function KosherTravelPage() {
   const extras = await readExtras();
+  const gearAvailable = gearShownToVisitors(await readGear()).length > 0;
   const quarters = kosherAreas.length;
   const stays = kosherStays.length;
   const seasonal = kosherStays.filter((stay) => stay.season).length;
@@ -272,6 +275,13 @@ export default async function KosherTravelPage() {
         heading="Worth taking with you"
         intro="Bought from the seller, not from us. Nothing here is a recommendation about which to choose."
       />
+      {gearAvailable && (
+        <p className="px-5 pb-12 text-center text-sm sm:px-8">
+          <Link href="/travel-gear" className="font-semibold text-[var(--gold-ink)] underline">
+            See the full travel gear shelf →
+          </Link>
+        </p>
+      )}
 
       <Footer />
     </main>

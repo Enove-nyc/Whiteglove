@@ -83,6 +83,12 @@ export default async function AdminSettingsPage() {
             detail="Enable insurance, eSIM, transfers, tours and seasonal programmes — with URLs, placements and order."
             state={stats.configured ? undefined : "Needs the private store"}
           />
+          <Card
+            href="/admin/settings/travel-gear"
+            title="Travel gear"
+            detail="A blech, a hotplate, a plug adapter — your Amazon shelf, at its own page."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
         </div>
       </section>
 

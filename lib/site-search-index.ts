@@ -776,6 +776,15 @@ function pushSitePages(docs: DraftDoc[]) {
       keywords: ["heritage", "towns"],
     },
     {
+      id: "page-travel-gear",
+      kind: "Site page",
+      title: "Travel gear",
+      subtitle: "A blech, a hotplate, an adapter, and the rest of the shelf",
+      href: "/travel-gear",
+      names: ["travel gear", "travel blech", "travel hotplate", "plug adapter"],
+      keywords: ["gear", "blech", "hotplate", "adapter", "amazon"],
+    },
+    {
       id: "page-case-studies",
       kind: "Site page",
       title: "Case studies",
