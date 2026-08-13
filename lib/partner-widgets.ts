@@ -89,7 +89,7 @@ export function aviasalesWidgetSrc(prefill: FlightWidgetPrefill = {}): string {
     campaign_id: AVIASALES_SEARCH_FORM.campaign_id,
     locale: "en_us",
     currency: "usd",
-    searchUrl: "www.aviasales.com/search",
+    searchUrl: "https://www.aviasales.com/search",
     show_hotels: "false",
     plain: "true",
     border_radius: "16",
@@ -106,9 +106,9 @@ export function aviasalesWidgetSrc(prefill: FlightWidgetPrefill = {}): string {
   if (depart) params.depart_date = depart;
   if (prefill.oneWay) {
     params.one_way = "true";
-  } else if (back) {
-    params.return_date = back;
+  } else {
     params.one_way = "false";
+    if (back) params.return_date = back;
   }
   const adults = Math.floor(Number(prefill.adults));
   if (Number.isFinite(adults) && adults >= 1) params.adults = String(Math.min(9, adults));
