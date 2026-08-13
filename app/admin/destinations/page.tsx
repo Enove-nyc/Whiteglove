@@ -2,6 +2,7 @@ import CompletenessQueue from "@/components/CompletenessQueue";
 import DbSetupButton from "@/components/DbSetupButton";
 import DestinationEditor from "@/components/DestinationEditor";
 import DestinationPicker from "@/components/DestinationPicker";
+import CreateDestinationForm from "@/components/CreateDestinationForm";
 import {
   getDestinationForAdmin,
   isDbEnabled,
@@ -103,6 +104,7 @@ export default async function AdminDestinationsPage({
       ) : (
         <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[.9fr_2fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start space-y-6">
+            <CreateDestinationForm />
             <DestinationPicker destinations={destinations} selectedSlug={slug} />
             {/* Which records are thinnest, and what each is missing. The only
                 place a percentage belongs. */}
