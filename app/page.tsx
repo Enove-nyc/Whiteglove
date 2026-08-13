@@ -191,7 +191,7 @@ export default async function Home() {
     .slice(0, 6);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--ink)]">
+    <main className="min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
       <SearchMemory />
       <Navbar />
