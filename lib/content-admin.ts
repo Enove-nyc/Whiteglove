@@ -501,10 +501,20 @@ export async function getProviderForAdmin(slug: string) {
   return prisma.directoryProvider.findUnique({ where: { slug } });
 }
 
-export async function createProvider(fields: ProviderFields) {
+/**
+ * @param slug Force the new row's slug instead of generating one.
+ *
+ * Only for promoting a built-in provider to an editable row. The public
+ * directory merges the built-in list with the database and lets the owner's
+ * row win a collision BY SLUG (lib/directory.ts:185) — so an edited built-in
+ * has to keep the seed's slug or it does not replace anything, and the
+ * business is listed twice. providerSlug() appends a random suffix, which
+ * would guarantee exactly that.
+ */
+export async function createProvider(fields: ProviderFields, slug?: string) {
   const prisma = await db();
   const row = await prisma.directoryProvider.create({
-    data: { slug: providerSlug(fields.name), ...fields },
+    data: { slug: slug?.trim() || providerSlug(fields.name), ...fields },
   });
   updateTag(DIRECTORY_PUBLIC_TAG);
   return row;

@@ -8,16 +8,19 @@
  * visitor to /directory was being shown thirty businesses he had no screen for
  * and could not see, edit or remove.
  *
- * AND THE TWO ARE ALL-OR-NOTHING. lib/directory.ts uses the built-in list as a
- * FALLBACK, not a base layer: the moment one row exists in the database, all
- * thirty disappear from the public site. So adding a single business silently
- * takes thirty off the directory — which is exactly what "my whole directory of
- * contacts vanished" looks like from the outside.
+ * THE ALL-OR-NOTHING WARNING THAT USED TO BE HERE IS GONE, because the
+ * behaviour it warned about is gone. lib/directory.ts once used the built-in
+ * list as a FALLBACK: the moment one row existed in the database all thirty
+ * disappeared from the public site, and adding a single business silently took
+ * thirty off the directory. That was issues #210 and #212, and it was fixed —
+ * every branch of readProviders() now MERGES, with the owner's own row winning
+ * a collision by slug.
  *
- * Nothing here changes that behaviour. It makes it VISIBLE, which is the part
- * that was missing: the screen now lists what a visitor is actually being
- * shown, says where each entry comes from, and says what will happen when the
- * first one of his own is added.
+ * This file was not updated with it, so the screen went on telling him the
+ * built-ins were "NOT on the public directory" and that adding one of his own
+ * "replaced them". Both false, and alarming in exactly the way the original
+ * bug was. The rule below is the merge rule, and it has to stay equal to
+ * lib/directory.ts:185.
  */
 
 import { directoryProviders, type DirectoryProviderSeed } from "@/data/directory";
@@ -37,7 +40,12 @@ export type BusinessList = {
   ownCount: number;
   /** The ones that ship with the site. */
   builtInCount: number;
-  /** Which set a visitor is being shown right now. */
+  /**
+   * Whether he has added any of his own yet.
+   *
+   * NOT "which set is live" any more — both sets are, always. It only changes
+   * which sentence describes the screen.
+   */
   showing: "yours" | "built-in";
 };
 
@@ -60,10 +68,31 @@ export function businessList(own: Array<{ slug: string; name: string; category: 
     rows: [...own.map((p) => ({ ...p, builtIn: false })), ...builtIn],
     ownCount: own.length,
     builtInCount: builtIn.length,
-    // Matches lib/directory.ts exactly: one row of his own and the built-in
-    // list is no longer used at all.
     showing: own.length > 0 ? "yours" : "built-in",
   };
+}
+
+/**
+ * Narrow the list by name or category.
+ *
+ * The editor listed his own businesses plus the thirty built-in ones in one
+ * flat, unpaginated column with no way to search it — the browser next door
+ * (`/admin/directory`) and the public directory both have a search box, and
+ * this screen, the only one that can actually change a provider, did not.
+ *
+ * Accents are stripped both sides so "Rymanów" is found by typing "rymanow",
+ * which is what somebody on an English keyboard types.
+ */
+const fold = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+
+export function filterBusinessRows(rows: BusinessRow[], query: string): BusinessRow[] {
+  const q = fold(query.trim());
+  if (!q) return rows;
+  return rows.filter((row) => fold(`${row.name} ${row.category} ${row.slug}`).includes(q));
 }
 
 /**
@@ -76,13 +105,13 @@ export function businessList(own: Array<{ slug: string; name: string; category: 
 export function describeBusinessList(list: BusinessList): string {
   if (list.showing === "built-in") {
     return (
-      `You have not added any businesses of your own, so the directory is showing the ${list.builtInCount} that ship with the site. ` +
-      `They are listed below and marked. Nothing is missing — but the moment you add one of your own, these ${list.builtInCount} stop being shown.`
+      `You have not added any businesses of your own yet, so the directory is showing the ${list.builtInCount} that ship with the site. ` +
+      `They are listed below and marked. Anything you add appears alongside them — adding one does not remove the rest.`
     );
   }
   return (
-    `The directory is showing your ${list.ownCount} ${list.ownCount === 1 ? "business" : "businesses"}. ` +
-    `The ${list.builtInCount} that ship with the site are listed below and marked, and are NOT on the public directory — ` +
-    `adding one of your own replaced them. Add any you still want by name.`
+    `The directory is showing your ${list.ownCount} ${list.ownCount === 1 ? "business" : "businesses"} ` +
+    `alongside the ${list.builtInCount} that ship with the site. All ${list.ownCount + list.builtInCount} are live. ` +
+    `The built-in ones are listed below and marked; open one to edit it, and your version replaces it.`
   );
 }

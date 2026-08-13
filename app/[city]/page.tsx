@@ -105,12 +105,22 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
   // record. A section with nothing behind it is not rendered at all, which is
   // the rule for the rest of the site and the reason those cards could not
   // simply be copied across as headings.
-  const airports = airportsFor(guide.country, guide.graveAddress, guide.graveCoordinates);
+  // RANKING POINT, NOT A NAVIGATION POINT.
+  //
+  // The grave pin when there is one, the town pin when there is not. Ranking
+  // airports and measuring what else is nearby only needs to know roughly
+  // where the town is, and three of these towns have no published grave
+  // coordinate — without this they fell back to "the main airports of Poland"
+  // and an empty nearby list. Navigation is untouched: graveMapUrl below is
+  // built from graveAddress and graveCoordinates only, so nothing sends a
+  // traveller to a town centre.
+  const rankingPoint = guide.graveCoordinates ?? guide.townCoordinates;
+  const airports = airportsFor(guide.country, guide.graveAddress, rankingPoint);
   // The tzaddik the town is known for is named in the panel above; this is
   // everybody else, from the guide and from the beis hachaim listing.
   const alsoBuried = otherBurials(guide, cemetery);
   const measuredAirports = airports.length > 0 && airports.every((airport) => airport.km);
-  const nearby = nearbyKevarim(guide.slug);
+  const nearby = nearbyKevarim(guide.slug, { from: rankingPoint });
   const questions = townQuestions(guide, cemetery, airports);
   const stayDestination = encodeURIComponent(`${guide.city}, ${guide.country}`);
   // Only the sections that exist get a jump link, so the bar never points at

@@ -11,7 +11,25 @@ export type CityGuide = {
   yahrzeit: string;
   niftar: string;
   graveAddress?: string;
+  /**
+   * The kever itself. What "Navigate to the kever" sends somebody to.
+   *
+   * Absent unless a source gives the grave pin. Nothing is estimated into
+   * this field — a coordinate a traveller drives to has to be the real one.
+   */
   graveCoordinates?: string;
+  /**
+   * The TOWN, not the grave. Never navigated to.
+   *
+   * Same idea as `airportRef` on a cemetery listing, and it exists for the
+   * same reason: ranking the nearest airports and working out which other
+   * kevarim are within reach needs a point, and a town centre answers both
+   * questions perfectly well. Lelov, Ropshitz and Rymanów had no grave pin
+   * published anywhere, so those pages had no nearby list and their airport
+   * panel fell back to "the main airports of Poland" — a town coordinate
+   * fixes both without anybody inventing a grave location.
+   */
+  townCoordinates?: string;
   findingNotes?: string[];
   accessContact?: {
     label: string;
@@ -169,7 +187,13 @@ export const cityGuides: CityGuide[] = [
     seforim: "תורות וסיפורים של בית לעלוב",
     yahrzeit: "ז׳ שבט",
     niftar: "תקע״ד / 1814",
-    sourceUrl: "https://hasidut.herzog.ac.il/en/story/rabbi-david-of-lelov-cannot-answer-the-lubliner/",
+    graveAddress: "Ogrodowa 7, 42-235 Lelów, Poland",
+    townCoordinates: "50.785600, 19.640800",
+    findingNotes: [
+      "Navigate to Ogrodowa 7. The ohel stands on the site of the old Jewish cemetery, in the town itself rather than outside it.",
+      "The cemetery around it no longer exists. It was levelled in 1956 and a shop built over the ground; the kever was located again in 1988 and the present ohel put up in 2012–13 after that building was demolished.",
+    ],
+    sourceUrl: "https://pl.wikipedia.org/wiki/Ohel_Dawida_Bidermana_w_Lelowie",
   },
   {
     slug: "ropshitz",
@@ -183,7 +207,13 @@ export const cityGuides: CityGuide[] = [
     seforim: "זרע קודש · אילה שלוחה · אמרי שפר",
     yahrzeit: "י״א אייר",
     niftar: "תקפ״ז / 1827",
-    sourceUrl: "https://nertzaddik.com/tzadik-info?id=3506",
+    graveAddress: "Old Jewish cemetery, Moniuszki Street, 37-100 Łańcut, Poland",
+    townCoordinates: "50.068600, 22.229700",
+    findingNotes: [
+      "The kever is in Łańcut, not in Ropczyce. The Ropshitzer Rov was niftar in 1827 on the road from Ropczyce to Lublin and was buried here; navigating to Ropczyce is the usual way people miss him.",
+      "The old cemetery is on Moniuszki Street. There are two ohels: the Ropshitzer Rov in the first, and Reb Elazar Shapiro of Łańcut in the second.",
+    ],
+    sourceUrl: "https://sztetl.org.pl/en/towns/l/186-lancut/114-cemeteries/20208-cemetary",
   },
   {
     slug: "preshburg",
@@ -306,6 +336,7 @@ export const cityGuides: CityGuide[] = [
     yahrzeit: "י״ט אייר",
     niftar: "תקע״ה / 1815",
     graveAddress: "Słowackiego Street, 38-480 Rymanów, Poland",
+    townCoordinates: "49.574700, 21.861900",
     findingNotes: [
       "The Jewish cemetery is at the end of Słowackiego Street; use the map link rather than only the city center.",
       "The tziyun is in the cemetery with other historic kevarim of Rymanów.",

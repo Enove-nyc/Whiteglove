@@ -53,10 +53,17 @@ function pointFor(cemetery: Cemetery) {
  */
 export function nearbyKevarim(
   slug: string,
-  { count = 4, withinKm = 120 }: { count?: number; withinKm?: number } = {},
+  {
+    count = 4,
+    withinKm = 120,
+    // Where to measure from when this town has no beis hachaim listing of its
+    // own, or has one with no coordinates. Lelov and Ropshitz have no listing
+    // at all — the guide carries the only point they have.
+    from: fallback,
+  }: { count?: number; withinKm?: number; from?: string } = {},
 ): NearbyKever[] {
   const origin = cemeteries.find((cemetery) => cemetery.slug === slug);
-  const from = origin ? pointFor(origin) : undefined;
+  const from = (origin ? pointFor(origin) : undefined) ?? coordinatesToPoint(fallback);
   if (!from) return [];
   return cemeteries
     .filter((cemetery) => cemetery.slug !== slug)
