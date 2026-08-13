@@ -241,6 +241,18 @@ describe("the order of the page", () => {
     assert.doesNotMatch(PROSE, /href="\/services"/);
   });
 
+  it("keeps Search / Ask / Plan above the panel on a narrow screen", () => {
+    const tools = readFileSync("components/HomeDiscoveryTools.tsx", "utf8");
+    const tablist = tools.indexOf('role="tablist"');
+    const panel = tools.indexOf("id={`home-tool-${id}`}");
+    assert.ok(tablist >= 0 && panel > tablist, "the three options must render before the selected panel");
+    // One row at every width — stacking the cards on a phone put Plan between
+    // a tap on Ask and TravelAssistantBox.
+    assert.match(tools, /grid grid-cols-3/);
+    assert.match(tools, /sticky/);
+    assert.match(tools, /hidden[^"]*sm:block/);
+  });
+
   it("CARRIES ONE PLANNING FORM, via Search / Ask / Plan", () => {
     // StaySearchForm lives once inside HomeDiscoveryTools (Plan), not twice on
     // the page and not as a second copy at the bottom.

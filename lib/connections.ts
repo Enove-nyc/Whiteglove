@@ -179,7 +179,7 @@ export const CONNECTIONS: Connection[] = [
     vars: ["TRAVELPAYOUTS_TOKEN"],
     what: "Travelpayouts token for the Flight Search API (live Aviasales offers on /book) and the Data API.",
     without:
-      "Flight search on /book still opens the Aviasales form and Kayak Compare. Live priced rows stay off until this token and the marker are both set and the Search API is approved.",
+      "Flight search on /book still opens Aviasales and Kayak Compare. Live priced rows stay off until this token and the marker are both set and the Search API is approved.",
     weight: "feature",
     where: "Travelpayouts dashboard → API token. Separate from the marker.",
   },

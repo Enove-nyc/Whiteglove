@@ -54,17 +54,18 @@ describe("live partner search wiring", () => {
     assert.match(ui, /carsEmbedPath/);
     assert.match(ui, /View & book/);
     assert.match(ui, /PartnerSearchWidget/);
+    assert.match(ui, /Open Aviasales/);
     assert.match(ui, /Compare on Kayak/);
     assert.doesNotMatch(ui, /Passengers/);
     assert.doesNotMatch(ui, /Driver age/);
     assert.doesNotMatch(ui, /Open with these dates in a new tab/);
   });
 
-  it("keeps cash flights on one form with trip type, live fares when real, and Kayak as a separate control", () => {
+  it("keeps cash flights on one form with trip type, live fares when real, and Aviasales/Kayak hand-offs — no embedded flight widget", () => {
     const ui = readFileSync("components/BookPartners.tsx", "utf8");
     const flights = ui.slice(ui.indexOf("function FlightsForm"), ui.indexOf("function HotelsForm"));
     const cars = ui.slice(ui.indexOf("function CarsForm"), ui.indexOf("function BookedPrompt"));
-    assert.match(flights, /PartnerSearchWidget/);
+    assert.doesNotMatch(flights, /PartnerSearchWidget/);
     assert.match(flights, /flightsEmbedPath/);
     assert.match(flights, /AirportAutocomplete/);
     assert.match(flights, /DateField/);
@@ -73,6 +74,7 @@ describe("live partner search wiring", () => {
     assert.match(flights, /multi-city/);
     assert.match(flights, /Nonstop only/);
     assert.match(flights, /\/api\/partners\/flights\/search/);
+    assert.match(flights, /Open Aviasales/);
     assert.match(flights, /Compare on Kayak/);
     assert.match(cars, /PartnerSearchWidget/);
     assert.match(cars, /carsEmbedPath/);

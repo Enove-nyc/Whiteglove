@@ -662,7 +662,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         <Section
           id="kosher-food"
           title="Kosher food"
-          lead="Kosher food listings for this destination and nearby White Glove recommendations."
+          lead={`Kosher restaurants, bakeries and groceries in ${destination.name} — kosher, not kosher-style. Confirm current supervision before you eat.`}
         >
           <Suspense fallback={<Skeleton what={`kosher food in ${destination.name}`} />}>
             <KosherFood destination={destination} />

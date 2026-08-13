@@ -7,12 +7,12 @@ import type { MapKind } from "@/lib/map-markers";
  * The markers used to be a simplified compass rose drawn in SVG. That kept the
  * colours clear at twenty-six pixels, but it was not the site's mark — the mark
  * is the glove with the compass in its palm. The artwork is baked into small
- * PNGs under /map-pins (see scripts/build-map-pins.mjs) so Google Maps shows
- * the same picture as the legend without resampling a full-size logo into
- * mush.
+ * PNGs under /map-pins (see scripts/build-map-pins.mjs) so Google Maps can
+ * show a sharp pin without resampling a full-size logo into mush.
  *
  * Kind is told by the colour of the mark itself (and by the legend and popup),
- * not by a coloured ring around the pin.
+ * not by a coloured ring around the pin. The cream disc is map-tile contrast
+ * only; filter chips paint the same colours onto the bare line-art mark.
  */
 
 export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin height in CSS pixels at full zoom. */ size: number }> = {
@@ -27,7 +27,7 @@ export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin 
 /** Intrinsic pixel size of each file in /map-pins (scripts/build-map-pins.mjs). */
 export const GLOVE_PIN_INTRINSIC = { width: 56, height: 78 };
 
-/** Public path for one kind's pin. Same file the legend draws. */
+/** Public path for one kind's map pin (tinted mark on a cream disc). */
 export function glovePinSrc(kind: MapKind): string {
   return `/map-pins/${kind}.png`;
 }

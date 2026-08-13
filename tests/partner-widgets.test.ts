@@ -199,11 +199,14 @@ describe("how the widgets are loaded", () => {
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 
-  it("shows the partner widget as fallback after search, with trip type on the White Glove form", () => {
+  it("hands cash flights off to Aviasales/Kayak from one White Glove form; cars keep the partner widget", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
     const flights = panel.slice(panel.indexOf("function FlightsForm"), panel.indexOf("function HotelsForm"));
     const cars = panel.slice(panel.indexOf("function CarsForm"), panel.indexOf("function BookedPrompt"));
-    assert.match(flights, /PartnerSearchWidget/);
+    assert.doesNotMatch(flights, /PartnerSearchWidget/);
+    assert.match(flights, /flightsEmbedPath/);
+    assert.match(flights, /Open Aviasales/);
+    assert.match(flights, /Compare on Kayak/);
     assert.match(flights, /AirportAutocomplete|DateField/);
     assert.match(flights, /round-trip/);
     assert.match(flights, /one-way/);

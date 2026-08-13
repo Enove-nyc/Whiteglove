@@ -94,7 +94,7 @@ const RESOURCES: Array<{ title: string; href: string; body: string; cta: string 
   {
     title: "Kosher food finder",
     href: "/kosher",
-    body: "White Glove's curated restaurants, bakeries and groceries.",
+    body: "White Glove's curated kosher restaurants, bakeries and groceries.",
     cta: "Browse the kosher food finder",
   },
   {
@@ -194,7 +194,7 @@ export default async function Home() {
   const kevarim = allTzaddikim();
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--ink)]">
+    <main className="min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
       <SearchMemory />
       <Navbar />

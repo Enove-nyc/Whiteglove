@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
 import StaySearchForm from "@/components/StaySearchForm";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
@@ -27,7 +27,7 @@ const TOOLS: Array<{
     id: "search",
     label: "Search",
     title: "Search White Glove",
-    body: "Looking for a particular destination, restaurant, place to stay, kever, cemetery, or town? Search everything published on White Glove.",
+    body: "Looking for a particular destination, kosher food listing, place to stay, kever, cemetery, or town? Search everything published on White Glove.",
     action: "Search the site",
   },
   {
@@ -75,16 +75,38 @@ function ToolIcon({ id }: { id: ToolId }) {
   );
 }
 
+function useStickyBelowHeader() {
+  const [top, setTop] = useState(96);
+  useEffect(() => {
+    const nav = document.querySelector('nav[aria-label="Main"]');
+    if (!nav) return;
+    const sync = () => setTop(Math.round(nav.getBoundingClientRect().height));
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+  return top;
+}
+
 export default function HomeDiscoveryTools() {
   // Plan is the primary vacation-planning action; Search and Ask stay one press away.
   const [tool, setTool] = useState<ToolId>("plan");
+  const stickyTop = useStickyBelowHeader();
 
   return (
     <div className="mt-8 max-w-5xl">
+      {/*
+        Narrow screens: all three controls stay in one row above the panel
+        (and stick under the header while the Ask assistant is tall). Stacking
+        the full cards used to put Plan between a tap on Ask and the panel,
+        so the assistant appeared only after a scroll.
+      */}
       <div
         role="tablist"
         aria-label="Search, ask, or plan"
-        className="grid gap-3 sm:grid-cols-3"
+        style={{ top: stickyTop }}
+        className="sticky z-[calc(var(--wg-z-header)-1)] -mx-5 grid grid-cols-3 gap-2 border-b border-[var(--gold-light)] bg-[var(--cream)]/95 px-5 py-2 backdrop-blur-md sm:static sm:top-auto sm:z-auto sm:mx-0 sm:gap-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
       >
         {TOOLS.map((item) => {
           const selected = tool === item.id;
@@ -97,19 +119,19 @@ export default function HomeDiscoveryTools() {
               aria-controls={`home-tool-${item.id}`}
               id={`home-tool-tab-${item.id}`}
               onClick={() => setTool(item.id)}
-              className={`rounded-2xl border px-4 py-4 text-left transition ${
+              className={`min-h-11 rounded-2xl border px-2 py-3 text-center transition sm:px-4 sm:py-4 sm:text-left ${
                 selected
                   ? "border-[var(--navy)] bg-[var(--navy)] text-white shadow-[0_14px_30px_rgba(23,45,82,.16)]"
                   : "border-[var(--gold-light)] bg-[var(--surface)] text-[var(--navy)] hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
               }`}
             >
-              <span className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] ${selected ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}`}>
+              <span className={`inline-flex w-full items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] sm:w-auto sm:justify-start sm:gap-2 ${selected ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}`}>
                 <ToolIcon id={item.id} />
                 {item.label}
               </span>
-              <span className="mt-2 block font-[family-name:var(--font-display)] text-xl leading-tight">{item.title}</span>
-              <span className={`mt-2 block text-sm leading-6 ${selected ? "text-slate-200" : "text-stone-600"}`}>{item.body}</span>
-              <span className={`mt-3 inline-flex min-h-11 items-center text-sm font-semibold ${selected ? "text-[var(--gold-light)]" : "text-[var(--navy)]"}`}>
+              <span className="mt-2 hidden font-[family-name:var(--font-display)] text-xl leading-tight sm:block">{item.title}</span>
+              <span className={`mt-2 hidden text-sm leading-6 sm:block ${selected ? "text-slate-200" : "text-stone-600"}`}>{item.body}</span>
+              <span className={`mt-3 hidden min-h-11 items-center text-sm font-semibold sm:inline-flex ${selected ? "text-[var(--gold-light)]" : "text-[var(--navy)]"}`}>
                 {item.action} →
               </span>
             </button>

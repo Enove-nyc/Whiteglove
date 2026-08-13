@@ -241,6 +241,7 @@ describe("the assistant asks about holidays first", () => {
     for (const prompt of [
       "Find a kosher summer vacation for a family.",
       "Plan four days in Rome for a couple.",
+      "Where is kosher food in Paris?",
       "Compare Alpine destinations for kosher travelers.",
       "Help me plan Shabbos in Paris.",
       "Plan a three-day heritage journey in Poland.",

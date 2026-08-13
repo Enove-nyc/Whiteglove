@@ -8,6 +8,7 @@ import { hotelButtonLabel } from "@/lib/stay22";
 import DateField from "@/components/DateField";
 import type { AffiliateRequest } from "@/lib/affiliate/partners";
 import { goHref } from "@/lib/affiliate/request";
+import { isPricedFlightRow } from "@/lib/flight-book-href";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
@@ -218,9 +219,10 @@ export default function BookPartners({
 
       <div className="px-5 py-7 sm:px-8 sm:py-9">
 
-      {/* Hotels: Stay22 live options when the API key is set. Flights and
-          cars: partner search widgets (prices on their form, not ours).
-          White Glove never takes payment — Duffel checkout stays admin-only. */}
+      {/* Hotels: Stay22 live options when the API key is set. Flights: one
+          White Glove form, then Aviasales / Kayak (or live rows when real).
+          Cars: Localrent partner form. White Glove never takes payment —
+          Duffel checkout stays admin-only. */}
       {pay === "cash" && kind === "flights" && (
         <FlightsForm onAdd={addToTrip} onOpened={setPending} prefill={prefill} />
       )}
@@ -250,7 +252,9 @@ export default function BookPartners({
           ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
           : kind === "hotels"
             ? "Places to stay are listed here when live options are available. Booking and payment happen with a trusted partner. After you book, you can add the details to your White Glove itinerary."
-            : "Search in the partner form on this page. Prices and payment stay with them — White Glove does not list a fare here. After you book, you can add the details to your itinerary."}
+            : kind === "cars"
+              ? "Search in the partner form on this page. Prices and payment stay with them — White Glove does not list a price here. After you book, you can add the details to your itinerary."
+              : "Search opens with booking partners. Prices and payment stay with them — White Glove does not list a fare here. After you book, you can add the details to your itinerary."}
       </p>
     </div>
   );
@@ -283,10 +287,11 @@ export type Prefill = { from?: string; to?: string; depart?: string; ret?: strin
 // ---- Cash --------------------------------------------------------------
 
 /**
- * Cash flights — one form, then real fares if Travelpayouts has them.
+ * Cash flights — one White Glove form, then partner hand-offs.
  *
- * Trip type and nonstop sit on this form and are passed into the partner
- * widget when live cache has nothing. From/to/dates are typed once.
+ * Trip type and nonstop sit here and are passed into Aviasales / Kayak with
+ * the typed route. Live priced rows appear only when Travelpayouts actually
+ * returns them. There is no second search form embedded on this page.
  */
 type TripKind = "round-trip" | "one-way" | "multi-city";
 type ExtraLeg = { from: string; to: string; date: string };
@@ -315,7 +320,6 @@ function FlightsForm({
   const [liveDetail, setLiveDetail] = useState("");
   const [rows, setRows] = useState<PartnerResultRow[]>([]);
   const [kayakHref, setKayakHref] = useState("");
-  const [showWidget, setShowWidget] = useState(false);
 
   const origin = airportCode(from);
   const destination = airportCode(to);
@@ -342,14 +346,17 @@ function FlightsForm({
     return { trip: "round-trip", legs: [legs[0]], ret };
   }
 
-  const widgetSrc = flightsEmbedPath({
-    origin,
-    destination,
-    departDate: depart,
-    returnDate: oneWay || multiCity ? "" : ret,
-    oneWay: oneWay || multiCity,
-    nonstop,
-  });
+  /** Same-origin Aviasales hand-off with the typed trip (marker stays server-side). */
+  function aviasalesHref() {
+    return flightsEmbedPath({
+      origin,
+      destination,
+      departDate: depart,
+      returnDate: oneWay || multiCity ? "" : ret,
+      oneWay: oneWay || multiCity,
+      nonstop,
+    });
+  }
   const summary = describeSearch(searchShape()) || "Flight";
 
   function validate() {
@@ -411,13 +418,23 @@ function FlightsForm({
     onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
   }
 
-  async function search() {
+  /**
+   * Open Aviasales with the typed trip on the same click (popup-safe). Live
+   * priced rows are loaded in the background when the Search API has any.
+   */
+  function openAviasales() {
     if (!validate()) return;
+    const href = aviasalesHref();
+    if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
+    onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
+    void loadLiveFares();
+  }
+
+  async function loadLiveFares() {
     setLoading(true);
     setRows([]);
     setLiveMessage("");
     setLiveDetail("");
-    setShowWidget(false);
     try {
       const response = await fetch("/api/partners/flights/search", {
         method: "POST",
@@ -434,12 +451,11 @@ function FlightsForm({
       const data = await response.json();
       setKayakHref(typeof data?.kayakHref === "string" ? data.kayakHref : "");
       if (data?.ok && data.mode === "live" && Array.isArray(data.flights) && data.flights.length > 0) {
-        const priced = data.flights.filter(
-          (flight: { network?: string; bookHref?: string; price?: number }) =>
-            flight.network === "travelpayouts" &&
-            typeof flight.price === "number" &&
-            (String(flight.bookHref ?? "").includes("aviasales.com") || String(flight.bookHref ?? "").startsWith("/api/partners/flights/offer?")),
-        );
+        // Only a real fare, on the network that quoted it, at the address the
+        // offer actually lives at — never a Kayak compare row dressed up as a
+        // price. Same list the server built these rows from; see
+        // lib/flight-book-href.ts.
+        const priced = data.flights.filter(isPricedFlightRow);
         if (priced.length > 0) {
           setLiveMessage(data.message ?? "");
           setLiveDetail(data.detail ?? "");
@@ -476,13 +492,12 @@ function FlightsForm({
           return;
         }
       }
-      setLiveMessage(data?.ok ? data.message : "No priced flights for those dates on White Glove.");
-      setLiveDetail(data?.detail ?? "Nothing is invented here. Compare on Kayak, or search in the partner form.");
-      setShowWidget(true);
+      // Usual case: Search API has nothing. The Aviasales tab already opened.
+      setLiveMessage("");
+      setLiveDetail("");
     } catch {
-      setLiveMessage("No priced flights for those dates on White Glove.");
-      setLiveDetail("Nothing is invented here. Compare on Kayak, or search in the partner form.");
-      setShowWidget(true);
+      setLiveMessage("");
+      setLiveDetail("");
     }
     setLoading(false);
   }
@@ -497,7 +512,6 @@ function FlightsForm({
             onClick={() => {
               setTrip(type);
               setRows([]);
-              setShowWidget(false);
               if (type === "multi-city") setExtraLegs((current) => (current.length ? current : [blankLeg()]));
             }}
             className={`min-h-11 w-full border px-2 py-2 text-xs font-bold uppercase tracking-[0.1em] sm:w-auto sm:px-3 ${trip === type ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)]"}`}
@@ -638,20 +652,11 @@ function FlightsForm({
       ) : null}
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
       <ActionRow
-        onSearch={search}
-        searchLabel="Search flights"
-        busy={loading}
+        onSearch={openAviasales}
+        searchLabel="Open Aviasales"
         secondary={{ label: "Compare on Kayak", onClick: openKayak }}
       />
       <PartnerResultsPanel loading={loading} message={liveMessage} detail={liveDetail} rows={rows} />
-      {showWidget ? (
-        <>
-          <p className="mt-6 text-sm leading-6 text-stone-600">
-            Search and prices are in the form below. White Glove does not list a fare here.
-          </p>
-          <PartnerSearchWidget src={widgetSrc} title="Flight search" minHeight={520} />
-        </>
-      ) : null}
       <button
         type="button"
         onClick={() => onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) })}

@@ -137,8 +137,9 @@ describe("saying where you are looking", () => {
 });
 
 describe("the glove marker", () => {
-  it("is one picture used by both the map and its legend", () => {
-    // A public PNG per kind, so the legend <img> and the map icon share a URL.
+  it("serves a public PNG per kind for the map markers", () => {
+    // Legend chips paint the same MAP_STYLE colours onto the bare mark; the
+    // map keeps the disc PNG for contrast on dark tiles.
     const pin = compassFor("kever");
     assert.equal(pin.url, glovePinSrc("kever"));
     assert.equal(pin.url, "/map-pins/kever.png");

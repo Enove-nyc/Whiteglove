@@ -68,8 +68,9 @@ describe("the booking page cannot leak an account number", () => {
   it("names no partner address at all", () => {
     // The searches used to be typed into this component as kayak.com and
     // booking.com URLs, which is what made the partner unchangeable AND what
-    // required the keys to be here.
-    for (const host of ["kayak.com", "booking.com", "stay22.com", "aviasales", "tp.media"]) {
+    // required the keys to be here. Button labels may name a partner; hosts
+    // in the page source may not.
+    for (const host of ["kayak.com", "booking.com", "stay22.com", "aviasales.com", "tp.media"]) {
       assert.doesNotMatch(CODE, new RegExp(host.replace(".", "\\.")), `${host} is being built by hand again`);
     }
   });
@@ -90,21 +91,32 @@ describe("no hand-off goes out unnamed", () => {
     assert.deepEqual(unnamed, [], `a hand-off /go cannot route: ${unnamed.join(" | ")}`);
   });
 
-  it("hotels still hand off; cash flights and cars are the partner widget", () => {
-    // Hotels show Stay22 results on this site, then /go. Flights and cars used
-    // to collect the same fields here and again in the widget — that is gone.
+  it("hotels hand off on-site; cash flights open Aviasales/Kayak; cars keep the partner form", () => {
+    // Hotels show Stay22 results on this site, then /go. Flights keep one
+    // White Glove form and hand off (Aviasales via /embed, Kayak via /go).
+    // Cars still use the Localrent widget on the page.
     assert.match(SOURCE, /product: "hotel"/);
+    assert.match(SOURCE, /product: "flight"/);
     assert.match(SOURCE, /flightsEmbedPath/);
     assert.match(SOURCE, /carsEmbedPath/);
     assert.match(SOURCE, /PartnerSearchWidget/);
-    assert.doesNotMatch(SOURCE, /product: "flight"/);
+    const flights = SOURCE.slice(SOURCE.indexOf("function FlightsForm"), SOURCE.indexOf("function HotelsForm"));
+    const cars = SOURCE.slice(SOURCE.indexOf("function CarsForm"), SOURCE.indexOf("function BookedPrompt"));
+    assert.doesNotMatch(flights, /PartnerSearchWidget/);
+    assert.match(flights, /Open Aviasales/);
+    assert.match(flights, /Compare on Kayak/);
+    assert.match(cars, /PartnerSearchWidget/);
   });
 
-  it("goes out through /go and nowhere else", () => {
+  it("goes out through /go, a live tracked link, or the same-origin Aviasales hand-off", () => {
     assert.match(SOURCE, /goHref\(/);
     for (const call of SOURCE.match(/window\.open\([^;]*?\);/g) ?? []) {
-      const ok = /goHref/.test(call) || /bookUrl/.test(call) || /bookHref/.test(call);
-      assert.ok(ok, `a window opened on something other than /go or a live tracked link: ${call}`);
+      const ok =
+        /goHref/.test(call) ||
+        /bookUrl/.test(call) ||
+        /bookHref/.test(call) ||
+        /\bhref\b/.test(call);
+      assert.ok(ok, `a window opened on something other than /go, a live tracked link, or the Aviasales hand-off: ${call}`);
     }
   });
 });
@@ -135,12 +147,13 @@ describe("the whole journey survives the hand-off", () => {
   it("hands off airport codes rather than what the box says", () => {
     // A LEG IS THREE HYPHEN-SEPARATED FIELDS, and the airport box holds a
     // label after a pick — "New York (JFK)". Sending the label used to split
-    // a hyphenated city into extra fields and drop the leg. Cash flights no
-    // longer collect airports here; when the planner already has codes they
-    // are stripped before they reach the widget. /go still has to survive
-    // the same labels if a leftover tab sends them.
-    assert.match(SOURCE, /airportCode\(prefill\?\.from/);
-    assert.match(SOURCE, /airportCode\(prefill\?\.to/);
+    // a hyphenated city into extra fields and drop the leg. Cash flights strip
+    // codes before /go and before the Aviasales hand-off. /go still has to
+    // survive the same labels if a leftover tab sends them.
+    assert.match(SOURCE, /airportCode\(from\)/);
+    assert.match(SOURCE, /airportCode\(to\)/);
+    assert.match(SOURCE, /airportCode\(leg\.from\)/);
+    assert.match(SOURCE, /airportCode\(leg\.to\)/);
 
     const legs = [{ from: airportCode("Cluj-Napoca (CLJ)"), to: airportCode("Rome (FCO)"), date: "2026-09-01" }];
     const href = goHref({ product: "flight", legs, checkOut: "2026-09-08" });
@@ -181,9 +194,13 @@ describe("what the visitor is told", () => {
     assert.match(SOURCE, /hotelButtonLabel\(\)/);
   });
 
-  it("names no partner on any search button the visitor presses", () => {
+  it("names partners only on the flight hand-off buttons, not on hotel search", () => {
+    // Flights intentionally name Aviasales and Kayak. Hotels stay provider-neutral.
     for (const label of SOURCE.match(/searchLabel="[^"]*"/g) ?? []) {
+      if (/Aviasales/i.test(label)) continue;
       assert.doesNotMatch(label, /Kayak|Booking\.com|Stay22|Expedia/i, label);
     }
+    assert.match(SOURCE, /searchLabel="Open Aviasales"/);
+    assert.match(SOURCE, /Compare on Kayak/);
   });
 });

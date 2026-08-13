@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import AssistantAnswer from "@/components/AssistantAnswer";
 
 /**
@@ -16,6 +17,7 @@ import AssistantAnswer from "@/components/AssistantAnswer";
 const EXAMPLES = [
   "Find a kosher summer vacation for a family.",
   "Plan four days in Rome for a couple.",
+  "Where is kosher food in Paris?",
   "Compare Alpine destinations for kosher travelers.",
   "Help me plan Shabbos in Paris.",
   "Plan a three-day heritage journey in Poland.",
@@ -66,8 +68,12 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
         Kosher travel, answered
       </h2>
       <p className="mt-2 text-sm leading-6 text-stone-600">
-        Not sure where to go or how to plan it? Ask for destination ideas, kosher travel guidance, Shabbos planning, or
-        help shaping an itinerary. AI-generated — not a search of this site.
+        Not sure where to go or how to plan it? Ask for destination ideas, kosher food, Shabbos planning, or help
+        shaping an itinerary. AI-generated — not a search of this site. For White Glove&apos;s curated listings, use the{" "}
+        <Link href="/kosher" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          kosher food finder
+        </Link>
+        .
       </p>
 
       <details className="mt-3 rounded-md border border-[var(--gold-light)] bg-white/70 px-4 py-2 sm:py-3">
@@ -84,7 +90,11 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
             Treat anything it says about a hechsher, a minyan, opening hours, prices or border and travel conditions as
             a starting point to confirm — with the place itself, with the local kehilla, or with us.
           </li>
-          <li>It answers kosher-travel questions only, and it declines the rest.</li>
+          <li>
+            It answers kosher-travel questions only, and it declines the rest. Kosher food means actually kosher — not
+            kosher-style, and not Israeli-style as a stand-in. It does not search the kosher food finder; that tool is
+            on its own page.
+          </li>
           <li>
             Your question is sent to the AI provider to be answered. We keep no copy of it and no conversation history:
             leaving this page ends it.
