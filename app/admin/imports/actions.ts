@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import {
   BULK_CONTENT_KINDS,
+  contentImportCandidatePath,
   type BulkContentCandidateInput,
   type BulkContentKind,
 } from "@/lib/bulk-content";
@@ -35,6 +36,16 @@ function nullable(formData: FormData, key: string, maximum?: number): string | n
   return value || null;
 }
 
+function sourceEvidence(formData: FormData): unknown {
+  const value = text(formData, "sourceEvidence", 10_000);
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
 function candidateInput(formData: FormData): BulkContentCandidateInput {
   const kind = text(formData, "kind", 40);
   if (!BULK_CONTENT_KINDS.includes(kind as BulkContentKind)) throw new Error("Choose a supported content type.");
@@ -60,6 +71,7 @@ function candidateInput(formData: FormData): BulkContentCandidateInput {
     sourceName: text(formData, "sourceName", 240),
     attribution: text(formData, "attribution", 500),
     license: nullable(formData, "license", 300),
+    sourceEvidence: sourceEvidence(formData),
   };
 }
 
@@ -110,17 +122,19 @@ export async function reviewContentImportCandidateAction(
       return { ok: true, message: intent === "reject" ? "Candidate rejected. It remains in the private audit trail." : "Candidate returned to the review queue." };
     }
 
-    await updateContentImportCandidate(id, candidateInput(formData));
+    const updated = await updateContentImportCandidate(id, candidateInput(formData));
     if (intent === "publish") {
       const published = await publishContentImportCandidate(id);
       revalidatePublishedTripContent();
       revalidatePath("/admin/imports");
       revalidatePath(`/admin/imports/${id}`);
+      revalidatePath(contentImportCandidatePath(updated.sourceId));
       return { ok: true, message: `Published as ${published.kind}. The public directories and search were refreshed.` };
     }
 
     revalidatePath("/admin/imports");
     revalidatePath(`/admin/imports/${id}`);
+    revalidatePath(contentImportCandidatePath(updated.sourceId));
     return { ok: true, message: "Candidate saved. It remains private until you publish it." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "The review change could not be saved." };

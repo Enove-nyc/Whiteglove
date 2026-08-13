@@ -171,6 +171,20 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             Licence
             <input name="license" defaultValue={candidate.license ?? ""} className={fieldClass} />
           </label>
+          <label className={`${labelClass} md:col-span-2`}>
+            Source evidence / review note
+            <textarea
+              name="sourceEvidence"
+              defaultValue={candidate.sourceEvidence == null
+                ? ""
+                : typeof candidate.sourceEvidence === "string"
+                  ? candidate.sourceEvidence
+                  : JSON.stringify(candidate.sourceEvidence, null, 2)}
+              rows={5}
+              placeholder="What was checked on the source page, including the date when useful."
+              className={fieldClass}
+            />
+          </label>
         </section>
       </fieldset>
 

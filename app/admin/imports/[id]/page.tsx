@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import ContentImportCandidateEditor from "@/components/ContentImportCandidateEditor";
+import { contentImportCandidatePath } from "@/lib/bulk-content";
 import { getContentImportCandidate } from "@/lib/content-imports";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export default async function ContentImportCandidatePage({ params }: { params: P
   const { id } = await params;
   const candidate = await getContentImportCandidate(id);
   if (!candidate) notFound();
+  if (id === candidate.id) permanentRedirect(contentImportCandidatePath(candidate.sourceId));
 
   return (
     <>
