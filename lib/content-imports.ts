@@ -463,6 +463,39 @@ export async function getContentImportCandidate(id: string): Promise<ContentImpo
   }
 }
 
+/**
+ * Rows the queue could plausibly match against — never the whole table.
+ *
+ * findBulkContentDuplicate only ever calls two things a duplicate: the same
+ * sourceId, or the same normalized name+city+country. Both are stored columns
+ * (sourceId, normalizedLocation), so the database can do the narrowing itself
+ * instead of every row being pulled across the wire so JavaScript can throw
+ * almost all of them away. A candidate pack runs to 15,000+ rows; comparing
+ * one new row against the whole pack, every time it is edited, was reading
+ * the entire queue out of Neon per edit — the actual cause of a month's
+ * public network transfer allowance going to admin review work nobody
+ * outside the team ever saw.
+ */
+async function possibleQueueDuplicates(
+  prisma: Awaited<ReturnType<typeof db>>,
+  candidate: PreparedBulkContentCandidate,
+  ignoreCandidateId?: string,
+) {
+  const sourceId = candidate.sourceId.trim();
+  const or: Array<Record<string, unknown>> = [{ normalizedLocation: candidate.normalizedLocation }];
+  if (sourceId) or.push({ sourceId: { equals: sourceId, mode: "insensitive" } });
+  if (candidate.sourceUrl.trim()) or.push({ sourceUrl: candidate.sourceUrl.trim() });
+
+  return prisma.contentImportCandidate.findMany({
+    where: {
+      ...(ignoreCandidateId ? { id: { not: ignoreCandidateId } } : {}),
+      OR: or,
+    },
+    select: { id: true, name: true, city: true, country: true, sourceUrl: true, sourceId: true },
+    take: 200,
+  });
+}
+
 async function ownedDuplicateFor(
   candidate: PreparedBulkContentCandidate,
   ignoreCandidateId?: string,
@@ -472,10 +505,7 @@ async function ownedDuplicateFor(
   const owned = findBulkContentDuplicate(candidate, known);
   if (owned) return owned;
 
-  const queueRows = await prisma.contentImportCandidate.findMany({
-    where: ignoreCandidateId ? { id: { not: ignoreCandidateId } } : undefined,
-    select: { id: true, name: true, city: true, country: true, sourceUrl: true, sourceId: true },
-  });
+  const queueRows = await possibleQueueDuplicates(prisma, candidate, ignoreCandidateId);
   const queued = findBulkContentDuplicate(candidate, queueRows.map((item) => ({
     ...item,
     id: `candidate:${item.id}`,
