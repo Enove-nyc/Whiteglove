@@ -173,3 +173,61 @@ export function sendProblem(input: {
   if (input.audienceSize === 0) return "Nobody on the list has asked about these topics, so there is nobody to send to.";
   return null;
 }
+
+/* ---- links in the words ------------------------------------------------- */
+
+/**
+ * A stretch of the message: plain words, or a link.
+ *
+ * WHY THIS EXISTS. The messages this feature is for are about a thing that is
+ * somewhere — a Pesach programme, a kosher place that has opened, a destination
+ * published. "Vienna is on the site" with no way to get to Vienna is a message
+ * that makes somebody go and look for it, and most of them will not. So a URL
+ * pasted into the body becomes a link in the email.
+ *
+ * NO MARKUP LANGUAGE. Not markdown, not HTML, not a link button with its own
+ * two fields. The owner writes the message the way he would write it to one
+ * person, pastes an address where he would paste one, and it is clickable. A
+ * syntax to learn is a syntax to get wrong at 200 recipients.
+ */
+export type BodySegment = { text: string; url?: string };
+
+/**
+ * `http://` and `https://` only.
+ *
+ * NOT bare "whitegloveitineraries.com" — the text of an email is full of things
+ * that look like hostnames ("Pesach 5787.Booking opens") and turning those into
+ * links produces a message that looks broken. And NOT other schemes: `mailto:`
+ * is harmless but `javascript:` and `data:` are not, and a rule that admits one
+ * scheme is a rule somebody will widen later.
+ *
+ * The trailing-punctuation trim is what makes it usable in a sentence — "see
+ * https://example.com/vienna." should link the address, not the full stop.
+ */
+const URL_PATTERN = /https?:\/\/[^\s<>"']+/g;
+
+export function splitLinks(block: string): BodySegment[] {
+  const out: BodySegment[] = [];
+  let at = 0;
+  for (const match of block.matchAll(URL_PATTERN)) {
+    const start = match.index ?? 0;
+    let url = match[0];
+    // Punctuation that ended the sentence rather than the address. Closing
+    // brackets only count when something opened them inside the URL itself.
+    let trimmed = "";
+    for (;;) {
+      const last = url.slice(-1);
+      const isStop = ".,;:!?".includes(last);
+      const isCloser = (last === ")" && !url.includes("(")) || (last === "]" && !url.includes("["));
+      if (!isStop && !isCloser) break;
+      trimmed = last + trimmed;
+      url = url.slice(0, -1);
+    }
+    if (!url) continue;
+    if (start > at) out.push({ text: block.slice(at, start) });
+    out.push({ text: url, url });
+    at = start + match[0].length - trimmed.length;
+  }
+  if (at < block.length) out.push({ text: block.slice(at) });
+  return out.length > 0 ? out : [{ text: block }];
+}

@@ -13,6 +13,7 @@ import {
   newBlast,
   readBlastTopics,
   sendProblem,
+  splitLinks,
 } from "@/lib/email-blast";
 
 /**
@@ -207,5 +208,90 @@ describe("what every message carries", () => {
     const route = readFileSync("app/api/alerts/unsubscribe/route.ts", "utf8");
     const post = route.slice(route.indexOf("export async function POST"), route.indexOf("export async function GET"));
     assert.match(post, /searchParams\.get\("token"\)/);
+  });
+});
+
+describe("links in the words", () => {
+  /**
+   * The messages this feature is for are about a thing that is somewhere — a
+   * Pesach programme, a kosher place that has opened, a destination published.
+   * "Vienna is on the site" with no way to get to Vienna makes somebody go and
+   * look for it, and most of them will not. So an address pasted into the body
+   * becomes a link, with no syntax for the owner to learn or get wrong.
+   */
+  it("finds an address on its own line", () => {
+    assert.deepEqual(splitLinks("https://example.com/vienna"), [
+      { text: "https://example.com/vienna", url: "https://example.com/vienna" },
+    ]);
+  });
+
+  it("finds one in the middle of a sentence, keeping the words around it", () => {
+    const parts = splitLinks("Vienna is up at https://example.com/vienna today.");
+    assert.deepEqual(parts, [
+      { text: "Vienna is up at " },
+      { text: "https://example.com/vienna", url: "https://example.com/vienna" },
+      { text: " today." },
+    ]);
+  });
+
+  it("LEAVES THE FULL STOP OUT OF THE ADDRESS", () => {
+    // "see https://example.com/vienna." must link the address, not the
+    // sentence's punctuation — otherwise every link at the end of a sentence
+    // is a broken link.
+    const parts = splitLinks("See https://example.com/vienna.");
+    assert.equal(parts[1].url, "https://example.com/vienna");
+    assert.equal(parts[2].text, ".");
+    for (const stop of [",", ";", ":", "!", "?"]) {
+      const one = splitLinks(`See https://example.com/a${stop}`);
+      assert.equal(one[1].url, "https://example.com/a", `${stop} was taken into the address`);
+    }
+  });
+
+  it("keeps a closing bracket that the address itself opened", () => {
+    const kept = splitLinks("https://example.com/a_(b)");
+    assert.equal(kept[0].url, "https://example.com/a_(b)");
+    const dropped = splitLinks("(see https://example.com/a)");
+    assert.equal(dropped[1].url, "https://example.com/a");
+  });
+
+  it("finds several in one paragraph", () => {
+    const parts = splitLinks("One https://a.example and two https://b.example end");
+    assert.deepEqual(
+      parts.filter((p) => p.url).map((p) => p.url),
+      ["https://a.example", "https://b.example"],
+    );
+  });
+
+  it("LINKS NOTHING BUT HTTP AND HTTPS", () => {
+    // javascript: and data: in an email somebody was sent, from an address they
+    // trust, is exactly the thing not to build. And a bare hostname is not
+    // linked either: ordinary prose is full of things that look like one
+    // ("Pesach 5787.Booking opens"), and linking those makes the message look
+    // broken.
+    for (const body of [
+      "javascript:alert(1)",
+      "data:text/html,<script>alert(1)</script>",
+      "mailto:someone@example.com",
+      "whitegloveitineraries.com/vienna",
+      "Pesach 5787.Booking opens soon",
+    ]) {
+      assert.deepEqual(splitLinks(body), [{ text: body }], `${body} was turned into a link`);
+    }
+  });
+
+  it("gives back the plain words when there is no address at all", () => {
+    assert.deepEqual(splitLinks("Nothing to click here."), [{ text: "Nothing to click here." }]);
+    assert.deepEqual(splitLinks(""), [{ text: "" }]);
+  });
+
+  it("SPLITS BEFORE ESCAPING, so an address with an & survives", () => {
+    // Escaping first would turn "&" into "&amp;" inside the href and send the
+    // reader somewhere else. The email builder splits, then escapes each part.
+    const parts = splitLinks("Look: https://example.com/search?a=1&b=2 now");
+    assert.equal(parts[1].url, "https://example.com/search?a=1&b=2");
+    const email = readFileSync("lib/email.ts", "utf8");
+    const fn = email.slice(email.indexOf("export async function sendBlastEmail"));
+    assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeHtml(segment.text)"));
+    assert.match(fn, /escapeHtml\(segment\.url\)/);
   });
 });

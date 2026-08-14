@@ -9,7 +9,7 @@ import {
   testBlastAction,
 } from "@/app/admin/alerts/send/actions";
 import { ALERT_TOPIC_BLURBS, ALERT_TOPIC_LABELS, ALERT_TOPICS, type AlertTopic } from "@/lib/email-alerts";
-import { describeBlast, type EmailBlast, MAX_BODY, MAX_SUBJECT } from "@/lib/email-blast";
+import { describeBlast, type EmailBlast, MAX_BODY, MAX_SUBJECT, splitLinks } from "@/lib/email-blast";
 
 /**
  * Writing and sending one message to the people who asked for it.
@@ -85,6 +85,10 @@ export default function BlastComposer({
 
   // The audience for what is being written, counted the same way the server
   // will count it: each person once, if they ticked ANY of the chosen topics.
+  // Counted as they type, so a mistyped address — one that will go out as
+  // plain grey words rather than a link — is visible before it is sent to two
+  // hundred people rather than after.
+  const linkCount = splitLinks(body).filter((segment) => segment.url).length;
   const wantedMask = chosen.reduce((mask, topic) => mask | (1 << ALERT_TOPICS.indexOf(topic)), 0);
   const reach = wantedMask === 0 ? 0 : audienceMasks.filter((mask) => (mask & wantedMask) !== 0).length;
 
@@ -186,12 +190,13 @@ export default function BlastComposer({
               onChange={(e) => setBody(e.target.value)}
               rows={10}
               maxLength={MAX_BODY}
-              placeholder={"Write it the way you would write to one person.\n\nA blank line starts a new paragraph. There is no other formatting — no headings, no pictures, no links that look like buttons."}
+              placeholder={"Write it the way you would write to one person.\n\nA blank line starts a new paragraph. Paste a web address anywhere — https://whitegloveitineraries.com/destinations/vienna — and it becomes a link they can press."}
               className={input}
             />
             <span className="mt-1 block text-xs text-stone-500">
-              {body.length}/{MAX_BODY}. A blank line starts a new paragraph. The footer — why they are getting this,
-              and how to stop — is added to every message and cannot be removed.
+              {body.length}/{MAX_BODY}. A blank line starts a new paragraph, and any web address you paste becomes a
+              link{linkCount > 0 ? ` — ${linkCount} so far` : ""}. The footer — why they are getting this, and how to
+              stop — is added to every message and cannot be removed.
             </span>
           </label>
 
