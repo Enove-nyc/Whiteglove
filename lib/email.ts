@@ -1,4 +1,5 @@
 import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
+import { splitLinks } from "@/lib/email-blast";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -455,11 +456,21 @@ export async function sendBlastEmail(input: {
     .map((block) => block.trim())
     .filter(Boolean);
 
+  // Split BEFORE escaping, so an address containing "&" survives: escaping
+  // first would turn it into "&amp;" and the href would go somewhere else.
+  // Both the text and the href are escaped after the split, so nothing the
+  // owner types can close the tag.
   const htmlBody = paragraphs
-    .map(
-      (block) =>
-        `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;margin:0 0 16px;">${escapeHtml(block).replace(/\n/g, "<br>")}</p>`,
-    )
+    .map((block) => {
+      const inner = splitLinks(block)
+        .map((segment) => {
+          const text = escapeHtml(segment.text).replace(/\n/g, "<br>");
+          if (!segment.url) return text;
+          return `<a href="${escapeHtml(segment.url)}" style="color:#7a602c;">${text}</a>`;
+        })
+        .join("");
+      return `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;margin:0 0 16px;">${inner}</p>`;
+    })
     .join("");
 
   const url = escapeHtml(input.unsubscribeUrl);
