@@ -406,7 +406,7 @@ export default async function Home() {
                     {season.label}
                   </span>
                   <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                    {count} destination{count === 1 ? "" : "s"} →
+                    Open →
                   </span>
                 </Link>
               </li>

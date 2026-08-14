@@ -182,7 +182,7 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
 
       <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-          Recorded so far{confirmed.length > 0 ? ` · ${confirmed.length}` : ""}
+          Recorded
         </h2>
         {/* Looking a shop up by name, rather than remembering which town it
             was in and searching that town again. Filters both lists at once. */}
@@ -199,7 +199,7 @@ export default function HechsherEditor({ confirmed, agencies, ownAdded, storeRea
           <p className="mt-2 text-sm text-stone-600">
             {visibleConfirmed.length === 0
               ? `Nothing recorded matching “${find.trim()}”.`
-              : `${visibleConfirmed.length} of ${confirmed.length} shown.`}
+              : "Filtered results."}
           </p>
         )}
         {confirmed.length === 0 ? (

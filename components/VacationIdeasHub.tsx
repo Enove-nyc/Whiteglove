@@ -226,10 +226,7 @@ export default function VacationIdeasHub({
             every time the number changes, and announces nothing reliably when
             the button appears or disappears. */}
         <p role="status" aria-live="polite" className="text-sm font-semibold text-[var(--navy)]">
-          {results.length === cards.length
-            ? `${cards.length} destinations`
-            : `Showing ${results.length} of ${cards.length} destinations`}
-          {active > 0 && `, ${active === 1 ? "1 filter" : `${active} filters`} applied`}
+          {active > 0 ? "Filtered destinations" : "All destinations"}
         </p>
         {active > 0 && (
           <button
@@ -238,7 +235,7 @@ export default function VacationIdeasHub({
             className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
           >
             All destinations
-            <span className="sr-only"> — clear {active === 1 ? "the filter" : `all ${active} filters`}</span>
+            <span className="sr-only"> — clear filters</span>
           </button>
         )}
       </div>

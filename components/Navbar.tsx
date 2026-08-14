@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import DestinationSearch from "@/components/DestinationSearch";
 import MembersOnlyLink from "@/components/MembersOnlyLink";
 import SitePromotions from "@/components/SitePromotions";
 import { GATED_FEATURES } from "@/lib/members-only";
@@ -240,19 +239,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Always its own row at desktop: putting this beside the bar at 2xl
-            squeezed Heritage Travel off the end and left the suggestions panel
-            only as wide as a 15rem field. On phones the labeled Search button
-            expands to a full-width site search — distinct from the AI assistant. */}
-        <div className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-3 sm:px-8">
-          <div className="md:hidden">
-            <DestinationSearch compact mobileCollapse />
-          </div>
-          <div className="hidden md:block">
-            <DestinationSearch compact />
-          </div>
-        </div>
-
         {menuOpen && (
           <div id="site-menu" className="absolute left-0 right-0 top-full z-[1] w-full min-w-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
             <div className="mx-auto grid w-full max-h-[calc(100vh-5rem)] max-w-7xl grid-cols-1 gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-2 md:py-9 lg:grid-cols-3">
@@ -271,19 +257,11 @@ export default function Navbar() {
                             onClick={() => setMenuOpen(false)}
                             href={item.href}
                             aria-current={current ? "page" : undefined}
-                            className={`flex min-h-11 items-start justify-between gap-3 rounded-md px-3 py-2.5 transition ${
+                            className={`flex min-h-12 items-center justify-between gap-3 rounded-xl px-4 py-3 transition ${
                               current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                             }`}
                           >
-                            <span>
-                              <span className="block text-sm font-semibold">{item.label}</span>
-                              {/* What is actually behind it. A menu of bare
-                                  nouns is a menu somebody presses once and
-                                  learns nothing from. */}
-                              <span className={`mt-0.5 block text-xs leading-5 ${current ? "text-slate-200" : "text-stone-500"}`}>
-                                {item.description}
-                              </span>
-                            </span>
+                            <span className="block text-sm font-semibold">{item.label}</span>
                             <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>→</span>
                           </Link>
                         </li>

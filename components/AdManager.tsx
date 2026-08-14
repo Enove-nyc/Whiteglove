@@ -108,9 +108,7 @@ export default function AdManager({ initial, configured, today }: { initial: Pro
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-stone-600">
-          {ads.length === 0
-            ? "No advertisements yet."
-            : `${ads.length} advertisement${ads.length === 1 ? "" : "s"} · ${ads.filter((a) => adStatus(a).label === "Live").length} live`}
+          {ads.length === 0 ? "No advertisements yet." : "Advertisements"}
         </p>
         <button
           type="button"

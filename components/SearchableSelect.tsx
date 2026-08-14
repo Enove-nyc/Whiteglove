@@ -138,7 +138,7 @@ export default function SearchableSelect({
       {open && (
         <div className="absolute left-0 right-0 top-full z-40 mt-1 border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.16)]">
           <p className="border-b border-[var(--gold-light)] px-3 py-1.5 text-[11px] text-stone-500">
-            {matches.length === options.length ? `${options.length} to choose from` : `${matches.length} of ${options.length}`}
+            {matches.length === options.length ? "Choose an option" : "Filtered options"}
           </p>
           {matches.length === 0 ? (
             <p className="px-3 py-3 text-sm text-stone-600">{emptyText}</p>

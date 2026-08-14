@@ -301,7 +301,7 @@ function Card({
   );
 }
 
-function SectionHeader({ eyebrow, title, hint, count }: { eyebrow: string; title: string; hint?: string; count?: number }) {
+function SectionHeader({ eyebrow, title, hint }: { eyebrow: string; title: string; hint?: string; count?: number }) {
   return (
     <div className="mb-5 flex items-end justify-between gap-4">
       <div>
@@ -309,9 +309,6 @@ function SectionHeader({ eyebrow, title, hint, count }: { eyebrow: string; title
         <h2 className="mt-1.5 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{title}</h2>
         {hint && <p className="mt-1 text-sm text-stone-500">{hint}</p>}
       </div>
-      {typeof count === "number" && (
-        <span className="shrink-0 rounded-full border border-[var(--gold-light)] px-3 py-1 text-xs font-bold text-[var(--navy)]">{count}</span>
-      )}
     </div>
   );
 }

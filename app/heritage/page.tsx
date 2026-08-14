@@ -10,7 +10,6 @@ import { guidedDestinations, destinationHref } from "@/data/destinations";
 import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
-import { allTzaddikim } from "@/lib/tzaddikim";
 import { TRUST_LEVELS } from "@/lib/trust-status";
 
 // NOT force-dynamic any more, and this needed a real fix rather than deleting
@@ -54,8 +53,6 @@ export const metadata = pageMetadata({
  */
 export default async function HeritagePage() {
   const [cemeteries, guides] = await Promise.all([getPublicCemeteryList(), Promise.resolve(guidedDestinations())]);
-  const tzaddikim = allTzaddikim();
-
   // Countries, by how much we hold for each. Built from the records rather
   // than typed out, so a country cannot appear here with nothing behind it.
   const byCountry = new Map<string, number>();
@@ -130,35 +127,30 @@ export default async function HeritagePage() {
             {
               href: "/tzaddikim",
               title: "Who is buried where",
-              count: `${tzaddikim.length} kevarim`,
               body: "By the name he is known by, because somebody looking for the Noam Elimelech is not looking under W.",
               cta: "Browse kevarim by name",
             },
             {
               href: "/cemeteries",
               title: "Batei hachaim",
-              count: `${cemeteries.length} records`,
               body: "Cemetery by cemetery: the known kevarim, the address, arrival notes, and the shomer where we hold one.",
               cta: "Browse the batei hachaim",
             },
             {
               href: "/stops",
               title: "Towns and guides",
-              count: `${guides.length} full guides`,
               body: "The town around the kever — where to eat, where to daven, where to sleep, and how to get in.",
               cta: "Browse towns and guides",
             },
             {
               href: "/map",
               title: "On a map",
-              count: "Everything plottable",
               body: "Every kever, place to stay and airport the site holds, in one view. Useful for working out an order.",
               cta: "Open the map",
             },
           ].map((card) => (
             <article key={card.href} className="wg-card flex h-full flex-col border border-[var(--gold-light)] bg-[var(--surface)] p-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{card.count}</p>
-              <h3 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+              <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {card.title}
               </h3>
               <p className="mt-3 flex-1 leading-7 text-stone-600">{card.body}</p>

@@ -1,12 +1,11 @@
 import AdminNavLink from "@/components/AdminNavLink";
 import AdminSignOut from "@/components/AdminSignOut";
-import { getAdminContent, getPromotionsDashboard } from "@/lib/admin-content";
-import { readDestinationFacts } from "@/lib/completeness-source";
+import { getAdminContent } from "@/lib/admin-content";
 import { currentAdmin } from "@/lib/admin-current";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { canOpen, describeAreas } from "@/lib/admin-permissions";
-import { ADMIN_TOTAL_CARDS, contentTotals } from "@/lib/admin-overview";
+import { ADMIN_TOTAL_CARDS } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
@@ -22,15 +21,14 @@ export const dynamic = "force-dynamic";
 const cardClass =
   "rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_1px_2px_rgba(23,45,82,.04)]";
 
-function QuickAction({ href, title, detail, number }: { href: string; title: string; detail: string; number: string }) {
+function QuickAction({ href, title, detail }: { href: string; title: string; detail: string }) {
   return (
     <AdminNavLink
       href={href}
       className={`${cardClass} group flex min-h-44 flex-col justify-between p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]`}
     >
       <span>
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{number}</span>
-        <span className="mt-4 block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+        <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
           {title}
         </span>
         <span className="mt-2 block text-sm leading-6 text-stone-600">{detail}</span>
@@ -42,13 +40,11 @@ function QuickAction({ href, title, detail, number }: { href: string; title: str
 
 function WorkPanel({
   title,
-  count,
   children,
   href,
   hrefLabel,
 }: {
   title: string;
-  count: number;
   children: React.ReactNode;
   href: string;
   hrefLabel: string;
@@ -57,9 +53,6 @@ function WorkPanel({
     <section className={`${cardClass} flex h-full flex-col p-5`}>
       <div className="flex items-start justify-between gap-4">
         <h3 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{title}</h3>
-        <span className={`min-w-8 rounded-full px-2.5 py-1 text-center text-xs font-bold ${count > 0 ? "bg-[var(--navy)] text-white" : "bg-stone-100 text-stone-500"}`}>
-          {count}
-        </span>
       </div>
       <div className="mt-3 flex-1 text-sm leading-6 text-stone-600">{children}</div>
       <AdminNavLink href={href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
@@ -69,32 +62,19 @@ function WorkPanel({
   );
 }
 
-function Metric({ label, value, detail }: { label: string; value: string | number; detail: string }) {
-  return (
-    <div className="border-l-2 border-[var(--gold-light)] pl-4">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">{label}</p>
-      <p className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-stone-500">{detail}</p>
-    </div>
-  );
-}
-
 const totalCardClass =
   "rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
 
 function TotalCard({
   label,
-  value,
   href,
 }: {
   label: string;
-  value: number;
   href: string | null;
 }) {
   const body = (
     <>
       <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</span>
-      <span className="mt-1 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
     </>
   );
 
@@ -115,7 +95,7 @@ function TotalCard({
       <AdminNavLink
         href={href}
         className={`${totalCardClass} flex w-full min-w-0 flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
-        aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
+        aria-label={`Open ${label.toLowerCase()}.`}
       >
         {body}
       </AdminNavLink>
@@ -130,10 +110,9 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, promotions, content, pages, picturesWaiting, messages, importReviewQueue] = await Promise.all([
+  const [stats, inventory, content, pages, picturesWaiting, messages, importReviewQueue] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
-    getPromotionsDashboard(),
     getAdminContent(),
     listPagesForAdmin(),
     countPendingSubmissions(),
@@ -170,7 +149,7 @@ export default async function AdminHome() {
   // this is dealt with, which is exactly why it needs saying here.
   if (picturesWaiting > 0) {
     alerts.push({
-      text: `${picturesWaiting} picture${picturesWaiting === 1 ? "" : "s"} sent in by visitors, waiting for you. Nothing is on the site until you say so.`,
+      text: "Visitor pictures are waiting for review.",
       href: "/admin/photos",
       label: "Look at them",
     });
@@ -193,32 +172,27 @@ export default async function AdminHome() {
   const plansWaiting = (await listPlanRequests()).filter((r) => r.state === "asked").length;
   if (plansWaiting > 0) {
     alerts.push({
-      text: `${plansWaiting} ${plansWaiting === 1 ? "person has" : "people have"} asked about a Pro or Business account. Nothing is charged either way — they are waiting on an answer from you.`,
+      text: "Account requests are waiting for an answer.",
       href: "/admin/accounts",
       label: "Answer them",
     });
   }
 
-  // Counted from the database where there is one, so the averages move when
-  // the owner fills something in rather than only when the code changes.
-  const totals = contentTotals(await readDestinationFacts());
   const reviewWaiting = importReviewQueue.error ? 0 : importReviewQueue.counts.awaitingVerification;
   if (reviewWaiting > 0 && may("/admin/imports/needs-review")) {
     alerts.push({
-      text: `${reviewWaiting} listing candidate${reviewWaiting === 1 ? "" : "s"} still need verification before they can become public White Glove listings.`,
+      text: "Listing candidates need verification.",
       href: "/admin/imports/needs-review",
       label: "Open needs review",
     });
   }
-  const attentionCount = alerts.length + unpublishedPages.length + pendingSuggestions.length + unfinished.length;
-
   const visibleAlerts = alerts.filter((alert) => may(alert.href));
   const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));
   const quickActions = [
-    { number: "01", href: "/admin/pages", title: "Edit a page", detail: "Words or pictures on any page." },
-    { number: "02", href: "/admin/directory", title: "Directory", detail: "A town, beis hachaim, contact, or business." },
-    { number: "03", href: "/admin/growth", title: "Growth", detail: "Searches, destinations and alerts." },
-    { number: "04", href: "/admin/advertisements", title: "Advertisements", detail: "Banners, popups and promotions." },
+    { href: "/admin/pages", title: "Edit a page", detail: "Words or pictures." },
+    { href: "/admin/directory", title: "Directory", detail: "Places and businesses." },
+    { href: "/admin/growth", title: "Growth", detail: "Searches and visits." },
+    { href: "/admin/advertisements", title: "Advertisements", detail: "Banners and promotions." },
   ].filter((action) => may(action.href));
   const sections = ADMIN_SECTIONS.filter((section) => section.href !== "/admin")
     .map((section) => ({ ...section, children: (section.children ?? []).filter((child) => may(child.href)) }))
@@ -254,7 +228,6 @@ export default async function AdminHome() {
             <TotalCard
               key={card.key}
               label={card.label}
-              value={totals[card.key]}
               href={may(card.href) ? card.href : null}
             />
           ))}
@@ -284,7 +257,6 @@ export default async function AdminHome() {
         <section aria-labelledby="attention-heading" className="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5">
           <div className="flex items-center justify-between gap-4">
             <h2 id="attention-heading" className="font-[family-name:var(--font-display)] text-2xl text-amber-950">Needs attention</h2>
-            <span className="rounded-full bg-amber-200 px-2.5 py-1 text-xs font-bold text-amber-950">{visibleAlerts.length}</span>
           </div>
           <ul className="mt-4 divide-y divide-amber-200">
             {visibleAlerts.map((alert) => (
@@ -299,31 +271,13 @@ export default async function AdminHome() {
         </section>
       )}
 
-      <section aria-labelledby="snapshot-heading" className={`${cardClass} mt-7 p-5 sm:p-6`}>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 id="snapshot-heading" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Today</h2>
-          <p className="text-xs text-stone-500">{stats.configured ? "Live" : "Not connected"}</p>
-        </div>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          <Metric label="Visits" value={stats.configured ? stats.visitsToday : "—"} detail="Today" />
-          <Metric label="Searches" value={stats.configured ? stats.searchesToday : "—"} detail="Today" />
-          <Metric label="Advertisements" value={promotions.enabledPromotions} detail="Running" />
-          <Metric label="Needs attention" value={attentionCount} detail="Drafts, suggestions, checklist" />
-        </div>
-        {stats.configured && stats.topSearches.length > 0 && (
-          <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
-            Most searched: <strong className="font-semibold text-[var(--navy)]">{stats.topSearches.slice(0, 3).map((s) => s.label).join(", ")}</strong>
-          </p>
-        )}
-      </section>
-
       {quickActions.length > 0 && (
       <section aria-labelledby="quick-actions-heading" className="mt-9">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Common jobs</p>
         <h2 id="quick-actions-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Quick actions</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {quickActions.map((action) => (
-            <QuickAction key={action.href} number={action.number} href={action.href} title={action.title} detail={action.detail} />
+            <QuickAction key={action.href} href={action.href} title={action.title} detail={action.detail} />
           ))}
         </div>
       </section>
@@ -340,7 +294,7 @@ export default async function AdminHome() {
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {may("/admin/pages") && (
-          <WorkPanel title="Waiting to be published" count={unpublishedPages.length} href="/admin/pages" hrefLabel="Open pages">
+          <WorkPanel title="Waiting to be published" href="/admin/pages" hrefLabel="Open pages">
             {unpublishedPages.length === 0 ? (
               <p>Every page is published. Nothing is sitting as a draft.</p>
             ) : (
@@ -357,7 +311,7 @@ export default async function AdminHome() {
           )}
 
           {may("/admin/content") && (
-          <WorkPanel title="Suggestions" count={pendingSuggestions.length} href="/admin/content" hrefLabel="Read suggestions">
+          <WorkPanel title="Suggestions" href="/admin/content" hrefLabel="Read suggestions">
             {pendingSuggestions.length === 0 ? (
               <p>No visitor corrections are waiting.</p>
             ) : (
@@ -374,21 +328,21 @@ export default async function AdminHome() {
           )}
 
                     {may("/admin/imports/needs-review") && (
-          <WorkPanel title="Listing candidates" count={reviewWaiting} href="/admin/imports/needs-review" hrefLabel="Open needs review">
+          <WorkPanel title="Listing candidates" href="/admin/imports/needs-review" hrefLabel="Open needs review">
             {reviewWaiting === 0 ? (
               <p>No listing candidates are waiting for verification.</p>
             ) : (
-              <p>{reviewWaiting} candidate{reviewWaiting === 1 ? " is" : "s are"} still awaiting verification before becoming a public White Glove listing.</p>
+              <p>Listings are waiting for verification.</p>
             )}
           </WorkPanel>
           )}
 
 {may("/admin/inventory") && (
-          <WorkPanel title="Unfinished checklist" count={unfinished.length} href="/admin/inventory" hrefLabel="Open checklist">
+          <WorkPanel title="Unfinished checklist" href="/admin/inventory" hrefLabel="Open checklist">
             {unfinished.length === 0 ? (
               <p>Nothing on the checklist is outstanding.</p>
             ) : (
-              <p>{unfinished.length} {unfinished.length === 1 ? "item is" : "items are"} marked unfinished, including pages to write and details to confirm.</p>
+              <p>Items are marked unfinished.</p>
             )}
           </WorkPanel>
           )}

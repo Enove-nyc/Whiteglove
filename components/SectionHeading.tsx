@@ -10,7 +10,6 @@ type SectionHeadingProps = {
 export default function SectionHeading({
   eyebrow,
   title,
-  description,
   centered = false,
 }: SectionHeadingProps) {
   return (
@@ -22,7 +21,6 @@ export default function SectionHeading({
         {eyebrow}
       </p>
       <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">{title}</h2>
-      {description && <p className="mt-3 text-base leading-7 text-stone-600">{description}</p>}
     </div>
   );
 }

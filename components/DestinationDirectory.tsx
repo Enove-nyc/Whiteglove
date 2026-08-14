@@ -146,7 +146,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
                 className={`${on ? chipOn : chipOff} disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 <span aria-hidden="true" className="mr-1.5">{on ? "✓" : "○"}</span>
-                {need.label} ({count})
+                {need.label}
               </button>
             );
           })}
@@ -186,8 +186,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] pt-4">
           <p className="text-sm text-stone-600" role="status">
-            <strong className="text-[var(--navy)]">{results.length}</strong> of {entries.length}
-            {results.length === entries.length ? " places" : " places match"}
+            {results.length === entries.length ? "All places" : "Filtered places"}
           </p>
           {active ? (
             <button type="button" onClick={() => { setFilters({ ...NO_FILTERS }); setShown(PAGE); }} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
@@ -229,9 +228,8 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
           {shown < results.length && (
             <div className="mt-8 text-center">
               <button type="button" onClick={() => setShown((current) => current + PAGE)} className="inline-flex min-h-12 items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">
-                Show {Math.min(PAGE, results.length - shown)} more
+                Show more
               </button>
-              <p className="mt-3 text-sm text-stone-500">Showing {shown} of {results.length}.</p>
             </div>
           )}
         </>

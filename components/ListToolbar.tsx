@@ -62,8 +62,8 @@ export default function ListToolbar({
 
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(auto-fit,minmax(0,1fr))]">
-        <label className="block">
+      <div className="grid gap-4">
+        <label className="block max-w-2xl">
           <span className={captionClass}>Search</span>
           <input
             type="search"
@@ -74,19 +74,24 @@ export default function ListToolbar({
             aria-label={`Search ${noun}`}
           />
         </label>
-        {filters.map((filter) => (
-          <label key={filter.label} className="block">
-            <span className={captionClass}>{filter.label}</span>
-            <select value={filter.value} onChange={(e) => filter.onChange(e.target.value)} className={inputClass}>
-              <option value="">{filter.allLabel}</option>
-              {filter.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+        {filters.length > 0 && (
+          <details className="rounded-xl border border-[var(--gold-light)] bg-white px-4 py-2" open={filters.some((filter) => filter.value)}>
+            <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-[var(--navy)]">Filters</summary>
+            <div className="grid gap-4 border-t border-[var(--gold-light)] py-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filters.map((filter) => (
+                <label key={filter.label} className="block">
+                  <span className={captionClass}>{filter.label}</span>
+                  <select value={filter.value} onChange={(e) => filter.onChange(e.target.value)} className={inputClass}>
+                    <option value="">{filter.allLabel}</option>
+                    {filter.options.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
               ))}
-            </select>
-          </label>
-        ))}
+            </div>
+          </details>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
@@ -103,11 +108,7 @@ export default function ListToolbar({
               </button>
               .
             </>
-          ) : narrowed ? (
-            `${showing} of ${total} ${noun}.`
-          ) : (
-            `${total} ${noun}.`
-          )}
+          ) : narrowed ? "Filtered results." : "All results."}
         </p>
         {/* The address bar is carrying the filters (components/useListUrl.ts),
             so a narrowed list is a link somebody can send. Said out loud,
@@ -115,7 +116,6 @@ export default function ListToolbar({
             looks for. */}
         {onReset && active && showing > 0 && (
           <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <span className="text-stone-500">This view is in the address bar — copy the link to share it.</span>
             <button
               type="button"
               onClick={onReset}

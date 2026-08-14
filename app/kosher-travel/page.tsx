@@ -113,7 +113,7 @@ export default async function KosherTravelPage() {
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kosher travel</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            The part of a trip nobody else plans for you.
+            Practical kosher travel.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
             Food, Shabbos, a minyan, a mikvah, and somebody local to ask.

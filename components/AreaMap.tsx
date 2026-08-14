@@ -7,7 +7,7 @@ import CompassMark from "@/components/CompassMark";
 import { curatedKosherPlaces, curatedKosherPlacesNear, type CuratedKosherPlaceNearby } from "@/lib/curated-kosher";
 import { GLOVE_MARK_SRC, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/map-icons";
 import { tintedMarkUrl } from "@/lib/tinted-mark";
-import { boundsOf, countByKind, type MapKind, type MapMarker } from "@/lib/map-markers";
+import { boundsOf, type MapKind, type MapMarker } from "@/lib/map-markers";
 import {
   googleMaps,
   loadGoogleMaps,
@@ -299,18 +299,12 @@ export default function AreaMap({
     };
   }, [centerName, engine, visible, zoom]);
 
-  const counts = useMemo(() => countByKind(all), [all]);
-  const total = useMemo(() => all.filter((marker) => marker.kind !== "center").length, [all]);
   const where = centerName ? `within ${radiusKm} km of ${centerName}` : "on the map";
 
   return (
     <div>
       <p className="text-sm leading-6 text-[var(--navy)]">
-        <strong className="font-[family-name:var(--font-display)] text-2xl">{total}</strong>{" "}
-        {total === 1 ? "place" : "places"} {where}
-        {centerName && counts.kosher > 0 && (
-          <span className="text-stone-500"> — including {counts.kosher} curated kosher {counts.kosher === 1 ? "listing" : "listings"}</span>
-        )}
+        Places {where}
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -327,7 +321,6 @@ export default function AreaMap({
             <span aria-hidden="true" className="w-2.5 text-center">{shown[kind] ? "✓" : "×"}</span>
             <CompassMark kind={kind} muted={!shown[kind]} />
             {MAP_STYLE[kind].label}
-            <span className="font-normal text-stone-400">{counts[kind]}</span>
           </button>
         ))}
       </div>

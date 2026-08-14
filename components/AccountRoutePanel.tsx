@@ -59,7 +59,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
   // logged in, their account (server) is the single source of truth — otherwise
   // places saved while browsing anonymously would leak into a new account.
   const [route, setRoute] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveMyRoute")));
-  const [favorites, setFavorites] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveFavorites")));
+  const [, setFavorites] = useState<SavedPlace[]>(() => (loggedIn ? [] : read("whiteGloveFavorites")));
   // Null until the answer is known — an account with no trips and an account
   // that has not loaded yet are different things, and "0 itineraries" on a
   // trip you spent an hour on would be alarming.
@@ -103,7 +103,6 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
   }, [loggedIn]);
 
   const activeRoute = loggedIn ? account?.route ?? [] : account?.route ?? route;
-  const activeFavorites = loggedIn ? account?.favorites ?? [] : account?.favorites ?? favorites;
   const sourceLabel = account ? `Synced to ${account.email}` : loggedIn ? "Synced to your account" : "Saved in this browser";
 
   /**
@@ -158,13 +157,11 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
       <div className="mt-12 grid gap-5 md:grid-cols-3">
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">My Route</p>
-          <p className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{activeRoute.length}</p>
-          <p className="mt-3 leading-7 text-stone-600">Destinations in your active journey.</p>
+          <p className="mt-3 leading-7 text-stone-600">Your active journey.</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Favorites</p>
-          <p className="mt-4 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{activeFavorites.length}</p>
-          <p className="mt-3 leading-7 text-stone-600">Places saved for another time.</p>
+          <p className="mt-3 leading-7 text-stone-600">Saved places.</p>
         </div>
         <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Storage</p>
@@ -180,7 +177,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
         <TripBox
           eyebrow="My routes"
-          heading={trips === null ? "Your saved places." : trips.length > 1 ? `${trips.length} routes saved.` : "One route saved."}
+          heading="Your saved places."
           blurb="The kevarim and places saved for a trip, before they are put on days."
           newLabel="Open My Route"
           newHref="/my-route"
@@ -188,7 +185,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
           fallback={
             <>
               <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
-                {activeRoute.length ? `${activeRoute.length} ${activeRoute.length === 1 ? "place" : "places"} saved.` : "Nothing saved yet."}
+                {activeRoute.length ? "Saved places." : "Nothing saved yet."}
               </p>
               {activeRoute.length > 0 && (
                 <ul className="mt-2 divide-y divide-[var(--gold-light)]">
@@ -209,7 +206,7 @@ export default function AccountRoutePanel({ loggedIn = false }: { loggedIn?: boo
 
         <TripBox
           eyebrow="My itineraries"
-          heading={trips === null ? "Your day-by-day plan." : trips.length > 1 ? `${trips.length} trips on the go.` : "One trip on the go."}
+          heading="Your day-by-day plan."
           blurb="Each trip keeps its own dates, flights, hotels and share link, so a week in Switzerland, a fortnight in Kraków and a month in Poland can all be planned at once."
           newLabel={opening === "new" ? "Starting…" : "New itinerary"}
           onNew={newTrip}

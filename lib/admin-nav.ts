@@ -102,6 +102,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         label: "Travel gear",
         blurb: "The Amazon shelf.",
       },
+      { href: "/admin/settings/travel-essentials", label: "Travel essentials", blurb: "Transfers, data and insurance." },
       {
         href: "/admin/settings/earnings",
         label: "Earnings",
@@ -113,6 +114,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
       { href: "/admin/duffel", label: "Duffel", blurb: "Book flights here. Not public." },
+      { href: "/admin/duffel/review", label: "Flight review", blurb: "Review the selected flight." },
     ],
   },
 ];
