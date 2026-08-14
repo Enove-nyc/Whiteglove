@@ -33,12 +33,12 @@ function offering(over: Partial<PlanOffering> = {}): PlanOffering {
 }
 
 describe("what the site is offering", () => {
-  it("is what it always was, out of the box", () => {
-    // Open and "ask" — because the account page has offered "ask about Pro"
-    // since long before there was billing, and a default of closed would have
-    // silently removed a working feature from a live site.
+  it("names the two accounts and opens neither, out of the box", () => {
+    // The owner's decision while the prices were being settled: both may be
+    // shown, nobody may sign up for either. "soon" promises nothing and cannot
+    // charge anybody, which is why it is the safe thing to default to.
     assert.equal(DEFAULT_OFFERING.open, true);
-    assert.equal(DEFAULT_OFFERING.how, "ask");
+    assert.equal(DEFAULT_OFFERING.how, "soon");
     for (const plan of PAID_PLANS) {
       assert.equal(DEFAULT_OFFERING.pricing[plan].monthlyPriceId, "");
       assert.equal(DEFAULT_OFFERING.pricing[plan].yearlyPriceId, "");
@@ -48,11 +48,38 @@ describe("what the site is offering", () => {
 
   it("NEVER READS AS STRIPE UNLESS SOMEBODY WROTE STRIPE", () => {
     // The one that matters. Anything unreadable, absent, misspelled or
-    // half-written is "ask", which cannot take money.
+    // half-written is "soon", which can neither take money nor promise an
+    // account.
     for (const raw of [null, undefined, {}, { how: "" }, { how: "STRIPE" }, { how: "card" }, { how: 1 }, "nonsense"]) {
-      assert.equal(cleanOffering(raw).how, "ask", `${JSON.stringify(raw)} became something other than ask`);
+      assert.equal(cleanOffering(raw).how, "soon", `${JSON.stringify(raw)} became something other than soon`);
     }
     assert.equal(cleanOffering({ how: "stripe" }).how, "stripe");
+    assert.equal(cleanOffering({ how: "ask" }).how, "ask");
+  });
+
+  it("NEVER PROMISES AN ACCOUNT SOMEBODY CANNOT HAVE", () => {
+    // The failure this setting exists to prevent: a record that means "not
+    // open" being read as "ask", so the page invites a request the owner
+    // cannot honour. Only the literal word "ask" is ask.
+    assert.equal(cleanOffering({ how: "Ask" }).how, "soon");
+    assert.equal(cleanOffering({ how: "asking" }).how, "soon");
+  });
+
+  it("shows both accounts while neither is open, and says nothing about money", () => {
+    const soon = offering({
+      how: "soon",
+      pricing: {
+        pro: { askingLine: "$4.99 a month", monthlyPriceId: "price_m", yearlyPriceId: "" },
+        business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },
+      },
+    });
+    assert.deepEqual(offerablePlans(soon), ["pro", "business"]);
+    // No renewal to offer, because nothing is being charged...
+    assert.deepEqual(periodsFor(soon, "pro"), []);
+    // ...and no price either, even though one is typed in and a Stripe price
+    // exists. A number beside an account nobody can have is the beginning of an
+    // argument later about what was promised.
+    assert.equal(offerLine(soon, "pro", "$4.99 a month"), "");
   });
 
   it("treats a record written before the switch existed as open", () => {
@@ -148,8 +175,9 @@ describe("what a traveller is told it costs", () => {
     assert.equal(offerLine(offering(), "pro"), "");
   });
 
-  it("says what the owner typed, while nobody is being charged", () => {
+  it("says what the owner typed, once the accounts are open to ask about", () => {
     const asking = offering({
+      how: "ask",
       pricing: {
         pro: { askingLine: "$12 a month", monthlyPriceId: "", yearlyPriceId: "" },
         business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },

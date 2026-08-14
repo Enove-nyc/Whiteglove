@@ -27,7 +27,7 @@ export default function AdminPlanOfferingForm({
 }) {
   const [state, act, busy] = useActionState(savePlanOfferingAction, null);
   const [open, setOpen] = useState(current.open);
-  const [how, setHow] = useState<"ask" | "stripe">(current.how);
+  const [how, setHow] = useState<"soon" | "ask" | "stripe">(current.how);
 
   return (
     <form action={act} className="mt-6 space-y-8">
@@ -60,6 +60,17 @@ export default function AdminPlanOfferingForm({
       <fieldset disabled={!open || !storeReady || busy} className={open ? "" : "opacity-50"}>
         <legend className={caption}>How somebody gets one</legend>
         <div className="mt-2 space-y-2">
+          <label className="flex cursor-pointer gap-3 text-sm leading-6 text-stone-700">
+            <input type="radio" name="how" value="soon" checked={how === "soon"} onChange={() => setHow("soon")} className="mt-1.5" />
+            <span>
+              <span className="font-semibold text-[var(--navy)]">Named, not open yet</span>
+              <span className="block text-stone-500">
+                Both accounts are shown and nobody can sign up for either. Pressing one opens a note saying it opens
+                shortly, and takes an address to write to on the day it does. Use this until you have settled what each
+                one includes — it is the only setting that promises nothing.
+              </span>
+            </span>
+          </label>
           <label className="flex cursor-pointer gap-3 text-sm leading-6 text-stone-700">
             <input type="radio" name="how" value="ask" checked={how === "ask"} onChange={() => setHow("ask")} className="mt-1.5" />
             <span>

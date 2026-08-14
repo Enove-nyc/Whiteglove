@@ -7,7 +7,13 @@
  * site is exactly what it was before this file was written. The owner turns it
  * on when he wants it on, and nothing happens in the meantime.
  *
- * TWO WAYS TO PAY, AND THEY ARE NOT THE SAME PROMISE.
+ * THREE WAYS SOMEBODY CAN COME BY ONE, AND THEY ARE NOT THE SAME PROMISE.
+ *
+ *   "soon"   — the two accounts are named, and nobody can take one yet. Asking
+ *              leaves an address to be written to on the day they open. This is
+ *              for the stretch where the owner knows what he is building and has
+ *              not settled what each one includes, and it exists so that stretch
+ *              does not have to be spent with a live sign-up nobody can honour.
  *
  *   "ask"    — somebody asks, the owner answers, and the owner sets the plan by
  *              hand from /admin/accounts. No card is taken anywhere on the site.
@@ -17,6 +23,12 @@
  *   "stripe" — a real subscription. The card is handled by Stripe on Stripe's
  *              own page; no card number ever reaches this site. Stripe tells us
  *              the subscription started, and the plan is set from that.
+ *
+ * "soon" AND "ask" DIFFER IN ONE WORD AND ONE PROMISE. Both take a request and
+ * neither takes a card. "ask" says a person will answer about an account they
+ * can have today; "soon" says the account is not open and they will be told
+ * when it is. Saying the first while meaning the second is the whole reason
+ * this third setting exists rather than a note in the copy.
  *
  * A PRICE IS NEVER INVENTED HERE. In "stripe" mode the number shown to a
  * traveller is read from Stripe itself, so the words on the button and the
@@ -64,8 +76,8 @@ export type PlanPricing = {
 export type PlanOffering = {
   /** The master switch. Off means none of this is visible or callable. */
   open: boolean;
-  /** How money is taken when it is taken. */
-  how: "ask" | "stripe";
+  /** How somebody comes by one of them. See the note at the top of this file. */
+  how: "soon" | "ask" | "stripe";
   /** Which of the paid plans are offered. Either, both, or neither. */
   plans: Record<PaidPlan, boolean>;
   pricing: Record<PaidPlan, PlanPricing>;
@@ -76,15 +88,17 @@ export type PlanOffering = {
 const EMPTY_PRICING: PlanPricing = { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" };
 
 /**
- * What a site that has never been configured has: EXACTLY WHAT IT DID BEFORE
- * THIS FILE EXISTED.
+ * What a site that has never been configured has.
  *
- * Open, and "ask". The account page has offered "ask about Pro" since long
- * before there was any billing, a person answers it, and no card is involved —
- * so a deployment that never opens this settings screen behaves the way it
- * always did. Defaulting to closed would have been the tidier-looking choice
- * and it would have silently removed a working feature from a live site, which
- * is not a default, it is a change nobody asked for.
+ * Open, and "soon" — THE OWNER'S OWN DECISION, made while the prices were being
+ * set up: the two accounts may be named, and nobody may sign up for either
+ * until he has settled what each one includes. A request leaves an address to
+ * write to, which is the honest version of a thing that is not open yet.
+ *
+ * This was "ask" for one commit, chosen so that a site which never opened the
+ * settings screen kept the "ask about Pro" panel it already had. That reasoning
+ * still holds and is why the switch exists — it is one radio button away, and
+ * the day the details are settled it moves.
  *
  * "stripe" IS NEVER THE DEFAULT AND NEVER WILL BE. It is reached only by the
  * owner choosing it on a screen that refuses the choice until the keys and the
@@ -93,7 +107,7 @@ const EMPTY_PRICING: PlanPricing = { askingLine: "", monthlyPriceId: "", yearlyP
  */
 export const DEFAULT_OFFERING: PlanOffering = {
   open: true,
-  how: "ask",
+  how: "soon",
   plans: { pro: true, business: true },
   pricing: { pro: { ...EMPTY_PRICING }, business: { ...EMPTY_PRICING } },
 };
@@ -117,7 +131,10 @@ export function cleanOffering(raw: unknown): PlanOffering {
   });
   return {
     open: value.open !== false,
-    how: value.how === "stripe" ? "stripe" : "ask",
+    // Only the exact words. Anything else — missing, misspelled, a number, a
+    // record written before this setting existed — is "soon", which cannot
+    // charge anybody and cannot promise anybody an account today.
+    how: value.how === "stripe" ? "stripe" : value.how === "ask" ? "ask" : "soon",
     plans: { pro: plans.pro !== false, business: plans.business !== false },
     pricing: { pro: one("pro"), business: one("business") },
     updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : undefined,
@@ -142,7 +159,7 @@ export function priceIdFor(offering: PlanOffering, plan: PaidPlan, period: Billi
  */
 export function planIsOfferable(offering: PlanOffering, plan: PaidPlan): boolean {
   if (!offering.open || !offering.plans[plan]) return false;
-  if (offering.how === "ask") return true;
+  if (offering.how !== "stripe") return true;
   return Boolean(priceIdFor(offering, plan, "monthly") || priceIdFor(offering, plan, "yearly"));
 }
 
@@ -198,9 +215,9 @@ export function describeOffering(offering: PlanOffering): string {
     return "Open, but no plan is ready to be offered — so nothing is shown. Check the prices below.";
   }
   const list = names.join(" and ");
-  return offering.how === "stripe"
-    ? `Open. ${list} can be subscribed to with a card, through Stripe.`
-    : `Open. ${list} can be asked about; you set the account by hand and no card is taken.`;
+  if (offering.how === "stripe") return `Open. ${list} can be subscribed to with a card, through Stripe.`;
+  if (offering.how === "ask") return `Open. ${list} can be asked about; you set the account by hand and nothing is charged.`;
+  return `Named, not open. ${list} are shown, nobody can sign up, and anybody interested leaves an address for you to write to.`;
 }
 
 /**
@@ -212,6 +229,10 @@ export function describeOffering(offering: PlanOffering): string {
  */
 export function offerLine(offering: PlanOffering, plan: PaidPlan, stripeLine?: string | null): string {
   if (offering.how === "stripe") return stripeLine?.trim() || "";
+  // Nothing about money while nothing is open. A price beside an account
+  // somebody cannot have is the beginning of an argument later about what they
+  // were promised.
+  if (offering.how === "soon") return "";
   return offering.pricing[plan]?.askingLine.trim() || "";
 }
 

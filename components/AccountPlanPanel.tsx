@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import {
   type AccountPlan,
   MAX_NOTE,
@@ -22,11 +23,12 @@ import {
  * lib/plan-billing.ts is open AND set to Stripe, which is a thing only he can
  * do, on a screen that refuses the setting until Stripe is genuinely ready.
  *
- * EVERY OTHER PART OF THE OLD RULE STANDS. With the offering on "ask" — which
- * is what it is unless he changes it — this panel takes no card, mentions no
- * card, and does exactly what it always did: you say what you would rather
- * have, and a person answers. With the offering closed it says nothing about
- * Pro or Business at all.
+ * EVERY OTHER PART OF THE OLD RULE STANDS. On the other two settings — and
+ * "soon" is what the offering is unless he changes it — this panel takes no
+ * card and mentions no card. On "soon" it says plainly that neither account is
+ * open and offers to write when one is; on "ask" it does what it always did,
+ * which is take a request a person answers. With the offering closed it says
+ * nothing about Pro or Business at all.
  *
  * AND IT STILL DOES NOT INVENT A FEATURE LIST. What Pro gets you is the two
  * free limits lifted, which `limitsLine` already says in the traveller's own
@@ -63,7 +65,7 @@ export default function AccountPlanPanel({
   hasSubscription = false,
 }: {
   plan: AccountPlan;
-  offer?: { how: "ask" | "stripe"; choices: PlanOffer[] } | null;
+  offer?: { how: "soon" | "ask" | "stripe"; choices: PlanOffer[] } | null;
   hasSubscription?: boolean;
   /**
    * What this plan limits, worked out on the server. A sentence rather than
@@ -91,6 +93,10 @@ export default function AccountPlanPanel({
   const choices = plansToAskAbout(plan).filter((choice) => offerable.some((entry) => entry.plan === choice));
   const included = whatYouGet(plan);
   const takingCards = offer?.how === "stripe";
+  // Named, not open. Both accounts are shown and neither can be taken; pressing
+  // one opens a note saying so and offers to write when it does open.
+  const notOpenYet = offer?.how === "soon";
+  const dialogRef = useFocusTrap<HTMLDivElement>(notOpenYet && Boolean(asking), () => setAsking(null));
 
   /** Off to Stripe's own page. Nothing about a card happens on this site. */
   async function subscribe(wanted: AccountPlan, period: "monthly" | "yearly") {
@@ -159,7 +165,12 @@ export default function AccountPlanPanel({
     setAsking(null);
     setBusinessName("");
     setNote("");
-    setMessage({ ok: true, text: "Thanks — your request has been sent. We will be in touch." });
+    setMessage({
+      ok: true,
+      text: notOpenYet
+        ? "Thank you — we have your name, and we will write to you the day it opens."
+        : "Thanks — your request has been sent. We will be in touch.",
+    });
     router.refresh();
   }
 
@@ -211,7 +222,8 @@ export default function AccountPlanPanel({
         <div className="mt-6 border-l-4 border-[var(--gold)] bg-white px-4 py-3">
           <p className="text-sm leading-7 text-stone-700">
             You asked about <strong>{PLAN_LABELS[openRequest.wanted]}</strong>
-            {openRequest.businessName ? ` for ${openRequest.businessName}` : ""}. We will be in touch with the next steps.
+            {openRequest.businessName ? ` for ${openRequest.businessName}` : ""}.{" "}
+            {notOpenYet ? "We will write to you the day it opens." : "We will be in touch with the next steps."}
           </p>
         </div>
       ) : choices.length > 0 ? (
@@ -219,7 +231,9 @@ export default function AccountPlanPanel({
           <p className="text-sm leading-7 text-stone-600">
             {takingCards
               ? "There are two other kinds of account, if one of them fits how you travel."
-              : "Interested in a different account? Send a request and we will follow up with the available options."}
+              : notOpenYet
+                ? "Two other kinds of account open shortly. Say which one interests you and we will write to you the day it does."
+                : "Interested in a different account? Send a request and we will follow up with the available options."}
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {choices.map((choice) => {
@@ -257,7 +271,11 @@ export default function AccountPlanPanel({
                       aria-expanded={asking === choice}
                       className="mt-4 min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)]"
                     >
-                      {asking === choice ? "Never mind" : `Ask about ${PLAN_LABELS[choice]}`}
+                      {asking === choice
+                        ? "Never mind"
+                        : notOpenYet
+                          ? `Tell me when ${PLAN_LABELS[choice]} opens`
+                          : `Ask about ${PLAN_LABELS[choice]}`}
                     </button>
                   )}
                 </div>
@@ -272,7 +290,7 @@ export default function AccountPlanPanel({
             </p>
           )}
 
-          {asking && (
+          {asking && !notOpenYet && (
             <form onSubmit={send} className="mt-5 border border-[var(--gold)] bg-white p-5">
               <p className="text-sm leading-7 text-stone-600">
                 Asking about <strong className="text-[var(--navy)]">{PLAN_LABELS[asking]}</strong>.
@@ -311,6 +329,90 @@ export default function AccountPlanPanel({
                 <span className="text-xs text-stone-400">We will reply with the next steps.</span>
               </div>
             </form>
+          )}
+
+          {/* The same request, as a note over the page, while the accounts are
+              named and not open.
+              WHY A DIALOG RATHER THAN THE INLINE FORM. Somebody pressing a
+              button expects to get the thing. Here they cannot, and the reason
+              has to arrive before anything else does — a form quietly appearing
+              below the fold would read as the sign-up they asked for and the
+              refusal would be the small print. */}
+          {asking && notOpenYet && (
+            <div
+              className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) setAsking(null);
+              }}
+            >
+              <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="plan-soon-title"
+                className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+              >
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">
+                  {PLAN_LABELS[asking]}
+                </p>
+                <h3
+                  id="plan-soon-title"
+                  className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]"
+                >
+                  {PLAN_LABELS[asking]} opens shortly
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-stone-600">{PLAN_BLURB[asking]}</p>
+                <p className="mt-3 text-sm leading-7 text-stone-600">
+                  It is not open for sign-ups yet. Leave your name on it and we will write to you the day it is —
+                  nothing is charged and there is nothing to cancel.
+                </p>
+
+                <form onSubmit={send} className="mt-5">
+                  {asking === "business" && (
+                    <label className="block">
+                      <span className={captionClass}>Name of the business</span>
+                      <input
+                        className={inputClass}
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        placeholder="e.g. Kesser Travel"
+                        maxLength={120}
+                        required
+                      />
+                    </label>
+                  )}
+                  <label className="mt-4 block">
+                    <span className={captionClass}>What you are hoping for (optional)</span>
+                    <textarea
+                      className={`${inputClass} min-h-24`}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      maxLength={MAX_NOTE}
+                      placeholder="How many trips you plan, who for"
+                    />
+                  </label>
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="min-h-11 rounded-md bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] disabled:opacity-50"
+                    >
+                      {sending ? "Sending…" : "Write to me when it opens"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAsking(null)}
+                      className="px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+                    >
+                      Not now
+                    </button>
+                  </div>
+                  {message && !message.ok && (
+                    <p className="mt-3 text-sm font-semibold text-red-700">{message.text}</p>
+                  )}
+                </form>
+              </div>
+            </div>
           )}
         </div>
       ) : null}
