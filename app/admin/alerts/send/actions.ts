@@ -19,6 +19,7 @@ import {
   SEND_SPACING_MS,
   senderProblem,
   sendProblem,
+  TEST_UNSUB_TOKEN,
 } from "@/lib/email-blast";
 import { SITE_DOMAIN } from "@/lib/features";
 import {
@@ -185,9 +186,11 @@ export async function testBlastAction(_prev: BlastActionResult | null, formData:
     from: (await readBlastSettings()).fromEmail,
     blast,
     origin,
-    // A real-looking but harmless link: pressing it unsubscribes nobody,
-    // because no signup carries this token.
-    unsubscribeUrl: `${origin}/api/alerts/unsubscribe?token=test`,
+    // Harmless, and honest about being harmless. The route recognises this
+    // sentinel and shows the real page with a line saying it was a test —
+    // rather than the "not valid" error a made-up token produced, which reads
+    // as a fault in the one part of the email that has to work.
+    unsubscribeUrl: `${origin}/api/alerts/unsubscribe?token=${TEST_UNSUB_TOKEN}`,
     becauseLine: becauseLine(blast.topics),
   });
   return result.ok

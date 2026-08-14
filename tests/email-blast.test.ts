@@ -18,6 +18,7 @@ import {
   senderProblem,
   sendProblem,
   splitLinks,
+  TEST_UNSUB_TOKEN,
 } from "@/lib/email-blast";
 
 /**
@@ -395,5 +396,48 @@ describe("who an update comes from", () => {
 
   it("gives a bare address a name, so it reads as a letter not a circular", () => {
     assert.match(readFileSync("lib/email.ts", "utf8"), /White Glove Itineraries <\$\{clean\}>/);
+  });
+});
+
+describe("the unsubscribe link in a message you sent yourself", () => {
+  /**
+   * The owner pressed it on a test message and was told the link was not
+   * valid. It was doing what it was built to do — the test carried a made-up
+   * token so it could not remove anybody — but "not valid" reads as a fault in
+   * the one part of an email that legally has to work, and it taught him
+   * nothing about what a reader would actually get.
+   */
+  it("cannot be mistaken for a real token", () => {
+    // Real ones are "salt.signature" and always contain a full stop.
+    assert.ok(!TEST_UNSUB_TOKEN.includes("."));
+    assert.ok(TEST_UNSUB_TOKEN.length > 10);
+  });
+
+  it("says what it is, rather than reporting a failure", () => {
+    const route = readFileSync("app/api/alerts/unsubscribe/route.ts", "utf8");
+    const get = route.slice(route.indexOf("export async function GET"));
+    // Recognised BEFORE the lookup, so it never reaches the store and can
+    // never remove anybody.
+    assert.ok(get.indexOf("TEST_UNSUB_TOKEN") < get.indexOf("unsubscribeByToken"));
+    assert.match(get, /searchParams\.set\("test", "1"\)/);
+
+    const page = readFileSync("app/alerts/unsubscribed/page.tsx", "utf8");
+    assert.match(page, /This was a test message/);
+    assert.match(page, /Nobody has been unsubscribed/);
+  });
+
+  it("is what the test send actually puts on the link", () => {
+    const actions = readFileSync("app/admin/alerts/send/actions.ts", "utf8");
+    assert.match(actions, /token=\$\{TEST_UNSUB_TOKEN\}/);
+    // And the real send uses the recipient's own token, not this one.
+    assert.match(actions, /token=\$\{encodeURIComponent\(signup\.unsubToken\)\}/);
+  });
+
+  it("GIVES SOMEBODY WITH A BROKEN LINK SOMEWHERE TO GO", () => {
+    // A person whose link has genuinely failed is somebody who wants to stop
+    // hearing from us and cannot. A dead end there becomes a spam report.
+    const page = readFileSync("app/alerts/unsubscribed/page.tsx", "utf8");
+    assert.match(page, /\/contact/);
+    assert.match(page, /take you off the list by hand/);
   });
 });
