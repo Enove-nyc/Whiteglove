@@ -66,8 +66,7 @@ export default async function TransfersPage() {
             Airport transfers
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            A transfer is booked before you travel and meets you at arrivals. It is the better answer than a hire car
-            more often than people expect — and on the days either side of Shabbos it is worth arranging early.
+            Booked in advance, waiting at arrivals. Often the better answer around Shabbos.
           </p>
         </div>
       </section>

@@ -190,14 +190,14 @@ export const BUILT_IN_WORDS: SiteWords = {
   // do, which is answer the kosher and Shabbos questions first.
   heroTitle: "Plan your next vacation with the kosher side answered first.",
   heroSubtitle:
-    "Discover where to go, build your itinerary, find kosher food and religious essentials, or let White Glove arrange the trip for you.",
+    "Discover where to go, build your itinerary, and find kosher food and religious essentials.",
   // No longer "a city, tzaddik, kever" — the same search still finds all three,
   // and the box no longer announces the heritage database on every page.
-  searchPlaceholder: "Destinations, places to stay, kosher food, activities, kevarim, cemeteries, towns…",
+  searchPlaceholder: "Destinations, stays, kosher food, kevarim…",
   contactEmail: "contact@whitegloveitineraries.com",
   replyPromise: "We’ll be in touch soon.",
   footerBlurb:
-    "Kosher vacations planned end to end — where to go, where to stay, what to do, and the food, Shabbos and religious essentials arranged around it. Jewish heritage journeys too, in their own section.",
+    "Kosher vacations — where to go, where to stay, what to do, and the food and Shabbos side. Heritage journeys in their own section.",
   footerStrapline: "Personalized travel, planned with purpose.",
   // Rewritten with the booking page. It used to open on flights and on how you
   // were paying; the page is now about the trip the travel is for, and hotels

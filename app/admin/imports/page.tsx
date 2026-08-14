@@ -11,7 +11,7 @@ export default async function AdminImportsPage() {
     <>
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Bulk content imports</h1>
+        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Bulk imports</h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
           Bring source-backed candidates into a private queue, review each one, then publish individual listings only when their public details are complete.
         </p>

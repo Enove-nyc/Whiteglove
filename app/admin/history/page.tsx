@@ -21,17 +21,16 @@ export default async function AdminHistoryPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">What changed</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">History</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Every edit in the last 30 days, newest first — what it said before, what it says now, and who changed it.
-          Put any of it back without touching anything else.
+          Edits from the last 30 days. Put any of them back.
         </p>
         <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-500">
-          Deletions are not here; they are in{" "}
+          Deletions are in{" "}
           <Link href="/admin/recycle" className="underline decoration-[var(--gold)] underline-offset-4">
-            Recently deleted
+            Deleted
           </Link>
-          . A save that changed nothing is not recorded at all.
+          .
         </p>
       </header>
 

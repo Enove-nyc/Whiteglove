@@ -52,12 +52,7 @@ export default async function PlanPage({
             {destination ? `Let’s plan ${destination.name}.` : "Tell us roughly what you have in mind."}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Three short steps. Nothing is required, every question can be skipped, and
-            &ldquo;I don&rsquo;t know yet&rdquo; is a real answer — you can start here without having chosen a
-            destination at all.
-          </p>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-            Your answers stay in this browser until you choose to send them.
+            Three short steps. Skip anything you do not know yet.
           </p>
         </div>
       </section>

@@ -48,9 +48,9 @@ export default async function AdminDirectoryPage({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Directory editor</h1>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Businesses</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Add and edit the tour operators, vacation planners, travel agencies, and guides/drivers shown at <code className="rounded bg-[var(--cream)] px-1">/directory</code>. Business submissions from visitors appear in the Content manager for review.
+              Add and edit the tour operators, vacation planners, travel agencies, and guides/drivers shown at <code className="rounded bg-[var(--cream)] px-1">/directory</code>. Business submissions from visitors appear in Suggestions for review.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

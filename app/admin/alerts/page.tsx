@@ -26,7 +26,7 @@ export default async function AdminAlertsPage() {
     <div className="pb-12">
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Customer updates</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Email alerts</h1>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Alerts</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           People who asked to be told about new destinations, listings, seasonal programmes or a specific place. Consent
           is required at signup. This screen does not send marketing blasts — it only holds who asked and for what.

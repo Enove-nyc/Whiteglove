@@ -64,9 +64,7 @@ export default async function EsimPage() {
             eSIMs and data abroad
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            A data plan you install on your phone before you fly, instead of hunting for a shop or paying your own
-            network&rsquo;s roaming rate. It matters most on the day you land — finding the apartment, the shul, or the
-            person meeting you.
+            A data plan on your phone before you fly, instead of roaming.
           </p>
         </div>
       </section>
@@ -78,7 +76,6 @@ export default async function EsimPage() {
         <SectionHeading
           eyebrow="Worth checking"
           title="Three things before you buy"
-          description="All three are quick, and all three are unpleasant to find out at the airport."
         />
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {BEFORE_YOU_BUY.map(([heading, body]) => (

@@ -11,10 +11,10 @@ import { type AdminArea, canOpen } from "@/lib/admin-permissions";
 /**
  * The frame every admin screen sits in.
  *
- * Five places down the left, the screens of whichever one you are in listed
- * underneath it, and a search box for listings, candidates and screens. No
- * visitor navigation and no public footer — this is a workplace, not a page
- * of the website.
+ * Five places down the left, every screen under each of them listed so a
+ * page is one click away without already knowing which section holds it, and
+ * a search box for listings, candidates and screens. No visitor navigation
+ * and no public footer — this is a workplace, not a page of the website.
  *
  * On a phone the nav collapses to a button; the content is what matters on a
  * small screen, and the nav is one tap away.
@@ -63,20 +63,17 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
               href={to(s.target)}
               onClick={() => setNavOpen(false)}
               aria-current={current ? "page" : undefined}
-              className={`flex items-start gap-3 rounded-md px-3 py-2.5 transition ${
+              className={`flex items-center gap-3 rounded-md px-3 py-2.5 transition ${
                 current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
               }`}
             >
               <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>
                 {s.icon}
               </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold">{s.label}</span>
-                <span className={`block text-xs ${current ? "text-stone-200" : "text-stone-500"}`}>{s.blurb}</span>
-              </span>
+              <span className="block min-w-0 text-sm font-semibold">{s.label}</span>
             </Link>
 
-            {current && s.children.length > 1 && (
+            {s.children.length > 1 && (
               <ul className="mb-2 ml-6 mt-1 space-y-0.5 border-l border-[var(--gold-light)] pl-3">
                 {s.children.map((c) => (
                   <li key={c.href}>

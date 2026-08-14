@@ -15,11 +15,9 @@ export default async function AdminPlannerPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Route planner</h1>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Planner</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              The figures the planner judges a day by. Every “this day is over-packed”, every “about four free hours —
-              room for another stop”, and every arrival time on every day card comes out of these. They are opinions
-              about how a day goes, and they were written into the code where nobody could see or correct them.
+              How the planner judges a packed day, free hours, and arrival times.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
               {changed.length === 0

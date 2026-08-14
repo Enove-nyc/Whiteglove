@@ -215,10 +215,10 @@ export default async function AdminHome() {
   const visibleAlerts = alerts.filter((alert) => may(alert.href));
   const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));
   const quickActions = [
-    { number: "01", href: "/admin/pages", title: "Edit a page", detail: "Change the words or pictures on any website page." },
-    { number: "02", href: "/admin/directory", title: "Manage the directory", detail: "Add or update a town, beis hachaim, contact, or business." },
-    { number: "03", href: "/admin/growth", title: "Search and bookings", detail: "See what people search for, which destinations convert, and alert signups." },
-    { number: "04", href: "/admin/advertisements", title: "Manage advertisements", detail: "Create or update banners, popups, and promotions." },
+    { number: "01", href: "/admin/pages", title: "Edit a page", detail: "Words or pictures on any page." },
+    { number: "02", href: "/admin/directory", title: "Directory", detail: "A town, beis hachaim, contact, or business." },
+    { number: "03", href: "/admin/growth", title: "Growth", detail: "Searches, destinations and alerts." },
+    { number: "04", href: "/admin/advertisements", title: "Advertisements", detail: "Banners, popups and promotions." },
   ].filter((action) => may(action.href));
   const sections = ADMIN_SECTIONS.filter((section) => section.href !== "/admin")
     .map((section) => ({ ...section, children: (section.children ?? []).filter((child) => may(child.href)) }))
@@ -230,11 +230,8 @@ export default async function AdminHome() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Admin overview</p>
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Your website at a glance
+            Dashboard
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-            See what needs attention, handle common jobs, and reach every management area from one organized screen.
-          </p>
         </div>
         <div className="text-right">
           {/* Who is actually signed in. Before this the answer was "somebody
@@ -262,11 +259,6 @@ export default async function AdminHome() {
             />
           ))}
         </ul>
-        <p className="mt-3 text-xs leading-5 text-stone-500">
-          {totals.started} of {totals.destinations + totals.cemeteries} records have something checked on them, averaging{" "}
-          {totals.averageCompleteness}% of the content standard. Visitors never see these numbers — they see what has
-          been checked, and when.
-        </p>
       </section>
 
       {/* The jobs somebody opens the admin to do, rather than a place to go
@@ -309,17 +301,14 @@ export default async function AdminHome() {
 
       <section aria-labelledby="snapshot-heading" className={`${cardClass} mt-7 p-5 sm:p-6`}>
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Today</p>
-            <h2 id="snapshot-heading" className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Website snapshot</h2>
-          </div>
-          <p className="text-xs text-stone-500">{stats.configured ? "Live website activity" : "Activity tracking is not connected"}</p>
+          <h2 id="snapshot-heading" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Today</h2>
+          <p className="text-xs text-stone-500">{stats.configured ? "Live" : "Not connected"}</p>
         </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          <Metric label="Visits" value={stats.configured ? stats.visitsToday : "—"} detail="People who visited today" />
-          <Metric label="Searches" value={stats.configured ? stats.searchesToday : "—"} detail="Searches made today" />
-          <Metric label="Advertisements" value={promotions.enabledPromotions} detail="Currently running" />
-          <Metric label="Needs attention" value={attentionCount} detail="Across drafts, suggestions and checklist" />
+          <Metric label="Visits" value={stats.configured ? stats.visitsToday : "—"} detail="Today" />
+          <Metric label="Searches" value={stats.configured ? stats.searchesToday : "—"} detail="Today" />
+          <Metric label="Advertisements" value={promotions.enabledPromotions} detail="Running" />
+          <Metric label="Needs attention" value={attentionCount} detail="Drafts, suggestions, checklist" />
         </div>
         {stats.configured && stats.topSearches.length > 0 && (
           <p className="mt-6 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
@@ -330,13 +319,8 @@ export default async function AdminHome() {
 
       {quickActions.length > 0 && (
       <section aria-labelledby="quick-actions-heading" className="mt-9">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Common jobs</p>
-            <h2 id="quick-actions-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Quick actions</h2>
-          </div>
-          <p className="text-sm text-stone-500">The tasks you are most likely to need</p>
-        </div>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Common jobs</p>
+        <h2 id="quick-actions-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Quick actions</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {quickActions.map((action) => (
             <QuickAction key={action.href} number={action.number} href={action.href} title={action.title} detail={action.detail} />
@@ -373,7 +357,7 @@ export default async function AdminHome() {
           )}
 
           {may("/admin/content") && (
-          <WorkPanel title="Visitor suggestions" count={pendingSuggestions.length} href="/admin/content" hrefLabel="Read suggestions">
+          <WorkPanel title="Suggestions" count={pendingSuggestions.length} href="/admin/content" hrefLabel="Read suggestions">
             {pendingSuggestions.length === 0 ? (
               <p>No visitor corrections are waiting.</p>
             ) : (
@@ -416,7 +400,6 @@ export default async function AdminHome() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Full dashboard</p>
           <h2 id="all-tools-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Everything you can manage</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">Every existing admin area, organized by purpose. Nothing has been added or removed.</p>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sections.map((section) => (

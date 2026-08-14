@@ -52,8 +52,7 @@ export default async function AdminDirectoryPage() {
       <header>
         <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Directory</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Every beis hachaim, town and business in one list. Search it, narrow it by country, or show only the
-          entries that are still missing something.
+          Every beis hachaim, town and business. Search, filter, or show what is still missing.
         </p>
 
         {/* Never a reassurance — only ever a reason the list might not be his. */}

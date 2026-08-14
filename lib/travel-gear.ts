@@ -160,9 +160,9 @@ export function describeGearItems(items: TravelGearItem[]): string {
   if (live.length === 0) {
     const waiting = saved.length - live.length;
     if (waiting > 0) {
-      return `The travel gear page is hidden — nothing on it is finished yet. ${waiting === 1 ? "One row is" : `${waiting} rows are`} saved but still missing something.`;
+      return `Nothing is on the shelf yet. ${waiting === 1 ? "One row is" : `${waiting} rows are`} saved but still missing something.`;
     }
-    return "The travel gear page is hidden — add a first item to publish it.";
+    return "Nothing is on the shelf yet — add a first finished item.";
   }
   const waiting = saved.length - live.length;
   const held = waiting > 0 ? ` ${waiting === 1 ? "One more row is" : `${waiting} more rows are`} saved but still unfinished, so travellers do not see ${waiting === 1 ? "it" : "them"}.` : "";

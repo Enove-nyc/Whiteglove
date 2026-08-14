@@ -93,16 +93,7 @@ export default async function HeritagePage() {
               Kevarim, batei hachaim, and the towns they are in.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-              The heritage side of White Glove: who is buried where, how to reach the kever, who holds the key, and what
-              is around it — kosher food, a minyan, a mikvah, and a driver who knows the road. Practical details are
-              published only once they have been checked, and each one says how far.
-            </p>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
-              A section of White Glove Itineraries, not a separate company. The{" "}
-              <Link href="/destinations" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-                vacation side of the site
-              </Link>{" "}
-              is planned by the same people, and a trip can be both.
+              Who is buried where, how to reach the kever, who holds the key, and what is around it.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 lg:block" />
@@ -187,17 +178,16 @@ export default async function HeritagePage() {
           <SectionHeading
             eyebrow="Browse by country"
             title="By country"
-            description="Counted from the cemetery records themselves, so a country cannot appear here with nothing behind it."
+            description="Open a country to see the batei hachaim there."
           />
           <ul className="mt-8 flex flex-wrap gap-2">
-            {countries.map(([country, count]) => (
+            {countries.map(([country]) => (
               <li key={country}>
                 <Link
                   href={`/cemeteries?country=${encodeURIComponent(country)}`}
                   className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)]"
                 >
                   {country}
-                  <span className="ml-2 font-normal text-stone-500">{count}</span>
                 </Link>
               </li>
             ))}

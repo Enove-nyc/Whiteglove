@@ -19,7 +19,7 @@ export default async function ReferralSettingsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Growth</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Referral programme</h1>
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Referrals</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
               Friend invites with unique codes and attribution. Stays off until you enable it and write real reward
               rules. Do not invent amounts here.

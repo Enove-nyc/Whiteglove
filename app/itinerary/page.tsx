@@ -48,15 +48,14 @@ export default async function ItineraryPage() {
             Your trip, day by day.
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-            Dates, travelers, flights, hotels and stops — with the driving between them worked out on real roads, a
-            warning when a Friday runs late, and a printable copy for the car. Free to use, and yours to change.
+            Dates, flights, hotels and stops — with driving times, a Friday warning, and a printable copy.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            To start from a few answers instead of a blank page,{" "}
+            Prefer a few answers first?{" "}
             <Link href="/plan" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-              Answer three short steps first
-            </Link>{" "}
-            and this page opens with your answers already in it.
+              Get recommendations
+            </Link>
+            .
           </p>
         </div>
       </section>

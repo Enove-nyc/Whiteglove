@@ -138,12 +138,12 @@ describe("which questions the site may ask", () => {
     // and each still leads somewhere that answers it.
     const page = prose("app/kosher-travel/page.tsx");
     for (const subject of [
-      "Kosher food, wherever you go",
-      "Which part of town to stay in",
+      "Kosher food",
+      "Where to stay",
       "Shabbos away from home",
-      "Local drivers, guides and contacts",
-      "Documents and border crossings",
-      "The hechsher on a listing",
+      "Drivers, guides and contacts",
+      "Documents and borders",
+      "Hechsherim",
     ]) {
       assert.ok(page.includes(subject), `the card for "${subject}" lost its subject`);
     }

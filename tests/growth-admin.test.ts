@@ -19,11 +19,11 @@ describe("growth admin surfaces", () => {
     assert.match(nav, /\/admin\/settings\/referral/);
     assert.match(nav, /\/admin\/settings\/collaboration/);
     assert.match(nav, /\/admin\/settings\/membership/);
-    assert.match(nav, /Search and bookings/);
-    assert.match(nav, /Email alerts/);
-    assert.match(nav, /Referral programme/);
-    assert.match(nav, /Group planning tools/);
-    assert.match(nav, /White Glove Plus/);
+    assert.match(nav, /Growth/);
+    assert.match(nav, /Alerts/);
+    assert.match(nav, /Referrals/);
+    assert.match(nav, /Collaboration/);
+    assert.match(nav, /Plus/);
   });
 
   it("keeps destination commerce free of fake partner buttons", () => {

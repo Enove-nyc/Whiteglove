@@ -89,14 +89,12 @@ export default async function KosherStaysPage({
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to sleep</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to stay</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
             {searching ? `Where to stay in ${heading}` : "Where to stay"}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Which part of a city to be in, and what is within walking distance of it. Most alpine kosher hotels are
-            seasons rather than places — every entry here says which, because arriving in the wrong month gets you a
-            room and nothing to eat.
+            Which part of town to be in, and what is walkable from it. Seasonal hotels say which weeks they run.
           </p>
           <ListingAudienceNote />
           {searching && (

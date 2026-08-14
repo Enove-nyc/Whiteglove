@@ -23,7 +23,7 @@ export default async function TrelloCandidateReviewPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Trello review cards</h1>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Trello cards</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
               Send source-attributed editorial candidates to an internal review board without exposing unfinished information to visitors.
             </p>

@@ -4,9 +4,8 @@
  * Same shape as lib/travel-extras-store.ts: its own key, cached for the
  * public read, uncached for the screen that has to show what was just saved.
  *
- * With no Redis there is nothing stored and /travel-gear does not exist —
- * see the page's own metadata() for how that becomes a real 404 rather than
- * an empty shell.
+ * With no Redis there is nothing stored. The public page still exists and
+ * points at the rest of "before you go" until a finished item is saved.
  */
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
@@ -76,6 +75,6 @@ export async function saveGear(next: TravelGearItem[]): Promise<{ ok: boolean; m
   updateTag(GEAR_TAG);
   revalidatePath("/travel-gear");
 
-  if (next.length === 0) return { ok: true, message: "Saved. The travel gear page is hidden until something is finished." };
+  if (next.length === 0) return { ok: true, message: "Saved. The shelf is empty until something is finished." };
   return { ok: true, message: `Saved. ${next.length} ${next.length === 1 ? "item is" : "items are"} saved (finished ones are on the page).` };
 }

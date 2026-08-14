@@ -38,8 +38,7 @@ export default function TzaddikimPage() {
             Who is buried where
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            {people.length} kevarim, by the name he is known by. Press a name for his seforim, his yahrzeit, and
-            how to reach the kever.
+            {people.length} kevarim, by the name he is known by.
           </p>
         </div>
       </section>

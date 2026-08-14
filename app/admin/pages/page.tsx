@@ -21,8 +21,7 @@ export default async function AdminPagesPage({
       <header>
         <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Pages</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          The words and pictures on the website. Open a page, change a section, and publish when it reads right —
-          or save a draft and the website keeps showing what it shows now.
+          Open a page, edit, then publish or save a draft.
         </p>
       </header>
 

@@ -43,12 +43,10 @@ export default async function EarningsSettings() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              What the site earns
+              Earnings
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Everything on this site that hands a traveller to somebody else to pay, in one place: the three
-              searches, the cards on the pages, and anything else you link to. Routed through a partner, a booking made
-              afterwards is credited to you. Left alone, each one works exactly the same and earns nothing.
+              Partner searches, page cards, and anything else you link to.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{describeLinks(current.links, current.partners, stay22)}</p>
           </div>

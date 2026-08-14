@@ -63,7 +63,7 @@ export default async function WebsiteAccessSettings() {
               <dd className="text-stone-600">
                 Add somebody on{" "}
                 <Link href="/admin/team" className="underline decoration-[var(--gold)] underline-offset-2">
-                  People with access
+                  Team
                 </Link>{" "}
                 and they get in by signing in to their own account. Nothing shared, and you can take it back from the
                 same screen without changing anybody else&apos;s code.

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import StructuredData from "@/components/StructuredData";
@@ -8,23 +8,27 @@ import { AMAZON_DISCLOSURE, needsAmazonDisclosure } from "@/lib/travel-extras";
 import { gearCtaFor, gearShownToVisitors, priceCheckedLabel } from "@/lib/travel-gear";
 import { readGear } from "@/lib/travel-gear-store";
 
-export async function generateMetadata() {
-  const shown = gearShownToVisitors(await readGear());
-  if (shown.length === 0) return { title: "Travel gear — White Glove Itineraries", robots: { index: false, follow: false } };
-  return pageMetadata({
-    title: "Travel gear for a kosher trip | White Glove Itineraries",
-    description: "The things worth packing or picking up before you go — a travel blech, a plug adapter, and the rest of the shelf.",
-    path: "/travel-gear",
-  });
-}
+export const metadata = pageMetadata({
+  title: "Travel gear for a kosher trip | White Glove Itineraries",
+  description: "The things worth packing or picking up before you go — a travel blech, a plug adapter, and the rest of the shelf.",
+  path: "/travel-gear",
+});
+
+const ALSO_BEFORE_YOU_GO = [
+  { href: "/travel-guide", label: "Travel guide", detail: "Documents, advisories and how to pay." },
+  { href: "/transfers", label: "Airport transfers", detail: "A car between the airport and where you stay." },
+  { href: "/esim", label: "eSIMs and data", detail: "A data plan for the country you are going to." },
+  { href: "/travel-insurance", label: "Travel insurance", detail: "Cover for the trip, from the partners we point to." },
+] as const;
 
 /**
  * The Amazon travel-gear shelf.
  *
- * EXISTS ONLY WHEN SOMETHING IS ON IT. An empty shop page is worse than no
- * page — see app/case-studies/page.tsx for the same rule applied to social
- * proof. gearShownToVisitors already drops anything unfinished; if that
- * leaves nothing, this route 404s rather than rendering an empty grid.
+ * ALWAYS A REAL PAGE. It used to 404 until something was on the shelf, and
+ * it was left out of the menu and the footer, so the address itself could not
+ * be found. An empty shop is still worse than a useful page — so with nothing
+ * on the shelf this route shows the rest of "before you go" rather than an
+ * empty grid or a note that something is unfinished.
  *
  * WHY THE PRICE READS "checked 3 days ago" INSTEAD OF JUST A NUMBER. A price
  * typed in by hand goes stale, and the site's own rule (docs/vacation-
@@ -34,7 +38,6 @@ export async function generateMetadata() {
  */
 export default async function TravelGearPage() {
   const shown = gearShownToVisitors(await readGear());
-  if (shown.length === 0) notFound();
   const amazon = needsAmazonDisclosure(shown.map((item) => ({ id: item.id, name: item.name, blurb: item.description, url: item.url })));
 
   return (
@@ -52,45 +55,66 @@ export default async function TravelGearPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Before you go</p>
           <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)] sm:text-5xl">Travel gear</h1>
           <p className="mt-4 text-base leading-7 text-stone-600">
-            The things worth packing or picking up before a trip — the same shelf we point to when someone asks what to bring.
+            {shown.length > 0
+              ? "The things worth packing or picking up before a trip — the same shelf we point to when someone asks what to bring."
+              : "Packing, data abroad, transfers and insurance — the practical things to sort before you go."}
           </p>
           {amazon && <p className="mt-4 text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>}
         </div>
       </section>
 
-      <section className="px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map((item) => {
-            const priceLabel = priceCheckedLabel(item);
-            return (
-              <a
-                key={item.id}
-                href={item.url}
-                target="_blank"
-                rel="noreferrer sponsored"
-                className="flex flex-col overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-white shadow-[0_8px_24px_rgba(23,45,82,.05)] transition hover:border-[var(--gold)] hover:shadow-[0_14px_34px_rgba(23,45,82,.09)]"
+      {shown.length > 0 && (
+        <section className="px-5 py-14 sm:px-8 sm:py-16">
+          <div className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map((item) => {
+              const priceLabel = priceCheckedLabel(item);
+              return (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer sponsored"
+                  className="flex flex-col overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-white shadow-[0_8px_24px_rgba(23,45,82,.05)] transition hover:border-[var(--gold)] hover:shadow-[0_14px_34px_rgba(23,45,82,.09)]"
+                >
+                  {item.imageUrl.trim() && (
+                    // eslint-disable-next-line @next/next/no-img-element -- an
+                    // owner-pasted external URL, not one next/image can optimise
+                    // without an allow-listed host that changes with every item.
+                    <img src={item.imageUrl} alt={item.name} className="aspect-square w-full object-cover" loading="lazy" />
+                  )}
+                  <div className="flex flex-1 flex-col justify-between p-6">
+                    <div>
+                      <h2 className="font-[family-name:var(--font-display)] text-lg leading-tight text-[var(--navy)]">{item.name}</h2>
+                      <p className="mt-2 text-sm leading-6 text-stone-600">{item.description}</p>
+                    </div>
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      {priceLabel && <span className="text-sm font-semibold text-stone-700">{priceLabel}</span>}
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{gearCtaFor(item)}</span>
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {shown.length === 0 && (
+        <section className="px-5 py-14 sm:px-8 sm:py-16">
+          <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
+            {ALSO_BEFORE_YOU_GO.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-2xl border border-[var(--gold-light)] bg-white p-6 transition hover:border-[var(--gold)]"
               >
-                {item.imageUrl.trim() && (
-                  // eslint-disable-next-line @next/next/no-img-element -- an
-                  // owner-pasted external URL, not one next/image can optimise
-                  // without an allow-listed host that changes with every item.
-                  <img src={item.imageUrl} alt={item.name} className="aspect-square w-full object-cover" loading="lazy" />
-                )}
-                <div className="flex flex-1 flex-col justify-between p-6">
-                  <div>
-                    <h2 className="font-[family-name:var(--font-display)] text-lg leading-tight text-[var(--navy)]">{item.name}</h2>
-                    <p className="mt-2 text-sm leading-6 text-stone-600">{item.description}</p>
-                  </div>
-                  <div className="mt-5 flex items-center justify-between gap-3">
-                    {priceLabel && <span className="text-sm font-semibold text-stone-700">{priceLabel}</span>}
-                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{gearCtaFor(item)}</span>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </section>
+                <span className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{item.label}</span>
+                <span className="mt-2 block text-sm leading-6 text-stone-600">{item.detail}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Footer />
     </main>

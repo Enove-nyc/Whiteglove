@@ -30,9 +30,17 @@ export default async function TravelGearSettings() {
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Travel gear</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
           A travel blech, a hotplate, a plug adapter — anything worth having in a suitcase, with your Amazon (or other)
-          affiliate link. This page is separate from the shorter list of extras under &ldquo;What the site earns&rdquo;
+          affiliate link. This page is separate from the shorter list of extras under Earnings
           (eSIM, insurance, transfers) — this one is its own page, <code>/travel-gear</code>, built to hold a whole shelf
           rather than three cards under a search.
+        </p>
+        <p className="mt-3">
+          <a
+            href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/travel-gear`}
+            className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+          >
+            View the public page
+          </a>
         </p>
         <p className="mt-3 max-w-2xl rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] p-3 text-xs leading-5 text-stone-600">
           The picture, description and price are typed in by hand for now — Amazon only hands those over automatically

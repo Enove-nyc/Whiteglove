@@ -118,7 +118,7 @@ export default async function VacationIdeasPage({
         <SectionHeading
           eyebrow="Every destination"
           title="All destinations"
-          description="Filter by the kosher and Shabbos answer as well as by the kind of holiday — each card says what the destination page can tell you before you open it."
+          description="Each card says kosher food, Shabbos and where to stay."
         />
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
@@ -132,8 +132,7 @@ export default async function VacationIdeasPage({
               Somewhere else in mind
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              These {vacationDestinations.length} are the ones written up so far. Tell us where else you are thinking
-              of and we will look into the kosher side of it.
+              These {vacationDestinations.length} are written up. Ask about somewhere else.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -141,7 +140,7 @@ export default async function VacationIdeasPage({
               href="/plan"
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              Start planning a trip
+              Get recommendations
             </Link>
             <Link
               href="/contact"

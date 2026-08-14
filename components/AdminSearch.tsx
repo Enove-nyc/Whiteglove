@@ -135,7 +135,7 @@ export default function AdminSearch({ areas, pathname }: { areas: AdminArea[] | 
               setOpen(false);
             }
           }}
-          placeholder="Search admin…"
+          placeholder="Find a page…"
           className="min-h-11 w-full bg-transparent py-2 text-sm text-[var(--navy)] outline-none placeholder:text-stone-400"
         />
       </div>
@@ -149,7 +149,7 @@ export default function AdminSearch({ areas, pathname }: { areas: AdminArea[] | 
             <p className="px-3 py-3 text-sm text-stone-600">Searching…</p>
           ) : flat.length === 0 ? (
             <p className="px-3 py-3 text-sm text-stone-600">
-              {trimmed ? "Nothing in the admin matches that." : "Type a listing, a candidate, or a screen."}
+              {trimmed ? "Nothing matches that." : "Type a page name. Press / from anywhere."}
             </p>
           ) : (
             <div className="max-h-80 overflow-auto">
