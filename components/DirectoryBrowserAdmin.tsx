@@ -49,7 +49,6 @@ export default function DirectoryBrowserAdmin({ entries }: { entries: DirectoryE
   };
 
   const visible = rows.slice(0, shown);
-  const missingCount = entries.filter((e) => e.missing.length > 0).length;
 
   return (
     <div>
@@ -93,11 +92,8 @@ export default function DirectoryBrowserAdmin({ entries }: { entries: DirectoryE
             onChange={(e) => reset(setOnlyMissing)(e.target.checked)}
             className="h-4 w-4 accent-[var(--navy)]"
           />
-          Only ones missing something ({missingCount})
+          Only ones missing something
         </label>
-        <p className="text-sm text-stone-500">
-          {rows.length === entries.length ? `${entries.length} entries` : `${rows.length} of ${entries.length}`}
-        </p>
       </div>
 
       {rows.length === 0 ? (

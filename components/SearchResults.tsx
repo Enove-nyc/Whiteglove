@@ -135,13 +135,12 @@ export default function SearchResults({
       {presentKinds.length > 1 ? (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by type">
           <FilterChip active={kindFilter === "all"} onClick={() => setKindFilter("all")}>
-            All ({results.length})
+            All
           </FilterChip>
           {presentKinds.map((kind) => {
-            const count = results.filter((r) => r.kind === kind).length;
             return (
               <FilterChip key={kind} active={kindFilter === kind} onClick={() => setKindFilter(kind)}>
-                {kindLabel(kind)} ({count})
+                {kindLabel(kind)}
               </FilterChip>
             );
           })}

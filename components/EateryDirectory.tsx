@@ -25,7 +25,7 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
     () =>
       [...new Set(eateries.map((e) => e.country))].sort().map((value) => ({
         value,
-        label: `${value} (${eateries.filter((e) => e.country === value).length})`,
+        label: value,
       })),
     [eateries],
   );

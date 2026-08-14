@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SearchResults from "@/components/SearchResults";
+import DestinationSearch from "@/components/DestinationSearch";
 import StructuredData from "@/components/StructuredData";
 import { searchSite } from "@/lib/site-search";
 import { pageMetadata } from "@/lib/seo";
@@ -45,10 +46,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
             {query ? `Results for “${query}”` : "Search the entire White Glove site"}
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-            Search information already published across White Glove — vacation destinations, where to stay, things to do,
-            kosher food, guides and heritage.
-          </p>
+          <div className="mt-6"><DestinationSearch compact showChrome={false} id="search-page" /></div>
         </div>
       </section>
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-14">

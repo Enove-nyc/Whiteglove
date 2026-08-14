@@ -41,7 +41,7 @@ export default function CemeteryDirectory({
     () =>
       [...new Set(cemeteries.map((c) => c.country))]
         .sort((a, b) => a.localeCompare(b))
-        .map((value) => ({ value, label: `${value} (${cemeteries.filter((c) => c.country === value).length})` })),
+        .map((value) => ({ value, label: value })),
     [cemeteries],
   );
 

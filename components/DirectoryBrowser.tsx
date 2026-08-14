@@ -31,13 +31,6 @@ export default function DirectoryBrowser({
   const [language, setLanguage] = useState("");
   const [specialty, setSpecialty] = useState("");
 
-  const counts = useMemo(() => {
-    const map: Record<string, number> = { ALL: providers.length };
-    for (const category of PROVIDER_CATEGORY_ORDER) map[category] = 0;
-    for (const provider of providers) map[provider.category] = (map[provider.category] ?? 0) + 1;
-    return map;
-  }, [providers]);
-
   // Regions, languages and specialties were on every record and shown on
   // none of them — you could not find "somebody in Ukraine who speaks
   // Yiddish", which is the question the directory exists to answer.
@@ -95,7 +88,7 @@ export default function DirectoryBrowser({
                   active ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold-light)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"
                 }`}
               >
-                {tab.label} <span className={active ? "text-[var(--gold-light)]" : "text-stone-400"}>({counts[tab.key] ?? 0})</span>
+                {tab.label}
               </button>
             );
           })}
@@ -137,7 +130,7 @@ export default function DirectoryBrowser({
       )}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-stone-500" role="status">{filtered.length} {filtered.length === 1 ? "provider" : "providers"}</p>
+        <p className="text-sm text-stone-500" role="status">{filtered.length === providers.length ? "All providers" : "Filtered providers"}</p>
         {(region || language || specialty || category !== "ALL" || query) && (
           <button
             type="button"

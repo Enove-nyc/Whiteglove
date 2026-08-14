@@ -1,7 +1,6 @@
 import { readWords } from "@/lib/site-words-store";
 import { readBookingLink } from "@/lib/booking-access-store";
 import type { BookingLink } from "@/lib/booking-access";
-import { LISTING_AUDIENCE_COPY } from "@/data/listing-audience";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -43,9 +42,12 @@ const columnsFor = (
     links: [
       { label: "Get recommendations", href: "/plan" },
       { label: "Destinations", href: "/destinations" },
+      { label: "Getaways", href: "/getaways" },
       { label: "Itinerary planner", href: "/itinerary" },
       { label: "A sample itinerary", href: "/sample-itinerary" },
+      { label: "My trip", href: "/command-center" },
       { label: booking.label, href: booking.href },
+      { label: "Flight help", href: "/flight-booking-assistance" },
       { label: "Travel services", href: "/services" },
     ],
   },
@@ -113,6 +115,8 @@ const utilityLinks = [
   // down a destination page, so somebody who wanted to be told when we publish
   // somewhere new had nowhere to go.
   { label: "Travel updates", href: "/alerts" },
+  { label: "Search", href: "/search" },
+  { label: "Suggest a place", href: "/submit" },
   { label: "How we verify", href: "/verification" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },
@@ -131,41 +135,9 @@ export default async function Footer() {
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-14">
           <div className="min-w-0 border-b border-white/10 pb-9 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-12">
             <Image src="/logo-footer.png" alt="White Glove Itineraries" width={977} height={754} className="h-24 w-auto max-w-full object-contain" />
-            <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">{words.footerBlurb}</p>
-            <p className="mt-4 max-w-md text-sm leading-7 text-slate-300">{LISTING_AUDIENCE_COPY}</p>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">
               {words.footerStrapline}
             </p>
-
-            <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.04] p-6">
-              {/* THE ONE SENTENCE THAT HAD TO CHANGE, and the reason this box
-                  exists at all. It used to open "Share your kevarim, dates and
-                  kosher needs" on every page of the site, including the ones
-                  about beach holidays. It now asks the question a footer can
-                  reasonably ask anybody, and points at the two pages that
-                  answer it rather than at a form. */}
-              <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-white">
-                Tell us where you want to go—or let us help you choose.
-              </h2>
-              {/* NOT "every destination here has the kosher food and the
-                  Shabbos side worked out". That was a promise about the whole
-                  list made in the footer of all three hundred pages, and the
-                  list does not keep it evenly — see
-                  lib/destination-readiness.ts, which is what decides. Verified
-                  details name a source and date; anything still needing
-                  confirmation is labelled. */}
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                Vacations, family trips and heritage journeys.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/destinations" className="inline-flex min-h-11 items-center rounded-md bg-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy-deep)] transition hover:bg-[var(--gold-light)]">
-                  Browse destinations
-                </Link>
-                <Link href="/hotels" className="inline-flex min-h-11 items-center rounded-md border border-white/30 px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold-light)] hover:text-[var(--gold-light)]">
-                  Where to stay
-                </Link>
-              </div>
-            </div>
           </div>
 
           <nav className="grid min-w-0 gap-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Footer navigation">

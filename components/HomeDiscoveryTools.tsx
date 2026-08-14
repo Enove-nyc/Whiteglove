@@ -130,10 +130,6 @@ export default function HomeDiscoveryTools() {
                 {item.label}
               </span>
               <span className="mt-2 hidden font-[family-name:var(--font-display)] text-xl leading-tight sm:block">{item.title}</span>
-              <span className={`mt-2 hidden text-sm leading-6 sm:block ${selected ? "text-slate-200" : "text-stone-600"}`}>{item.body}</span>
-              <span className={`mt-3 hidden min-h-11 items-center text-sm font-semibold sm:inline-flex ${selected ? "text-[var(--gold-light)]" : "text-[var(--navy)]"}`}>
-                {item.action} →
-              </span>
             </button>
           );
         })}

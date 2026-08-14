@@ -35,7 +35,7 @@ export default function MyRouteDashboard({
 }) {
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [route, setRoute] = useState<SavedPlace[]>([]);
-  const [favorites, setFavorites] = useState<SavedPlace[]>([]);
+  const [, setFavorites] = useState<SavedPlace[]>([]);
 
   useEffect(() => {
     const syncLocal = () => {
@@ -62,7 +62,6 @@ export default function MyRouteDashboard({
   }, []);
 
   const activeRoute = account?.route ?? route;
-  const activeFavorites = account?.favorites ?? favorites;
   const optimized = optimizeRoute(activeRoute);
   // Worked out on the order that will actually be driven, not the order they
   // happened to be saved in.
@@ -120,7 +119,6 @@ export default function MyRouteDashboard({
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Saved places</p>
                 <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">My Route</h2>
               </div>
-              <span className="text-sm text-stone-500">{activeRoute.length} places</span>
             </div>
             <ol className="mt-7 space-y-4">
               {optimized.map((place, index) => (
@@ -229,7 +227,7 @@ export default function MyRouteDashboard({
       )}
 
       <div className="mt-14">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Favorites - {activeFavorites.length}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Favorites</p>
         <p className="mt-3 text-stone-600">Favorites are saved separately from your active route, so you can keep places for a future trip.</p>
       </div>
     </section>

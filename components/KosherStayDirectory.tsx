@@ -34,7 +34,7 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
     () =>
       [...new Set(stays.map((s) => s.country))].sort().map((value) => ({
         value,
-        label: `${value} (${stays.filter((s) => s.country === value).length})`,
+        label: value,
       })),
     [stays],
   );
@@ -232,11 +232,8 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             onClick={() => setLimit((current) => current + PAGE)}
             className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
-            Show {Math.min(PAGE, shown.length - visible.length)} more
+            Show more
           </button>
-          <p className="text-sm text-stone-600">
-            Showing {visible.length} of {shown.length}.
-          </p>
         </div>
       )}
     </>

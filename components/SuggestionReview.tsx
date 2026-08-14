@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { EditSuggestion, SuggestionStatus } from "@/lib/admin-content";
 import { changedFields, type DirectoryDraft } from "@/lib/directory-fields";
-import { countByStatus, replyDraft, reviewProblem, sortForReview, suggestionSection, waitingFor, type ReviewDecision, type ReviewInput } from "@/lib/suggestions";
+import { replyDraft, reviewProblem, sortForReview, suggestionSection, waitingFor, type ReviewDecision, type ReviewInput } from "@/lib/suggestions";
 
 /**
  * The review queue for corrections people send in.
@@ -55,7 +55,6 @@ export default function SuggestionReview({ suggestions, links, readAt, currentLi
   onReview: (id: string, input: ReviewInput) => Promise<ReviewResult>;
 }) {
   const [filter, setFilter] = useState<SuggestionStatus | "all">("pending");
-  const counts = countByStatus(suggestions);
   const ordered = sortForReview(suggestions);
   const shown = filter === "all" ? ordered : ordered.filter((item) => item.status === filter);
 
@@ -81,7 +80,7 @@ export default function SuggestionReview({ suggestions, links, readAt, currentLi
               filter === name ? "border border-[var(--navy)] bg-[var(--navy)] text-white" : "border border-[var(--gold-light)] text-[var(--navy)]"
             }`}
           >
-            {name === "all" ? `Everything (${suggestions.length})` : `${STATUS_LABEL[name]} (${counts[name]})`}
+            {name === "all" ? "Everything" : STATUS_LABEL[name]}
           </button>
         ))}
       </div>

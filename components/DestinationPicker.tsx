@@ -47,7 +47,7 @@ export default function DestinationPicker({
         className="mt-3 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] transition focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
       />
       <p className="mt-3 text-xs text-stone-500">
-        {filtered.length} of {destinations.length} destinations
+        Destinations
       </p>
       <div className="mt-3 max-h-[60vh] space-y-1 overflow-y-auto pr-1">
         {filtered.map((d) => {
@@ -67,7 +67,6 @@ export default function DestinationPicker({
               <span className={`ml-2 text-xs ${active ? "text-white/70" : "text-stone-500"}`}>{d.country}</span>
               {count > 0 && (
                 <span className={`ml-2 text-xs ${active ? "text-white/70" : "text-[var(--gold-ink)]"}`}>
-                  · {d._count.places} listings, {d._count.contacts} contacts
                 </span>
               )}
             </Link>

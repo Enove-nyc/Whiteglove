@@ -75,7 +75,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <SectionHeading
           eyebrow={query ? "Search results" : "Destination directory"}
-          title={query ? `Results for “${q.trim()}”` : `${allCemeteries.length + destinations.length} destinations available.`}
+          title={query ? `Results for “${q.trim()}”` : "Destinations"}
           description={query ? "Guides and locations matching your search." : "Browse by city, traditional name, country, or tzaddik. Detailed practical information is added only when it has been checked."}
         />
 

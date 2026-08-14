@@ -20,15 +20,6 @@ function statusClass(status: ContentImportStatus) {
   return "border-sky-200 bg-sky-50 text-sky-800";
 }
 
-function Count({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</p>
-      <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{value}</p>
-    </div>
-  );
-}
-
 function candidateMatches(candidate: ContentImportCandidateView, query: string) {
   const text = [candidate.name, candidate.city, candidate.region, candidate.country, candidate.category, candidate.sourceName, candidate.sourceId]
     .filter(Boolean)
@@ -59,15 +50,6 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
 
   return (
     <section className="mt-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        <Count label="Ready to stage" value={dashboard.counts.readyToStage} />
-        <Count label="Needs review" value={dashboard.counts.needsReview} />
-        <Count label="Publishable now" value={dashboard.counts.publishable} />
-        <Count label="Possible duplicates" value={dashboard.counts.duplicates} />
-        <Count label="Rejected" value={dashboard.counts.rejected} />
-        <Count label="Published" value={dashboard.counts.published} />
-      </div>
-
       <section className="mt-8 space-y-4">
         {dashboard.batches.map((source) => (
           <article key={source.slug} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
@@ -76,7 +58,7 @@ export default function ContentImportReview({ dashboard }: { dashboard: ContentI
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Source package</p>
                 <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{source.name}</h2>
                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                  {source.packageCandidates} candidates · {source.stagedCandidates} in the private queue · {source.sourceName} · {source.license}
+                  {source.sourceName} · {source.license}
                 </p>
                 {/* A package compiled from dozens of official sources has no one
                     set of terms to link to, and linking one of sixty-five would

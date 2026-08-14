@@ -18,12 +18,10 @@ const countCardClass =
 
 function CountCard({
   label,
-  value,
   active,
   onClick,
 }: {
   label: string;
-  value: number;
   active: boolean;
   onClick: () => void;
 }) {
@@ -32,13 +30,12 @@ function CountCard({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      aria-label={`${label}: ${value}. Filter the queue to ${label.toLowerCase()}.`}
+      aria-label={`Filter the queue to ${label.toLowerCase()}.`}
       className={`${countCardClass} flex flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)] ${
         active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(23,45,82,.08)]" : ""
       }`}
     >
       <span className="block text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</span>
-      <span className="mt-2 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
     </button>
   );
 }
@@ -122,25 +119,21 @@ export default function ImportNeedsReviewQueue({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CountCard
           label="Awaiting verification"
-          value={queue.counts.awaitingVerification}
           active={status === "OPEN" && origin === "ALL" && kind === "ALL"}
           onClick={() => applyCountFilter({ status: "OPEN", origin: "ALL", kind: "ALL" })}
         />
         <CountCard
           label="Needs review"
-          value={queue.counts.needsReview}
           active={status === "NEEDS_REVIEW" && origin === "ALL"}
           onClick={() => applyCountFilter({ status: "NEEDS_REVIEW", origin: "ALL" })}
         />
         <CountCard
           label="In source packs only"
-          value={queue.counts.sourcePackOnly}
           active={origin === "source_pack"}
           onClick={() => applyCountFilter({ status: "OPEN", origin: "source_pack" })}
         />
         <CountCard
           label="Possible duplicates"
-          value={queue.counts.duplicates}
           active={status === "DUPLICATE" && origin === "ALL"}
           onClick={() => applyCountFilter({ status: "DUPLICATE", origin: "ALL" })}
         />
@@ -151,31 +144,11 @@ export default function ImportNeedsReviewQueue({
           <CountCard
             key={key}
             label={reviewQueueKindLabel(key)}
-            value={queue.counts.byKind[key]}
             active={kind === key}
             onClick={() => applyCountFilter({ kind: key })}
           />
         ))}
       </div>
-
-      {queue.counts.byBatch.length > 0 && (
-        <p className="mt-4 text-sm leading-6 text-stone-600">
-          By batch:{" "}
-          {queue.counts.byBatch
-            .slice(0, 6)
-            .map((item) => `${item.name} (${item.count})`)
-            .join(" · ")}
-        </p>
-      )}
-      {queue.counts.byMarket.length > 0 && (
-        <p className="mt-1 text-sm leading-6 text-stone-600">
-          By market:{" "}
-          {queue.counts.byMarket
-            .slice(0, 8)
-            .map((item) => `${item.market} (${item.count})`)
-            .join(" · ")}
-        </p>
-      )}
 
       <section className="mt-8 space-y-4">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Private import packs</h2>

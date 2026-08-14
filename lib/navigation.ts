@@ -163,6 +163,8 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     title: "Where to go",
     links: [
       PRIMARY_NAV[0],
+      { label: "Search", href: "/search", description: "Find any page or place." },
+      { label: "Getaways", href: "/getaways", description: "Trip ideas." },
       { label: "Where to stay", href: "/hotels", description: "Kosher hotels, quarters and seasonal programmes." },
       { label: "Kosher food finder", href: "/kosher", description: "Restaurants, bakeries and groceries by place." },
       { label: "Map", href: "/map", description: "Everything on the site, on one map." },
@@ -175,6 +177,7 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       // One entry for the unified search — not Hotels, Flights, Cars and
       // "Search hotels…" as four near-duplicates of Search & Book.
       BOOKING_NAV,
+      { label: "Flight help", href: "/flight-booking-assistance", description: "Help with a flight request." },
     ],
   },
   {
@@ -196,6 +199,7 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
     links: [
       PRIMARY_NAV[1],
       { label: "A sample itinerary", href: "/sample-itinerary", description: "What a finished trip looks like." },
+      { label: "My trip", href: "/command-center", description: "Everything for the current trip." },
       // Discoverable here rather than buried under White Glove; not in the bar.
       { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
       { label: "Certification marks", href: "/hechsherim", description: "Who certifies the kosher places on this site." },
@@ -223,6 +227,8 @@ export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem
       // personally is inside Contact.
       { label: "Travel services", href: "/services", description: "Have White Glove plan the trip." },
       { label: "Contact", href: "/contact", description: "A question, a correction, or advertising." },
+      { label: "Suggest a place", href: "/submit", description: "Send a place or correction." },
+      { label: "Travel updates", href: "/alerts", description: "Destination and seasonal updates." },
     ],
   },
 ] as const;
