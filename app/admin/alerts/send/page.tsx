@@ -5,6 +5,7 @@ import { ALERT_TOPICS } from "@/lib/email-alerts";
 import { alertsStoreAvailable, listAlertSignups } from "@/lib/email-alerts-store";
 import { audienceFor } from "@/lib/email-blast";
 import { alreadyHandled, blastStoreAvailable, listBlasts, readBlastSettings } from "@/lib/email-blast-store";
+import { siteOrigin } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -84,10 +85,13 @@ export default async function SendUpdatesPage() {
         )}
         <BlastComposer
           open={settings.open}
+          fromEmail={settings.fromEmail}
+          defaultFrom={status.from}
           storeReady={blastStoreAvailable()}
           reachByTopic={reachByTopic}
           audienceMasks={audienceMasks}
           blasts={blasts}
+          siteOrigin={siteOrigin()?.origin || "https://www.whitegloveitineraries.com"}
           remaining={remaining}
           deliveryWarning={deliveryWarning}
         />

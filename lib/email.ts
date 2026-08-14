@@ -1,5 +1,6 @@
 import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
-import { splitLinks } from "@/lib/email-blast";
+import type { BlastBlock } from "@/lib/email-blast";
+import { renderBlastHtml, renderBlastText } from "@/lib/email-template";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -71,6 +72,9 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
     const response = await fetch(RESEND_API_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
+      // `from` inside the payload wins, so a caller can send as a different
+      // address on the same verified domain. Nobody but the blast does; see
+      // the note on senderForBlast below for why it is only that one.
       body: JSON.stringify({ from: config.from, ...payload }),
     });
     const bodyText = await response.text().catch(() => "");
@@ -442,54 +446,69 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
  * request, but every one of them would then need the same unsubscribe link —
  * which is to say, the wrong one for 49 of them. The caller paces these.
  */
+/**
+ * Who an update comes FROM, which is not who a verification code comes from.
+ *
+ * TWO KINDS OF MAIL, TWO ADDRESSES, AND THE DIFFERENCE MATTERS. A six-digit
+ * code is from `noreply@` because there is nothing to reply to and a reply
+ * would sit unread in a mailbox nobody opens. An update about a Pesach
+ * programme is a letter: somebody WILL reply to it, to ask whether the hotel
+ * takes a family of six, and that reply has to land somewhere a person reads.
+ *
+ * So the blast sender is its own setting. Blank means "whatever the rest of the
+ * site uses", which is what it was before this existed.
+ *
+ * IT MUST BE ON THE VERIFIED DOMAIN. Resend will only send as a domain it has
+ * been shown control of; anything else is refused at the API, or worse,
+ * accepted and dropped into spam by the receiving server for failing DKIM. The
+ * check lives in lib/email-blast.ts so the admin screen can refuse it at the
+ * moment it is typed rather than at the moment 200 messages fail.
+ */
+export function blastSender(configured: string): string {
+  const clean = configured.trim();
+  if (!clean) return resendConfig()?.from ?? "";
+  // Named, so it arrives as "White Glove Itineraries" rather than a bare
+  // address — which is most of the difference between a letter and a circular.
+  return clean.includes("<") ? clean : `White Glove Itineraries <${clean}>`;
+}
+
 export async function sendBlastEmail(input: {
   to: string;
   subject: string;
-  /** The body as the owner wrote it — plain text, paragraphs separated by blank lines. */
-  body: string;
+  /** The address to send as. Blank uses the site-wide sender. */
+  from?: string;
+  /** The message, as blocks. A pre-blocks draft still renders through blocksOf. */
+  blast: { blocks?: BlastBlock[]; body?: string; subject?: string };
+  /** This deployment's address, so the crest and any picture can be absolute. */
+  origin: string;
   unsubscribeUrl: string;
-  /** Shown under the body, above the unsubscribe line. Why they are getting this. */
+  /** Shown under the message, above the unsubscribe line. Why they are getting this. */
   becauseLine: string;
 }): Promise<SendResult> {
-  const paragraphs = input.body
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean);
-
-  // Split BEFORE escaping, so an address containing "&" survives: escaping
-  // first would turn it into "&amp;" and the href would go somewhere else.
-  // Both the text and the href are escaped after the split, so nothing the
-  // owner types can close the tag.
-  const htmlBody = paragraphs
-    .map((block) => {
-      const inner = splitLinks(block)
-        .map((segment) => {
-          const text = escapeHtml(segment.text).replace(/\n/g, "<br>");
-          if (!segment.url) return text;
-          return `<a href="${escapeHtml(segment.url)}" style="color:#7a602c;">${text}</a>`;
-        })
-        .join("");
-      return `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;margin:0 0 16px;">${inner}</p>`;
-    })
-    .join("");
-
-  const url = escapeHtml(input.unsubscribeUrl);
+  const render = {
+    blast: input.blast,
+    origin: input.origin,
+    becauseLine: input.becauseLine,
+    unsubscribeUrl: input.unsubscribeUrl,
+  };
+  const from = blastSender(input.from ?? "");
   return postResend(
     {
       to: input.to,
       subject: input.subject,
+      ...(from ? { from } : {}),
+      // Replies go back to the same address it came from. An update somebody
+      // answers is the point of sending it from a mailbox rather than noreply@.
+      ...(from ? { reply_to: from } : {}),
       headers: {
         // One-click unsubscribe, the way the mail clients want it offered.
         "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
-      html:
-        `<div style="max-width:560px;margin:0 auto;padding:8px 4px;">${htmlBody}` +
-        `<hr style="border:none;border-top:1px solid #e3d9cc;margin:28px 0 14px;">` +
-        `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin:0;">${escapeHtml(input.becauseLine)} ` +
-        `<a href="${url}" style="color:#7a602c;">Stop these emails</a>.</p>` +
-        `<p style="font-family:Arial,sans-serif;font-size:12px;color:#8a8a8a;margin:8px 0 0;">White Glove Itineraries · whitegloveitineraries.com</p></div>`,
-      text: `${paragraphs.join("\n\n")}\n\n—\n${input.becauseLine} Stop these emails: ${input.unsubscribeUrl}\n\nWhite Glove Itineraries · whitegloveitineraries.com`,
+      html: renderBlastHtml(render),
+      // Both parts, always. Some corporate clients show the text one, and a
+      // message with no text part scores worse with spam filters.
+      text: renderBlastText(render),
     },
     input.to,
     "blast",

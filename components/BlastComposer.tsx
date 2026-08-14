@@ -6,10 +6,20 @@ import {
   saveBlastAction,
   sendBlastAction,
   setBlastOpenAction,
+  setBlastSenderAction,
   testBlastAction,
 } from "@/app/admin/alerts/send/actions";
+import BlastBlocks from "@/components/BlastBlocks";
 import { ALERT_TOPIC_BLURBS, ALERT_TOPIC_LABELS, ALERT_TOPICS, type AlertTopic } from "@/lib/email-alerts";
-import { describeBlast, type EmailBlast, MAX_BODY, MAX_SUBJECT, splitLinks } from "@/lib/email-blast";
+import {
+  type BlastBlock,
+  blocksOf,
+  describeBlast,
+  type EmailBlast,
+  MAX_SUBJECT,
+  becauseLine,
+} from "@/lib/email-blast";
+import { renderBlastHtml } from "@/lib/email-template";
 
 /**
  * Writing and sending one message to the people who asked for it.
@@ -45,6 +55,10 @@ function Note({ state }: { state: { ok: boolean; message: string } | null }) {
 
 export default function BlastComposer({
   open,
+  /** The address updates go out as. Blank means the site's usual sender. */
+  fromEmail,
+  /** What the site would send as with nothing set here — for the placeholder. */
+  defaultFrom,
   storeReady,
   /** How many active signups have ticked each topic. */
   reachByTopic,
@@ -60,16 +74,21 @@ export default function BlastComposer({
    */
   audienceMasks,
   blasts,
+  /** This deployment's own address, so the preview's crest and pictures load. */
+  siteOrigin,
   /** Waiting counts per blast id — audience minus everybody already handled. */
   remaining,
   /** Why sending is impossible right now, whatever the switch says. Null if it is possible. */
   deliveryWarning,
 }: {
   open: boolean;
+  fromEmail: string;
+  defaultFrom: string;
   storeReady: boolean;
   reachByTopic: Record<string, number>;
   audienceMasks: number[];
   blasts: EmailBlast[];
+  siteOrigin: string;
   remaining: Record<string, number>;
   deliveryWarning: string | null;
 }) {
@@ -78,17 +97,26 @@ export default function BlastComposer({
   const [sendState, sendAct, sending] = useActionState(sendBlastAction, null);
   const [testState, testAct, testing] = useActionState(testBlastAction, null);
   const [deleteState, deleteAct, deleting] = useActionState(deleteBlastAction, null);
+  const [senderState, senderAct, savingSender] = useActionState(setBlastSenderAction, null);
 
   const [chosen, setChosen] = useState<AlertTopic[]>([]);
   const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [blocks, setBlocks] = useState<BlastBlock[]>([{ kind: "text", text: "" }]);
+  /** Which saved message is being edited, or "" for a new one. */
+  const [editing, setEditing] = useState("");
 
   // The audience for what is being written, counted the same way the server
   // will count it: each person once, if they ticked ANY of the chosen topics.
-  // Counted as they type, so a mistyped address — one that will go out as
-  // plain grey words rather than a link — is visible before it is sent to two
-  // hundred people rather than after.
-  const linkCount = splitLinks(body).filter((segment) => segment.url).length;
+  // Rendered by the very code that sends it, in an iframe so the email's own
+  // styles cannot leak into the admin and the admin's cannot leak into it. A
+  // preview drawn a second way is a preview of something else.
+  const preview = renderBlastHtml({
+    blast: { blocks, subject },
+    origin: siteOrigin,
+    becauseLine: becauseLine(chosen),
+    unsubscribeUrl: `${siteOrigin}/api/alerts/unsubscribe?token=preview`,
+  });
+
   const wantedMask = chosen.reduce((mask, topic) => mask | (1 << ALERT_TOPICS.indexOf(topic)), 0);
   const reach = wantedMask === 0 ? 0 : audienceMasks.filter((mask) => (mask & wantedMask) !== 0).length;
 
@@ -116,6 +144,40 @@ export default function BlastComposer({
           </button>
         </form>
         <Note state={switchState} />
+
+        <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+          <h3 className="text-sm font-semibold text-[var(--navy)]">Who it comes from</h3>
+          <p className="mt-1.5 text-sm leading-6 text-stone-600">
+            Updates can come from their own address, separate from the one that sends verification codes and password
+            resets. Somebody will reply to an update asking whether a hotel takes a family of six — that reply should
+            land somewhere you read. Replies go back to whatever you put here.
+          </p>
+          <form action={senderAct} className="mt-3 flex flex-wrap items-end gap-3">
+            <label className="min-w-[16rem] flex-1">
+              <span className={caption}>Sending address</span>
+              <input
+                name="fromEmail"
+                defaultValue={fromEmail}
+                placeholder={defaultFrom || "info@whitegloveitineraries.com"}
+                className={input}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={savingSender || !storeReady}
+              className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-50"
+            >
+              {savingSender ? "Saving…" : "Save address"}
+            </button>
+          </form>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            It has to be an address at whitegloveitineraries.com — that is the domain verified with Resend, and mail
+            sent as anything else is refused or lands in spam. Leave it blank to use{" "}
+            <code>{defaultFrom || "the site's usual sender"}</code>.
+          </p>
+          <Note state={senderState} />
+        </div>
+
         {deliveryWarning && (
           <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             {deliveryWarning}
@@ -182,30 +244,46 @@ export default function BlastComposer({
             </span>
           </label>
 
-          <label className="block">
-            <span className={caption}>Message</span>
-            <textarea
-              name="body"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={10}
-              maxLength={MAX_BODY}
-              placeholder={"Write it the way you would write to one person.\n\nA blank line starts a new paragraph. Paste a web address anywhere — https://whitegloveitineraries.com/destinations/vienna — and it becomes a link they can press."}
-              className={input}
+          <div>
+            <span className={caption}>The message</span>
+            <p className="mt-1.5 text-sm leading-6 text-stone-600">
+              Built out of pieces, the same way you edit a page. The crest, the gold rule and the footer are added
+              around whatever you put here — you are writing the middle of the letter, not the whole of it.
+            </p>
+            {/* The blocks go up as one JSON field. A stack of pieces with
+                pictures in it does not fit the flat name/value shape a form
+                posts, and inventing "block-3-caption" names would be a second
+                encoding to keep in step with the first. */}
+            <input type="hidden" name="blocks" value={JSON.stringify(blocks)} />
+            <input type="hidden" name="blastId" value={editing} />
+            <div className="mt-3">
+              <BlastBlocks blocks={blocks} onChange={setBlocks} />
+            </div>
+            <p className="mt-3 text-xs leading-5 text-stone-500">
+              Why they are getting this and how to stop are added to every message and cannot be removed.
+            </p>
+          </div>
+
+          {/* ---- what it will look like ---- */}
+          <div>
+            <span className={caption}>What they will see</span>
+            <p className="mt-1.5 text-xs leading-5 text-stone-500">
+              The real message, drawn by the same code that sends it — so this is not an impression of the email, it is
+              the email.
+            </p>
+            <iframe
+              title="Preview of the message"
+              srcDoc={preview}
+              className="mt-3 h-[32rem] w-full rounded-lg border border-[var(--gold-light)] bg-white"
             />
-            <span className="mt-1 block text-xs text-stone-500">
-              {body.length}/{MAX_BODY}. A blank line starts a new paragraph, and any web address you paste becomes a
-              link{linkCount > 0 ? ` — ${linkCount} so far` : ""}. The footer — why they are getting this, and how to
-              stop — is added to every message and cannot be removed.
-            </span>
-          </label>
+          </div>
 
           <button
             type="submit"
             disabled={saving || !storeReady}
             className="bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
           >
-            {saving ? "Saving…" : "Save it"}
+            {saving ? "Saving…" : editing ? "Save changes" : "Save it"}
           </button>
           <Note state={saveState} />
         </form>
@@ -234,7 +312,20 @@ export default function BlastComposer({
                     </span>
                   </div>
 
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-600">{blast.body}</p>
+                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                    {blocksOf(blast)
+                      .map((block) =>
+                        block.kind === "heading" || block.kind === "text"
+                          ? block.text.trim().slice(0, 120)
+                          : block.kind === "image"
+                            ? "[picture]"
+                            : block.kind === "button"
+                              ? `[${block.label.trim() || "button"}]`
+                              : "—",
+                      )
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                   <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{describeBlast(blast, left)}</p>
                   {blast.lastError && (
                     <p className="mt-1 text-xs leading-5 text-amber-900">Last refusal: {blast.lastError}</p>
@@ -263,6 +354,21 @@ export default function BlastComposer({
                           {sending ? "Sending…" : blast.state === "draft" ? `Send to ${left}` : `Continue — ${left} left`}
                         </button>
                       </form>
+                    )}
+                    {blast.state === "draft" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditing(blast.id);
+                          setSubject(blast.subject);
+                          setChosen(blast.topics);
+                          setBlocks(blocksOf(blast));
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+                      >
+                        Edit
+                      </button>
                     )}
                     {blast.state === "draft" && (
                       <form action={deleteAct}>

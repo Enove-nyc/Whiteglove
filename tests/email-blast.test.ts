@@ -12,6 +12,10 @@ import {
   type EmailBlast,
   newBlast,
   readBlastTopics,
+  blocksOf,
+  blocksProblem,
+  cleanBlocks,
+  senderProblem,
   sendProblem,
   splitLinks,
 } from "@/lib/email-blast";
@@ -50,7 +54,8 @@ const READY = { apiKeySet: true, usingTestSender: false };
 
 function blast(over: Partial<EmailBlast> = {}): EmailBlast {
   return {
-    ...newBlast({ id: "b-1", subject: "Vienna is on the site", body: "A paragraph.", topics: ["new_destinations"], by: "owner" }),
+    ...newBlast({ id: "b-1", subject: "Vienna is on the site", body: "", topics: ["new_destinations"], by: "owner" }),
+    blocks: [{ kind: "text", text: "A paragraph." }] as EmailBlast["blocks"],
     ...over,
   };
 }
@@ -89,11 +94,60 @@ describe("who a blast reaches", () => {
 });
 
 describe("what may be written", () => {
-  it("wants a subject, a body and somebody to send it to", () => {
-    assert.match(blastProblem({ subject: "", body: "x", topics: ["seasonal"] }) ?? "", /subject/i);
-    assert.match(blastProblem({ subject: "x", body: " ", topics: ["seasonal"] }) ?? "", /message/i);
-    assert.match(blastProblem({ subject: "x", body: "y", topics: [] }) ?? "", /who it goes to/i);
-    assert.equal(blastProblem({ subject: "x", body: "y", topics: ["seasonal"] }), null);
+  it("wants a subject and somebody to send it to", () => {
+    assert.match(blastProblem({ subject: "", topics: ["seasonal"] }) ?? "", /subject/i);
+    assert.match(blastProblem({ subject: "x", topics: [] }) ?? "", /who it goes to/i);
+    assert.match(blastProblem({ subject: "x".repeat(200), topics: ["seasonal"] }) ?? "", /subject/i);
+    assert.equal(blastProblem({ subject: "x", topics: ["seasonal"] }), null);
+  });
+
+  it("wants something in the message, and some words among it", () => {
+    assert.match(blocksProblem([]) ?? "", /Add something/i);
+    assert.match(blocksProblem([{ kind: "text", text: "  " }]) ?? "", /Add something/i);
+    // A message that is only a picture and a button reads as an advertisement,
+    // which is not what anybody ticked a box for.
+    assert.match(
+      blocksProblem([
+        { kind: "image", url: "/api/media?id=m-1", alt: "A shul", caption: "", href: "" },
+        { kind: "button", label: "Look", href: "https://example.com" },
+      ]) ?? "",
+      /some words/i,
+    );
+    assert.equal(blocksProblem([{ kind: "text", text: "Hello." }]), null);
+  });
+
+  it("REFUSES A BUTTON THAT GOES NOWHERE", () => {
+    // It renders as something to press that does nothing, in somebody else's
+    // inbox, where the owner will never see it happen.
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "button", label: "Book", href: "  " }]) ?? "",
+      /nowhere to go/i,
+    );
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "button", label: " ", href: "https://example.com" }]) ?? "",
+      /no words on it/i,
+    );
+  });
+
+  it("wants a description on every picture", () => {
+    // For the people whose email does not show pictures, which is a lot of
+    // people on a phone with images off.
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "image", url: "/api/media?id=m", alt: "", caption: "", href: "" }]) ?? "",
+      /description/i,
+    );
+  });
+
+  it("opens a message written before there were blocks", () => {
+    // Nothing typed in the plain-text days is lost or has to be retyped.
+    assert.deepEqual(blocksOf({ body: "An old draft." }), [{ kind: "text", text: "An old draft." }]);
+    assert.deepEqual(blocksOf({ body: "  " }), []);
+    assert.deepEqual(blocksOf({ blocks: [{ kind: "divider" }], body: "ignored" }), [{ kind: "divider" }]);
+  });
+
+  it("drops anything that is not a block it knows", () => {
+    assert.deepEqual(cleanBlocks([{ kind: "video", src: "x" }, { kind: "divider" }, null, "text"]), [{ kind: "divider" }]);
+    assert.deepEqual(cleanBlocks("nonsense"), []);
   });
 
   it("drops anything that is not a real topic", () => {
@@ -105,13 +159,13 @@ describe("what may be written", () => {
 describe("what stops a send", () => {
   it("IS OFF UNTIL THE OWNER TURNS IT ON", () => {
     assert.equal(DEFAULT_BLAST_SETTINGS.open, false);
-    const stop = sendProblem({ settings: { open: false }, blast: blast(), audienceSize: 5, deliveryReady: READY });
+    const stop = sendProblem({ settings: { open: false, fromEmail: "" }, blast: blast(), audienceSize: 5, deliveryReady: READY });
     assert.match(stop ?? "", /switched off/i);
   });
 
   it("REFUSES THE SANDBOX SENDER, WHICH WOULD LOOK SENT AND ARRIVE NOWHERE", () => {
     const stop = sendProblem({
-      settings: { open: true },
+      settings: { open: true, fromEmail: "" },
       blast: blast(),
       audienceSize: 5,
       deliveryReady: { apiKeySet: true, usingTestSender: true },
@@ -122,7 +176,7 @@ describe("what stops a send", () => {
 
   it("refuses when Resend is not connected at all", () => {
     const stop = sendProblem({
-      settings: { open: true },
+      settings: { open: true, fromEmail: "" },
       blast: blast(),
       audienceSize: 5,
       deliveryReady: { apiKeySet: false, usingTestSender: true },
@@ -131,12 +185,12 @@ describe("what stops a send", () => {
   });
 
   it("refuses when there is nobody to send to", () => {
-    const stop = sendProblem({ settings: { open: true }, blast: blast(), audienceSize: 0, deliveryReady: READY });
+    const stop = sendProblem({ settings: { open: true, fromEmail: "" }, blast: blast(), audienceSize: 0, deliveryReady: READY });
     assert.match(stop ?? "", /nobody/i);
   });
 
   it("allows a send that is switched on, deliverable and has an audience", () => {
-    assert.equal(sendProblem({ settings: { open: true }, blast: blast(), audienceSize: 3, deliveryReady: READY }), null);
+    assert.equal(sendProblem({ settings: { open: true, fromEmail: "" }, blast: blast(), audienceSize: 3, deliveryReady: READY }), null);
   });
 });
 
@@ -289,9 +343,57 @@ describe("links in the words", () => {
     // reader somewhere else. The email builder splits, then escapes each part.
     const parts = splitLinks("Look: https://example.com/search?a=1&b=2 now");
     assert.equal(parts[1].url, "https://example.com/search?a=1&b=2");
+    // The paragraph builder moved into lib/email-template.ts when the message
+    // became a stack of blocks. The ordering it has to keep did not change.
+    const template = readFileSync("lib/email-template.ts", "utf8");
+    const fn = template.slice(template.indexOf("function paragraphHtml"));
+    assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeEmailHtml(segment.text)"));
+    assert.match(fn, /safeHref\(segment\.url\)/);
+  });
+});
+
+describe("who an update comes from", () => {
+  /**
+   * TWO KINDS OF MAIL, TWO ADDRESSES. A six-digit code comes from noreply@
+   * because there is nothing to reply to. An update about a Pesach programme is
+   * a letter somebody WILL answer, and the answer has to reach a mailbox a
+   * person opens.
+   */
+  it("allows blank, which means the site's usual sender", () => {
+    assert.equal(senderProblem("", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("   ", "whitegloveitineraries.com"), null);
+  });
+
+  it("allows an address on the verified domain, named or bare", () => {
+    assert.equal(senderProblem("info@whitegloveitineraries.com", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("White Glove <info@whitegloveitineraries.com>", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("info@mail.whitegloveitineraries.com", "whitegloveitineraries.com"), null);
+  });
+
+  it("REFUSES A DOMAIN RESEND HAS NOT BEEN SHOWN CONTROL OF", () => {
+    // Sending as an unverified domain is refused at the API in the good case
+    // and, in the bad one, accepted and then binned by the receiving server for
+    // failing DKIM — which from this end looks exactly like a successful send.
+    const problem = senderProblem("info@gmail.com", "whitegloveitineraries.com");
+    assert.match(problem ?? "", /whitegloveitineraries\.com/);
+    assert.match(senderProblem("info@notourdomain.com", "whitegloveitineraries.com") ?? "", /spam|refused/i);
+    // And not a lookalike that merely ends with the right letters.
+    assert.ok(senderProblem("info@evilwhitegloveitineraries.com", "whitegloveitineraries.com"));
+  });
+
+  it("refuses something that is not an address at all", () => {
+    assert.match(senderProblem("info", "whitegloveitineraries.com") ?? "", /not an email address/i);
+    assert.match(senderProblem("White Glove <not-an-address>", "whitegloveitineraries.com") ?? "", /not an email address/i);
+  });
+
+  it("sends as that address and takes replies there", () => {
     const email = readFileSync("lib/email.ts", "utf8");
     const fn = email.slice(email.indexOf("export async function sendBlastEmail"));
-    assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeHtml(segment.text)"));
-    assert.match(fn, /escapeHtml\(segment\.url\)/);
+    assert.match(fn, /blastSender\(input\.from/);
+    assert.match(fn, /reply_to/);
+  });
+
+  it("gives a bare address a name, so it reads as a letter not a circular", () => {
+    assert.match(readFileSync("lib/email.ts", "utf8"), /White Glove Itineraries <\$\{clean\}>/);
   });
 });
