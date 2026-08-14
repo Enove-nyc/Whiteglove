@@ -13,29 +13,58 @@ import {
 } from "@/lib/account-plans";
 
 /**
- * What kind of account this is, and how to ask for a different one.
+ * What kind of account this is, and how to come by a different one.
  *
- * TWO THINGS THIS PANEL MUST NEVER DO. It must not take money — there is no
- * payment anywhere on this site, and a panel that looks like a checkout and is
- * not one is worse than no panel. And it must not list what Pro includes,
- * because it does not include anything yet; the honest version says that in a
- * sentence, which is what the empty list from whatYouGet() stands for.
+ * THE RULE THIS PANEL WAS WRITTEN UNDER HAS CHANGED, ON PURPOSE, ONCE. It used
+ * to say it must never take money, because nothing on this site did. The owner
+ * has since asked for real subscriptions, so there is now one way — and only
+ * one — for this panel to be about money: the offering in
+ * lib/plan-billing.ts is open AND set to Stripe, which is a thing only he can
+ * do, on a screen that refuses the setting until Stripe is genuinely ready.
  *
- * So: it says what you are on, it lets you say what you would rather have, and
- * it tells you a person will answer. Nothing more, because nothing more is true.
+ * EVERY OTHER PART OF THE OLD RULE STANDS. With the offering on "ask" — which
+ * is what it is unless he changes it — this panel takes no card, mentions no
+ * card, and does exactly what it always did: you say what you would rather
+ * have, and a person answers. With the offering closed it says nothing about
+ * Pro or Business at all.
+ *
+ * AND IT STILL DOES NOT INVENT A FEATURE LIST. What Pro gets you is the two
+ * free limits lifted, which `limitsLine` already says in the traveller's own
+ * terms. A bulleted list of benefits would be the first place this site made
+ * something up.
  */
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] transition focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
+/** One plan the traveller could take up, already resolved on the server. */
+export type PlanOffer = {
+  plan: AccountPlan;
+  /** "$12 a month", or "" when there is nothing certain to say about money. */
+  line: string;
+  /** The renewal periods available. Empty when nothing is being charged. */
+  periods: Array<{ period: "monthly" | "yearly"; line: string }>;
+};
+
 export default function AccountPlanPanel({
   plan,
   limitsLine,
   usageLine,
   openRequest,
+  /**
+   * What the owner is offering right now, worked out on the server.
+   *
+   * `null` means the offering is closed and this panel says nothing at all
+   * about other kinds of account — not a greyed-out card, not a "coming soon".
+   */
+  offer = null,
+  /** True when they already have a live subscription that can be managed. */
+  hasSubscription = false,
 }: {
   plan: AccountPlan;
+  offer?: { how: "ask" | "stripe"; choices: PlanOffer[] } | null;
+  hasSubscription?: boolean;
   /**
    * What this plan limits, worked out on the server. A sentence rather than
    * numbers, because it has to read the clock to say when the next printable
@@ -52,9 +81,64 @@ export default function AccountPlanPanel({
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [leaving, setLeaving] = useState(false);
 
-  const choices = plansToAskAbout(plan);
+  // Two filters, both of which have to agree. `plansToAskAbout` is about THEM —
+  // never offer somebody what they already have. The offering is about the
+  // owner — never offer what he is not offering. Neither is a substitute for
+  // the other, and the server checks both again when a button is pressed.
+  const offerable = offer?.choices ?? [];
+  const choices = plansToAskAbout(plan).filter((choice) => offerable.some((entry) => entry.plan === choice));
   const included = whatYouGet(plan);
+  const takingCards = offer?.how === "stripe";
+
+  /** Off to Stripe's own page. Nothing about a card happens on this site. */
+  async function subscribe(wanted: AccountPlan, period: "monthly" | "yearly") {
+    setSending(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/account/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: wanted, period }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.url) {
+        setSending(false);
+        setMessage({ ok: false, text: data?.error || "That could not be started just now." });
+        return;
+      }
+      // `assign`, not `location.href =`: this leaves the site for Stripe's own
+      // page, and the lint rule that forbids writing to an external value is
+      // right that a plain assignment is a mutation rather than a navigation.
+      window.location.assign(data.url);
+    } catch {
+      setSending(false);
+      setMessage({ ok: false, text: "That could not be started just now." });
+    }
+  }
+
+  /** Stripe's own portal: change the card, or stop. */
+  async function manage() {
+    setLeaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/account/billing/portal", { method: "POST" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.url) {
+        setLeaving(false);
+        setMessage({ ok: false, text: data?.error || "That could not be opened just now." });
+        return;
+      }
+      // `assign`, not `location.href =`: this leaves the site for Stripe's own
+      // page, and the lint rule that forbids writing to an external value is
+      // right that a plain assignment is a mutation rather than a navigation.
+      window.location.assign(data.url);
+    } catch {
+      setLeaving(false);
+      setMessage({ ok: false, text: "That could not be opened just now." });
+    }
+  }
 
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,6 +191,22 @@ export default function AccountPlanPanel({
 
       <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--navy)]">{usageLine}</p>
 
+      {hasSubscription && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={manage}
+            disabled={leaving}
+            className="min-h-11 rounded-md border border-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
+          >
+            {leaving ? "Opening…" : "Manage your subscription"}
+          </button>
+          <p className="mt-2 text-xs leading-6 text-stone-500">
+            Your card, your receipts and stopping the subscription are all handled by Stripe.
+          </p>
+        </div>
+      )}
+
       {openRequest ? (
         <div className="mt-6 border-l-4 border-[var(--gold)] bg-white px-4 py-3">
           <p className="text-sm leading-7 text-stone-700">
@@ -117,27 +217,60 @@ export default function AccountPlanPanel({
       ) : choices.length > 0 ? (
         <div className="mt-6">
           <p className="text-sm leading-7 text-stone-600">
-            Interested in a different account? Send a request and we will follow up with the available options.
+            {takingCards
+              ? "There are two other kinds of account, if one of them fits how you travel."
+              : "Interested in a different account? Send a request and we will follow up with the available options."}
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {choices.map((choice) => (
-              <div key={choice} className="border border-[var(--gold-light)] bg-white p-5">
-                <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{PLAN_LABELS[choice]}</h3>
-                <p className="mt-2 text-sm leading-7 text-stone-600">{PLAN_BLURB[choice]}</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAsking(asking === choice ? null : choice);
-                    setMessage(null);
-                  }}
-                  aria-expanded={asking === choice}
-                  className="mt-4 min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)]"
-                >
-                  {asking === choice ? "Never mind" : `Ask about ${PLAN_LABELS[choice]}`}
-                </button>
-              </div>
-            ))}
+            {choices.map((choice) => {
+              const entry = offerable.find((row) => row.plan === choice);
+              return (
+                <div key={choice} className="border border-[var(--gold-light)] bg-white p-5">
+                  <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{PLAN_LABELS[choice]}</h3>
+                  <p className="mt-2 text-sm leading-7 text-stone-600">{PLAN_BLURB[choice]}</p>
+                  {/* No price line at all rather than a guessed one. In Stripe
+                      mode this comes from Stripe itself, so it is the number
+                      that will appear on the card or it is not shown. */}
+                  {entry?.line && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{entry.line}</p>}
+
+                  {takingCards && entry ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {entry.periods.map((option) => (
+                        <button
+                          key={option.period}
+                          type="button"
+                          onClick={() => subscribe(choice, option.period)}
+                          disabled={sending}
+                          className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)] disabled:opacity-50"
+                        >
+                          {sending ? "One moment…" : entry.periods.length > 1 ? `${option.period === "yearly" ? "Yearly" : "Monthly"} — ${option.line}` : `Subscribe — ${option.line}`}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAsking(asking === choice ? null : choice);
+                        setMessage(null);
+                      }}
+                      aria-expanded={asking === choice}
+                      className="mt-4 min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)]"
+                    >
+                      {asking === choice ? "Never mind" : `Ask about ${PLAN_LABELS[choice]}`}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
+
+          {takingCards && (
+            <p className="mt-4 text-xs leading-6 text-stone-500">
+              Payment is handled by Stripe on their own page. You can stop it whenever you like, and the trips you have
+              made stay yours either way.
+            </p>
+          )}
 
           {asking && (
             <form onSubmit={send} className="mt-5 border border-[var(--gold)] bg-white p-5">

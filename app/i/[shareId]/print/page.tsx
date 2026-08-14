@@ -1,7 +1,11 @@
 import Link from "next/link";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import { emptyItinerary } from "@/data/itinerary";
+import { mayBrandOwnItinerary } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { printBrandFor } from "@/lib/business-brand";
+import { readBrand } from "@/lib/business-brand-store";
 import { burialsForSlugs } from "@/lib/kever-search";
 import { readAssumptions } from "@/lib/planner-settings-store";
 
@@ -34,5 +38,24 @@ export default async function SharedItineraryPrintPage({ params }: { params: Pro
   // rather than fetched the way the planner has to.
   const burials = burialsForSlugs(itin.activities.map((a) => a.keverSlug ?? ""));
 
-  return <PrintableItinerary itin={itin} burials={burials} sharedBy={shared.ownerName || shared.ownerEmail} assume={await readAssumptions()} />;
+  // THIS IS THE PAGE THE BRANDING IS ACTUALLY FOR. A Business account plans a
+  // trip and sends the link to their client; the client opens it and prints it.
+  // The document they hold has to be their agent's, not ours. The brand is the
+  // trip OWNER's — the person who planned it — never the reader's, who may well
+  // be on no plan at all.
+  const owner = shared.ownerEmail || "";
+  const brand = owner ? printBrandFor(await readBrand(owner), mayBrandOwnItinerary(await getPlan(owner))) : null;
+
+  return (
+    <PrintableItinerary
+      itin={itin}
+      burials={burials}
+      // On a branded document "Prepared by <the business>" is already on the
+      // cover, and a "Shared by" row saying the same name again reads as the
+      // document not knowing who made it.
+      sharedBy={brand ? undefined : shared.ownerName || shared.ownerEmail}
+      assume={await readAssumptions()}
+      brand={brand}
+    />
+  );
 }

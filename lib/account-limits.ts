@@ -35,6 +35,53 @@ export type PlanLimits = {
   printsPerWeek: Limit;
 };
 
+/* ---- what a plan can DO, as opposed to how much of it ------------------- */
+
+/**
+ * The one thing a plan unlocks rather than merely raises the ceiling on.
+ *
+ * IT IS IN THIS FILE FOR THE REASON THE HEADER GIVES. "A third limit belongs in
+ * that same file or nowhere" — and an entitlement is the same kind of thing as
+ * a limit even though it is a yes/no rather than a number: it is a plan
+ * deciding what somebody may do. Putting it in a second module would be the
+ * exact drift this file exists to prevent, where nobody can answer "what does
+ * Pro actually get you" without grepping.
+ *
+ * THERE IS ONLY ONE, AND THAT IS THE POINT. Pro is not a feature list — it is
+ * the same site without the two limits above, because that is what was asked
+ * for: somebody planning more than one trip at a time. Business is the one that
+ * genuinely does something different, because it is used by a person planning
+ * on somebody else's behalf, and the itinerary they hand their client should
+ * carry their name rather than ours.
+ *
+ * NOTHING ELSE IS INVENTED HERE. When a second entitlement is real, it goes in
+ * this table and the account page changes in the same commit.
+ */
+export type PlanFeatures = {
+  /**
+   * Put their own logo and business name on the printed itinerary, in place of
+   * the White Glove crest. The small credit line in the footer stays either
+   * way — see components/PrintableItinerary.tsx, which is where that decision
+   * is written down and enforced.
+   */
+  ownBranding: boolean;
+};
+
+export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
+  traveler: { ownBranding: false },
+  pro: { ownBranding: false },
+  business: { ownBranding: true },
+};
+
+export function featuresFor(plan: AccountPlan): PlanFeatures {
+  return PLAN_FEATURES[plan] ?? PLAN_FEATURES.traveler;
+}
+
+/** Whether this plan may brand its own itineraries. The one gate, named once. */
+export function mayBrandOwnItinerary(plan: AccountPlan): boolean {
+  return featuresFor(plan).ownBranding;
+}
+
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**

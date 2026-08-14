@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PrintableItinerary from "@/components/PrintableItinerary";
+import type { PrintBrand } from "@/lib/business-brand";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { useKeverBurials } from "@/lib/use-kever-burials";
 import { usePlannerAssumptions } from "@/components/usePlannerAssumptions";
@@ -30,6 +31,9 @@ type Claim = { allowed: boolean; message: string };
 export default function PrintItineraryPage() {
   const [itin, setItin] = useState<Itinerary | null>(null);
   const [claim, setClaim] = useState<Claim | null>(null);
+  // A Business account's own letterhead, when they have one turned on. Null for
+  // everybody else, which is the White Glove document unchanged.
+  const [brand, setBrand] = useState<PrintBrand | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -58,6 +62,20 @@ export default function PrintItineraryPage() {
         if (answer?.allowed === false) return;
       } catch {
         setClaim({ allowed: true, message: "" });
+      }
+
+      // Asked after the copy is claimed and before anything is drawn, so a
+      // branded document is branded on the first paint rather than swapping its
+      // own cover while somebody is looking at the print preview. A failure
+      // here is simply the White Glove cover, which is not a broken page.
+      try {
+        const res = await fetch("/api/account/branding", { cache: "no-store" });
+        if (res.ok) {
+          const data = (await res.json()) as { print?: PrintBrand | null };
+          if (data?.print?.name) setBrand(data.print);
+        }
+      } catch {
+        /* not signed in, or the store blinked — the White Glove cover it is */
       }
 
       if (loaded) {
@@ -106,5 +124,5 @@ export default function PrintItineraryPage() {
 
   if (!itin || !ready || !claim) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
 
-  return <PrintableItinerary itin={itin} burials={burials} assume={assume} />;
+  return <PrintableItinerary itin={itin} burials={burials} assume={assume} brand={brand} />;
 }

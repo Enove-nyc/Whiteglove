@@ -72,6 +72,12 @@ export default async function AdminSettingsPage() {
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
+            href="/admin/settings/plans"
+            title="Pro and Business"
+            detail="Whether they are offered, and how."
+            state={stats.configured ? undefined : "Needs the private store"}
+          />
+          <Card
             href="/admin/settings/earnings"
             title="Earnings"
             detail="Partners, extras and destination placements."

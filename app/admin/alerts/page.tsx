@@ -29,9 +29,13 @@ export default async function AdminAlertsPage() {
         <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Alerts</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           People who asked to be told about new destinations, listings, seasonal programmes or a specific place. Consent
-          is required at signup. This screen does not send marketing blasts — it only holds who asked and for what.
+          is required at signup. This screen is the list itself — who asked and for what. Writing to them is its own
+          screen, with its own switch.
         </p>
-        <p className="mt-2">
+        <p className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+          <Link href="/admin/alerts/send" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+            Send an update →
+          </Link>
           <Link href="/admin/growth" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
             Search &amp; booking numbers →
           </Link>

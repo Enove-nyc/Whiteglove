@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import AccountPlanPanel from "@/components/AccountPlanPanel";
+import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
+import BusinessBrandPanel from "@/components/BusinessBrandPanel";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -9,7 +10,12 @@ import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
-import { describeLimits, limitsFor } from "@/lib/account-limits";
+import { describeLimits, limitsFor, mayBrandOwnItinerary } from "@/lib/account-limits";
+import { emptyBrand } from "@/lib/business-brand";
+import { readBrand } from "@/lib/business-brand-store";
+import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
+import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
+import { describePrice, readPrice, statusIsPaid } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
 import { getTrips } from "@/lib/account-store";
 import { isAdminAccount } from "@/lib/admin-roles";
@@ -48,6 +54,37 @@ export default async function AccountPage() {
   const limits = limitsFor(plan, await getLimitOverrides());
   const trips = who ? await getTrips(who) : [];
   const usageLine = await usageLineFor(who, limits, trips.length);
+
+  // Whether the owner is offering anything, and on what terms. Worked out here
+  // because the price has to be read from Stripe when a card is involved, and
+  // that is a network call — not something a component may make while it draws.
+  const offering = await readPlanOffering();
+  const subscription = who ? await readSubscription(who) : null;
+  const hasSubscription = Boolean(subscription?.customerId && statusIsPaid(subscription.status));
+  const offerChoices: PlanOffer[] = [];
+  if (offering.open) {
+    for (const paid of offerablePlans(offering)) {
+      const periods = await Promise.all(
+        periodsFor(offering, paid).map(async (period) => ({
+          period,
+          line: describePrice(await readPrice(priceIdFor(offering, paid, period))),
+        })),
+      );
+      // In Stripe mode a period whose price cannot be read is left out rather
+      // than shown with no number on it. A button that says "Subscribe" and
+      // nothing else is asking somebody to agree to an unnamed amount.
+      const usable = offering.how === "stripe" ? periods.filter((entry) => entry.line) : [];
+      if (offering.how === "stripe" && usable.length === 0) continue;
+      offerChoices.push({ plan: paid, line: offerLine(offering, paid, usable[0]?.line), periods: usable });
+    }
+  }
+  const offer = offerChoices.length > 0 ? { how: offering.how, choices: offerChoices } : null;
+
+  // A Business account's own letterhead. Read for nobody else — the panel is
+  // not drawn for them, and a locked panel advertising an upgrade has no place
+  // on somebody's own account page.
+  const canBrand = mayBrandOwnItinerary(plan);
+  const brand = canBrand && who ? await readBrand(who) : null;
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -113,7 +150,15 @@ export default async function AccountPage() {
         <AccountRoutePanel loggedIn={signedIn} />
         {(account || sessionEmail) && (
           <>
-            <AccountPlanPanel plan={plan} openRequest={openRequest} limitsLine={describeLimits(plan, limits)} usageLine={usageLine} />
+            <AccountPlanPanel
+              plan={plan}
+              openRequest={openRequest}
+              limitsLine={describeLimits(plan, limits)}
+              usageLine={usageLine}
+              offer={offer}
+              hasSubscription={hasSubscription}
+            />
+            {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
             <AccountSettings initial={{ name: account?.name, email: account?.email ?? sessionEmail ?? "", phone: account?.phone }} />
           </>
         )}

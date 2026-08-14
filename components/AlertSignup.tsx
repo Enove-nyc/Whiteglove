@@ -21,6 +21,7 @@ export default function AlertSignup({
   destinationQuery,
   sourcePage,
   topics,
+  preselect,
   className,
 }: {
   kind?: Kind;
@@ -28,14 +29,21 @@ export default function AlertSignup({
   destinationSlug?: string;
   destinationQuery?: string;
   sourcePage?: string;
-  /** Override the pre-selected topics. */
+  /** Which topics are offered at all. */
   topics?: AlertTopic[];
+  /**
+   * Which of them start ticked. Defaults to all of the offered ones, which is
+   * right where the form offers the two things the page is about — and wrong
+   * on a page that offers every topic there is, where arriving to find them
+   * all ticked is not a choice anybody made.
+   */
+  preselect?: AlertTopic[];
   className?: string;
 }) {
   const copy = alertCopy({ kind, destinationName });
   const available = topics ?? defaultTopicsFor(kind);
   const [email, setEmail] = useState("");
-  const [selected, setSelected] = useState<AlertTopic[]>(available);
+  const [selected, setSelected] = useState<AlertTopic[]>(preselect ?? available);
   const [place, setPlace] = useState(destinationQuery ?? destinationName ?? "");
   const [consented, setConsented] = useState(false);
   const [busy, setBusy] = useState(false);

@@ -3,9 +3,21 @@ import { unsubscribeByToken } from "@/lib/email-alerts-store";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Two callers, one job.
+ *
+ * The site's own form posts JSON. The other caller is Gmail or Outlook acting
+ * on the `List-Unsubscribe-Post` header every blast carries: the mail client
+ * posts to this URL by itself, with a form body of its own choosing and the
+ * token only ever in the query string. Reading the token from both places is
+ * what makes their one-click button actually work — and a one-click button that
+ * silently does nothing is worse than not offering one, because the next thing
+ * that person presses is "report spam".
+ */
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as { token?: string } | null;
-  const result = await unsubscribeByToken(body?.token ?? "");
+  const token = body?.token?.trim() || request.nextUrl.searchParams.get("token") || "";
+  const result = await unsubscribeByToken(token);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
   return NextResponse.json({ ok: true, message: "You have been unsubscribed." });
 }

@@ -17,10 +17,22 @@
  * NOTHING ALREADY MADE IS TAKEN AWAY. The trip limit refuses a new trip; it
  * never closes, hides or deletes one that exists.
  *
- * AND NOTHING IS CHARGED. There is no payment of any kind on this site. Asking
- * for Pro registers interest and tells the owner; it does not take a card, does
- * not start a subscription, and says so plainly where it is asked for. A page
- * that looks like a checkout and is not one is worse than no page.
+ * NOTHING IS CHARGED FROM THIS FILE, AND NOTHING IS CHARGED BY DEFAULT. This
+ * used to read "there is no payment of any kind on this site", and that stopped
+ * being unconditionally true the day the owner asked for real subscriptions —
+ * so here is the condition, in the place the old sentence was.
+ *
+ * Money is possible only when the offering in **lib/plan-billing.ts** is both
+ * open AND set to "stripe", which is a setting only the owner can make, on a
+ * screen that refuses it until Stripe's keys and prices genuinely exist. Unless
+ * he has done that, asking for Pro does exactly what it always did: it registers
+ * interest, tells him, takes no card, starts no subscription, and says so
+ * plainly where it is asked for. A page that looks like a checkout and is not
+ * one is still worse than no page.
+ *
+ * Nothing in THIS file reads that setting or knows anything about money. A plan
+ * is what kind of account somebody has, however they came by it — granted by
+ * hand or paid for — and everything downstream treats the two identically.
  */
 
 export const ACCOUNT_PLANS = ["traveler", "pro", "business"] as const;
