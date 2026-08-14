@@ -87,6 +87,12 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
         every page. One line at the bottom says the itinerary was planned with whitegloveitineraries.com; everything
         else on it is yours.
       </p>
+      <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
+        Two things in the planner come with this. Each trip can say who it is for, so twenty of them do not all read
+        &ldquo;Italy&rdquo; — and that name goes on the cover the client receives. And when the trip is finished you can
+        send it to them from the planner: they get a link to read and print, the email comes from your name, and replies
+        come back to you.
+      </p>
 
       <form onSubmit={save} className="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem]">
         <div className="space-y-5">

@@ -56,6 +56,7 @@ export default async function SharedItineraryPrintPage({ params }: { params: Pro
       sharedBy={brand ? undefined : shared.ownerName || shared.ownerEmail}
       assume={await readAssumptions()}
       brand={brand}
+      preparedFor={shared.client}
     />
   );
 }

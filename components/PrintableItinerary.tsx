@@ -78,6 +78,16 @@ export default function PrintableItinerary({
    * White Glove document exactly as it was.
    */
   brand = null,
+  /**
+   * Who the trip was planned for, when somebody planned it on their behalf.
+   *
+   * ONLY EVER SHOWN ON A BRANDED DOCUMENT. A traveller's own printout saying
+   * "Prepared for" their own name would be strange; the line means something
+   * precisely because a business is handing it to somebody else. So it is drawn
+   * only when there is a brand, which is checked here rather than left to each
+   * caller to remember.
+   */
+  preparedFor = "",
 }: {
   itin: Itinerary;
   burials: Record<string, string[]>;
@@ -85,6 +95,7 @@ export default function PrintableItinerary({
   sharedBy?: string;
   assume?: PlannerAssumptions;
   brand?: PrintBrand | null;
+  preparedFor?: string;
 }) {
   const CoverHeading = embedded ? "h2" : "h1";
   const DayHeading = embedded ? "h3" : "h2";
@@ -106,6 +117,9 @@ export default function PrintableItinerary({
   // line. It read as four competing headlines. It is one small list now, under
   // the title, which is what a summary is.
   const summary = [
+    // First in the list, because on a document handed to a client it is the
+    // line that says this one is theirs.
+    brand && preparedFor.trim() && { label: "Prepared for", value: preparedFor.trim() },
     dates && { label: "When", value: dates },
     countries && { label: "Where", value: countries },
     travelerSummary(itin) && { label: "Travelling", value: travelerSummary(itin) },

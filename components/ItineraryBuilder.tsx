@@ -11,6 +11,7 @@ import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import SendPlaceIn from "@/components/SendPlaceIn";
 import RoomGroupsPanel from "@/components/RoomGroupsPanel";
+import SendToClientPanel from "@/components/SendToClientPanel";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
 import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
@@ -472,7 +473,11 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span className="text-sm font-semibold text-[var(--navy)]">Share this itinerary</span>
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
-          <div className="border-t border-[var(--gold-light)] p-3"><ShareItineraryPanel /></div>
+          <div className="border-t border-[var(--gold-light)] space-y-3 p-3">
+            <ShareItineraryPanel />
+            {/* Renders nothing at all unless this is a Business account. */}
+            <SendToClientPanel />
+          </div>
         </details>
         <details className="group rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6]">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none">

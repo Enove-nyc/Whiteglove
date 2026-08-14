@@ -484,3 +484,64 @@ export async function sendBlastEmail(input: {
     "blast",
   );
 }
+
+/**
+ * A Business account sending a finished itinerary to the person it was planned
+ * for.
+ *
+ * WHY THIS IS NOT THE COLLABORATOR INVITATION. That one adds somebody to a trip
+ * so they can open it, comment on it and see it in their own account — it is an
+ * invitation to work on something together. This is a delivery: an agent has
+ * finished, and the client gets a link to read and print. Nobody is added to
+ * anything, and the client needs no account.
+ *
+ * IT GOES OUT AS THE BUSINESS, NOT AS US. The subject and the body say the
+ * business's name, because the client has never heard of White Glove and an
+ * email from a stranger about their holiday is an email they delete. The From
+ * address is still this site's — sending as somebody else's domain is what
+ * every spam filter in the world exists to catch — and their own address is set
+ * as the reply-to, so pressing reply reaches the person they think they are
+ * talking to.
+ */
+export async function sendItineraryToClient(input: {
+  to: string;
+  /** The business's name, from their branding. */
+  from: string;
+  /** Where to reply. The account's own address. */
+  replyTo?: string;
+  tripTitle: string;
+  /** Anything the agent wanted to say. Optional. */
+  note?: string;
+  url: string;
+}): Promise<SendResult> {
+  const business = escapeHtml(input.from);
+  const title = escapeHtml(input.tripTitle || "your trip");
+  const url = escapeHtml(input.url);
+  const note = input.note?.trim();
+  return postResend(
+    {
+      to: input.to,
+      ...(input.replyTo?.includes("@") ? { reply_to: input.replyTo } : {}),
+      subject: `${input.from}: your itinerary for ${input.tripTitle || "your trip"}`,
+      html:
+        `<div style="max-width:560px;margin:0 auto;padding:8px 4px;">` +
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;margin:0 0 16px;">Your itinerary from ${business}</h2>` +
+        (note
+          ? `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;">${escapeHtml(note).replace(/\n/g, "<br>")}</p>`
+          : "") +
+        `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;">` +
+        `<strong>${title}</strong> is ready. Open it to see every day, and print it or save it as a PDF to take with you.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open your itinerary →</a></p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin-top:24px;">` +
+        `Sent by ${business}. Reply to this email to reach them.<br>` +
+        `Planned with whitegloveitineraries.com.</p></div>`,
+      text:
+        `Your itinerary from ${input.from}\n\n` +
+        (note ? `${note}\n\n` : "") +
+        `${input.tripTitle || "Your trip"} is ready. Open it to see every day, and print it or save it as a PDF:\n${input.url}\n\n` +
+        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whitegloveitineraries.com.`,
+    },
+    input.to,
+    "itinerary to client",
+  );
+}

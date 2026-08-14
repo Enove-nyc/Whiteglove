@@ -34,6 +34,9 @@ export default function PrintItineraryPage() {
   // A Business account's own letterhead, when they have one turned on. Null for
   // everybody else, which is the White Glove document unchanged.
   const [brand, setBrand] = useState<PrintBrand | null>(null);
+  // Who the trip is for, when a Business account planned it for somebody. Shown
+  // on the cover of a branded document and nowhere else.
+  const [client, setClient] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -45,6 +48,7 @@ export default function PrintItineraryPage() {
         if (res.ok) {
           const data = await res.json();
           tripId = typeof data?.tripId === "string" ? data.tripId : "";
+          if (typeof data?.client === "string") setClient(data.client);
           if (data?.itinerary) loaded = { ...emptyItinerary(), ...data.itinerary };
         }
       } catch {
@@ -124,5 +128,5 @@ export default function PrintItineraryPage() {
 
   if (!itin || !ready || !claim) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
 
-  return <PrintableItinerary itin={itin} burials={burials} assume={assume} brand={brand} />;
+  return <PrintableItinerary itin={itin} burials={burials} assume={assume} brand={brand} preparedFor={client} />;
 }

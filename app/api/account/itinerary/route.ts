@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     itinerary: trip?.itinerary ?? null,
     tripId: trip?.tripId ?? null,
     tripName: trip?.tripName ?? null,
+    /** Who it is for, when a Business account planned it for somebody. */
+    client: trip?.client ?? "",
   });
 }
 

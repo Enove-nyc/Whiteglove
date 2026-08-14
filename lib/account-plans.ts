@@ -57,7 +57,12 @@ export const PLAN_LABELS: Record<AccountPlan, string> = {
 export const PLAN_BLURB: Record<AccountPlan, string> = {
   traveler: "Everything on the site, for planning your own trips. This is what every account is.",
   pro: "For people who plan trips often, or plan them for others.",
-  business: "For a hotel, a kitchen, a shomer or a driver listed in the directory.",
+  // THIS USED TO SAY "for a hotel, a kitchen, a shomer or a driver listed in
+  // the directory", which described being IN the directory rather than using
+  // the planner — and it was written before Business did anything. It does
+  // something now: an agency plans in here and hands the client a document
+  // with their own name on it, so the sentence names the people that is for.
+  business: "For an agency, an office or anybody who plans trips for other people and hands them the itinerary.",
 };
 
 /** Higher means further up. Used only to work out what counts as an upgrade. */
