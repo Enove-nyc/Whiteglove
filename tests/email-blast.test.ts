@@ -15,6 +15,7 @@ import {
   blocksOf,
   blocksProblem,
   cleanBlocks,
+  senderProblem,
   sendProblem,
   splitLinks,
 } from "@/lib/email-blast";
@@ -158,13 +159,13 @@ describe("what may be written", () => {
 describe("what stops a send", () => {
   it("IS OFF UNTIL THE OWNER TURNS IT ON", () => {
     assert.equal(DEFAULT_BLAST_SETTINGS.open, false);
-    const stop = sendProblem({ settings: { open: false }, blast: blast(), audienceSize: 5, deliveryReady: READY });
+    const stop = sendProblem({ settings: { open: false, fromEmail: "" }, blast: blast(), audienceSize: 5, deliveryReady: READY });
     assert.match(stop ?? "", /switched off/i);
   });
 
   it("REFUSES THE SANDBOX SENDER, WHICH WOULD LOOK SENT AND ARRIVE NOWHERE", () => {
     const stop = sendProblem({
-      settings: { open: true },
+      settings: { open: true, fromEmail: "" },
       blast: blast(),
       audienceSize: 5,
       deliveryReady: { apiKeySet: true, usingTestSender: true },
@@ -175,7 +176,7 @@ describe("what stops a send", () => {
 
   it("refuses when Resend is not connected at all", () => {
     const stop = sendProblem({
-      settings: { open: true },
+      settings: { open: true, fromEmail: "" },
       blast: blast(),
       audienceSize: 5,
       deliveryReady: { apiKeySet: false, usingTestSender: true },
@@ -184,12 +185,12 @@ describe("what stops a send", () => {
   });
 
   it("refuses when there is nobody to send to", () => {
-    const stop = sendProblem({ settings: { open: true }, blast: blast(), audienceSize: 0, deliveryReady: READY });
+    const stop = sendProblem({ settings: { open: true, fromEmail: "" }, blast: blast(), audienceSize: 0, deliveryReady: READY });
     assert.match(stop ?? "", /nobody/i);
   });
 
   it("allows a send that is switched on, deliverable and has an audience", () => {
-    assert.equal(sendProblem({ settings: { open: true }, blast: blast(), audienceSize: 3, deliveryReady: READY }), null);
+    assert.equal(sendProblem({ settings: { open: true, fromEmail: "" }, blast: blast(), audienceSize: 3, deliveryReady: READY }), null);
   });
 });
 
@@ -348,5 +349,51 @@ describe("links in the words", () => {
     const fn = template.slice(template.indexOf("function paragraphHtml"));
     assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeEmailHtml(segment.text)"));
     assert.match(fn, /safeHref\(segment\.url\)/);
+  });
+});
+
+describe("who an update comes from", () => {
+  /**
+   * TWO KINDS OF MAIL, TWO ADDRESSES. A six-digit code comes from noreply@
+   * because there is nothing to reply to. An update about a Pesach programme is
+   * a letter somebody WILL answer, and the answer has to reach a mailbox a
+   * person opens.
+   */
+  it("allows blank, which means the site's usual sender", () => {
+    assert.equal(senderProblem("", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("   ", "whitegloveitineraries.com"), null);
+  });
+
+  it("allows an address on the verified domain, named or bare", () => {
+    assert.equal(senderProblem("info@whitegloveitineraries.com", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("White Glove <info@whitegloveitineraries.com>", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("info@mail.whitegloveitineraries.com", "whitegloveitineraries.com"), null);
+  });
+
+  it("REFUSES A DOMAIN RESEND HAS NOT BEEN SHOWN CONTROL OF", () => {
+    // Sending as an unverified domain is refused at the API in the good case
+    // and, in the bad one, accepted and then binned by the receiving server for
+    // failing DKIM — which from this end looks exactly like a successful send.
+    const problem = senderProblem("info@gmail.com", "whitegloveitineraries.com");
+    assert.match(problem ?? "", /whitegloveitineraries\.com/);
+    assert.match(senderProblem("info@notourdomain.com", "whitegloveitineraries.com") ?? "", /spam|refused/i);
+    // And not a lookalike that merely ends with the right letters.
+    assert.ok(senderProblem("info@evilwhitegloveitineraries.com", "whitegloveitineraries.com"));
+  });
+
+  it("refuses something that is not an address at all", () => {
+    assert.match(senderProblem("info", "whitegloveitineraries.com") ?? "", /not an email address/i);
+    assert.match(senderProblem("White Glove <not-an-address>", "whitegloveitineraries.com") ?? "", /not an email address/i);
+  });
+
+  it("sends as that address and takes replies there", () => {
+    const email = readFileSync("lib/email.ts", "utf8");
+    const fn = email.slice(email.indexOf("export async function sendBlastEmail"));
+    assert.match(fn, /blastSender\(input\.from/);
+    assert.match(fn, /reply_to/);
+  });
+
+  it("gives a bare address a name, so it reads as a letter not a circular", () => {
+    assert.match(readFileSync("lib/email.ts", "utf8"), /White Glove Itineraries <\$\{clean\}>/);
   });
 });

@@ -60,6 +60,7 @@ export async function readBlastSettings(): Promise<BlastSettings> {
       // Anything but an explicit true is off. A store returning something
       // unreadable must not be the reason mail goes out.
       open: parsed?.open === true,
+      fromEmail: typeof parsed?.fromEmail === "string" ? parsed.fromEmail.trim().slice(0, 120) : "",
       updatedAt: typeof parsed?.updatedAt === "string" ? parsed.updatedAt : undefined,
       updatedBy: typeof parsed?.updatedBy === "string" ? parsed.updatedBy : undefined,
     };
@@ -68,10 +69,15 @@ export async function readBlastSettings(): Promise<BlastSettings> {
   }
 }
 
-export async function writeBlastSettings(open: boolean, by: string): Promise<boolean> {
+export async function writeBlastSettings(next: Pick<BlastSettings, "open" | "fromEmail">, by: string): Promise<boolean> {
   if (!blastStoreAvailable()) return false;
-  const next: BlastSettings = { open, updatedAt: new Date().toISOString(), updatedBy: by };
-  return (await redis(`set/${SETTINGS_KEY}`, JSON.stringify(next))) !== null;
+  const record: BlastSettings = {
+    open: next.open,
+    fromEmail: next.fromEmail.trim().slice(0, 120),
+    updatedAt: new Date().toISOString(),
+    updatedBy: by,
+  };
+  return (await redis(`set/${SETTINGS_KEY}`, JSON.stringify(record))) !== null;
 }
 
 /* ---- the blasts --------------------------------------------------------- */

@@ -231,11 +231,43 @@ export type EmailBlast = {
 export type BlastSettings = {
   /** The master switch. Off means nothing can be sent, by anybody. */
   open: boolean;
+  /**
+   * The address these updates come from. Blank uses the site-wide sender.
+   *
+   * Its own setting because an update is not a verification code: somebody
+   * will reply to it, and that reply has to reach a mailbox a person opens.
+   * See blastSender in lib/email.ts.
+   */
+  fromEmail: string;
   updatedAt?: string;
   updatedBy?: string;
 };
 
-export const DEFAULT_BLAST_SETTINGS: BlastSettings = { open: false };
+export const DEFAULT_BLAST_SETTINGS: BlastSettings = { open: false, fromEmail: "" };
+
+/**
+ * Why this cannot be the sending address, or null.
+ *
+ * IT HAS TO BE ON THE DOMAIN RESEND HAS BEEN SHOWN CONTROL OF. Sending as a
+ * domain that has not been verified is refused at the API in the good case and,
+ * in the bad one, accepted and then dropped into spam by the receiving server
+ * for failing DKIM — which looks from this end exactly like a successful send.
+ * So the address is checked here, at the moment it is typed, rather than at the
+ * moment two hundred messages quietly fail.
+ *
+ * Blank is allowed and means "use whatever the rest of the site uses".
+ */
+export function senderProblem(raw: string, domain: string): string | null {
+  const value = raw.trim();
+  if (!value) return null;
+  const address = value.includes("<") ? (value.match(/<([^>]+)>/)?.[1] ?? "") : value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) return "That is not an email address.";
+  const at = address.split("@")[1]?.toLowerCase() ?? "";
+  if (at !== domain.toLowerCase() && !at.endsWith(`.${domain.toLowerCase()}`)) {
+    return `It has to be an address at ${domain} — that is the domain verified with Resend, and mail sent as anything else is refused or lands in spam.`;
+  }
+  return null;
+}
 
 export function newBlast(input: { id: string; subject: string; body: string; topics: AlertTopic[]; by: string }): EmailBlast {
   return {

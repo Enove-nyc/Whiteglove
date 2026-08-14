@@ -6,6 +6,7 @@ import {
   saveBlastAction,
   sendBlastAction,
   setBlastOpenAction,
+  setBlastSenderAction,
   testBlastAction,
 } from "@/app/admin/alerts/send/actions";
 import BlastBlocks from "@/components/BlastBlocks";
@@ -54,6 +55,10 @@ function Note({ state }: { state: { ok: boolean; message: string } | null }) {
 
 export default function BlastComposer({
   open,
+  /** The address updates go out as. Blank means the site's usual sender. */
+  fromEmail,
+  /** What the site would send as with nothing set here — for the placeholder. */
+  defaultFrom,
   storeReady,
   /** How many active signups have ticked each topic. */
   reachByTopic,
@@ -77,6 +82,8 @@ export default function BlastComposer({
   deliveryWarning,
 }: {
   open: boolean;
+  fromEmail: string;
+  defaultFrom: string;
   storeReady: boolean;
   reachByTopic: Record<string, number>;
   audienceMasks: number[];
@@ -90,6 +97,7 @@ export default function BlastComposer({
   const [sendState, sendAct, sending] = useActionState(sendBlastAction, null);
   const [testState, testAct, testing] = useActionState(testBlastAction, null);
   const [deleteState, deleteAct, deleting] = useActionState(deleteBlastAction, null);
+  const [senderState, senderAct, savingSender] = useActionState(setBlastSenderAction, null);
 
   const [chosen, setChosen] = useState<AlertTopic[]>([]);
   const [subject, setSubject] = useState("");
@@ -136,6 +144,40 @@ export default function BlastComposer({
           </button>
         </form>
         <Note state={switchState} />
+
+        <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+          <h3 className="text-sm font-semibold text-[var(--navy)]">Who it comes from</h3>
+          <p className="mt-1.5 text-sm leading-6 text-stone-600">
+            Updates can come from their own address, separate from the one that sends verification codes and password
+            resets. Somebody will reply to an update asking whether a hotel takes a family of six — that reply should
+            land somewhere you read. Replies go back to whatever you put here.
+          </p>
+          <form action={senderAct} className="mt-3 flex flex-wrap items-end gap-3">
+            <label className="min-w-[16rem] flex-1">
+              <span className={caption}>Sending address</span>
+              <input
+                name="fromEmail"
+                defaultValue={fromEmail}
+                placeholder={defaultFrom || "info@whitegloveitineraries.com"}
+                className={input}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={savingSender || !storeReady}
+              className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-50"
+            >
+              {savingSender ? "Saving…" : "Save address"}
+            </button>
+          </form>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            It has to be an address at whitegloveitineraries.com — that is the domain verified with Resend, and mail
+            sent as anything else is refused or lands in spam. Leave it blank to use{" "}
+            <code>{defaultFrom || "the site's usual sender"}</code>.
+          </p>
+          <Note state={senderState} />
+        </div>
+
         {deliveryWarning && (
           <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             {deliveryWarning}

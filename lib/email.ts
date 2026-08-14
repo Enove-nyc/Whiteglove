@@ -72,6 +72,9 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
     const response = await fetch(RESEND_API_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
+      // `from` inside the payload wins, so a caller can send as a different
+      // address on the same verified domain. Nobody but the blast does; see
+      // the note on senderForBlast below for why it is only that one.
       body: JSON.stringify({ from: config.from, ...payload }),
     });
     const bodyText = await response.text().catch(() => "");
@@ -443,9 +446,37 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
  * request, but every one of them would then need the same unsubscribe link —
  * which is to say, the wrong one for 49 of them. The caller paces these.
  */
+/**
+ * Who an update comes FROM, which is not who a verification code comes from.
+ *
+ * TWO KINDS OF MAIL, TWO ADDRESSES, AND THE DIFFERENCE MATTERS. A six-digit
+ * code is from `noreply@` because there is nothing to reply to and a reply
+ * would sit unread in a mailbox nobody opens. An update about a Pesach
+ * programme is a letter: somebody WILL reply to it, to ask whether the hotel
+ * takes a family of six, and that reply has to land somewhere a person reads.
+ *
+ * So the blast sender is its own setting. Blank means "whatever the rest of the
+ * site uses", which is what it was before this existed.
+ *
+ * IT MUST BE ON THE VERIFIED DOMAIN. Resend will only send as a domain it has
+ * been shown control of; anything else is refused at the API, or worse,
+ * accepted and dropped into spam by the receiving server for failing DKIM. The
+ * check lives in lib/email-blast.ts so the admin screen can refuse it at the
+ * moment it is typed rather than at the moment 200 messages fail.
+ */
+export function blastSender(configured: string): string {
+  const clean = configured.trim();
+  if (!clean) return resendConfig()?.from ?? "";
+  // Named, so it arrives as "White Glove Itineraries" rather than a bare
+  // address — which is most of the difference between a letter and a circular.
+  return clean.includes("<") ? clean : `White Glove Itineraries <${clean}>`;
+}
+
 export async function sendBlastEmail(input: {
   to: string;
   subject: string;
+  /** The address to send as. Blank uses the site-wide sender. */
+  from?: string;
   /** The message, as blocks. A pre-blocks draft still renders through blocksOf. */
   blast: { blocks?: BlastBlock[]; body?: string; subject?: string };
   /** This deployment's address, so the crest and any picture can be absolute. */
@@ -460,10 +491,15 @@ export async function sendBlastEmail(input: {
     becauseLine: input.becauseLine,
     unsubscribeUrl: input.unsubscribeUrl,
   };
+  const from = blastSender(input.from ?? "");
   return postResend(
     {
       to: input.to,
       subject: input.subject,
+      ...(from ? { from } : {}),
+      // Replies go back to the same address it came from. An update somebody
+      // answers is the point of sending it from a mailbox rather than noreply@.
+      ...(from ? { reply_to: from } : {}),
       headers: {
         // One-click unsubscribe, the way the mail clients want it offered.
         "List-Unsubscribe": `<${input.unsubscribeUrl}>`,

@@ -17,8 +17,10 @@ import {
   newBlast,
   readBlastTopics,
   SEND_SPACING_MS,
+  senderProblem,
   sendProblem,
 } from "@/lib/email-blast";
+import { SITE_DOMAIN } from "@/lib/features";
 import {
   alreadyHandled,
   blastStoreAvailable,
@@ -58,13 +60,47 @@ export async function setBlastOpenAction(
   const check = await guard();
   if (!check.ok) return { ok: false, message: check.message };
   const open = String(formData.get("open") ?? "") === "on";
-  if (!(await writeBlastSettings(open, check.who))) return { ok: false, message: "That could not be saved." };
+  // The switch alone. The sender is left exactly as it was, so turning sending
+  // off and on again does not quietly move which address the mail comes from.
+  const current = await readBlastSettings();
+  if (!(await writeBlastSettings({ open, fromEmail: current.fromEmail }, check.who))) {
+    return { ok: false, message: "That could not be saved." };
+  }
   revalidatePath("/admin/alerts/send");
   return {
     ok: true,
     message: open
       ? "Sending is on. Nothing goes out until you press send on a message."
       : "Sending is off. Messages can still be written and saved; none can leave.",
+  };
+}
+
+/**
+ * Which address the updates come from.
+ *
+ * Refused here if it is not on the verified domain, because mail sent as
+ * anything else is refused by Resend in the good case and silently binned by
+ * the receiving server in the bad one.
+ */
+export async function setBlastSenderAction(
+  _prev: BlastActionResult | null,
+  formData: FormData,
+): Promise<BlastActionResult> {
+  const check = await guard();
+  if (!check.ok) return { ok: false, message: check.message };
+  const fromEmail = String(formData.get("fromEmail") ?? "").trim();
+  const problem = senderProblem(fromEmail, SITE_DOMAIN);
+  if (problem) return { ok: false, message: problem };
+  const current = await readBlastSettings();
+  if (!(await writeBlastSettings({ open: current.open, fromEmail }, check.who))) {
+    return { ok: false, message: "That could not be saved." };
+  }
+  revalidatePath("/admin/alerts/send");
+  return {
+    ok: true,
+    message: fromEmail
+      ? `Updates will come from ${fromEmail}, and replies will go there too.`
+      : "Updates will come from the site's usual sending address.",
   };
 }
 
@@ -146,6 +182,7 @@ export async function testBlastAction(_prev: BlastActionResult | null, formData:
   const result = await sendBlastEmail({
     to,
     subject: `[test] ${blast.subject}`,
+    from: (await readBlastSettings()).fromEmail,
     blast,
     origin,
     // A real-looking but harmless link: pressing it unsubscribes nobody,
@@ -220,6 +257,7 @@ export async function sendBlastAction(_prev: BlastActionResult | null, formData:
     const result = await sendBlastEmail({
       to: signup.email,
       subject: blast.subject,
+      from: settings.fromEmail,
       blast,
       origin,
       unsubscribeUrl: `${origin}/api/alerts/unsubscribe?token=${encodeURIComponent(signup.unsubToken)}`,

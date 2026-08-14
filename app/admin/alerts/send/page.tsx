@@ -85,6 +85,8 @@ export default async function SendUpdatesPage() {
         )}
         <BlastComposer
           open={settings.open}
+          fromEmail={settings.fromEmail}
+          defaultFrom={status.from}
           storeReady={blastStoreAvailable()}
           reachByTopic={reachByTopic}
           audienceMasks={audienceMasks}
