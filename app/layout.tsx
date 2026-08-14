@@ -8,6 +8,7 @@ import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getBetaNotice } from "@/lib/beta-notice-store";
 import { siteOrigin } from "@/lib/seo";
 
@@ -99,6 +100,11 @@ export default async function RootLayout({
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           <BookingLinkProvider value={booking}>{children}</BookingLinkProvider>
         </div>
+        {/* Real page-speed numbers from real visitors, on the Speed Insights
+            tab in Vercel. Last in the body so it never delays anything the
+            visitor came for, and only ever measures — it reads no content and
+            sends nothing about who the visitor is. */}
+        <SpeedInsights />
       </body>
     </html>
   );
