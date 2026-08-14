@@ -46,12 +46,172 @@ export const BATCH_SIZE = 15;
 /** Milliseconds between messages, so the allowance is not tripped. */
 export const SEND_SPACING_MS = 350;
 
+/* ---- what a message is made of ------------------------------------------ */
+
+/**
+ * A message is a stack of pieces, not a box of text.
+ *
+ * WHY IT CHANGED. It was one plain-text field, on the argument that a plain
+ * note from a person reads better than a designed one. The owner's answer was
+ * that an email from this site should look like this site — and he is right
+ * about his own product: a kosher travel letter with a kever photograph in it
+ * and the crest at the top is the thing people forward, and a wall of grey text
+ * is the thing they delete.
+ *
+ * FIVE PIECES AND NO MORE. Heading, words, picture, button, rule. Every one of
+ * them is a thing the owner can point at on his own website. There is no font
+ * picker, no colour picker and no column layout, because the moment an email
+ * has those it starts looking like a template somebody bought, and because
+ * every one of them is a way to make a message that renders differently in
+ * Outlook than it did on the screen it was written on.
+ *
+ * THE OLD DRAFTS STILL OPEN. A blast saved before this existed has `body` and
+ * no blocks; `blocksOf` turns it into a single block of words, so nothing
+ * written earlier is lost or has to be retyped.
+ */
+export type BlastBlock =
+  | { kind: "heading"; text: string }
+  | { kind: "text"; text: string }
+  /** `url` is a same-origin /api/media path from the admin upload. */
+  | { kind: "image"; url: string; alt: string; caption: string; href: string }
+  | { kind: "button"; label: string; href: string }
+  | { kind: "divider" };
+
+export type BlastBlockKind = BlastBlock["kind"];
+
+export const BLAST_BLOCK_KINDS: readonly BlastBlockKind[] = ["heading", "text", "image", "button", "divider"];
+
+export const BLAST_BLOCK_LABELS: Record<BlastBlockKind, { label: string; detail: string }> = {
+  heading: { label: "Heading", detail: "A line in the display face, to start a section." },
+  text: { label: "Words", detail: "A paragraph or several. Any address you paste becomes a link." },
+  image: { label: "Picture", detail: "A photograph, with an optional caption and somewhere to go." },
+  button: { label: "Button", detail: "One thing to press — a destination, a programme, a listing." },
+  divider: { label: "Rule", detail: "A gold line, to separate one part from the next." },
+};
+
+export const MAX_HEADING = 90;
+export const MAX_BUTTON_LABEL = 40;
+export const MAX_CAPTION = 140;
+export const MAX_BLOCKS = 30;
+
+export function emptyBlastBlock(kind: BlastBlockKind): BlastBlock {
+  switch (kind) {
+    case "heading":
+      return { kind, text: "" };
+    case "image":
+      return { kind, url: "", alt: "", caption: "", href: "" };
+    case "button":
+      return { kind, label: "", href: "" };
+    case "divider":
+      return { kind };
+    default:
+      return { kind: "text", text: "" };
+  }
+}
+
+/** Tidy anything stored or posted into real blocks. Never throws. */
+export function cleanBlocks(raw: unknown): BlastBlock[] {
+  if (!Array.isArray(raw)) return [];
+  const out: BlastBlock[] = [];
+  for (const entry of raw.slice(0, MAX_BLOCKS)) {
+    const value = (entry ?? {}) as Record<string, unknown>;
+    const str = (key: string, cap: number) => (typeof value[key] === "string" ? (value[key] as string).slice(0, cap) : "");
+    switch (value.kind) {
+      case "heading":
+        out.push({ kind: "heading", text: str("text", MAX_HEADING) });
+        break;
+      case "text":
+        out.push({ kind: "text", text: str("text", MAX_BODY) });
+        break;
+      case "image":
+        out.push({
+          kind: "image",
+          url: str("url", 300),
+          alt: str("alt", MAX_CAPTION),
+          caption: str("caption", MAX_CAPTION),
+          href: str("href", 300),
+        });
+        break;
+      case "button":
+        out.push({ kind: "button", label: str("label", MAX_BUTTON_LABEL), href: str("href", 300) });
+        break;
+      case "divider":
+        out.push({ kind: "divider" });
+        break;
+      default:
+        break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The blocks of a message, whether it was written before blocks existed or not.
+ *
+ * A draft from the plain-text days becomes one block of words, which is exactly
+ * what it was. Nothing is lost and nothing has to be retyped.
+ */
+export function blocksOf(blast: { blocks?: BlastBlock[]; body?: string }): BlastBlock[] {
+  if (blast.blocks && blast.blocks.length > 0) return blast.blocks;
+  const body = blast.body?.trim();
+  return body ? [{ kind: "text", text: body }] : [];
+}
+
+/** Whether a block would put anything on the page. An empty one is skipped. */
+export function blockHasContent(block: BlastBlock): boolean {
+  switch (block.kind) {
+    case "heading":
+    case "text":
+      return Boolean(block.text.trim());
+    case "image":
+      return Boolean(block.url.trim());
+    case "button":
+      return Boolean(block.label.trim() && block.href.trim());
+    case "divider":
+      return true;
+  }
+}
+
+/**
+ * Why these blocks cannot be sent, or null.
+ *
+ * A BUTTON WITH NO ADDRESS IS THE ONE WORTH REFUSING. It renders as something
+ * to press that does nothing, in somebody else's inbox, where the owner will
+ * never see it happen. Everything else empty is simply left out.
+ */
+export function blocksProblem(blocks: BlastBlock[]): string | null {
+  const real = blocks.filter(blockHasContent);
+  if (real.length === 0) return "Add something to the message.";
+  if (!real.some((block) => block.kind === "text" || block.kind === "heading")) {
+    return "Add some words — a message that is only pictures and buttons reads as an advertisement.";
+  }
+  for (const block of blocks) {
+    if (block.kind === "button" && block.label.trim() && !block.href.trim()) {
+      return `The button "${block.label.trim()}" has nowhere to go.`;
+    }
+    if (block.kind === "button" && !block.label.trim() && block.href.trim()) {
+      return "One of the buttons has no words on it.";
+    }
+    if (block.kind === "image" && block.url.trim() && !block.alt.trim()) {
+      return "Every picture needs a short description, for the people whose email does not show pictures.";
+    }
+  }
+  return null;
+}
+
 export type BlastState = "draft" | "sending" | "sent";
 
 export type EmailBlast = {
   id: string;
   subject: string;
-  /** Plain text. Blank lines separate paragraphs; nothing else is markup. */
+  /**
+   * The message, as a stack of pieces.
+   *
+   * Optional only so that a blast written before blocks existed still parses.
+   * Read it through `blocksOf`, never directly.
+   */
+  blocks?: BlastBlock[];
+  /** What a message written before blocks existed held. Kept so nothing is lost. */
   body: string;
   /** Who it is for. At least one. */
   topics: AlertTopic[];
@@ -98,14 +258,18 @@ export function readBlastTopics(raw: unknown): AlertTopic[] {
   return out;
 }
 
-/** Why this message cannot be written down or sent, or null. */
-export function blastProblem(input: { subject?: string; body?: string; topics?: unknown }): string | null {
+/**
+ * Why this message cannot be written down or sent, or null.
+ *
+ * THE SUBJECT AND THE AUDIENCE ONLY. What is IN the message is checked by
+ * `blocksProblem`, because a message is a stack of pieces now rather than a box
+ * of text, and one function that knew about both would have to be told which
+ * kind it was looking at.
+ */
+export function blastProblem(input: { subject?: string; topics?: unknown }): string | null {
   const subject = input.subject?.trim() ?? "";
-  const body = input.body?.trim() ?? "";
   if (!subject) return "Give it a subject line — that is the whole of what most people will read.";
   if (subject.length > MAX_SUBJECT) return `Keep the subject under ${MAX_SUBJECT} characters.`;
-  if (!body) return "Write the message.";
-  if (body.length > MAX_BODY) return `Keep the message under ${MAX_BODY} characters.`;
   if (readBlastTopics(input.topics).length === 0) return "Choose who it goes to — at least one topic.";
   return null;
 }
@@ -159,7 +323,7 @@ export function describeBlast(blast: EmailBlast, remaining: number): string {
  */
 export function sendProblem(input: {
   settings: BlastSettings;
-  blast: EmailBlast;
+  blast: Pick<EmailBlast, "subject" | "topics"> & { blocks?: BlastBlock[]; body?: string };
   audienceSize: number;
   deliveryReady: { apiKeySet: boolean; usingTestSender: boolean };
 }): string | null {
@@ -168,7 +332,7 @@ export function sendProblem(input: {
   if (input.deliveryReady.usingTestSender) {
     return "Mail is still going out from the shared test sender, which only reaches your own inbox. Verify whitegloveitineraries.com in Resend and set RESEND_FROM_EMAIL first — otherwise this would look sent and arrive nowhere.";
   }
-  const problem = blastProblem(input.blast);
+  const problem = blastProblem(input.blast) ?? blocksProblem(blocksOf(input.blast));
   if (problem) return problem;
   if (input.audienceSize === 0) return "Nobody on the list has asked about these topics, so there is nobody to send to.";
   return null;

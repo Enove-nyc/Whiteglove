@@ -11,6 +11,8 @@ import {
   BATCH_SIZE,
   becauseLine,
   blastProblem,
+  blocksProblem,
+  cleanBlocks,
   type EmailBlast,
   newBlast,
   readBlastTopics,
@@ -73,9 +75,18 @@ export async function saveBlastAction(_prev: BlastActionResult | null, formData:
   if (!check.ok) return { ok: false, message: check.message };
 
   const subject = String(formData.get("subject") ?? "");
-  const body = String(formData.get("body") ?? "");
   const topics = readBlastTopics(formData.getAll("topics").map(String));
-  const problem = blastProblem({ subject, body, topics });
+  // The blocks arrive as JSON in one hidden field. A stack of pieces with
+  // pictures in it does not fit the flat name/value shape a form posts, and
+  // inventing "block-3-caption" field names would be a second encoding to keep
+  // in step with the first.
+  let blocks: ReturnType<typeof cleanBlocks> = [];
+  try {
+    blocks = cleanBlocks(JSON.parse(String(formData.get("blocks") ?? "[]")));
+  } catch {
+    return { ok: false, message: "The message could not be read. Reload the page and try again." };
+  }
+  const problem = blastProblem({ subject, topics }) ?? blocksProblem(blocks);
   if (problem) return { ok: false, message: problem };
 
   const existingId = String(formData.get("blastId") ?? "").trim();
@@ -89,8 +100,11 @@ export async function saveBlastAction(_prev: BlastActionResult | null, formData:
   }
 
   const blast: EmailBlast = existing
-    ? { ...existing, subject: subject.trim(), body: body.trim(), topics }
-    : newBlast({ id: `b-${Date.now().toString(36)}-${randomBytes(3).toString("hex")}`, subject, body, topics, by: check.who });
+    ? { ...existing, subject: subject.trim(), blocks, body: "", topics }
+    : {
+        ...newBlast({ id: `b-${Date.now().toString(36)}-${randomBytes(3).toString("hex")}`, subject, body: "", topics, by: check.who }),
+        blocks,
+      };
 
   if (!(await writeBlast(blast))) return { ok: false, message: "That could not be saved." };
   revalidatePath("/admin/alerts/send");
@@ -132,7 +146,8 @@ export async function testBlastAction(_prev: BlastActionResult | null, formData:
   const result = await sendBlastEmail({
     to,
     subject: `[test] ${blast.subject}`,
-    body: blast.body,
+    blast,
+    origin,
     // A real-looking but harmless link: pressing it unsubscribes nobody,
     // because no signup carries this token.
     unsubscribeUrl: `${origin}/api/alerts/unsubscribe?token=test`,
@@ -205,7 +220,8 @@ export async function sendBlastAction(_prev: BlastActionResult | null, formData:
     const result = await sendBlastEmail({
       to: signup.email,
       subject: blast.subject,
-      body: blast.body,
+      blast,
+      origin,
       unsubscribeUrl: `${origin}/api/alerts/unsubscribe?token=${encodeURIComponent(signup.unsubToken)}`,
       becauseLine: line,
     });

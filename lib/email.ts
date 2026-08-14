@@ -1,5 +1,6 @@
 import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
-import { splitLinks } from "@/lib/email-blast";
+import type { BlastBlock } from "@/lib/email-blast";
+import { renderBlastHtml, renderBlastText } from "@/lib/email-template";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -445,35 +446,20 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
 export async function sendBlastEmail(input: {
   to: string;
   subject: string;
-  /** The body as the owner wrote it — plain text, paragraphs separated by blank lines. */
-  body: string;
+  /** The message, as blocks. A pre-blocks draft still renders through blocksOf. */
+  blast: { blocks?: BlastBlock[]; body?: string; subject?: string };
+  /** This deployment's address, so the crest and any picture can be absolute. */
+  origin: string;
   unsubscribeUrl: string;
-  /** Shown under the body, above the unsubscribe line. Why they are getting this. */
+  /** Shown under the message, above the unsubscribe line. Why they are getting this. */
   becauseLine: string;
 }): Promise<SendResult> {
-  const paragraphs = input.body
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean);
-
-  // Split BEFORE escaping, so an address containing "&" survives: escaping
-  // first would turn it into "&amp;" and the href would go somewhere else.
-  // Both the text and the href are escaped after the split, so nothing the
-  // owner types can close the tag.
-  const htmlBody = paragraphs
-    .map((block) => {
-      const inner = splitLinks(block)
-        .map((segment) => {
-          const text = escapeHtml(segment.text).replace(/\n/g, "<br>");
-          if (!segment.url) return text;
-          return `<a href="${escapeHtml(segment.url)}" style="color:#7a602c;">${text}</a>`;
-        })
-        .join("");
-      return `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;margin:0 0 16px;">${inner}</p>`;
-    })
-    .join("");
-
-  const url = escapeHtml(input.unsubscribeUrl);
+  const render = {
+    blast: input.blast,
+    origin: input.origin,
+    becauseLine: input.becauseLine,
+    unsubscribeUrl: input.unsubscribeUrl,
+  };
   return postResend(
     {
       to: input.to,
@@ -483,13 +469,10 @@ export async function sendBlastEmail(input: {
         "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
-      html:
-        `<div style="max-width:560px;margin:0 auto;padding:8px 4px;">${htmlBody}` +
-        `<hr style="border:none;border-top:1px solid #e3d9cc;margin:28px 0 14px;">` +
-        `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin:0;">${escapeHtml(input.becauseLine)} ` +
-        `<a href="${url}" style="color:#7a602c;">Stop these emails</a>.</p>` +
-        `<p style="font-family:Arial,sans-serif;font-size:12px;color:#8a8a8a;margin:8px 0 0;">White Glove Itineraries · whitegloveitineraries.com</p></div>`,
-      text: `${paragraphs.join("\n\n")}\n\n—\n${input.becauseLine} Stop these emails: ${input.unsubscribeUrl}\n\nWhite Glove Itineraries · whitegloveitineraries.com`,
+      html: renderBlastHtml(render),
+      // Both parts, always. Some corporate clients show the text one, and a
+      // message with no text part scores worse with spam filters.
+      text: renderBlastText(render),
     },
     input.to,
     "blast",

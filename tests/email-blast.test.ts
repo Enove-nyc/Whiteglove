@@ -12,6 +12,9 @@ import {
   type EmailBlast,
   newBlast,
   readBlastTopics,
+  blocksOf,
+  blocksProblem,
+  cleanBlocks,
   sendProblem,
   splitLinks,
 } from "@/lib/email-blast";
@@ -50,7 +53,8 @@ const READY = { apiKeySet: true, usingTestSender: false };
 
 function blast(over: Partial<EmailBlast> = {}): EmailBlast {
   return {
-    ...newBlast({ id: "b-1", subject: "Vienna is on the site", body: "A paragraph.", topics: ["new_destinations"], by: "owner" }),
+    ...newBlast({ id: "b-1", subject: "Vienna is on the site", body: "", topics: ["new_destinations"], by: "owner" }),
+    blocks: [{ kind: "text", text: "A paragraph." }] as EmailBlast["blocks"],
     ...over,
   };
 }
@@ -89,11 +93,60 @@ describe("who a blast reaches", () => {
 });
 
 describe("what may be written", () => {
-  it("wants a subject, a body and somebody to send it to", () => {
-    assert.match(blastProblem({ subject: "", body: "x", topics: ["seasonal"] }) ?? "", /subject/i);
-    assert.match(blastProblem({ subject: "x", body: " ", topics: ["seasonal"] }) ?? "", /message/i);
-    assert.match(blastProblem({ subject: "x", body: "y", topics: [] }) ?? "", /who it goes to/i);
-    assert.equal(blastProblem({ subject: "x", body: "y", topics: ["seasonal"] }), null);
+  it("wants a subject and somebody to send it to", () => {
+    assert.match(blastProblem({ subject: "", topics: ["seasonal"] }) ?? "", /subject/i);
+    assert.match(blastProblem({ subject: "x", topics: [] }) ?? "", /who it goes to/i);
+    assert.match(blastProblem({ subject: "x".repeat(200), topics: ["seasonal"] }) ?? "", /subject/i);
+    assert.equal(blastProblem({ subject: "x", topics: ["seasonal"] }), null);
+  });
+
+  it("wants something in the message, and some words among it", () => {
+    assert.match(blocksProblem([]) ?? "", /Add something/i);
+    assert.match(blocksProblem([{ kind: "text", text: "  " }]) ?? "", /Add something/i);
+    // A message that is only a picture and a button reads as an advertisement,
+    // which is not what anybody ticked a box for.
+    assert.match(
+      blocksProblem([
+        { kind: "image", url: "/api/media?id=m-1", alt: "A shul", caption: "", href: "" },
+        { kind: "button", label: "Look", href: "https://example.com" },
+      ]) ?? "",
+      /some words/i,
+    );
+    assert.equal(blocksProblem([{ kind: "text", text: "Hello." }]), null);
+  });
+
+  it("REFUSES A BUTTON THAT GOES NOWHERE", () => {
+    // It renders as something to press that does nothing, in somebody else's
+    // inbox, where the owner will never see it happen.
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "button", label: "Book", href: "  " }]) ?? "",
+      /nowhere to go/i,
+    );
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "button", label: " ", href: "https://example.com" }]) ?? "",
+      /no words on it/i,
+    );
+  });
+
+  it("wants a description on every picture", () => {
+    // For the people whose email does not show pictures, which is a lot of
+    // people on a phone with images off.
+    assert.match(
+      blocksProblem([{ kind: "text", text: "Hi" }, { kind: "image", url: "/api/media?id=m", alt: "", caption: "", href: "" }]) ?? "",
+      /description/i,
+    );
+  });
+
+  it("opens a message written before there were blocks", () => {
+    // Nothing typed in the plain-text days is lost or has to be retyped.
+    assert.deepEqual(blocksOf({ body: "An old draft." }), [{ kind: "text", text: "An old draft." }]);
+    assert.deepEqual(blocksOf({ body: "  " }), []);
+    assert.deepEqual(blocksOf({ blocks: [{ kind: "divider" }], body: "ignored" }), [{ kind: "divider" }]);
+  });
+
+  it("drops anything that is not a block it knows", () => {
+    assert.deepEqual(cleanBlocks([{ kind: "video", src: "x" }, { kind: "divider" }, null, "text"]), [{ kind: "divider" }]);
+    assert.deepEqual(cleanBlocks("nonsense"), []);
   });
 
   it("drops anything that is not a real topic", () => {
@@ -289,9 +342,11 @@ describe("links in the words", () => {
     // reader somewhere else. The email builder splits, then escapes each part.
     const parts = splitLinks("Look: https://example.com/search?a=1&b=2 now");
     assert.equal(parts[1].url, "https://example.com/search?a=1&b=2");
-    const email = readFileSync("lib/email.ts", "utf8");
-    const fn = email.slice(email.indexOf("export async function sendBlastEmail"));
-    assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeHtml(segment.text)"));
-    assert.match(fn, /escapeHtml\(segment\.url\)/);
+    // The paragraph builder moved into lib/email-template.ts when the message
+    // became a stack of blocks. The ordering it has to keep did not change.
+    const template = readFileSync("lib/email-template.ts", "utf8");
+    const fn = template.slice(template.indexOf("function paragraphHtml"));
+    assert.ok(fn.indexOf("splitLinks(block)") < fn.indexOf("escapeEmailHtml(segment.text)"));
+    assert.match(fn, /safeHref\(segment\.url\)/);
   });
 });
