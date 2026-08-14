@@ -9,8 +9,11 @@ import {
   getTrips,
   importTrip,
   renameTrip,
+  setTripClient,
   switchTrip,
 } from "@/lib/account-store";
+import { mayBrandOwnItinerary } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Itinerary } from "@/data/itinerary";
 
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: string; id?: string; name?: string; itinerary?: Itinerary }
+    | { action?: string; id?: string; name?: string; client?: string; itinerary?: Itinerary }
     | null;
 
   switch (body?.action) {
@@ -60,6 +63,21 @@ export async function POST(request: NextRequest) {
     case "switch": {
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       const result = await switchTrip(email, body.id);
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "client": {
+      // Saying who a trip is for is part of a Business account — it exists for
+      // somebody planning on other people's behalf, and it is the name that
+      // goes on the document their client is handed. Checked here rather than
+      // only in the panel, because a hidden field is not a closed door.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayBrandOwnItinerary(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: "Planning trips for named clients is part of a Business account." },
+          { status: 403 },
+        );
+      }
+      const result = await setTripClient(email, body.id, body.client ?? "");
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "duplicate": {

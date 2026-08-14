@@ -109,6 +109,10 @@ const utilityLinks = [
   { label: "About us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "Rate a trip", href: "/rate" },
+  // The signup had no address of its own until now — it existed only part way
+  // down a destination page, so somebody who wanted to be told when we publish
+  // somewhere new had nowhere to go.
+  { label: "Travel updates", href: "/alerts" },
   { label: "How we verify", href: "/verification" },
   { label: "Advertise with us", href: "/contact?reason=advertise" },
   { label: "Sign in", href: "/login" },

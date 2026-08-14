@@ -17,6 +17,8 @@ import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
 type Trip = {
   id: string;
   name: string;
+  /** Who the trip is for. Business accounts only; "" for everybody else. */
+  client: string;
   active: boolean;
   stops: number;
   places: number;
@@ -36,6 +38,13 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   const [error, setError] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  // Naming the client is part of a Business account. Asked once, from the same
+  // endpoint the branding panel uses, and the buttons simply are not drawn for
+  // anybody else — a greyed-out control advertising an upgrade has no place in
+  // the middle of somebody's planning.
+  const [mayNameClient, setMayNameClient] = useState(false);
+  const [clientFor, setClientFor] = useState<string | null>(null);
+  const [draftClient, setDraftClient] = useState("");
   // The traveler's own date, so a trip that starts tomorrow says so on the
   // list rather than only once it is opened.
   const { today } = useDeviceClock();
@@ -51,8 +60,19 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     };
   }, []);
 
+  useEffect(() => {
+    let live = true;
+    fetch("/api/account/branding", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => live && setMayNameClient(Boolean(d?.allowed)))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+
   const act = useCallback(
-    async (action: string, payload: { id?: string; name?: string } = {}, reload = false) => {
+    async (action: string, payload: { id?: string; name?: string; client?: string } = {}, reload = false) => {
       setBusy(true);
       setError("");
       try {
@@ -68,6 +88,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
         }
         setTrips(data.trips);
         setRenaming(null);
+        setClientFor(null);
         if (reload) onSwitched?.();
       } catch {
         setError("Could not reach the server.");
@@ -127,6 +148,30 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     Cancel
                   </button>
                 </form>
+              ) : clientFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void act("client", { id: trip.id, client: draftClient });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={draftClient}
+                    onChange={(e) => setDraftClient(e.target.value)}
+                    aria-label="Who this trip is for"
+                    placeholder="The Friedman family"
+                    maxLength={60}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setClientFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
               ) : (
                 <>
                   <p className="font-semibold text-[var(--navy)]">
@@ -135,6 +180,9 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                       <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Open</span>
                     )}
                   </p>
+                  {trip.client && (
+                    <p className="text-xs font-semibold text-[var(--gold-ink)]">For {trip.client}</p>
+                  )}
                   <p className="text-xs text-stone-500">
                     {[
                       `${trip.stops} ${trip.stops === 1 ? "stop" : "stops"}`,
@@ -150,7 +198,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               )}
             </div>
 
-            {renaming !== trip.id && (
+            {renaming !== trip.id && clientFor !== trip.id && (
               <div className="flex flex-wrap gap-2">
                 {!trip.active && (
                   <button type="button" disabled={busy} onClick={() => void act("switch", { id: trip.id }, true)} className={smallButton}>
@@ -168,6 +216,19 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                 >
                   Rename
                 </button>
+                {mayNameClient && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setClientFor(trip.id);
+                      setDraftClient(trip.client);
+                    }}
+                    className={smallButton}
+                  >
+                    {trip.client ? "Change who it is for" : "Who it is for"}
+                  </button>
+                )}
                 <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
                   Make a copy
                 </button>

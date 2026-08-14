@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { PrintBrand } from "@/lib/business-brand";
 import { buildDays, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
@@ -58,12 +59,43 @@ export default function PrintableItinerary({
    * copy cannot give a different arrival time from the screen it came off.
    */
   assume = BUILT_IN_ASSUMPTIONS,
+  /**
+   * A Business account's own letterhead, when there is one.
+   *
+   * WHAT IT REPLACES: the crest on the cover, the mark and name in every page
+   * header, and the "A White Glove Itineraries journey" line. That is the whole
+   * point — an agent hands this to their client, and a document with somebody
+   * else's crest on the cover is one they cannot hand over.
+   *
+   * WHAT IT DOES NOT REPLACE, EVER: the credit line. Every page still says the
+   * itinerary was planned with whitegloveitineraries.com, quietly, at 8.5px in
+   * the footer. That is the owner's decision and this component is where it is
+   * enforced, so a caller cannot pass a flag that removes it — there is no such
+   * flag to pass. The line is small and it is not an advertisement; it is the
+   * one true statement about where the document came from.
+   *
+   * Null — which is what every traveller and every Pro account gets — is the
+   * White Glove document exactly as it was.
+   */
+  brand = null,
+  /**
+   * Who the trip was planned for, when somebody planned it on their behalf.
+   *
+   * ONLY EVER SHOWN ON A BRANDED DOCUMENT. A traveller's own printout saying
+   * "Prepared for" their own name would be strange; the line means something
+   * precisely because a business is handing it to somebody else. So it is drawn
+   * only when there is a brand, which is checked here rather than left to each
+   * caller to remember.
+   */
+  preparedFor = "",
 }: {
   itin: Itinerary;
   burials: Record<string, string[]>;
   embedded?: boolean;
   sharedBy?: string;
   assume?: PlannerAssumptions;
+  brand?: PrintBrand | null;
+  preparedFor?: string;
 }) {
   const CoverHeading = embedded ? "h2" : "h1";
   const DayHeading = embedded ? "h3" : "h2";
@@ -85,6 +117,9 @@ export default function PrintableItinerary({
   // line. It read as four competing headlines. It is one small list now, under
   // the title, which is what a summary is.
   const summary = [
+    // First in the list, because on a document handed to a client it is the
+    // line that says this one is theirs.
+    brand && preparedFor.trim() && { label: "Prepared for", value: preparedFor.trim() },
     dates && { label: "When", value: dates },
     countries && { label: "Where", value: countries },
     travelerSummary(itin) && { label: "Travelling", value: travelerSummary(itin) },
@@ -119,8 +154,21 @@ export default function PrintableItinerary({
         </svg>
 
         <div className="wg-cover-inner">
-          <Image src="/logo.png" alt="White Glove Itineraries" width={480} height={320} className="wg-crest" priority />
-          <p className="wg-cover-eyebrow">A White Glove Itineraries journey</p>
+          {brand?.logoUrl ? (
+            // An uploaded blob served from /api/media, which next/image cannot
+            // optimise without an allow-listed host; and it is one picture on a
+            // document that exists to be printed.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={brand.logoUrl} alt={brand.name} className="wg-crest" />
+          ) : brand ? (
+            // A name and no logo is a letterhead, not a failure. Set in the
+            // cover's own display face so the page still opens with something.
+            <p className="wg-crest-name">{brand.name}</p>
+          ) : (
+            <Image src="/logo.png" alt="White Glove Itineraries" width={480} height={320} className="wg-crest" priority />
+          )}
+          <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : "A White Glove Itineraries journey"}</p>
+          {brand?.contactLine && <p className="wg-cover-contact">{brand.contactLine}</p>}
           <CoverHeading className="wg-cover-title">{title}</CoverHeading>
           <div className="wg-cover-rule" />
           {summary.length > 0 && (
@@ -136,8 +184,8 @@ export default function PrintableItinerary({
         </div>
 
         <p className="wg-cover-foot">
-          Thoughtfully arranged · meaningfully traveled
-          <span className="wg-cover-site">whitegloveitineraries.com</span>
+          {brand ? brand.name : "Thoughtfully arranged · meaningfully traveled"}
+          <span className="wg-cover-site">{brand ? "Planned with whitegloveitineraries.com" : "whitegloveitineraries.com"}</span>
         </p>
       </section>
 
@@ -147,8 +195,13 @@ export default function PrintableItinerary({
         return (
           <section className="wg-page wg-day" key={day.date}>
             <header className="wg-head">
-              <Image src="/logo.png" alt="" width={160} height={110} className="wg-head-mark" />
-              <span className="wg-head-name">White Glove Itineraries · {title}</span>
+              {brand?.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- see the cover
+                <img src={brand.logoUrl} alt="" className="wg-head-mark" />
+              ) : brand ? null : (
+                <Image src="/logo.png" alt="" width={160} height={110} className="wg-head-mark" />
+              )}
+              <span className="wg-head-name">{brand ? brand.name : "White Glove Itineraries"} · {title}</span>
               <span className="wg-head-day">Day {String(index + 1).padStart(2, "0")}</span>
             </header>
 
@@ -189,7 +242,9 @@ export default function PrintableItinerary({
             )}
 
             <footer className="wg-foot">
-              <span>White Glove Itineraries · whitegloveitineraries.com</span>
+              {/* The credit line. On a branded document this is the only thing
+                  on the page that is not the business's own, and it stays. */}
+              <span>{brand ? `${brand.name} · planned with whitegloveitineraries.com` : "White Glove Itineraries · whitegloveitineraries.com"}</span>
               <span>{footerRight}</span>
             </footer>
           </section>
@@ -250,7 +305,14 @@ const css = `
   .wg-frame { position: absolute; inset: 0.3in; border: 1px solid ${GOLD_RULE}; pointer-events: none; }
   .wg-arc { position: absolute; top: 0; right: 0; width: 2.6in; height: 2.6in; }
   .wg-cover-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
-  .wg-crest { width: 2.1in; height: auto; object-fit: contain; }
+  .wg-crest { width: 2.1in; height: auto; max-height: 1.5in; object-fit: contain; }
+  /* A business with a name and no logo. The same weight the crest carries, so
+     the cover still opens on something rather than starting at the eyebrow. */
+  .wg-crest-name {
+    font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+    font-size: 26px; line-height: 1.1; color: ${INK}; max-width: 5in; text-align: center;
+  }
+  .wg-cover-contact { margin-top: 8px; font-size: 10.5px; line-height: 1.5; color: ${BODY}; }
   .wg-cover-eyebrow {
     margin-top: 26px; font-size: 9px; font-weight: 700; letter-spacing: .26em;
     text-transform: uppercase; color: ${GOLD_INK};
@@ -287,7 +349,9 @@ const css = `
 
   /* ---- day header ---- */
   .wg-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid ${GOLD_RULE}; }
-  .wg-head-mark { width: 34px; height: auto; object-fit: contain; }
+  /* Capped both ways. An uploaded logo can be any shape at all, and a tall one
+     with only a width set would push the whole day's header down the page. */
+  .wg-head-mark { width: 34px; height: auto; max-height: 34px; object-fit: contain; }
   .wg-head-name { flex: 1; font-family: Georgia, "Times New Roman", serif; font-size: 15px; color: ${INK}; }
   .wg-head-day { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${MAROON}; }
 

@@ -79,6 +79,19 @@ export type AccountRecord = {
 export type SavedTrip = {
   id: string;
   name: string;
+  /**
+   * Who this trip is being planned FOR, when that is somebody else.
+   *
+   * A Business account plans for other people, and twenty of their trips are
+   * called "Italy", "Italy" and "Italy 2" — which is fine for somebody with two
+   * trips and useless for somebody with twenty. This is the field that tells
+   * them apart, and it is the name that goes on the cover of the document their
+   * client is handed.
+   *
+   * Empty for everybody else, and empty is the normal case. A traveller
+   * planning their own trip is not a client of anybody.
+   */
+  client?: string;
   itinerary: Itinerary;
   route: SavedPlace[];
   /** Public read-only token, when this particular trip is shared. */
@@ -574,6 +587,8 @@ export function withTrips(data: AccountData): { trips: SavedTrip[]; activeId: st
 export type TripSummary = {
   id: string;
   name: string;
+  /** Who it is for, when somebody is planning on another person's behalf. */
+  client: string;
   active: boolean;
   /** Stops in the itinerary itself. */
   stops: number;
@@ -599,6 +614,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
   return trips.map((t) => ({
     id: t.id,
     name: t.name,
+    client: t.client?.trim() ?? "",
     active: t.id === activeId,
     stops: t.itinerary?.activities?.length ?? 0,
     places: t.route?.length ?? 0,
@@ -621,7 +637,33 @@ export async function getTripItinerary(email: string, id?: string) {
   const data = await getAccountData(email);
   const { trips, activeId } = withTrips(data);
   const trip = trips.find((t) => t.id === (id || activeId)) ?? trips[0];
-  return trip ? { itinerary: trip.itinerary, tripId: trip.id, tripName: trip.name } : null;
+  return trip
+    ? { itinerary: trip.itinerary, tripId: trip.id, tripName: trip.name, client: trip.client?.trim() ?? "" }
+    : null;
+}
+
+/** How long a client's name may be. It goes on a cover, not in a database. */
+export const MAX_TRIP_CLIENT = 60;
+
+/**
+ * Say who a trip is for, or clear it.
+ *
+ * NOT GATED HERE. Whether an account may use this is a question about plans,
+ * and this file knows nothing about plans — the check is in the route, which is
+ * the door. Storing a name on a trip is harmless; showing it on a document is
+ * the part that belongs to Business.
+ */
+export async function setTripClient(email: string, id: string, client: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const clean = client.trim().slice(0, MAX_TRIP_CLIENT);
+  const next = trips.map((t) => (t.id === id ? { ...t, client: clean || undefined, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
 }
 
 /**
@@ -772,6 +814,10 @@ export async function duplicateTrip(email: string, id: string) {
   const copy: SavedTrip = {
     id: tripId(),
     name,
+    // The client comes across. A copy is a copy — an agent duplicating a trip
+    // for a different family renames both, and having to retype the name they
+    // meant to keep is the more annoying of the two mistakes.
+    client: source.client,
     itinerary: { ...source.itinerary, title: name },
     route: [...(source.route ?? [])],
     // A copy is not shared. Handing someone a link to one trip should not
@@ -932,12 +978,16 @@ export async function getSharedItineraryByShareId(shareId: string) {
   if (!ownerEmail) return null;
   const [data, record] = await Promise.all([getAccountData(ownerEmail), getAccountRecord(ownerEmail)]);
   if (!data.itinerary) return null;
+  // Who the trip was planned for, from the trip this link actually belongs to.
+  // Only used on a branded document, where it is the line the client reads to
+  // know the itinerary is theirs.
+  const client = withTrips(data).trips.find((t) => t.shareId === shareId)?.client?.trim() ?? "";
   // Boarding passes and tickets do not leave the account they were uploaded
   // to. Serving one already checks the owner, so the reference alone would
   // fetch nothing — but stripping it here means the person holding the link is
   // not even told a pass exists. Two answers to the same question, because
   // this is the one that costs somebody their flight if it is wrong.
-  return { itinerary: withoutAttachments(data.itinerary), ownerName: record?.name, ownerEmail };
+  return { itinerary: withoutAttachments(data.itinerary), ownerName: record?.name, ownerEmail, client };
 }
 
 async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {

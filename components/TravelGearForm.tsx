@@ -186,8 +186,11 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
           </div>
 
           {row.imageUrl.trim() && (
+            // `contain`, not `cover`, so this preview shows the same thing the
+            // shelf will — a cropped square here would hide the very thing the
+            // owner is checking for.
             // eslint-disable-next-line @next/next/no-img-element -- a preview of an owner-pasted external URL
-            <img src={row.imageUrl} alt="" className="mt-3 h-24 w-24 rounded-md border border-[var(--gold-light)] object-cover" />
+            <img src={row.imageUrl} alt="" className="mt-3 h-24 w-24 rounded-md border border-[var(--gold-light)] bg-[var(--cream)] object-contain p-1" />
           )}
 
           <p className={`mt-2 text-xs leading-5 ${gearItemProblem(row) ? "text-red-700" : "text-stone-500"}`}>

@@ -77,10 +77,28 @@ export default async function TravelGearPage() {
                   className="flex flex-col overflow-hidden rounded-2xl border border-[var(--gold-light)] bg-white shadow-[0_8px_24px_rgba(23,45,82,.05)] transition hover:border-[var(--gold)] hover:shadow-[0_14px_34px_rgba(23,45,82,.09)]"
                 >
                   {item.imageUrl.trim() && (
-                    // eslint-disable-next-line @next/next/no-img-element -- an
-                    // owner-pasted external URL, not one next/image can optimise
-                    // without an allow-listed host that changes with every item.
-                    <img src={item.imageUrl} alt={item.name} className="aspect-square w-full object-cover" loading="lazy" />
+                    // A picture well of a fixed height, and the product sits
+                    // INSIDE it whole.
+                    //
+                    // This used to be `aspect-square w-full object-cover`, which
+                    // on a card 370px wide made a 370px-tall picture — the
+                    // largest thing on the page by a distance, with the words
+                    // pushed under the fold on a phone. And `cover` crops to
+                    // fill, so a wide product (a blech, an adapter on its side)
+                    // had its ends cut off to make a square nobody asked for.
+                    //
+                    // `contain` in a short well fixes both: the whole product is
+                    // visible, every card is the same height whatever shape its
+                    // picture is, and the name and price are what the eye lands
+                    // on. The cream behind it is what an Amazon cut-out sits on
+                    // — the white background of the file itself would otherwise
+                    // disappear into the card and leave the product floating.
+                    <div className="flex h-36 items-center justify-center border-b border-[var(--gold-light)] bg-[var(--cream)] p-4 sm:h-40">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- an
+                          owner-pasted external URL, not one next/image can optimise
+                          without an allow-listed host that changes with every item. */}
+                      <img src={item.imageUrl} alt={item.name} className="max-h-full max-w-full object-contain" loading="lazy" />
+                    </div>
                   )}
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
