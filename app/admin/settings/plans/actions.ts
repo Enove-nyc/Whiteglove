@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
-import { cleanOffering, offeringProblem, PAID_PLANS, type PlanOffering } from "@/lib/plan-billing";
+import { cleanOffering, offeringProblem, PAID_PLANS, type PlanOffering, readOfferingHow } from "@/lib/plan-billing";
 import { writePlanOffering } from "@/lib/plan-billing-store";
 import { stripeReadiness } from "@/lib/stripe";
 
@@ -28,7 +28,10 @@ export async function savePlanOfferingAction(
 
   const next = cleanOffering({
     open: String(form.get("open") ?? "") === "on",
-    how: String(form.get("how") ?? "ask") === "stripe" ? "stripe" : "ask",
+    // Handed to readOfferingHow rather than mapped here. This line used to do
+    // its own mapping and turned every setting that was not "stripe" into
+    // "ask" — including "soon", which is the one the owner had chosen.
+    how: readOfferingHow(form.get("how")),
     plans: Object.fromEntries(PAID_PLANS.map((plan) => [plan, String(form.get(`${plan}-on`) ?? "") === "on"])),
     pricing: Object.fromEntries(
       PAID_PLANS.map((plan) => [

@@ -88,6 +88,26 @@ export type PlanOffering = {
 const EMPTY_PRICING: PlanPricing = { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" };
 
 /**
+ * Which setting a value is asking for. THE ONLY PLACE THAT DECIDES.
+ *
+ * WHY THIS IS A FUNCTION AND NOT TWO TERNARIES. It was two: one here, reading a
+ * stored record, and one in the admin's save action, reading a form. When
+ * "soon" was added the first was updated and the second was not — so the form
+ * offered three choices, and saving any of them wrote "ask". The owner picked
+ * "named, not open", pressed save, and watched the radio move back to a setting
+ * he had not chosen, on a live site.
+ *
+ * A second copy of a mapping like this is not a duplicate, it is a fork waiting
+ * for the next value to be added. There is one now, and both callers use it.
+ *
+ * Anything unrecognised is "soon", which can neither charge anybody nor promise
+ * anybody an account — so the direction this fails in is the harmless one.
+ */
+export function readOfferingHow(raw: unknown): PlanOffering["how"] {
+  return raw === "stripe" ? "stripe" : raw === "ask" ? "ask" : "soon";
+}
+
+/**
  * What a site that has never been configured has.
  *
  * Open, and "soon" — THE OWNER'S OWN DECISION, made while the prices were being
@@ -131,10 +151,7 @@ export function cleanOffering(raw: unknown): PlanOffering {
   });
   return {
     open: value.open !== false,
-    // Only the exact words. Anything else — missing, misspelled, a number, a
-    // record written before this setting existed — is "soon", which cannot
-    // charge anybody and cannot promise anybody an account today.
-    how: value.how === "stripe" ? "stripe" : value.how === "ask" ? "ask" : "soon",
+    how: readOfferingHow(value.how),
     plans: { pro: plans.pro !== false, business: plans.business !== false },
     pricing: { pro: one("pro"), business: one("business") },
     updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : undefined,

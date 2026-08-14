@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   cleanOffering,
@@ -11,6 +12,7 @@ import {
   periodsFor,
   planIsOfferable,
   priceIdFor,
+  readOfferingHow,
   type PlanOffering,
 } from "@/lib/plan-billing";
 
@@ -99,6 +101,46 @@ describe("what the site is offering", () => {
   it("offers only the plans that are ticked", () => {
     const only = offering({ plans: { pro: true, business: false } });
     assert.deepEqual(offerablePlans(only), ["pro"]);
+  });
+});
+
+describe("reading which setting was chosen", () => {
+  /**
+   * THIS EXISTS BECAUSE THE MAPPING WAS ONCE WRITTEN TWICE.
+   *
+   * `cleanOffering` read a stored record; the admin's save action read the
+   * form. When "soon" was added only the first was updated, so the screen
+   * offered three settings and saving any of them wrote "ask" — the owner
+   * chose "named, not open", pressed save, and watched it move to a setting he
+   * had not picked, on a live site. Both callers now go through one function,
+   * and this is the test that keeps it that way.
+   */
+  it("gives back exactly what was chosen, for all three", () => {
+    assert.equal(readOfferingHow("soon"), "soon");
+    assert.equal(readOfferingHow("ask"), "ask");
+    assert.equal(readOfferingHow("stripe"), "stripe");
+  });
+
+  it("survives a form value, which arrives as a FormDataEntryValue", () => {
+    const form = new FormData();
+    form.set("how", "soon");
+    assert.equal(readOfferingHow(form.get("how")), "soon");
+    form.set("how", "stripe");
+    assert.equal(readOfferingHow(form.get("how")), "stripe");
+  });
+
+  it("falls to the harmless setting on anything else", () => {
+    for (const raw of [null, undefined, "", "Ask", "ASK", "asking", 1, {}, ["ask"]]) {
+      assert.equal(readOfferingHow(raw), "soon", `${JSON.stringify(raw)} was not read as soon`);
+    }
+  });
+
+  it("IS THE ONLY PLACE THE MAPPING LIVES", () => {
+    // A second copy is not a duplicate, it is a fork waiting for the next
+    // value to be added. If this fails, somebody has written the ternary again.
+    const action = readFileSync("app/admin/settings/plans/actions.ts", "utf8");
+    assert.match(action, /readOfferingHow\(form\.get\("how"\)\)/);
+    assert.ok(!/"stripe"\s*\?\s*"stripe"\s*:/.test(action), "the save action maps the setting itself again");
   });
 });
 
