@@ -31,6 +31,22 @@
 
 import { type AlertSignup, type AlertTopic, ALERT_TOPIC_LABELS, isAlertTopic } from "@/lib/email-alerts";
 
+/**
+ * The token the test send puts on its unsubscribe link.
+ *
+ * A TEST MESSAGE MUST NOT BE ABLE TO UNSUBSCRIBE ANYBODY, and it must not look
+ * broken either. It used to carry the word "test", which is not a real token —
+ * so pressing the link in a test message produced "That unsubscribe link is not
+ * valid", which reads as a fault in the one part of the email that legally has
+ * to work, and gives the owner no way to see what a reader would actually get.
+ *
+ * This sentinel is recognised by the unsubscribe route, which shows the real
+ * page with a line saying it was a test and nobody was removed. It cannot
+ * collide with a real token: those are always "salt.signature" and contain a
+ * full stop, and this does not.
+ */
+export const TEST_UNSUB_TOKEN = "test-message-no-one-is-unsubscribed";
+
 export const MAX_SUBJECT = 120;
 export const MAX_BODY = 6000;
 

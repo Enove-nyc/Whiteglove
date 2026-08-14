@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unsubscribeByToken } from "@/lib/email-alerts-store";
+import { TEST_UNSUB_TOKEN } from "@/lib/email-blast";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,17 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token") ?? "";
+
+  // The owner pressing the link in a message he sent himself. Shows the real
+  // page, says plainly that it was a test, and removes nobody — rather than the
+  // "not valid" error, which reads as a fault in the one part of an email that
+  // has to work and taught him nothing about what a reader would get.
+  if (token === TEST_UNSUB_TOKEN) {
+    const url = new URL("/alerts/unsubscribed", request.url);
+    url.searchParams.set("test", "1");
+    return NextResponse.redirect(url);
+  }
+
   const result = await unsubscribeByToken(token);
   const url = new URL("/alerts/unsubscribed", request.url);
   url.searchParams.set("ok", result.ok ? "1" : "0");
