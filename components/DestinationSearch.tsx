@@ -349,7 +349,9 @@ export default function DestinationSearch({
             autoComplete="off"
           />
         </div>
-        <div className="flex gap-2">
+        {/* Stacked on a phone, so the submit button spans the box rather than
+            sitting as a stub under a full-width field. Side by side from sm. */}
+        <div className="flex gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
           {mobileCollapse ? (
             <button
               type="button"

@@ -157,7 +157,9 @@ export default function Navbar() {
               className={`w-auto max-w-none object-contain transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"}`}
               priority
             />
-            <span className="hidden flex-col leading-none min-[400px]:flex">
+            {/* Shown from 360px: a 390px phone is the common case, and hiding
+                the site's own name there left the header as a bare mark. */}
+            <span className="hidden flex-col leading-none min-[360px]:flex">
               <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove</span>
               <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Kosher Travel</span>
             </span>

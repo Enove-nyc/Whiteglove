@@ -184,7 +184,10 @@ export function kosherAvailability(destination: VacationDestination, facts: Vaca
       label: "Kosher food in town",
       glyph: "●",
       tone: "good",
-      detail: `Kosher food is on record in ${destination.name}. Confirm current certification and opening details before visiting.`,
+      // "On record" describes White Glove's filing rather than the town, and
+      // AGENTS.md keeps that language out of customer copy. What a traveler
+      // needs is that there is kosher food here, and to confirm it.
+      detail: `There is kosher food in ${destination.name}. Confirm current certification and opening details before visiting.`,
     };
   }
 

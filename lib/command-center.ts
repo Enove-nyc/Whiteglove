@@ -71,7 +71,7 @@ export function stopConcerns(stop: StopFacts): Concern[] {
   if (stop.isKever && !reachable) {
     concerns.push({
       weight: 1,
-      says: "Nobody on record to let you in.",
+      says: "No contact to let you in.",
       doThis: "Many batei hachaim are locked. Ask locally, or write in if you find out who holds the key.",
     });
   }

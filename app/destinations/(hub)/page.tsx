@@ -66,11 +66,11 @@ export default async function VacationIdeasPage({
       {/* The owner's own words at the top, from /admin/pages. */}
       {page ? <PageBlocks blocks={page.blocks} /> : null}
 
-      <section id="browse" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
-        <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Destinations</h1>
-        <div className="mt-10">
-          <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
-        </div>
+      {/* No heading of its own. The hero block above IS the page's h1
+          ("Destinations"), and it is the one the owner can edit; a second
+          heading here said the same word twice. */}
+      <section id="browse" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
+        <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
       </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">

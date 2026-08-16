@@ -32,7 +32,24 @@ export default function Footer() {
   return (
     <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#f7f3eb]">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <Image src="/logo-footer.png" alt="White Glove Kosher Travel" width={977} height={754} className="h-14 w-auto max-w-full object-contain" />
+        {/* THE MARK, AND THE NAME AS TEXT — the same lockup as the header.
+            The wordmark artwork (public/logo-footer.png) has "Itineraries"
+            drawn into it, so it was the one place left on the site still
+            showing the old name. The hand is ink on transparent, so the
+            filter carries it to the footer's cream on navy. */}
+        <div className="flex items-center gap-3">
+          <Image
+            src="/logo-hand-navy.png"
+            alt=""
+            width={355}
+            height={460}
+            className="h-12 w-auto object-contain brightness-0 invert"
+          />
+          <span className="flex flex-col leading-none">
+            <span className="font-[family-name:var(--font-display)] text-xl text-[#f7f3eb]">White Glove</span>
+            <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Kosher Travel</span>
+          </span>
+        </div>
 
         <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-3">
           {FOOTER_LINKS.map((link) => (

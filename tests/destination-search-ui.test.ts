@@ -61,6 +61,18 @@ describe("DestinationSearch wiring", () => {
     assert.ok(SOURCE.includes("kindLabel"));
   });
 
+  test("one chip per word, even when two kinds share it", () => {
+    // "Hotel or stay" and "Neighborhood" both read as "Where to stay", so a
+    // chip row built from kinds printed the same word twice, each chip hiding
+    // half the answer. The row is built from the labels the visitor reads, and
+    // a chip matches every kind carrying that label.
+    const RESULTS = readFileSync("components/SearchResults.tsx", "utf8");
+    assert.ok(RESULTS.includes("presentLabels"));
+    assert.ok(RESULTS.includes("kindLabel(r.kind) === kindFilter"));
+    assert.ok(RESULTS.includes("all.indexOf(label) === index"));
+    assert.ok(!RESULTS.includes("presentKinds"));
+  });
+
   test("does not mix AI answers into site search", () => {
     assert.ok(!SOURCE.includes("/api/itinerary/ai"));
     assert.ok(!SOURCE.includes("AssistantAnswer"));

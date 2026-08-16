@@ -57,16 +57,22 @@ export default function SearchResults({
   interpretedAs?: string;
   heritageIntent: boolean;
 }) {
-  const [kindFilter, setKindFilter] = useState<SiteHitKind | "all">("all");
+  // BY LABEL, NOT BY KIND. Two kinds read as "Where to stay" — a hotel and a
+  // neighbourhood — so filtering by kind put the same word on two chips beside
+  // each other, each hiding half the answer. One chip per word the visitor
+  // reads, matching every kind that carries it.
+  const [kindFilter, setKindFilter] = useState<string>("all");
 
   const filtered = useMemo(
-    () => (kindFilter === "all" ? results : results.filter((r) => r.kind === kindFilter)),
+    () => (kindFilter === "all" ? results : results.filter((r) => kindLabel(r.kind) === kindFilter)),
     [results, kindFilter],
   );
 
   const order = heritageIntent ? HERITAGE_FIRST : SECTION_ORDER;
   const groups = buildGroups(filtered, order);
-  const presentKinds = SITE_HIT_KINDS.filter((kind) => results.some((r) => r.kind === kind));
+  const presentLabels = SITE_HIT_KINDS.filter((kind) => results.some((r) => r.kind === kind))
+    .map(kindLabel)
+    .filter((label, index, all) => all.indexOf(label) === index);
 
   if (!query) {
     return (
@@ -100,15 +106,15 @@ export default function SearchResults({
         </p>
       ) : null}
 
-      {presentKinds.length > 1 ? (
+      {presentLabels.length > 1 ? (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by type">
           <FilterChip active={kindFilter === "all"} onClick={() => setKindFilter("all")}>
             All
           </FilterChip>
-          {presentKinds.map((kind) => {
+          {presentLabels.map((label) => {
             return (
-              <FilterChip key={kind} active={kindFilter === kind} onClick={() => setKindFilter(kind)}>
-                {kindLabel(kind)}
+              <FilterChip key={label} active={kindFilter === label} onClick={() => setKindFilter(label)}>
+                {label}
               </FilterChip>
             );
           })}

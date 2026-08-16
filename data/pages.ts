@@ -35,15 +35,17 @@ export const editablePages: PageDef[] = [
     label: "Vacation Ideas",
     seoTitle: "Kosher vacation ideas — where to go | White Glove Kosher Travel",
     seoDescription:
-      "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
+      "Beaches, cities, mountains and family trips, with practical kosher food and Shabbos guidance for each one.",
     blocks: [
       {
         id: "getaways-hero",
         kind: "hero",
-        eyebrow: "Vacation ideas",
-        heading: "Where to go, with the kosher side answered first.",
-        intro:
-          "Beaches, cities, mountains and family trips. Each destination page answers the two questions that decide whether a holiday is workable — what there is to eat, and how Shabbos works there. Where a detail has been checked, the page names its source and when it was confirmed.",
+        // Was an eyebrow, "Where to go, with the kosher side answered first."
+        // and a four-line paragraph, all of it above a page whose own heading
+        // then said "Destinations" again. The list is what somebody came for.
+        eyebrow: "",
+        heading: "Destinations",
+        intro: "",
       },
     ],
   },
