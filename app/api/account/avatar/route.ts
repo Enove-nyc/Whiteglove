@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, readSessionEmail, setAccountAvatar } from "@/lib/account-store";
-import { MAX_MEDIA_BYTES, mediaStoreAvailable, putMedia } from "@/lib/media";
+import { effectiveMediaLimit, mediaStoreAvailable, putMedia } from "@/lib/media";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Use a JPG, PNG or WEBP picture." }, { status: 400 });
   }
   const bytes = Math.floor((base64.length * 3) / 4);
-  const limit = Math.min(MAX_AVATAR_BYTES, MAX_MEDIA_BYTES);
+  const limit = Math.min(MAX_AVATAR_BYTES, effectiveMediaLimit());
   if (bytes > limit) {
     return NextResponse.json({ error: `That picture is too large (max ${Math.round(limit / 1024)} KB). Use a smaller one.` }, { status: 413 });
   }

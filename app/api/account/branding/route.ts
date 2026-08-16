@@ -5,7 +5,7 @@ import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } from "@/lib/business-brand";
 import { brandStoreAvailable, readBrand, writeBrand } from "@/lib/business-brand-store";
-import { isAllowedMediaType, MAX_MEDIA_BYTES, mediaStoreAvailable, putMedia } from "@/lib/media";
+import { effectiveMediaLimit, isAllowedMediaType, mediaStoreAvailable, putMedia } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  * where they left it; nothing of theirs was thrown away because a card expired.
  */
 
-const MAX_LOGO_BYTES = MAX_MEDIA_BYTES;
+const MAX_LOGO_BYTES = effectiveMediaLimit();
 
 /**
  * Only these three.

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAllowedMediaType, MAX_MEDIA_BYTES, mediaStoreAvailable, putMedia } from "@/lib/media";
+import { effectiveMediaLimit, isAllowedMediaType, mediaStoreAvailable, putMedia } from "@/lib/media";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -25,8 +25,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That file type isn't supported. Use an image or a PDF." }, { status: 400 });
   }
   const bytes = Math.floor((base64.length * 3) / 4);
-  if (bytes > MAX_MEDIA_BYTES) {
-    return NextResponse.json({ error: `That file is too large (max ${Math.round(MAX_MEDIA_BYTES / 1024)} KB). Compress it and try again.` }, { status: 413 });
+  const limit = effectiveMediaLimit();
+  if (bytes > limit) {
+    return NextResponse.json({ error: `That file is too large (max ${Math.round(limit / 1024)} KB). Compress it and try again.` }, { status: 413 });
   }
 
   const id = await putMedia(contentType, base64);

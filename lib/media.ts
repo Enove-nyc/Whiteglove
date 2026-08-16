@@ -1,14 +1,70 @@
-// Small media store for admin-uploaded advertisement images and PDFs. Files are
-// base64-encoded into a single Redis value (Upstash REST) and served back to
-// visitors through /api/media. Kept out of any list so lookups stay fast.
+// Small media store for admin-uploaded advertisement images, email pictures
+// and profile photos, served back to visitors through /api/media.
+//
+// ON DISK FIRST, REDIS AS THE FALLBACK. These files lived base64-encoded
+// inside Upstash Redis, which has a small storage tier and a per-request cap
+// — a handful of photographs filled it, and that limit is what forced the
+// hosting move. With a persistent disk attached (Railway volume at /data),
+// files are written to MEDIA_DIR instead and Redis goes back to what it is
+// good at: small fast values.
+//
+// NOTHING ALREADY UPLOADED IS LOST. A read that misses the disk falls back
+// to Redis, and on a hit it moves the file to disk and deletes the Redis
+// copy — so every image that is ever served migrates itself, and the Redis
+// space frees up as it happens. sweepMediaToDisk() does the same for files
+// nobody has asked for yet, in one pass, from the admin's own maintenance
+// button.
+//
+// WITHOUT THE DISK (local dev, or any host with no volume), everything
+// behaves exactly as it always did: Redis holds the files, the old cap
+// applies, and no code path touches the filesystem.
+
+import { mkdirSync, existsSync } from "node:fs";
+import { readFile, writeFile, rename, unlink } from "node:fs/promises";
+import { join } from "node:path";
 
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]);
 
-// Cap uploads so a single base64 value stays within Upstash's request limit.
+// The Redis cap: a single base64 value must stay within Upstash's request
+// limit. The disk has no such constraint — see effectiveMediaLimit().
 export const MAX_MEDIA_BYTES = 900 * 1024;
+
+/** The disk cap — roomier, but still a cap: this store is for adverts and
+ * portraits, not video. */
+export const MAX_DISK_MEDIA_BYTES = 2 * 1024 * 1024;
 
 export function isAllowedMediaType(type: string) {
   return ALLOWED_TYPES.has(type);
+}
+
+/**
+ * Ids are minted by putMedia as `m-<timestamp>-<random>`. Checked on every
+ * read BEFORE the id goes anywhere near a filesystem path — an id is also a
+ * URL parameter, and "../" must never become part of a path.
+ */
+const MEDIA_ID = /^m-[a-z0-9]+-[a-z0-9]+$/i;
+
+function mediaDir(): string | null {
+  const dir = process.env.MEDIA_DIR?.trim() || "/data/media";
+  // The default only activates where the volume actually exists — on a host
+  // without /data (Vercel, local dev) this quietly stays on Redis.
+  const parent = join(dir, "..");
+  if (!existsSync(parent)) return null;
+  try {
+    mkdirSync(dir, { recursive: true });
+    return dir;
+  } catch {
+    return null;
+  }
+}
+
+export function diskMediaActive(): boolean {
+  return mediaDir() !== null;
+}
+
+/** What the upload routes should enforce, wherever the store is today. */
+export function effectiveMediaLimit(): number {
+  return diskMediaActive() ? MAX_DISK_MEDIA_BYTES : MAX_MEDIA_BYTES;
 }
 
 const mediaKey = (id: string) => `white-glove:media:${id}`;
@@ -20,57 +76,137 @@ function redisConfig() {
 }
 
 export function mediaStoreAvailable() {
-  return Boolean(redisConfig());
+  return diskMediaActive() || Boolean(redisConfig());
 }
 
 type StoredMedia = { contentType: string; data: string };
 
-async function redisSetBody(key: string, value: string): Promise<boolean> {
+async function redisCommand(path: string, body?: string): Promise<Response | null> {
   const config = redisConfig();
-  if (!config) return false;
+  if (!config) return null;
   try {
-    const res = await fetch(`${config.url}/set/${encodeURIComponent(key)}`, {
-      method: "POST",
+    return await fetch(`${config.url}/${path}`, {
+      method: body === undefined ? "GET" : "POST",
       headers: { Authorization: `Bearer ${config.token}` },
-      body: value,
+      body,
       cache: "no-store",
     });
-    return res.ok;
+  } catch {
+    return null;
+  }
+}
+
+async function redisGet(key: string): Promise<string | undefined> {
+  const res = await redisCommand(`get/${encodeURIComponent(key)}`);
+  if (!res?.ok) return undefined;
+  return ((await res.json()) as { result?: string }).result;
+}
+
+/* ---- disk ---------------------------------------------------------------- */
+
+function fileFor(dir: string, id: string): string {
+  return join(dir, `${id}.json`);
+}
+
+async function diskRead(id: string): Promise<StoredMedia | null> {
+  const dir = mediaDir();
+  if (!dir) return null;
+  try {
+    const parsed = JSON.parse(await readFile(fileFor(dir, id), "utf8")) as StoredMedia;
+    return parsed?.data ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function diskWrite(id: string, media: StoredMedia): Promise<boolean> {
+  const dir = mediaDir();
+  if (!dir) return false;
+  try {
+    // Write-then-rename, so a crash mid-write can never leave a half file
+    // where a whole one is expected.
+    const tmp = fileFor(dir, id) + ".tmp";
+    await writeFile(tmp, JSON.stringify(media), "utf8");
+    await rename(tmp, fileFor(dir, id));
+    return true;
   } catch {
     return false;
   }
 }
 
-async function redisGet(key: string): Promise<string | undefined> {
-  const config = redisConfig();
-  if (!config) return undefined;
-  try {
-    const res = await fetch(`${config.url}/get/${encodeURIComponent(key)}`, {
-      headers: { Authorization: `Bearer ${config.token}` },
-      cache: "no-store",
-    });
-    if (!res.ok) return undefined;
-    return ((await res.json()) as { result?: string }).result;
-  } catch {
-    return undefined;
-  }
-}
+/* ---- the store ----------------------------------------------------------- */
 
 /** Store a file and return its id, or null on failure. */
 export async function putMedia(contentType: string, base64: string): Promise<string | null> {
-  if (!mediaStoreAvailable()) return null;
   const id = `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const ok = await redisSetBody(mediaKey(id), JSON.stringify({ contentType, data: base64 } satisfies StoredMedia));
-  return ok ? id : null;
+  if (await diskWrite(id, { contentType, data: base64 })) return id;
+  const res = await redisCommand(`set/${encodeURIComponent(mediaKey(id))}`, JSON.stringify({ contentType, data: base64 } satisfies StoredMedia));
+  return res?.ok ? id : null;
 }
 
 export async function getMedia(id: string): Promise<StoredMedia | null> {
+  if (!MEDIA_ID.test(id)) return null;
+
+  const onDisk = await diskRead(id);
+  if (onDisk) return onDisk;
+
   const raw = await redisGet(mediaKey(id));
   if (!raw) return null;
+  let parsed: StoredMedia;
   try {
-    const parsed = JSON.parse(raw) as StoredMedia;
-    return parsed?.data ? parsed : null;
+    parsed = JSON.parse(raw) as StoredMedia;
   } catch {
     return null;
   }
+  if (!parsed?.data) return null;
+
+  // Found only in Redis: move it home, then free the Redis space. The delete
+  // only happens after the disk write succeeded, so the file always exists in
+  // at least one place.
+  if (await diskWrite(id, parsed)) {
+    await redisCommand(`del/${encodeURIComponent(mediaKey(id))}`);
+  }
+  return parsed;
+}
+
+/**
+ * Move every file still in Redis onto the disk, in one pass — the lazy
+ * migration above only reaches images somebody asks for; this reaches the
+ * rest. Safe to run any number of times; does nothing without the disk.
+ * Returns how many files moved, or null when there was nothing to do it with.
+ */
+export async function sweepMediaToDisk(): Promise<number | null> {
+  if (!diskMediaActive() || !redisConfig()) return null;
+  let moved = 0;
+  let cursor = "0";
+  do {
+    const res = await redisCommand(`scan/${cursor}/match/${encodeURIComponent("white-glove:media:*")}/count/50`);
+    if (!res?.ok) break;
+    const data = (await res.json()) as { result?: [string, string[]] };
+    const [next, keys] = data.result ?? ["0", []];
+    cursor = next;
+    for (const key of keys) {
+      const id = key.replace("white-glove:media:", "");
+      if (!MEDIA_ID.test(id)) continue;
+      const raw = await redisGet(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw) as StoredMedia;
+        if (parsed?.data && (await diskWrite(id, parsed))) {
+          await redisCommand(`del/${encodeURIComponent(key)}`);
+          moved += 1;
+        }
+      } catch {
+        // An unreadable value is left where it is rather than deleted.
+      }
+    }
+  } while (cursor !== "0");
+  return moved;
+}
+
+/** Test hook: delete one file from the disk store. */
+export async function deleteMediaFromDisk(id: string): Promise<void> {
+  const dir = mediaDir();
+  if (!dir || !MEDIA_ID.test(id)) return;
+  await unlink(fileFor(dir, id)).catch(() => undefined);
 }

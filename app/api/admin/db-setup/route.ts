@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isDbEnabled } from "@/lib/content-admin";
 import { ensureTables, seedDatabase } from "@/lib/db-setup";
+import { sweepMediaToDisk } from "@/lib/media";
 import { redact } from "@/lib/redact";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 
@@ -33,8 +34,14 @@ export async function POST(request: NextRequest) {
   try {
     const { prisma } = await import("@/lib/prisma");
     const tables = await ensureTables(prisma);
+    // Not a database job, but the same maintenance moment: any pictures
+    // still stored inside Redis move onto the attached disk, freeing the
+    // space that used to hit Upstash's limit. Does nothing where no disk
+    // is attached. Best-effort — a storage hiccup must not fail the
+    // schema update it is riding along with.
+    const movedMedia = await sweepMediaToDisk().catch(() => null);
     if (!body?.reimport) {
-      return NextResponse.json({ ok: true, tablesCreated: tables.created, upgradedOnly: true });
+      return NextResponse.json({ ok: true, tablesCreated: tables.created, upgradedOnly: true, movedMedia: movedMedia ?? undefined });
     }
     const counts = await seedDatabase(prisma);
     return NextResponse.json({

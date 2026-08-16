@@ -76,9 +76,11 @@ describe("the profile picture API", () => {
   });
 
   it("refuses an oversized picture with the store's real limit, not a failed save", () => {
-    // lib/media caps a single value below the 2 MB the page allows, so the
-    // smaller number is the one enforced and the one said out loud.
-    assert.match(ROUTE, /Math\.min\(MAX_AVATAR_BYTES, MAX_MEDIA_BYTES\)/);
+    // The store's cap depends on where it is keeping files today — 900 KB in
+    // Redis, 2 MB on the attached disk — so the route asks it rather than
+    // hard-coding either number, and the smaller of that and the page's own
+    // cap is the one enforced and said out loud.
+    assert.match(ROUTE, /Math\.min\(MAX_AVATAR_BYTES, effectiveMediaLimit\(\)\)/);
     assert.match(ROUTE, /status: 413/);
   });
 
