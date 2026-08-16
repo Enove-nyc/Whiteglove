@@ -159,6 +159,14 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   Website ↗
                 </a>
               )}
+              {a.internalHref && (
+                <Link
+                  href={a.internalHref}
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] px-3 font-semibold text-[var(--navy)]"
+                >
+                  Full guide
+                </Link>
+              )}
               <a
                 href={a.sourceUrl}
                 target="_blank"

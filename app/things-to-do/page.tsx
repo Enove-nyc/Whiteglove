@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
+import { heritageAsAttractions } from "@/lib/heritage-attractions";
 
 // Not force-dynamic. getAttractionList (lib/attractions-view.ts) is a tagged
 // unstable_cache now, busted the moment an attraction is actually written,
@@ -19,7 +20,11 @@ export const metadata = pageMetadata({
 export default async function AttractionsPage() {
   // Read through the view, not the data file, so anything the owner adds in the
   // admin appears here and in every search without a redeploy.
-  const attractions = await getAttractionList();
+  //
+  // Heritage towns join the same list under "Jewish heritage" — the filter
+  // that already existed for the 35 hand-picked entries in data/attractions.ts
+  // — rather than a separate section elsewhere. See lib/heritage-attractions.ts.
+  const attractions = [...(await getAttractionList()), ...heritageAsAttractions()];
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />

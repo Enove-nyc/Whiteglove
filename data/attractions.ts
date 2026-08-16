@@ -71,6 +71,12 @@ export type Attraction = {
   /** "lat, lng" — a real, navigable location. */
   coordinates?: string;
   website?: string;
+  /**
+   * This site's own page about the place, when there is a fuller one than
+   * this card — a heritage town's guide, for instance. Distinct from
+   * `website`, which is the place's own official site, not ours.
+   */
+  internalHref?: string;
   /** Practical notes, kosher-travel first. */
   notes?: string[];
   /** How it sits with Shabbos and yom tov, when that is worth saying. */
