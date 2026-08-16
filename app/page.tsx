@@ -30,7 +30,7 @@ import { readPublicCaseStudies } from "@/lib/case-studies-store";
 export const metadata = pageMetadata({
   title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Itineraries",
   description:
-    "Plan a kosher vacation with the kosher side answered first: where to go, what to do, kosher food, Shabbos, minyanim and mikvaos — build the itinerary yourself or have White Glove arrange it.",
+    "Plan a kosher vacation with the kosher side answered first: where to go, what to do, kosher food, Shabbos, minyanim and mikvaos — build the itinerary yourself, free.",
   path: "/",
 });
 
@@ -535,28 +535,10 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* ---- 12. Which door do I want? ------------------------------------
-          THIS WAS THE SEARCH BOX A SECOND TIME. The page carried the same
-          StaySearchForm in the hero and again at the bottom, and the argument
-          for the second one — that sending a reader back up to the hero is a
-          rudeness that costs the press — turned out to be answering the wrong
-          question. Somebody who has read the whole page has usually stopped
-          wondering where to go and started wondering how this site works: it
-          has three free tools and a paid service, all reachable from the
-          navigation, and no page said which was which. One search box, near
-          the top, where a person who arrives knowing their dates finds it; and
-          a finish that orients rather than repeats.
-
-          /services IS DELIBERATELY NOT ONE OF THE CARDS HERE. A front page
-          that offers to arrange the trip for you is a page about an agency,
-          and every free tool above would then read as a funnel into a phone
-          call. It is offered inside Contact and on its own page. AGENTS.md. */}
+      {/* Which door do I want? All three free tools, side by side, once
+          rather than repeated as separate calls to action down the page. */}
       <section className="mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8">
-        <StartingPoints
-          omit={["/services"]}
-          heading="Three ways to start"
-          intro="All three are free."
-        />
+        <StartingPoints heading="Three ways to start" intro="All three are free." />
       </section>
 
       <Footer />

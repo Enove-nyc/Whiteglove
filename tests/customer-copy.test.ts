@@ -3,7 +3,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { BUILT_IN_WORDS } from "@/data/site-words";
-import { services } from "@/data/services";
 
 /**
  * The customer-facing copy rules from AGENTS.md, as a test.
@@ -95,7 +94,7 @@ const COMPONENTS = walk("components", (path) => path.endsWith(".tsx")).filter(
  * explained the four checking labels on every page of the site and no walk
  * over .tsx files would ever have seen it.
  */
-const COPY_DATA = ["lib/beta-notice.ts", "data/site-words.ts", "data/services.ts", "lib/trust-status.ts"];
+const COPY_DATA = ["lib/beta-notice.ts", "data/site-words.ts", "lib/trust-status.ts"];
 const FILES = [...PAGES, ...COMPONENTS, ...COPY_DATA];
 const AGENTS_MD = readFileSync("AGENTS.md", "utf8");
 
@@ -162,15 +161,15 @@ describe("the rules are written down where the next person reads them", () => {
     assert.ok(readFileSync("components/NewSiteNotice.tsx", "utf8").length > 500);
   });
 
-  it("KEEPS PERSONAL ASSISTANCE INSIDE CONTACT, which the rules also say", () => {
-    assert.match(AGENTS, /discoverable only from the Contact area/);
-    assert.match(readFileSync("app/contact/page.tsx", "utf8"), /<PlanningRequestForm/);
+  it("OFFERS PERSONAL ASSISTANCE NOWHERE AT ALL, which the rules also say", () => {
+    assert.match(AGENTS_MD, /## Personal trip planning has been removed/);
+    assert.doesNotMatch(readFileSync("app/contact/page.tsx", "utf8"), /PlanningRequestForm/);
   });
 });
 
 describe("two things this site is not", () => {
   /**
-   * The owner's standing instruction, encoded so a later review cannot talk
+   * The owner's standing instructions, encoded so a later review cannot talk
    * the site back into either one.
    *
    * BOTH HAVE ALREADY BEEN ASKED FOR ONCE by a post-launch review, in good
@@ -178,13 +177,18 @@ describe("two things this site is not", () => {
    * paragraph: a persuasive checklist arrives, the reasoning looks sound in
    * isolation, and the site drifts into being a planning agency with a
    * founder page — which is the one thing the owner has said twice it is not.
+   *
+   * The planning-service rule went further than "last resort" during the
+   * redesign: the owner removed it outright. What is tested below is the
+   * stronger claim — it does not exist anywhere on the site — not the older,
+   * weaker one.
    */
   it("KEEPS THE INSTRUCTION WHERE THE NEXT PERSON READS IT", () => {
     // The owner recorded these himself in another session; this file only
     // holds them. Asserting on his headings rather than a paraphrase, so a
     // reworded restatement cannot pass while the real rule is gone.
-    assert.match(AGENTS_MD, /## The paid planning service is a last resort/);
-    assert.match(AGENTS_MD, /Do not ask the owner to price it/i);
+    assert.match(AGENTS_MD, /## Personal trip planning has been removed/);
+    assert.match(AGENTS_MD, /Never ask the owner to price it/i);
     assert.match(AGENTS_MD, /## Settled decisions/);
     assert.match(AGENTS_MD, /carries no personal facts at all/i);
     // THE NEWEST OF THESE, and the easiest to undo in good faith. The rule
@@ -204,36 +208,30 @@ describe("two things this site is not", () => {
     assert.doesNotMatch(aboutAdmin, /is the only one of these the public page needs/i);
   });
 
-  it("QUOTES NO PRICE FOR PLANNING WORK", () => {
-    // Not a figure, not a range, not a "from". The pricing lines staying
-    // unanswered is the resting state, not a gap.
-    for (const key of ["pricingStartsAt", "pricingWhatAffects", "pricingTurnaround", "pricingRevisions", "pricingBookingSupport", "pricingFeeCredit", "pricingTimeline", "pricingCancellation", "pricingSupportAfter"] as const) {
-      assert.doesNotMatch(BUILT_IN_WORDS[key], /[€$£]\s?\d/, `${key} quotes a price`);
-    }
-    for (const service of services) {
-      assert.doesNotMatch(service.pricing, /[€$£]\s?\d/, `${service.id} quotes a price`);
-      assert.doesNotMatch(service.pricing, /\bfrom\s+[€$£]/i, service.id);
-    }
+  it("HAS NOTHING LEFT TO QUOTE A PRICE FOR PLANNING WORK WITH", () => {
+    // The nine pricing lines and the services page they were written for are
+    // both gone — not merely unanswered. There is no field anywhere that
+    // could hold a planning price.
+    for (const key of Object.keys(BUILT_IN_WORDS)) assert.doesNotMatch(key, /^pricing/i, key);
   });
 
-  it("KEEPS PLANNING OUT OF THE WAYS TO START", () => {
-    // Enforced in the component rather than remembered per page: it is
-    // dropped unless a page opts in, and only the services page does, where
-    // it is listing what you could do for free instead.
+  it("HAS NO WAY BACK IN AS A WAY TO START", () => {
+    // Personal planning was previously excluded from StartingPoints by
+    // default and opted back in on one page. Now there is no opt-in at all —
+    // the component and every page that renders it carry only the three free
+    // doors.
     const points = readFileSync("components/StartingPoints.tsx", "utf8");
-    assert.match(points, /includePlanning \? \[\] : \["\/services"\]/, "planning is no longer excluded by default");
-    const optIn = PAGES.filter((path) => readFileSync(path, "utf8").includes("includePlanning"));
-    assert.deepEqual(
-      optIn.map((path) => path.replace(/\\/g, "/")),
-      ["app/services/page.tsx"],
-      "a page other than /services is promoting personal planning as a way to start",
-    );
+    assert.doesNotMatch(points, /includePlanning/, "the opt-in for personal planning still exists");
+    assert.doesNotMatch(points, /\/services/, "StartingPoints still names the removed service");
+    for (const path of PAGES) {
+      assert.doesNotMatch(readFileSync(path, "utf8"), /includePlanning/, `${path} still opts in to a removed feature`);
+    }
   });
 
-  it("KEEPS PLANNING TO ONE FOOTER LINK", () => {
-    const footer = readFileSync("components/Footer.tsx", "utf8");
-    const links = (footer.match(/href: "\/services"/g) ?? []).length;
-    assert.ok(links <= 1, `the footer links to planning ${links} times; the rule is one small link`);
+  it("HAS NO SERVICES PAGE AND NO LINK TO ONE", () => {
+    for (const path of FILES) {
+      assert.doesNotMatch(readFileSync(path, "utf8"), /["'`]\/services["'`]/, `${path} still points at the removed services page`);
+    }
   });
 
   it("ASKS FOR NO BIOGRAPHY", () => {
@@ -259,23 +257,26 @@ describe("one name per thing", () => {
   });
 
   it("CALLS ONE PAGE ONE THING IN THE NAVIGATION", () => {
-    // The bar said "My Trips" and the menu said "Itinerary planner", both
+    // The bar once said "My Trips" and the menu said "Itinerary planner", both
     // pointing at /itinerary — one page offered twice under two names, which
-    // reads as two features, one of which cannot be found.
-    // Each nav item is a small object; pull the label that sits with /itinerary.
+    // reads as two features, one of which cannot be found. The header's
+    // dropdowns since moved to short, category-scoped words ("Plan >
+    // Itinerary" reads as "Itinerary planner" without spelling it out) — what
+    // still must not happen is a SECOND, competing name for the same page.
     const itineraryBlocks = [...NAV.matchAll(/\{[^{}]*href: "\/itinerary"[^{}]*\}/g)].map((m) => m[0]);
     const labels = itineraryBlocks.map((block) => /label: "([^"]+)"/.exec(block)?.[1]).filter(Boolean);
-    assert.ok(labels.includes("Itinerary planner"), "the navigation bar no longer calls /itinerary the itinerary planner");
-    assert.deepEqual([...new Set(labels)].filter((l) => l !== "Itinerary planner"), [], `/itinerary is also called: ${labels}`);
+    assert.deepEqual([...new Set(labels)], ["Itinerary"], `/itinerary is called more than one thing: ${labels}`);
     assert.doesNotMatch(NAV, /"My Trips"/);
     assert.doesNotMatch(NAV, /"Hotels & Stays"/);
+    assert.doesNotMatch(NAV, /"Itinerary planner"/, "a second, longer name for the same page has crept back in");
   });
 
-  it("NAMES THE FOUR FRONT DOORS IN ONE PLACE", () => {
-    for (const href of ["/plan", "/itinerary", "/book", "/services"]) {
+  it("NAMES THE THREE FRONT DOORS IN ONE PLACE", () => {
+    for (const href of ["/plan", "/itinerary", "/book"]) {
       assert.ok(POINTS.includes(`href: "${href}"`), href);
     }
-    // And uses the site's own word for the planner rather than a fifth one.
+    assert.doesNotMatch(POINTS, /\/services/, "a fourth, removed door is still named here");
+    // And uses the site's own word for the planner rather than a fourth one.
     assert.match(POINTS, /itinerary planner/);
     assert.doesNotMatch(POINTS, /trip planner/);
   });

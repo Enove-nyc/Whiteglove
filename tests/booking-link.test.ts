@@ -10,7 +10,6 @@ import {
   pathIsLocked,
 } from "@/lib/booking-access";
 import { bookCategoryFor } from "@/lib/navigation";
-import { services } from "@/data/services";
 
 /**
  * No public call to action may end at a password box.
@@ -98,8 +97,6 @@ describe("the words on the public pages", () => {
     "app/destinations/[destination]/page.tsx",
     "app/travel-guide/page.tsx",
     "components/PracticalInformation.tsx",
-    "components/ServiceCatalog.tsx",
-    "data/services.ts",
   ];
 
   it("TYPES /book INTO NO PUBLIC PAGE", () => {
@@ -114,22 +111,11 @@ describe("the words on the public pages", () => {
 
   it("no longer claims the booking page is yours to use now", () => {
     for (const file of FILES) {
-      // Comments stripped: data/services.ts quotes the old sentence in order to
-      // record why it went, which is worth keeping and is not shown to anybody.
       const source = readFileSync(file, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")
         .replace(/\/\/[^\n]*/g, "");
       assert.doesNotMatch(source, /booking page is yours to use/i, file);
       assert.doesNotMatch(source, /Search here and book it yourself/i, file);
     }
-  });
-
-  it("leaves the flights service without a hardcoded search button", () => {
-    const flights = services.find((service) => service.id === "flights-hotels-transport");
-    assert.ok(flights);
-    assert.equal(flights.usesBookingSearch, true);
-    // The fallback must not be the search itself, or a closed search resolves
-    // to a closed search.
-    assert.notEqual(flights.action.href, BOOKING_SEARCH_PATH);
   });
 });

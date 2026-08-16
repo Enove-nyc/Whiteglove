@@ -45,7 +45,8 @@ import { staySearchHref } from "@/lib/stay-search";
  *
  * NO PERSONAL ASSISTANCE. This is the most commercial surface on the site and
  * "have us plan it" here would turn every section above into a sales funnel.
- * It is offered inside Contact. See lib/contact-reasons.ts.
+ * The service itself has since been removed from the site outright — see
+ * AGENTS.md, "Personal trip planning has been removed".
  */
 export default function DestinationStickyCta({
   destination,

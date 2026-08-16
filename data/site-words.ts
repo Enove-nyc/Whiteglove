@@ -48,58 +48,6 @@ export type SiteWords = {
   /** The paragraph under the heading on the booking page. */
   bookingNotice: string;
 
-  /* ---- what to expect about price -------------------------------------
-   *
-   * SIX ANSWERS THE SERVICES PAGE COULD NOT GIVE. It said "quoted once we
-   * understand the trip" and stopped, which is true and is also what every
-   * site with something to hide says. What a person deciding whether to write
-   * in actually wants is: roughly what does this cost, what moves that number,
-   * how long until I hear, do changes cost extra, is booking a separate bill,
-   * and does the planning fee come off anything.
-   *
-   * THREE OF THE SIX ARE NOT PUBLISHED YET and say so in as many words rather
-   * than being left blank or filled with something plausible. There is no
-   * price list on this site to stand behind, and inventing one would be the
-   * single worst thing to do on a site whose argument is that what it prints
-   * has been checked. They are here as editable lines so the owner can answer
-   * them from /admin/settings/words the day he decides, without a deploy —
-   * which is the difference between a gap and a silence. */
-
-  /** A starting figure or a typical range, once there is one to publish. */
-  pricingStartsAt: string;
-  /** What moves the number. */
-  pricingWhatAffects: string;
-  /** How long until a quote comes back. */
-  pricingTurnaround: string;
-  /** Whether changing the plan costs extra. */
-  pricingRevisions: string;
-  /** Whether booking the travel is a separate charge. */
-  pricingBookingSupport: string;
-  /** Whether a planning fee comes off anything else. */
-  pricingFeeCredit: string;
-
-  /* ---- three more the panel could not answer ---------------------------
-   *
-   * The six above answer what it costs and how the money works. A person
-   * about to hand over a family holiday asks three more before they commit,
-   * and the page had no room for any of them: how long the planning itself
-   * takes once it starts (which is not the same as how long a quote takes to
-   * come back), what happens if they change their mind, and whether anybody
-   * is there once the itinerary has been sent. The third is the one that
-   * decides whether this reads as a document or as a service.
-   *
-   * All three ship unanswered, for the same reason three of the six do:
-   * there is nothing on this site to stand behind a timeline, a refund policy
-   * or a support window, and inventing one would be a promise made on the
-   * owner's behalf. Answer them at /admin/settings/words. */
-
-  /** How long the planning takes once it starts. */
-  pricingTimeline: string;
-  /** What happens if the trip or the arrangement is called off. */
-  pricingCancellation: string;
-  /** Whether anybody is there after the itinerary has been sent, and for how long. */
-  pricingSupportAfter: string;
-
   /**
    * What is said beside a link that earns a commission.
    *
@@ -115,50 +63,6 @@ export type SiteWords = {
    */
   affiliateDisclosure: string;
 };
-
-/**
- * What an unanswered pricing line says in Admin → Words.
- *
- * ONE STRING, so the services page can tell the difference between a line the
- * owner has answered and one he has not. The public page never prints this
- * sentinel as a row — unfinished answers collapse into PRICING_OUTSTANDING_NOTE.
- */
-export const PRICE_NOT_PUBLISHED =
-  "Ask when you write in, and we will tell you before any work starts.";
-
-/**
- * One polished note covering every pricing line the owner has not yet decided.
- * Shown once on the public services page — never repeated per empty row.
- */
-export const PRICING_OUTSTANDING_NOTE =
-  "Every trip is different. Your quote will set out the planning fee, expected timeline, revisions, cancellation terms, and support after delivery before any work begins.";
-
-/** A priced Q&A row on the services page. */
-export type PricingQuestion = { id: string; question: string; answer: string };
-
-/**
- * What the public services page should show for price.
- *
- * - No completed answers → only the outstanding note (never six placeholders).
- * - Some completed → those answers, plus one short note for what remains.
- * - All completed → the answers only.
- *
- * The questions themselves are built in components/ServicePricing.tsx with
- * named `words.pricing…` reads so settings ↔ page stay linked in tests.
- */
-export function publicPricingView(questions: PricingQuestion[]): {
-  answered: PricingQuestion[];
-  outstandingCount: number;
-  showOutstandingNote: boolean;
-} {
-  const answered = questions.filter((entry) => entry.answer !== PRICE_NOT_PUBLISHED);
-  const outstandingCount = questions.length - answered.length;
-  return {
-    answered,
-    outstandingCount,
-    showOutstandingNote: outstandingCount > 0,
-  };
-}
 
 /**
  * What the site says today.
@@ -204,21 +108,6 @@ export const BUILT_IN_WORDS: SiteWords = {
   // are the product this site knows something a comparison site does not.
   bookingNotice:
     "Search the travel that fits your destination, dates, and kosher needs — with cash, or with your own miles and points.",
-
-  // Three answers the site can already stand behind, because they are said
-  // elsewhere on it, and three it cannot. The three it cannot say so.
-  pricingStartsAt: PRICE_NOT_PUBLISHED,
-  pricingWhatAffects:
-    "The work scales with how many places are involved, how long the trip is, how much has to be arranged rather than only recommended, and how much of the kosher side has to be checked from scratch.",
-  pricingTurnaround: PRICE_NOT_PUBLISHED,
-  pricingRevisions:
-    "Changing the plan is part of the planning, not an extra: you say what you want different and we adjust until the itinerary is right.",
-  pricingBookingSupport:
-    "Booking your own travel through the search on this site costs you nothing extra — the site may earn a commission from the travel provider, which does not change your price. Booking on your behalf is a separate service, quoted before any work starts.",
-  pricingFeeCredit: PRICE_NOT_PUBLISHED,
-  pricingTimeline: PRICE_NOT_PUBLISHED,
-  pricingCancellation: PRICE_NOT_PUBLISHED,
-  pricingSupportAfter: PRICE_NOT_PUBLISHED,
   affiliateDisclosure:
     "White Glove may earn a commission if you book through a partner link, at no additional cost to you.",
 };

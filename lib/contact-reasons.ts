@@ -1,32 +1,25 @@
 /**
  * Why somebody is writing to us, and what to ask them because of it.
  *
- * ONE PAGE, FOUR ERRANDS. A person reaching /contact is doing one of four
- * quite different things: asking us to plan or book a trip, telling us
- * something on the site is wrong, asking about advertising, or asking a
- * question. A single "Message" box serves all four badly — the correction
- * arrives without the page it is about, the advertising enquiry arrives
- * without the business, and the trip arrives without the dates, so every one
- * of them costs a reply asking for what the form should have asked for.
+ * ONE PAGE, THREE ERRANDS. A person reaching /contact is doing one of three
+ * quite different things: telling us something on the site is wrong, asking
+ * about advertising, or asking a question. A single "Message" box serves all
+ * three badly — the correction arrives without the page it is about and the
+ * advertising enquiry arrives without the business, so each costs a reply
+ * asking for what the form should have asked for.
  *
- * THE RULE THIS FILE ENFORCES is the same one the planning form already
- * follows for the kevarim question: a field belongs to a reason and appears
- * for that reason only. Somebody reporting a wrong address is never shown a
- * box asking how many children are travelling, and somebody asking about a
- * honeymoon is never asked which page has the error on it. It is enforced
- * here, as data, so the page cannot drift from it.
+ * THE RULE THIS FILE ENFORCES: a field belongs to a reason and appears for
+ * that reason only. Somebody reporting a wrong address is never asked which
+ * business they run, and vice versa. It is enforced here, as data, so the
+ * page cannot drift from it.
  *
- * AND WHY PERSONAL ASSISTANCE LIVES HERE AND NOWHERE ELSE. Arranging a trip
- * for somebody is a real thing this business does, and it is the one offer
- * that would change how every other page reads. On a destination page or a
- * hotel result, "we can arrange this for you" turns a usable tool into a
- * sales funnel — the visitor stops reading the kosher notes and starts
- * working out what the catch is. Behind a reason on the contact page it is
- * exactly what it is: a thing you can ask for, once you have decided to ask
- * for something.
+ * A FOURTH REASON — asking us to plan or book a trip — used to live here.
+ * The owner removed personal trip planning from the site outright rather
+ * than keep it as a quiet fourth option; see AGENTS.md, "Personal trip
+ * planning has been removed". Do not add it back as a contact reason.
  */
 
-export type ContactReason = "trip" | "correction" | "advertise" | "question" | "fault";
+export type ContactReason = "correction" | "advertise" | "question" | "fault";
 
 export type ContactField = {
   name: string;
@@ -56,19 +49,6 @@ export type ContactReasonSpec = {
 };
 
 export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
-  {
-    value: "trip",
-    label: "Plan or book a trip for me",
-    blurb: "You would rather somebody else did the working out.",
-    heading: "Tell us about the trip",
-    subject: "Trip planning request",
-    // No fields here: the trip is asked about by the planning form, which
-    // already knows how to ask the kevarim question of the right people and
-    // how to read the answers somebody left at /plan.
-    fields: [],
-    messageLabel: "Anything else we should know",
-    messagePlaceholder: "",
-  },
   {
     value: "correction",
     label: "Something here is wrong",

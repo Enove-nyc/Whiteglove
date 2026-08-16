@@ -35,10 +35,10 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:shrink-0">
             <Link
-              href="/contact"
+              href="/plan"
               className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] lg:w-52"
             >
-              Have us plan it
+              Plan a trip
             </Link>
             <Link
               href="/cemeteries"

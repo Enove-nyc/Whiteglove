@@ -14,7 +14,6 @@ import { destinationHaystack, destinationHref as heritageDestinationHref, destin
 import { HECHSHERIM } from "@/data/hechsherim";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { practicalContent } from "@/data/practical-content";
-import { services } from "@/data/services";
 import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
@@ -109,7 +108,6 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   await pushPublishedPracticalPlaces(docs);
   pushStaticPracticalPlaces(docs);
   pushEateries(docs);
-  pushServices(docs);
   pushSitePages(docs);
   await pushPublishedInfoPages(docs);
 
@@ -458,25 +456,6 @@ function pushEateries(docs: DraftDoc[]) {
   });
 }
 
-function pushServices(docs: DraftDoc[]) {
-  services.forEach((s, index) => {
-    docs.push({
-      id: `service-${s.id}`,
-      kind: "Service",
-      section: sectionForKind("Service"),
-      title: s.title,
-      subtitle: s.summary,
-      href: "/services",
-      names: [s.title, s.id.replace(/-/g, " ")],
-      keywords: ["service", "travel service", "planning", "white glove", ...s.included.slice(0, 4)],
-      body: [s.who, s.summary].join(" "),
-      rankWeight: index,
-      heritage: false,
-      vacation: false,
-    });
-  });
-}
-
 /**
  * Public site pages a traveler might search for by topic — flights, Shabbos,
  * hechsherim, the itinerary planner, and so on. Private/admin/access pages stay out.
@@ -664,15 +643,6 @@ function pushSitePages(docs: DraftDoc[]) {
       href: "/itinerary",
       names: ["itinerary planner", "itinerary", "trip planner", "route planner"],
       keywords: ["itinerary", "planning", "route planning"],
-    },
-    {
-      id: "page-services",
-      kind: "Service",
-      title: "Have White Glove plan it",
-      subtitle: "Personal vacation planning and travel services",
-      href: "/services",
-      names: ["services", "white glove plan", "personal vacation planning"],
-      keywords: ["planning", "concierge", "services"],
     },
     {
       id: "page-heritage",

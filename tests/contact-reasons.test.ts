@@ -18,15 +18,18 @@ import { publicPaths } from "@/lib/site-map";
  * Somebody writing to say a shul's address had changed met eleven questions
  * about their dates and their kosher standards; somebody asking about
  * advertising met the same. Both wrote in the message box instead, and both
- * cost a reply asking for the one fact the form should have asked for.
+ * cost a reply asking for the one fact the form should have asked for. The
+ * trip-planning reason itself is gone now — the service it asked about was
+ * removed from the site outright, not merely demoted — so what remains below
+ * is the same rule applied to the four errands that are left.
  *
- * THE RULE, and it is the same one the planning form follows for the kevarim
- * question: a field belongs to a reason and appears for that reason only. It
- * is asserted here against the data rather than against the markup, so it
- * survives the page being rewritten.
+ * THE RULE, and it is the same one every reason follows: a field belongs to a
+ * reason and appears for that reason only. It is asserted here against the
+ * data rather than against the markup, so it survives the page being
+ * rewritten.
  *
- * AND THE OTHER THING THIS FILE WATCHES: personal booking assistance is
- * offered here and nowhere else on the public site. That is a positioning
+ * AND THE OTHER THING THIS FILE WATCHES: personal booking assistance is not
+ * offered anywhere on the public site any more. That is a positioning
  * decision, it is invisible in the code, and it is exactly the kind of thing
  * that comes back one helpful link at a time.
  */
@@ -35,11 +38,11 @@ const PAGE = readFileSync("app/contact/page.tsx", "utf8");
 const FORM = readFileSync("components/ContactForm.tsx", "utf8");
 
 describe("the reasons", () => {
-  it("is five, and each is answerable without reading the others", () => {
-    // Five since the site fault was split out of "something here is wrong":
+  it("is four, and each is answerable without reading the others", () => {
+    // Four since the site fault was split out of "something here is wrong":
     // one is a claim about the world and one is a claim about the site, and
     // only the second can be checked without ringing somebody up.
-    assert.equal(CONTACT_REASONS.length, 5);
+    assert.equal(CONTACT_REASONS.length, 4);
     for (const reason of CONTACT_REASONS) {
       assert.ok(reason.label.length > 5, reason.value);
       assert.ok(reason.blurb.length > 10, `${reason.value} has no blurb`);
@@ -56,8 +59,12 @@ describe("the reasons", () => {
   it("COVERS THE ERRANDS THE SITE ACTUALLY HAS", () => {
     assert.deepEqual(
       CONTACT_REASONS.map((reason) => reason.value),
-      ["trip", "correction", "advertise", "fault", "question"],
+      ["correction", "advertise", "fault", "question"],
     );
+  });
+
+  it("HAS NO TRIP-PLANNING REASON LEFT", () => {
+    assert.ok(!CONTACT_REASONS.some((reason) => reason.value === "trip"), "personal planning is back as a contact reason");
   });
 
   it("SENDS THE SITE FAULT TO THE BOT AND EVERYTHING ELSE TO A PERSON", () => {
@@ -68,10 +75,6 @@ describe("the reasons", () => {
     for (const kind of ["photo", "suggestion", "listing", "plan", "report", "contact"] as const) {
       assert.equal(assigneeFor(kind), "owner", kind);
     }
-  });
-
-  it("puts personal assistance first, because it is the one people write for", () => {
-    assert.equal(CONTACT_REASONS[0].value, "trip");
   });
 });
 
@@ -159,11 +162,13 @@ describe("what reaches the inbox", () => {
 });
 
 describe("the page", () => {
-  it("OPENS ON THE CHOICE, not on a trip form", () => {
+  it("OPENS ON THE CHOICE, not on a form", () => {
     assert.match(PAGE, /CONTACT_REASONS\.map/);
-    const choice = PAGE.indexOf("CONTACT_REASONS.map");
-    const planning = PAGE.indexOf("<PlanningRequestForm");
-    assert.ok(choice > 0 && planning > 0 && choice < planning, "the trip form is rendered before the choice");
+  });
+
+  it("HAS NO PLANNING FORM LEFT TO OPEN ON", () => {
+    assert.doesNotMatch(PAGE, /PlanningRequestForm/);
+    assert.doesNotMatch(PAGE, /reason === "trip"/);
   });
 
   it("MAKES THE REASONS LINKS, so the choice survives a refresh and works without scripts", () => {
@@ -178,8 +183,7 @@ describe("the page", () => {
     assert.match(PAGE, /mailto:\$\{words\.contactEmail\}/);
   });
 
-  it("sends the trip to the planning form and the rest to the short one", () => {
-    assert.match(PAGE, /reason === "trip" \?/);
+  it("sends every reason to the one short form", () => {
     assert.match(PAGE, /<ContactForm reason=\{reason\}/);
   });
 
@@ -204,23 +208,29 @@ describe("the short form", () => {
   });
 });
 
-describe("personal booking assistance is offered here and nowhere else", () => {
+describe("personal booking assistance is offered nowhere at all", () => {
   const PUBLIC_FILES = [
     "app/page.tsx",
+    "app/contact/page.tsx",
     "app/destinations/(hub)/page.tsx",
     "app/destinations/[destination]/page.tsx",
+    "app/heritage/page.tsx",
     "app/hotels/page.tsx",
     "app/book/page.tsx",
     "components/Footer.tsx",
     "components/Navbar.tsx",
+    "components/ItineraryFooter.tsx",
     "lib/navigation.ts",
+    "lib/starting-points.ts",
     "components/VacationCard.tsx",
   ];
 
-  it("KEEPS THE OFFER OFF EVERY COMMERCIAL SURFACE", () => {
+  it("KEEPS THE OFFER OFF EVERY COMMERCIAL SURFACE, AND OFF THE CONTACT PAGE TOO", () => {
     // On a hotel result, "we can arrange this for you" turns a usable tool
     // into a sales funnel — the visitor stops reading the kosher notes and
-    // starts working out what the catch is.
+    // starts working out what the catch is. It used to still be true on the
+    // contact page, deliberately, as the one place the offer belonged; the
+    // owner removed the service outright, so it is checked here too now.
     const offers = [
       /have us (plan|book)\b/i,
       /we (can )?arrange (it|this|the trip)/i,
@@ -231,6 +241,7 @@ describe("personal booking assistance is offered here and nowhere else", () => {
       // The link, not only the words. A destination page carried
       // "/contact?trip=vacation&destination=Rome" twice.
       /href=\{?`?\/contact\?trip=/,
+      /PlanningRequestForm/,
     ];
     for (const file of PUBLIC_FILES) {
       const source = readFileSync(file, "utf8")
@@ -242,9 +253,8 @@ describe("personal booking assistance is offered here and nowhere else", () => {
     }
   });
 
-  it("still offers it, on the page that is for it", () => {
-    assert.match(PAGE, /<PlanningRequestForm/);
-    assert.equal(CONTACT_REASONS[0].value, "trip");
+  it("has no request form left on disk to offer", () => {
+    assert.throws(() => readFileSync("components/PlanningRequestForm.tsx", "utf8"));
   });
 });
 

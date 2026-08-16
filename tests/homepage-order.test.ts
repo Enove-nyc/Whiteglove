@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { BUILT_IN_WORDS } from "@/data/site-words";
-import { services } from "@/data/services";
 
 /**
  * What the front page says, and in what order.
@@ -270,20 +269,21 @@ describe("the order of the page", () => {
 
   it("FINISHES ON THE THREE FREE WAYS IN, and names them from one place", () => {
     // /plan, /itinerary and /book, described once in lib/starting-points.ts so
-    // the same four doors are not called seven different things across the
-    // site.
+    // the same three doors are not called six different things across the
+    // site. Personal planning is not a fourth door — it does not exist.
     assert.match(HOME, /<StartingPoints/);
-    assert.match(HOME, /omit=\{\["\/services"\]\}/, "the front page offers the paid service after all");
+    assert.doesNotMatch(HOME, /\/services/, "the front page still names the removed service");
     const points = readFileSync("lib/starting-points.ts", "utf8");
-    for (const href of ["/plan", "/itinerary", "/book", "/services"]) {
+    for (const href of ["/plan", "/itinerary", "/book"]) {
       assert.ok(points.includes(`href: "${href}"`), `${href} is not one of the starting points`);
     }
+    assert.doesNotMatch(points, /\/services/, "a fourth, removed door is still named here");
   });
 
   it("still offers the planner, which is a free tool rather than an offer to help", () => {
     const points = readFileSync("lib/starting-points.ts", "utf8");
     assert.match(points, /href: "\/itinerary"/);
-    assert.match(points, /Free/);
+    assert.doesNotMatch(points, /"Paid"/, "a starting point still claims to be paid work");
   });
 
   it("INVENTS NO TESTIMONIAL", () => {
@@ -339,61 +339,3 @@ describe("the new-site notice", () => {
   });
 });
 
-describe("the services", () => {
-  it("is the six that were asked for, in order", () => {
-    assert.deepEqual(services.map((service) => service.id), [
-      "vacation-planning",
-      "itinerary-design",
-      "flights-hotels-transport",
-      "kosher-and-shabbos",
-      "travel-essentials",
-      "heritage-journeys",
-    ]);
-  });
-
-  it("ANSWERS THE SAME SIX QUESTIONS FOR EVERY ONE", () => {
-    // The old page was twelve cards with a line each: a visitor could read all
-    // of them without learning who any was for or what it cost.
-    for (const service of services) {
-      assert.ok(service.who.length > 40, `${service.id}: who it is for`);
-      assert.ok(service.included.length >= 3, `${service.id}: what is included`);
-      assert.ok(service.process.length >= 2, `${service.id}: how it works`);
-      assert.ok(service.receive.length >= 1, `${service.id}: what you end up with`);
-      assert.ok(service.action.label && service.action.href.startsWith("/"), `${service.id}: next action`);
-      assert.ok(service.pricing.length > 40, `${service.id}: what it costs`);
-    }
-  });
-
-  it("says something real about price rather than “contact us”", () => {
-    for (const service of services) {
-      assert.doesNotMatch(service.pricing.trim(), /^contact us\.?$/i, service.id);
-      // And never a figure, because there is no price list on this site to
-      // stand behind one.
-      assert.doesNotMatch(service.pricing, /[€$£]\s?\d/, `${service.id} quotes a price`);
-    }
-  });
-
-  it("puts personal vacation planning first and heritage last", () => {
-    assert.equal(services[0].id, "vacation-planning");
-    assert.equal(services[services.length - 1].id, "heritage-journeys");
-  });
-
-  it("gives every next action somewhere real to go", () => {
-    const known = new Set([
-      "/plan",
-      "/plan?kind=heritage",
-      "/contact",
-      "/itinerary",
-      "/book",
-      "/flight-booking-assistance",
-      "/travel-guide",
-      "/travel-insurance",
-      "/kosher-travel",
-      "/heritage",
-    ]);
-    for (const service of services) {
-      assert.ok(known.has(service.action.href), `${service.id}: ${service.action.href}`);
-      if (service.secondary) assert.ok(known.has(service.secondary.href), `${service.id}: ${service.secondary.href}`);
-    }
-  });
-});

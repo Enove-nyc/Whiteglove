@@ -574,8 +574,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               button, at the top of the most commercial page on the site. It
               made every section below it read as a sales funnel — the visitor
               stops reading the kosher notes and starts working out what the
-              catch is. It is offered inside Contact, which is the only place
-              it belongs. See lib/contact-reasons.ts. */}
+              catch is. Personal trip planning has since been removed from the
+              site outright; see AGENTS.md. */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={staySearchHref({ destination: destination.name })}

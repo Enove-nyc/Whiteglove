@@ -26,33 +26,6 @@ export type PageDef = {
 
 export const editablePages: PageDef[] = [
   {
-    slug: "services",
-    href: "/services",
-    label: "Services",
-    seoTitle: "Travel services — planning, booking, kosher and Shabbos | White Glove",
-    seoDescription:
-      "Six services, each saying who it is for, what is included, how it works, what you end up with and what to expect about price.",
-    blocks: [
-      {
-        id: "services-hero",
-        kind: "hero",
-        eyebrow: "Travel services",
-        heading: "What we actually do for you.",
-        // The sentence, and nothing after it. The clause explaining WHY the
-        // page mentions price was arguing with an objection the reader had not
-        // made — and the page proves the point by doing it, six times over.
-        intro:
-          "See who each service is for, what it includes, how it works, what you receive, and what to expect about pricing.",
-      },
-      {
-        id: "services-note",
-        kind: "note",
-        body:
-          "Everything on this site is free to use — the planner, the route timing, the kosher lookups, the heritage database. The services below are for when you would rather somebody else did the work.",
-      },
-    ],
-  },
-  {
     // STILL "getaways" — the slug is the key the owner's stored edits are
     // filed under, and renaming it would throw away whatever he has already
     // written for a page that has only moved address. The page is
@@ -203,7 +176,7 @@ export const editablePages: PageDef[] = [
     label: "Contact",
     seoTitle: "Contact — White Glove Itineraries",
     seoDescription:
-      "Ask us to plan or book a trip, tell us something on the site is wrong, ask about advertising, or ask a question.",
+      "Tell us something on the site is wrong, ask about advertising, or ask a question.",
     blocks: [
       {
         id: "contact-hero",
@@ -215,7 +188,8 @@ export const editablePages: PageDef[] = [
         // everybody about a trip, including the person writing to say a shul's
         // address had changed and the one asking about advertising. The page
         // asks what the message is about first now, so the heading has to be
-        // one that fits all four answers.
+        // one that fits every answer — trip planning among them has since
+        // been removed from the site outright.
         heading: "Get in touch.",
         intro:
           "Answer what you know, leave the rest, and we will come back to you.",

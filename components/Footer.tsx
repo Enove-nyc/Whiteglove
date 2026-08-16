@@ -48,7 +48,6 @@ const columnsFor = (
       { label: "My trip", href: "/command-center" },
       { label: booking.label, href: booking.href },
       { label: "Flight help", href: "/flight-booking-assistance" },
-      { label: "Travel services", href: "/services" },
     ],
   },
   {

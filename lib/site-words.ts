@@ -111,7 +111,7 @@ export function wordProblem(words: SiteWords): string | null {
 
 /* ---- what each word is, and where it shows ------------------------------ */
 
-export type WordGroup = "front" | "contact" | "footer" | "booking" | "pricing" | "affiliate";
+export type WordGroup = "front" | "contact" | "footer" | "booking" | "affiliate";
 
 export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> = [
   { id: "front", title: "The front page", note: "The first three lines anybody reads, and what the search box invites them to type." },
@@ -127,11 +127,6 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
     title: "The commission disclosure",
     note: "Shown beside every booking button on the site — hotels, flights, cars, and anything else that goes out to a partner. It is a legal requirement in the US, the UK and the EU, and it has to be next to the action rather than only in the footer. Change it here and it changes in every one of those places at once.",
   },
-  {
-    id: "pricing",
-    title: "What to expect about price",
-    note: "Nine lines for the Services page. Each field you fill appears there as a real answer; anything still on the built-in “ask when you write in” line stays off the public page and is covered by one short note instead of a row of placeholders. Never invent a figure or a policy here.",
-  },
 ];
 
 export type WordField = {
@@ -143,23 +138,7 @@ export type WordField = {
   /** The page it is on, so the screen can link straight to it. */
   href: string;
   long?: boolean;
-  /**
-   * Owner must decide before this can be a real public answer.
-   * Shown in Admin → Words as an amber badge.
-   *
-   * NOTHING SETS THIS TODAY, AND THE PRICING LINES MUST NOT SET IT AGAIN.
-   * The six pricing questions carried it — where prices start, how long a
-   * quote takes, whether a fee comes off a booking, how long planning takes,
-   * cancellation, and support afterwards — which put six permanent "Needs
-   * your decision" badges on the Words screen. The owner has answered them,
-   * once, for good: he is not pricing the planning service, because it is the
-   * bottom option and not something this website sells. See AGENTS.md.
-   *
-   * The fields stay editable, so the day he wants a price there is somewhere
-   * to put one. What is gone is the screen telling him he owes an answer.
-   * The public page never needed it either — publicPricingView() already
-   * collapses every unanswered line into one polished note.
-   */
+  /** Owner must decide before this can be a real public answer. Shown in Admin → Words as an amber badge. Nothing sets this today. */
   needsOwnerDecision?: boolean;
   /** Short example of a defendable answer — guidance, never published as fact. */
   example?: string;
@@ -192,69 +171,6 @@ export const FIELDS: WordField[] = [
   { key: "footerBlurb", group: "footer", label: "The paragraph under the logo", where: "in the footer of every page", href: "/", long: true },
   { key: "footerStrapline", group: "footer", label: "The line under that", where: "in the footer of every page, in gold capitals", href: "/" },
   { key: "bookingNotice", group: "booking", label: "The paragraph under the heading", where: "on the booking page", href: "/book", long: true },
-  {
-    key: "pricingStartsAt",
-    group: "pricing",
-    label: "Where prices start, or a typical range",
-    where: "on the Services page, first",
-    href: "/services",
-    long: true,
-    guidance: "Optional. A starting fee or typical range you will honour — or leave the built-in “ask when you write in” line.",
-    example: "Planning usually starts from £X for a short city break; longer or multi-city trips are quoted after we understand the brief.",
-  },
-  { key: "pricingWhatAffects", group: "pricing", label: "What moves the number", where: "on the Services page", href: "/services", long: true },
-  {
-    key: "pricingTurnaround",
-    group: "pricing",
-    label: "How long a quote takes to come back",
-    where: "on the Services page",
-    href: "/services",
-    long: true,
-    guidance: "Optional. How long until they hear a price — not how long planning takes once hired.",
-    example: "A first quote usually comes back within a few working days once we have the dates and places.",
-  },
-  { key: "pricingRevisions", group: "pricing", label: "Whether changes cost extra", where: "on the Services page", href: "/services", long: true },
-  { key: "pricingBookingSupport", group: "pricing", label: "Whether booking is a separate charge", where: "on the Services page", href: "/services", long: true },
-  {
-    key: "pricingFeeCredit",
-    group: "pricing",
-    label: "Whether a planning fee comes off anything else",
-    where: "on the Services page",
-    href: "/services",
-    long: true,
-    guidance: "Optional. Is any planning fee credited toward booking assistance, or is it separate?",
-    example: "The planning fee is for the itinerary. If you later hire us to book, we will say whether any of it is credited before that work starts.",
-  },
-  {
-    key: "pricingTimeline",
-    group: "pricing",
-    label: "How long the planning itself takes",
-    where: "on the Services page",
-    href: "/services",
-    long: true,
-    guidance: "Optional. Typical duration once planning has started — distinct from quote turnaround.",
-    example: "A straightforward city break is often ready within about two weeks of kickoff; heritage or multi-country trips take longer.",
-  },
-  {
-    key: "pricingCancellation",
-    group: "pricing",
-    label: "What happens if a trip is called off",
-    where: "on the Services page",
-    href: "/services",
-    long: true,
-    guidance: "Optional. Cancellation / refund for planning work — only what you will actually do.",
-    example: "If you cancel before planning starts, you owe nothing. Once work has begun, the fee for work already done is not refundable; unused paid time is discussed case by case.",
-  },
-  {
-    key: "pricingSupportAfter",
-    group: "pricing",
-    label: "Whether we are there after the itinerary is sent",
-    where: "on the Services page",
-    href: "/services",
-    long: true,
-    guidance: "Optional. What support exists after delivery, and for how long.",
-    example: "Questions about the written plan are welcome for a set window after delivery; changes that need new research are a new piece of work.",
-  },
   { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
 ];
 

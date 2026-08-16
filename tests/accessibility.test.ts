@@ -194,7 +194,7 @@ describe("nothing is carried by colour alone", () => {
     // anybody who cannot separate cream from cream-deep with no idea where
     // they are.
     const navbar = readFileSync("components/Navbar.tsx", "utf8");
-    assert.match(navbar, /aria-current=\{current \? "page" : undefined\}/);
+    assert.match(navbar, /aria-current=\{\w*[Cc]urrent \? "page" : undefined\}/);
     assert.match(navbar, /after:bg-\[var\(--gold\)\]/);
   });
 });
@@ -273,7 +273,6 @@ describe("dialogs", () => {
 const HUB = readFileSync("components/VacationIdeasHub.tsx", "utf8");
 const DESTINATIONS = readFileSync("app/destinations/(hub)/page.tsx", "utf8");
 const FLOW = readFileSync("components/TripStartFlow.tsx", "utf8");
-const REQUEST = readFileSync("components/PlanningRequestForm.tsx", "utf8");
 
 describe("the vacation-ideas filters", () => {
   it("GIVES THE SEARCH FIELD A VISIBLE LABEL, not only a placeholder", () => {
@@ -365,33 +364,6 @@ describe("the planning flow", () => {
   });
 });
 
-describe("the planning request", () => {
-  it("ties every error to the field it is about", () => {
-    assert.match(REQUEST, /aria-invalid=/);
-    assert.match(REQUEST, /aria-describedby=/);
-    assert.match(REQUEST, /id="request-name-error"/);
-    assert.match(REQUEST, /id="request-email-error"/);
-  });
-
-  it("puts a focusable error summary above the form", () => {
-    // Marking fields red and leaving somebody to find them is what this
-    // replaces; and the summary is focused rather than the first field, so a
-    // screen reader hears how many things are wrong before being dropped in.
-    assert.match(REQUEST, /role="alert"/);
-    assert.match(REQUEST, /summaryRef\.current\?\.focus\(\)/);
-    assert.match(REQUEST, /href=\{`#\$\{problem\.field\}`\}/);
-  });
-
-  it("ANNOUNCES SENDING, SENT AND FAILED", () => {
-    // A button that changes its own label to "Sending…" tells a sighted
-    // person what is happening and a screen reader nothing: the name of the
-    // control that already has focus is not re-read when it changes.
-    assert.match(REQUEST, /aria-busy=\{busy \|\| undefined\}/);
-    assert.match(REQUEST, /Sending your planning request/);
-    assert.match(REQUEST, /role="status"/);
-    assert.match(REQUEST, /role="alert"/);
-  });
-});
 
 describe("waiting is said out loud", () => {
   it("gives every skeleton a status line, and hides the grey boxes", () => {

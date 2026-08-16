@@ -21,7 +21,6 @@ const PAGE_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Kosher getaways", value: "/getaways" },
   { label: "Batei hachaim", value: "/cemeteries" },
   { label: "Directory", value: "/directory" },
-  { label: "Services", value: "/services" },
   { label: "Book flights, hotels & cars", value: "/book" },
   { label: "Phone & SIM rentals", value: "/phone-rentals" },
   { label: "Travel insurance", value: "/travel-insurance" },

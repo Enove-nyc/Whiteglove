@@ -10,9 +10,9 @@
  * within ten seconds.
  *
  * So: three steps, in the order a person actually decides. What kind of trip.
- * Then where, when, from where, and who is coming. Then the only question that
- * changes what happens next: do you want to plan this yourself, or would you
- * like us to.
+ * Then where, when, from where, and who is coming. Then open the planner with
+ * all of it already in — or say they are not sure yet and browse destinations
+ * first.
  *
  * THREE SHORT STEPS, NOT THREE QUESTIONS, and the difference cost the flow its
  * credibility for a while. Step two used to carry nine questions — pace,
@@ -20,9 +20,8 @@
  * three, with a counter underneath reading "1 of 10 questions answered". Every
  * one of those questions is worth asking and none of them is worth asking
  * BEFORE somebody can reach the planner, so they moved into a "Personalize my
- * recommendations" section that opens after step three. Somebody planning it
- * themselves never has to open it; somebody asking us to plan it answers the
- * same questions on the request form, where they are the actual brief.
+ * recommendations" section that opens after step three, which nobody has to
+ * open.
  *
  * EVERY QUESTION IS SKIPPABLE AND EVERY ONE HAS "I DON'T KNOW YET". That is
  * not politeness; it is the point. The visitor this flow exists for is
@@ -30,12 +29,12 @@
  * demands a destination before it will help sends them away, and they were the
  * customer.
  *
- * WHAT THE ANSWERS BECOME. Self-service: a seeded trip in the planner, so the
- * name, the dates and the travelers are already in it. Personal service: a
- * structured message to the planning-request form, WITH THE ANSWERS ALREADY IN
- * IT. Making somebody type their dates twice — once to the wizard and once to
- * the contact form — is the specific failure this file exists to prevent, and
- * it is why the answers live in one shape that both ends read.
+ * WHAT THE ANSWERS BECOME. A seeded trip in the planner, so the name, the
+ * dates and the travelers are already in it — nobody types anything twice.
+ * There used to be a second path here, a structured message to a
+ * personal-planning request form; that service was removed from the site
+ * outright, so `method` now has one real value ("myself") and one way of
+ * saying "not yet" ("unsure").
  *
  * All of it is pure. The browser storage and the React are in the component;
  * what a well-formed set of answers is, and what it turns into, is here where
@@ -79,7 +78,7 @@ export function tripKind(value: string): (typeof TRIP_KINDS)[number] | undefined
 
 export type DateMode = "exact" | "approximate" | "unknown";
 export type Pace = "slow" | "balanced" | "full" | "unknown";
-export type PlanningMethod = "myself" | "white-glove" | "unsure";
+export type PlanningMethod = "myself" | "unsure";
 
 export const PACES: ReadonlyArray<{ value: Pace; label: string; blurb: string }> = [
   { value: "slow", label: "Slow", blurb: "One thing a day, and time to sit." },
@@ -260,7 +259,7 @@ export function readAnswers(raw: string | null | undefined): TripPlanAnswers | n
       kosherNotes: text(parsed.kosherNotes),
       shabbos: list(parsed.shabbos),
       accessibility: list(parsed.accessibility),
-      method: (["myself", "white-glove", "unsure"] as const).find((m) => m === parsed.method) ?? "",
+      method: (["myself", "unsure"] as const).find((m) => m === parsed.method) ?? "",
       kevarim: text(parsed.kevarim),
       notes: text(parsed.notes),
     };
@@ -298,7 +297,7 @@ export const STEPS: ReadonlyArray<{ id: StepId; number: number; title: string; b
     title: "Where, when, and who is coming",
     blurb: "Four short answers, none of them required — “I don’t know yet” is on every one.",
   },
-  { id: "how", number: 3, title: "How to plan it", blurb: "This is the only answer that changes what happens next." },
+  { id: "how", number: 3, title: "Ready when you are", blurb: "Open the planner with this already in it, or browse destinations first." },
 ] as const;
 
 /**
@@ -428,25 +427,6 @@ export function summarize(answers: TripPlanAnswers): Array<[string, string]> {
   return lines;
 }
 
-/**
- * The message body a planning request carries.
- *
- * Plain text, because it lands in somebody's inbox and is read by a person.
- * /api/contact caps the message at 4,000 characters; every field here is
- * length-capped on the way in, so a full set of answers is nowhere near it.
- */
-export function requestMessage(answers: TripPlanAnswers, extra = ""): string {
-  const lines = summarize(answers).map(([label, value]) => `${label}: ${value}`);
-  const tail = extra.trim();
-  return [lines.join("\n"), tail].filter(Boolean).join("\n\n").slice(0, 3800);
-}
-
-/** The subject line, so the inbox can tell one kind of request from another. */
-export function requestSubject(answers: TripPlanAnswers): string {
-  const kind = tripKind(answers.kind)?.label ?? "Trip";
-  const where = answers.helpMeChoose ? "destination undecided" : answers.destination.trim();
-  return where ? `${kind} — ${where}` : kind;
-}
 
 /**
  * What the planner should open with.
@@ -509,7 +489,6 @@ export function suggestedTheme(answers: TripPlanAnswers): TripTheme | null {
 
 /** Where step three sends them. */
 export function nextStepHref(answers: TripPlanAnswers): string {
-  if (answers.method === "white-glove") return "/contact?from=plan";
   if (answers.method === "myself") return "/itinerary?from=plan";
   return "/destinations";
 }

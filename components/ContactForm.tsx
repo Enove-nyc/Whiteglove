@@ -10,15 +10,16 @@ import {
 } from "@/lib/contact-reasons";
 
 /**
- * The short form: a correction, an advertising enquiry, or a question.
+ * The short form: a correction, an advertising enquiry, a site fault, or a
+ * question.
  *
- * NOT THE TRIP ONE. A trip is asked about by PlanningRequestForm, which knows
- * how to ask the kevarim question of the right people and how to pick up
- * answers somebody already gave at /plan. This is for the other three errands,
- * and it exists because each of them needs two or three specific facts that a
- * bare message box does not collect — which page the error is on, which
- * business is enquiring — and every one of those costs a reply asking for what
- * the form should have asked for.
+ * A fourth reason — asking us to plan a trip — used to be handled by a
+ * separate form here. That service was removed from the site outright; see
+ * AGENTS.md, "Personal trip planning has been removed". This form now covers
+ * every remaining errand, and it exists because each of them needs two or
+ * three specific facts that a bare message box does not collect — which page
+ * the error is on, which business is enquiring — and every one of those costs
+ * a reply asking for what the form should have asked for.
  *
  * WHICH FIELDS APPEAR IS NOT DECIDED HERE. lib/contact-reasons.ts owns that,
  * so a field cannot leak from one errand to another: nobody reporting a wrong

@@ -14,9 +14,9 @@ export async function generateMetadata() {
     return { title: "Case studies — White Glove Itineraries", robots: { index: false, follow: false } };
   }
   return pageMetadata({
-    title: "Case studies — real trips we planned | White Glove Itineraries",
+    title: "Case studies — real trips built on this site | White Glove Itineraries",
     description:
-      "Permitted outcomes from trips White Glove planned — not the sample itinerary. Published only with the traveller’s consent.",
+      "Real outcomes from travelers who used White Glove's tools — not the sample itinerary. Published only with the traveller’s consent.",
     path: "/case-studies",
   });
 }

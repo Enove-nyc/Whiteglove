@@ -34,11 +34,11 @@ export default function CaseStudiesSection({
         id="case-studies-heading"
         className="mt-3 max-w-3xl font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl"
       >
-        What planning looked like for someone else.
+        What a trip looked like for someone else.
       </h2>
       <p className="mt-4 max-w-2xl leading-7 text-stone-600">
-        Each note below is from a trip we planned, published only with permission. This is not the sample itinerary —
-        that page shows the shape of a deliverable; these are outcomes.
+        Each note below is a real outcome, published only with permission. This is not the sample itinerary — that
+        page shows the shape of a deliverable; these are outcomes.
       </p>
       <ul className="mt-10 grid gap-8 lg:grid-cols-2">
         {studies.map((study) => (

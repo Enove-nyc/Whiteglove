@@ -149,18 +149,6 @@ describe("which questions the site may ask", () => {
     }
   });
 
-  it("names the six pricing lines rather than asking them", () => {
-    const pricing = prose("components/ServicePricing.tsx");
-    for (const label of ["The fee", "What the fee depends on", "Time to a first reply", "Changes to a plan"]) {
-      assert.ok(pricing.includes(label), `the pricing panel lost "${label}"`);
-    }
-    // Each one still reads a word the owner can edit, or the settings screen
-    // grows a field that no page shows.
-    for (const word of ["pricingStartsAt", "pricingWhatAffects", "pricingTurnaround", "pricingRevisions"]) {
-      assert.ok(pricing.includes(`words.${word}`), `${word} is editable and shown nowhere`);
-    }
-  });
-
   it("LEAVES THE ADMIN ALONE, because that is a conversation with the owner", () => {
     // A kashrus dropdown reading "reported — not checked by us" is exactly
     // right on the screen of the person doing the checking.

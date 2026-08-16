@@ -158,7 +158,6 @@ export default function TripStartFlow({
   function choose(method: PlanningMethod) {
     update({ method });
     if (method === "myself") router.push("/itinerary?from=plan");
-    else if (method === "white-glove") router.push("/contact?from=plan");
     else router.push("/destinations");
   }
 
@@ -446,39 +445,21 @@ export default function TripStartFlow({
 
         {step === 3 && (
           <div className="mt-8 space-y-8">
-            <div className="grid gap-5 lg:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => choose("myself")}
-                className="wg-card flex h-full flex-col items-start border border-[var(--gold-light)] bg-[var(--surface)] p-7 text-left transition hover:border-[var(--gold)]"
-              >
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Free, and yours</span>
-                <span className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
-                  I want to plan it myself
-                </span>
-                <span className="mt-3 leading-7 text-stone-600">
-                  Opens the planner with your answers already in it — the name, the dates and the travelers. Add
-                  flights, hotels and stops as you go, and it works out the driving between them.
-                </span>
-                <span className="mt-5 text-sm font-semibold text-[var(--navy)]">Open the planner →</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => choose("white-glove")}
-                className="wg-card flex h-full flex-col items-start border border-[var(--navy)] bg-[var(--navy)] p-7 text-left text-white transition hover:bg-[var(--navy-deep)]"
-              >
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">Have us do it</span>
-                <span className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight">
-                  I want White Glove to help
-                </span>
-                <span className="mt-3 leading-7 text-slate-200">
-                  Sends everything you have just answered to us, so you do not type it again. The rest of the
-                  questions are on that form, where they are the brief.
-                </span>
-                <span className="mt-5 text-sm font-semibold text-[var(--gold-light)]">Send my answers →</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => choose("myself")}
+              className="wg-card flex w-full flex-col items-start border border-[var(--navy)] bg-[var(--navy)] p-7 text-left text-white transition hover:bg-[var(--navy-deep)]"
+            >
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">Free, and yours</span>
+              <span className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight">
+                Open the planner
+              </span>
+              <span className="mt-3 leading-7 text-slate-200">
+                Opens with your answers already in it — the name, the dates and the travelers. Add flights, hotels
+                and stops as you go, and it works out the driving between them.
+              </span>
+              <span className="mt-5 text-sm font-semibold text-[var(--gold-light)]">Open the planner →</span>
+            </button>
 
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>

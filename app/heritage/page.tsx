@@ -305,11 +305,11 @@ export default async function HeritagePage() {
 
           <div className="rounded-2xl border border-[var(--gold)] bg-[#fcfaf6] p-7">
             <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-              Have us plan the journey
+              Plan the journey
             </h2>
             <p className="mt-3 leading-7 text-stone-600">
-              Tell us which kevarim you want to reach and when. We will work out the order, the driving, where Shabbos
-              falls, and who to speak to at each place.
+              Say which kevarim you want to reach and when. The planner works out the order, the driving, where
+              Shabbos falls, and who to speak to at each place.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -317,12 +317,6 @@ export default async function HeritagePage() {
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
               >
                 Start a heritage journey
-              </Link>
-              <Link
-                href="/contact?trip=heritage"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-              >
-                Ask about a heritage trip
               </Link>
             </div>
             <p className="mt-6 border-t border-[var(--gold-light)] pt-5 text-sm leading-6 text-stone-600">

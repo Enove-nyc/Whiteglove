@@ -84,7 +84,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/hotels", priority: 0.7, changeFrequency: "weekly" },
   { path: "/things-to-do", priority: 0.7, changeFrequency: "weekly" },
   { path: "/travel-guide", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/services", priority: 0.7, changeFrequency: "monthly" },
   // /getaways is gone and redirects here (next.config.ts). A redirecting
   // address must not be in the sitemap — Google reports that as an error
   // against the site, the same way a noindexed one is.

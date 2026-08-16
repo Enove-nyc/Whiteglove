@@ -11,10 +11,11 @@ import { builtInDirectory, countriesIn, filterDirectory } from "@/lib/directory-
 describe("every editable page ships with content", () => {
   it("has pages registered", () => {
     // A floor against the registry emptying out, not a count of pages. Pages
-    // get merged — Planning folded into Services — and that should not read as
-    // a failure. What matters is that the list is populated and every entry in
-    // it renders, which the tests below check one by one.
-    assert.ok(editablePages.length >= 8, `expected the registry to be filled, found ${editablePages.length}`);
+    // get merged or removed — Services was removed outright when personal
+    // planning was — and that should not read as a failure. What matters is
+    // that the list is populated and every entry in it renders, which the
+    // tests below check one by one.
+    assert.ok(editablePages.length >= 7, `expected the registry to be filled, found ${editablePages.length}`);
   });
 
   for (const def of editablePages) {

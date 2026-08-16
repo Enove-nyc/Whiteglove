@@ -282,35 +282,12 @@ function defaultLocations(): EditableLocation[] {
   return [...guideLocations, ...destinationLocations, ...cemeteryLocations];
 }
 
+// No seeded default any more — the one that shipped here promoted personal
+// trip planning, which is removed from the site rather than merely demoted.
+// A promotion is now something the owner writes from a blank one, not a
+// sample he has to notice and turn off.
 function defaultPromotions(): Promotion[] {
-  const now = new Date().toISOString();
-  return [
-    {
-      id: "homepage-planning-help",
-      title: "Plan the rest of the trip",
-      description: "Ask White Glove for flights, hotels, drivers, and itinerary help in one place.",
-      buttonText: "Start planning",
-      targetHref: "/services",
-      imageUrl: "",
-      pdfUrl: "",
-      videoUrl: "",
-      advertiserName: "",
-      advertiserPhone: "",
-      advertiserEmail: "",
-      placements: ["homepage-promo", "inline-content"],
-      targetPaths: "/",
-      device: "all",
-      startDate: "",
-      endDate: "",
-      priority: 1,
-      maxViewsPerVisitor: 3,
-      enabled: false,
-      impressions: 0,
-      clicks: 0,
-      createdAt: now,
-      updatedAt: now,
-    },
-  ];
+  return [];
 }
 
 /**

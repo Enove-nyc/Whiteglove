@@ -5,11 +5,9 @@ import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
-import PlanningRequestForm from "@/components/PlanningRequestForm";
 import SectionHeading from "@/components/SectionHeading";
 import { CONTACT_REASONS, readReason } from "@/lib/contact-reasons";
 import { resolvePage } from "@/lib/pages";
-import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
 
 export async function generateMetadata() {
   const page = await resolvePage("contact");
@@ -19,44 +17,32 @@ export async function generateMetadata() {
     title: page?.seoTitle ?? "White Glove Itineraries",
     description:
       page?.seoDescription ??
-      "Ask us to plan or book a trip, tell us something on the site is wrong, ask about advertising, or ask a question.",
+      "Tell us something on the site is wrong, ask about advertising, or ask a question.",
     path: "/contact",
   });
 }
 
 /**
- * Four errands, and only the questions that belong to the one you picked.
+ * Three errands, and only the questions that belong to the one you picked.
  *
- * THE PAGE OPENED ON A TRIP FORM, whoever you were. Somebody writing to say a
- * shul's address had changed met eleven questions about their dates and their
- * kosher standards, and somebody asking about advertising met the same. Both
- * wrote in the message box instead, and both cost a reply asking for the one
- * fact the form should have asked for.
+ * Somebody writing to say a shul's address had changed used to meet the same
+ * open message box as somebody asking about advertising, and both wrote in it
+ * instead of the field the form should have asked for — which cost a reply
+ * asking for the one fact that was missing.
  *
  * THE REASONS ARE LINKS, NOT A JAVASCRIPT TOGGLE. Three things follow, and all
  * three matter more than the extra render: /contact?reason=advertise can be
  * linked to from the footer and from an advertising page, the choice survives
  * a refresh and a shared address, and the page works with scripts blocked.
- *
- * AND THIS IS WHERE PERSONAL ASSISTANCE LIVES. Arranging a trip for somebody
- * is a real thing this business does, and it is the one offer that changes how
- * every other page reads — on a hotel result, "we can arrange this for you"
- * turns a usable tool into a sales funnel. Behind a reason on this page it is
- * what it actually is: something you can ask for, once you have decided to ask
- * for something.
  */
 export default async function ContactPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string; trip?: string; destination?: string; from?: string }>;
+  searchParams: Promise<{ reason?: string; from?: string }>;
 }) {
-  const { reason: reasonParam, trip, destination } = await searchParams;
+  const { reason: reasonParam } = await searchParams;
   const reason = readReason(reasonParam);
   const [page, words] = await Promise.all([resolvePage("contact"), readWords()]);
-  const initialKind = (TRIP_KINDS.find((entry) => entry.value === trip)?.value ?? "") as TripKind | "";
-  // Trimmed and capped rather than printed as given: it lands in a text field
-  // as though the visitor had typed it, and a link is not a trustworthy author.
-  const initialDestination = typeof destination === "string" ? destination.replace(/\s+/g, " ").trim().slice(0, 80) : "";
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -114,8 +100,6 @@ export default async function ContactPage({
               </a>
               . {words.replyPromise}
             </p>
-          ) : reason === "trip" ? (
-            <PlanningRequestForm words={words} initialKind={initialKind} initialDestination={initialDestination} />
           ) : (
             <ContactForm reason={reason} words={words} />
           )}

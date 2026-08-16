@@ -15,25 +15,26 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Do not expose internal workflows or content status to customers. Avoid phrases such as “unverified,” “being checked,” “on record,” “research queue,” “not published yet,” or explanations that the owner has not completed something.
 - Hide unfinished or empty public sections until they contain useful customer-ready content.
 - Do not make blanket payment promises such as “no card taken” or “nothing charged.” State a price or payment step only when it is accurate and needed.
-- Keep vacation discovery, self-service planning and partner booking links as the primary public journey. Heritage travel belongs in its own section.
-- Personal planning or booking assistance should be discreet and discoverable only from the Contact area unless the owner requests otherwise.
+- Keep vacation discovery, self-service planning and partner booking links as the primary public journey. Heritage places are part of the normal destination directory, not a separate section (see "Personal trip planning has been removed" below for when this changed and why).
+- There is no personal trip-planning or booking-assistance offer anywhere on the site, discreet or otherwise — see "Personal trip planning has been removed" below.
 - Audience-appropriate is not the same as kosher-only. Vacation attractions and lodging do not have to be Jewish places or kosher establishments; prefer Jewish when it fits, and keep ordinary sightseeing and stays that Orthodox / Torah-observant travelers would use. Never promote nightlife, clubs, mixed concerts, or similar venues. Reserve “kosher” for food / kashrus features — do not demand a kosher label on every attraction, hotel, cemetery, shul or mikvah. Do not blur this into the kosher food finder or the heritage section. Public wording for this standard lives in `data/listing-audience.ts` (footer, About, Things to do, Where to stay) — reuse it; do not invent a second version.
 
-## The paid planning service is a last resort, not an offer
+## Personal trip planning has been removed
 
-**Done-for-you itinerary planning (`/services`) is the bottom option.** The owner does not want it promoted as one of the things this website sells. It stays reachable for somebody who asks for it and finds nothing else that fits — that is all.
+**Done-for-you itinerary planning (`/services`) does not exist on this site.** It used to be kept as a reachable last resort — mentioned last, never promoted — and the owner then decided to remove it outright rather than keep it available: no page, no nav entry, no footer link, no form, no mention anywhere, not even discreetly through Contact.
 
 What follows from that:
 
-- Do not give it prominence: no homepage push, no cards selling it, no “or let us plan it for you” beside the free tools. Where it is mentioned at all, it comes last.
-- **Do not ask the owner to price it.** No starting price, no typical range, no turnaround time, no “does the fee come off a booking”, no cancellation or refund terms, no post-itinerary support window. A page that would need one of those sentences should not be built. This is a standing answer, not an open question — do not re-raise it as an outstanding item.
-- The free tools are the offer: get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`).
+- Do not re-add `/services`, a services page, a "have us plan it" card, or any wording that offers personal planning or booking assistance, in any form or at any prominence. This is a full removal, not a demotion — do not partially restore it as "just a footer link" or "just reachable from Contact."
+- **Never ask the owner to price it.** No starting price, no typical range, no turnaround time, no "does the fee come off a booking", no cancellation or refund terms, no post-itinerary support window. There is nothing on this site to price. This is a standing answer, not an open question — do not re-raise it as an outstanding item.
+- The three free tools are the whole offer: get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`).
 
 ## Settled decisions — do not re-open these
 
 - **The site notice stays exactly as it is**, a full-screen popup, until the owner says otherwise. He was shown the cost (it blocks every automated functional check and is the whole of the tab-order findings) and chose to keep it. Do not raise it again, and do not quietly turn it into a strip.
 - **The About page carries no personal facts at all** — no name, no background, no photograph, no years of experience, and no location. White Glove is not based anywhere: it is a website. Do not ask him for any of them, and do not treat the empty fields on `/admin/settings/about` as gaps. The page is finished as it stands: what the site is for, and what its information is worth.
-- **Vacation attractions need not be Jewish or kosher.** Audience-appropriate ≠ kosher-only. A Jewish venue is better when available, but general sightseeing, parks, museums, family activities and ordinary lodging are fine when Orthodox / Torah-observant travelers would go. No mixed concerts, clubs, nightlife, bars, casinos, or similar. Do not require a kosher label on attractions, lodging, cemeteries, shuls or mikvaos — “kosher” is for food / kashrus features. Kosher food tools stay kosher-specific; heritage stays heritage. Customer-facing copy is in `data/listing-audience.ts` and must stay consistent with this.
+- **Vacation attractions need not be Jewish or kosher.** Audience-appropriate ≠ kosher-only. A Jewish venue is better when available, but general sightseeing, parks, museums, family activities and ordinary lodging are fine when Orthodox / Torah-observant travelers would go. No mixed concerts, clubs, nightlife, bars, casinos, or similar. Do not require a kosher label on attractions, lodging, cemeteries, shuls or mikvaos — “kosher” is for food / kashrus features. Kosher food tools stay kosher-specific. Customer-facing copy is in `data/listing-audience.ts` and must stay consistent with this.
+- **Heritage is not a separate top-level section any more.** Heritage destinations (towns, kevarim, cemeteries) are part of the normal destination directory, reached the same way any other destination is; practical heritage information (kevarim, cemeteries, shuls) is reached through Kosher. The heritage pages themselves still exist and stay reachable — only the standalone "Heritage" category is gone. Do not reintroduce Heritage as its own top-level nav item or reopen the old "vacation vs. heritage" split without the owner asking for it.
 
 ## Do not hand the owner checklists
 
@@ -56,4 +57,4 @@ The site had several names for each of its own features, so four front doors loo
 | Kosher food finder (the live tool) | food finder, kosher lookup, live search |
 | Listing (White Glove’s curated listing, with a source) | record, entry, our data |
 
-The four ways into the site are named once in `lib/starting-points.ts` — get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`), have White Glove plan it (`/services`). Link to one of them through that list rather than inventing a label at the call site.
+The three ways into the site are named once in `lib/starting-points.ts` — get recommendations (`/plan`), build the trip yourself (`/itinerary`), search booking partners (`/book`). Link to one of them through that list rather than inventing a label at the call site.

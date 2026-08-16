@@ -258,9 +258,9 @@ export default function TripSetupPanel({
           </div>
 
           {/* "Would rather not do this part? … Have us plan it" sat here, in
-              the middle of the planner. It is a real service and it is offered
-              inside Contact; here it read as the tool giving up on the person
-              using it. See lib/contact-reasons.ts. */}
+              the middle of the planner. It read as the tool giving up on the
+              person using it, and the service it offered has since been
+              removed from the site outright. See AGENTS.md. */}
         </div>
       )}
     </section>

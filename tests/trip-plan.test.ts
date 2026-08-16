@@ -11,8 +11,6 @@ import {
   plannerSeed,
   progressOf,
   readAnswers,
-  requestMessage,
-  requestSubject,
   SHABBOS_REQUIREMENTS,
   STEPS,
   suggestedTheme,
@@ -26,23 +24,22 @@ import {
 /**
  * The three questions before the planner.
  *
- * TWO FAILURES THESE TESTS EXIST TO PREVENT, and both of them are the kind
- * that lose the customer rather than break the page:
+ * THE FAILURE THESE TESTS EXIST TO PREVENT, and it is the kind that loses the
+ * customer rather than breaks the page: a form that will not help somebody
+ * who has not chosen a destination. That person is the whole reason this flow
+ * exists, and every question here is optional so that they can get through
+ * it.
  *
- *   1. A form that will not help somebody who has not chosen a destination.
- *      That person is the whole reason this flow exists, and every question
- *      here is optional so that they can get through it.
+ * And one that would be worse: asking a family planning a week on a beach
+ * which kevarim they want to visit.
  *
- *   2. Making somebody type their dates twice — once into the wizard and once
- *      into the request form. The answers have one shape and both ends read
- *      it.
- *
- * And one that would be worse than either: asking a family planning a week on
- * a beach which kevarim they want to visit.
+ * There used to be a second failure this guarded against — making somebody
+ * type their dates twice, once into this wizard and once into a personal
+ * planning request form. That form was removed with the service it served;
+ * what is left below is the self-service half only.
  */
 
 const FLOW = readFileSync("components/TripStartFlow.tsx", "utf8");
-const FORM = readFileSync("components/PlanningRequestForm.tsx", "utf8");
 
 function answers(over: Partial<TripPlanAnswers> = {}): TripPlanAnswers {
   return { ...emptyAnswers(), ...over };
@@ -82,10 +79,10 @@ describe("what is asked", () => {
     for (const needed of ["minyan", "eruv", "meals", "mikvah"]) assert.match(all, new RegExp(needed), needed);
   });
 
-  it("has three steps and the third is the one that changes what happens", () => {
+  it("has three steps, and the third opens the planner", () => {
     assert.equal(STEPS.length, 3);
     assert.deepEqual(STEPS.map((s) => s.id), ["kind", "shape", "how"]);
-    assert.match(STEPS[2].title, /how to plan it/i);
+    assert.match(STEPS[2].blurb, /open the planner/i);
   });
 
   it("KEEPS STEP TWO TO WHERE, WHEN, FROM WHERE AND WHO", () => {
@@ -119,14 +116,6 @@ describe("what is asked", () => {
     assert.equal(progressOf(quick).personalized, 0);
     // And what does reach the planner is a usable trip rather than an error.
     assert.equal(plannerSeed(quick).title, "Family trip");
-  });
-
-  it("asks the same detail questions on the request form", () => {
-    // "A visitor requesting personal planning can complete the additional
-    // questions as part of the request" — so the form carries all six.
-    for (const name of ["pace", "interests", "kosher", "shabbos", "accessibility", "notes"]) {
-      assert.match(FORM, new RegExp(`name="${name}"`), `the request form does not ask about ${name}`);
-    }
   });
 
   it("asks about access needs as what the trip must do, not who somebody is", () => {
@@ -213,7 +202,6 @@ describe("the kevarim question", () => {
     const beach = answers({ kind: "relaxing", destination: "Nice", kevarim: "should never appear" });
     const said = summarize({ ...beach, kevarim: "" });
     assert.ok(!said.some(([term]) => /kever|kevarim/i.test(term)), JSON.stringify(said));
-    assert.doesNotMatch(requestMessage({ ...beach, kevarim: "" }), /kevarim/i);
   });
 
   it("is asked, and carried, for a heritage journey", () => {
@@ -221,13 +209,9 @@ describe("the kevarim question", () => {
     assert.ok(summarize(heritage).some(([term, value]) => /kevarim/i.test(term) && value.includes("Lizhensk")));
   });
 
-  it("is shown by the flow and the form only for the heritage kind", () => {
+  it("is shown by the flow only for the heritage kind", () => {
     // Read from the source, because the condition is the whole feature.
     assert.match(FLOW, /answers\.kind === "heritage"/);
-    assert.match(FORM, /kind === "heritage"/);
-    // And the value is dropped rather than merely hidden, so a kind changed
-    // after typing cannot smuggle the answer through.
-    assert.match(FORM, /kind === "heritage" \? text\("kevarim"\) : ""/);
   });
 });
 
@@ -251,8 +235,8 @@ describe("nobody types anything twice", () => {
 
   it("CARRIES THE PERSONALISATION ANSWERS ACROSS THE HANDOFF", () => {
     // The whole route: answered at /plan, written to one browser key, read
-    // back by the request form, sent as the message. The three fields that
-    // moved out of step two — pace, interests, access needs — are the ones a
+    // back, shown in the traveler's own words. The three fields that moved
+    // out of step two — pace, interests, access needs — are the ones a
     // refactor would most easily drop on the floor, because nothing on the
     // planner side has a field for them.
     const answered = answers({
@@ -267,7 +251,7 @@ describe("nobody types anything twice", () => {
       notes: "One of us cannot walk far.",
     });
 
-    // 1. Stored and read back, through the same validator the form uses.
+    // 1. Stored and read back, through the same validator the flow uses.
     const restored = readAnswers(JSON.stringify(answered));
     assert.ok(restored);
     assert.deepEqual(restored.accessibility, ["Short walking distances", "A lift rather than stairs"]);
@@ -280,43 +264,12 @@ describe("nobody types anything twice", () => {
     assert.equal(shown.get("Pace"), "Slow");
     assert.equal(shown.get("Kosher notes"), "A child who eats nothing but pasta");
 
-    // 3. In the message that reaches the inbox.
-    const message = requestMessage(restored);
-    for (const needle of ["Short walking distances", "A lift rather than stairs", "Slow", "An eruv", "pasta"]) {
-      assert.ok(message.includes(needle), `${needle} did not survive the handoff`);
-    }
-
-    // 4. And in the planner's notes for the self-service half, since the
-    // planner has no field of its own for any of them.
+    // 3. And in the planner's notes, since the planner has no field of its
+    // own for any of them.
     const seed = plannerSeed(restored);
     for (const needle of ["Access needs", "Short walking distances", "Pace"]) {
       assert.ok(seed.notes.includes(needle), `${needle} was dropped on the way into the planner`);
     }
-  });
-
-  it("carries every answer into the message the request sends", () => {
-    const message = requestMessage(full);
-    for (const needle of ["Rome", "2026-07-05", "New York", "2 adults, 3 children (ages 4, 7 and 11)", "Cholov Yisroel", "cannot walk far"]) {
-      assert.ok(message.includes(needle), `${needle} did not survive into the request`);
-    }
-  });
-
-  it("titles the request so an inbox can tell one from another", () => {
-    assert.equal(requestSubject(full), "Family trip — Rome");
-    // "Destination undecided" in the subject, because that is the request the
-    // owner most wants to spot in a list: somebody who needs help choosing.
-    assert.equal(requestSubject(answers({ kind: "relaxing", helpMeChoose: true })), "Relaxing vacation — destination undecided");
-    assert.equal(requestSubject(emptyAnswers()), "Trip");
-  });
-
-  it("stays well inside what the contact endpoint accepts", () => {
-    // /api/contact caps a message at 4,000 characters.
-    const stuffed = answers({
-      ...full,
-      notes: "x".repeat(5000),
-      kosherNotes: "y".repeat(5000),
-    });
-    assert.ok(requestMessage(stuffed).length <= 3800);
   });
 
   it("seeds the planner with what the planner has fields for", () => {
@@ -369,20 +322,15 @@ describe("what was stored", () => {
     assert.deepEqual(readAnswers(JSON.stringify({ interests: [1, 2, "Food"] }))?.interests, ["Food"]);
   });
 
-  it("keeps one key, and both ends read it", () => {
+  it("keeps one key", () => {
     assert.equal(TRIP_PLAN_KEY, "whiteGloveTripPlan");
     assert.match(FLOW, /TRIP_PLAN_KEY/);
-    assert.match(FORM, /TRIP_PLAN_KEY/);
   });
 });
 
 describe("where step three goes", () => {
   it("opens the planner for somebody planning it themselves", () => {
     assert.equal(nextStepHref(answers({ method: "myself" })), "/itinerary?from=plan");
-  });
-
-  it("opens the request form for somebody who wants us to", () => {
-    assert.equal(nextStepHref(answers({ method: "white-glove" })), "/contact?from=plan");
   });
 
   it("shows destinations to somebody who has not decided", () => {
@@ -410,7 +358,7 @@ describe("what we suggest afterwards", () => {
   });
 });
 
-describe("the flow and the form behave themselves", () => {
+describe("the flow behaves itself", () => {
   it("blocks nothing: no required field in the flow at all", () => {
     // A single `required` ATTRIBUTE in the wizard would stop the person it
     // exists for. Matched as an attribute rather than as the word, because the
@@ -431,18 +379,4 @@ describe("the flow and the form behave themselves", () => {
     assert.match(FLOW, /aria-current=\{.*"step"/);
   });
 
-  it("gives the request form an error summary that links to the fields", () => {
-    assert.match(FORM, /role="alert"/);
-    assert.match(FORM, /href=\{`#\$\{problem\.field\}`\}/);
-    assert.match(FORM, /aria-invalid/);
-    assert.match(FORM, /aria-describedby/);
-  });
-
-  it("MAKES TWO FIELDS MANDATORY AND NO MORE", () => {
-    // A name and somewhere to write back. Everything else about the trip is
-    // optional, because the person this is for may not know it yet — and a
-    // third `required` attribute appearing here is how that stops being true.
-    const attributes = FORM.match(/^\s*required$/gm) ?? [];
-    assert.equal(attributes.length, 2, `${attributes.length} required fields — something else became mandatory`);
-  });
 });

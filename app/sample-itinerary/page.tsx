@@ -19,11 +19,10 @@ export const metadata = pageMetadata({
 /**
  * The proof that was missing.
  *
- * A visitor could read the services page and understand the process perfectly
- * — send us the answers, we come back with directions, you pick one, we build
- * it — and still have no idea what arrives at the end of it. "A written
- * day-by-day itinerary" is a description of a deliverable, and the decision
- * somebody is making is about the deliverable.
+ * A visitor could read how the itinerary planner works and still have no idea
+ * what arrives at the end of it. "A written day-by-day itinerary" is a
+ * description of a deliverable, and the decision somebody is making is about
+ * the deliverable.
  *
  * SO THIS SHOWS THE DOCUMENT, not a picture of one. It is rendered by
  * components/PrintableItinerary.tsx, the same component that prints a real
@@ -50,7 +49,7 @@ export default function SampleItineraryPage() {
       <StructuredData
         data={breadcrumbs([
           { name: "Home", path: "/" },
-          { name: "Travel services", path: "/services" },
+          { name: "Itinerary planner", path: "/itinerary" },
           { name: "A sample itinerary", path: "/sample-itinerary" },
         ])}
       />
@@ -144,36 +143,26 @@ export default function SampleItineraryPage() {
           <div className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-7">
             <div className="flex items-center gap-3">
               <GloveMark size="lg" />
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Two ways to get one</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Free, either way</p>
             </div>
             <p className="mt-4 leading-7 text-stone-600">
-              The planner that produced this is free and open to everybody — you can build the same document yourself,
-              for your own dates, without an account. Or answer the three short steps and we will build it for you.
+              Build the same document yourself, for your own dates, without an account — or answer three short steps
+              for destination ideas first.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                href="/plan"
+                href="/itinerary"
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
               >
-                Have us plan mine
+                Open the itinerary planner
               </Link>
               <Link
-                href="/itinerary"
+                href="/plan"
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                Build one myself, free
+                Get recommendations
               </Link>
             </div>
-            <p className="mt-6 text-sm leading-6 text-stone-500">
-              What a planned trip costs, and what is free:{" "}
-              <Link
-                href="/services#pricing"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
-              >
-                what to expect about price
-              </Link>
-              .
-            </p>
           </div>
         </div>
       </section>
