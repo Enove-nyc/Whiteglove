@@ -9,6 +9,7 @@ import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { bookCategoryFor, categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, type NavCategory } from "@/lib/navigation";
+import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
@@ -206,7 +207,7 @@ export default function Navbar() {
               <IconLink icon="search" label="Search" href="/search" />
               <IconLink icon="route" label="Route" href="/my-route" />
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
-              <IconLink icon="account" label={signedIn ? "Account" : "Sign in"} href={signedIn ? "/account" : SIGN_IN.href} />
+              <IconLink icon="account" label={signedIn ? "Account" : "Sign in"} href={signedIn ? "/account" : signInHref()} />
             </div>
 
             {/* xl and up: the bar above is the navigation. Below xl: this is
@@ -269,7 +270,7 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <Link onClick={() => setMobileOpen(false)} href={SIGN_IN.href} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
+                <Link onClick={() => setMobileOpen(false)} href={signInHref()} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
                   {SIGN_IN.label}
                 </Link>
               )}

@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Itinerary } from "@/data/itinerary";
-import { signInHref, useSignedIn } from "@/lib/use-signed-in";
-
-const LS_KEY = "whiteGloveItinerary";
+import { useRequireSignIn } from "@/components/SignInGate";
+import { useSignedIn } from "@/lib/use-signed-in";
 
 /**
  * What you can do with a trip somebody shared with you.
@@ -17,12 +16,16 @@ const LS_KEY = "whiteGloveItinerary";
  * as many trips as it needs, so adding a shared one now makes a trip of its
  * own and leaves everything else exactly where it was.
  *
- * Signed out there is nowhere to put a second trip, so it says so rather than
- * quietly overwriting the one this browser is holding.
+ * NO SIGNED-OUT LOCAL COPY ANY MORE. There used to be a second button that
+ * wrote the shared trip into this browser's own storage instead of an
+ * account — exactly the kind of browser-only plan the brief says not to
+ * keep. Pressing "Add to my trips" signed out now opens the sign-in dialog
+ * and completes the same save the moment it succeeds.
  */
 export default function SharedItineraryActions({ itinerary, shareId }: { itinerary: Itinerary; shareId: string }) {
   const router = useRouter();
   const signedIn = useSignedIn();
+  const requireSignIn = useRequireSignIn();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -50,23 +53,6 @@ export default function SharedItineraryActions({ itinerary, shareId }: { itinera
     }
   }
 
-  /** Signed out, this browser holds one trip and that is the only place for it. */
-  function copyLocally() {
-    try {
-      const existing = localStorage.getItem(LS_KEY);
-      let hasTrip = false;
-      if (existing) {
-        const parsed = JSON.parse(existing) as Partial<Itinerary>;
-        hasTrip = Boolean(parsed.flights?.length || parsed.lodging?.length || parsed.activities?.length);
-      }
-      if (hasTrip && !window.confirm("You are not signed in, so this browser holds one trip and this will replace it. Sign in instead to keep both.")) return;
-      localStorage.setItem(LS_KEY, JSON.stringify({ ...itinerary, title: itinerary.title ? `${itinerary.title} (copy)` : "My trip" }));
-      router.push("/itinerary");
-    } catch {
-      setNote({ ok: false, text: "Could not copy it — please try again." });
-    }
-  }
-
   const buttonBase = "inline-flex items-center min-h-[44px] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] transition";
 
   return (
@@ -82,35 +68,16 @@ export default function SharedItineraryActions({ itinerary, shareId }: { itinera
           Print / Save as PDF
         </Link>
 
-        {signedIn === false ? (
-          <>
-            <Link
-              href={signInHref()}
-              className={`${buttonBase} border border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)]`}
-            >
-              Sign in to add it to my trips
-            </Link>
-            <button type="button" onClick={copyLocally} className={`${buttonBase} border border-[var(--gold-light)] text-stone-600 hover:bg-[var(--cream-deep)]`}>
-              Just open it in this browser
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            disabled={busy || signedIn === null}
-            onClick={() => void addAsOwnTrip()}
-            className={`${buttonBase} border border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60`}
-          >
-            {busy ? "Adding…" : "Add to my trips"}
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={busy || signedIn === null}
+          onClick={() => requireSignIn(() => void addAsOwnTrip(), "Sign in to save")}
+          className={`${buttonBase} border border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60`}
+        >
+          {busy ? "Adding…" : "Add to my trips"}
+        </button>
       </div>
 
-      {signedIn === false && (
-        <p className="mt-2 text-xs leading-5 text-stone-500">
-          Signed in, this is added as a trip of its own and whatever you are already planning stays exactly as it is.
-        </p>
-      )}
       {note && <p className={`mt-2 text-xs font-semibold ${note.ok ? "text-emerald-700" : "text-red-700"}`}>{note.text}</p>}
     </div>
   );

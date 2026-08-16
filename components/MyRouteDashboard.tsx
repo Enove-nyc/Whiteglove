@@ -3,6 +3,7 @@
 import DateField from "@/components/DateField";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRequireSignIn } from "@/components/SignInGate";
 import { directionsUrl, movePlace, optimizeRoute, type SavedPlace } from "@/data/route-utils";
 import { type Crossing, describeCrossing } from "@/lib/border-crossings";
 import { borderCrossings } from "@/lib/borders";
@@ -36,6 +37,7 @@ export default function MyRouteDashboard({
   const [account, setAccount] = useState<AccountSnapshot | null>(null);
   const [route, setRoute] = useState<SavedPlace[]>([]);
   const [, setFavorites] = useState<SavedPlace[]>([]);
+  const requireSignIn = useRequireSignIn();
 
   useEffect(() => {
     const syncLocal = () => {
@@ -75,13 +77,15 @@ export default function MyRouteDashboard({
   };
 
   const save = (next: SavedPlace[]) => {
-    localStorage.setItem(routeKey, JSON.stringify(next));
-    window.dispatchEvent(new Event("whiteglove-route"));
-    void fetch("/api/account/places", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: "route", action: "replace", items: next }),
-    });
+    requireSignIn(() => {
+      localStorage.setItem(routeKey, JSON.stringify(next));
+      window.dispatchEvent(new Event("whiteglove-route"));
+      void fetch("/api/account/places", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ collection: "route", action: "replace", items: next }),
+      });
+    }, "Sign in to save");
   };
 
   const remove = (id: string) => save(activeRoute.filter((place) => place.id !== id));

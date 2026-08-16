@@ -68,6 +68,7 @@ export default function LoginForm({
   next,
   googleAvailable = false,
   googleProblem,
+  onSuccess,
 }: {
   phoneSignupAvailable?: boolean;
   /** Where to go once they are in — set when they were sent here mid-task. */
@@ -76,6 +77,13 @@ export default function LoginForm({
   googleAvailable?: boolean;
   /** What went wrong last time, if they have just come back from Google. */
   googleProblem?: string;
+  /**
+   * Called instead of navigating, when this form is inside the sign-in
+   * dialog rather than the full /login page. The dialog is the one that
+   * resumes whatever the visitor was doing — this component only reports
+   * that signing in worked.
+   */
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -92,6 +100,10 @@ export default function LoginForm({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    // Inside the dialog this form is only ever mounted while signed out —
+    // the gate that opens it checks first — so there is nothing to redirect
+    // from and no /account to replace the page with.
+    if (onSuccess) return;
     let active = true;
     fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
@@ -102,7 +114,7 @@ export default function LoginForm({
     return () => {
       active = false;
     };
-  }, [router, next]);
+  }, [router, next, onSuccess]);
 
   async function continueToAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -174,6 +186,10 @@ export default function LoginForm({
       return;
     }
     forgetSignedIn();
+    if (onSuccess) {
+      onSuccess();
+      return;
+    }
     router.push(next ?? "/account");
     router.refresh();
   }

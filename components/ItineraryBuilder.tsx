@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
+import { useRequireSignIn } from "@/components/SignInGate";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
 import SendPlaceIn from "@/components/SendPlaceIn";
@@ -106,6 +107,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
   const [view, setView] = useState<ItineraryView>("days");
+  const requireSignIn = useRequireSignIn();
 
   // Load: account first, then localStorage.
   useEffect(() => {
@@ -139,25 +141,32 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     };
   }, [reloadKey]);
 
+  // The one chokepoint every add, edit and reorder in this builder funnels
+  // through. Gated here rather than at each of the dozens of buttons that
+  // call it: the first attempt to change anything, signed out, opens the
+  // sign-in dialog instead of writing a change nowhere it can be got back
+  // from; once signed in, this and every later call go straight through.
   function persist(next: Itinerary) {
-    setItin(next);
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-    void fetch("/api/account/itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itinerary: next }),
-    })
-      .then((r) => {
-        if (r.ok) {
-          setSavedNote("Saved to your account.");
-          setTimeout(() => setSavedNote(""), 1500);
-        }
+    requireSignIn(() => {
+      setItin(next);
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      void fetch("/api/account/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itinerary: next }),
       })
-      .catch(() => undefined);
+        .then((r) => {
+          if (r.ok) {
+            setSavedNote("Saved to your account.");
+            setTimeout(() => setSavedNote(""), 1500);
+          }
+        })
+        .catch(() => undefined);
+    }, "Sign in to save");
   }
 
   const set = (patch: Partial<Itinerary>) => persist({ ...itin, ...patch });

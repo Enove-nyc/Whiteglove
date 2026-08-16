@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useBookingLink } from "@/components/BookingLinkProvider";
+import { useRequireSignIn } from "@/components/SignInGate";
 import { bookingHref } from "@/lib/booking-access";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
 import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
-import { signInHref, useSignedIn } from "@/lib/use-signed-in";
+import { useSignedIn } from "@/lib/use-signed-in";
 
 /**
  * Everything you can do with a destination, in one bar, on every destination
@@ -105,6 +106,7 @@ export default function DestinationActions({
   airports?: NearbyAirport[];
 }) {
   const signedIn = useSignedIn();
+  const requireSignIn = useRequireSignIn();
   const booking = useBookingLink();
   const route = useSavedPlaces(ROUTE_KEY);
   const favorites = useSavedPlaces(FAVORITES_KEY);
@@ -220,28 +222,48 @@ export default function DestinationActions({
             already signed in is worse than a moment of nothing. */}
         {signedIn === null ? (
           <span className="h-11" aria-hidden="true" />
-        ) : signedIn ? (
+        ) : (
+          // Every action shows, signed in or not — pressed signed out, each
+          // opens the sign-in dialog and completes itself the moment sign-in
+          // succeeds, rather than one row hiding behind a single "sign in"
+          // link. See components/SignInGate.tsx.
           <>
-            <button type="button" onClick={toggleRoute} className={role === "absent" ? idle : done} aria-pressed={role !== "absent"}>
-              {role === "absent" ? "Add to My Route" : "✓ On My Route"}
+            <button
+              type="button"
+              onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
+              className={role === "absent" ? idle : done}
+              aria-pressed={role !== "absent"}
+            >
+              {role === "absent" ? "Add to Route" : "✓ On your Route"}
             </button>
-            <button type="button" onClick={() => saveRoute(withPlaceFirst(route, place))} className={role === "start" ? done : quiet} aria-pressed={role === "start"}>
+            <button
+              type="button"
+              onClick={() => requireSignIn(() => saveRoute(withPlaceFirst(route, place)), "Sign in to set the start of your Route")}
+              className={role === "start" ? done : quiet}
+              aria-pressed={role === "start"}
+            >
               {role === "start" ? "✓ Starts here" : "Start route here"}
             </button>
-            <button type="button" onClick={() => saveRoute(withPlaceLast(route, place))} className={role === "end" ? done : quiet} aria-pressed={role === "end"}>
+            <button
+              type="button"
+              onClick={() => requireSignIn(() => saveRoute(withPlaceLast(route, place)), "Sign in to set the end of your Route")}
+              className={role === "end" ? done : quiet}
+              aria-pressed={role === "end"}
+            >
               {role === "end" ? "✓ Ends here" : "End route here"}
             </button>
-            <button type="button" onClick={toggleFavorite} className={favorite ? done : idle} aria-pressed={favorite}>
+            <button
+              type="button"
+              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
+              className={favorite ? done : idle}
+              aria-pressed={favorite}
+            >
               {favorite ? "✓ Saved" : "Save destination"}
             </button>
-            <button type="button" onClick={addToItinerary} className={onTrip ? done : idle}>
+            <button type="button" onClick={() => requireSignIn(addToItinerary, "Sign in to add to your itinerary")} className={onTrip ? done : idle}>
               {onTrip ? "✓ On your itinerary" : "Add to itinerary"}
             </button>
           </>
-        ) : (
-          <Link href={signInHref()} className={`${base} border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)]`}>
-            Sign in to plan with this
-          </Link>
         )}
 
         {/* These need no account — they are reading, not saving. */}
@@ -260,12 +282,6 @@ export default function DestinationActions({
         </button>
       </div>
 
-      {signedIn === false && (
-        <p className="mt-3 text-sm leading-6 text-stone-600">
-          A route is kept in your account, so it is there on your phone when you are standing at the gate — not only in
-          this browser.
-        </p>
-      )}
       {shared && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{shared}</p>}
 
       {panel === "nearby" && (

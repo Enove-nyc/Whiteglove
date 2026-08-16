@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import type { SavedPlace } from "@/data/route-utils";
-import { signInHref, useSignedIn } from "@/lib/use-signed-in";
+import { useRequireSignIn } from "@/components/SignInGate";
+import { useSignedIn } from "@/lib/use-signed-in";
 
 // Adding a place to your route, or keeping it as a favourite.
 //
@@ -16,6 +16,10 @@ import { signInHref, useSignedIn } from "@/lib/use-signed-in";
 // So the buttons now ask to sign in instead of pretending. Nothing is written
 // locally either — a route that exists in one browser and nowhere else is the
 // thing that misled them in the first place.
+//
+// PRESSED SIGNED OUT, THE BUTTON OPENS THE SIGN-IN DIALOG RATHER THAN SENDING
+// somebody to /login and losing the place they were adding. It resumes the
+// exact toggle the moment sign-in succeeds — see components/SignInGate.tsx.
 
 const routeKey = "whiteGloveMyRoute";
 const favoritesKey = "whiteGloveFavorites";
@@ -36,6 +40,7 @@ function write(key: string, places: SavedPlace[]) {
 
 export default function SavePlaceButtons({ place }: { place: SavedPlace }) {
   const signedIn = useSignedIn();
+  const requireSignIn = useRequireSignIn();
   const [inRoute, setInRoute] = useState(() => read(routeKey).some((item) => item.id === place.id));
   const [favorite, setFavorite] = useState(() => read(favoritesKey).some((item) => item.id === place.id));
 
@@ -58,35 +63,18 @@ export default function SavePlaceButtons({ place }: { place: SavedPlace }) {
   // somebody who is already signed in.
   if (signedIn === null) return <div className="mt-6 h-[38px]" aria-hidden="true" />;
 
-  if (!signedIn) {
-    return (
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Link
-          href={signInHref()}
-          className="border border-[var(--navy)] bg-[var(--navy)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-        >
-          Sign in to add to My Route
-        </Link>
-        <p className="text-sm leading-6 text-stone-600">
-          A route is kept in your account, so it is there on your phone when you are standing at the gate — not only in
-          this browser.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="mt-6 flex flex-wrap gap-2">
       <button
         type="button"
-        onClick={() => toggle(routeKey, inRoute, setInRoute, "route")}
+        onClick={() => requireSignIn(() => toggle(routeKey, inRoute, setInRoute, "route"), "Sign in to add to Route")}
         className={`border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${inRoute ? "border-[var(--navy)] bg-[var(--navy)] text-white" : "border-[var(--gold)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}
       >
-        {inRoute ? "Added to My Route" : "Add to My Route"}
+        {inRoute ? "Added to Route" : "Add to Route"}
       </button>
       <button
         type="button"
-        onClick={() => toggle(favoritesKey, favorite, setFavorite, "favorites")}
+        onClick={() => requireSignIn(() => toggle(favoritesKey, favorite, setFavorite, "favorites"), "Sign in to save")}
         className={`border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${favorite ? "border-[var(--gold)] bg-[var(--gold)] text-white" : "border-[var(--gold-light)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"}`}
       >
         {favorite ? "Saved to Favorites" : "Save favorite"}

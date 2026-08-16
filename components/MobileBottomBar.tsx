@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/icons/Icon";
 import { isCurrent } from "@/lib/navigation";
+import { signInHref } from "@/lib/use-signed-in";
 
 /**
  * The compact bottom bar for phones — Search, Route, Itinerary, Account.
@@ -22,7 +23,7 @@ const ITEMS: Array<{ key: string; icon: IconName; label: string; href: string }>
 
 export default function MobileBottomBar({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname();
-  const items = [...ITEMS, { key: "account", icon: "account" as IconName, label: "Account", href: signedIn ? "/account" : "/login" }];
+  const items = [...ITEMS, { key: "account", icon: "account" as IconName, label: "Account", href: signedIn ? "/account" : signInHref() }];
 
   return (
     <nav

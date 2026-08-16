@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
+import { SignInGateProvider } from "@/components/SignInGate";
 import IdleLogout from "@/components/IdleLogout";
 import { readBookingLink } from "@/lib/booking-access-store";
 import RequiredFields from "@/components/RequiredFields";
@@ -10,6 +11,8 @@ import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getBetaNotice } from "@/lib/beta-notice-store";
+import { googleConfig } from "@/lib/google-signin";
+import { smsConfigured } from "@/lib/sms";
 import { siteOrigin } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -77,6 +80,8 @@ export default async function RootLayout({
   // once here — cached, so it costs the prerendered pages nothing — and handed
   // to the client components that would otherwise have `/book` typed into them.
   const [betaNotice, booking] = await Promise.all([getBetaNotice(), readBookingLink()]);
+  const googleAvailable = Boolean(googleConfig({ GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET }));
+  const phoneSignupAvailable = smsConfigured();
   return (
     <html
       lang="en"
@@ -98,7 +103,11 @@ export default async function RootLayout({
             Without it the browser scrolls to the anchor and leaves the focus
             behind, and the next Tab starts at the header again. */}
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
-          <BookingLinkProvider value={booking}>{children}</BookingLinkProvider>
+          <BookingLinkProvider value={booking}>
+            <SignInGateProvider googleAvailable={googleAvailable} phoneSignupAvailable={phoneSignupAvailable}>
+              {children}
+            </SignInGateProvider>
+          </BookingLinkProvider>
         </div>
         {/* Real page-speed numbers from real visitors, on the Speed Insights
             tab in Vercel. Last in the body so it never delays anything the
