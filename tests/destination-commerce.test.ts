@@ -149,6 +149,29 @@ describe("what the commercial links promise", () => {
   });
 });
 
+describe("one affiliate disclosure, beside the booking actions", () => {
+  /**
+   * Legally required, so it is deduplicated rather than removed. The page's
+   * commerce lives in DestinationBookingOptions, and the disclosure sits
+   * there, adjacent to the actions it applies to — once. Travel Essentials is
+   * a shared section that renders nothing until the owner configures a
+   * hand-off, and carries its own disclosure for its own cards when it does.
+   */
+  const OPTIONS = readFileSync("components/DestinationBookingOptions.tsx", "utf8");
+
+  it("RENDERS THE DISCLOSURE EXACTLY ONCE in the destination's own commerce", () => {
+    assert.equal(OPTIONS.match(/<AffiliateDisclosure/g)?.length, 1, "the booking options repeat the disclosure");
+    assert.doesNotMatch(PROSE, /AffiliateDisclosure/, "the page mounts a second disclosure of its own");
+    assert.doesNotMatch(PROSE, /commission/i, "the page writes its own commission sentence beside the shared one");
+  });
+
+  it("keeps the per-card copies off — the section says it once above them", () => {
+    const cards = OPTIONS.match(/showDisclosure=\{false\}/g) ?? [];
+    const links = OPTIONS.match(/<BookingLink/g) ?? [];
+    assert.equal(cards.length, links.length, "a BookingLink in the grid repeats the disclosure under its button");
+  });
+});
+
 describe("personal assistance is not on this page", () => {
   it("OFFERS IT NOWHERE, IN WORDS OR IN LINKS", () => {
     for (const pattern of [/Have us plan/i, /hand it over/i, /somebody else did the arranging/i, /\/contact\?trip=/]) {

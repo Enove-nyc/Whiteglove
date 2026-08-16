@@ -118,7 +118,8 @@ export function alertCopy(context: {
   if (context.kind === "destination" && context.destinationName) {
     return {
       heading: `Updates for ${context.destinationName}`,
-      intro: `Get a note when we add verified listings, seasonal programmes or practical changes for ${context.destinationName}. Nothing else — and you can stop anytime.`,
+      // One short line — the destination page keeps this signup compact.
+      intro: `One email when a listing or practical detail for ${context.destinationName} changes — unsubscribe anytime.`,
     };
   }
   if (context.kind === "seasonal") {

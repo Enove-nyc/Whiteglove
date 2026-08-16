@@ -33,7 +33,7 @@ const OPTIONS: Option[] = [
   {
     product: "flight",
     title: "Flights",
-    body: "Open a flight search with our booking partner. Airport codes are chosen on the next step.",
+    body: "Open a flight search — airport codes are chosen on the next step.",
     label: "Search flights",
     placement: "destination-booking-flight",
   },
@@ -91,9 +91,10 @@ export default async function DestinationBookingOptions({
           Book the practical pieces
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          Searches for {destinationName} open with booking partners. Only options we can actually hand off are listed
-          here.
+          Searches for {destinationName} open with our booking partners.
         </p>
+        {/* The page's ONE affiliate disclosure, beside the actions it
+            applies to. Legally required — deduplicated, never dropped. */}
         <AffiliateDisclosure className="mt-3 max-w-2xl text-xs leading-5 text-stone-500" />
 
         <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

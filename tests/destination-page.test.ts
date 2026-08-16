@@ -78,6 +78,64 @@ describe("the H1 and the summary do not wait on a database", () => {
   });
 });
 
+describe("the page folds into seven compact sections", () => {
+  it("USES NATIVE DETAILS/SUMMARY, so the folds work without JavaScript", () => {
+    // The same pattern as ListToolbar's Filter: focusable, toggles on Enter
+    // and Space, announces itself as expandable with no aria of its own — and
+    // the page stays a server component.
+    assert.match(PAGE, /<details/);
+    assert.match(PAGE, /<summary/);
+    assert.doesNotMatch(PAGE, /^"use client"/m, "the destination page became a client component");
+  });
+
+  it("opens Overview by default and starts the rest closed", () => {
+    // Closed folds are what make the page compact on a phone; Overview open
+    // is what makes it a page rather than a menu.
+    assert.match(PAGE, /<Fold id="overview" title="Overview" open>/);
+    for (const id of ["where-to-stay", "things-to-do", "kosher-food", "shabbos", "getting-around"]) {
+      const tag = new RegExp(`<Fold[^>]*id="${id}"[^>]*>`).exec(PAGE)?.[0];
+      assert.ok(tag, `the ${id} fold is gone`);
+      assert.doesNotMatch(tag, /\sopen[\s>]/, `the ${id} fold starts open`);
+    }
+  });
+
+  it("KEEPS EVERY PRE-FOLD SECTION ID IN THE MARKUP", () => {
+    // The "On this page" nav, external anchors and
+    // scripts/audit-destinations.mjs all address these. Fragment navigation
+    // expands the ancestor <details>, so a link into a closed fold still
+    // arrives somewhere visible.
+    for (const id of [
+      "overview",
+      "why-visit",
+      "when-and-how-long",
+      "where-to-stay",
+      "things-to-do",
+      "kosher-food",
+      "shabbos",
+      "minyanim-and-mikvaos",
+      "getting-around",
+      "cautions",
+      "reviews",
+    ]) {
+      assert.ok(PAGE.includes(`id="${id}"`), `the ${id} anchor is gone`);
+    }
+  });
+
+  it("renders each signal panel once — the hero's, not a copy per section", () => {
+    // The kosher and Shabbos folds used to repeat the hero's signal panels
+    // word for word. One mount each is the fix; losing the mount entirely
+    // would be a different bug.
+    assert.equal(PAGE.match(/<KosherSignal destination=\{destination\} \/>/g)?.length, 1);
+    assert.equal(PAGE.match(/<ShabbosSignal destination=\{destination\} \/>/g)?.length, 1);
+  });
+
+  it("says confirm-before-you-travel once, with the cautions", () => {
+    assert.equal(PAGE.match(/reconfirmBeforeTravel\(\)/g)?.length, 1, "the reconfirm note is repeated again");
+    const cautions = PAGE.indexOf('id="cautions"');
+    assert.ok(cautions > 0 && PAGE.indexOf("reconfirmBeforeTravel()", cautions) > cautions, "the reconfirm note left the cautions block");
+  });
+});
+
 describe("the hub's loading screen belongs to the hub", () => {
   it("DOES NOT SIT ABOVE THE DESTINATION PAGES", () => {
     // A loading.tsx applies to its segment and everything under it. At

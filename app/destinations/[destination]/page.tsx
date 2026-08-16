@@ -14,6 +14,7 @@ import { ReviewSection } from "@/components/reviews/ReviewSection";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
+import { Icon } from "@/components/icons/Icon";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
 import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
@@ -102,21 +103,34 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
 /**
  * One vacation destination.
  *
- * THE ORDER OF THE SECTIONS IS THE ORDER SOMEBODY DECIDES IN. Why go, when,
- * how long, who for — then, once they are still reading, the four practical
- * questions that decide whether a kosher family can actually do it: where to
- * sleep, what to eat, what Shabbos looks like, and how to get around.
+ * SEVEN COMPACT SECTIONS, SIX OF THEM FOLDING. The page used to be eleven
+ * headed sections laid end to end, and the repetition — a booking button per
+ * section, a partner explanation per booking button — is what made it long,
+ * not the content. Now it is Overview, Where to stay, Things to do, Kosher
+ * food, Shabbos, Getting there and around, Reviews. Each fold is a native
+ * <details>/<summary> (the same pattern as ListToolbar's Filter), so it works
+ * before and without JavaScript, toggles from the keyboard, and announces
+ * itself as expandable with no aria of its own. Overview is open by default;
+ * the rest start closed, which is what makes the page short on a phone.
+ * Fragment navigation opens the fold it lands in — browsers expand ancestor
+ * <details> when the target is inside one — so the "On this page" links and
+ * old external anchors (#why-visit, #cautions, …) still arrive somewhere
+ * visible. Every pre-fold section id is still in the markup for that reason;
+ * scripts/audit-destinations.mjs checks them against the built page.
+ *
+ * SAID ONCE, IN ONE PLACE. One affiliate disclosure, beside the booking
+ * actions in DestinationBookingOptions — it is legally required, and a
+ * disclosure repeated four times is one that has stopped being read. One
+ * confirm-before-you-travel note, under "Before you book". One planning CTA
+ * pair, in the hero. The sticky bar is the one booking action allowed to
+ * repeat, because it replaces the per-section buttons that went.
  *
  * EVERY PRACTICAL SECTION IS BUILT FROM DATA THE SITE ALREADY HOLDS. Nothing
  * on this page asserts that a restaurant exists, that a hotel is kosher, or
- * that a shul has a minyan — each of those comes from a record with a source
- * and a status behind it, and where there is no record the section says so in
- * as many words. An empty section that admits it is empty is worth more than a
- * full one nobody can check, and it is the only version of this page that is
- * honest on the day it ships.
- *
- * The editorial half — why visit, best time, who it suits — is marked as
- * editorial where it appears, because it is a judgement and the four
+ * that a shul has a minyan — each of those comes from a listing with a source
+ * and a status behind it, and where there is no listing the section says so in
+ * as many words. The editorial half — why visit, best time, who it suits — is
+ * marked as editorial where it appears, because it is a judgement and the
  * verification labels do not apply to a judgement.
  */
 
@@ -133,26 +147,47 @@ function SignalPanel({ signal, children }: { signal: Signal<string>; children?: 
   );
 }
 
-function Section({
+/**
+ * One folding section. Native <details> — server-rendered, no JS required —
+ * with the section's h2 in the summary so the heading outline survives the
+ * fold. `.wg-page-section` draws the same hairline between siblings as the
+ * old flat sections had.
+ */
+function Fold({
   id,
   title,
-  children,
   lead,
+  open,
+  children,
 }: {
   id: string;
   title: string;
   lead?: string;
+  open?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="wg-page-section scroll-mt-28 py-10">
-      <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-        {title}
-      </h2>
-      {lead && <p className="mt-3 max-w-3xl text-lg leading-8 text-stone-600">{lead}</p>}
-      <div className="mt-6">{children}</div>
-    </section>
+    <details id={id} open={open} className="wg-page-section group scroll-mt-28">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-5 marker:content-none [&::-webkit-details-marker]:hidden">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
+          {title}
+        </h2>
+        <Icon
+          name="chevron-down"
+          className="h-5 w-5 shrink-0 text-[var(--gold-ink)] transition-transform group-open:rotate-180"
+        />
+      </summary>
+      <div className="pb-10">
+        {lead && <p className="max-w-3xl leading-7 text-stone-600">{lead}</p>}
+        <div className={lead ? "mt-5" : undefined}>{children}</div>
+      </div>
+    </details>
   );
+}
+
+/** An inner heading within a fold — the old section ids live on these. */
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{children}</h3>;
 }
 
 /** The site's own kevarim guide for the same town, when there is one. */
@@ -169,7 +204,7 @@ function StaysSection({ facts }: { facts: VacationFacts }) {
     <div className="space-y-6">
       {facts.areas.length > 0 && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Which part of town</h3>
+          <SubHeading>Which part of town</SubHeading>
           <ul className="mt-3 space-y-3">
             {facts.areas.map((area) => (
               <li key={area.slug} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
@@ -185,7 +220,7 @@ function StaysSection({ facts }: { facts: VacationFacts }) {
 
       {facts.stays.length > 0 && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Places to stay</h3>
+          <SubHeading>Places to stay</SubHeading>
           <ul className="mt-3 grid gap-4 md:grid-cols-2">
             {facts.stays.map((stay) => {
               const claim = fromKosherClaim(stay.kosherClaim);
@@ -261,6 +296,10 @@ function SignalFallback({ label }: { label: string }) {
   );
 }
 
+/* The two signal panels render ONCE, in the hero grid. The kosher and Shabbos
+ * folds used to repeat them word for word; the folds now carry only what the
+ * hero does not. */
+
 async function KosherSignal({ destination }: { destination: VacationDestination }) {
   return <SignalPanel signal={kosherAvailability(destination, await factsOf(destination))} />;
 }
@@ -294,9 +333,9 @@ async function MinyanimAndMikvaos({ destination }: { destination: VacationDestin
           {mikvaos.map((listing) => (
             <li key={listing.id} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Mikvah · {listing.city}</p>
-              <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+              <h4 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
                 {listing.name}
-              </h3>
+              </h4>
               {listing.address && <p className="mt-2 text-sm leading-6 text-stone-600">{listing.address}</p>}
               {listing.hours && (
                 <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -353,7 +392,7 @@ async function MinyanimAndMikvaos({ destination }: { destination: VacationDestin
         </div>
       ) : mikvaos.length === 0 ? (
         <p className="text-sm leading-6 text-stone-600">
-          Minyan times, mikvah access and Shabbos arrangements are best confirmed locally. Browse{" "}
+          Browse{" "}
           <Link
             href="/mikvaos"
             className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
@@ -371,7 +410,6 @@ async function MinyanimAndMikvaos({ destination }: { destination: VacationDestin
         </p>
       ) : (
         <p className="text-sm leading-6 text-stone-600">
-          Confirm access and hours locally before you travel.{" "}
           <Link
             href="/mikvaos"
             className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
@@ -433,10 +471,8 @@ async function KosherFood({ destination }: { destination: VacationDestination })
   const anchor = facts.areas[0]?.coordinates ?? facts.stays[0]?.anchor?.coordinates;
   return (
     <>
-      <SignalPanel signal={kosherAvailability(destination, facts)} />
-
       {facts.eateries.length > 0 && (
-        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+        <ul className="grid gap-4 md:grid-cols-2">
           {facts.eateries.map((eatery) => {
             const hechsher = fromHechsherState(eatery.hechsher.state);
             return (
@@ -461,9 +497,7 @@ async function KosherFood({ destination }: { destination: VacationDestination })
 
       {facts.base && (facts.base.eateries.length > 0 || facts.base.areas.length > 0) && (
         <div className="mt-6 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-          <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-            Where to shop on the way in
-          </h3>
+          <SubHeading>Where to shop on the way in</SubHeading>
           <p className="mt-2 leading-7 text-stone-600">{facts.base.note}</p>
           <ul className="mt-3 space-y-2">
             {facts.base.eateries.map((eatery) => (
@@ -511,21 +545,16 @@ export default async function VacationDestinationPage({ params }: { params: Prom
   // The only await the SHELL does. Everything below the heading that needs a
   // read is behind a Suspense boundary, so the H1, the summary and the
   // editorial sections are in the first byte of HTML either way.
-  // Both are cached reads of the owner's own settings, so they cost one round
-  // trip between them rather than two — and neither depends on the other.
   const booking = await readBookingLink();
 
   const contents: Array<[string, string]> = [
-    ["why-visit", "Why visit"],
-    ["when-and-how-long", "When to go, and for how long"],
+    ["overview", "Overview"],
     ["where-to-stay", "Where to stay"],
     ["things-to-do", "Things to do"],
     ["kosher-food", "Kosher food"],
     ["shabbos", "Shabbos"],
-    ["minyanim-and-mikvaos", "Minyanim and mikvaos"],
     ["getting-around", "Getting there and around"],
-    ...(destination.outline ? ([["outline", "A shape for the days"]] as Array<[string, string]>) : []),
-    ["cautions", "Before you book"],
+    ["reviews", "Reviews"],
   ];
 
   return (
@@ -586,12 +615,12 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             </Suspense>
           </div>
 
-          {/* THE OFFER THAT WENT: "Have us plan Rome", beside the first
-              button, at the top of the most commercial page on the site. It
-              made every section below it read as a sales funnel — the visitor
-              stops reading the kosher notes and starts working out what the
-              catch is. Personal trip planning has since been removed from the
-              site outright; see AGENTS.md. */}
+          {/* THE ONE PLANNING CTA PAIR ON THE PAGE. The per-section repeats —
+              a "start a trip" button under the outline, another pair at the
+              foot — folded into this one and the sticky bar. And THE OFFER
+              THAT WENT: "Have us plan Rome" once sat beside the first button;
+              personal trip planning has since been removed from the site
+              outright — see AGENTS.md. */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={staySearchHref({ destination: destination.name })}
@@ -626,26 +655,24 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           </ul>
         </nav>
 
-        <Section id="why-visit" title="Why visit">
-          <ul className="glove-list max-w-3xl space-y-3 text-lg leading-8 text-stone-600">
-            {destination.whyVisit.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-          <p className="mt-6 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-3 text-sm leading-6 text-stone-600">
-            <span className="font-semibold text-[var(--navy)]">This part is our opinion,</span> not a checked fact —
-            which is why it carries no verification label. The practical sections below do, and each of them comes from
-            a record with a source behind it.
-          </p>
-        </Section>
+        <Fold id="overview" title="Overview" open>
+          <div id="why-visit" className="scroll-mt-28">
+            <SubHeading>Why visit</SubHeading>
+            <ul className="glove-list mt-3 max-w-3xl space-y-2 leading-7 text-stone-600">
+              {destination.whyVisit.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
 
-        <Section id="when-and-how-long" title="When to go, and for how long">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div id="when-and-how-long" className="mt-8 grid scroll-mt-28 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Best time</h3>
-              <p className="mt-2 max-w-2xl text-lg leading-8 text-stone-600">{destination.bestTime}</p>
-              <h3 className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Who it suits</h3>
-              <p className="mt-2 max-w-2xl text-lg leading-8 text-stone-600">{destination.suits}</p>
+              <SubHeading>Best time</SubHeading>
+              <p className="mt-2 max-w-2xl leading-7 text-stone-600">{destination.bestTime}</p>
+              <div className="mt-6">
+                <SubHeading>Who it suits</SubHeading>
+              </div>
+              <p className="mt-2 max-w-2xl leading-7 text-stone-600">{destination.suits}</p>
             </div>
             <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Give it</p>
@@ -657,9 +684,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               </p>
             </div>
           </div>
-        </Section>
 
-        <Section
+          <p className="mt-6 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-3 text-sm leading-6 text-stone-600">
+            <span className="font-semibold text-[var(--navy)]">This part is our opinion,</span> not a checked fact —
+            which is why it carries no verification label. The practical sections below do, and each of them comes from
+            a listing with a source behind it.
+          </p>
+        </Fold>
+
+        <Fold
           id="where-to-stay"
           title="Where to stay"
           lead="Which part of town matters more than which hotel — that is the decision that makes Shabbos walkable or not."
@@ -667,15 +700,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           <Suspense fallback={<Skeleton what={`where to stay in ${destination.name}`} />}>
             <WhereToStay destination={destination} />
           </Suspense>
-        </Section>
+        </Fold>
 
-        <Section id="things-to-do" title="Things to do">
+        <Fold id="things-to-do" title="Things to do">
           <Suspense fallback={<Skeleton what={`things to do in ${destination.name}`} rows={3} />}>
             <ThingsToDo destination={destination} />
           </Suspense>
-        </Section>
+        </Fold>
 
-        <Section
+        <Fold
           id="kosher-food"
           title="Kosher food"
           lead={`Kosher restaurants, bakeries and groceries in ${destination.name} — kosher, not kosher-style. Confirm current supervision before you eat.`}
@@ -683,131 +716,111 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           <Suspense fallback={<Skeleton what={`kosher food in ${destination.name}`} />}>
             <KosherFood destination={destination} />
           </Suspense>
-        </Section>
+        </Fold>
 
-        <Section id="shabbos" title="Shabbos">
-          <Suspense fallback={<SignalFallback label="Shabbos" />}>
-            <ShabbosSignal destination={destination} />
-          </Suspense>
+        <Fold id="shabbos" title="Shabbos">
           <Suspense fallback={null}>
             <DestinationShabbosExtras destination={destination} />
           </Suspense>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <VerificationBadge descriptor={reconfirmBeforeTravel()} />
-            <p className="max-w-2xl text-sm leading-6 text-stone-600">
-              Candle-lighting times, whether a shul still has a regular minyan, and whether a seasonal kosher kitchen is
-              running are all things that move. Confirm them for your dates.{" "}
-              <Link
-                href="/verification"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                What the labels on this page mean
-              </Link>
-              {" · "}
-              <Link
-                href="/zmanim"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Full zmanim
-              </Link>
-            </p>
+          <div id="minyanim-and-mikvaos" className="mt-8 scroll-mt-28">
+            <SubHeading>Minyanim and mikvaos</SubHeading>
+            <div className="mt-3">
+              <Suspense fallback={<Skeleton what={`minyanim and mikvaos in ${destination.name}`} />}>
+                <MinyanimAndMikvaos destination={destination} />
+              </Suspense>
+            </div>
           </div>
-        </Section>
+        </Fold>
 
-        <Section id="minyanim-and-mikvaos" title="Minyanim and mikvaos">
-          <Suspense fallback={<Skeleton what={`minyanim and mikvaos in ${destination.name}`} />}>
-            <MinyanimAndMikvaos destination={destination} />
-          </Suspense>
-        </Section>
-
-        <Section id="getting-around" title="Getting there and around">
-          <p className="max-w-3xl text-lg leading-8 text-stone-600">{destination.transport}</p>
+        <Fold id="getting-around" title="Getting there and around">
+          <p className="max-w-3xl leading-7 text-stone-600">{destination.transport}</p>
           {/* The car search, carrying the destination as the pick-up — a link
               that says the site knows where you are going and then asks again
               is worse than one that never claimed to.
 
-              It opens the booking page on its Cars tab. /cars and /flights
-              were separate pages running these same partner searches and have
-              folded into that one; the flights button that used to sit beside
-              this one is gone rather than repointed, because the "Everything
-              in one search" link directly below is now the same destination.
-
               RESOLVED, NEVER A TYPED /book: the owner can put that path behind
               an access code, and this is a public page. Only bookingHref may
               decide where a booking link lands. See lib/booking-access.ts. */}
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link
               href={bookingHref(booking, { type: "cars", destination: destination.name })}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
             >
               Car hire in {destination.name}
             </Link>
-          </div>
-          {/* Resolved, never a typed `/book`: the owner can have that path
-              behind an access code, and this is a public page. */}
-          {booking.searchIsPublic && (
-            <p className="mt-5 text-sm">
+            {booking.searchIsPublic && (
               <Link
                 href={booking.href}
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
                 Everything in one search
               </Link>
-            </p>
-          )}
-        </Section>
+            )}
+          </div>
 
-        {destination.outline && (
-          <Section
-            id="outline"
-            title="A shape for the days"
-            lead="An outline to adapt, not a booking. Nothing here is reserved and the order is yours to change."
-          >
-            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-              {destination.outline.title}
-            </h3>
-            <ol className="mt-5 max-w-3xl space-y-4">
-              {destination.outline.days.map((day, index) => (
-                <li key={day} className="flex gap-4 border-t border-[var(--gold-light)] pt-4">
-                  <span className="mt-1 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                    Day {index + 1}
-                  </span>
-                  <span className="leading-7 text-stone-600">{day}</span>
+          {destination.outline && (
+            <div id="outline" className="mt-8 scroll-mt-28">
+              <SubHeading>A shape for the days</SubHeading>
+              <p className="mt-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+                {destination.outline.title}
+              </p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+                An outline to adapt, not a booking — nothing here is reserved and the order is yours to change.
+              </p>
+              <ol className="mt-4 max-w-3xl space-y-4">
+                {destination.outline.days.map((day, index) => (
+                  <li key={day} className="flex gap-4 border-t border-[var(--gold-light)] pt-4">
+                    <span className="mt-1 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+                      Day {index + 1}
+                    </span>
+                    <span className="leading-7 text-stone-600">{day}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* THE ONE CONFIRM-BEFORE-YOU-TRAVEL NOTE. The Shabbos, kosher and
+              mikvah sections each used to carry their own; what moves is the
+              same in every case, so it is said once, here, with the cautions. */}
+          <div id="cautions" className="mt-8 scroll-mt-28">
+            <SubHeading>Before you book</SubHeading>
+            <ul className="mt-3 max-w-3xl space-y-3">
+              {destination.cautions.map((caution) => (
+                <li key={caution} className="flex gap-3 rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-4">
+                  <GloveMark size="sm" className="mt-1" />
+                  <span className="leading-7 text-stone-700">{caution}</span>
                 </li>
               ))}
-            </ol>
-            <p className="mt-6">
-              <Link
-                href={addToTripHref(destination)}
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-              >
-                Start a trip from this outline
-              </Link>
-            </p>
-          </Section>
-        )}
+            </ul>
+            <div className="mt-4 flex max-w-3xl flex-wrap items-center gap-3">
+              <VerificationBadge descriptor={reconfirmBeforeTravel()} />
+              <p className="max-w-2xl text-sm leading-6 text-stone-600">
+                Candle-lighting times, whether a shul still has a regular minyan, and whether a seasonal kosher kitchen
+                is running are all things that move. Confirm them for your dates.{" "}
+                <Link
+                  href="/verification"
+                  className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                >
+                  What the labels on this page mean
+                </Link>
+              </p>
+            </div>
+          </div>
+        </Fold>
 
-        <Section id="cautions" title="Before you book">
-          <ul className="max-w-3xl space-y-4">
-            {destination.cautions.map((caution) => (
-              <li key={caution} className="flex gap-3 rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-4">
-                <GloveMark size="sm" className="mt-1" />
-                <span className="leading-7 text-stone-700">{caution}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        {/* The template's reviews slot: after the practical sections, before
-            the closing action. Not sacred — a vacation destination's reviews
-            are ordinary reviews. */}
-        <div className="mt-12">
+        {/* Reviews stay flat rather than folded: ReviewSection carries its own
+            heading, and a review is the one thing here a visitor may have come
+            back specifically to leave. */}
+        <section id="reviews" className="wg-page-section scroll-mt-28 py-10">
           <ReviewSection placeKind="destination" placeRef={destination.slug} placeLabel={destination.name} />
-        </div>
+        </section>
 
         {/* Rides the bottom of the viewport while there is page left, then
             lets go — the last section and the footer are never underneath it.
-            See components/DestinationStickyCta.tsx. */}
+            The one booking action allowed to repeat: it replaces the buttons
+            the folded sections used to carry. See
+            components/DestinationStickyCta.tsx. */}
         <DestinationStickyCta
           destination={destination.name}
           flightsHref={bookingHref(booking, { type: "flights" })}
@@ -815,6 +828,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         />
       </div>
 
+      {/* The booking hand-offs, and the page's ONE affiliate disclosure —
+          beside the actions it applies to, said once. */}
       <DestinationBookingOptions destinationName={destination.name} destinationSlug={destination.slug} />
 
       {/* Travel Essentials — insurance, eSIM, transfers, tours when configured.
@@ -825,7 +840,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         destinationName={destination.name}
         destinationSlug={destination.slug}
         heading={`Before you go to ${destination.name}`}
-        intro="Connectivity, cover and transfers when you are ready. Each link opens with the provider, who handles the purchase and its terms."
+        intro="Each link opens with the provider, who handles the purchase and its terms."
         placement="destination-essentials"
       />
 
@@ -840,31 +855,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         </div>
       </section>
 
-      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
-          <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Ready to book {destination.name}?
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Rooms and prices come from our booking partners. The planner holds the trip day by day — the route, the
-              driving times, and a printable copy for the car — and it is free.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={staySearchHref({ destination: destination.name })}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-            >
-              See places to stay
-            </Link>
-            <Link
-              href={addToTripHref(destination)}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Plan {destination.name} myself
-            </Link>
-          </div>
+      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-10 sm:px-8 sm:py-12">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
+            Ready to book {destination.name}?
+          </h2>
+          <p className="mt-3 max-w-2xl leading-7 text-stone-600">
+            Rooms and prices come from our booking partners above, and the itinerary planner holds the trip day by day —
+            free.
+          </p>
         </div>
       </section>
 
