@@ -41,10 +41,6 @@ export type SiteWords = {
   contactEmail: string;
   /** What a form says once it has been sent. */
   replyPromise: string;
-  /** The paragraph under the logo in the footer. */
-  footerBlurb: string;
-  /** The gold line under that. */
-  footerStrapline: string;
   /** The paragraph under the heading on the booking page. */
   bookingNotice: string;
 
@@ -100,9 +96,6 @@ export const BUILT_IN_WORDS: SiteWords = {
   searchPlaceholder: "Destinations, stays, kosher food, kevarim…",
   contactEmail: "contact@whitegloveitineraries.com",
   replyPromise: "We’ll be in touch soon.",
-  footerBlurb:
-    "Kosher vacations — where to go, where to stay, what to do, and the food and Shabbos side. Heritage journeys in their own section.",
-  footerStrapline: "Personalized travel, planned with purpose.",
   // Rewritten with the booking page. It used to open on flights and on how you
   // were paying; the page is now about the trip the travel is for, and hotels
   // are the product this site knows something a comparison site does not.

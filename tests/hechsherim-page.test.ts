@@ -107,7 +107,8 @@ describe("the page", () => {
   });
 
   it("IS REACHABLE, and offered to search engines", () => {
-    assert.match(readFileSync("components/Footer.tsx", "utf8"), /"\/hechsherim"/);
+    // No slot in the Kosher dropdown's seven fixed items — linked from the
+    // kosher travel hub instead, which already covers it in its own words.
     assert.match(readFileSync("app/kosher-travel/page.tsx", "utf8"), /href: "\/hechsherim"/);
     assert.ok(publicPaths().some((entry) => entry.path === "/hechsherim"));
   });

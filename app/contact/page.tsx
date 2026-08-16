@@ -104,6 +104,12 @@ export default async function ContactPage({
             <ContactForm reason={reason} words={words} />
           )}
         </div>
+
+        <p className="mt-10 text-sm">
+          <Link href="/about" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+            About White Glove
+          </Link>
+        </p>
       </section>
 
       <Footer />

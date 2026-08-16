@@ -29,10 +29,10 @@ describe("obsolete homepage headline", () => {
   it("scrubObsoleteWords removes only that key", () => {
     const scrubbed = scrubObsoleteWords({
       heroTitle: OBSOLETE,
-      footerStrapline: "Keep me",
+      bookingNotice: "Keep me",
     });
     assert.equal(scrubbed.heroTitle, undefined);
-    assert.equal(scrubbed.footerStrapline, "Keep me");
+    assert.equal(scrubbed.bookingNotice, "Keep me");
   });
 
   it("wordProblem refuses putting the obsolete headline back", () => {

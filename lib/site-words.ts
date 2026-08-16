@@ -111,7 +111,10 @@ export function wordProblem(words: SiteWords): string | null {
 
 /* ---- what each word is, and where it shows ------------------------------ */
 
-export type WordGroup = "front" | "contact" | "footer" | "booking" | "affiliate";
+// "footer" was retired as a group along with footerBlurb and footerStrapline
+// — the redesigned footer is five fixed links, a logo and a copyright line,
+// none of it owner-editable text any more. See components/Footer.tsx.
+export type WordGroup = "front" | "contact" | "booking" | "affiliate";
 
 export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> = [
   { id: "front", title: "The front page", note: "The first three lines anybody reads, and what the search box invites them to type." },
@@ -120,7 +123,6 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
     title: "Getting in touch",
     note: "Shown wherever the site asks somebody to write in. This is the address VISITORS ARE TOLD, and it is not the same setting as the inbox the site delivers its own forms to — that is CONTACT_INBOX, on the connections screen. Changing this one changes what is printed on the page; make sure somebody reads whatever you put here.",
   },
-  { id: "footer", title: "The footer", note: "On the bottom of every page." },
   { id: "booking", title: "The booking page", note: "Under the heading on /book." },
   {
     id: "affiliate",
@@ -168,8 +170,6 @@ export const FIELDS: WordField[] = [
     href: "/contact",
   },
   { key: "replyPromise", group: "contact", label: "What a form says once it is sent", where: "after somebody presses send", href: "/contact" },
-  { key: "footerBlurb", group: "footer", label: "The paragraph under the logo", where: "in the footer of every page", href: "/", long: true },
-  { key: "footerStrapline", group: "footer", label: "The line under that", where: "in the footer of every page, in gold capitals", href: "/" },
   { key: "bookingNotice", group: "booking", label: "The paragraph under the heading", where: "on the booking page", href: "/book", long: true },
   { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
 ];

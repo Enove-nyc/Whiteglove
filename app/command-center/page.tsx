@@ -196,6 +196,9 @@ export default async function CommandCenterPage() {
           <Link href="/account" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">
             Your account
           </Link>
+          <Link href="/rate" className="border border-[var(--gold-light)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)]">
+            Rate this trip
+          </Link>
         </div>
       </section>
 

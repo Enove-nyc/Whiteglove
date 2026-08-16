@@ -55,6 +55,10 @@ export default async function ItineraryPage() {
             <Link href="/plan" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
               Get recommendations
             </Link>
+            . Or see{" "}
+            <Link href="/sample-itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+              a sample itinerary
+            </Link>
             .
           </p>
         </div>

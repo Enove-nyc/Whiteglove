@@ -164,9 +164,8 @@ describe("reachable from the site", () => {
     assert.match(adminNav, /\/admin\/settings\/travel-gear/);
   });
 
-  it("is in the public menu and the footer — not only search", () => {
+  it("is in the public menu — not only search", () => {
     assert.match(readFileSync("lib/navigation.ts", "utf8"), /href: "\/travel-gear"/);
-    assert.match(readFileSync("components/Footer.tsx", "utf8"), /href: "\/travel-gear"/);
   });
 
   it("the public page exists even when the shelf is empty", () => {

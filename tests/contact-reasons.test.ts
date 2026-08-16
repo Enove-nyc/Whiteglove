@@ -281,18 +281,19 @@ describe("the page that said it was being built", () => {
   });
 });
 
-describe("the owner's door is not advertised on every page", () => {
-  it("TAKES /admin OUT OF THE PUBLIC FOOTER", () => {
-    // It protected nothing — /admin is gated and robots.txt disallows it —
-    // but it pointed at the door from three hundred pages, and it reads as
-    // "one person runs this, and here is his way in".
+describe("the owner's door, in the minimal footer", () => {
+  // REVERSED, at the owner's explicit word. /admin used to be kept out of the
+  // footer entirely — it protected nothing (gated, and robots.txt disallows
+  // it) but reading "one person runs this, and here is his way in" from three
+  // hundred pages was a branding cost with no security benefit. The redesign
+  // brief named "Contact, Advertise, Terms, Privacy, Admin" as exactly five
+  // footer links, Admin included, so this is taken as a considered decision
+  // rather than an oversight — see components/Footer.tsx's own comment.
+  it("is exactly five links, Admin among them, and nothing gated stronger than that", () => {
     const footer = readFileSync("components/Footer.tsx", "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/\/\/[^\n]*/g, "");
-    assert.doesNotMatch(footer, /"\/admin"/);
-    assert.doesNotMatch(footer, /Owner login/);
-    // "Sign in" stays. That one is for travellers, whose account holds their
-    // own trips.
-    assert.match(footer, /"\/login"/);
+    assert.match(footer, /"\/admin"/);
+    assert.doesNotMatch(footer, /Owner login/, "still just \"Admin\", not a phrase that reads as an invitation");
   });
 });

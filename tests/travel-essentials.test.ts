@@ -314,10 +314,13 @@ describe("a visitor can find the eSIM page", () => {
     // The hand-off was live for weeks and reachable only by scrolling past a
     // search on another page. Being in the sitemap makes it findable by
     // Google; these are what make it findable by somebody who wants one.
-    const footer = readFileSync("components/Footer.tsx", "utf8");
-    assert.match(footer, /href: "\/esim"/, "no footer link to the eSIM page");
-    assert.match(footer, /href: "\/transfers"/, "no footer link to transfers");
-    assert.match(footer, /href: "\/travel-insurance"/, "no footer link to insurance");
+    // eSIM has no slot in the Travel dropdown's five fixed items (Stays,
+    // Activities, Transport, Insurance, Gear) — it is linked directly from
+    // the travel guide instead, checked below. Transfers and insurance are
+    // themselves two of the five.
+    const nav = readFileSync("lib/navigation.ts", "utf8");
+    assert.match(nav, /href: "\/transfers"/, "no menu link to transfers");
+    assert.match(nav, /href: "\/travel-insurance"/, "no menu link to insurance");
     const guide = readFileSync("app/travel-guide/page.tsx", "utf8");
     assert.match(guide, /href="\/esim"/, "the travel guide does not link to it");
     const index = readFileSync("lib/site-search-index.ts", "utf8");
