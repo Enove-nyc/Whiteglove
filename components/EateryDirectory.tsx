@@ -55,9 +55,8 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
         query={query}
         onQuery={setQuery}
         placeholder="Rome, bakery, meat, Antwerp…"
-        noun="kosher listings"
-        showing={shown.length}
-        total={eateries.length}
+        searchLabel="Search kosher listings"
+        empty={shown.length === 0}
         filters={[
           { label: "Country", value: country, onChange: setCountry, options: countries, allLabel: "Everywhere" },
           { label: "Kind", value: kind, onChange: setKind, options: kinds, allLabel: "Anything" },

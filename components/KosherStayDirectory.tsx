@@ -81,9 +81,8 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
         query={query}
         onQuery={(q) => { setFilters({ q }); setLimit(PAGE); }}
         placeholder="Rome, Alps, B&B, somewhere walkable for Shabbos…"
-        noun="places to stay"
-        showing={shown.length}
-        total={stays.length}
+        searchLabel="Search places to stay"
+        empty={shown.length === 0}
         onReset={() => { reset(); setLimit(PAGE); }}
         filters={[
           {

@@ -32,10 +32,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
 
   const countries = useMemo(
     () =>
-      [...new Set(attractions.map((a) => a.country))].sort().map((value) => ({
-        value,
-        label: `${value} (${attractions.filter((a) => a.country === value).length})`,
-      })),
+      [...new Set(attractions.map((a) => a.country))].sort().map((value) => ({ value, label: value })),
     [attractions],
   );
   const kinds = useMemo(
@@ -85,9 +82,9 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
         query={query}
         onQuery={(q) => { setFilters({ q }); setLimit(PAGE); }}
         placeholder="Rome, waterfall, ghetto, something for the children…"
-        noun="things to do"
-        showing={shown.length}
-        total={attractions.length}
+        searchLabel="Search things to do"
+        empty={shown.length === 0}
+        mapHref="/map"
         onReset={() => { reset(); setLimit(PAGE); }}
         filters={[
           {
@@ -247,11 +244,8 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
             onClick={() => setLimit((current) => current + PAGE)}
             className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
-            Show {Math.min(PAGE, shown.length - visible.length)} more
+            Show more
           </button>
-          <p className="text-sm text-stone-600">
-            Showing {visible.length} of {shown.length}.
-          </p>
         </div>
       )}
     </>

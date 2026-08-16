@@ -1,6 +1,8 @@
 "use client";
 
 import { fuzzyMatch, normalize } from "@/lib/place-search";
+import { Icon } from "@/components/icons/Icon";
+import { IconLink } from "@/components/icons/IconAction";
 
 // The search bar and filters that belong at the top of any long list.
 //
@@ -11,9 +13,20 @@ import { fuzzyMatch, normalize } from "@/lib/place-search";
 // so the look of each page stays the page's own. What is shared is the
 // behaviour and the shape of the controls, so a search box means the same
 // thing and sits in the same place wherever it appears.
+//
+// ONE SEARCH BAR, ONE FILTER BUTTON, TAGS FOR WHAT IS SET. The selects used
+// to sit open on the page; they now live behind a single Filter control, and
+// each filter that has been set shows as a small removable tag beside it —
+// so what is narrowing the list is always visible even while the panel is
+// closed, and any one filter comes off with one press rather than reopening
+// the panel to find it.
+//
+// NO COUNTS. This used to print "Showing 12 of 149 batei hachaim". The
+// redesign removes result totals everywhere — what matters is whether the
+// list is narrowed (the tags say so) and whether it is empty (said in words).
 
 export type ListFilter = {
-  /** Shown above the select. */
+  /** Shown above the select, and on the tag when set. */
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -31,20 +44,21 @@ export default function ListToolbar({
   onQuery,
   placeholder,
   filters = [],
-  showing,
-  total,
-  noun,
+  empty = false,
+  searchLabel = "Search",
+  mapHref,
   onReset,
 }: {
   query: string;
   onQuery: (value: string) => void;
   placeholder: string;
   filters?: ListFilter[];
-  /** How many are on screen now, and how many there are altogether. */
-  showing: number;
-  total: number;
-  /** What the things are called, e.g. "batei hachaim". Plural. */
-  noun: string;
+  /** True when nothing matches — the toolbar says so, without a number. */
+  empty?: boolean;
+  /** The accessible name of the search box, e.g. "Search places to stay". */
+  searchLabel?: string;
+  /** Where this list can be seen on a map, when it can. Renders the map icon. */
+  mapHref?: string;
   /**
    * Put every control back to "everything", in one press.
    *
@@ -57,48 +71,77 @@ export default function ListToolbar({
    */
   onReset?: () => void;
 }) {
-  const narrowed = showing !== total;
-  const active = Boolean(query.trim()) || filters.some((filter) => filter.value);
+  const setFilters = filters.filter((filter) => filter.value);
+  const active = Boolean(query.trim()) || setFilters.length > 0;
 
   return (
-    <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-      <div className="grid gap-4">
-        <label className="block max-w-2xl">
-          <span className={captionClass}>Search</span>
+    <div className="rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block min-w-0 flex-1 basis-64">
+          <span className={captionClass}>{searchLabel}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => onQuery(e.target.value)}
             className={inputClass}
             placeholder={placeholder}
-            aria-label={`Search ${noun}`}
+            aria-label={searchLabel}
           />
         </label>
-        {filters.length > 0 && (
-          <details className="rounded-xl border border-[var(--gold-light)] bg-white px-4 py-2" open={filters.some((filter) => filter.value)}>
-            <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-[var(--navy)]">Filters</summary>
-            <div className="grid gap-4 border-t border-[var(--gold-light)] py-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filters.map((filter) => (
-                <label key={filter.label} className="block">
-                  <span className={captionClass}>{filter.label}</span>
-                  <select value={filter.value} onChange={(e) => filter.onChange(e.target.value)} className={inputClass}>
-                    <option value="">{filter.allLabel}</option>
-                    {filter.options.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-            </div>
-          </details>
-        )}
+        {mapHref && <IconLink icon="map" label="Map" href={mapHref} className="mb-0.5 border border-[var(--gold-light)] bg-white" />}
       </div>
+
+      {filters.length > 0 && (
+        <details className="mt-3 rounded-xl border border-[var(--gold-light)] bg-white px-4 py-1" open={setFilters.length > 0}>
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 font-semibold text-[var(--navy)] [&::-webkit-details-marker]:hidden">
+            <Icon name="chevron-down" className="h-4 w-4" />
+            Filter
+          </summary>
+          <div className="grid gap-4 border-t border-[var(--gold-light)] py-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filters.map((filter) => (
+              <label key={filter.label} className="block">
+                <span className={captionClass}>{filter.label}</span>
+                <select value={filter.value} onChange={(e) => filter.onChange(e.target.value)} className={inputClass}>
+                  <option value="">{filter.allLabel}</option>
+                  {filter.options.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        </details>
+      )}
+
+      {/* Each set filter, as a tag that comes off with one press. The value
+          shown is the option's own label, so the tag reads "Poland", not a
+          slug. */}
+      {setFilters.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {setFilters.map((filter) => {
+            const chosen = filter.options.find((option) => option.value === filter.value);
+            return (
+              <li key={filter.label}>
+                <button
+                  type="button"
+                  onClick={() => filter.onChange("")}
+                  aria-label={`Remove filter: ${chosen?.label ?? filter.value}`}
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[var(--gold)] bg-white px-3 text-xs font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+                >
+                  {chosen?.label ?? filter.value}
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
         <p className="text-sm text-stone-600" role="status">
-          {showing === 0 ? (
+          {empty ? (
             <>
-              Nothing here matches that.{" "}
+              No results.{" "}
               <button
                 type="button"
                 onClick={() => (onReset ? onReset() : onQuery(""))}
@@ -106,24 +149,19 @@ export default function ListToolbar({
               >
                 {onReset ? "Start again" : "Clear the search"}
               </button>
-              .
             </>
-          ) : narrowed ? "Filtered results." : "All results."}
+          ) : null}
         </p>
         {/* The address bar is carrying the filters (components/useListUrl.ts),
-            so a narrowed list is a link somebody can send. Said out loud,
-            because a URL that changes without a page load is a thing nobody
-            looks for. */}
-        {onReset && active && showing > 0 && (
-          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <button
-              type="button"
-              onClick={onReset}
-              className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              Reset filters
-            </button>
-          </p>
+            so a narrowed list is a link somebody can send. */}
+        {onReset && active && !empty && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Reset filters
+          </button>
         )}
       </div>
     </div>

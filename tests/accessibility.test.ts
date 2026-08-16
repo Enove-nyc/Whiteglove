@@ -290,16 +290,18 @@ describe("the vacation-ideas filters", () => {
     assert.match(HUB, /aria-pressed=\{value === option\.value\}/);
   });
 
-  it("ANNOUNCES THE NEW COUNT, AND ONLY THE COUNT", () => {
-    // The live region used to contain the "Clear all filters" button, so every
-    // press announced the button's label with the number — and the button
-    // appearing or disappearing changed the region's structure rather than its
-    // text, which some screen readers read whole and others not at all.
+  it("ANNOUNCES THE FILTERED STATE, WITHOUT A NUMBER", () => {
+    // Two rules meet here. The live region must announce state changes as
+    // text-only (it used to contain the "Clear all filters" button, so every
+    // press announced the button's label, and the button appearing or
+    // disappearing changed the region's structure rather than its text). And
+    // the redesign removes result totals everywhere public — so what is
+    // announced is whether the list is filtered, never how many it holds.
     const region = HUB.slice(HUB.indexOf('<p role="status"'), HUB.indexOf("</p>", HUB.indexOf('<p role="status"')));
     assert.match(region, /aria-live="polite"/);
-    assert.match(region, /destinations/);
+    assert.match(region, /destinations/i);
     assert.doesNotMatch(region, /<button/);
-    assert.match(region, /filters applied|filter"/);
+    assert.doesNotMatch(region, /\.length|count/i, "the live region announces a number");
   });
 
   it("names each filter group rather than leaving thirty loose buttons", () => {

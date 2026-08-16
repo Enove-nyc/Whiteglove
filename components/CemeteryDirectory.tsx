@@ -72,9 +72,9 @@ export default function CemeteryDirectory({
         query={query}
         onQuery={setQuery}
         placeholder="Town, country, or who is buried there — Sanz, Kraków, קאָװנע, the Chozeh…"
-        noun="batei hachaim"
-        showing={shown.length}
-        total={cemeteries.length}
+        searchLabel="Search batei hachaim"
+        empty={shown.length === 0}
+        mapHref="/map"
         filters={[
           { label: "Country", value: country, onChange: setCountry, options: countries, allLabel: "Everywhere" },
           {
