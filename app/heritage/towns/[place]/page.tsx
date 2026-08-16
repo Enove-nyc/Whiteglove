@@ -66,7 +66,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           }),
           breadcrumbs([
             { name: "Home", path: "/" },
-            { name: "Destinations", path: "/stops" },
+            { name: "Destinations", path: "/destinations" },
             { name: destination.city, path: `/heritage/towns/${destination.slug}` },
           ]),
         ]}

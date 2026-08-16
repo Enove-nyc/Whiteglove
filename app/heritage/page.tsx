@@ -33,10 +33,11 @@ export const metadata = pageMetadata({
 });
 
 /**
- * The heritage section's own front door.
+ * The heritage traveler's own page, inside the same Destinations directory
+ * as everywhere else on the site.
  *
  * IT EXISTS BECAUSE THE WHOLE SITE USED TO BE THIS. The kevarim database is
- * the deepest thing White Glove has — three hundred towns, hundreds of
+ * the deepest thing White Glove has — over a hundred towns, hundreds of
  * kevarim, cemetery records with arrival notes and shomer contacts — and it
  * had spread into every global component: the front page led with it, the bar
  * carried three entries pointing at it, the footer asked for your kevarim, and
@@ -46,10 +47,13 @@ export const metadata = pageMetadata({
  * think they were in the wrong place, and it left the heritage traveler with
  * no page that was theirs — the database was everywhere and had no door.
  *
- * This is the door. Nothing was moved, hidden or thinned to make it: every
- * record, every guide, every verification status and every Yiddish name is
- * exactly where it was, and this page and the Heritage Travel item in the bar
- * are how you reach them.
+ * NOTHING WAS MOVED, HIDDEN OR THINNED to make this page: every record, every
+ * guide, every verification status and every Yiddish name is exactly where it
+ * was. What changed since is the bar itself — Heritage is no longer a
+ * category of its own there; the towns here are reached through the same
+ * Destinations door as a beach holiday, and kevarim and cemeteries through
+ * Kosher. This page still exists and is linked from the destinations
+ * directory, for the visitor who wants the fuller heritage-specific view.
  */
 export default async function HeritagePage() {
   const [cemeteries, guides] = await Promise.all([getPublicCemeteryList(), Promise.resolve(guidedDestinations())]);

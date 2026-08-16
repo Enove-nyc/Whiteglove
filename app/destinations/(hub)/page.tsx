@@ -5,6 +5,7 @@ import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
 import { SEASONS, TRIP_THEMES, vacationDestinations, type Season, type TripTheme } from "@/data/vacation-destinations";
+import { destinationHref, destinations as heritageDestinations } from "@/data/destinations";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { cardModels, vacationBrowseHref } from "@/lib/vacation-ideas";
@@ -45,6 +46,17 @@ export default async function VacationIdeasPage({
   // nobody chose.
   const initialTheme = (TRIP_THEMES.find((theme) => theme.value === kind)?.value ?? "") as TripTheme | "";
   const initialSeason = (SEASONS.find((entry) => entry.value === season)?.value ?? "") as Season | "";
+
+  // Heritage towns, in the same directory rather than a separate section —
+  // grouped by country since there are far more of them than vacation
+  // destinations and no photograph behind any one of them, unlike the cards
+  // above. /stops carries the full searchable version of this same list.
+  const heritageByCountry = new Map<string, typeof heritageDestinations>();
+  for (const place of heritageDestinations) {
+    const list = heritageByCountry.get(place.country) ?? [];
+    list.push(place);
+    heritageByCountry.set(place.country, list);
+  }
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -123,6 +135,41 @@ export default async function VacationIdeasPage({
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl border-t border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-16">
+        <SectionHeading
+          eyebrow="Heritage journeys"
+          title="Towns, kevarim and batei hachaim"
+          description="Part of the same directory — searchable at /stops, with each town's own page."
+        />
+        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {[...heritageByCountry].map(([country, places]) => (
+            <div key={country}>
+              <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">{country}</h3>
+              <ul className="mt-3 space-y-1">
+                {places.map((place) => (
+                  <li key={place.slug}>
+                    <Link
+                      href={destinationHref(place)}
+                      className="inline-flex min-h-9 items-center text-sm text-stone-600 underline decoration-[var(--gold-light)] decoration-2 underline-offset-4 hover:text-[var(--navy)] hover:decoration-[var(--gold)]"
+                    >
+                      {place.city}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="mt-10">
+          <Link
+            href="/stops"
+            className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+          >
+            Search the full heritage directory
+          </Link>
+        </p>
       </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">

@@ -64,7 +64,8 @@ describe("the reasons", () => {
   });
 
   it("HAS NO TRIP-PLANNING REASON LEFT", () => {
-    assert.ok(!CONTACT_REASONS.some((reason) => reason.value === "trip"), "personal planning is back as a contact reason");
+    const values: string[] = CONTACT_REASONS.map((reason) => reason.value);
+    assert.ok(!values.includes("trip"), "personal planning is back as a contact reason");
   });
 
   it("SENDS THE SITE FAULT TO THE BOT AND EVERYTHING ELSE TO A PERSON", () => {

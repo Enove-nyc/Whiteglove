@@ -53,7 +53,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
           }),
           breadcrumbs([
             { name: "Home", path: "/" },
-            { name: "Destinations", path: "/stops" },
+            { name: "Destinations", path: "/destinations" },
           ]),
         ]}
       />

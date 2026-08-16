@@ -152,7 +152,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
           ...(questions.length ? [faqPage(questions)] : []),
           breadcrumbs([
             { name: "Home", path: "/" },
-            { name: "Destinations", path: "/stops" },
+            { name: "Destinations", path: "/destinations" },
             { name: guide.city, path: `/${guide.slug}` },
           ]),
         ]}
