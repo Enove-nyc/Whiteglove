@@ -122,6 +122,16 @@ export async function saveExperienceRating(
   let saved = false;
   if (ratingsStoreAvailable()) {
     const rows = await readRedis();
+    const already = rows.find(
+      (row) => row.email.toLocaleLowerCase("en") === rating.email.toLocaleLowerCase("en") && row.kind === rating.kind && row.ref === rating.ref,
+    );
+    if (already) {
+      already.score = rating.score;
+      already.note = rating.note;
+      already.name = rating.name;
+      already.at = rating.at;
+      return writeRedis(rows);
+    }
     rows.unshift(rating);
     // Cap the Redis list so it cannot grow without bound on a busy day.
     saved = await writeRedis(rows.slice(0, 500));

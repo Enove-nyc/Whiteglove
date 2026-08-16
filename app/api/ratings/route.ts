@@ -8,6 +8,7 @@ import {
   ratingProblem,
   type ExperienceRatingInput,
 } from "@/lib/experience-ratings";
+import { accountCookieName, getAccountRecord, readSessionEmail } from "@/lib/account-store";
 import { saveExperienceRating } from "@/lib/experience-ratings-store";
 import { sendSubmissionNotification } from "@/lib/email";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
@@ -32,10 +33,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
 
+  const email = readSessionEmail(request.cookies.get(accountCookieName())?.value);
+  if (!email) return NextResponse.json({ error: "Sign in to rate." }, { status: 401 });
+  const account = await getAccountRecord(email);
+
   const body = (await request.json().catch(() => null)) as Partial<ExperienceRatingInput> | null;
   if (!body) return NextResponse.json({ error: "Complete the form." }, { status: 400 });
 
-  const problem = ratingProblem(body);
+  const named = {
+    ...body,
+    name: account?.name?.trim() || body.name,
+    email,
+  };
+  const problem = ratingProblem(named);
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });
 
   if (!isRatingKind(body.kind) || !isRatingScore(Number(body.score))) {
@@ -55,8 +65,8 @@ export async function POST(request: NextRequest) {
     ref: body.ref!.trim(),
     label: body.label!.trim(),
     score: Number(body.score) as 1 | 2 | 3,
-    name: body.name!.trim(),
-    email: body.email!.trim(),
+    name: (account?.name?.trim() || body.name || email).trim(),
+    email,
     note: body.note?.trim() ?? "",
   };
 

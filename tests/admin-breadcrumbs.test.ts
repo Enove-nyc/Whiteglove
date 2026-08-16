@@ -23,12 +23,12 @@ describe("the admin trail", () => {
   });
 
   it("names the section and the screen", () => {
-    assert.deepEqual(labels("/admin/kevarim"), ["Dashboard", "Directory", "Kevarim"]);
+    assert.deepEqual(labels("/admin/kevarim"), ["Dashboard", "Tzaddikim"]);
     assert.deepEqual(labels("/admin/shomrim"), ["Dashboard", "Directory", "Shomrim"]);
   });
 
   it("links every crumb except the last", () => {
-    assert.deepEqual(links("/admin/kevarim"), ["/admin", "/admin/directory", null]);
+    assert.deepEqual(links("/admin/kevarim"), ["/admin", null]);
   });
 
   it("names a screen the nav does not list, rather than pretending you are on the section front page", () => {

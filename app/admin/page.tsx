@@ -14,6 +14,8 @@ import { listContactMessages } from "@/lib/contact-store";
 import { listPagesForAdmin } from "@/lib/pages";
 import { listPlanRequests } from "@/lib/account-plan-store";
 import { getImportReviewQueue } from "@/lib/import-review-queue";
+import { listExperienceRatings } from "@/lib/experience-ratings-store";
+import { listReportedPlaceReviews } from "@/lib/place-review-store";
 import { getDashboardStats } from "@/lib/site-analytics";
 
 export const dynamic = "force-dynamic";
@@ -67,14 +69,19 @@ const totalCardClass =
 
 function TotalCard({
   label,
+  value,
   href,
 }: {
   label: string;
+  value?: number;
   href: string | null;
 }) {
   const body = (
     <>
       <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</span>
+      {value !== undefined && (
+        <span className="mt-1 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
+      )}
     </>
   );
 
@@ -95,7 +102,7 @@ function TotalCard({
       <AdminNavLink
         href={href}
         className={`${totalCardClass} flex w-full min-w-0 flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
-        aria-label={`Open ${label.toLowerCase()}.`}
+        aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
       >
         {body}
       </AdminNavLink>
@@ -110,7 +117,7 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, content, pages, picturesWaiting, messages, importReviewQueue] = await Promise.all([
+  const [stats, inventory, content, pages, picturesWaiting, messages, importReviewQueue, privateRatings, reportedReviews] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
     getAdminContent(),
@@ -118,6 +125,8 @@ export default async function AdminHome() {
     countPendingSubmissions(),
     listContactMessages(),
     getImportReviewQueue(),
+    listExperienceRatings(),
+    listReportedPlaceReviews(),
   ]);
 
   const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
@@ -221,6 +230,38 @@ export default async function AdminHome() {
       {/* What the site holds. The dashboard knew how many people had visited
           and nothing about what they had visited. Counted from the built-in
           content, so these survive the database being away. */}
+      {(may("/admin/imports/needs-review") || may("/admin/content") || may("/admin/ratings") || may("/admin/history")) && (
+        <section aria-labelledby="now-heading" className="mt-7">
+          <h2 id="now-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Needs you now</h2>
+          <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {may("/admin/imports/needs-review") && (
+              <TotalCard
+                label="Needs review"
+                value={importReviewQueue.error ? 0 : importReviewQueue.counts.awaitingVerification}
+                href="/admin/imports/needs-review"
+              />
+            )}
+            {may("/admin/imports/needs-review") && (
+              <TotalCard
+                label="Possible duplicates"
+                value={importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates}
+                href="/admin/imports/needs-review"
+              />
+            )}
+            {may("/admin/content") && (
+              <TotalCard label="Reported updates" value={pendingSuggestions.length} href="/admin/content" />
+            )}
+            {may("/admin/ratings") && (
+              <TotalCard label="Pending ratings" value={privateRatings.length} href="/admin/ratings" />
+            )}
+            {may("/admin/ratings") && (
+              <TotalCard label="Flagged reviews" value={reportedReviews.length} href="/admin/ratings" />
+            )}
+            {may("/admin/history") && <TotalCard label="Recent admin activity" href="/admin/history" />}
+          </ul>
+        </section>
+      )}
+
       <section aria-labelledby="totals-heading" className="mt-7">
         <h2 id="totals-heading" className="sr-only">What the site holds</h2>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
 
   const removed = await removePlaceReview(id);
   if (!removed.ok) return NextResponse.json({ error: removed.error }, { status: 503 });
-  if (isForm) return NextResponse.redirect(new URL("/admin/ratings", request.url), 303);
+  if (isForm) {
+    const host = request.headers.get("host")?.toLowerCase().split(":")[0] ?? "";
+    const configured = process.env.ADMIN_HOST?.trim().toLowerCase().split(":")[0] ?? "";
+    const path = configured && host === configured ? "/ratings" : "/admin/ratings";
+    return NextResponse.redirect(new URL(path, request.url), 303);
+  }
   return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   rateHref,
@@ -60,5 +61,13 @@ describe("rating copy helpers", () => {
     assert.equal(averageScore([1, 3, 3]), 7 / 3);
     assert.equal(nearestScoreLabel(2.6), "Glad we went");
     assert.equal(averageScore([5, 4]), null);
+  });
+});
+
+describe("the private rating API", () => {
+  it("refuses a request with no account session", () => {
+    const source = readFileSync("app/api/ratings/route.ts", "utf8");
+    assert.match(source, /readSessionEmail\(/);
+    assert.match(source, /Sign in to rate/);
   });
 });

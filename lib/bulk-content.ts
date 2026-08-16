@@ -25,6 +25,7 @@ import {
   isHeritageOnlyCategory,
   normalizeListingCategory,
 } from "@/data/listing-categories";
+import { findNearDuplicates } from "@/lib/duplicate-match";
 
 export const BULK_CONTENT_KINDS = ["ATTRACTION", "KOSHER_FOOD", "PLACE_TO_STAY", "PRACTICAL"] as const;
 export type BulkContentKind = (typeof BULK_CONTENT_KINDS)[number];
@@ -118,11 +119,14 @@ export type KnownContentRecord = {
   country: string;
   sourceUrl?: string | null;
   sourceId?: string | null;
+  website?: string | null;
+  coordinates?: string | null;
+  aliases?: string[];
 };
 
 export type DuplicateMatch = {
   id: string;
-  reason: "source" | "name-and-location";
+  reason: "source" | "name-and-location" | "coordinates" | "website";
 };
 
 const COORDINATES = /^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/;
@@ -374,6 +378,22 @@ export function findBulkContentDuplicate(
     if (location === locationKey(item.name, item.city, item.country)) {
       return { id: item.id, reason: "name-and-location" };
     }
+  }
+  const near = findNearDuplicates(
+    {
+      id: "candidate",
+      name: candidate.name,
+      aliases: candidate.aliases,
+      city: candidate.city,
+      country: candidate.country,
+      website: candidate.website,
+      sourceUrl: candidate.sourceUrl,
+      coordinates: candidate.coordinates,
+    },
+    existing,
+  ).find((hit) => hit.confidence !== "possible");
+  if (near) {
+    return { id: near.id, reason: near.matched.includes("coordinates") ? "coordinates" : "website" };
   }
   return null;
 }
