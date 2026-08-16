@@ -67,9 +67,15 @@ describe("DestinationSearch wiring", () => {
     assert.ok(SOURCE.includes("AI answers never appear") || SOURCE.includes("published White Glove content only"));
   });
 
-  test("mobile can collapse behind a labeled Search button", () => {
-    assert.ok(SOURCE.includes("mobileCollapse"));
-    assert.ok(NAV.includes("mobileCollapse"));
+  test("is reachable from the header and the mobile bar as a named Search icon", () => {
+    // The redesign moved the site search out of the header's own row: the
+    // header carries a Search icon (labelled and tooltipped) and the mobile
+    // bottom bar carries the same icon with a visible one-word label —
+    // hover tooltips never fire on a phone. The collapsing in-header field
+    // (mobileCollapse) went with the old row.
+    assert.match(NAV, /icon="search" label="Search" href="\/search"/);
+    const BAR = readFileSync("components/MobileBottomBar.tsx", "utf8");
+    assert.match(BAR, /icon: "search", label: "Search", href: "\/search"/);
   });
 });
 
@@ -82,7 +88,8 @@ describe("the /search results page", () => {
   });
 
   test("names the full site search", () => {
+    // Minimal wording now — the heading names the search; the sentence that
+    // explained what "the site" contains went in the wording pass.
     assert.ok(SEARCH_PAGE.includes("Search the entire White Glove site"));
-    assert.ok(SEARCH_PAGE.includes("already published"));
   });
 });

@@ -66,6 +66,13 @@ export type AccountRecord = {
    * anybody can type will ever match. "Forgotten password" sets a real one.
    */
   noPasswordYet?: boolean;
+  /**
+   * The unguessable media-store id of their profile picture (lib/media.ts),
+   * absent when they have not chosen one. It appears beside reviews they
+   * publish and nowhere else — the account page says so next to the control,
+   * and nothing else on the site reads it.
+   */
+  avatarMediaId?: string;
 };
 
 /**
@@ -147,6 +154,8 @@ export type AccountSummary = {
   favoriteCount: number;
   createdAt?: string;
   verifiedAt?: string;
+  /** Their profile picture's media id, for the account screen to show it. */
+  avatarMediaId?: string;
 };
 
 function redisConfig() {
@@ -1085,6 +1094,7 @@ export async function getCurrentAccountSummary(cookieValue?: string): Promise<Ac
     favoriteCount: data.favorites.length,
     createdAt: record.createdAt,
     verifiedAt: record.verifiedAt,
+    avatarMediaId: record.avatarMediaId,
   };
 }
 
@@ -1105,6 +1115,27 @@ export async function updateAccountProfile(email: string, updates: { name?: stri
   };
   const saved = await writeJson(accountKey(normalized), next);
   if (!saved) return { ok: false as const, error: "Could not save your changes." };
+  return { ok: true as const };
+}
+
+/**
+ * Set or clear the account's profile picture.
+ *
+ * Only the media id is stored here — the image itself lives in the media store
+ * (lib/media.ts) and is served by the public /api/media route, the same way
+ * every other uploaded file on the site is. Clearing passes null; the replaced
+ * image stays behind in the store, unguessable and referenced by nothing,
+ * because the media store deliberately has no delete and a dangling id is
+ * harmless.
+ */
+export async function setAccountAvatar(email: string, mediaId: string | null) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const normalized = normalizeId(email);
+  const record = await getAccountRecord(normalized);
+  if (!record) return { ok: false as const, error: "Account not found." };
+  const next: AccountRecord = { ...record, avatarMediaId: mediaId ?? undefined };
+  const saved = await writeJson(accountKey(normalized), next);
+  if (!saved) return { ok: false as const, error: "Could not save the picture." };
   return { ok: true as const };
 }
 

@@ -39,7 +39,22 @@ export async function GET(request: NextRequest) {
   }
   const viewer = await sessionEmail();
   const reviews = await listPlaceReviews(placeKind, placeRef);
-  return NextResponse.json({ reviews: reviews.map((review) => toPublicReview(review, viewer)) });
+  // The one public appearance a profile picture has: beside its author's
+  // published reviews (the account page's Details copy promises exactly
+  // this and nothing more). Joined here at read time by author, so the
+  // review rows never store a second copy of anybody's picture; the URL is
+  // the existing immutable media route, keyed by an unguessable id.
+  const authors = [...new Set(reviews.map((review) => review.authorEmail))];
+  const avatars = new Map<string, string>();
+  await Promise.all(
+    authors.map(async (author) => {
+      const record = await getAccountRecord(author).catch(() => null);
+      if (record?.avatarMediaId) avatars.set(author, `/api/media?id=${encodeURIComponent(record.avatarMediaId)}`);
+    }),
+  );
+  return NextResponse.json({
+    reviews: reviews.map((review) => toPublicReview({ ...review, avatarUrl: avatars.get(review.authorEmail) }, viewer)),
+  });
 }
 
 export async function POST(request: NextRequest) {

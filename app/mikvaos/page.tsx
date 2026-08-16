@@ -53,7 +53,7 @@ export default async function MikvaosPage() {
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
             {listings.length > 0
-              ? `${listings.length} listings with a source behind each one. Hours and access change — confirm with the community before you travel.`
+              ? "Every listing carries its source. Hours and access change — confirm with the community before you travel."
               : "Mikvah listings appear here once they have a source and are ready to publish."}
           </p>
           <p className="mt-4 max-w-3xl leading-7 text-stone-600">

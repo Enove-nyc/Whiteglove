@@ -132,7 +132,7 @@ export default async function VacationIdeasPage({
               Somewhere else in mind
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              These {vacationDestinations.length} are written up. Ask about somewhere else.
+              Ask about somewhere that is not written up yet.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
