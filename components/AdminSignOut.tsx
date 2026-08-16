@@ -1,12 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { adminHref } from "@/lib/admin-nav";
 
 export default function AdminSignOut() {
   const router = useRouter();
+  const pathname = usePathname();
   async function signOut() {
     await fetch("/api/admin/logout", { method: "POST" }).catch(() => undefined);
-    router.push("/admin/login");
+    router.push(adminHref("/admin/login", pathname));
     router.refresh();
   }
   return (

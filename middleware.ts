@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  adminHostEntry,
+  isAdminHostSegment,
+  toCanonicalAdminPath,
+} from "@/lib/admin-host";
+import {
   edgeAccessGeneration,
   edgeAccessToken,
   edgeAccountEmail,
@@ -98,42 +103,8 @@ function isAdminHost(request: NextRequest): boolean {
  * does not break: it lands on the public site instead of the admin one, which
  * is a visible, harmless wrong answer rather than a silent one.
  */
-const ADMIN_SCREENS = new Set([
-  "accounts",
-  "add",
-  "advertisements",
-  "airports",
-  "alerts",
-  "borders",
-  "content",
-  "countries",
-  "destinations",
-  "directory",
-  "directory-listings",
-  "duffel",
-  "finances",
-  "growth",
-  "hechsherim",
-  "history",
-  "imports",
-  "inventory",
-  "mikvaos",
-  "kevarim",
-  "login",
-  "messages",
-  "pages",
-  "photos",
-  "planner",
-  "ratings",
-  "recycle",
-  "reports",
-  "settings",
-  "shomrim",
-  "team",
-]);
-
 function isAdminScreen(pathname: string): boolean {
-  return ADMIN_SCREENS.has(pathname.split("/")[1] ?? "");
+  return isAdminHostSegment(pathname);
 }
 
 /**
@@ -177,6 +148,18 @@ export async function middleware(request: NextRequest) {
 
   const onAdminHost = isAdminHost(request);
 
+  if (onAdminHost && pathname.startsWith("/admin")) {
+    const token = await edgeAccessToken("admin");
+    const authed = Boolean(token && request.cookies.get("white_glove_admin")?.value === token);
+    const entry = adminHostEntry(pathname, request.nextUrl.search, authed);
+    if (entry.kind === "redirect") {
+      const url = request.nextUrl.clone();
+      url.pathname = entry.pathname;
+      url.search = entry.search;
+      return NextResponse.redirect(url, entry.permanent ? 308 : 307);
+    }
+  }
+
   // On the admin hostname, a bare path means the admin screen OF THAT NAME —
   // and only if a screen of that name exists. /version stays where it is so
   // the deployed build can always be checked, and anything else is a link back
@@ -186,7 +169,7 @@ export async function middleware(request: NextRequest) {
       ? pathname === "/"
         ? "/admin"
         : isAdminScreen(pathname)
-          ? `/admin${pathname}`
+          ? toCanonicalAdminPath(pathname)
           : pathname
       : pathname;
 
@@ -219,8 +202,8 @@ export async function middleware(request: NextRequest) {
     const url = new URL(request.url);
     url.hostname = adminHostname;
     url.port = "";
-    // Behind Vercel's proxy the incoming URL is plain http, and sending an
-    // http redirect would only bounce again through the https upgrade.
+    // Behind the TLS terminator the incoming URL is often plain http, and
+    // sending an http redirect would only bounce again through the https upgrade.
     if (!/^(localhost|127\.0\.0\.1)$/.test(url.hostname)) url.protocol = "https:";
     url.pathname = pathname.replace(/^\/admin/, "") || "/";
     return NextResponse.redirect(url);
@@ -232,7 +215,12 @@ export async function middleware(request: NextRequest) {
     // being equal to null, so a later refactor cannot turn it into fail-open.
     const token = await edgeAccessToken("admin");
     if (!token || request.cookies.get("white_glove_admin")?.value !== token) {
-      return NextResponse.redirect(new URL(onAdminHost ? "/login" : "/admin/login", request.url));
+      const login = new URL(onAdminHost ? "/login" : "/admin/login", request.url);
+      const nextPath = (onAdminHost ? pathname : pathname.replace(/^\/admin/, "") || "/") + request.nextUrl.search;
+      if (nextPath && nextPath !== "/" && nextPath !== "/login" && !nextPath.startsWith("/admin/login")) {
+        login.searchParams.set("next", nextPath);
+      }
+      return NextResponse.redirect(login);
     }
   }
 
