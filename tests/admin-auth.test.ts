@@ -22,8 +22,13 @@ const NO_AUTH_NEEDED = new Set([
   "app/api/admin/session/route.ts",
 ]);
 
-// Any of the guard helpers used across the admin routes.
-const GUARD = /isAdmin\(|isValidAccessToken\(|requireAdmin\(|\badmin\(request\)/;
+// Any of the guard helpers used across the admin routes. currentAdmin() is a
+// guard too — it verifies the same signed cookie through lib/admin-current and
+// the handlers that call it 401 on a null identity. It was missing from this
+// list, so two genuinely guarded routes read as unguarded here for months and
+// the suite sat red — which is the worst state for a tripwire: a REAL
+// unguarded route would have arrived as one more line of familiar noise.
+const GUARD = /isAdmin\(|isValidAccessToken\(|requireAdmin\(|\badmin\(request\)|currentAdmin\(/;
 const ADMIN_ACTIONS = ["app/admin/add/actions.ts", "app/admin/kevarim/actions.ts", "app/admin/shomrim/actions.ts", "app/admin/destinations/actions.ts", "app/admin/pages/actions.ts", "app/admin/directory/actions.ts"];
 
 function routeFiles(dir: string): string[] {
@@ -83,11 +88,11 @@ describe("admin authorisation", () => {
     if (NO_AUTH_NEEDED.has(rel)) continue;
 
     it(`${rel} checks the admin cookie`, () => {
-      assert.match(
-        source,
-        /isValidAccessToken\(\s*["']admin["']/,
-        `${rel} does not verify the admin cookie — every admin route must`,
-      );
+      // Two ways to check the same cookie: isValidAccessToken("admin", …)
+      // inline, or currentAdmin() — which calls exactly that against the same
+      // jar (lib/admin-current.ts) and additionally resolves who it is.
+      const checksIt = /isValidAccessToken\(\s*["']admin["']/.test(source) || /currentAdmin\(/.test(source);
+      assert.ok(checksIt, `${rel} does not verify the admin cookie — every admin route must`);
     });
 
     it(`${rel} refuses before doing anything`, () => {

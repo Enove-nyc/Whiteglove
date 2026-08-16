@@ -694,6 +694,48 @@ model Page {
   updatedAt DateTime      @updatedAt
 }
 
+// A public review: a signed-in traveler's rating of a place, in their own
+// words, published the moment it is saved.
+//
+// THE OTHER RATINGS TABLE, ExperienceRating below, is PRIVATE feedback for the
+// owner and never publishes. Keep them apart: a traveller telling the owner a
+// trip disappointed them is a different act from a traveller telling other
+// travellers about a hotel, and merging the tables would publish the first.
+//
+// The scale is 1–3 — Poor, Good, Excellent — and the labels live in
+// lib/place-reviews.ts as the one source. Not five stars: three honest words a
+// person can pick between without agonising over the difference of one star.
+//
+// One review per account per place (the unique below). Saving again edits it.
+// `status` is a plain string, not ContentStatus: reviews are never DRAFT and
+// never NEEDS_REVIEW — they publish immediately and the only other state is
+// REMOVED, which ContentStatus does not have.
+model PlaceReview {
+  id          String   @id @default(cuid())
+  /** destination | attraction | eatery | stay | shul | mikvah | kever | cemetery | listing */
+  placeKind   String
+  /** The place's slug or id within its kind. */
+  placeRef    String
+  /** What the place is called, so the admin list reads without a join. */
+  placeLabel  String
+  /** 1 Poor, 2 Good, 3 Excellent. The whole scale. */
+  score       Int
+  /** Their own words. Empty is fine — the rating alone is a review. */
+  text        String   @default("")
+  authorEmail String
+  /** From the account record at write time. The public sees initials only. */
+  authorName  String
+  status      String   @default("PUBLISHED") // PUBLISHED | REMOVED
+  /** How many readers flagged it. Over zero puts it in the admin's queue. */
+  reportCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([placeKind, placeRef, authorEmail])
+  @@index([placeKind, placeRef, status])
+  @@index([reportCount])
+}
+
 // Private feedback: how a listing or trip went for somebody.
 //
 // NOT published on public pages from this table. Case studies still need

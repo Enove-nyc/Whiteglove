@@ -91,6 +91,28 @@ END $$;
 -- contacts out of one man.
 ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "name" TEXT;
 
+-- Public place reviews (1-3 with the traveller's own words, published under
+-- initials). NOT the private ExperienceRating below — that one never
+-- publishes. Safe to re-run.
+CREATE TABLE IF NOT EXISTS "PlaceReview" (
+  "id" TEXT NOT NULL,
+  "placeKind" TEXT NOT NULL,
+  "placeRef" TEXT NOT NULL,
+  "placeLabel" TEXT NOT NULL,
+  "score" INTEGER NOT NULL,
+  "text" TEXT NOT NULL DEFAULT '',
+  "authorEmail" TEXT NOT NULL,
+  "authorName" TEXT NOT NULL,
+  "status" TEXT NOT NULL DEFAULT 'PUBLISHED',
+  "reportCount" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "PlaceReview_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "PlaceReview_placeKind_placeRef_authorEmail_key" ON "PlaceReview"("placeKind", "placeRef", "authorEmail");
+CREATE INDEX IF NOT EXISTS "PlaceReview_placeKind_placeRef_status_idx" ON "PlaceReview"("placeKind", "placeRef", "status");
+CREATE INDEX IF NOT EXISTS "PlaceReview_reportCount_idx" ON "PlaceReview"("reportCount");
+
 -- Private experience ratings (listings / trips). Safe to re-run.
 CREATE TABLE IF NOT EXISTS "ExperienceRating" (
   "id" TEXT NOT NULL,

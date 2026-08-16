@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
@@ -203,6 +204,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
             </div>
             <DestinationActions place={{ id: guide.slug, name: guide.city, yiddishName: guide.yiddishCity, address: guide.graveAddress ?? `${guide.city}, ${guide.country}`, coordinates: guide.graveCoordinates, href: `/${guide.slug}` }} airports={airportsFor(guide.country, guide.graveAddress, guide.graveCoordinates)} />
             <SuggestEditPanel targetType="location" targetId={guide.slug} title={guide.city} />
+            <ReviewSection placeKind="kever" placeRef={guide.slug} placeLabel={guide.city} sacred />
 
             {guide.findingNotes && <div className="mt-8 border-t border-[var(--gold-light)] pt-5">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Finding the kever</p>

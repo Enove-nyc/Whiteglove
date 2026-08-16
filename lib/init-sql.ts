@@ -447,6 +447,24 @@ CREATE TABLE "Page" (
 );
 
 -- CreateTable
+CREATE TABLE "PlaceReview" (
+    "id" TEXT NOT NULL,
+    "placeKind" TEXT NOT NULL,
+    "placeRef" TEXT NOT NULL,
+    "placeLabel" TEXT NOT NULL,
+    "score" INTEGER NOT NULL,
+    "text" TEXT NOT NULL DEFAULT '',
+    "authorEmail" TEXT NOT NULL,
+    "authorName" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PUBLISHED',
+    "reportCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PlaceReview_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ExperienceRating" (
     "id" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
@@ -574,6 +592,15 @@ CREATE INDEX "DirectoryProvider_category_idx" ON "DirectoryProvider"("category")
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Page_slug_key" ON "Page"("slug");
+
+-- CreateIndex
+CREATE INDEX "PlaceReview_placeKind_placeRef_status_idx" ON "PlaceReview"("placeKind", "placeRef", "status");
+
+-- CreateIndex
+CREATE INDEX "PlaceReview_reportCount_idx" ON "PlaceReview"("reportCount");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PlaceReview_placeKind_placeRef_authorEmail_key" ON "PlaceReview"("placeKind", "placeRef", "authorEmail");
 
 -- CreateIndex
 CREATE INDEX "ExperienceRating_kind_ref_idx" ON "ExperienceRating"("kind", "ref");

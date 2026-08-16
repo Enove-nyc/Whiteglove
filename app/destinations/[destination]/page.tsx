@@ -10,6 +10,7 @@ import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
@@ -796,6 +797,13 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             ))}
           </ul>
         </Section>
+
+        {/* The template's reviews slot: after the practical sections, before
+            the closing action. Not sacred — a vacation destination's reviews
+            are ordinary reviews. */}
+        <div className="mt-12">
+          <ReviewSection placeKind="destination" placeRef={destination.slug} placeLabel={destination.name} />
+        </div>
 
         {/* Rides the bottom of the viewport while there is page left, then
             lets go — the last section and the footer are never underneath it.

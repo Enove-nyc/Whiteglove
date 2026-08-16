@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import KeverCoordinates from "@/components/KeverCoordinates";
 import MixedText from "@/components/MixedText";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 import Navbar from "@/components/Navbar";
 import NearestAirports from "@/components/NearestAirports";
 import StructuredData from "@/components/StructuredData";
@@ -98,6 +99,7 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
               </p>
             )}
             <SuggestEditPanel targetType="location" targetId={entry.slug} title={burial.knownAs || burial.name} />
+            <ReviewSection placeKind="kever" placeRef={entry.slug} placeLabel={burial.knownAs || burial.name} sacred />
 
             <dl className="mt-8 divide-y divide-[var(--gold-light)] border-y border-[var(--gold-light)]">
               {burial.seforim && (
