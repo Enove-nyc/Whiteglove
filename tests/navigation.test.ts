@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { bookCategoryFor, categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN } from "@/lib/navigation";
+import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor } from "@/lib/navigation";
 import { bookingLink } from "@/lib/booking-access";
 
 /**
  * The bar is the positioning, so the rules about it are tests rather than a
  * comment somebody can read past.
  *
- * Rewritten for the five-dropdown header (Destinations, Kosher, Plan, Travel,
- * Book) plus the icon row (Search, Route, Itinerary, Account). The bar this
+ * Rewritten for the four-dropdown header (Destinations, Kosher, Plan,
+ * Travel — booking inside Travel) plus the icon row (Search, Route,
+ * Itinerary, Account). The bar this
  * replaces read Destinations · Things to Do · Kosher Travel · Heritage Travel
  * · Itinerary planner with one filled Search & Book button; each test below
  * that concerns the OLD shape has been rewritten for the new one rather than
@@ -24,7 +25,7 @@ describe("what the bar leads with", () => {
     assert.equal(NAV_CATEGORIES[0].label, "Destinations");
   });
 
-  it("is the five categories, in order", () => {
+  it("is the four categories, in order", () => {
     assert.deepEqual(
       NAV_CATEGORIES.map((category) => category.label),
       ["Destinations", "Kosher", "Plan", "Travel"],
@@ -58,16 +59,20 @@ describe("what the bar leads with", () => {
   });
 });
 
-describe("Book — resolved, never a dead end", () => {
-  it("offers a real link when the search is open", () => {
-    const category = bookCategoryFor(bookingLink([]));
-    assert.equal(category.label, "Book");
-    assert.ok(category.links.length > 0);
-    for (const link of category.links) assert.match(link.href, /^\/book/);
+describe("booking lives inside Travel — resolved, never a dead end", () => {
+  it("is not a category of its own", () => {
+    for (const category of NAV_CATEGORIES) assert.notEqual(category.label, "Book");
+    assert.equal(NAV_CATEGORIES.length, 4);
+  });
+
+  it("offers real links when the search is open", () => {
+    const category = travelCategoryFor(bookingLink([]));
+    assert.equal(category.label, "Travel");
+    assert.ok(["Flights", "Hotels", "Cars"].every((label) => category.links.some((link) => link.label === label)));
   });
 
   it("never leads to an access code", () => {
-    const category = bookCategoryFor(bookingLink(["/book"]));
+    const category = travelCategoryFor(bookingLink(["/book"]));
     for (const link of category.links) assert.notEqual(link.href, "/book");
   });
 });
@@ -120,7 +125,7 @@ describe("which section is current", () => {
 describe("the header renders the list rather than its own copy", () => {
   it("reads the shared navigation", () => {
     assert.match(NAVBAR, /NAV_CATEGORIES/);
-    assert.match(NAVBAR, /bookCategoryFor\(/);
+    assert.match(NAVBAR, /travelCategoryFor\(/);
     assert.match(NAVBAR, /from "@\/lib\/navigation"/);
   });
 
@@ -135,10 +140,15 @@ describe("the header renders the list rather than its own copy", () => {
     assert.match(NAVBAR, /label=\{signedIn \? "Account" : "Sign in"\}/);
   });
 
-  it("opens dropdowns on hover, click and focus, not click alone", () => {
-    assert.match(NAVBAR, /onMouseEnter=\{?\(\) => openOnHover/);
-    assert.match(NAVBAR, /onFocus=\{?\(\) => openOnHover/);
-    assert.match(NAVBAR, /onClick=\{?\(\) => setOpenKey/);
+  it("opens dropdowns on hover, click and focus — and click cannot undo focus", () => {
+    assert.match(NAVBAR, /onMouseEnter=\{\(\) => openOnHover/);
+    assert.match(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
+    assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick/);
+    // The pre-interaction state is recorded at pointer-down, before focus
+    // fires — the fix for the menu that flashed open and shut on click.
+    assert.match(NAVBAR, /onPointerDown=\{\(\) => \{ openBeforePress\.current = open; \}\}/);
+    // Focus leaving a category closes its panel.
+    assert.match(NAVBAR, /onBlur=/);
   });
 
   it("sign in points at the sign-in page", () => {

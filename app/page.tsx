@@ -1,16 +1,16 @@
-import { readWords } from "@/lib/site-words-store";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SearchMemory from "@/components/SearchMemory";
-import StartingPoints from "@/components/StartingPoints";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { featuredDestinations } from "@/lib/featured-destinations";
 import { pageMetadata } from "@/lib/seo";
+import { Icon } from "@/components/icons/Icon";
+import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
 import type { TripTheme } from "@/data/vacation-destinations";
 import { headers } from "next/headers";
@@ -19,7 +19,7 @@ import Link from "next/link";
 export const metadata = pageMetadata({
   title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Itineraries",
   description:
-    "Plan a kosher vacation with the kosher side answered first: where to go, what to do, kosher food, Shabbos, minyanim and mikvaos — build the itinerary yourself, free.",
+    "Kosher travel: destinations, kosher food, Shabbos, shuls and mikvahs — plan and book your own trip.",
   path: "/",
 });
 
@@ -87,15 +87,13 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, words, featured, caseStudies] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, featured, caseStudies, booking] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
-    // The first three lines anybody reads, and what the search box invites
-    // them to type. /admin/settings/words.
-    readWords(),
     featuredDestinations(6),
     // Genuine, permitted, approved only — section renders nothing when empty.
     readPublicCaseStudies(),
+    readBookingLink(),
   ]);
 
   return (
@@ -113,31 +111,14 @@ export default async function Home() {
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#24405f] to-[#3a5462]" />
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,25,45,.78),rgba(13,25,45,.30)_45%,transparent_80%)]" />
         <div className="relative mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--gold-light)]">{words.heroEyebrow}</p>
-          <h1 className="mt-3 max-w-4xl font-[family-name:var(--font-display)] text-[2.25rem] leading-[1.06] sm:text-[clamp(2.75rem,6.5vw,4.25rem)] sm:leading-[1.04]">
-            {words.heroTitle}
+          {/* The whole opening, at the owner's word: a question and the
+              search that answers it. No eyebrow, no pitch paragraph, no
+              browse links — the navigation is one line up. */}
+          <h1 className="max-w-4xl font-[family-name:var(--font-display)] text-[2.5rem] uppercase tracking-[0.06em] leading-[1.04] sm:text-[clamp(3rem,7vw,4.5rem)]">
+            Where to?
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">{words.heroSubtitle}</p>
 
-          {/* The site-wide search, at hero size. It finds destinations,
-              stays, kosher food and the heritage side alike, and every result
-              lands on one of our own pages. */}
-          <DestinationSearch id="home-hero-search" placeholder={words.searchPlaceholder} />
-
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Link
-              href="/destinations"
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-white underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold-light)]"
-            >
-              Browse every destination →
-            </Link>
-            <Link
-              href="/heritage"
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-white underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold-light)]"
-            >
-              Planning a heritage journey? Start here →
-            </Link>
-          </div>
+          <DestinationSearch id="home-hero-search" placeholder="Search destinations" />
 
           {homepagePromotions.length > 0 && (
             <div className="mt-10">
@@ -180,11 +161,31 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ---- 3. The three free ways in ------------------------------------
-          /plan, /itinerary and /book, named once in lib/starting-points.ts.
-          Personal planning is not a fourth door — it does not exist. */}
+      {/* ---- 3. The three ways in, as compact icon cards ------------------
+          Ideas (/plan), Itinerary (/itinerary), Book (resolved through the
+          booking lock). One word each, at the owner's word — the accessible
+          name and tooltip carry the sentence, the card does not. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <StartingPoints />
+        <div className="grid grid-cols-3 gap-3 sm:gap-5">
+          {(
+            [
+              { icon: "lightbulb", label: "Ideas", href: "/plan", name: "Ideas — get destination recommendations" },
+              { icon: "suitcase", label: "Itinerary", href: "/itinerary", name: "Itinerary — build the trip yourself" },
+              { icon: "plane", label: "Book", href: booking.href, name: booking.searchIsPublic ? "Book — search flights, hotels and cars" : booking.label },
+            ] as const
+          ).map((card) => (
+            <Link
+              key={card.label}
+              href={card.href}
+              aria-label={card.name}
+              title={card.name}
+              className="wg-card flex min-h-28 flex-col items-center justify-center gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--navy)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
+            >
+              <Icon name={card.icon} className="h-7 w-7" />
+              <span className="text-sm font-bold uppercase tracking-[0.12em]">{card.label}</span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {inlinePromotions.length ? (

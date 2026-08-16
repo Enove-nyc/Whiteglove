@@ -162,10 +162,6 @@ export type Signal<L extends string> = {
 export type KosherLevel = "in-town" | "from-a-base" | "not-checked";
 export type ShabbosLevel = "walkable-quarter" | "seasonal" | "arrange-ahead" | "not-checked";
 
-function count(n: number, one: string, many = `${one}s`): string {
-  return `${n} ${n === 1 ? one : many}`;
-}
-
 /**
  * What we hold about kosher food where you are going.
  *
@@ -179,15 +175,16 @@ export function kosherAvailability(destination: VacationDestination, facts: Vaca
   const quarters = facts.areas.length;
 
   if (listings > 0 || quarters > 0) {
-    const parts: string[] = [];
-    if (listings) parts.push(`${count(listings, "kosher food listing")}`);
-    if (quarters) parts.push(`${count(quarters, "Jewish quarter", "Jewish quarters")}`);
+    // No tallies. "3 kosher food listings" advertised the size of the
+    // database, not the state of the town — the fact a traveler needs is
+    // that kosher food is on record here, and the listings themselves are
+    // one press away.
     return {
       level: "in-town",
       label: "Kosher food in town",
       glyph: "●",
       tone: "good",
-      detail: `${parts.join(" and ")} in ${destination.name}. Confirm current certification and opening details before visiting.`,
+      detail: `Kosher food is on record in ${destination.name}. Confirm current certification and opening details before visiting.`,
     };
   }
 

@@ -99,7 +99,6 @@ function FilterGroup<V extends string>({
             className={value === option.value ? chipOn : chipOff}
           >
             {option.label}
-            <span className="ml-2 font-normal opacity-70">{option.count}</span>
           </button>
         ))}
       </div>
@@ -161,30 +160,24 @@ export default function VacationIdeasHub({
               things and this field needs both. */}
           <div className="lg:col-span-2">
             <label htmlFor="vacation-search" className="block text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-              Search these destinations
+              Search
             </label>
             <input
               id="vacation-search"
               type="search"
               value={filters.query}
               onChange={(event) => set("query", event.target.value)}
-              aria-describedby="vacation-search-hint"
-              placeholder="A place, a country, or the kind of trip — Rome, Switzerland, mountains…"
+              placeholder="Rome, Switzerland, mountains…"
               className="mt-2 w-full rounded-md border border-[var(--gold-light)] bg-white px-4 py-3 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]"
             />
-            <p id="vacation-search-hint" className="mt-1.5 text-xs leading-5 text-stone-500">
-              For a kever or a town rather than a holiday,{" "}
-              <Link
-                href="/heritage"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
-              >
-                Search the heritage directory
-              </Link>
-              .
-            </p>
           </div>
 
-          <FilterGroup legend="Kind of trip" allLabel="Any kind" options={themes} value={filters.theme} onChange={(v) => setTheme(v as TripTheme | "")} />
+          <details className="lg:col-span-2 rounded-xl border border-[var(--gold-light)] bg-white px-4 py-1" open={active > 0}>
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 font-semibold text-[var(--navy)] [&::-webkit-details-marker]:hidden">
+              Filter
+            </summary>
+            <div className="grid gap-6 border-t border-[var(--gold-light)] py-4 lg:grid-cols-2">
+          <FilterGroup legend="Trip type" allLabel="Any" options={themes} value={filters.theme} onChange={(v) => setTheme(v as TripTheme | "")} />
           <FilterGroup legend="Season" allLabel="Any season" options={seasons} value={filters.season} onChange={(v) => setSeason(v as Season | "")} />
           <FilterGroup legend="Country" allLabel="Anywhere" options={countries} value={filters.country} onChange={(v) => set("country", v)} />
           <div className="grid gap-6">
@@ -203,20 +196,9 @@ export default function VacationIdeasHub({
               onChange={(v) => set("shabbos", v as ShabbosLevel | "")}
             />
           </div>
+            </div>
+          </details>
         </div>
-
-        <p className="mt-6 text-xs leading-6 text-stone-500">
-          The kosher and Shabbos labels describe{" "}
-          <span className="font-semibold text-[var(--navy)]">what our guides cover</span> for a place — not a
-          judgement about the town itself.{" "}
-          <Link
-            href="/verification"
-            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
-          >
-            How we check what goes on these pages
-          </Link>
-          .
-        </p>
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">

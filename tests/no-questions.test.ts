@@ -77,8 +77,10 @@ const NOT_THE_VISITORS: Array<[RegExp, string]> = [
  */
 const THE_VISITORS_OWN: Array<[string, string]> = [
   ["app/destinations/[destination]/page.tsx", "Ready to book {destination.name}?"],
-  ["app/book/page.tsx", "Planning a heritage journey?"],
-  ["app/page.tsx", "Planning a heritage journey? Start here"],
+  // The homepage now opens with the visitor's own question — the audit's
+  // exact wording — and the heritage hero link went with the rest of the
+  // hero copy (heritage is reached through Destinations like anywhere else).
+  ["app/page.tsx", "Where to?"],
 ];
 
 function walk(dir: string): string[] {

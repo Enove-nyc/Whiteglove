@@ -38,12 +38,12 @@ export type TripTheme = "beach" | "city" | "mountains" | "family" | "couples" | 
 export type Season = "spring" | "summer" | "autumn" | "winter";
 
 export const TRIP_THEMES: ReadonlyArray<{ value: TripTheme; label: string; blurb: string }> = [
-  { value: "beach", label: "Beach and resort", blurb: "Sea, sun and somewhere to stop." },
-  { value: "city", label: "City break", blurb: "Streets, museums and a kehilla to daven with." },
-  { value: "mountains", label: "Mountains and nature", blurb: "Air, height and quiet." },
+  { value: "beach", label: "Beach", blurb: "Sea, sun and somewhere to stop." },
+  { value: "city", label: "Cities", blurb: "Streets, museums and a kehilla to daven with." },
+  { value: "mountains", label: "Mountains", blurb: "Air, height and quiet." },
   { value: "family", label: "Family", blurb: "Enough for children and enough for you." },
-  { value: "couples", label: "Couples and honeymoon", blurb: "Somewhere calm and unhurried." },
-  { value: "short-break", label: "Short getaway", blurb: "Three or four days, one flight." },
+  { value: "couples", label: "Couples", blurb: "Somewhere calm and unhurried." },
+  { value: "short-break", label: "Short Trips", blurb: "Three or four days, one flight." },
 ] as const;
 
 export const SEASONS: ReadonlyArray<{ value: Season; label: string }> = [

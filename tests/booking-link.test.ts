@@ -9,7 +9,7 @@ import {
   bookingLink,
   pathIsLocked,
 } from "@/lib/booking-access";
-import { bookCategoryFor } from "@/lib/navigation";
+import { travelCategoryFor } from "@/lib/navigation";
 
 /**
  * No public call to action may end at a password box.
@@ -75,19 +75,30 @@ describe("where a public booking link may go", () => {
   });
 });
 
-describe("the Book dropdown", () => {
-  it("still offers booking when it is open", () => {
-    const category = bookCategoryFor(bookingLink([]));
-    assert.ok(category.links.some((link) => link.href.startsWith(BOOKING_SEARCH_PATH)));
+describe("the booking links inside Travel", () => {
+  it("offers Flights, Hotels and Cars when the search is open", () => {
+    const category = travelCategoryFor(bookingLink([]));
+    for (const label of ["Flights", "Hotels", "Cars"]) {
+      assert.ok(category.links.some((link) => link.label === label && link.href.startsWith(BOOKING_SEARCH_PATH)), `${label} missing from Travel`);
+    }
   });
 
   it("HAS NO ROUTE TO THE LOCKED SEARCH", () => {
-    const category = bookCategoryFor(bookingLink(LOCKED));
+    const category = travelCategoryFor(bookingLink(LOCKED));
     for (const link of category.links) {
       assert.notEqual(link.href, BOOKING_SEARCH_PATH, `${link.label} still points at the locked search`);
     }
     // And it is replaced rather than removed — the entry is still there.
     assert.ok(category.links.some((link) => link.href === BOOKING_HELP_PATH));
+  });
+
+  it("keeps Travel's own pages either way", () => {
+    for (const locked of [[], LOCKED]) {
+      const category = travelCategoryFor(bookingLink(locked));
+      for (const href of ["/hotels", "/things-to-do", "/transfers", "/travel-insurance", "/travel-gear"]) {
+        assert.ok(category.links.some((link) => link.href === href), `${href} missing while locked=${locked.length > 0}`);
+      }
+    }
   });
 });
 

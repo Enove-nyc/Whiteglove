@@ -2,12 +2,11 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
-import SectionHeading from "@/components/SectionHeading";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
 import { SEASONS, TRIP_THEMES, vacationDestinations, type Season, type TripTheme } from "@/data/vacation-destinations";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
-import { cardModels, vacationBrowseHref } from "@/lib/vacation-ideas";
+import { cardModels } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -24,7 +23,7 @@ export async function generateMetadata() {
   // away for a cosmetic tidy.
   const page = await resolvePage("getaways");
   return pageMetadata({
-    title: page?.seoTitle ?? "Kosher vacation ideas — where to go | White Glove Itineraries",
+    title: page?.seoTitle ?? "Destinations — White Glove Kosher Travel",
     description:
       page?.seoDescription ??
       "Beaches, cities, mountains and family trips, with practical kosher and Shabbos guidance for each destination.",
@@ -67,59 +66,8 @@ export default async function VacationIdeasPage({
       {/* The owner's own words at the top, from /admin/pages. */}
       {page ? <PageBlocks blocks={page.blocks} /> : null}
 
-      <section className="mx-auto max-w-7xl px-5 pt-4 sm:px-8">
-        <SectionHeading
-          eyebrow="Holiday type"
-          title="Browse by holiday type"
-          description="Each one filters the same list of destinations."
-        />
-        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {TRIP_THEMES.map((theme) => {
-            const count = cards.filter((card) => card.destination.themes.includes(theme.value)).length;
-            const selected = initialTheme === theme.value;
-            // A category with nothing in it is not offered. See the same rule
-            // in lib/vacation-ideas.ts.
-            if (count === 0) return null;
-            return (
-              <li key={theme.value}>
-                <Link
-                  href={`${vacationBrowseHref({ theme: theme.value, season: initialSeason })}#browse`}
-                  aria-current={selected ? "true" : undefined}
-                  className={`wg-card flex h-full min-h-11 min-w-0 flex-col justify-between gap-2 border p-5 ${
-                    selected
-                      ? "border-[var(--navy)] bg-[var(--cream-deep)] shadow-[0_10px_28px_rgba(23,45,82,0.12)]"
-                      : "border-[var(--gold-light)] bg-[var(--surface)]"
-                  }`}
-                >
-                  <span>
-                    <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                      {theme.label}
-                    </span>
-                    <span className="mt-1 block text-sm leading-6 text-stone-600">{theme.blurb}</span>
-                  </span>
-                  <span className="flex flex-wrap items-center justify-end gap-2">
-                    {selected && (
-                      <span className="rounded-full bg-[var(--navy)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
-                        Selected
-                      </span>
-                    )}
-                    <span aria-hidden="true" className="shrink-0 text-xs font-bold text-[var(--gold-ink)]">
-                      →
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
       <section id="browse" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
-        <SectionHeading
-          eyebrow="Every destination"
-          title="All destinations"
-          description="Each card says kosher food, Shabbos and where to stay."
-        />
+        <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Destinations</h1>
         <div className="mt-10">
           <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
         </div>

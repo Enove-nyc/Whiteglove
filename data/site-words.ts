@@ -23,12 +23,6 @@
  */
 
 export type SiteWords = {
-  /** The small gold line above the front-page headline. */
-  heroEyebrow: string;
-  /** The front-page headline. */
-  heroTitle: string;
-  /** The paragraph under it. */
-  heroSubtitle: string;
   /** What the search box invites somebody to type. */
   searchPlaceholder: string;
   /**
@@ -81,16 +75,10 @@ export type SiteWords = {
  * Anything the owner has already changed from /admin/settings/words still wins
  * over every line here; only what he has not touched moves.
  */
+// The hero words (eyebrow, headline, subtitle) were retired with the
+// "Where to?" homepage: the opening is a question and a search box, and an
+// editable setting shown nowhere is worse than no setting.
 export const BUILT_IN_WORDS: SiteWords = {
-  heroEyebrow: "Kosher vacations, thoughtfully planned",
-  // NOT "with every kosher detail in place". A headline is the one sentence a
-  // stranger takes away, and that one promised completeness across the whole
-  // site — which lib/destination-readiness.ts, the thing that actually
-  // decides, does not grant to every destination. This says what the site does
-  // do, which is answer the kosher and Shabbos questions first.
-  heroTitle: "Plan your next vacation with the kosher side answered first.",
-  heroSubtitle:
-    "Discover where to go, build your itinerary, and find kosher food and religious essentials.",
   // No longer "a city, tzaddik, kever" — the same search still finds all three,
   // and the box no longer announces the heritage database on every page.
   searchPlaceholder: "Destinations, stays, kosher food, kevarim…",

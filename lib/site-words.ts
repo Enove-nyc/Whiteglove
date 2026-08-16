@@ -24,7 +24,9 @@ export const WORD_KEYS = Object.keys(BUILT_IN_WORDS) as (keyof SiteWords)[];
  * Redis override saved before the rewrite cannot silently undo the fix.
  */
 export const OBSOLETE_WORDINGS: Partial<Record<keyof SiteWords, readonly string[]>> = {
-  heroTitle: ["Plan your next vacation with every kosher detail in place."],
+  // The hero-words keys themselves were retired with the "Where to?" front
+  // page; the scrub machinery stays for the next wording that has to go.
+  searchPlaceholder: ["Search a city, tzaddik, or country..."],
 };
 
 /** True when a stored value is a known-obsolete string we must not republish. */
@@ -103,7 +105,7 @@ export function wordProblem(words: SiteWords): string | null {
   for (const key of WORD_KEYS) {
     if (isObsoleteWording(key, words[key])) {
       const field = FIELDS.find((f) => f.key === key);
-      return `${field?.label ?? key} uses wording the site no longer stands behind — it promised every kosher detail site-wide, which the destination checklist does not grant. Use the built-in headline, or write something you can defend.`;
+      return `${field?.label ?? key} uses wording the site no longer stands behind. Use the built-in wording, or write something current.`;
     }
   }
   return null;
@@ -149,16 +151,6 @@ export type WordField = {
 };
 
 export const FIELDS: WordField[] = [
-  { key: "heroEyebrow", group: "front", label: "The line above the headline", where: "on the front page, in small gold capitals", href: "/" },
-  {
-    key: "heroTitle",
-    group: "front",
-    label: "The headline",
-    where: "on the front page, the largest words on the site",
-    href: "/",
-    guidance: "Do not promise every kosher detail site-wide. Prefer what the site actually does — answer the kosher side first.",
-  },
-  { key: "heroSubtitle", group: "front", label: "The paragraph under it", where: "on the front page, under the headline", href: "/", long: true },
   { key: "searchPlaceholder", group: "front", label: "What the search box says", where: "inside the search box until somebody types", href: "/" },
   {
     key: "contactEmail",
@@ -196,8 +188,6 @@ export type OldSetting = { key: keyof SiteWords; label: string; theirs: string; 
 export function whatTheOldScreenSaved(old: Partial<Record<string, string>> | null | undefined, now: SiteWords): OldSetting[] {
   if (!old) return [];
   const pairs: Array<[string, keyof SiteWords]> = [
-    ["heroTitle", "heroTitle"],
-    ["heroSubtitle", "heroSubtitle"],
     ["searchPlaceholder", "searchPlaceholder"],
     ["footerEmail", "contactEmail"],
     ["bookingNotice", "bookingNotice"],

@@ -281,8 +281,9 @@ describe("the vacation-ideas filters", () => {
     // control has no name to speak.
     assert.match(HUB, /<label htmlFor="vacation-search"/);
     assert.match(HUB, /id="vacation-search"/);
-    assert.match(HUB, /aria-describedby="vacation-search-hint"/);
-    assert.match(HUB, /id="vacation-search-hint"/);
+    // The heritage-search hint went with the wording pass — heritage is in
+    // this same directory now, so the hint described a distinction that no
+    // longer exists. The visible label stays; that is the accessibility rule.
   });
 
   it("exposes which filter is chosen as a real state", () => {
@@ -309,15 +310,16 @@ describe("the vacation-ideas filters", () => {
     assert.match(HUB, /<legend/);
   });
 
-  it("keeps every style card a keyboard link to the matching, visible result set", () => {
-    // A link is the correct control here: the selection is a shareable route,
-    // not a one-off visual toggle. The `TRIP_THEMES.map` supplies every card
-    // from the same canonical taxonomy used to filter the results.
-    assert.match(DESTINATIONS, /TRIP_THEMES\.map/);
-    assert.match(DESTINATIONS, /href=\{`\$\{vacationBrowseHref\(\{ theme: theme\.value, season: initialSeason \}\)\}#browse`\}/);
-    assert.match(DESTINATIONS, /aria-current=\{selected \? "true" : undefined\}/);
-    assert.match(DESTINATIONS, /Selected/);
-    assert.match(DESTINATIONS, /min-w-0/);
+  it("keeps trip types reachable as real links, now from the navigation", () => {
+    // The style-card grid left the hub page — trip types live in the
+    // Destinations dropdown (real links, keyboard reachable) and the hub's
+    // own Filter drawer. The links must stay links: a shareable route, not a
+    // one-off visual toggle.
+    const NAV = readFileSync("lib/navigation.ts", "utf8");
+    for (const kind of ["beach", "city", "mountains", "family", "couples", "short-break"]) {
+      assert.ok(NAV.includes(`/destinations?kind=${kind}`), `${kind} lost its navigation link`);
+    }
+    assert.match(DESTINATIONS, /<VacationIdeasHub/);
     // Same-route links preserve Client Component state by default, so the hub
     // reads the new server-provided query values directly rather than trying
     // to reset all of the visitor's local refinements after navigation lands.

@@ -12,8 +12,8 @@ import type { TripTheme } from "@/data/vacation-destinations";
  * everything else live with room to breathe. A row of cards stopped being a
  * row of small forms.
  *
- * WHAT SURVIVED THE TRIM: name, where it is, one line of why, and the two
- * signals (kosher food, Shabbos) — the essential category information. The
+ * WHAT SURVIVED THE TRIM: name, where it is, and the two signals (kosher
+ * food, Shabbos) — the essential category information, as compact symbols. The
  * best-for/how-long grid and the counted "12 things to do" line went; counts
  * are not shown anywhere public any more, and the rest is on the page the
  * card opens.
@@ -74,9 +74,7 @@ export default function VacationCard({ card, compact = false }: { card: Vacation
       </span>
 
       <span className={`flex flex-1 flex-col ${compact ? "p-5" : "p-6"}`}>
-        <span className={compact ? "text-sm leading-6 text-stone-600" : "leading-7 text-stone-600"}>{destination.whyGo}</span>
-
-        <span className={`mt-auto flex flex-wrap gap-2 ${compact ? "pt-4" : "pt-5"}`}>
+        <span className={`mt-auto flex flex-wrap gap-2`}>
           <SignalChip signal={kosher} />
           <SignalChip signal={shabbos} />
         </span>

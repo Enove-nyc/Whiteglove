@@ -34,9 +34,9 @@ describe("the built-in words are what the site says", () => {
 
 describe("the owner's words on top", () => {
   it("keeps every line he did not touch", () => {
-    const merged = mergeWords({ heroTitle: "Somewhere new" });
-    assert.equal(merged.heroTitle, "Somewhere new");
-    assert.equal(merged.heroSubtitle, BUILT_IN_WORDS.heroSubtitle);
+    const merged = mergeWords({ bookingNotice: "Somewhere new" });
+    assert.equal(merged.bookingNotice, "Somewhere new");
+    assert.equal(merged.replyPromise, BUILT_IN_WORDS.replyPromise);
   });
 
   it("returns the built-in wording for nothing at all", () => {
@@ -47,22 +47,24 @@ describe("the owner's words on top", () => {
   it("DROPS a blank rather than using it", () => {
     // A front page with no headline on it is worse than one with the wrong
     // headline, and an empty string in a store is not a decision anybody makes.
-    assert.equal(mergeWords({ heroTitle: "   " }).heroTitle, BUILT_IN_WORDS.heroTitle);
-    assert.equal(mergeWords({ heroTitle: 7 } as never).heroTitle, BUILT_IN_WORDS.heroTitle);
+    assert.equal(mergeWords({ bookingNotice: "   " }).bookingNotice, BUILT_IN_WORDS.bookingNotice);
+    assert.equal(mergeWords({ bookingNotice: 7 } as never).bookingNotice, BUILT_IN_WORDS.bookingNotice);
   });
 
   it("stores only what differs, so a later correction to the built-in wording still reaches him", () => {
     assert.deepEqual(onlyChangedWords(BUILT_IN_WORDS), {});
-    assert.deepEqual(onlyChangedWords(with_({ heroTitle: "New" })), { heroTitle: "New" });
-    assert.deepEqual(changedWords(with_({ heroTitle: "New" })).map((f) => f.key), ["heroTitle"]);
+    assert.deepEqual(onlyChangedWords(with_({ bookingNotice: "New" })), { bookingNotice: "New" });
+    assert.deepEqual(changedWords(with_({ bookingNotice: "New" })).map((f) => f.key), ["bookingNotice"]);
   });
 });
 
 describe("what cannot be saved", () => {
   it("refuses a blank, and names where the blank would be", () => {
-    const said = String(wordProblem(with_({ heroTitle: "" })));
+    const said = String(wordProblem(with_({ bookingNotice: "" })));
     assert.match(said, /cannot be empty/);
-    assert.match(said, /front page/, said);
+    // Named by place — the booking page — so the owner knows where the
+    // blank would land, not just that one would.
+    assert.match(said, /booking page/, said);
   });
 
   it("refuses an address that is not an address, because mail would go nowhere", () => {
@@ -84,11 +86,15 @@ describe("what the old screen had saved", () => {
     // never did. Putting it live today would change his front page for a
     // decision he may not remember making; discarding it would throw away
     // something he did ask for. So it is shown, and he chooses.
-    const offered = whatTheOldScreenSaved({ heroTitle: "Every Journey Begins with Purpose." }, BUILT_IN_WORDS);
+    // The old screen's heroTitle has no home since the hero words retired —
+    // an orphaned key is simply not offered, rather than crashing or
+    // silently applying. The keys that DO survive still round-trip.
+    assert.deepEqual(whatTheOldScreenSaved({ heroTitle: "Every Journey Begins with Purpose." }, BUILT_IN_WORDS), []);
+    const offered = whatTheOldScreenSaved({ searchPlaceholder: "Type here" }, BUILT_IN_WORDS);
     assert.equal(offered.length, 1);
-    assert.equal(offered[0].key, "heroTitle");
-    assert.equal(offered[0].theirs, "Every Journey Begins with Purpose.");
-    assert.equal(offered[0].nowShowing, BUILT_IN_WORDS.heroTitle);
+    assert.equal(offered[0].key, "searchPlaceholder");
+    assert.equal(offered[0].theirs, "Type here");
+    assert.equal(offered[0].nowShowing, BUILT_IN_WORDS.searchPlaceholder);
   });
 
   it("maps the old footerEmail onto the address people are actually told", () => {

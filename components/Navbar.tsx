@@ -8,12 +8,12 @@ import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
-import { bookCategoryFor, categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, type NavCategory } from "@/lib/navigation";
+import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
- * The header: logo, five dropdown categories, four utility icons.
+ * The header: logo, four dropdown categories, four utility icons.
  *
  * What each dropdown holds is in lib/navigation.ts, not here. Dropdowns open
  * on hover, click, focus and tap — all four, not the one the last redesign
@@ -46,7 +46,10 @@ export default function Navbar() {
   // go to the public assistance page instead of a password box. See
   // lib/booking-access.ts and lib/navigation.ts's bookCategoryFor.
   const booking = useBookingLink();
-  const categories: NavCategory[] = [...NAV_CATEGORIES, bookCategoryFor(booking)];
+  // Four categories; Travel's booking links resolve through the owner's lock.
+  const categories: NavCategory[] = NAV_CATEGORIES.map((category) =>
+    category.label === "Travel" ? travelCategoryFor(booking) : category,
+  );
 
   useEffect(() => {
     let active = true;
@@ -99,9 +102,29 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", onKey);
   }, [openKey]);
 
+  /**
+   * THE CLICK BUG, and the fix. Clicking a trigger fires focus first — which
+   * opens the menu — and then the click itself, which used to toggle the
+   * just-opened menu shut again: the panel flashed and vanished. Pointer-down
+   * fires before focus does, so the state recorded there is the state BEFORE
+   * this interaction, and the click decides from that instead of from what
+   * the focus handler changed in between. Keyboard interactions have no
+   * pointer-down; for them onFocus records the pre-open state itself.
+   */
+  const openBeforePress = useRef(false);
+
   function openOnHover(key: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setOpenKey(key);
+  }
+
+  function openOnFocus(key: string, open: boolean) {
+    openBeforePress.current = open;
+    openOnHover(key);
+  }
+
+  function toggleOnClick(key: string) {
+    setOpenKey(openBeforePress.current ? null : key);
   }
   function closeOnHoverOut() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -134,21 +157,31 @@ export default function Navbar() {
               className={`w-auto max-w-none object-contain transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"}`}
               priority
             />
-            <span className="hidden flex-col leading-none sm:flex">
+            <span className="hidden flex-col leading-none min-[400px]:flex">
               <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove</span>
               <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Kosher Travel</span>
             </span>
           </Link>
 
-          {/* The five dropdowns. Hidden below xl, where the hamburger carries
-              the same categories as an accordion. */}
-          <div className="hidden min-w-0 flex-1 items-center gap-0.5 xl:flex">
+          {/* The four dropdowns. Hidden below lg (~1024px), where the hamburger
+              carries the same categories as an accordion. */}
+          <div className="hidden min-w-0 flex-1 items-center gap-0.5 lg:flex">
             {categories.map((category) => {
               const key = category.label;
               const current = categoryIsCurrent(category, pathname);
               const open = openKey === key;
               return (
-                <div key={key} className="relative" onMouseEnter={() => openOnHover(key)} onMouseLeave={closeOnHoverOut}>
+                <div
+                  key={key}
+                  className="relative"
+                  onMouseEnter={() => openOnHover(key)}
+                  onMouseLeave={closeOnHoverOut}
+                  onBlur={(event) => {
+                    // Focus moved outside this category: close its panel, so a
+                    // keyboard user tabbing on never leaves a menu floating.
+                    if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpenKey((k) => (k === key ? null : k));
+                  }}
+                >
                   <button
                     ref={(el) => {
                       triggerRefs.current[key] = el;
@@ -157,8 +190,9 @@ export default function Navbar() {
                     aria-expanded={open}
                     aria-haspopup="true"
                     aria-controls={`nav-${key}`}
-                    onClick={() => setOpenKey(open ? null : key)}
-                    onFocus={() => openOnHover(key)}
+                    onPointerDown={() => { openBeforePress.current = open; }}
+                    onClick={() => toggleOnClick(key)}
+                    onFocus={() => openOnFocus(key, open)}
                     className={`relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition ${
                       current || open
                         ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
@@ -174,9 +208,34 @@ export default function Navbar() {
                       role="menu"
                       onMouseEnter={() => openOnHover(key)}
                       onMouseLeave={closeOnHoverOut}
-                      className="absolute left-0 top-full z-[1] mt-1 min-w-48 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] py-2 shadow-[0_18px_40px_rgba(23,45,82,.15)]"
+                      className={`absolute left-0 top-full z-[1] mt-1 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
+                        category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"
+                      }`}
                     >
-                      {category.links.map((link) => {
+                      {category.groups
+                        ? category.groups.map((group) => (
+                            <div key={group.title}>
+                              <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</p>
+                              {group.links.map((link) => {
+                                const linkCurrent = isCurrent(link.href, pathname);
+                                return (
+                                  <Link
+                                    key={link.href + link.label}
+                                    role="menuitem"
+                                    href={link.href}
+                                    aria-current={linkCurrent ? "page" : undefined}
+                                    onClick={() => setOpenKey(null)}
+                                    className={`flex min-h-11 items-center rounded-md px-2 py-2 text-sm transition ${
+                                      linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
+                                    }`}
+                                  >
+                                    {link.label}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          ))
+                        : category.links.map((link) => {
                         const linkCurrent = isCurrent(link.href, pathname);
                         return (
                           <Link
@@ -219,7 +278,7 @@ export default function Navbar() {
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] xl:hidden"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] lg:hidden"
             >
               <Icon name={mobileOpen ? "close" : "menu"} className="h-5 w-5" />
             </button>
@@ -227,7 +286,7 @@ export default function Navbar() {
         </div>
 
         {mobileOpen && (
-          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-[1] max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] xl:hidden">
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-[1] max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] lg:hidden">
             <ul className="divide-y divide-[var(--gold-light)]/60 px-5 sm:px-8">
               {categories.map((category) => {
                 const key = category.label;

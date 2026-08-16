@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { BUILT_IN_WORDS } from "@/data/site-words";
 
 /**
  * What the front page says, and in what order.
@@ -23,7 +22,6 @@ import { BUILT_IN_WORDS } from "@/data/site-words";
 const HOME = readFileSync("app/page.tsx", "utf8");
 const NOTICE = readFileSync("components/NewSiteNotice.tsx", "utf8");
 const LAYOUT = readFileSync("app/layout.tsx", "utf8");
-const FORM = readFileSync("components/StaySearchForm.tsx", "utf8");
 const FEATURED_LIB = readFileSync("lib/featured-destinations.ts", "utf8");
 
 /**
@@ -45,63 +43,22 @@ function at(marker: string): number {
 }
 
 describe("the first five seconds", () => {
-  it("LEADS WITH THE VACATION PROPOSITION", () => {
-    assert.match(BUILT_IN_WORDS.heroEyebrow, /kosher vacations/i);
-    assert.match(BUILT_IN_WORDS.heroTitle, /vacation/i);
-    assert.match(BUILT_IN_WORDS.heroSubtitle, /where to go|itinerary/i);
+  it("OPENS WITH THE QUESTION, NOT A PITCH — Where to?, then the search", () => {
+    // The owner's wording, exactly: no eyebrow, no proposition paragraph, no
+    // browse links. The opening is a question and the box that answers it.
+    const heading = at("Where to?");
+    const search = at("<DestinationSearch");
+    assert.ok(heading < search, "the search comes before the question it answers");
+    assert.match(HOME, /placeholder="Search destinations"/);
   });
 
-  it("does not open with “two kinds of journeys”", () => {
-    // The old eyebrow. It asked the visitor to classify themselves before
-    // they had been told what the site does.
-    assert.doesNotMatch(BUILT_IN_WORDS.heroEyebrow, /two kinds of journeys/i);
+  it("carries no hero copy at all — the retired words stay retired", () => {
+    assert.doesNotMatch(PROSE, /heroEyebrow|heroTitle|heroSubtitle/);
+    assert.doesNotMatch(PROSE, /thoughtfully planned/i);
+    assert.doesNotMatch(PROSE, /kosher side answered first/i);
+    assert.doesNotMatch(PROSE, /Browse every destination/i);
+    assert.doesNotMatch(PROSE, /heritage journey\? Start here/i);
     assert.doesNotMatch(PROSE, /two kinds of journeys/i);
-  });
-
-  it("IS A PLACE AND A SEARCH: brand words, then the search, nothing between", () => {
-    // The hero used to carry three labelled tools behind tabs. Three
-    // intentions is a menu; a first visit is a question. One search, at hero
-    // size, that finds destinations, stays, kosher food and the heritage side
-    // alike — and every result lands on one of our own pages.
-    const eyebrow = at("{words.heroEyebrow}");
-    const title = at("{words.heroTitle}");
-    const subtitle = at("{words.heroSubtitle}");
-    const search = at("<DestinationSearch");
-    assert.ok(eyebrow < title, "the eyebrow has moved below the headline");
-    assert.ok(title < subtitle, "the supporting hero copy has moved above the title");
-    assert.ok(subtitle < search, "the search has moved above the words that explain it");
-  });
-
-  it("LETS THE OWNER'S WORDS REACH THE SEARCH BOX", () => {
-    // words.searchPlaceholder is editable at /admin/settings/words. Before
-    // this, the homepage box read the built-in default and the owner's edit
-    // showed everywhere except the one page he would check.
-    assert.match(HOME, /placeholder=\{words\.searchPlaceholder\}/);
-  });
-
-  it("SENDS THE SEARCH TO OUR OWN PAGES, NOT STRAIGHT TO A PARTNER", () => {
-    // The one decision worth defending, wherever the search lives. Handing
-    // off a press sooner earns the commission sooner and throws away the only
-    // reason to search here: the quarter, the walk, and which alpine hotels
-    // are a fortnight rather than a hotel. The hero search asks our own
-    // index; the stay search, one press away on /hotels, still lands on
-    // /hotels rather than on /go.
-    const search = readFileSync("components/DestinationSearch.tsx", "utf8");
-    assert.match(search, /\/api\/search/);
-    assert.match(FORM, /action="\/hotels"/);
-    assert.doesNotMatch(FORM, /action="\/go"/);
-  });
-
-  it("carries the two hero links after the search, in order", () => {
-    // "Planning a heritage journey? Start here" stays by the owner's word —
-    // tests/no-questions.test.ts names it as one of the visitor's own
-    // questions. A quiet link, not a section: heritage is part of the
-    // destination directory now, not a second site.
-    const search = at("<DestinationSearch");
-    const secondary = at("Browse every destination");
-    const tertiary = at("Planning a heritage journey? Start here");
-    assert.ok(search < secondary, "a link comes before the search");
-    assert.ok(secondary < tertiary, "the heritage link comes before the destinations one");
   });
 });
 
@@ -128,7 +85,7 @@ describe("the featured row", () => {
     // The destination's own page carries the why-go, the kosher and Shabbos
     // answers and the two ways in. A front-page card that repeats them is the
     // brochure creeping back one field at a time.
-    const cards = HOME.slice(at("featured.map"), at("<StartingPoints"));
+    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
     assert.match(cards, /destination\.name/);
     assert.match(cards, /destination\.country/);
     assert.doesNotMatch(cards, /whyGo|SignalChip|bestFor|suggestedLength/, "editorial fields are back on the featured card");
@@ -138,7 +95,7 @@ describe("the featured row", () => {
   it("MAKES THE WHOLE CARD ONE LINK", () => {
     // One action, so a screen reader lists "Rome" rather than "Open" six
     // times — and there is no second button for a swallowed click to find.
-    const cards = HOME.slice(at("featured.map"), at("<StartingPoints"));
+    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
     assert.equal(cards.match(/<Link/g)?.length, 1, "a featured card carries more than one link");
   });
 
@@ -158,7 +115,7 @@ describe("the order of the page", () => {
   it("runs hero, Featured, then the three ways in", () => {
     const search = at("<DestinationSearch");
     const featured = HOME.search(/Featured\s*<\/h2>/);
-    const doors = at("<StartingPoints");
+    const doors = at("The three ways in, as compact icon cards");
     assert.ok(featured > search, "the Featured row has moved above the hero");
     assert.ok(doors > featured, "the three ways in have moved above the Featured row");
   });
@@ -215,7 +172,13 @@ describe("the order of the page", () => {
     // /plan, /itinerary and /book, described once in lib/starting-points.ts so
     // the same three doors are not called six different things across the
     // site. Personal planning is not a fourth door — it does not exist.
-    assert.match(HOME, /<StartingPoints/);
+    // The three doors are one-word icon cards now — Ideas, Itinerary, Book —
+    // each with the sentence in its accessible name and tooltip, and Book
+    // resolved through the owner's lock like every booking link.
+    for (const label of ['"Ideas"', '"Itinerary"', '"Book"']) assert.ok(HOME.includes(`label: ${label}`), `${label} card missing`);
+    assert.match(HOME, /aria-label=\{card\.name\}/);
+    assert.match(HOME, /title=\{card\.name\}/);
+    assert.match(HOME, /booking\.href/);
     assert.doesNotMatch(HOME, /\/services/, "the front page still names the removed service");
     const points = readFileSync("lib/starting-points.ts", "utf8");
     for (const href of ["/plan", "/itinerary", "/book"]) {
@@ -272,19 +235,18 @@ describe("the new-site notice", () => {
     assert.match(NOTICE, /notice\.version/);
   });
 
-  it("OFFERS THE THREE ACTIONS THE NOTICE HAS TO CARRY", () => {
-    // How verification works, report an update, hide this notice. The third
-    // used to read "I understand", which is not an action.
-    assert.match(NOTICE, /How verification works/);
+  it("OFFERS THE TWO ACTIONS THE NOTICE HAS TO CARRY", () => {
+    // Verification and Close — nothing else. The notice was cut to one line
+    // and two actions in the wording pass; a third button is it growing back.
     assert.match(NOTICE, /href="\/verification"/);
-    assert.match(NOTICE, /notice\.feedbackLabel/);
     assert.match(NOTICE, /onClick=\{close\}/);
+    assert.doesNotMatch(NOTICE, /feedbackLabel|feedbackHref/);
   });
 
   it("SHOWS EVERY LINE THE OWNER CAN EDIT", () => {
     // The failure data/site-words.ts exists to end: a settings screen with a
     // field on it that no page reads.
-    for (const field of ["heading", "body", "caution", "feedback", "feedbackHref", "feedbackLabel", "dismissLabel"]) {
+    for (const field of ["heading", "body"]) {
       assert.ok(NOTICE.includes(`notice.${field}`), `notice.${field} is editable and shown nowhere`);
     }
   });
