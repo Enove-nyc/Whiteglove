@@ -61,13 +61,14 @@ export const TRIP_KINDS: ReadonlyArray<{
   /** Which vacation category to recommend from. Absent for the two that have none. */
   theme?: TripTheme;
 }> = [
-  { value: "relaxing", label: "Relaxing vacation", blurb: "Sea, mountains or a quiet hotel. Not much of a schedule.", theme: "beach" },
-  { value: "city-break", label: "City break", blurb: "A few days somewhere with streets, food and things to see.", theme: "city" },
+  { value: "relaxing", label: "Relaxing vacation", blurb: "Sea, mountains or a quiet hotel.", theme: "beach" },
+  { value: "city-break", label: "City break", blurb: "Streets, food and things to see.", theme: "city" },
   { value: "family", label: "Family trip", blurb: "Enough for the children and enough for you.", theme: "family" },
-  { value: "honeymoon", label: "Honeymoon", blurb: "Private, unhurried, and arranged properly.", theme: "couples" },
+  { value: "honeymoon", label: "Honeymoon", blurb: "Private and unhurried.", theme: "couples" },
   { value: "group", label: "Group trip", blurb: "Several families, a school, a shul or a simcha." },
-  { value: "heritage", label: "Jewish heritage journey", blurb: "Kevarim, batei hachaim and the towns they are in." },
-  { value: "unsure", label: "Not sure yet", blurb: "That is a normal place to start. We will help you narrow it down." },
+  // The VALUE stays "heritage" — data, tests and query strings reference it.
+  { value: "heritage", label: "Heritage", blurb: "Kevarim, batei hachaim and the towns they are in." },
+  { value: "unsure", label: "Not sure yet", blurb: "A normal place to start." },
 ] as const;
 
 export function tripKind(value: string): (typeof TRIP_KINDS)[number] | undefined {
@@ -290,14 +291,9 @@ export function hasAnswers(answers: TripPlanAnswers | null): boolean {
 export type StepId = "kind" | "shape" | "how";
 
 export const STEPS: ReadonlyArray<{ id: StepId; number: number; title: string; blurb: string }> = [
-  { id: "kind", number: 1, title: "The trip", blurb: "One press. It only shapes what we suggest." },
-  {
-    id: "shape",
-    number: 2,
-    title: "Where, when, and who is coming",
-    blurb: "Four short answers, none of them required — “I don’t know yet” is on every one.",
-  },
-  { id: "how", number: 3, title: "Ready when you are", blurb: "Open the planner with this already in it, or browse destinations first." },
+  { id: "kind", number: 1, title: "The trip", blurb: "" },
+  { id: "shape", number: 2, title: "Where, when, and who is coming", blurb: "" },
+  { id: "how", number: 3, title: "Ready when you are", blurb: "Open the planner, or browse destinations first." },
 ] as const;
 
 /**

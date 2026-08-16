@@ -105,25 +105,17 @@ export default function MyRouteDashboard({
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-      <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">My Route</p>
-      <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">Your journey, arranged with care.</h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">Save the places that matter to you, set any kever you must reach on a specific date, then organize the flexible stops around it.</p>
+      <h1 className="font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)] sm:text-6xl">My Route</h1>
 
       {activeRoute.length === 0 ? (
         <div className="wg-card mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your route is waiting.</h2>
-          <p className="mt-3 leading-7 text-stone-600">Open a destination or location and choose Add to My Route.</p>
-          <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Browse destinations</Link>
+          <p className="leading-7 text-stone-600">No stops</p>
+          <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Add</Link>
         </div>
       ) : (
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_.6fr]">
           <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-9">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Saved places</p>
-                <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">My Route</h2>
-              </div>
-            </div>
+            <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Saved places</h2>
             <ol className="mt-7 space-y-4">
               {optimized.map((place, index) => (
                 <li key={place.id} className="flex items-start gap-4 border-t border-[var(--gold-light)] pt-4 first:border-t-0 first:pt-0">
@@ -176,9 +168,8 @@ export default function MyRouteDashboard({
             </ol>
           </div>
           <aside className="border border-[var(--gold-light)] bg-[var(--cream-deep)] p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Route helper</p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Optimize the flexible stops.</h2>
-            <p className="mt-4 leading-7 text-stone-600">A place with a fixed date stays in its place. The other kevarim are ordered by nearby distance within the flexible parts of your route. Places without coordinates remain at the end until we verify them.</p>
+            <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Optimize the flexible stops.</h2>
+            <p className="mt-4 leading-7 text-stone-600">Stops with a fixed date stay in place; the rest are ordered by distance.</p>
             <button type="button" disabled={activeRoute.length < 2} onClick={openDirections} className="mt-7 w-full bg-[var(--navy)] px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-50">Open optimized route in maps</button>
             <Link href="/itinerary" className="mt-3 block w-full border border-[var(--gold)] px-5 py-4 text-center text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Build a full day-by-day itinerary →</Link>
 
@@ -230,10 +221,6 @@ export default function MyRouteDashboard({
         </div>
       )}
 
-      <div className="mt-14">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Favorites</p>
-        <p className="mt-3 text-stone-600">Favorites are saved separately from your active route, so you can keep places for a future trip.</p>
-      </div>
     </section>
   );
 }

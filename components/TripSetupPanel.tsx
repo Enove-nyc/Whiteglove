@@ -86,10 +86,13 @@ export default function TripSetupPanel({
           <h2 id="trip-setup-heading" className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
             {progress.done === progress.total ? "This trip has everything the planner needs." : "Getting this trip started"}
           </h2>
-          <p aria-live="polite" className="mt-1 text-sm leading-6 text-stone-600">
-            {progress.done} of {progress.total} basics done
-            {progress.next ? ` — next: ${progress.next.label.toLowerCase()}` : " — the route planner can work with this."}
-          </p>
+          {/* No "N of 5 basics done" counter: the checklist below already says
+              what is done and what is next, one card at a time. */}
+          {progress.next && (
+            <p aria-live="polite" className="mt-1 text-sm leading-6 text-stone-600">
+              Next: {progress.next.label.toLowerCase()}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -102,11 +105,6 @@ export default function TripSetupPanel({
         </button>
       </div>
 
-      {/* Decoration; the sentence above carries the information. */}
-      <div aria-hidden="true" className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[var(--cream-deep)]">
-        <div className="h-full rounded-full bg-[var(--gold)] transition-all" style={{ width: `${progress.percent}%` }} />
-      </div>
-
       {open && (
         <div id="trip-setup-body" className="mt-5 space-y-5">
           {/* ---- carry the answers over ------------------------------------ */}
@@ -114,10 +112,6 @@ export default function TripSetupPanel({
             <div className="rounded-xl border border-[var(--gold)] bg-white p-5">
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
                 You answered these a moment ago
-              </p>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
-                Put them into this trip and you can carry on from there — nothing is overwritten, because there is
-                nothing in this trip yet.
               </p>
               <ul className="mt-3 grid gap-x-8 gap-y-1 text-sm text-stone-600 sm:grid-cols-2">
                 {summarize(answers).slice(0, 6).map(([term, value]) => (
@@ -178,12 +172,10 @@ export default function TripSetupPanel({
           {untouched && templates.length > 0 && (
             <div className="rounded-xl border border-[var(--gold-light)] bg-white p-5">
               <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
-                Or start from a shape that already works
+                Or start from a template
               </h3>
               <p className="mt-1.5 text-sm leading-6 text-stone-600">
-                Each of these fills in the outline and drops the places we hold for that destination into your trip,
-                unscheduled — real places with real coordinates, so the route planner can time the driving straight
-                away. Nothing is booked, and you can change or remove any of it.
+                Fills in the outline and adds real places, unscheduled. Nothing is booked; change or remove any of it.
               </p>
               <ul className="mt-4 grid gap-3 md:grid-cols-2">
                 {templates.map((template) => (
@@ -192,10 +184,10 @@ export default function TripSetupPanel({
                       {template.destination} · {template.country}
                     </p>
                     <p className="mt-1 font-semibold text-[var(--navy)]">{template.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-stone-600">
-                      {template.days} days
-                      {template.stops.length > 0 ? ` · ${template.stops.length} places to add` : " · outline only"}
-                    </p>
+                    {/* Days are a duration the traveler needs; how many records
+                        the template will add is a count the site was
+                        advertising, so it is gone. */}
+                    <p className="mt-1 text-xs leading-5 text-stone-600">{template.days} days</p>
                     <button
                       type="button"
                       onClick={() => onApply({}, template)}
@@ -216,8 +208,7 @@ export default function TripSetupPanel({
                 We hold a page for {suggested.name}
               </h3>
               <p className="mt-1.5 text-sm leading-6 text-stone-600">
-                Things to do, where to stay, what the kosher food and the Shabbos situation look like, and what catches
-                people out there.
+                Things to do, where to stay, kosher food and Shabbos.
               </p>
               <Link
                 href={destinationHref(suggested)}
@@ -235,8 +226,7 @@ export default function TripSetupPanel({
               <>
                 <p className="mt-1.5 text-sm leading-6 text-stone-600">
                   It saves as you type — <span className="font-semibold text-[var(--navy)]">in this browser only</span>.
-                  Clear your history, or pick up your phone, and it is not there. Signing in keeps it with your account
-                  instead, so it follows you between devices and you can share it with whoever is travelling with you.
+                  Signing in keeps it with your account, so it follows you between devices.
                 </p>
                 <Link
                   href="/login?next=%2Fitinerary"
@@ -246,10 +236,7 @@ export default function TripSetupPanel({
                 </Link>
               </>
             ) : signedIn ? (
-              <p className="mt-1.5 text-sm leading-6 text-stone-600">
-                Saved to your account as you type, so it is on your phone when you are standing at the gate. You can
-                share it with the people travelling with you, and print it before you go.
-              </p>
+              <p className="mt-1.5 text-sm leading-6 text-stone-600">Saved to your account as you type.</p>
             ) : (
               /* Still asking. Saying nothing beats telling somebody who is
                  signed in that their trip lives in a browser. */

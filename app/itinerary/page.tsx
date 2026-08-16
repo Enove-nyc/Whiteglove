@@ -16,7 +16,7 @@ import { templatesFrom } from "@/lib/trip-setup";
 import { loadVacationSources } from "@/lib/vacation-sources";
 
 export const metadata = pageMetadata({
-  title: "Itinerary planner — White Glove Itineraries",
+  title: "Itinerary planner — White Glove Kosher Travel",
   description: "Build your trip day by day — flights, hotels, and stops — with automatic checks and a printable itinerary.",
   path: "/itinerary",
   noIndex: true,
@@ -43,19 +43,11 @@ export default async function ItineraryPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Itinerary planner</p>
-          <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Your trip, day by day.
+          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            Itinerary planner
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-            Dates, flights, hotels and stops — with driving times, a Friday warning, and a printable copy.
-          </p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            Prefer a few answers first?{" "}
-            <Link href="/plan" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-              Get recommendations
-            </Link>
-            . Or see{" "}
+            Flights, hotels and stops, day by day — see{" "}
             <Link href="/sample-itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
               a sample itinerary
             </Link>
@@ -65,11 +57,9 @@ export default async function ItineraryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
-        <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4 shadow-[0_8px_26px_rgba(23,45,82,.05)] sm:p-6">
-          <TravelAssistantBox />
-        </div>
+        <TravelAssistantBox />
 
-        <div className="itinerary-planner mt-8">
+        <div className="itinerary-planner mt-6">
           <SharedWithMe />
           <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} />
         </div>
@@ -81,7 +71,7 @@ export default async function ItineraryPage() {
       <TravelEssentials
         pageType="itinerary"
         heading="Travel essentials for this trip"
-        intro="Flights, places to stay, car hire and pre-departure add-ons when a partner hand-off is configured. Nothing appears here until it can actually open."
+        intro="Flights, places to stay, car hire and add-ons through our booking partners."
         placement="itinerary-essentials"
       />
 

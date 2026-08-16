@@ -9,7 +9,6 @@ import {
   INTERESTS,
   KOSHER_REQUIREMENTS,
   PACES,
-  progressOf,
   SHABBOS_REQUIREMENTS,
   STEPS,
   summarize,
@@ -161,7 +160,6 @@ export default function TripStartFlow({
     else router.push("/destinations");
   }
 
-  const progress = progressOf(answers);
   const current = STEPS[step - 1];
   const isHeritage = answers.kind === "heritage";
 
@@ -217,13 +215,10 @@ export default function TripStartFlow({
               style={{ width: `${Math.round((step / STEPS.length) * 100)}%` }}
             />
           </div>
-          {/* OUT OF THREE, because the page above says three short steps. It
-              used to read "1 of 10 questions answered" under that promise. */}
+          {/* OUT OF THREE, because there are three steps. It used to read
+              "1 of 10 questions answered". */}
           <p aria-live="polite" className="mt-2 text-xs text-stone-600">
-            Step {step} of {STEPS.length}
-            {progress.answered > 0 && ` — ${progress.answered} answered so far`}.{" "}
-            <span className="font-semibold text-[var(--navy)]">Nothing here is required</span> — skip anything you have
-            not decided.
+            Step {step} of {STEPS.length}. <span className="font-semibold text-[var(--navy)]">Nothing is required.</span>
           </p>
         </div>
       </nav>
@@ -237,7 +232,7 @@ export default function TripStartFlow({
         >
           {current.title}
         </h2>
-        <p className="mt-2 text-lg leading-8 text-stone-600">{current.blurb}</p>
+        {current.blurb && <p className="mt-2 text-lg leading-8 text-stone-600">{current.blurb}</p>}
 
         {step === 1 && (
           <fieldset className="mt-8">
@@ -276,7 +271,7 @@ export default function TripStartFlow({
                 onClick={() => goToStep(2)}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                Skip this and carry on
+                Skip
               </button>
             </div>
           </fieldset>
@@ -383,9 +378,6 @@ export default function TripStartFlow({
 
               <fieldset className="lg:col-span-2">
                 <legend className={label}>Who is coming</legend>
-                <p className="mt-1 text-xs leading-5 text-stone-500">
-                  Ages matter more than the number — what suits a four-year-old is not what suits a fourteen-year-old.
-                </p>
                 <div className="mt-2.5 grid gap-4 sm:grid-cols-3">
                   <label className="block">
                     <span className={label}>Adults</span>
@@ -437,7 +429,7 @@ export default function TripStartFlow({
                 onClick={() => goToStep(1)}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                Back to the kind of trip
+                Back
               </button>
             </div>
           </div>
@@ -450,28 +442,21 @@ export default function TripStartFlow({
               onClick={() => choose("myself")}
               className="wg-card flex w-full flex-col items-start border border-[var(--navy)] bg-[var(--navy)] p-7 text-left text-white transition hover:bg-[var(--navy-deep)]"
             >
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">Free, and yours</span>
-              <span className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight">
-                Open the planner
+              <span className="font-[family-name:var(--font-display)] text-3xl leading-tight">
+                Open the planner <span aria-hidden="true">→</span>
               </span>
-              <span className="mt-3 leading-7 text-slate-200">
-                Opens with your answers already in it — the name, the dates and the travelers. Add flights, hotels
-                and stops as you go, and it works out the driving between them.
-              </span>
-              <span className="mt-5 text-sm font-semibold text-[var(--gold-light)]">Open the planner →</span>
+              <span className="mt-3 leading-7 text-slate-200">Your answers are already in it.</span>
             </button>
 
             <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
-              <p className="mt-2 leading-7 text-stone-600">
-                You can look around first and come back — your answers stay in this browser either way.
-              </p>
+              <p className="mt-2 leading-7 text-stone-600">Your answers stay in this browser.</p>
               <button
                 type="button"
                 onClick={() => choose("unsure")}
                 className="mt-4 inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                Show me some destinations first
+                Browse destinations first
               </button>
             </div>
 
@@ -489,12 +474,11 @@ export default function TripStartFlow({
                     Personalize my recommendations
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">
-                    Optional. Pace, interests, your kosher standards, Shabbos and any access needs — it makes what we suggest
-                    fit rather than being generic.
+                    Optional. Pace, interests, kosher standards, Shabbos and access needs.
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
-                  {progress.personalized > 0 ? `${progress.personalized} of ${progress.personalizeTotal}` : "Open"}
+                  Open
                   <span aria-hidden="true" className="ml-2 inline-block transition group-open:rotate-90">
                     →
                   </span>
@@ -525,7 +509,7 @@ export default function TripStartFlow({
                 <div>
                   <Toggles
                     legend="Kosher standards"
-                    hint="So we know which shops and which arrangements actually help. Choose as many as apply."
+                    hint="Choose as many as apply."
                     options={KOSHER_REQUIREMENTS}
                     chosen={answers.kosher}
                     onToggle={(v) => toggle("kosher", v)}
@@ -543,7 +527,6 @@ export default function TripStartFlow({
 
                 <Toggles
                   legend="Shabbos requirements"
-                  hint="Shabbos is the part of a trip that is hardest to fix once you have booked. Worth answering even roughly."
                   options={SHABBOS_REQUIREMENTS}
                   chosen={answers.shabbos}
                   onToggle={(v) => toggle("shabbos", v)}
@@ -551,7 +534,6 @@ export default function TripStartFlow({
 
                 <Toggles
                   legend="Accessibility needs"
-                  hint="What the trip has to be able to do. This changes which hotel and which quarter we would suggest at all."
                   options={ACCESSIBILITY_NEEDS}
                   chosen={answers.accessibility}
                   onToggle={(v) => toggle("accessibility", v)}
@@ -573,11 +555,9 @@ export default function TripStartFlow({
                       onChange={(event) => update({ kevarim: event.target.value })}
                     />
                     <span className="mt-1.5 block text-xs leading-5 text-stone-500">
-                      You are seeing this because you chose a heritage journey.{" "}
                       <Link href="/heritage" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
                         Browse the kevarim directory
-                      </Link>{" "}
-                      if you would rather look first.
+                      </Link>
                     </span>
                   </label>
                 )}
@@ -610,10 +590,7 @@ export default function TripStartFlow({
                   ))}
                 </dl>
               ) : (
-                <p className="mt-3 leading-7 text-stone-600">
-                  Nothing yet — which is fine. Both paths above work from an empty start, and the planner will ask for
-                  the dates when you are ready.
-                </p>
+                <p className="mt-3 leading-7 text-stone-600">Nothing yet.</p>
               )}
               <button
                 type="button"

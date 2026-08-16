@@ -26,12 +26,10 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
               Planned with White Glove
             </p>
             <p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-              White Glove Itineraries
+              White Glove Kosher Travel
             </p>
-            <p className="mt-1 text-sm text-stone-600">
-              Kevarim, kosher food and the whole trip — planned in one place at{" "}
-              <span className="font-semibold text-[var(--navy)]">whitegloveitineraries.com</span>
-            </p>
+            {/* The domain stays as it is — only the visible brand changed. */}
+            <p className="mt-1 text-sm font-semibold text-[var(--navy)]">whitegloveitineraries.com</p>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:shrink-0">
             <Link

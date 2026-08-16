@@ -412,8 +412,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             placeholder="Anything you want to remember — who has the key, where you parked, what to bring next time…"
           />
           <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
-            Saved with the trip and printed with it. Anyone you share the trip with can read them, so keep passport
-            numbers and anything else private out of here.
+            Printed and shared with the trip — keep passport numbers and anything private out.
           </span>
         </label>
 
@@ -1579,8 +1578,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
 
         {(f.stops ?? []).length === 0 ? (
           <p className="mt-2 text-xs leading-5 text-stone-600">
-            Direct flight. If it connects somewhere, add the stop here rather than entering two flights — it is one journey,
-            and the planner will not ask you for a hotel in the connecting city.
+            If it connects, add the stop here rather than entering a second flight.
           </p>
         ) : (
           <div className="mt-3 space-y-3">
@@ -1695,9 +1693,9 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
     >
       {!overnight && (
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
-          <span className={caption}>Pick from lodging we&apos;ve researched near the kevarim</span>
+          <span className={caption}>Pick from our listed lodging</span>
           <LodgingPicker onPick={pickLodging} />
-          <p className="mt-2 text-[11px] text-stone-500">Kosher-friendly guesthouses and hotels we&apos;ve gathered — confirm rates and availability directly. Or just type your own below.</p>
+          <p className="mt-2 text-[11px] text-stone-500">Confirm rates and availability directly, or type your own below.</p>
         </div>
       )}
       <Field label="Type"><select className={inputClass} value={l.type ?? "hotel"} onChange={(e) => setL({ ...l, type: e.target.value as LodgingType })}><option value="hotel">Hotel / guesthouse</option><option value="overnight-transit">Overnight bus / flight (sleep in transit)</option><option value="other">Other (family, apartment…)</option></select></Field>
@@ -1815,11 +1813,11 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
-        <span className={caption}>Add a kever from our list — we&apos;ll fill in the rest</span>
+        <span className={caption}>Add a kever from our list</span>
         <KeverPicker onPick={pickKever} />
-        <span className={`${caption} mt-3 block`}>…or something to do — a museum, a mountain, somewhere for the children</span>
+        <span className={`${caption} mt-3 block`}>…or something to do</span>
         <AttractionPicker onPick={pickAttraction} />
-        {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}. Edit anything below if you like.</p>}
+        {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
       <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
@@ -2070,8 +2068,7 @@ function TravelersPanel({
         )}
       </div>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-        Everyone travelling with you. They appear on the printed itinerary and give you the head count for rooms and seats.
-        This is separate from sharing the trip below — a child doesn&apos;t need an account to be on the list.
+        They appear on the printed itinerary and set the head count for rooms and seats.
       </p>
 
       {/* Asked once, and only of somebody signed in — there is no name to add
@@ -2103,8 +2100,7 @@ function TravelersPanel({
 
       {bookingFor === "someone-else" && (
         <p className="mt-4 text-sm leading-6 text-stone-600">
-          You are arranging this for somebody else, so you are not on the list. Add the people who are actually going
-          below.
+          You are not on the list. Add the people who are going below.
         </p>
       )}
 
@@ -2180,7 +2176,6 @@ function TravelersPanel({
  */
 function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   const people = travelersOf(itin);
-  const flights = itin.flights.length;
   const booking = useBookingLink();
 
   const params = new URLSearchParams();
@@ -2207,23 +2202,12 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
           </p>
         )}
       </div>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-        {flights > 0
-          ? `${flights} ${flights === 1 ? "flight is" : "flights are"} on this trip already. Add another, or compare fares and award seats for the dates above.`
-          : "Compare fares and award seats for your dates, then add what you book straight back into this trip."}
-      </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link
           href={href}
           className="min-h-[44px] border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
         >
           Book flights &amp; hotels
-        </Link>
-        <Link
-          href="/flight-booking-assistance"
-          className="min-h-[44px] border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-        >
-          Have us book it
         </Link>
       </div>
     </section>

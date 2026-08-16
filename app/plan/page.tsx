@@ -8,9 +8,8 @@ import { pageMetadata } from "@/lib/seo";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
 
 export const metadata = pageMetadata({
-  title: "Plan a kosher trip — start here | White Glove Itineraries",
-  description:
-    "Three short steps and you have a trip started: what kind of holiday, where and roughly when, and whether you would like to plan it yourself or have us do it.",
+  title: "Plan a kosher trip — start here | White Glove Kosher Travel",
+  description: "Start a trip: the kind of holiday, where and when, and who is coming.",
   path: "/plan",
 });
 
@@ -51,9 +50,6 @@ export default async function PlanPage({
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
             {destination ? `Let’s plan ${destination.name}.` : "Tell us roughly what you have in mind."}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Three short steps. Skip anything you do not know yet.
-          </p>
         </div>
       </section>
 
@@ -70,9 +66,6 @@ export default async function PlanPage({
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-5">
-          <p className="max-w-xl leading-7 text-stone-600">
-            You can look at somewhere first and answer these afterwards.
-          </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/destinations"

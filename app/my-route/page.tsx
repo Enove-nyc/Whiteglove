@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 
 // Private to one person. Nothing here belongs in a search result.
 export const metadata = pageMetadata({
-  title: "My Route | White Glove Itineraries",
+  title: "My Route | White Glove Kosher Travel",
   description: "The stops you have saved, in order, with driving times and directions.",
   path: "/my-route",
   noIndex: true,
