@@ -10,6 +10,7 @@ import SubBrandBanner from "@/components/SubBrand";
 import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import DestinationActions from "@/components/DestinationActions";
+import SuggestEditPanel from "@/components/SuggestEditPanel";
 import { airportsFor } from "@/lib/destination-actions";
 import { cemeteries } from "@/data/cemeteries";
 import { kmBetween } from "@/data/itinerary";
@@ -108,6 +109,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{cemetery.city} · {cemetery.yiddishCity}</p>
           <a href={mapUrl} target="_blank" rel="noreferrer" className="mt-8 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]">Navigate to this beis hachaim →</a>
           <DestinationActions place={{ id: `cemetery-${cemetery.slug}`, name: cemetery.name, yiddishName: cemetery.yiddishName, address: cemetery.address, coordinates: cemetery.coordinates, href: `/cemeteries/${cemetery.slug}` }} airports={airportsFor(cemetery.country, cemetery.address, cemetery.coordinates)} />
+          <SuggestEditPanel targetType="location" targetId={cemetery.slug} title={cemetery.name} />
         </div>
       </section>
 

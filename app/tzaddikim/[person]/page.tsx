@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import KeverCoordinates from "@/components/KeverCoordinates";
 import MixedText from "@/components/MixedText";
+import SuggestEditPanel from "@/components/SuggestEditPanel";
 import Navbar from "@/components/Navbar";
 import NearestAirports from "@/components/NearestAirports";
 import StructuredData from "@/components/StructuredData";
@@ -92,10 +93,11 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
               <p className="mt-4 text-lg leading-8 text-stone-600">{burial.note}</p>
             ) : (
               <p className="mt-4 text-sm leading-6 text-stone-500">
-                Nothing written here yet beyond his name and where he is buried. If you know more, the beis
-                hachaim page has a place to send it.
+                Nothing written here yet beyond his name and where he is buried. If you know more, send it
+                with Suggest edit below.
               </p>
             )}
+            <SuggestEditPanel targetType="location" targetId={entry.slug} title={burial.knownAs || burial.name} />
 
             <dl className="mt-8 divide-y divide-[var(--gold-light)] border-y border-[var(--gold-light)]">
               {burial.seforim && (

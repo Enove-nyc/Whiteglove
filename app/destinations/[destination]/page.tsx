@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import AlertSignup from "@/components/AlertSignup";
 import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
+import DetailActionRow from "@/components/DetailActionRow";
+import SuggestEditPanel from "@/components/SuggestEditPanel";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
@@ -15,7 +17,7 @@ import { destinations as heritageDestinations, destinationHref as heritageHref }
 import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
-import { fromHechsherState, fromKosherClaim, reconfirmBeforeTravel, TRUST_LEVELS } from "@/lib/trust-status";
+import { fromHechsherState, fromKosherClaim, reconfirmBeforeTravel } from "@/lib/trust-status";
 import {
   addToTripHref,
   factsFor,
@@ -552,6 +554,19 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             {destination.name}
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">{destination.overview}</p>
+
+          {/* The same essential icons as every other detail surface —
+              directions, share, favorite, route, itinerary — plus the pencil.
+              See components/DetailActionRow.tsx. */}
+          <DetailActionRow
+            place={{
+              id: `vacation-${destination.slug}`,
+              name: destination.name,
+              address: `${destination.name}, ${destination.country}`,
+              href: `/destinations/${destination.slug}`,
+            }}
+          />
+          <SuggestEditPanel targetType="location" targetId={destination.slug} title={destination.name} />
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4">

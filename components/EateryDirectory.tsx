@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
@@ -117,6 +118,7 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
             </div>
 
             {e.address && <p className="mt-4 break-words text-xs leading-5 text-stone-500">{e.address}</p>}
+            <SuggestEditPanel targetType="site" targetId={e.slug} title={e.name} compact />
           </article>
         ))}
       </div>

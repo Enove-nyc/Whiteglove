@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 import { useRequireSignIn } from "@/components/SignInGate";
+import { IconButton, IconLink } from "@/components/icons/IconAction";
 import { bookingHref } from "@/lib/booking-access";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
+import { placeDirectionsUrl, placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
 import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
 import { useSignedIn } from "@/lib/use-signed-in";
 
@@ -91,7 +92,6 @@ function write(key: string, places: SavedPlace[]) {
 
 const base =
   "inline-flex min-h-11 items-center justify-center rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.11em] transition";
-const idle = `${base} border-[var(--gold)] text-[var(--navy)] hover:bg-[var(--cream-deep)]`;
 const done = `${base} border-[var(--navy)] bg-[var(--navy)] text-white`;
 const quiet = `${base} border-[var(--gold-light)] text-stone-600 hover:border-[var(--gold)] hover:text-[var(--navy)]`;
 
@@ -215,27 +215,48 @@ export default function DestinationActions({
 
   return (
     <div className="mt-6">
-      <div className="flex flex-wrap gap-2">
-        {/* Still asking whether they are signed in. A placeholder holds the
-            row's height so the read-only actions beside it do not jump when
-            the answer lands, and flashing "sign in" at somebody who is
-            already signed in is worse than a moment of nothing. */}
-        {signedIn === null ? (
-          <span className="h-11" aria-hidden="true" />
-        ) : (
-          // Every action shows, signed in or not — pressed signed out, each
-          // opens the sign-in dialog and completes itself the moment sign-in
-          // succeeds, rather than one row hiding behind a single "sign in"
-          // link. See components/SignInGate.tsx.
+      {/* The familiar actions as icons — the same set, in the same order, as
+          every other detail surface (see components/DetailActionRow.tsx):
+          directions, share, favorite, route, itinerary. Each carries an
+          accessible name and a desktop tooltip; none is a bare symbol. The
+          suitcase flips its name once the place is on the trip. */}
+      <div className="flex flex-wrap items-center gap-1">
+        {(place.address || place.coordinates) && (
+          <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(place.address, place.coordinates)} />
+        )}
+        <IconButton icon="share" label="Share" onClick={() => void share()} />
+        {/* Still asking whether they are signed in — a moment of nothing
+            beats flashing the wrong state at somebody. Pressed signed out,
+            each save opens the sign-in dialog and completes itself on
+            success. See components/SignInGate.tsx. */}
+        {signedIn !== null && (
           <>
-            <button
-              type="button"
+            <IconButton
+              icon={favorite ? "heart-filled" : "heart"}
+              label={favorite ? "Remove favorite" : "Favorite"}
+              active={favorite}
+              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
+            />
+            <IconButton
+              icon="route"
+              label={role === "absent" ? "Add to Route" : "Remove from Route"}
+              active={role !== "absent"}
               onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
-              className={role === "absent" ? idle : done}
-              aria-pressed={role !== "absent"}
-            >
-              {role === "absent" ? "Add to Route" : "✓ On your Route"}
-            </button>
+            />
+            {onTrip ? (
+              <IconLink icon="suitcase" label="View itinerary" href="/itinerary" active />
+            ) : (
+              <IconButton icon="suitcase" label="Add to itinerary" onClick={() => requireSignIn(addToItinerary, "Sign in to add to your itinerary")} />
+            )}
+          </>
+        )}
+      </div>
+
+      {/* The planner-specific extras keep their words: "start the route
+          here" has no familiar icon, and an unfamiliar icon is a guess. */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {signedIn !== null && (
+          <>
             <button
               type="button"
               onClick={() => requireSignIn(() => saveRoute(withPlaceFirst(route, place)), "Sign in to set the start of your Route")}
@@ -252,17 +273,6 @@ export default function DestinationActions({
             >
               {role === "end" ? "✓ Ends here" : "End route here"}
             </button>
-            <button
-              type="button"
-              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
-              className={favorite ? done : idle}
-              aria-pressed={favorite}
-            >
-              {favorite ? "✓ Saved" : "Save destination"}
-            </button>
-            <button type="button" onClick={() => requireSignIn(addToItinerary, "Sign in to add to your itinerary")} className={onTrip ? done : idle}>
-              {onTrip ? "✓ On your itinerary" : "Add to itinerary"}
-            </button>
           </>
         )}
 
@@ -277,9 +287,6 @@ export default function DestinationActions({
             Nearest airport
           </button>
         )}
-        <button type="button" onClick={share} className={quiet}>
-          Share
-        </button>
       </div>
 
       {shared && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{shared}</p>}

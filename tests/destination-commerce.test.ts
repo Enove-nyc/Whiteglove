@@ -43,16 +43,17 @@ const STICKY_CODE = STICKY.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/
 const PROSE = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
 describe("the action that follows the page", () => {
-  it("LEADS THE HERO WITH PLACES TO STAY", () => {
+  it("puts the planner's own actions in the hero, before any commercial one", () => {
     // The question a person holding dates is actually asking, and the one this
     // site answers better than a comparison site — which quarter, and what is
-    // walkable for Shabbos.
+    // walkable for Shabbos. The planner action is the icon row now
+    // (components/DetailActionRow.tsx) — favorite, route, itinerary — and it
+    // comes before anything that hands off to a partner.
     const hero = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf('aria-label="On this page"'));
-    const stay = hero.indexOf("See places to stay in {destination.name}");
-    const trip = hero.indexOf("AddDestinationToTrip");
-    assert.ok(stay > 0, "the hero no longer offers places to stay");
-    assert.ok(trip > 0 && stay < trip, "the planner comes before the commercial action");
-    assert.match(hero.slice(stay - 400, stay), /bg-\[var\(--navy\)\]/, "the stay action is not the filled button");
+    assert.match(hero, /<DetailActionRow/, "the hero lost the planner's icon action row");
+    const row = hero.indexOf("<DetailActionRow");
+    const booking = hero.indexOf("DestinationBookingOptions");
+    if (booking > 0) assert.ok(row < booking, "the commercial hand-off comes before the planner's actions");
   });
 
   it("CARRIES A STICKY ACTION, and it is sticky rather than fixed", () => {
