@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconButton } from "@/components/icons/IconAction";
 import type { Promotion } from "@/lib/admin-content";
 
 export default function PromotionBanner({
@@ -48,42 +49,43 @@ export default function PromotionBanner({
       ? "mx-auto max-w-6xl px-5 sm:px-8"
       : "";
 
+  // The gold rule along the top plus the Sponsored eyebrow is the ad uniform:
+  // a destination card (wg-card) has neither, so the two cannot be mistaken
+  // for each other at a glance.
   const cardClass = promotion.placements.includes("full-page-takeover")
-    ? "w-full max-w-2xl border border-[var(--gold-light)] bg-[var(--cream)] p-6 shadow-2xl sm:p-8"
+    ? "w-full max-w-2xl rounded-md border border-[var(--gold-light)] border-t-2 border-t-[var(--gold)] bg-[var(--cream)] p-6 shadow-2xl sm:p-8"
     : promotion.placements.includes("popup")
-      ? "border border-[var(--gold-light)] bg-[#fcfaf6] p-4 shadow-2xl"
-      : "border border-[var(--gold-light)] bg-[#fcfaf6] p-5";
+      ? "rounded-md border border-[var(--gold-light)] border-t-2 border-t-[var(--gold)] bg-[#fcfaf6] p-4 shadow-2xl"
+      : "rounded-md border border-[var(--gold-light)] border-t-2 border-t-[var(--gold)] bg-[#fcfaf6] p-5";
 
   return (
     <div className={wrapperClass}>
       <div className={cardClass}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Sponsored</p>
-            <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">{promotion.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">{promotion.description}</p>
-          </div>
-          <button type="button" onClick={() => setDismissed(true)} className="text-sm text-stone-500" aria-label="Dismiss promotion">
-            ✕
-          </button>
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Sponsored</p>
+          <IconButton icon="close" label="Dismiss promotion" onClick={() => setDismissed(true)} className="-mr-2" />
         </div>
-        {/* A tall notice used to be forced into a 160px letterbox and CROPPED
-            to fill it — object-cover — so the small print in it came out a few
-            pixels high and could not be read at any size. It fits now instead
-            of filling, and the title carries into alt, because alt="" told a
-            screen reader there was nothing here at all. */}
+        {/* The creative leads and the words follow. A tall notice used to be
+            forced into a 160px letterbox and CROPPED to fill it — object-cover
+            — so the small print in it came out a few pixels high and could not
+            be read at any size. It fits now instead of filling, and the title
+            carries into alt, because alt="" told a screen reader there was
+            nothing here at all. */}
         {promotion.videoUrl ? (
           <video
             src={promotion.videoUrl}
-            className="mt-4 max-h-[60vh] w-full bg-black object-contain"
+            className="mt-3 max-h-[60vh] w-full bg-black object-contain"
             controls
             playsInline
             preload="metadata"
             poster={promotion.imageUrl || undefined}
           />
         ) : promotion.imageUrl ? (
-          <img src={promotion.imageUrl} alt={promotion.title} className="mt-4 max-h-[60vh] w-full object-contain" />
+          // eslint-disable-next-line @next/next/no-img-element -- an advertiser's remote creative, size unknown
+          <img src={promotion.imageUrl} alt={promotion.title} className="mt-3 max-h-[60vh] w-full object-contain" />
         ) : null}
+        <h2 className="mt-4 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{promotion.title}</h2>
+        {promotion.description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-600">{promotion.description}</p> : null}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <a href={promotion.targetHref} onClick={trackClick} className="border border-[var(--gold)] bg-[var(--navy)] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">
             {promotion.buttonText}

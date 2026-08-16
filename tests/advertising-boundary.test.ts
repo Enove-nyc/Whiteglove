@@ -135,8 +135,14 @@ describe("a reader can always tell what is paid for", () => {
     assert.match(BANNER, /Sponsored/);
     // Three shapes render a promotion; a label on two of them is a label on
     // none, because the unlabelled one is the one somebody believes.
-    const labels = SITE_PROMOTIONS.match(/Sponsored/g) ?? [];
+    const labels = SITE_PROMOTIONS.match(/>Sponsored</g) ?? [];
     assert.ok(labels.length >= 3, `only ${labels.length} of the promotion shapes say Sponsored`);
+    // And none of the labels is responsive-hidden — a label a phone cannot
+    // see is not a label. The top banner's used to disappear below `sm`.
+    assert.doesNotMatch(SITE_PROMOTIONS, /className="[^"]*\bhidden\b[^"]*"[^>]*>Sponsored/, "a Sponsored label is hidden at some widths");
+    // The itinerary-footer placement renders through PromotionBanner, so the
+    // label above covers it too; anything else it renders is the signature.
+    assert.match(readFileSync("components/ItineraryFooter.tsx", "utf8"), /<PromotionBanner/, "the itinerary footer no longer uses the labelled shape");
   });
 
   it("SAYS A FEATURED LISTING MAY BE PAID FOR", () => {
