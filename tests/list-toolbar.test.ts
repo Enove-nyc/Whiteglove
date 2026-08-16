@@ -17,6 +17,9 @@ const CONSUMERS = [
   "components/EateryDirectory.tsx",
   "components/KosherStayDirectory.tsx",
   "components/AttractionDirectory.tsx",
+  // The kevarim directory: search by the name a person is known by, through
+  // the same toolbar and matcher, with the same no-counts rule.
+  "components/TzaddikimDirectory.tsx",
 ];
 
 describe("the shared list toolbar", () => {

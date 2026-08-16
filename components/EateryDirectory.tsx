@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import { IconLink } from "@/components/icons/IconAction";
 import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
-import { describeHechsher, hechsherLabel } from "@/data/hechsherim";
+import { hechsherLabel } from "@/data/hechsherim";
 import type { KosherEatery } from "@/data/kosher-eateries";
 
 // The curated kosher listings. The food finder filters this same White Glove
@@ -71,54 +72,26 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
               {e.city} · {e.country} · {e.kind} · {e.diet}
             </p>
             <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{e.name}</h3>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{e.summary}</p>
 
             {/* The kashrus line comes before anything practical because it is
-                the thing that decides whether the rest matters. */}
+                the thing that decides whether the rest matters. The label
+                only — the full wording lives with the hechsherim reference. */}
             {e.hechsher.state !== "unverified" && (
-              <p className={`mt-4 border-l-4 px-3 py-2 text-sm leading-6 ${toneFor(e.hechsher.state)}`}>
-                <strong>{hechsherLabel(e.hechsher)}</strong> — {describeHechsher(e.hechsher)}
+              <p className={`mt-3 inline-block border-l-4 px-3 py-1.5 text-sm font-semibold leading-6 ${toneFor(e.hechsher.state)}`}>
+                {hechsherLabel(e.hechsher)}
               </p>
             )}
 
-            {e.notes && e.notes.length > 0 && (
-              <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-600">
-                {e.notes.map((note, i) => (
-                  <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
-                ))}
-              </ul>
-            )}
+            {e.address && <p className="mt-3 break-words text-xs leading-5 text-stone-500">{e.address}</p>}
 
-            <div className="mt-5 flex flex-wrap gap-2 text-sm">
+            <div className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-2">
               {e.coordinates && (
-                <a
-                  href={placeDirectionsUrl(e.address, e.coordinates)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]"
-                >
-                  Navigate →
-                </a>
+                <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(e.address, e.coordinates)} external />
               )}
-              {e.website && (
-                <a
-                  href={e.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]"
-                >
-                  Their site →
-                </a>
-              )}
-              {e.phone && (
-                <a href={`tel:${e.phone}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">
-                  {e.phone}
-                </a>
-              )}
+              {e.website && <IconLink icon="website" label="Website" href={e.website} external />}
+              {e.phone && <IconLink icon="phone" label={`Call ${e.phone}`} href={`tel:${e.phone}`} />}
+              <SuggestEditPanel targetType="site" targetId={e.slug} title={e.name} compact />
             </div>
-
-            {e.address && <p className="mt-4 break-words text-xs leading-5 text-stone-500">{e.address}</p>}
-            <SuggestEditPanel targetType="site" targetId={e.slug} title={e.name} compact />
           </article>
         ))}
       </div>

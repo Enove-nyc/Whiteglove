@@ -30,7 +30,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ cemetery: string }> }) {
   const { cemetery: slug } = await params;
   const cemetery = await getCemeteryView(slug);
-  if (!cemetery) return pageMetadata({ title: "Beis hachaim not found | White Glove Itineraries", description: "This cemetery record could not be found.", path: `/cemeteries/${slug}`, noIndex: true });
+  if (!cemetery) return pageMetadata({ title: "Beis hachaim not found | White Glove Kosher Travel", description: "This cemetery record could not be found.", path: `/cemeteries/${slug}`, noIndex: true });
   // The names of the people buried there are what somebody is searching for,
   // so the description leads with them rather than with our own wording.
   const names = cemetery.burials.slice(0, 3).map((burial) => burial.name).filter(Boolean);

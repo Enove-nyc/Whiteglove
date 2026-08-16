@@ -72,6 +72,8 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/plan", priority: 0.9, changeFrequency: "monthly" },
   { path: "/kosher-travel", priority: 0.8, changeFrequency: "monthly" },
+  // The reference page for the words the site uses — moved off the hub.
+  { path: "/kosher-travel/glossary", priority: 0.3, changeFrequency: "yearly" },
   // The heritage section's own landing page. Its contents — the towns, the
   // batei hachaim, the tzaddikim — are listed below as they always were.
   { path: "/heritage", priority: 0.8, changeFrequency: "weekly" },

@@ -36,7 +36,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ place: string }> }) {
   const { place: slug } = await params;
   const destination = getBulkDestination(slug);
-  if (!destination) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination could not be found.", path: `/heritage/towns/${slug}`, noIndex: true });
+  if (!destination) return pageMetadata({ title: "Destination not found | White Glove Kosher Travel", description: "This destination could not be found.", path: `/heritage/towns/${slug}`, noIndex: true });
   return pageMetadata({
     title: `${destination.city}, ${destination.country} — Jewish Heritage Guide | White Glove`,
     description: destination.summary
@@ -112,7 +112,6 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
                 <p className="mt-1 text-sm text-stone-500">{cemetery.name}</p>
                 {cemetery.address && <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.address}</p>}
                 {cemetery.arrivalNotes[0] && <p className="mt-4 border-l-2 border-[var(--gold)] pl-3 text-sm leading-6 text-stone-600">{cemetery.arrivalNotes[0]}</p>}
-                {cemetery.burials.length > 0 && <p className="mt-4 text-sm font-semibold text-[var(--navy)]">{cemetery.burials.length} known kevarim recorded.</p>}
                 {cemetery.address && <a href={placeDirectionsUrl(cemetery.address, cemetery.coordinates)} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Navigate to this beis hachaim</a>}
               </article>
             ))}

@@ -521,7 +521,7 @@ function pushSitePages(docs: DraftDoc[]) {
       id: "page-hechsherim",
       kind: "Travel guide",
       title: "Hechsherim",
-      subtitle: `${HECHSHERIM.length} certifying bodies the site knows by name`,
+      subtitle: "The certifying bodies the site knows by name",
       href: "/hechsherim",
       names: ["hechsherim", "hechsher", "kashrus", "certification"],
       keywords: ["hechsher", "kosher certification", ...HECHSHERIM.flatMap((h) => [h.name, h.mark, ...h.aliases])],

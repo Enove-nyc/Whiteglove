@@ -1,9 +1,9 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
-import MixedText from "@/components/MixedText";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
-import { sortedTzaddikim } from "@/lib/tzaddikim";
+import TzaddikimDirectory, { type TzaddikCard } from "@/components/TzaddikimDirectory";
+import { extraSpellings } from "@/lib/place-search";
+import { haystack, sortedTzaddikim } from "@/lib/tzaddikim";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -21,10 +21,20 @@ export const revalidate = 60;
  * The cemetery directory answers "what is in Poland". This answers the other
  * question, which is the one people actually ask: where is he buried. Sorted
  * by the name he is known by rather than his surname — somebody looking for
- * the Noam Elimelech is not looking under W.
+ * the Noam Elimelech is not looking under W — and searchable by that name,
+ * client-side, through the directory component.
  */
 export default function TzaddikimPage() {
-  const people = sortedTzaddikim();
+  const people: TzaddikCard[] = sortedTzaddikim().map((entry) => ({
+    slug: entry.slug,
+    yiddishName: entry.burial.yiddishName,
+    name: entry.burial.name,
+    knownAs: entry.burial.knownAs,
+    yahrzeit: entry.burial.yahrzeit,
+    city: entry.cemetery.city,
+    country: entry.cemetery.country,
+    search: [haystack(entry), extraSpellings([entry.cemetery.slug, entry.cemetery.city])].join(" "),
+  }));
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -37,37 +47,11 @@ export default function TzaddikimPage() {
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-tight text-[var(--navy)]">
             Who is buried where
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Search by name.
-          </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {people.map(({ slug, burial, cemetery }) => (
-            <li key={slug}>
-              <Link
-                href={`/tzaddikim/${slug}`}
-                className="wg-card block h-full border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md"
-              >
-                {burial.yiddishName && (
-                  <span dir="rtl" lang="yi" className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                    <MixedText text={burial.yiddishName} lang="yi" />
-                  </span>
-                )}
-                <span className="mt-1 block font-semibold text-[var(--navy)]">{burial.knownAs || burial.name}</span>
-                {burial.knownAs && <span className="block text-sm text-stone-500">{burial.name}</span>}
-                <span className="mt-2 block text-sm text-stone-500">
-                  {cemetery.city} · {cemetery.country}
-                </span>
-                {burial.yahrzeit && (
-                  <span className="mt-1 block text-xs text-stone-400"><MixedText text={burial.yahrzeit} /></span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <TzaddikimDirectory people={people} />
       </section>
 
       <Footer />

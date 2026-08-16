@@ -13,7 +13,7 @@ import { breadcrumbs } from "@/lib/structured-data";
 // unstable_cache now, busted by saveAgency/deleteAgency the moment either
 // actually writes, rather than this page reading Redis on every visit.
 export const metadata = pageMetadata({
-  title: "Kosher certification marks and the agencies behind them | White Glove Itineraries",
+  title: "Kosher certification marks and the agencies behind them | White Glove Kosher Travel",
   description:
     "The certifying bodies this site knows by name, with the mark each one uses, where it certifies, and a link to the agency itself.",
   path: "/hechsherim",
@@ -72,7 +72,7 @@ export default async function HechsherimPage() {
             The marks, and who is behind them
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            {agencies.length} certifying bodies, with the mark each one uses. Which to rely on is a question for your rov.
+            This page does not say who certifies what and does not rank them. Which to rely on is a question for your rov.
           </p>
         </div>
       </section>
