@@ -6,7 +6,7 @@ import TransferBooking from "@/components/TransferBooking";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Airport transfers for a kosher trip | White Glove Itineraries",
+  title: "Airport transfers for a kosher trip | White Glove Kosher Travel",
   description:
     "When a booked airport transfer is the better answer than a hire car, what to settle before you book one, and where to find a driver who knows a heritage route.",
   path: "/transfers",

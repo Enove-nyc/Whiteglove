@@ -69,7 +69,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
         placeholder: "A link, a phone call, or “I was there last month”",
         kind: "text",
         required: false,
-        hint: "Not required. It decides how fast the correction goes live, not whether we believe you.",
+        hint: "Not required.",
       },
     ],
     messageLabel: "What it says, and what it should say",
@@ -113,7 +113,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
      */
     value: "fault",
     label: "Something on the site is broken",
-    blurb: "A page that will not load, a button that does nothing, a link that goes nowhere.",
+    blurb: "A page, button or link that does not work.",
     heading: "What broke, and where",
     subject: "Site fault",
     fields: [
@@ -135,7 +135,6 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
         placeholder: "iPhone, Safari — or Windows, Chrome",
         kind: "text",
         required: false,
-        hint: "Worth a second: plenty of faults happen on a phone and nowhere else.",
       },
     ],
     messageLabel: "What you did, and what happened instead",

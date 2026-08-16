@@ -14,7 +14,7 @@ import { pageMetadata } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Your trip | White Glove Itineraries",
+  title: "Your trip | White Glove Kosher Travel",
   description: "Everything still to sort before you travel, stop by stop.",
   path: "/command-center",
   noIndex: true,

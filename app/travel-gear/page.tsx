@@ -9,7 +9,7 @@ import { gearCtaFor, gearShownToVisitors, priceCheckedLabel } from "@/lib/travel
 import { readGear } from "@/lib/travel-gear-store";
 
 export const metadata = pageMetadata({
-  title: "Travel gear for a kosher trip | White Glove Itineraries",
+  title: "Travel gear for a kosher trip | White Glove Kosher Travel",
   description: "The things worth packing or picking up before you go — a travel blech, a plug adapter, and the rest of the shelf.",
   path: "/travel-gear",
 });

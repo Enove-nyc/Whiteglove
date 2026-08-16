@@ -31,7 +31,7 @@ function Row({ message, now }: { message: ContactMessage; now: string }) {
 
   const mailto =
     `mailto:${encodeURIComponent(message.email)}` +
-    `?subject=${encodeURIComponent(`Re: ${message.subject || "your message to White Glove Itineraries"}`)}`;
+    `?subject=${encodeURIComponent(`Re: ${message.subject || "your message to White Glove Kosher Travel"}`)}`;
 
   return (
     <div className={`border p-5 ${waiting ? "border-[var(--gold-light)] bg-white" : "border-stone-200 bg-[#fcfaf6]"}`}>

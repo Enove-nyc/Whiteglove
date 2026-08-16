@@ -10,7 +10,7 @@ import type { Metadata } from "next";
  * Twitter card — from the page's own words, so a page says what it is.
  */
 
-export const SITE_NAME = "White Glove Itineraries";
+export const SITE_NAME = "White Glove Kosher Travel";
 
 /**
  * The card image used when a page is shared, unless the page has its own.

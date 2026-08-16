@@ -3,9 +3,9 @@ import Link from "next/link";
 
 // שתוליכנו לשלום by White Glove — the Jewish-heritage side of the site.
 //
-// It is a section of White Glove Itineraries, not a separate company, so the
+// It is a section of White Glove Kosher Travel, not a separate company, so the
 // mark is built from the same gloved hand and compass as the parent logo and
-// always carries "by White Glove Itineraries" underneath. A traveler moving
+// always carries "by White Glove Kosher Travel" underneath. A traveler moving
 // between a kever page and the booking pages should never wonder whether they
 // have left the site.
 
@@ -34,7 +34,7 @@ export default function SubBrandBanner({ className = "" }: { className?: string 
         <p className="min-w-0 text-xs leading-5 text-stone-500">
           Kevarim and nesios across Europe and Asia — a section of{" "}
           <Link href="/" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-            White Glove Itineraries
+            White Glove Kosher Travel
           </Link>
           .
         </p>

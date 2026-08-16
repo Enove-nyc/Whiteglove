@@ -193,7 +193,7 @@ export default function DestinationActions({
 
   const share = async () => {
     const url = typeof window !== "undefined" ? new URL(place.href ?? "/", window.location.origin).toString() : "";
-    const payload = { title: place.name, text: `${place.name} — White Glove Itineraries`, url };
+    const payload = { title: place.name, text: `${place.name} — White Glove Kosher Travel`, url };
     // The phone's own share sheet where there is one; the clipboard where
     // there is not. Both end with the person holding a link.
     if (typeof navigator !== "undefined" && navigator.share) {

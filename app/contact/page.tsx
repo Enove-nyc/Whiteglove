@@ -5,7 +5,6 @@ import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
-import SectionHeading from "@/components/SectionHeading";
 import { CONTACT_REASONS, readReason } from "@/lib/contact-reasons";
 import { resolvePage } from "@/lib/pages";
 
@@ -14,7 +13,7 @@ export async function generateMetadata() {
   // The owner writes the title and description in the admin; the
   // canonical URL and the share card come from the page it is.
   return pageMetadata({
-    title: page?.seoTitle ?? "White Glove Itineraries",
+    title: page?.seoTitle ?? "White Glove Kosher Travel",
     description:
       page?.seoDescription ??
       "Tell us something on the site is wrong, ask about advertising, or ask a question.",
@@ -50,11 +49,9 @@ export default async function ContactPage({
       <PageBlocks blocks={page!.blocks} />
 
       <section className="mx-auto max-w-5xl px-5 pb-16 sm:px-8">
-        <SectionHeading
-          eyebrow="Reason for writing"
-          title="Reason for writing"
-          description="Pick one and the form asks only what that needs."
-        />
+        <h2 className="max-w-2xl font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
+          Reason for writing
+        </h2>
         <ul className="mt-8 grid gap-3 sm:grid-cols-2">
           {CONTACT_REASONS.map((entry) => {
             const chosen = entry.value === reason;
@@ -104,12 +101,6 @@ export default async function ContactPage({
             <ContactForm reason={reason} words={words} />
           )}
         </div>
-
-        <p className="mt-10 text-sm">
-          <Link href="/about" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-            About White Glove
-          </Link>
-        </p>
       </section>
 
       <Footer />

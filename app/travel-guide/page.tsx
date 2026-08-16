@@ -10,7 +10,7 @@ import { COUNTRY_DOCS, DOCUMENT_CHECKLIST, PAYMENT_GUIDE } from "@/data/travel-g
 import { ADVISORY_LEVELS, ADVISORY_SOURCE_URL, advisoryFor, fetchAdvisories } from "@/lib/travel-advisories";
 
 export const metadata = pageMetadata({
-  title: "Travel guide — documents, advisories & paying | White Glove Itineraries",
+  title: "Travel guide — documents, advisories & paying | White Glove Kosher Travel",
   description: "Entry documents, live U.S. State Department safety advisories, and how to pay for your trip with points or cash.",
   path: "/travel-guide",
 });

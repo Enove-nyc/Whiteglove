@@ -87,9 +87,14 @@ describe("the /search results page", () => {
     assert.ok(SEARCH_PAGE.includes("Never send a generic unsuccessful search to /stops"));
   });
 
-  test("names the full site search", () => {
-    // Minimal wording now — the heading names the search; the sentence that
-    // explained what "the site" contains went in the wording pass.
-    assert.ok(SEARCH_PAGE.includes("Search the entire White Glove site"));
+  test("keeps the heading to the one word", () => {
+    // Minimal wording: the visible heading is exactly "Search". The sentence
+    // that explained what "the site" contains, and the sitewide heading, went
+    // in the wording pass and must not come back.
+    // One h1, and it is the word — the query belongs in the metadata title,
+    // not in a second visible heading.
+    assert.match(SEARCH_PAGE, />\s*Search\s*<\/h1>/);
+    assert.equal(SEARCH_PAGE.match(/<h1/g)?.length, 1);
+    assert.ok(!SEARCH_PAGE.includes("Search the entire White Glove site"));
   });
 });

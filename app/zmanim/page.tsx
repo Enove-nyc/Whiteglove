@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "Zmanim — halachic times for your destination | White Glove Itineraries",
+  title: "Zmanim — halachic times for your destination | White Glove Kosher Travel",
   description:
     "Halachic times calculated for a place and date: alos, sunrise, sof zman Shema, chatzos, mincha, sunset and tzeit. Informational travel aid — confirm with local custom.",
   path: "/zmanim",

@@ -28,7 +28,7 @@ import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/li
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Where to stay — White Glove Itineraries",
+  title: "Where to stay — White Glove Kosher Travel",
   description: "Kosher and kosher-friendly places to stay in Italy, France and Switzerland, and which part of each city to be in for Shabbos.",
   path: "/hotels",
 });
@@ -93,9 +93,6 @@ export default async function KosherStaysPage({
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
             {searching ? `Where to stay in ${heading}` : "Where to stay"}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Which part of town to be in, and what is walkable from it. Seasonal hotels say which weeks they run.
-          </p>
           <ListingAudienceNote />
           {searching && (
             <p className="mt-4 text-sm font-semibold text-[var(--navy)]">
@@ -122,8 +119,7 @@ export default async function KosherStaysPage({
               Planning a kosher stay in {heading}
             </h2>
             <p className="mt-3 max-w-2xl leading-7 text-stone-600">
-              Our guides do not yet cover the kosher side of {heading}. Arrange food and Shabbos locally before you
-              travel, and use the search below to compare places to stay.
+              Arrange food and Shabbos locally before you travel, and compare places to stay with the search below.
             </p>
             <p className="mt-4 max-w-2xl leading-7 text-stone-600">
               <a
@@ -155,11 +151,6 @@ export default async function KosherStaysPage({
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
             Check prices and availability
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            {searching
-              ? `Rooms, dates and prices come from our booking partner.`
-              : `Rooms, dates and prices come from our booking partner. Type where and when, and it opens on your search.`}
-          </p>
           <div className="mt-6">
             <PartnerSearchForm
               id="hotels-partner"

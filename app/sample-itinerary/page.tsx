@@ -10,7 +10,7 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "A sample itinerary — what you actually receive | White Glove Itineraries",
+  title: "A sample itinerary — what you actually receive | White Glove Kosher Travel",
   description:
     "A whole week in Rome for a family of five, as the itinerary is delivered: a day per page, real walking and driving times, the kosher side per day, and a Shabbos with nothing scheduled on it.",
   path: "/sample-itinerary",

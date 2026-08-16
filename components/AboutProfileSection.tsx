@@ -53,7 +53,7 @@ export default function AboutProfileSection({ profile }: { profile: AboutProfile
             paragraph above rather than as a field somebody filled in. */}
         {profile.location && (
           <p className="leading-7 text-stone-600">
-            White Glove Itineraries is based in {profile.location}.
+            White Glove Kosher Travel is based in {profile.location}.
           </p>
         )}
       </div>

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Build version — White Glove Itineraries",
+  title: "Build version — White Glove Kosher Travel",
   robots: { index: false, follow: false },
 };
 

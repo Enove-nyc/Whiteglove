@@ -35,8 +35,6 @@ type Kind = "flights" | "hotels" | "cars";
 // rather than floating as separate boxes with gaps between them. The hairlines
 // come from a 1px grid gap over a gold background, so they stay perfectly even
 // however the grid wraps.
-const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(23,45,82,.04)] outline-none transition focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
-const caption = "text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]";
 const fieldLabel = "text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500";
 /**
  * The field inside the panel, and why it has a height of its own.
@@ -206,7 +204,7 @@ export default function BookPartners({
         <p className="min-w-0 text-xs leading-5 text-stone-500">
           {pay === "miles"
             ? "Find the award, check the value, book it in your own program."
-            : "Compare options here — booking and payment happen with a trusted partner."}
+            : "Booking and payment happen with a trusted partner."}
         </p>
       </div>
 
@@ -249,12 +247,8 @@ export default function BookPartners({
           actually looking at, rather than describing the page in general. */}
       <p className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-5 text-xs leading-6 text-stone-500 sm:px-8">
         {pay === "miles"
-          ? "Award bookings are always finished inside your own loyalty account — we never see your balances or your login. Save the item to your trip so the rest of your itinerary stays in one place."
-          : kind === "hotels"
-            ? "Places to stay are listed here when live options are available. Booking and payment happen with a trusted partner. After you book, you can add the details to your White Glove itinerary."
-            : kind === "cars"
-              ? "Search in the partner form on this page. Prices and payment stay with them — White Glove does not list a price here. After you book, you can add the details to your itinerary."
-              : "Search opens with booking partners. Prices and payment stay with them — White Glove does not list a fare here. After you book, you can add the details to your itinerary."}
+          ? "Award bookings are finished inside your own loyalty account."
+          : "After you book, add the details to your itinerary."}
       </p>
     </div>
   );
@@ -908,9 +902,6 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
 
   return (
     <div>
-      <p className="text-sm leading-6 text-stone-600">
-        Search and prices are in the form below. White Glove does not list a price here.
-      </p>
       <PartnerSearchWidget src={widgetSrc} title="Car search" minHeight={640} />
       <button
         type="button"
@@ -950,8 +941,7 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
           When you have booked, come back and tell us.
         </h2>
         <p className="mt-3 text-sm leading-6 text-stone-600">
-          The booking happens on their site, so your itinerary does not know about it. Add the {what} here and it goes on
-          your trip with everything else — and the reference is somewhere you can find it without digging through email.
+          Add the {what} here and it goes on your trip, reference included.
         </p>
         <p className="mt-3 border-l-4 border-[var(--gold-light)] bg-white px-3 py-2 text-sm font-semibold text-[var(--navy)]">
           {booking.summary}
@@ -986,9 +976,6 @@ function BookedPrompt({ booking, onDone, onDismiss }: { booking: PendingBooking;
             Not yet
           </button>
         </div>
-        <p className="mt-3 text-xs leading-5 text-stone-500">
-          Still looking? Close this and finish booking in the other tab. Search again here afterwards if you need this prompt back.
-        </p>
       </div>
     </div>
   );
@@ -1142,8 +1129,7 @@ function ValueCalculator({ unit, cashLabel, feesLabel, pointsPlaceholder, cashPl
           <p className="font-[family-name:var(--font-display)] text-3xl leading-none text-[var(--navy)]">{cpp.toFixed(2)}¢ <span className="text-base text-stone-500">per point</span></p>
           <p className={`text-sm font-semibold ${verdict.tone}`}>{verdict.text}</p>
           <p className="mt-1 basis-full text-xs leading-5 text-stone-500">
-            Worked out as (cash price − what you still pay on the award) ÷ points. Around 1.2¢ is typical; 2¢ or more is usually a good redemption.
-            Compare against what your own program normally returns before you transfer anything.
+            (Cash price − what you still pay on the award) ÷ points. Around 1.2¢ is typical; 2¢ or more is usually good.
           </p>
         </div>
       )}
@@ -1183,9 +1169,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
   return (
     <div>
       <MilesNote>
-        <strong className="text-[var(--navy)]">How award flights work.</strong>{" "}No website can redeem your miles for you — award seats
-        come out of your own loyalty account, so the booking is always finished on the airline&apos;s own site. What we do here is help
-        you find the seats and check the redemption is worth it.
+        Award seats are booked in your own loyalty account, on the airline&apos;s own site.
       </MilesNote>
 
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -1201,8 +1185,6 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
         <a href="https://seats.aero/search" target="_blank" rel="noreferrer" className={linkGhost}>Search on seats.aero →</a>
         {selected && <a href={selected.award} target="_blank" rel="noreferrer" className={linkGhost}>Open {program} →</a>}
       </div>
-      <p className="mt-2 text-xs text-stone-500">Independent award-search sites, free to use. We don&apos;t see your balances or your account.</p>
-
       <StepLabel n={2}>Whether the miles are worth it</StepLabel>
       <ValueCalculator unit="Miles" cashLabel="Cash price of the same ticket" feesLabel="Taxes/fees you still pay" pointsPlaceholder="45000" cashPlaceholder="900" />
 
@@ -1210,7 +1192,7 @@ function MilesFlightsForm({ onAdd }: { onAdd: AddFn }) {
         <button type="button" onClick={addToTrip} className={linkGhost}>+ Add this flight to my trip</button>
       </div>
       <p className="mt-6 text-xs leading-5 text-stone-500">
-        Transfers from a card program to an airline are almost always one-way. Confirm the award seat exists first, then transfer, then book.
+        Card-to-airline transfers are one-way. Confirm the seat first, then transfer, then book.
       </p>
     </div>
   );
@@ -1237,9 +1219,7 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
   return (
     <div>
       <MilesNote>
-        <strong className="text-[var(--navy)]">How award nights work.</strong>{" "}Points nights are booked inside your own hotel program,
-        so the reservation is always completed on the chain&apos;s own site. Use the calculator below before you book — hotel points are
-        worth very different amounts depending on the chain and the property.
+        Points nights are booked inside your own hotel program, on the chain&apos;s own site.
       </MilesNote>
 
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -1259,15 +1239,11 @@ function MilesHotelsForm({ onAdd }: { onAdd: AddFn }) {
           : <span className="text-sm text-stone-500">Choose your program above and its award booking page opens here.</span>}
         <a href="https://awardmapper.com/" target="_blank" rel="noreferrer" className={linkGhost}>See which chains have hotels here →</a>
       </div>
-      <p className="mt-2 text-xs text-stone-500">
-        Award Mapper is a free independent tool for seeing which loyalty programs have properties in a city — useful before you commit points.
-      </p>
 
       <StepLabel n={2}>Whether the points are worth it</StepLabel>
       <ValueCalculator unit="Points" cashLabel="Cash price of the same stay" feesLabel="Resort/other fees still charged" pointsPlaceholder="60000" cashPlaceholder="750" />
       <p className="mt-3 text-xs leading-5 text-stone-500">
-        Compare the whole stay, not one night — many programs discount longer award stays. Check the kosher-food situation separately;
-        an award property miles from anything kosher can cost more in taxis than the points saved.
+        Check the kosher-food situation separately before you commit points.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -1298,9 +1274,7 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
   return (
     <div>
       <MilesNote>
-        <strong className="text-[var(--navy)]">Be honest about cars.</strong>{" "}Rental cars are usually the weakest way to spend points —
-        card travel portals let you pay for one with points at a fixed rate, which is convenient but rarely good value. Run the numbers
-        below before you do it; paying cash and keeping the points for a flight is very often the better trip.
+        Rental cars are usually the weakest way to spend points — run the numbers below first.
       </MilesNote>
 
       <SearchGrid className="mt-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -1341,10 +1315,6 @@ function MilesCarsForm({ onAdd }: { onAdd: AddFn }) {
       <div className="mt-6 flex flex-wrap gap-3">
         <button type="button" onClick={addToTrip} className={linkGhost}>+ Add this car to my trip</button>
       </div>
-      <p className="mt-6 text-xs leading-5 text-stone-500">
-        Rental-car loyalty programs mostly earn you airline miles rather than let you spend them — worth linking your frequent-flyer
-        number at the counter either way.
-      </p>
     </div>
   );
 }

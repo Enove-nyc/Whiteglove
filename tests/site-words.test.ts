@@ -73,10 +73,10 @@ describe("what cannot be saved", () => {
   });
 
   it("argues about nothing else", () => {
-    // These are words on his own front page. A screen that refused a headline
-    // for being too long, or the wrong tone, would be an insult.
-    assert.equal(wordProblem(with_({ heroTitle: "!" })), null);
-    assert.equal(wordProblem(with_({ heroSubtitle: "x".repeat(2000) })), null);
+    // These are his own words. A screen that refused a placeholder for being
+    // too short, or a promise for being too long, would be an insult.
+    assert.equal(wordProblem(with_({ searchPlaceholder: "!" })), null);
+    assert.equal(wordProblem(with_({ replyPromise: "x".repeat(2000) })), null);
   });
 });
 
@@ -103,7 +103,7 @@ describe("what the old screen had saved", () => {
   });
 
   it("says nothing when the old value already matches, or when there is none", () => {
-    assert.deepEqual(whatTheOldScreenSaved({ heroTitle: BUILT_IN_WORDS.heroTitle }, BUILT_IN_WORDS), []);
+    assert.deepEqual(whatTheOldScreenSaved({ searchPlaceholder: BUILT_IN_WORDS.searchPlaceholder }, BUILT_IN_WORDS), []);
     assert.deepEqual(whatTheOldScreenSaved(null, BUILT_IN_WORDS), []);
     // publicNotice had no home anywhere on the site, which is part of why none
     // of this worked. It is not offered, because there is nowhere to put it.

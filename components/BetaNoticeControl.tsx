@@ -53,38 +53,9 @@ export default function BetaNoticeControl({ notice, storeReady }: { notice: Beta
           </label>
 
           <label className="block">
-            <span className={captionClass}>What is still being worked on</span>
+            <span className={captionClass}>What to confirm before travelling</span>
             <textarea name="body" defaultValue={notice.body} rows={3} className={inputClass} />
           </label>
-
-          <label className="block">
-            <span className={captionClass}>What to check before travelling</span>
-            <textarea name="caution" defaultValue={notice.caution} rows={3} className={inputClass} />
-            <span className="mt-1 block text-xs leading-5 text-stone-500">
-              The part that does the work. Name the things people actually rely on — a shomer&apos;s number, an
-              address, a time to be somewhere. &ldquo;Use with caution&rdquo; on its own warns nobody of anything.
-            </span>
-          </label>
-
-          <label className="block">
-            <span className={captionClass}>Asking for feedback</span>
-            <textarea name="feedback" defaultValue={notice.feedback} rows={2} className={inputClass} />
-          </label>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="block">
-              <span className={captionClass}>Feedback link</span>
-              <input name="feedbackHref" defaultValue={notice.feedbackHref} className={inputClass} placeholder="/contact" />
-            </label>
-            <label className="block">
-              <span className={captionClass}>Feedback button</span>
-              <input name="feedbackLabel" defaultValue={notice.feedbackLabel} className={inputClass} />
-            </label>
-            <label className="block">
-              <span className={captionClass}>Dismiss button</span>
-              <input name="dismissLabel" defaultValue={notice.dismissLabel} className={inputClass} />
-            </label>
-          </div>
 
           <label className="block">
             <span className={captionClass}>Version</span>

@@ -170,7 +170,7 @@ export function replyDraft(suggestion: EditSuggestion): { subject: string; body:
           ? "We have looked into it and are leaving it as it is for now:"
           : "We are looking into it.";
   const note = suggestion.reviewerNotes?.trim();
-  const body = [opening, "", middle, note ? `\n${note}` : "", "", "White Glove Itineraries"].filter((line) => line !== undefined).join("\n");
+  const body = [opening, "", middle, note ? `\n${note}` : "", "", "White Glove Kosher Travel"].filter((line) => line !== undefined).join("\n");
   const href = `mailto:${encodeURIComponent(suggestion.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   return { subject, body, href };
 }

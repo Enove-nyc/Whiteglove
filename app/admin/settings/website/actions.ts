@@ -30,11 +30,6 @@ export async function saveBetaNoticeAction(_prev: ActionResult | null, formData:
     on: formData.get("on") === "on",
     heading: text("heading"),
     body: text("body"),
-    caution: text("caution"),
-    feedback: text("feedback"),
-    feedbackHref: text("feedbackHref"),
-    feedbackLabel: text("feedbackLabel"),
-    dismissLabel: text("dismissLabel"),
     version: text("version"),
   });
 

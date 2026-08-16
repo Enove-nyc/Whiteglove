@@ -165,7 +165,7 @@ export default function AlertSignup({
               required
             />
             <span>
-              I agree to receive the updates I chose from White Glove Itineraries. I can unsubscribe from any email.
+              I agree to receive the updates I chose from White Glove Kosher Travel. I can unsubscribe from any email.
             </span>
           </label>
 

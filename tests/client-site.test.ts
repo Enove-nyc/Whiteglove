@@ -124,7 +124,8 @@ describe("the site does not ask a customer to do our work", () => {
     const contact = readFileSync("lib/contact-reasons.ts", "utf8");
     assert.match(contact, /value: "correction"/);
     assert.match(contact, /value: "advertise"/);
-    assert.match(readFileSync("lib/beta-notice.ts", "utf8"), /feedbackHref: "\/contact\?reason=correction"/);
+    // The notice no longer carries a feedback door — it is one line and two
+    // actions now — so the correction reason itself is the door asserted on.
     assert.match(readFileSync("app/directory/page.tsx", "utf8"), /\/contact\?reason=advertise/);
   });
 

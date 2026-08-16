@@ -45,11 +45,6 @@ export default async function StayQuarters({
   return (
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Where should I stay?</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-        Before a hotel is chosen, the question is really which neighbourhood. These are where the shuls, the kosher
-        food and the eruv are
-        {searchable ? ", and each one searches on that quarter rather than the whole city." : "."}
-      </p>
 
       <ul className="mt-6 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
         {offerable.map((area) => (

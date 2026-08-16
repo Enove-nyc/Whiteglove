@@ -10,7 +10,7 @@ export async function generateMetadata() {
   // The owner writes the title and description in the admin; the
   // canonical URL and the share card come from the page it is.
   return pageMetadata({
-    title: page?.seoTitle ?? "White Glove Itineraries",
+    title: page?.seoTitle ?? "White Glove Kosher Travel",
     description: page?.seoDescription ?? "Thoughtfully planned kosher travel and Jewish heritage journeys.",
     path: "/travel-insurance",
   });

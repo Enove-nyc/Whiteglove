@@ -5,7 +5,7 @@ import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Travel information | White Glove Itineraries",
+  title: "Travel information | White Glove Kosher Travel",
   description: "A practical guide to checking the travel details that can change before your vacation.",
   path: "/verification",
 });

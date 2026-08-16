@@ -99,7 +99,7 @@ export default function EmailDeliveryTest() {
           account — messages to <code className={code}>{config.contactInbox}</code> get rejected. To fix it: verify
           <strong> whitegloveitineraries.com</strong> in Resend (add the DNS records it gives you), then set
           <code className={code}>RESEND_FROM_EMAIL</code> to something like
-          <code className={code}>White Glove Itineraries &lt;no-reply@whitegloveitineraries.com&gt;</code> and redeploy.
+          <code className={code}>White Glove Kosher Travel &lt;no-reply@whitegloveitineraries.com&gt;</code> and redeploy.
         </div>
       )}
 

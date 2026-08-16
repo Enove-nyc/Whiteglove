@@ -17,7 +17,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 
 export const metadata = pageMetadata({
-  title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Itineraries",
+  title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Kosher Travel",
   description:
     "Kosher travel: destinations, kosher food, Shabbos, shuls and mikvahs — plan and book your own trip.",
   path: "/",

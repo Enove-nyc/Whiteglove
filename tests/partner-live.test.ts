@@ -87,7 +87,11 @@ describe("live partner search wiring", () => {
     assert.doesNotMatch(ui, /Live prices are not available/);
     assert.doesNotMatch(ui, /Live prices could not be loaded/);
     assert.doesNotMatch(ui, /Compare fares with Kayak/);
-    assert.match(ui, /White Glove does not list a fare here/);
+    // The per-tab explainer went in the wording pass; the honesty rule — no
+    // invented fare is ever shown as White Glove's — survives as the empty
+    // result's own words.
+    assert.match(ui, /No priced flights for those dates on White Glove/);
+    assert.match(ui, /Nothing is invented here/);
   });
 
   it("puts a real airline mark and expandable stop copy on priced rows", () => {

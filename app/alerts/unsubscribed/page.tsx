@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Email alerts | White Glove Itineraries",
+  title: "Email alerts | White Glove Kosher Travel",
   description: "Unsubscribe from White Glove travel alerts.",
   path: "/alerts/unsubscribed",
   noIndex: true,

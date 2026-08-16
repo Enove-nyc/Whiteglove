@@ -5,8 +5,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
 export const metadata = pageMetadata({
-  title: "Terms of Use — White Glove Itineraries",
-  description: "The terms that govern your use of White Glove Itineraries.",
+  title: "Terms of Use — White Glove Kosher Travel",
+  description: "The terms that govern your use of White Glove Kosher Travel.",
   path: "/terms",
 });
 
@@ -28,7 +28,7 @@ export default async function TermsOfUsePage() {
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Kosher Travel</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Terms of Use</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
@@ -76,7 +76,7 @@ export default async function TermsOfUsePage() {
         </Section>
 
         <Section title="Intellectual property">
-          <p>The Service, including its guides, text, design, and logo, is owned by White Glove Itineraries and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved.</p>
+          <p>The Service, including its guides, text, design, and logo, is owned by White Glove Kosher Travel and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved.</p>
         </Section>
 
         <Section title="Disclaimer">
@@ -84,7 +84,7 @@ export default async function TermsOfUsePage() {
         </Section>
 
         <Section title="Limitation of liability">
-          <p>To the fullest extent permitted by law, White Glove Itineraries will not be liable for any indirect, incidental, or consequential damages, or for any loss arising from your use of the Service, third-party travel services, or reliance on information provided through the Service.</p>
+          <p>To the fullest extent permitted by law, White Glove Kosher Travel will not be liable for any indirect, incidental, or consequential damages, or for any loss arising from your use of the Service, third-party travel services, or reliance on information provided through the Service.</p>
         </Section>
 
         <Section title="Changes">

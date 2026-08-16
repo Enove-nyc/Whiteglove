@@ -33,7 +33,7 @@ export const editablePages: PageDef[] = [
     slug: "getaways",
     href: "/destinations",
     label: "Vacation Ideas",
-    seoTitle: "Kosher vacation ideas — where to go | White Glove Itineraries",
+    seoTitle: "Kosher vacation ideas — where to go | White Glove Kosher Travel",
     seoDescription:
       "Beaches, cities, mountains and family trips, with what we hold on record about kosher food and Shabbos in each one.",
     blocks: [
@@ -51,7 +51,7 @@ export const editablePages: PageDef[] = [
     slug: "travel-insurance",
     href: "/travel-insurance",
     label: "Travel Insurance",
-    seoTitle: "Travel Insurance — White Glove Itineraries",
+    seoTitle: "Travel Insurance — White Glove Kosher Travel",
     seoDescription: "What travel insurance usually covers, what to check before you buy, and where to compare policies for your dates.",
     blocks: [
     { id: "travel-insurance-hero", kind: "hero", eyebrow: "Before you travel", heading: "Travel insurance", intro: "What a policy usually covers, and what to read before you buy one. We are not the insurer and we do not advise on cover — the terms, the price and the exclusions are theirs." },
@@ -72,7 +72,7 @@ export const editablePages: PageDef[] = [
     slug: "flight-booking-assistance",
     href: "/flight-booking-assistance",
     label: "Flight Booking Assistance",
-    seoTitle: "Flight Booking Assistance — White Glove Itineraries",
+    seoTitle: "Flight Booking Assistance — White Glove Kosher Travel",
     seoDescription: "This page is for travelers who want a person to help gather the flight details and request a booking on their behalf.",
     blocks: [
     { id: "flight-booking-assistance-hero", kind: "hero", eyebrow: "Ask a person", heading: "Flight booking assistance", intro: "For a journey that does not fit a search box — a group, a complicated routing, or a date somebody wants a second opinion on. Send what you have and a person picks it up." },
@@ -115,9 +115,9 @@ export const editablePages: PageDef[] = [
     slug: "about",
     href: "/about",
     label: "About",
-    seoTitle: "About White Glove Itineraries — who we are and how we work",
+    seoTitle: "About White Glove Kosher Travel — who we are and how we work",
     seoDescription:
-      "Who is behind White Glove Itineraries, how the kosher, Shabbos and practical detail on this site is put together, how the business is paid, and how to reach a person.",
+      "Who is behind White Glove Kosher Travel, how the kosher, Shabbos and practical detail on this site is put together, how the business is paid, and how to reach a person.",
     blocks: [
       {
         id: "about-hero",
@@ -128,7 +128,7 @@ export const editablePages: PageDef[] = [
         eyebrow: "About White Glove",
         heading: "Travel information you can plan around.",
         intro:
-          "White Glove Itineraries is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
+          "White Glove Kosher Travel is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
         hidden: true,
       },
       {
@@ -174,25 +174,20 @@ export const editablePages: PageDef[] = [
     slug: "contact",
     href: "/contact",
     label: "Contact",
-    seoTitle: "Contact — White Glove Itineraries",
+    seoTitle: "Contact — White Glove Kosher Travel",
     seoDescription:
       "Tell us something on the site is wrong, ask about advertising, or ask a question.",
     blocks: [
       {
         id: "contact-hero",
         kind: "hero",
-        eyebrow: "Start a conversation",
         // Was: "Tell us about your trip — kevarim, dates, and kosher needs",
-        // and then "Tell us about the trip you want to take." The first asked
-        // every visitor which graves they wanted to see. The second asked
-        // everybody about a trip, including the person writing to say a shul's
-        // address had changed and the one asking about advertising. The page
-        // asks what the message is about first now, so the heading has to be
-        // one that fits every answer — trip planning among them has since
-        // been removed from the site outright.
-        heading: "Get in touch.",
-        intro:
-          "Answer what you know, leave the rest, and we will come back to you.",
+        // then "Tell us about the trip you want to take.", then "Get in
+        // touch." with an eyebrow and an intro. The page is the heading, the
+        // reason choices and the form — nothing else to read first.
+        eyebrow: "",
+        heading: "Contact",
+        intro: "",
       },
     ],
   },
@@ -200,7 +195,7 @@ export const editablePages: PageDef[] = [
     slug: "kosher",
     href: "/kosher",
     label: "Kosher food finder",
-    seoTitle: "Kosher food finder — White Glove Itineraries",
+    seoTitle: "Kosher food finder — White Glove Kosher Travel",
     seoDescription: "Browse White Glove's curated kosher restaurants, bakeries and groceries, then add a listing to your trip.",
     blocks: [
     { id: "kosher-hero", kind: "hero", eyebrow: "Kosher food", heading: "Find kosher food for your trip.", intro: "Browse White Glove's curated kosher restaurants, bakeries and groceries, then add a listing to your trip." },
@@ -210,7 +205,7 @@ export const editablePages: PageDef[] = [
     slug: "submit",
     href: "/submit",
     label: "Submit an entry",
-    seoTitle: "Submit an entry — White Glove Itineraries",
+    seoTitle: "Submit an entry — White Glove Kosher Travel",
     seoDescription: "Send in a kever, cemetery, provider, or correction for the White Glove directory.",
     blocks: [
     { id: "submit-hero", kind: "hero", eyebrow: "Help us get it right", heading: "Send in a kever, cemetery, or provider.", intro: "If you know a place we are missing, or something on the site is wrong, tell us. Every submission is read before anything changes." },

@@ -13,7 +13,7 @@ import { placeMapUrl } from "@/data/route-utils";
 // written, rather than this page running a real database read on every
 // visit.
 export const metadata = pageMetadata({
-  title: "Mikvaos — source-backed listings for travel | White Glove Itineraries",
+  title: "Mikvaos — source-backed listings for travel | White Glove Kosher Travel",
   description:
     "Mikvah listings White Glove holds for Jewish travel, with addresses, contacts and the source behind each one. Confirm access and hours locally before you go.",
   path: "/mikvaos",

@@ -13,10 +13,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const { q = "" } = await searchParams;
   const query = q.trim();
   return pageMetadata({
-    title: query ? `Search: ${query} | White Glove Itineraries` : "Search | White Glove Itineraries",
-    description: query
-      ? `Results for “${query}” across vacation destinations, places to stay, things to do, kosher travel and heritage.`
-      : "Search White Glove for vacation destinations, places to stay, kosher food, guides and heritage journeys.",
+    title: query ? `Search: ${query} | White Glove Kosher Travel` : "Search | White Glove Kosher Travel",
+    description: query ? `Results for “${query}”.` : "Search White Glove.",
     path: query ? `/search?q=${encodeURIComponent(query)}` : "/search",
     noIndex: true,
   });
@@ -42,9 +40,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Search</p>
-          <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-            {query ? `Results for “${query}”` : "Search the entire White Glove site"}
+          <h1 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
+            Search
           </h1>
           <div className="mt-6"><DestinationSearch compact showChrome={false} id="search-page" /></div>
         </div>

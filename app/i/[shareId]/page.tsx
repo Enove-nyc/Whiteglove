@@ -20,7 +20,7 @@ import { pageMetadata } from "@/lib/seo";
 // A share link is given to somebody, not found. Indexing it would put a
 // stranger's trip — with their dates and their stops — into search results.
 export const metadata = pageMetadata({
-  title: "A shared itinerary | White Glove Itineraries",
+  title: "A shared itinerary | White Glove Kosher Travel",
   description: "An itinerary shared with you.",
   path: "/i",
   noIndex: true,

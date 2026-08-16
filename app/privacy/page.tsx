@@ -5,8 +5,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
 export const metadata = pageMetadata({
-  title: "Privacy Policy — White Glove Itineraries",
-  description: "How White Glove Itineraries collects, uses, and protects your information.",
+  title: "Privacy Policy — White Glove Kosher Travel",
+  description: "How White Glove Kosher Travel collects, uses, and protects your information.",
   path: "/privacy",
 });
 
@@ -28,7 +28,7 @@ export default async function PrivacyPolicyPage() {
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Kosher Travel</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Privacy Policy</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
@@ -36,7 +36,7 @@ export default async function PrivacyPolicyPage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          White Glove Itineraries (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides travel guides and planning
+          White Glove Kosher Travel (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides travel guides and planning
           tools for kosher travel and Jewish heritage journeys at {SITE_DOMAIN}. This policy explains what information we collect,
           how we use it, and the choices you have.
         </p>

@@ -71,10 +71,7 @@ export default function SearchResults({
   if (!query) {
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10 text-center">
-        <p className="text-stone-600">
-          Search destinations, places to stay, kosher food, activities, kevarim, cemeteries or towns across White Glove.
-        </p>
-        <Link href="/destinations" className="mt-6 inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+        <Link href="/destinations" className="inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
           Browse vacation destinations
         </Link>
       </div>
@@ -84,41 +81,12 @@ export default function SearchResults({
   if (results.length === 0) {
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10">
-        <p className="text-lg text-[var(--navy)]">No published results for “{query}”.</p>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-          Try another spelling, a city name, or a broader idea such as beach, mountains or where to stay. Site search only
-          covers information already published on White Glove — it does not invent answers.
+        <p className="text-lg text-[var(--navy)]">No results for “{query}”.</p>
+        <p className="mt-6 text-sm font-semibold">
+          <Link href="/destinations" className="text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+            Browse vacation destinations
+          </Link>
         </p>
-        <ul className="mt-8 space-y-3 text-sm font-semibold text-[var(--navy)]">
-          <li>
-            <Link href="/destinations" className="underline decoration-[var(--gold)] underline-offset-4">
-              Browse vacation destinations
-            </Link>
-          </li>
-          {!heritageIntent ? (
-            <li>
-              <Link href="/heritage" className="text-stone-600 underline decoration-[var(--gold-light)] underline-offset-4">
-                Or look in Jewish heritage journeys
-              </Link>
-            </li>
-          ) : (
-            <li>
-              <Link href="/heritage" className="underline decoration-[var(--gold)] underline-offset-4">
-                Browse heritage towns and kevarim
-              </Link>
-            </li>
-          )}
-          <li>
-            <Link href="/kosher" className="text-stone-600 underline decoration-[var(--gold-light)] underline-offset-4">
-              Open the kosher food finder
-            </Link>
-          </li>
-          <li>
-            <Link href="/hotels" className="text-stone-600 underline decoration-[var(--gold-light)] underline-offset-4">
-              Browse where to stay
-            </Link>
-          </li>
-        </ul>
       </div>
     );
   }

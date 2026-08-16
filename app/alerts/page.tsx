@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "Kosher travel updates | White Glove Itineraries",
+  title: "Kosher travel updates | White Glove Kosher Travel",
   description:
     "Choose what you want to hear about — new destinations, verified listings, seasonal programmes or one place in particular.",
   path: "/alerts",

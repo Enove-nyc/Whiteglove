@@ -106,7 +106,7 @@ describe("hotels first", () => {
   });
 
   it("puts hotels first in the cash-and-points comparison too", () => {
-    const comparison = PAGE.slice(PAGE.indexOf("const COMPARISON"), PAGE.indexOf("const STEPS"));
+    const comparison = PAGE.slice(PAGE.indexOf("const COMPARISON"), PAGE.indexOf("const NOT_YET"));
     assert.ok(comparison.indexOf('"Where to stay"') < comparison.indexOf('"Flights"'));
     assert.ok(comparison.indexOf('"Flights"') < comparison.indexOf('"Cars"'));
   });
@@ -209,10 +209,10 @@ describe("what is not bookable is named", () => {
     assert.doesNotMatch(PAGE, /NOT_YET\.map/, "the page still renders the unfiltered list");
     // Things to do names the tours hand-off, so it goes when tours go live.
     assert.match(PAGE, /"activity",/);
-    // And the count in the sentence is counted rather than typed — "Two things"
-    // was written when there were two and stayed while the list changed.
-    assert.match(PAGE, /notYet\.length === 1/);
-    assert.doesNotMatch(PROSE, /Two things people ask us for/);
+    // The counting sentence went in the wording pass, and no typed count may
+    // replace it — "Two things" was written when there were two and stayed
+    // while the list changed underneath it.
+    assert.doesNotMatch(PROSE, /things people ask us for/i);
   });
 
   it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {

@@ -61,7 +61,7 @@ export type ContentExport = {
 };
 
 const ABOUT =
-  "White Glove Itineraries — complete content export. Built-in content comes from the data/*.ts files in the repository; " +
+  "White Glove Kosher Travel — complete content export. Built-in content comes from the data/*.ts files in the repository; " +
   "owner-added content comes from the Postgres database. Contains shomer and access phone numbers: keep private. " +
   "Excludes passwords, API keys, visitor accounts, sessions and visitor-submitted edit suggestions.";
 

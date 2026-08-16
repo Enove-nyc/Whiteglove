@@ -194,7 +194,7 @@ export function renderBlastHtml(input: BlastRenderInput): string {
   return (
     `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1">` +
-    `<title>${escapeEmailHtml(input.blast.subject ?? "White Glove Itineraries")}</title></head>` +
+    `<title>${escapeEmailHtml(input.blast.subject ?? "White Glove Kosher Travel")}</title></head>` +
     `<body style="margin:0;padding:0;background:${CREAM};">` +
     // The outer table IS the page background. A background on <body> alone is
     // dropped by several clients, which is how an email ends up on white.
@@ -205,7 +205,7 @@ export function renderBlastHtml(input: BlastRenderInput): string {
 
     // ---- the crest ----
     `<tr><td align="center" style="padding:30px 40px 0;">` +
-    `<img src="${escapeEmailHtml(crest)}" alt="White Glove Itineraries" width="150" ` +
+    `<img src="${escapeEmailHtml(crest)}" alt="White Glove Kosher Travel" width="150" ` +
     `style="display:block;width:150px;max-width:60%;height:auto;border:0;" /></td></tr>` +
     `<tr><td align="center" style="padding:14px 40px 0;">` +
     `<div style="font-family:${SANS};font-size:10px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:${GOLD_INK};">` +
@@ -224,7 +224,7 @@ export function renderBlastHtml(input: BlastRenderInput): string {
     `${escapeEmailHtml(input.becauseLine)} ` +
     `<a href="${unsubscribe}" style="color:${GOLD_INK};text-decoration:underline;">Stop these emails</a>.</p>` +
     `<p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.6;color:#8a8a86;">` +
-    `<a href="${escapeEmailHtml(origin)}" style="color:${INK};text-decoration:none;">White Glove Itineraries</a>` +
+    `<a href="${escapeEmailHtml(origin)}" style="color:${INK};text-decoration:none;">White Glove Kosher Travel</a>` +
     ` &middot; whitegloveitineraries.com</p>` +
     `</td></tr>` +
 
@@ -273,6 +273,6 @@ export function renderBlastText(input: BlastRenderInput): string {
   return (
     `${lines.join("\n").trim()}\n\n—\n` +
     `${input.becauseLine} Stop these emails: ${input.unsubscribeUrl}\n\n` +
-    `White Glove Itineraries · whitegloveitineraries.com`
+    `White Glove Kosher Travel · whitegloveitineraries.com`
   );
 }

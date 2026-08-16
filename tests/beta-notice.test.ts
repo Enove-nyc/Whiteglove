@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   type BetaNotice,
@@ -11,91 +12,93 @@ import {
 } from "@/lib/beta-notice";
 
 /**
- * "Travel information changes. Here is how we label what we have checked."
+ * The site notice is one line and two actions, and it does not open on arrival.
  *
- * The thing these tests are really protecting: people plan real journeys on
- * this site, to places where the difference between a shomer's old number and
- * his current one is standing outside a locked gate. A caution that does not
- * say what to be cautious about is decoration, and the site would be no more
- * honest for having shown it.
- *
- * AND WHAT THE NOTICE MUST NOT DO, which is what the second describe block
- * below is about. It used to lead with the site being unfinished and name
- * towns, kevarim, phone numbers and opening times — three of the four being
- * the heritage database — on every page, including the ones about beaches.
+ * The history this file holds in place: the notice has been, in turn, an
+ * apology for an unfinished site, an explanation of the editorial labels, a
+ * heritage-database caveat on every vacation page, and a three-paragraph
+ * dialog with three buttons. Each rewrite cut it down; this one settles it at
+ * the single instruction a traveler can act on — confirm the details that
+ * change — shown only after the visitor has settled in.
  */
 
 const notice = (over: Partial<BetaNotice> = {}): BetaNotice => ({ ...DEFAULT_NOTICE, ...over });
 
 describe("what it says when nobody has set anything", () => {
   it("is shippable as it stands", () => {
-    // If the owner never opens the settings, this is what the first visitor
-    // reads. It has to be the right thing, not a placeholder.
     assert.equal(noticeProblem(DEFAULT_NOTICE), null);
     assert.equal(DEFAULT_NOTICE.on, true);
   });
 
-  it("names what to do rather than saying to be careful", () => {
-    // "Use with caution" on its own warns nobody of anything. This one names
-    // the single thing a kosher traveler has to do for themselves, and who
-    // the claim actually belongs to.
-    assert.match(DEFAULT_NOTICE.caution, /teudah/i);
-    assert.match(DEFAULT_NOTICE.caution, /certifying body/i);
+  it("IS THE ONE LINE, exactly", () => {
+    // The whole body. Anything more is a paragraph creeping back.
+    assert.equal(
+      DEFAULT_NOTICE.body,
+      "Travel details change. Confirm kashrus, hours and Shabbos arrangements before travel.",
+    );
   });
 
   it("SAYS WHAT TO DO, NOT WHAT WE HAVE AND HAVE NOT CHECKED", () => {
-    // Two failures, a version apart. Version 1 opened "We are still building
-    // this" — an apology at the top of every page. Version 2 explained the
-    // four checking labels — Verified, Reported, Being checked, Reconfirm
-    // before travel — which is the site's own editorial grading, shown to
-    // everybody on every page. AGENTS.md: do not expose internal workflows or
-    // content status to customers.
+    // Version 1 opened "We are still building this" — an apology on every
+    // page. Version 2 explained the four checking labels. AGENTS.md: do not
+    // expose internal workflows or content status to customers.
     assert.doesNotMatch(DEFAULT_NOTICE.body, /still building|unfinished|beta|coming soon/i);
     assert.doesNotMatch(DEFAULT_NOTICE.body, /\blabel\b|being checked|reconfirm before travel/i);
-    // What survives is the actionable half, which was always the useful half.
-    assert.match(DEFAULT_NOTICE.body, /travel details change/i);
-    assert.match(DEFAULT_NOTICE.body, /confirm/i);
-    assert.match(DEFAULT_NOTICE.body, /kosher certification/i);
-  });
-
-  it("BRINGS THE NOTICE BACK when the wording changes", () => {
-    // A dismissal is per version. Somebody who dismissed the old wording has
-    // not been shown this one, and this one says something different.
-    assert.equal(DEFAULT_NOTICE.version, "5");
-  });
-
-  it("says the site is new and added to, in the forwards direction", () => {
-    // The owner asked for it. It is written as a guide that grows rather than
-    // as a site that is unfinished — the assertion above about "still
-    // building" is what keeps the difference honest, and both hold at once.
-    assert.match(DEFAULT_NOTICE.body, /new/i);
-    assert.match(DEFAULT_NOTICE.body, /added and updated every day/i);
   });
 
   it("DOES NOT DESCRIBE THIS SITE AS A KEVARIM DATABASE", () => {
-    // The examples were "towns, kevarim, phone numbers and opening times".
-    // Three of the four belong to the heritage section, and this strip is on
-    // every page of a kosher vacation planner.
-    const words = `${DEFAULT_NOTICE.heading} ${DEFAULT_NOTICE.body} ${DEFAULT_NOTICE.caution}`;
+    // The examples were once "towns, kevarim, phone numbers and opening
+    // times" — three of the four the heritage section — on every page of a
+    // kosher vacation planner.
+    const words = `${DEFAULT_NOTICE.heading} ${DEFAULT_NOTICE.body}`;
     for (const heritageOnly of ["kevarim", "kever", "shomer", "cemeter", "beis hachaim"]) {
       assert.doesNotMatch(words, new RegExp(heritageOnly, "i"), `the notice on every page mentions ${heritageOnly}`);
     }
   });
 
-  it("offers the three actions, and the dismiss one says what it does", () => {
-    assert.match(DEFAULT_NOTICE.feedbackLabel, /report an update/i);
-    assert.match(DEFAULT_NOTICE.dismissLabel, /hide/i);
-    // "I understand" is not an action and does not say what pressing it does.
-    assert.doesNotMatch(DEFAULT_NOTICE.dismissLabel, /^i understand$/i);
+  it("BRINGS THE NOTICE BACK when the wording changes", () => {
+    // A dismissal is per version. Somebody who dismissed the three-paragraph
+    // version 5 has not seen the one-line version.
+    assert.equal(DEFAULT_NOTICE.version, "6");
   });
 
-  it("brings itself back for somebody who dismissed the old wording", () => {
-    assert.notEqual(DEFAULT_NOTICE.version, "1");
+  it("CARRIES NO EXTRA PARAGRAPHS OR EDITABLE BUTTONS", () => {
+    // The caution, the feedback paragraph and the per-button labels were
+    // removed with the wording. A field that comes back here is a settings
+    // box no page should show again.
+    assert.deepEqual(Object.keys(DEFAULT_NOTICE).sort(), ["body", "heading", "on", "version"]);
+  });
+});
+
+describe("how the dialog behaves", () => {
+  const COMPONENT = readFileSync("components/NewSiteNotice.tsx", "utf8");
+
+  it("DOES NOT OPEN ON ARRIVAL — it waits like SitePromotions", () => {
+    // Twelve seconds on the page, or the first scroll past the fold,
+    // whichever comes first. Nothing else may open it.
+    assert.match(COMPONENT, /NOTICE_DELAY_MS = 12_000/);
+    assert.match(COMPONENT, /NOTICE_SCROLL_PX = 600/);
+    assert.match(COMPONENT, /addEventListener\("scroll", onScroll, \{ passive: true \}\)/);
+    assert.match(COMPONENT, /setTimeout\(reveal, NOTICE_DELAY_MS\)/);
+    // The gate is a second condition on top of eligibility, not a replacement
+    // for it: due && revealed.
+    assert.match(COMPONENT, /due && revealed/);
   });
 
-  it("asks for feedback and gives somewhere to send it", () => {
-    assert.ok(DEFAULT_NOTICE.feedback.trim().length > 20);
-    assert.match(DEFAULT_NOTICE.feedbackHref, /^\//);
+  it("offers the two actions and nothing else", () => {
+    assert.match(COMPONENT, /href="\/verification"/);
+    assert.match(COMPONENT, />\s*Verification\s*</);
+    assert.match(COMPONENT, />\s*Close\s*</);
+    assert.doesNotMatch(COMPONENT, /feedbackLabel|dismissLabel|notice\.caution|notice\.feedback/);
+  });
+
+  it("is still a real dialog", () => {
+    // Same bar as every other modal: labelled, modal, focus-trapped, Escape.
+    assert.match(COMPONENT, /role="dialog"/);
+    assert.match(COMPONENT, /aria-modal="true"/);
+    assert.match(COMPONENT, /useFocusTrap/);
+    assert.match(COMPONENT, /aria-labelledby/);
+    assert.match(COMPONENT, /body\.style\.overflow/);
   });
 });
 
@@ -123,9 +126,8 @@ describe("whether to show it", () => {
   });
 
   it("does not put it over the owner's own screens", () => {
-    // The admin is his workshop; telling him the site is unfinished is telling
-    // him what he is in the middle of doing. And a modal over a password box
-    // is an obstacle rather than a courtesy.
+    // The admin is his workshop. And a modal over a password box is an
+    // obstacle rather than a courtesy.
     for (const path of ["/admin", "/admin/destinations", "/login", "/access", "/embed", "/embed/flights"]) {
       assert.equal(shouldShow(notice(), { dismissedVersion: null, path }), false, path);
     }
@@ -160,13 +162,9 @@ describe("reading what was stored", () => {
 
 describe("filling in what the owner left blank", () => {
   it("falls back field by field", () => {
-    // Clearing one line must not leave a gap under a heading — a blank
-    // paragraph reads as something that failed to load, and this is the one
-    // screen where that would undermine the whole point of it.
-    const filled = noticeFrom({ heading: "We are still building", body: "   " });
-    assert.equal(filled.heading, "We are still building");
+    const filled = noticeFrom({ heading: "Before you go", body: "   " });
+    assert.equal(filled.heading, "Before you go");
     assert.equal(filled.body, DEFAULT_NOTICE.body);
-    assert.equal(filled.caution, DEFAULT_NOTICE.caution);
   });
 
   it("keeps off meaning off", () => {
@@ -178,27 +176,17 @@ describe("filling in what the owner left blank", () => {
 });
 
 describe("what the owner cannot save", () => {
-  it("refuses a caution that does not say what to check", () => {
-    const said = noticeProblem(notice({ caution: "Use with caution." }));
-    assert.match(String(said), /warns nobody/);
-  });
-
   it("refuses a body with nothing in it", () => {
-    assert.match(String(noticeProblem(notice({ body: "Beta." }))), /what is still being worked on/i);
+    assert.match(String(noticeProblem(notice({ body: "Beta." }))), /what to confirm/i);
   });
 
   it("refuses a heading with nothing in it", () => {
     assert.equal(noticeProblem(notice({ heading: " " })), "Give it a heading.");
   });
 
-  it("refuses a feedback link that goes nowhere", () => {
-    assert.match(String(noticeProblem(notice({ feedbackHref: "contact" }))), /start with/);
-    assert.equal(noticeProblem(notice({ feedbackHref: "https://example.com/x" })), null);
-  });
-
   it("checks nothing once it is switched off", () => {
     // Turning it off is how this ends. It must not be blocked by the wording
     // it is about to stop showing.
-    assert.equal(noticeProblem(notice({ on: false, heading: "", body: "", caution: "" })), null);
+    assert.equal(noticeProblem(notice({ on: false, heading: "", body: "" })), null);
   });
 });

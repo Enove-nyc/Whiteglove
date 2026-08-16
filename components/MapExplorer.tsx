@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AreaMap from "@/components/AreaMap";
 import { MAP_STYLE } from "@/lib/map-icons";
@@ -13,7 +12,6 @@ export type MapKever = {
   city: string;
   country: string;
   coordinates: string;
-  burials: number;
 };
 
 export type MapAirport = { code: string; name: string; city: string; lat: number; lng: number; size: string };
@@ -27,14 +25,11 @@ export default function MapExplorer({
   airports,
   attractions,
   stays,
-  /** Batei hachaim whose coordinates nobody has checked yet, so they cannot be plotted. */
-  unplottedKevarim = 0,
 }: {
   kevarim: MapKever[];
   airports: MapAirport[];
   attractions: MapAttraction[];
   stays: MapStay[];
-  unplottedKevarim?: number;
 }) {
   // Null means nobody has searched, and the map opens on everything.
   //
@@ -85,7 +80,7 @@ export default function MapExplorer({
     const point = fromPicker ?? (ours ? pointFrom(ours.coordinates) : null);
 
     if (!point) {
-      setStatus(`Could not find “${label}” in White Glove’s curated map. Try a listed destination or place name.`);
+      setStatus(`Could not find “${label}”. Try a listed destination or place name.`);
       return;
     }
     setCenter(point);
@@ -109,7 +104,7 @@ export default function MapExplorer({
       out.push({
         id: `kever-${k.slug}`,
         name: k.name,
-        subtitle: `${k.city} · ${k.country} · ${k.burials} ${k.burials === 1 ? "kever" : "kevarim"}`,
+        subtitle: `${k.city} · ${k.country}`,
         lat: p.lat,
         lng: p.lng,
         href: `/cemeteries/${k.slug}`,
@@ -173,7 +168,7 @@ export default function MapExplorer({
     <div>
       <div className="grid gap-4 sm:grid-cols-[1.6fr_auto_auto] sm:items-end">
         <label className="block">
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Search White Glove listings</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Search</span>
           <AddressAutocomplete
             value={query}
             onChange={(value, coords) => {
@@ -204,8 +199,8 @@ export default function MapExplorer({
         </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        {center ? (
+      {center && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           <button
             type="button"
             onClick={showEverything}
@@ -213,12 +208,8 @@ export default function MapExplorer({
           >
             ← Back to everything
           </button>
-        ) : (
-          <p className="text-xs leading-5 text-stone-500">
-            Showing White Glove&apos;s curated collection. Search a listed destination or place to narrow the map.
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {status && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{status}</p>}
 
@@ -233,20 +224,12 @@ export default function MapExplorer({
         />
       </div>
 
-      {unplottedKevarim > 0 && !center && (
-        // Said plainly rather than left to look like the site holds 31 places.
-        <p className="mt-4 text-xs leading-5 text-stone-500">
-          {unplottedKevarim} more batei hachaim are listed on the site without checked coordinates, so they are not on
-          the map yet. They are all in <Link href="/cemeteries" className="underline decoration-[var(--gold)] underline-offset-2">the directory</Link>.
-        </p>
-      )}
-
       {center && (
         <div className="mt-8">
           <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
             {nearby.length
-              ? `${nearby.length} ${nearby.length === 1 ? "place" : "places"} of ours within ${radius} km of ${name}`
-              : `Nothing of ours within ${radius} km of ${name}`}
+              ? `${nearby.length} ${nearby.length === 1 ? "place" : "places"} within ${radius} km of ${name}`
+              : `Nothing within ${radius} km of ${name}`}
           </h2>
           {nearby.length === 0 ? (
             <p className="mt-2 text-sm leading-6 text-stone-600">Widen the radius above, or search a different town.</p>

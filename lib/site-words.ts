@@ -119,7 +119,7 @@ export function wordProblem(words: SiteWords): string | null {
 export type WordGroup = "front" | "contact" | "booking" | "affiliate";
 
 export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> = [
-  { id: "front", title: "The front page", note: "The first three lines anybody reads, and what the search box invites them to type." },
+  { id: "front", title: "The front page", note: "What the search box invites people to type." },
   {
     id: "contact",
     title: "Getting in touch",

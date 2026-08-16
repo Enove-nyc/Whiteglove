@@ -30,40 +30,30 @@ import { pageMetadata } from "@/lib/seo";
 // comparison site does not — which quarter makes Shabbos walkable — so it is
 // the tab that earns the visit.
 export const metadata = pageMetadata({
-  title: "Search Booking Partners | White Glove",
+  title: "Search Booking Partners | White Glove Kosher Travel",
   description:
-    "Search places to stay, flights and rental cars for your trip — with cash or miles — then keep the whole journey together in White Glove. Booking and payment happen with trusted partners.",
+    "Search places to stay, flights and rental cars — with cash or miles. Booking and payment happen with trusted partners.",
   path: "/book",
 });
 
 const COMPARISON: Array<[string, string, string]> = [
   [
     "Where to stay",
-    "Compare places to stay for your dates — and check which quarter they are in before you book one.",
-    "See which chains have a property in town, and whether the points beat the cash rate for that stay.",
+    "Compare places to stay for your dates.",
+    "See which chains have a property in town, and whether the points beat the cash rate.",
   ],
   [
     "Flights",
     "Compare airlines and routes for your dates, then book with a partner.",
-    "Search award seats across programs, then confirm the cents-per-point before you transfer anything.",
+    "Search award seats across programs, then check the cents-per-point before you transfer.",
   ],
   [
     "Cars",
-    // The cross-border line came off /cars when that page folded into this
-    // one. It is the single most expensive thing to find out late: several
-    // hire companies forbid taking the car over a border outright, and a
-    // heritage route crosses two or three.
-    "Hire a car where the destination needs one — and each destination page says whether it does. Check the cross-border rules first if the trip crosses one; several hire companies forbid it outright.",
-    "Card portals will take points for a rental — usually poor value, and the calculator will tell you so.",
+    // The cross-border warning stays: several hire companies forbid taking
+    // the car over a border outright, and finding out late is expensive.
+    "Hire a car where the destination needs one. If the trip crosses a border, check the rules first — several hire companies forbid it outright.",
+    "Card portals take points for a rental — usually poor value; the calculator will say.",
   ],
-];
-
-// How a booking connects to the rest of the trip. The three steps are the
-// reason to search here rather than on the partner's own site.
-const STEPS: Array<[string, string]> = [
-  ["Search for your dates", "Hotels, flights or a car — with cash, or with your own miles and points."],
-  ["Save it to the trip", "It goes into your itinerary with the rest of the days, and the planner works out the driving between them."],
-  ["Travel with it in one place", "Confirmation numbers, addresses and the kosher and Shabbos notes for each place, on one printable page."],
 ];
 
 /**
@@ -97,12 +87,12 @@ const STEPS: Array<[string, string]> = [
 const NOT_YET: Array<[string, string, { href: string; label: string }?, EssentialServiceId?]> = [
   [
     "Drivers on a heritage route",
-    "A driver who knows the roads and the gates is a person, not a booking engine. They are in the provider directory, with what we know about each.",
+    "A driver is a person, not a booking engine. They are in the provider directory.",
     { href: "/directory", label: "Open the provider directory" },
   ],
   [
     "Things to do",
-    "We do not sell tickets yet. What each place is, how long to give it and what it does on Shabbos is on the Things to Do pages.",
+    "We do not sell tickets yet.",
     { href: "/things-to-do", label: "Browse things to do" },
     "activity",
   ],
@@ -213,9 +203,6 @@ export default async function BookPage({
       <section className="px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Cash or points, side by side</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          What each route actually gets you, so you can tell which is worth using before you spend either.
-        </p>
 
         <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_18px_45px_rgba(23,45,82,.07)]">
           <div className="hidden bg-[var(--navy)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)] sm:grid sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
@@ -243,26 +230,6 @@ export default async function BookPage({
         </div>
       </section>
 
-      {/* How a booking joins the rest of the trip. From the old /booking page,
-          which was the only page that said it. */}
-      <section className="border-t border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Booked here, planned here</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            The travel and the rest of the trip — where you are eating, where Shabbos falls, what to see between — stay
-            in one itinerary.
-          </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {STEPS.map(([heading, body], index) => (
-              <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">0{index + 1}</p>
-                <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
-                <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
       {/* What is NOT bookable here. A tab that takes somebody's dates and
           gives them nothing is worse than a sentence saying so.
 
@@ -274,12 +241,6 @@ export default async function BookPage({
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            {/* Counted rather than typed. "Two things" was written when there
-                were two, and stayed while the list changed underneath it. */}
-            {notYet.length === 1 ? "One thing people" : `${notYet.length} things people`} ask us for that we do not
-            book, and where to go for {notYet.length === 1 ? "it" : "each of them"}.
-          </p>
           {/* The link sits on the card it belongs to, rather than in a row of
               buttons underneath. That row used to lead with "Cars and
               transfers" pointing at /cars — a page whose search is now the Cars

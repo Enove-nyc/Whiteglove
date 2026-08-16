@@ -395,7 +395,7 @@ describe("who an update comes from", () => {
   });
 
   it("gives a bare address a name, so it reads as a letter not a circular", () => {
-    assert.match(readFileSync("lib/email.ts", "utf8"), /White Glove Itineraries <\$\{clean\}>/);
+    assert.match(readFileSync("lib/email.ts", "utf8"), /White Glove Kosher Travel <\$\{clean\}>/);
   });
 });
 

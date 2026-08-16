@@ -17,7 +17,7 @@ import { startingPointsExcept } from "@/lib/starting-points";
 export default function StartingPoints({
   omit = [],
   heading = "Ways to start",
-  intro = "What each one is for.",
+  intro,
 }: {
   omit?: string[];
   heading?: string;
@@ -31,7 +31,7 @@ export default function StartingPoints({
       <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
         {heading}
       </h2>
-      <p className="mt-3 max-w-2xl leading-7 text-stone-600">{intro}</p>
+      {intro && <p className="mt-3 max-w-2xl leading-7 text-stone-600">{intro}</p>}
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {points.map((point) => (

@@ -44,7 +44,7 @@ export const revalidate = 60;
 /**
  * Every guide says who is buried there, in the title.
  *
- * These pages all shared one line — "White Glove Itineraries | Luxury Kosher
+ * These pages all shared one line — "White Glove Kosher Travel | Luxury Kosher
  * Travel" — so a search result for Uman and one for Lizhensk were
  * indistinguishable, and neither said what the page was. Somebody searching
  * for a tzaddik is searching for the tzaddik's name.
@@ -52,7 +52,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ city: string }> }) {
   const { city } = await params;
   const guide = getCityGuide(city);
-  if (!guide) return pageMetadata({ title: "Destination not found | White Glove Itineraries", description: "This destination guide could not be found.", path: `/${city}`, noIndex: true });
+  if (!guide) return pageMetadata({ title: "Destination not found | White Glove Kosher Travel", description: "This destination guide could not be found.", path: `/${city}`, noIndex: true });
   return pageMetadata({
     title: `${guide.city} Travel Guide & Kever of ${guide.tzaddik} | White Glove`,
     description: `${guide.city}, ${guide.country}: how to reach the kever of ${guide.tzaddik}, who else is buried there, access and shomer details, kosher food, minyanim and mikvaos — checked before it is published.`,

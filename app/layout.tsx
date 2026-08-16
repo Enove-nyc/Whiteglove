@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   // share image as a plain path and have them resolved to this deployment's
   // real address. See lib/seo.ts.
   metadataBase: siteOrigin(),
-  title: "White Glove Itineraries | Luxury Kosher Travel",
+  title: "White Glove Kosher Travel",
   description: "Thoughtfully planned kosher travel and Jewish heritage journeys.",
-  applicationName: "White Glove Itineraries",
+  applicationName: "White Glove Kosher Travel",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
     // Every icon here is built from public/logo-mark.png — the logo artwork

@@ -137,7 +137,7 @@ export function submissionReply(
     middle,
     reason.trim() ? `\n${reason.trim()}` : "",
     "",
-    "White Glove Itineraries",
+    "White Glove Kosher Travel",
   ].join("\n");
   const to = photo.submittedEmail?.trim() ?? "";
   return { subject, body, href: `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` };

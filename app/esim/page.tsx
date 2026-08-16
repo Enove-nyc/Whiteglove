@@ -6,7 +6,7 @@ import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "eSIMs and data abroad for a kosher trip | White Glove Itineraries",
+  title: "eSIMs and data abroad for a kosher trip | White Glove Kosher Travel",
   description:
     "What an eSIM is, what to check before you buy one, and where to get a data plan for the country you are going to.",
   path: "/esim",

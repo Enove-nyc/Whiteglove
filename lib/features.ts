@@ -46,7 +46,7 @@ export function tripArrangementOpen(): boolean {
  * happened to be, including a Vercel preview URL.
  */
 export const SITE_DOMAIN = "whitegloveitineraries.com";
-export const SITE_NAME = "White Glove Itineraries";
+export const SITE_NAME = "White Glove Kosher Travel";
 
 /**
  * What "Featured" means in the provider directory.

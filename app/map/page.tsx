@@ -13,8 +13,8 @@ import { pointFrom } from "@/lib/map-markers";
 // actually written, rather than this page running three real reads (this one
 // plots both lists plus static airports and cemeteries) on every visit.
 export const metadata = pageMetadata({
-  title: "Map — everywhere we know, on one map | White Glove Itineraries",
-  description: "Every beis hachaim, place worth visiting, kosher hotel and airport the site holds, on one map. Search a town to see what is around it.",
+  title: "Map | White Glove Kosher Travel",
+  description: "Batei hachaim, things to do, places to stay and airports on one map. Search a town to see what is around it.",
   path: "/map",
 });
 
@@ -30,7 +30,6 @@ export default async function MapPage() {
     city: c.city,
     country: c.country,
     coordinates: c.coordinates as string,
-    burials: c.burials.length,
   }));
 
   const attractions: MapAttraction[] = attractionList
@@ -59,16 +58,10 @@ export default async function MapPage() {
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
+          <h1 className="flex items-center gap-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
             <GloveMark size="xs" />
-            See the area
-          </p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Everywhere we know, on one map
+            Map
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Batei hachaim, things to do, places to stay and airports. Search a town to narrow it.
-          </p>
         </div>
       </section>
 
@@ -79,7 +72,6 @@ export default async function MapPage() {
             airports={airports}
             attractions={attractions}
             stays={stays}
-            unplottedKevarim={cemeteries.length - plottableCemeteries.length}
           />
         </div>
       </section>

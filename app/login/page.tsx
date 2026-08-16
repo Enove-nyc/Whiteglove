@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 // Noindexed: a sign-in form is of no use in a search result, and having one
 // rank for the brand name puts a login page where the homepage should be.
 export const metadata = pageMetadata({
-  title: "Sign in to White Glove Itineraries",
+  title: "Sign in to White Glove Kosher Travel",
   description: "Sign in to keep your route, saved destinations and itineraries on every device.",
   path: "/login",
   noIndex: true,

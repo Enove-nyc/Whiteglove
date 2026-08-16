@@ -7,33 +7,22 @@ import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow } from "@/lib/b
 import { useFocusTrap } from "@/components/useFocusTrap";
 
 /**
- * "Travel information changes. Here is how we label what we have checked."
+ * The site notice: one line, and two actions — Verification and Close.
  *
- * WHAT IT SAYS CHANGED, AND WHY. It used to lead with the site being
- * unfinished, and its examples were towns, kevarim, phone numbers and opening
- * times — three of the four being the heritage database. So the first thing a
- * family asking about the Dolomites read was an apology about a different
- * business. The wording is in lib/beta-notice.ts and the reasoning is written
- * out there.
+ * The wording lives in lib/beta-notice.ts, with the reasoning. This file owns
+ * how it appears: a real dialog (focus trap, Escape, aria-modal), dismissed
+ * once per wording.
  *
- * THREE ACTIONS, and each is a different thing somebody might want at that
- * moment: read how the labels work, tell us something is out of date, or make
- * the notice go away. The third used to be "I understand", which is not an
- * action and does not say what pressing it does.
- *
- * IT IS A POPUP. It lived for a while as a strip under the top of every page
- * so visitors could read the site first; it is a dialog again because the
- * strip pushed the brand and the proposition down and read as chrome rather
- * than a caution. Same words, same settings, same once-per-visitor rule —
- * shown once, dismissible, never over the admin or a sign-in box.
- *
- * WHAT IS KEPT. It is still read from the owner's settings, so the day the
- * site stops being new he can turn it off without a deploy. It is still
- * dismissed once per wording — bumping the version brings it back, because
- * somebody who dismissed the old wording has not agreed to the new one.
+ * IT DOES NOT OPEN ON ARRIVAL. It waits for the same settling-in signal
+ * SitePromotions uses: a while on the page, or the first real scroll —
+ * whichever comes first. A dialog over the first paint is the site
+ * interrupting somebody who has not read a word of it yet.
  */
 
 const UNKNOWN = "unknown";
+// Matches SitePromotions' gate: twelve seconds, or scrolling past the fold.
+const NOTICE_DELAY_MS = 12_000;
+const NOTICE_SCROLL_PX = 600;
 
 function subscribeDismissal(onChange: () => void) {
   window.addEventListener("storage", onChange);
@@ -56,6 +45,8 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
   // Pressed, this visit. Separate from what is stored, so it goes at once
   // rather than waiting for a storage event that never comes in this tab.
   const [answered, setAnswered] = useState(false);
+  // The gate: armed on arrival, opened by time or the first real scroll.
+  const [revealed, setRevealed] = useState(false);
 
   // READ AS AN OUTSIDE THING rather than copied into state in an effect.
   // localStorage is not React's, another tab can change it, and the server
@@ -63,10 +54,31 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
   // Without it the dialog would flash on for everybody who had already
   // dismissed it, then vanish on hydration.
   const dismissed = useSyncExternalStore(subscribeDismissal, dismissalNow, () => UNKNOWN);
-  const open =
+  const due =
     dismissed !== UNKNOWN &&
     !answered &&
     shouldShow(notice, { dismissedVersion: readDismissed(dismissed.slice("known:".length)), path });
+  const open = due && revealed;
+
+  // Nothing is shown until the visitor has settled in — NOTICE_DELAY_MS on
+  // the page, or the first scroll past NOTICE_SCROLL_PX.
+  useEffect(() => {
+    if (!due || revealed) return;
+    function reveal() {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+      setRevealed(true);
+    }
+    function onScroll() {
+      if (window.scrollY > NOTICE_SCROLL_PX) reveal();
+    }
+    const timer = window.setTimeout(reveal, NOTICE_DELAY_MS);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [due, revealed]);
 
   const close = useCallback(() => {
     setAnswered(true);
@@ -113,36 +125,26 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
             {notice.heading}
           </h2>
           <p className="mt-3">{notice.body}</p>
-          <p className="mt-2 text-stone-600">{notice.caution}</p>
         </div>
 
-        <div className="mt-5 flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/verification"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--gold)] hover:text-white"
-            >
-              How verification works
-            </Link>
-            <Link
-              href={notice.feedbackHref}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--gold)] hover:text-white"
-            >
-              {notice.feedbackLabel}
-            </Link>
-            <button
-              type="button"
-              onClick={close}
-              className="inline-flex min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)]"
-            >
-              {/* The owner's word for it. It used to be "I understand", which
-                  is not an action and does not say what pressing it does — a
-                  screen reader listing this page's buttons could not tell it
-                  from the eleven others. */}
-              {notice.dismissLabel}
-            </button>
-          </div>
-          <p className="text-xs leading-5 text-stone-600">{notice.feedback}</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href="/verification"
+            // Following the link answers the notice; this component stays
+            // mounted across the navigation, so without this the dialog would
+            // still be open over the verification page it just linked to.
+            onClick={close}
+            className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--gold)] hover:text-white"
+          >
+            Verification
+          </Link>
+          <button
+            type="button"
+            onClick={close}
+            className="inline-flex min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)]"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

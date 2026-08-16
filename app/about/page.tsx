@@ -15,10 +15,10 @@ import { readWords } from "@/lib/site-words-store";
 export async function generateMetadata() {
   const page = await resolvePage("about");
   return pageMetadata({
-    title: page?.seoTitle ?? "About — White Glove Itineraries",
+    title: page?.seoTitle ?? "About — White Glove Kosher Travel",
     description:
       page?.seoDescription ??
-      "Who is behind White Glove Itineraries, how the practical detail on this site is put together, and how to reach a person.",
+      "Who is behind White Glove Kosher Travel, how the practical detail on this site is put together, and how to reach a person.",
     path: "/about",
   });
 }

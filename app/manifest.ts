@@ -4,7 +4,7 @@ import type { MetadataRoute } from "next";
 // once wrapped as a Trusted Web Activity).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "White Glove Itineraries",
+    name: "White Glove Kosher Travel",
     short_name: "White Glove",
     description: "Thoughtfully planned kosher travel and Jewish heritage journeys — kevarim, kosher food, minyanim, and trip planning.",
     start_url: "/",

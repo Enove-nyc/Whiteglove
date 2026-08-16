@@ -108,7 +108,7 @@ export async function sendSms(to: string, body: string, kind = "sms"): Promise<S
 export async function sendVerificationSms(to: string, code: string): Promise<boolean> {
   const result = await sendSms(
     to,
-    `${code} is your White Glove Itineraries verification code. It expires in 30 minutes.`,
+    `${code} is your White Glove Kosher Travel verification code. It expires in 30 minutes.`,
     "verification code",
   );
   return result.ok;
@@ -118,7 +118,7 @@ export async function sendVerificationSms(to: string, code: string): Promise<boo
 export async function sendPasswordResetSms(to: string, code: string): Promise<boolean> {
   const result = await sendSms(
     to,
-    `${code} is your White Glove Itineraries password reset code. It expires in 30 minutes. If you did not ask for it, ignore this message.`,
+    `${code} is your White Glove Kosher Travel password reset code. It expires in 30 minutes. If you did not ask for it, ignore this message.`,
     "password reset",
   );
   return result.ok;

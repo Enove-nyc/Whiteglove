@@ -54,7 +54,7 @@ export const EMPTY_ABOUT_PROFILE: AboutProfile = {
  * not what this website offers — see AGENTS.md.
  */
 export const ABOUT_INTRO: readonly string[] = [
-  "White Glove Itineraries is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
+  "White Glove Kosher Travel is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
   "Answers like those are only worth having if they hold up. So every listing here names its source, nothing is shown as checked unless somebody checked it, and where we cannot yet stand behind something we leave it out — better an honest gap than a phone number that stopped working two years ago.",
   "Everything on this site is free to use: ask for recommendations, build the trip day by day yourself, or search our booking partners once the dates are settled.",
 ];

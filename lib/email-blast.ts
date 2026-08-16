@@ -344,7 +344,7 @@ export function audienceFor(signups: AlertSignup[], topics: AlertTopic[]): Alert
  */
 export function becauseLine(topics: AlertTopic[]): string {
   const labels = topics.map((topic) => ALERT_TOPIC_LABELS[topic]?.toLowerCase()).filter(Boolean);
-  if (labels.length === 0) return "You asked to hear from White Glove Itineraries.";
+  if (labels.length === 0) return "You asked to hear from White Glove Kosher Travel.";
   if (labels.length === 1) return `You are getting this because you asked us about ${labels[0]}.`;
   const last = labels[labels.length - 1];
   return `You are getting this because you asked us about ${labels.slice(0, -1).join(", ")} and ${last}.`;

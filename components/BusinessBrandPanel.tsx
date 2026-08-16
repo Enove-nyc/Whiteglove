@@ -185,10 +185,10 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
             ) : (
               // The site's own crest, at a size next/image would not help with.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src="/logo.png" alt="White Glove Itineraries" className="max-h-16 max-w-full object-contain" />
+              <img src="/logo.png" alt="White Glove Kosher Travel" className="max-h-16 max-w-full object-contain" />
             )}
             <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">
-              {enabled && name.trim() ? `Prepared by ${name}` : "A White Glove Itineraries journey"}
+              {enabled && name.trim() ? `Prepared by ${name}` : "A White Glove Kosher Travel journey"}
             </p>
             {enabled && contactLine.trim() && <p className="mt-1.5 text-[10px] text-stone-500">{contactLine}</p>}
             <p className="mt-4 font-[family-name:var(--font-display)] text-base text-[var(--navy)]">Your client&rsquo;s trip</p>

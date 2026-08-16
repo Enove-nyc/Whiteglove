@@ -13,12 +13,12 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const page = await getInfoPage(slug);
-  if (!page) return pageMetadata({ title: "Page not found | White Glove Itineraries", description: "This page could not be found.", path: `/info/${slug}`, noIndex: true });
+  if (!page) return pageMetadata({ title: "Page not found | White Glove Kosher Travel", description: "This page could not be found.", path: `/info/${slug}`, noIndex: true });
   return pageMetadata({
-    title: `${page.title} | White Glove Itineraries`,
+    title: `${page.title} | White Glove Kosher Travel`,
     // The first couple of sentences of what the owner actually wrote, rather
     // than a description invented for them.
-    description: page.body.replace(/\s+/g, " ").trim().slice(0, 155) || `${page.title} — White Glove Itineraries.`,
+    description: page.body.replace(/\s+/g, " ").trim().slice(0, 155) || `${page.title} — White Glove Kosher Travel.`,
     path: `/info/${page.slug}`,
   });
 }
@@ -33,7 +33,7 @@ export default async function InfoPageRoute({ params }: { params: Promise<{ slug
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Kosher Travel</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">{page.title}</h1>
         </div>
       </section>

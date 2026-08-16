@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 // search result, and the page renders from their own browser storage anyway,
 // so a crawler would only ever see an empty one.
 export const metadata = pageMetadata({
-  title: "Print your itinerary | White Glove Itineraries",
+  title: "Print your itinerary | White Glove Kosher Travel",
   description: "A printable version of your trip.",
   path: "/itinerary/print",
   noIndex: true,

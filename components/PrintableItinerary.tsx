@@ -63,7 +63,7 @@ export default function PrintableItinerary({
    * A Business account's own letterhead, when there is one.
    *
    * WHAT IT REPLACES: the crest on the cover, the mark and name in every page
-   * header, and the "A White Glove Itineraries journey" line. That is the whole
+   * header, and the "A White Glove Kosher Travel journey" line. That is the whole
    * point — an agent hands this to their client, and a document with somebody
    * else's crest on the cover is one they cannot hand over.
    *
@@ -165,9 +165,9 @@ export default function PrintableItinerary({
             // cover's own display face so the page still opens with something.
             <p className="wg-crest-name">{brand.name}</p>
           ) : (
-            <Image src="/logo.png" alt="White Glove Itineraries" width={480} height={320} className="wg-crest" priority />
+            <Image src="/logo.png" alt="White Glove Kosher Travel" width={480} height={320} className="wg-crest" priority />
           )}
-          <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : "A White Glove Itineraries journey"}</p>
+          <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : "A White Glove Kosher Travel journey"}</p>
           {brand?.contactLine && <p className="wg-cover-contact">{brand.contactLine}</p>}
           <CoverHeading className="wg-cover-title">{title}</CoverHeading>
           <div className="wg-cover-rule" />
@@ -201,7 +201,7 @@ export default function PrintableItinerary({
               ) : brand ? null : (
                 <Image src="/logo.png" alt="" width={160} height={110} className="wg-head-mark" />
               )}
-              <span className="wg-head-name">{brand ? brand.name : "White Glove Itineraries"} · {title}</span>
+              <span className="wg-head-name">{brand ? brand.name : "White Glove Kosher Travel"} · {title}</span>
               <span className="wg-head-day">Day {String(index + 1).padStart(2, "0")}</span>
             </header>
 
@@ -244,7 +244,7 @@ export default function PrintableItinerary({
             <footer className="wg-foot">
               {/* The credit line. On a branded document this is the only thing
                   on the page that is not the business's own, and it stays. */}
-              <span>{brand ? `${brand.name} · planned with whitegloveitineraries.com` : "White Glove Itineraries · whitegloveitineraries.com"}</span>
+              <span>{brand ? `${brand.name} · planned with whitegloveitineraries.com` : "White Glove Kosher Travel · whitegloveitineraries.com"}</span>
               <span>{footerRight}</span>
             </footer>
           </section>

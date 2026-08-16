@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Referral programme | White Glove Itineraries",
+  title: "Referral programme | White Glove Kosher Travel",
   description: "Invite friends when the White Glove referral programme is open.",
   path: "/account/referral",
   noIndex: true,

@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
   const destination = getVacationDestination(slug);
   if (!destination) {
     return pageMetadata({
-      title: "Destination not found — White Glove Itineraries",
+      title: "Destination not found — White Glove Kosher Travel",
       description: "This vacation destination is not on the site.",
       path: `/destinations/${slug}`,
       noIndex: true,

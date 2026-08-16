@@ -8,7 +8,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 // owns the Resend account — anything else is rejected. A real domain sender
 // (e.g. no-reply@whitegloveitineraries.com, once the domain is verified in
 // Resend) is required for mail to reach the edits@/contact@ inboxes.
-const TEST_SENDER = "White Glove Itineraries <onboarding@resend.dev>";
+const TEST_SENDER = "White Glove Kosher Travel <onboarding@resend.dev>";
 
 function resendConfig() {
   const apiKey = process.env.RESEND_API_KEY;
@@ -320,10 +320,10 @@ export async function sendItineraryShareEmail(to: string, opts: { fromName: stri
       subject: `${opts.fromName || "A traveler"} shared "${opts.title}" with you`,
       html:
         `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} shared a trip with you</h2>` +
-        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">You've been added to <strong>${title}</strong> on White Glove Itineraries.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">You've been added to <strong>${title}</strong> on White Glove Kosher Travel.</p>` +
         `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">View the itinerary →</a></p>` +
         `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Or open this link: ${url}</p>`,
-      text: `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on White Glove Itineraries.\n\nView it here: ${opts.url}`,
+      text: `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on White Glove Kosher Travel.\n\nView it here: ${opts.url}`,
     },
     to,
     "itinerary share",
@@ -467,9 +467,9 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
 export function blastSender(configured: string): string {
   const clean = configured.trim();
   if (!clean) return resendConfig()?.from ?? "";
-  // Named, so it arrives as "White Glove Itineraries" rather than a bare
+  // Named, so it arrives as "White Glove Kosher Travel" rather than a bare
   // address — which is most of the difference between a letter and a circular.
-  return clean.includes("<") ? clean : `White Glove Itineraries <${clean}>`;
+  return clean.includes("<") ? clean : `White Glove Kosher Travel <${clean}>`;
 }
 
 export async function sendBlastEmail(input: {

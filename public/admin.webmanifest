@@ -2,7 +2,7 @@
   "id": "/admin",
   "name": "White Glove Admin",
   "short_name": "WG Admin",
-  "description": "Owner dashboard for White Glove Itineraries — content, accounts, finances, advertisements, and analytics.",
+  "description": "Owner dashboard for White Glove Kosher Travel — content, accounts, finances, advertisements, and analytics.",
   "start_url": "/admin",
   "scope": "/admin",
   "display": "standalone",

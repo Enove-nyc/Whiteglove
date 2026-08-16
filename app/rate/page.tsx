@@ -7,7 +7,7 @@ import { isRatingKind, type RatingKind } from "@/lib/experience-ratings";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Rate how it went — White Glove Itineraries",
+  title: "Rate how it went — White Glove Kosher Travel",
   description: "Tell White Glove how a place or a trip went. Private feedback — nothing is published from this page.",
   path: "/rate",
 });

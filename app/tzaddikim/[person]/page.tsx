@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ person: s
   const { person } = await params;
   const entry = getTzaddik(person);
   if (!entry) {
-    return pageMetadata({ title: "Not found | White Glove Itineraries", description: "This record could not be found.", path: `/tzaddikim/${person}`, noIndex: true });
+    return pageMetadata({ title: "Not found | White Glove Kosher Travel", description: "This record could not be found.", path: `/tzaddikim/${person}`, noIndex: true });
   }
   const { burial, cemetery } = entry;
   // The name people search by leads, because that is the search.

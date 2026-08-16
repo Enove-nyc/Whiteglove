@@ -21,7 +21,7 @@ import { getPublicProviders } from "@/lib/directory";
 // paying for a fresh render on every hit — the page can go back to being an
 // ordinary cached render.
 export const metadata = pageMetadata({
-  title: "Directory — White Glove Itineraries",
+  title: "Directory — White Glove Kosher Travel",
   description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
   path: "/directory",
 });

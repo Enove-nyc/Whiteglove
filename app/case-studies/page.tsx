@@ -11,10 +11,10 @@ import { breadcrumbs } from "@/lib/structured-data";
 export async function generateMetadata() {
   const studies = await readPublicCaseStudies();
   if (!caseStudiesPageShouldExist(studies)) {
-    return { title: "Case studies — White Glove Itineraries", robots: { index: false, follow: false } };
+    return { title: "Case studies — White Glove Kosher Travel", robots: { index: false, follow: false } };
   }
   return pageMetadata({
-    title: "Case studies — real trips built on this site | White Glove Itineraries",
+    title: "Case studies — real trips built on this site | White Glove Kosher Travel",
     description:
       "Real outcomes from travelers who used White Glove's tools — not the sample itinerary. Published only with the traveller’s consent.",
     path: "/case-studies",

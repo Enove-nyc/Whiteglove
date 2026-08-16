@@ -12,7 +12,7 @@ import { heritageAsAttractions } from "@/lib/heritage-attractions";
 // unstable_cache now, busted the moment an attraction is actually written,
 // rather than this page running a real database read on every visit.
 export const metadata = pageMetadata({
-  title: "Things to do — White Glove Itineraries",
+  title: "Things to do — White Glove Kosher Travel",
   description: "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
   path: "/things-to-do",
 });
