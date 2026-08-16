@@ -11,10 +11,12 @@ export const metadata: Metadata = {
 // change looks missing, open /version: if the commit here isn't the newest one
 // on main, the site is serving an older deployment and the code is fine.
 export default function VersionPage() {
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA || "unknown (not built on Vercel)";
-  const message = process.env.VERCEL_GIT_COMMIT_MESSAGE || "—";
-  const branch = process.env.VERCEL_GIT_COMMIT_REF || "—";
-  const env = process.env.VERCEL_ENV || "local";
+  // Vercel and Railway name these differently; whichever platform built the
+  // site, this page answers the same question.
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA || process.env.RAILWAY_GIT_COMMIT_SHA || "unknown (not a platform build)";
+  const message = process.env.VERCEL_GIT_COMMIT_MESSAGE || process.env.RAILWAY_GIT_COMMIT_MESSAGE || "—";
+  const branch = process.env.VERCEL_GIT_COMMIT_REF || process.env.RAILWAY_GIT_BRANCH || "—";
+  const env = process.env.VERCEL_ENV || process.env.RAILWAY_ENVIRONMENT_NAME || "local";
   const builtAt = process.env.BUILD_TIME || "—";
 
   // Features that should be present in this build — a quick visual checklist.
