@@ -4,51 +4,47 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import MembersOnlyLink from "@/components/MembersOnlyLink";
 import SitePromotions from "@/components/SitePromotions";
-import { GATED_FEATURES } from "@/lib/members-only";
-import { isCurrent, menuGroupsFor, primaryCtaFor, PRIMARY_HREFS, PRIMARY_NAV, SIGN_IN } from "@/lib/navigation";
+import { Icon } from "@/components/icons/Icon";
+import { IconLink } from "@/components/icons/IconAction";
+import { bookCategoryFor, categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, type NavCategory } from "@/lib/navigation";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
- * The header.
+ * The header: logo, five dropdown categories, four utility icons.
  *
- * WHAT IT SAYS IS IN lib/navigation.ts, not here, and the rules about what may
- * and may not be in it are tests. The bar is the site's positioning — it used
- * to read Destinations · Cemeteries · Getaways · Directory · Services · Book,
- * which is an accurate description of a kevarim database with a travel page
- * attached, and the wrong first sentence for a business that plans kosher
- * holidays. That list is now one screen of reviewable text with its reasoning
- * beside it.
- *
- * WHAT DID NOT CHANGE, and must not: the site search, the sign-in state, the
- * promotions strip, and the members-only
- * links — the planner and My Route are offered to everybody, signed in or not,
- * because a feature nobody can see is a feature nobody asks for. See
- * lib/members-only.ts.
- *
- * The Yiddish labels that used to sit in this file were a record of which
- * words are right rather than anything that rendered; they have moved to
- * lib/navigation.ts's history along with the menu, and the bar shows English
- * as it always did.
+ * What each dropdown holds is in lib/navigation.ts, not here. Dropdowns open
+ * on hover, click, focus and tap — all four, not the one the last redesign
+ * had (a single click-toggled panel). Only one is open at a time.
  */
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  // Closing every dropdown on navigation is a reset triggered by a changed
+  // prop (the route), not a side effect — done during render, per React's own
+  // guidance, rather than in a useEffect that would cause an extra render.
+  const [trackedPathname, setTrackedPathname] = useState(pathname);
+  if (trackedPathname !== pathname) {
+    setTrackedPathname(pathname);
+    setOpenKey(null);
+    setMobileOpen(false);
+    setMobileSection(null);
+  }
+  const [scrolled, setScrolled] = useState(false);
   const navRef = useRef<HTMLElement>(null);
-  // Search & Book (and the matching menu entry) go to the search, or to the
-  // assistance page when the owner has the search locked. Resolved in the
-  // root layout; never a bare `/book` typed in here. See lib/booking-access.ts.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Search & Book's three links resolve through booking-access — locked, they
+  // go to the public assistance page instead of a password box. See
+  // lib/booking-access.ts and lib/navigation.ts's bookCategoryFor.
   const booking = useBookingLink();
-  const menuGroups = menuGroupsFor(booking);
-  // The one filled button on the site. Resolved, so it cannot become a
-  // password box because of a setting in the admin — see rule 3 in
-  // lib/navigation.ts.
-  const primaryCta = primaryCtaFor(booking);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const categories: NavCategory[] = [...NAV_CATEGORIES, bookCategoryFor(booking)];
 
   useEffect(() => {
     let active = true;
@@ -63,6 +59,44 @@ export default function Navbar() {
     };
   }, [pathname]);
 
+  // The header becomes slightly smaller once the page has moved under it —
+  // a small cue that it's the same bar, not a different one.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const closeOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenKey(null);
+    };
+    document.addEventListener("mousedown", closeOutside);
+    return () => document.removeEventListener("mousedown", closeOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!openKey) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const key = openKey;
+      setOpenKey(null);
+      if (key) triggerRefs.current[key]?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openKey]);
+
+  function openOnHover(key: string) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenKey(key);
+  }
+  function closeOnHoverOut() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpenKey(null), 150);
+  }
+
   async function signOut() {
     await fetch("/api/account/logout", { method: "POST" }).catch(() => undefined);
     setSignedIn(false);
@@ -70,240 +104,165 @@ export default function Navbar() {
     router.refresh();
   }
 
-  useEffect(() => {
-    const closeOutsideMenu = (event: MouseEvent) => {
-      if (menuOpen && navRef.current && !navRef.current.contains(event.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", closeOutsideMenu);
-    return () => document.removeEventListener("mousedown", closeOutsideMenu);
-  }, [menuOpen]);
-
-  // At desktop the bar is the navigation and this button holds the rest of the
-  // site; at compact widths the button IS the navigation. They need different
-  // names, and a name cannot be swapped by a media query — rendering both and
-  // hiding one would leave a screen reader announcing "MenuMore". So the
-  // width is measured. It starts false, which is the compact answer and the
-  // one the server renders, so the first paint is right on a phone.
-  const [wideNav, setWideNav] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1280px)");
-    const sync = () => setWideNav(query.matches);
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
-
-  // Escape closes the menu and puts the focus back on the button that opened
-  // it. Without the second half, dismissing the menu from the keyboard drops
-  // the focus at the top of the document and the next Tab starts the page
-  // over — which is how a keyboard user gets stranded.
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setMenuOpen(false);
-      menuButtonRef.current?.focus();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
-
   return (
     <>
       <nav
         ref={navRef}
         aria-label="Main"
-        className="relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md"
+        className={`relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[rgba(252,250,246,0.97)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md transition-[min-height] ${
+          scrolled ? "min-h-16" : "min-h-20"
+        }`}
       >
-        <div className="mx-auto flex min-h-24 max-w-7xl items-center gap-3 px-5 sm:gap-4 sm:px-8">
-          {/* z-10 + max-w-none: global img{max-width:100%} and centered overflow
-              used to let Destinations paint across the mark after fonts/images
-              finished loading — the brief jump-clear-then-overlap. */}
-          <Link href="/" className="relative z-10 mr-4 flex shrink-0 items-center sm:mr-5 xl:mr-6" aria-label="White Glove Itineraries home">
+        <div className={`mx-auto flex max-w-7xl items-center gap-2 px-5 transition-[min-height] sm:px-8 ${scrolled ? "min-h-16" : "min-h-20"}`}>
+          <Link href="/" className="relative z-10 mr-2 flex shrink-0 items-center gap-2.5 sm:mr-4" aria-label="White Glove Kosher Travel home">
             <Image
-              src="/logo.png"
-              alt="White Glove Itineraries"
-              width={500}
-              height={300}
-              className="h-14 w-auto max-w-none object-contain sm:h-[4.5rem]"
+              src="/logo-hand-navy.png"
+              alt=""
+              width={355}
+              height={460}
+              className={`w-auto max-w-none object-contain transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"}`}
               priority
             />
+            <span className="hidden flex-col leading-none sm:flex">
+              <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove</span>
+              <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Kosher Travel</span>
+            </span>
           </Link>
 
-          {/* Start after the logo. justify-center spilled left over the mark
-              whenever the labels were wider than the remaining slot. No
-              overflow-hidden here: that was clipping Heritage Travel to
-              "Heritage Trav" once Search sat on this row. Search stays on the
-              row below so the full labels can breathe. */}
-          <div className="hidden min-w-0 flex-1 items-center justify-start gap-0.5 xl:flex">
-            {PRIMARY_NAV.map((item) => {
-              const current = isCurrent(item.href, pathname);
-              const barLabel = item.shortLabel ?? item.label;
+          {/* The five dropdowns. Hidden below xl, where the hamburger carries
+              the same categories as an accordion. */}
+          <div className="hidden min-w-0 flex-1 items-center gap-0.5 xl:flex">
+            {categories.map((category) => {
+              const key = category.label;
+              const current = categoryIsCurrent(category, pathname);
+              const open = openKey === key;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={current ? "page" : undefined}
-                  aria-label={item.shortLabel ? item.label : undefined}
-                  // The current section is marked three ways, not one: a filled
-                  // pill, a gold underline, and aria-current. Colour alone
-                  // leaves anyone who cannot separate cream from cream-deep
-                  // with no idea where they are.
-                  className={`relative inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold transition 2xl:px-3 ${
-                    current
-                      ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-2 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-[''] 2xl:after:inset-x-3"
-                      : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
-                  }`}
-                >
-                  <span className="2xl:hidden">{barLabel}</span>
-                  <span className="hidden 2xl:inline">{item.label}</span>
-                </Link>
+                <div key={key} className="relative" onMouseEnter={() => openOnHover(key)} onMouseLeave={closeOnHoverOut}>
+                  <button
+                    ref={(el) => {
+                      triggerRefs.current[key] = el;
+                    }}
+                    type="button"
+                    aria-expanded={open}
+                    aria-haspopup="true"
+                    aria-controls={`nav-${key}`}
+                    onClick={() => setOpenKey(open ? null : key)}
+                    onFocus={() => openOnHover(key)}
+                    className={`relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition ${
+                      current || open
+                        ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
+                        : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
+                    }`}
+                  >
+                    {category.label}
+                    <Icon name="chevron-down" className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+                  </button>
+                  {open && (
+                    <div
+                      id={`nav-${key}`}
+                      role="menu"
+                      onMouseEnter={() => openOnHover(key)}
+                      onMouseLeave={closeOnHoverOut}
+                      className="absolute left-0 top-full z-[1] mt-1 min-w-48 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] py-2 shadow-[0_18px_40px_rgba(23,45,82,.15)]"
+                    >
+                      {category.links.map((link) => {
+                        const linkCurrent = isCurrent(link.href, pathname);
+                        return (
+                          <Link
+                            key={link.href + link.label}
+                            role="menuitem"
+                            href={link.href}
+                            aria-current={linkCurrent ? "page" : undefined}
+                            aria-label={link.description}
+                            title={link.description}
+                            onClick={() => setOpenKey(null)}
+                            className={`flex min-h-11 items-center px-4 py-2 text-sm transition ${
+                              linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
+                            }`}
+                          >
+                            {link.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            {/*
-              THE WAY IN IS IN THE HEADER AT EVERY WIDTH, and it was not.
-              This block was `hidden sm:flex`, so on a phone the header offered
-              the logo and Menu and nothing else — and the only other Sign in
-              on the site sat at the very bottom of the menu drawer, 1695px of
-              content in a 640px window. Somebody on a phone had no way of
-              knowing an account existed without scrolling a drawer to its end.
-
-              The header is already sticky, so putting it here is the "always
-              on screen" part without a second banner over the page.
-
-              Signed in, only My account comes to the phone; Sign out stays in
-              the menu, because two account controls beside Menu is more than a
-              412px header can hold and signing out is not what somebody is
-              reaching for mid-trip.
-            */}
-            <div className="flex items-center gap-2">
-              {signedIn ? (
-                <>
-                  {/* px-2 until sm: at 320px the row was 6px wider than the
-                      screen, which pushed Menu off the edge. */}
-                  <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-2 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white sm:px-3" href="/account">
-                    My account
-                  </Link>
-                  <button type="button" onClick={signOut} className="hidden min-h-11 items-center rounded-md px-3 py-2 text-xs font-semibold tracking-[0.06em] text-stone-600 transition hover:bg-[var(--cream-deep)] hover:text-[var(--navy)] sm:inline-flex">
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                // Outlined on a phone so it reads as a control rather than as
-                // one more word in the header; the plain desktop link is
-                // untouched from sm up.
-                <Link className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-2 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] sm:border-0 sm:px-3 sm:text-stone-600 sm:hover:text-[var(--navy)]" href={SIGN_IN.href}>
-                  {SIGN_IN.label}
-                </Link>
-              )}
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <div className="hidden items-center gap-1 sm:flex">
+              <IconLink icon="search" label="Search" href="/search" />
+              <IconLink icon="route" label="Route" href="/my-route" />
+              <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
+              <IconLink icon="account" label={signedIn ? "Account" : "Sign in"} href={signedIn ? "/account" : SIGN_IN.href} />
             </div>
 
-            {/* The one filled control in the header — Search & Book. */}
-            <Link
-              href={primaryCta.href}
-              className="hidden min-h-11 items-center rounded-md bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] sm:inline-flex"
-            >
-              {primaryCta.label}
-            </Link>
-
-            {/* At compact widths this IS the navigation, so it says "Menu".
-                At desktop the bar above is the navigation and this only holds
-                what the bar has no room for, so it says "More" — two controls
-                both claiming to be the navigation is what made the header feel
-                doubled. The panel itself drops the links the bar already shows
-                (see xl:hidden on the list items below), so nothing is offered
-                twice at the same width. */}
+            {/* xl and up: the bar above is the navigation. Below xl: this is
+                the navigation, and it opens the same five categories plus
+                account, as an accordion, by tap. */}
             <button
-              ref={menuButtonRef}
               type="button"
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-expanded={menuOpen}
-              aria-controls="site-menu"
-              aria-label={
-                menuOpen
-                  ? wideNav ? "Close the rest of the site" : "Close navigation menu"
-                  : wideNav ? "More of the site" : "Open navigation menu"
-              }
-              className="flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] px-3 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[var(--gold-light)] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] xl:hidden"
             >
-              <span>{menuOpen ? "Close" : wideNav ? "More" : "Menu"}</span>
-              <span aria-hidden="true" className="flex w-4 flex-col gap-1">
-                <span className="h-px w-full bg-[var(--navy)]" />
-                <span className="h-px w-full bg-[var(--navy)]" />
-                <span className="h-px w-full bg-[var(--navy)]" />
-              </span>
+              <Icon name={mobileOpen ? "close" : "menu"} className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        {menuOpen && (
-          <div id="site-menu" className="absolute left-0 right-0 top-full z-[1] w-full min-w-full border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)]">
-            <div className="mx-auto grid w-full max-h-[calc(100vh-5rem)] max-w-7xl grid-cols-1 gap-8 overflow-y-auto px-5 py-7 sm:px-8 md:grid-cols-2 md:py-9 lg:grid-cols-3">
-              {menuGroups.map((group) => (
-                <section key={group.title}>
-                  <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{group.title}</h2>
-                  <ul className="mt-3 space-y-1">
-                    {group.links.map((item) => {
-                      const current = isCurrent(item.href, pathname);
-                      return (
-                        // Hidden at desktop when the bar above already shows
-                        // it, so this panel is "the rest of the site" there
-                        // rather than a second copy of the navigation.
-                        <li key={item.href} className={PRIMARY_HREFS.has(item.href) ? "xl:hidden" : undefined}>
-                          <Link
-                            onClick={() => setMenuOpen(false)}
-                            href={item.href}
-                            aria-current={current ? "page" : undefined}
-                            className={`flex min-h-12 items-center justify-between gap-3 rounded-xl px-4 py-3 transition ${
-                              current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
-                            }`}
-                          >
-                            <span className="block text-sm font-semibold">{item.label}</span>
-                            <span aria-hidden="true" className={current ? "text-[var(--gold-light)]" : "text-[var(--gold-ink)]"}>→</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              ))}
-
-              <div className="border-t border-[var(--gold-light)] pt-5 md:col-span-3 md:flex md:items-center md:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {/* THE PLANNER AND MY ROUTE ARE HERE FOR EVERYBODY. They used
-                      to be inside the signed-in branch, so somebody who had not
-                      signed in never learned they existed — and therefore had
-                      no reason to make an account. Pressing one signed out
-                      opens a note saying what it is; see lib/members-only.ts
-                      for why that note does not say "you must log in". */}
-                  {GATED_FEATURES.map((feature) => (
-                    <MembersOnlyLink
-                      key={feature.key}
-                      feature={feature}
-                      onNavigate={() => setMenuOpen(false)}
-                      className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]"
-                    />
-                  ))}
-                  {signedIn ? (
-                    <>
-                      <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href="/account">My account</Link>
-                      <button type="button" onClick={() => { setMenuOpen(false); signOut(); }} className="rounded-md px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">Sign out</button>
-                    </>
-                  ) : (
-                    <Link onClick={() => setMenuOpen(false)} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]" href={SIGN_IN.href}>{SIGN_IN.label}</Link>
-                  )}
-                </div>
-                <Link
-                  onClick={() => setMenuOpen(false)}
-                  href={primaryCta.href}
-                  className="mt-5 inline-flex min-h-11 items-center rounded-md bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] md:mt-0"
-                >
-                  {primaryCta.label}
+        {mobileOpen && (
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-[1] max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] xl:hidden">
+            <ul className="divide-y divide-[var(--gold-light)]/60 px-5 sm:px-8">
+              {categories.map((category) => {
+                const key = category.label;
+                const expanded = mobileSection === key;
+                return (
+                  <li key={key}>
+                    <button
+                      type="button"
+                      aria-expanded={expanded}
+                      aria-controls={`mobile-${key}`}
+                      onClick={() => setMobileSection(expanded ? null : key)}
+                      className="flex min-h-12 w-full items-center justify-between py-3 text-left text-base font-semibold text-[var(--navy)]"
+                    >
+                      {category.label}
+                      <Icon name="chevron-down" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                    </button>
+                    {expanded && (
+                      <ul id={`mobile-${key}`} className="pb-2">
+                        {category.links.map((link) => (
+                          <li key={link.href + link.label}>
+                            <Link href={link.href} onClick={() => setMobileOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
+                              {link.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex items-center justify-between gap-3 border-t border-[var(--gold-light)] px-5 py-4 sm:px-8">
+              {signedIn ? (
+                <>
+                  <Link onClick={() => setMobileOpen(false)} href="/account" className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
+                    Account
+                  </Link>
+                  <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link onClick={() => setMobileOpen(false)} href={SIGN_IN.href} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
+                  {SIGN_IN.label}
                 </Link>
-              </div>
+              )}
             </div>
           </div>
         )}

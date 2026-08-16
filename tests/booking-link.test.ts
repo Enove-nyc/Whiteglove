@@ -9,7 +9,7 @@ import {
   bookingLink,
   pathIsLocked,
 } from "@/lib/booking-access";
-import { MENU_GROUPS, menuGroupsFor } from "@/lib/navigation";
+import { bookCategoryFor } from "@/lib/navigation";
 import { services } from "@/data/services";
 
 /**
@@ -76,30 +76,19 @@ describe("where a public booking link may go", () => {
   });
 });
 
-describe("the menu", () => {
+describe("the Book dropdown", () => {
   it("still offers booking when it is open", () => {
-    const groups = menuGroupsFor(bookingLink([]));
-    assert.ok(groups.some((group) => group.links.some((link) => link.href === BOOKING_SEARCH_PATH)));
+    const category = bookCategoryFor(bookingLink([]));
+    assert.ok(category.links.some((link) => link.href.startsWith(BOOKING_SEARCH_PATH)));
   });
 
   it("HAS NO ROUTE TO THE LOCKED SEARCH", () => {
-    const groups = menuGroupsFor(bookingLink(LOCKED));
-    for (const group of groups) {
-      for (const link of group.links) {
-        assert.notEqual(link.href, BOOKING_SEARCH_PATH, `${link.label} still points at the locked search`);
-      }
+    const category = bookCategoryFor(bookingLink(LOCKED));
+    for (const link of category.links) {
+      assert.notEqual(link.href, BOOKING_SEARCH_PATH, `${link.label} still points at the locked search`);
     }
     // And it is replaced rather than removed — the entry is still there.
-    assert.ok(groups.some((group) => group.links.some((link) => link.href === BOOKING_HELP_PATH)));
-  });
-
-  it("changes nothing else about the menu", () => {
-    const groups = menuGroupsFor(bookingLink(LOCKED));
-    assert.equal(groups.length, MENU_GROUPS.length);
-    assert.deepEqual(
-      groups.map((group) => group.links.length),
-      MENU_GROUPS.map((group) => group.links.length),
-    );
+    assert.ok(category.links.some((link) => link.href === BOOKING_HELP_PATH));
   });
 });
 

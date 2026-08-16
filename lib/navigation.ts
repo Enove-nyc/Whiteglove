@@ -1,268 +1,129 @@
 /**
  * What the site says it is, in the order it says it.
  *
- * THE NAVIGATION IS THE POSITIONING, and it has now been rewritten twice for
- * that reason. The first time it read Destinations · Cemeteries · Getaways ·
- * Directory · Services · Book, which was an accurate description of a kevarim
- * database with a travel page attached. The second time it led with Plan a
- * Trip and Travel Services, which described a personal planning service.
+ * Five dropdown categories in the bar — Destinations, Kosher, Plan, Travel,
+ * Book — each a short list of links with no photographs or paragraphs. A
+ * category is what somebody is trying to do, not which folder the page lives
+ * in: Kosher Stays and Travel Stays point at the same page today (one kosher
+ * stays page is still to come) and that is fine — the two labels answer two
+ * different questions even when today they land in the same place.
  *
- * The business is neither. It helps somebody choose a kosher-friendly holiday
- * and earns when they book it, so the bar is where to go and what matters
- * about travelling kosher — with one filled Search & Book button for hotels,
- * flights and cars. Putting Hotels and Flights in the bar next to that button
- * said the same thing three times and crowded Destinations onto the logo.
+ * RULES, each with the mistake it exists to prevent:
  *
- * THE RULES, each with the mistake it exists to prevent:
+ *   1. **No personal planning anywhere in this file.** /services does not
+ *      appear. Not renamed, not demoted — removed, at the owner's word: the
+ *      business is self-service destinations, kosher information and booking
+ *      partners, not a planning agency.
  *
- *   1. **No Cemeteries at the top level.** It is the single item that makes a
- *      vacation planner look like a burial-records database, and it is one
- *      press away inside Heritage Travel where the person looking for it will
- *      look.
+ *   2. **Heritage is not a category.** Kevarim, batei hachaim and heritage
+ *      towns are reached through Destinations (as places) and Kosher (as
+ *      practical information) — not as a fourth thing this site is about.
  *
- *   2. **"Destinations" means holidays.** It used to be forbidden here,
- *      because it was ambiguous: to a vacation customer it promises places to
- *      go, and on this site it opened a directory of towns with kevarim in
- *      them. The heritage towns have moved (lib/route-migration.ts), so the
- *      word is free to mean the thing a visitor expects — and it must keep
- *      meaning it.
- *
- *   3. **Nothing in the bar may lead to an access code.** The booking search
- *      is the primary action now, so this rule could not be kept by leaving it
- *      out; it is kept by RESOLVING it. `menuGroupsFor` and `primaryCtaFor`
- *      below take the resolved link (lib/booking-access.ts), so when the owner
- *      has that path locked the bar offers the public assistance page instead
- *      of a password box. A first-time visitor pressing the one filled button
- *      and meeting a login is the end of that visit.
- *
- *   4. **No personal planning in the bar, at all.** Not "Plan a Trip", not
- *      "Travel Services", not "Have us book it". The service still exists and
- *      is offered inside Contact; promoting it here would tell every visitor
- *      that the business is a planning agency, which is what the whole pivot
- *      is away from.
- *
- *   5. **One primary action, and it is a search.** The thing this business
- *      does is help somebody find and book a trip. Hotels, flights and cars
- *      are one search on /book — not four near-duplicate menu links beside
- *      the Search & Book button.
+ *   3. **Nothing here may lead to an access code.** The Book category is
+ *      resolved through lib/booking-access.ts, exactly as the old single
+ *      "Search & Book" button was: when the owner has the search locked, its
+ *      links go to the public assistance page instead of a password box.
  */
 
 import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
 
-export type NavItem = {
+export type NavLink = {
+  /** The word on the link. Short — this is a dropdown, not a page. */
   label: string;
-  /**
-   * Shorter bar wording when the full label will not fit beside the logo and
-   * actions. The menu panel and the accessible name keep `label`.
-   */
-  shortLabel?: string;
   href: string;
   /**
-   * What is actually behind it, in the words a traveler would use.
-   *
-   * Used as the description in the menu panel and as the accessible name where
-   * a link would otherwise be a bare noun. A navigation item whose meaning has
-   * to be guessed is one that gets pressed once.
+   * Only when the label alone would not say enough out of context (an icon,
+   * or a link whose destination isn't obvious from its word). Used as the
+   * accessible name; never shown as visible text in the dropdown itself.
    */
-  description: string;
+  description?: string;
+};
+
+export type NavCategory = {
+  label: string;
+  links: readonly NavLink[];
 };
 
 /**
- * The one menu entry for booking. Same destination as Search & Book; the bar
- * keeps the short label, the panel says what you can search.
+ * The five dropdowns, in order. Destinations first: a visitor reads left to
+ * right and stops at the first thing that sounds like what they came for.
  */
-export const BOOKING_NAV: NavItem = {
-  label: "Search hotels, flights & cars",
-  href: BOOKING_SEARCH_PATH,
-  description: "Hotels, flights and cars — cash or points.",
-};
-
-/**
- * The bar, in order, at the widths that have room for it.
- *
- * FIVE, NOT SEVEN. Hotels & Stays and Flights used to sit here next to the
- * Search & Book button, which searches the same three things. That tripled the
- * booking pitch and crowded the first item onto the logo at 1280px. The menu
- * used to list Hotels, Flights, Cars and the combined search as four separate
- * links to the same job — they are one entry now, and /flights and /cars have
- * since been deleted outright: both ran the same partner searches as the
- * booking page's own tabs, so they redirect to it. /hotels keeps its own
- * address, because the stay directory and the quarters are not on the booking
- * page and are the one thing here a comparison site cannot do.
- */
-export const PRIMARY_NAV: readonly NavItem[] = [
+export const NAV_CATEGORIES: readonly NavCategory[] = [
   {
     label: "Destinations",
-    href: "/destinations",
-    description: "Beaches, cities, mountains and family trips.",
-  },
-  {
-    label: "Things to Do",
-    href: "/things-to-do",
-    description: "What to do, including on Shabbos.",
-  },
-  {
-    label: "Kosher Travel",
-    shortLabel: "Kosher",
-    href: "/kosher-travel",
-    description: "Food, Shabbos, minyanim and mikvaos.",
-  },
-  {
-    label: "Heritage Travel",
-    shortLabel: "Heritage",
-    href: "/heritage",
-    description: "Kevarim, batei hachaim and heritage journeys.",
-  },
-  {
-    // ONE NAME FOR ONE PAGE. The bar called /itinerary "My Trips" while the
-    // menu two lines below called the same address "Itinerary planner", so the
-    // same navigation offered one page under two names — which reads as two
-    // features, one of which cannot be found.
-    label: "Itinerary planner",
-    shortLabel: "Itinerary",
-    href: "/itinerary",
-    description: "Build the trip day by day.",
-  },
-] as const;
-
-/**
- * The one button. Filled, and the only filled thing in the header.
- *
- * RESOLVED, NOT TYPED. It points at the booking search, which the owner can
- * lock from the admin — and rule 3 above says nothing in the bar may end at a
- * password box. `primaryCtaFor` swaps in the public assistance page when that
- * happens, so the most prominent control on the site cannot become a login
- * screen because of a setting somewhere else.
- */
-export const PRIMARY_CTA: NavItem = {
-  label: "Search & Book",
-  href: BOOKING_SEARCH_PATH,
-  description: "Hotels, flights and cars for your dates.",
-};
-
-export function primaryCtaFor(booking: BookingLink): NavItem {
-  return booking.searchIsPublic ? PRIMARY_CTA : { ...PRIMARY_CTA, label: "Plan & enquire", href: booking.href, description: booking.description };
-}
-
-export const SIGN_IN: NavItem = {
-  label: "Sign in",
-  href: "/login",
-  description: "Your saved trips, on any device.",
-};
-
-/**
- * The rest of the site, behind the menu button.
- *
- * At compact widths this IS the navigation and it carries the bar as well; at
- * desktop the bar is showing, so the panel drops what the bar already offers
- * (see PRIMARY_HREFS in the header). Grouped by what somebody is trying to do,
- * not by which folder the page lives in.
- */
-export const MENU_GROUPS: ReadonlyArray<{ title: string; links: readonly NavItem[] }> = [
-  {
-    title: "Where to go",
     links: [
-      PRIMARY_NAV[0],
-      { label: "Search", href: "/search", description: "Find any page or place." },
-      { label: "Getaways", href: "/getaways", description: "Trip ideas." },
-      { label: "Where to stay", href: "/hotels", description: "Kosher hotels, quarters and seasonal programmes." },
-      { label: "Kosher food finder", href: "/kosher", description: "Restaurants, bakeries and groceries by place." },
-      { label: "Map", href: "/map", description: "Everything on the site, on one map." },
+      { label: "All", href: "/destinations" },
+      { label: "Map", href: "/map" },
+      { label: "Seasonal", href: "/destinations?view=seasonal" },
+      { label: "Ideas", href: "/getaways" },
     ],
   },
   {
-    title: "Book the trip",
+    label: "Kosher",
     links: [
-      { label: "Get recommendations", href: "/plan", description: "Three short steps to destinations that fit." },
-      // One entry for the unified search — not Hotels, Flights, Cars and
-      // "Search hotels…" as four near-duplicates of Search & Book.
-      BOOKING_NAV,
-      { label: "Flight help", href: "/flight-booking-assistance", description: "Help with a flight request." },
+      { label: "Food", href: "/kosher" },
+      { label: "Stays", href: "/hotels" },
+      { label: "Shuls", href: "/shuls" },
+      { label: "Mikvahs", href: "/mikvaos" },
+      { label: "Zmanim", href: "/zmanim" },
+      { label: "Kevarim", href: "/tzaddikim" },
+      { label: "Cemeteries", href: "/cemeteries" },
     ],
   },
   {
-    // THESE FIVE LIVED ONLY IN THE FOOTER, except the travel guide which sat
-    // as one line under Book the trip. Travel gear had no menu or footer
-    // entry at all — only a link that appeared after the shelf already had
-    // items, on two other pages — so the page itself could not be found.
-    title: "Before you go",
+    label: "Plan",
     links: [
-      { label: "Travel guide", href: "/travel-guide", description: "Documents, insurance, transfers and eSIMs." },
-      { label: "Travel gear", href: "/travel-gear", description: "A blech, a hotplate, adapters and the rest of the shelf." },
-      { label: "Airport transfers", href: "/transfers", description: "Cars between the airport and where you are staying." },
-      { label: "eSIMs and data", href: "/esim", description: "A data plan for the country you are going to." },
-      { label: "Travel insurance", href: "/travel-insurance", description: "Cover for the trip, from the partners we point to." },
+      { label: "Planner", href: "/plan" },
+      { label: "Route", href: "/my-route" },
+      { label: "Itinerary", href: "/itinerary" },
     ],
   },
   {
-    title: "While you are there",
+    label: "Travel",
     links: [
-      PRIMARY_NAV[1],
-      { label: "A sample itinerary", href: "/sample-itinerary", description: "What a finished trip looks like." },
-      { label: "My trip", href: "/command-center", description: "Everything for the current trip." },
-      // Discoverable here rather than buried under White Glove; not in the bar.
-      { label: "Provider directory", href: "/directory", description: "Drivers, shomrim and local services." },
-      { label: "Certification marks", href: "/hechsherim", description: "Who certifies the kosher places on this site." },
-      { label: "Mikvaos", href: "/mikvaos", description: "Mikvah listings, with the source behind each one." },
-      { label: "Zmanim", href: "/zmanim", description: "Halachic times for the place you are staying." },
-    ],
-  },
-  {
-    title: "Heritage travel",
-    links: [
-      PRIMARY_NAV[3],
-      { label: "Towns and guides", href: "/stops", description: "Towns and kevarim, in English or Yiddish." },
-      { label: "Batei hachaim", href: "/cemeteries", description: "Cemetery records, access notes and shomrim." },
-      { label: "Kevarim by name", href: "/tzaddikim", description: "Who is buried where, by name." },
-    ],
-  },
-  {
-    title: "White Glove",
-    links: [
-      { label: "Home", href: "/", description: "The front page of the site." },
-      { label: "About us", href: "/about", description: "What this site is for." },
-      { label: "How we verify", href: "/verification", description: "What to confirm before you travel." },
-      // Travel Services is OUT OF THE BAR (rule 4) and still reachable. What it
-      // offers commercially has moved into the journeys; what it offers
-      // personally is inside Contact.
-      { label: "Travel services", href: "/services", description: "Have White Glove plan the trip." },
-      { label: "Contact", href: "/contact", description: "A question, a correction, or advertising." },
-      { label: "Suggest a place", href: "/submit", description: "Send a place or correction." },
-      { label: "Travel updates", href: "/alerts", description: "Destination and seasonal updates." },
+      { label: "Stays", href: "/hotels" },
+      { label: "Activities", href: "/things-to-do" },
+      { label: "Transport", href: "/transfers" },
+      { label: "Insurance", href: "/travel-insurance" },
+      { label: "Gear", href: "/travel-gear" },
     ],
   },
 ] as const;
 
-/** Everything the bar shows, for the header to hide from the panel at desktop. */
-export const PRIMARY_HREFS: ReadonlySet<string> = new Set(PRIMARY_NAV.map((item) => item.href));
-
 /**
- * The menu, with the booking entry pointed wherever it is allowed to go today.
- *
- * Rule 3 above kept `/book` out of the BAR because it can be behind an access
- * code. The menu panel kept it, and the same objection applied there — a
- * visitor opening the menu and pressing the combined search met the password
- * box just as squarely. The entry stays (removing it would hide a working
- * feature from everybody to protect against a setting most deployments do not
- * have) and its target is resolved instead. See lib/booking-access.ts.
+ * Book — flights, hotels and cars, resolved so it can never end at a
+ * password box. Kept apart from NAV_CATEGORIES because its three links share
+ * one destination (BOOKING_SEARCH_PATH) that has to be resolved per request.
  */
-export function menuGroupsFor(booking: BookingLink): typeof MENU_GROUPS {
-  return MENU_GROUPS.map((group) => ({
-    ...group,
-    links: group.links.map((item) =>
-      item.href === BOOKING_SEARCH_PATH ? { ...item, href: booking.href, description: booking.description } : item,
-    ),
-  }));
+export function bookCategoryFor(booking: BookingLink): NavCategory {
+  if (!booking.searchIsPublic) {
+    return { label: "Book", links: [{ label: booking.label, href: booking.href, description: booking.description }] };
+  }
+  return {
+    label: "Book",
+    links: [
+      { label: "Flights", href: `${BOOKING_SEARCH_PATH}?type=flights` },
+      { label: "Hotels", href: `${BOOKING_SEARCH_PATH}?type=hotels` },
+      { label: "Cars", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+    ],
+  };
 }
 
+export const SIGN_IN: NavLink = { label: "Sign in", href: "/login" };
+
 /**
- * Is this navigation item the page we are on?
- *
- * A section match, so a destination page still lights its section up. `/` is
- * exempt, because every path starts with it and the front page would otherwise
- * be current everywhere.
+ * Is this navigation item the page we are on? A section match, so a
+ * destination page still lights Destinations up. `/` is exempt, because
+ * every path starts with it and the front page would otherwise be current
+ * everywhere.
  */
 export function isCurrent(href: string, pathname: string): boolean {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const clean = href.split("?")[0];
+  if (clean === "/") return pathname === "/";
+  return pathname === clean || pathname.startsWith(`${clean}/`);
+}
+
+/** Is any link in this category the page we are on? Lights up the trigger. */
+export function categoryIsCurrent(category: NavCategory, pathname: string): boolean {
+  return category.links.some((link) => isCurrent(link.href, pathname));
 }
