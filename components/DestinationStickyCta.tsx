@@ -60,7 +60,7 @@ export default function DestinationStickyCta({
   carsHref: string;
 }) {
   return (
-    <div className="sticky bottom-0 z-30 -mx-5 mt-6 border-t border-[var(--gold-light)] bg-[var(--surface)]/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/85 sm:-mx-8 sm:px-8">
+    <div className="sticky bottom-14 z-30 -mx-5 mt-6 border-t border-[var(--gold-light)] bg-[var(--surface)]/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-[var(--surface)]/85 sm:-mx-8 sm:bottom-0 sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2">
         <Link
           href={staySearchHref({ destination })}

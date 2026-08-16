@@ -48,7 +48,7 @@ describe("what is in front of what", () => {
   });
 
   it("uses the named layers rather than loose numbers", () => {
-    for (const file of ["../components/Navbar.tsx", "../components/SitePromotions.tsx", "../components/BookPartners.tsx", "../components/PromotionBanner.tsx"]) {
+    for (const file of ["../components/Navbar.tsx", "../components/MobileBottomBar.tsx", "../components/SitePromotions.tsx", "../components/BookPartners.tsx", "../components/PromotionBanner.tsx"]) {
       const source = readFileSync(new URL(file, import.meta.url), "utf8");
       // z-40 / z-50 / z-[60] on a fixed or sticky layer is how this drifted
       // apart in the first place: each one picked a number by looking at

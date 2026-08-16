@@ -57,7 +57,10 @@ describe("the action that follows the page", () => {
 
   it("CARRIES A STICKY ACTION, and it is sticky rather than fixed", () => {
     assert.match(PAGE, /<DestinationStickyCta\s+destination=\{destination\.name\}/);
-    assert.match(STICKY, /sticky bottom-0/);
+    assert.match(STICKY, /className="sticky bottom-/);
+    // Clears the mobile bottom bar (Search/Route/Itinerary/Account) below sm,
+    // rather than sitting under it — see components/MobileBottomBar.tsx.
+    assert.match(STICKY, /sm:bottom-0/);
     assert.doesNotMatch(STICKY_CODE, /\bfixed\b/, "a fixed bar covers the page it is about");
   });
 

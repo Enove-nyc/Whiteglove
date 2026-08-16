@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SitePromotions from "@/components/SitePromotions";
+import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { bookCategoryFor, categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, type NavCategory } from "@/lib/navigation";
@@ -58,6 +59,15 @@ export default function Navbar() {
       active = false;
     };
   }, [pathname]);
+
+  // Reserves room at the bottom of the page for the fixed mobile bar, below
+  // `sm` only (see the matching rule in globals.css). Scoped to a body class
+  // set only while Navbar is mounted, so /admin — which never renders this
+  // component — is never affected.
+  useEffect(() => {
+    document.body.classList.add("wg-has-mobile-bar");
+    return () => document.body.classList.remove("wg-has-mobile-bar");
+  }, []);
 
   // The header becomes slightly smaller once the page has moved under it —
   // a small cue that it's the same bar, not a different one.
@@ -268,6 +278,7 @@ export default function Navbar() {
         )}
       </nav>
       <SitePromotions />
+      <MobileBottomBar signedIn={signedIn} />
     </>
   );
 }
