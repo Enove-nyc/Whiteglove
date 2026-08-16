@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { trackPageView, trackSearch, trackSearchSelection } from "@/lib/site-analytics";
+import { trackDestinationOpen, trackPageView, trackSearch, trackSearchSelection } from "@/lib/site-analytics";
 import { recordPromotionEvent } from "@/lib/admin-content";
 
 export async function POST(request: NextRequest) {
@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     id?: string;
     found?: number;
     kind?: string;
+    slug?: string;
   } | null;
   if (!body) {
     return NextResponse.json({ ok: false }, { status: 400 });
@@ -25,6 +26,21 @@ export async function POST(request: NextRequest) {
     // Kind only — never the query — so selected-result analytics carry no PII.
     if (typeof body.kind !== "string") return NextResponse.json({ ok: false }, { status: 400 });
     await trackSearchSelection(body.kind);
+    // A destination selection also feeds the front page's Featured row.
+    // `slug` is newer than this event: older clients send kind alone and are
+    // still counted above — the day buckets simply learn nothing from them.
+    // A slug is a published address, not a query, so recording it keeps the
+    // no-PII rule this event was built on.
+    if (body.kind === "Vacation destination" && typeof body.slug === "string") {
+      await trackDestinationOpen(body.slug);
+    }
+  }
+  else if (body.type === "destination_open") {
+    // For opens that are not search selections — a Featured card, a hub card —
+    // so the trailing-week row can learn from every front door, not only the
+    // search bar.
+    if (typeof body.slug !== "string") return NextResponse.json({ ok: false }, { status: 400 });
+    await trackDestinationOpen(body.slug);
   }
   else if (body.type === "promotion_view" || body.type === "promotion_click") {
     if (!body.id) return NextResponse.json({ ok: false }, { status: 400 });

@@ -88,6 +88,71 @@ export async function trackSearchSelection(kind: string) {
 }
 
 /**
+ * A destination somebody actually opened, bucketed by day.
+ *
+ * THE FRONT PAGE'S "FEATURED" ROW READS THIS. The all-time pages zset above
+ * cannot serve it: a destination that was popular in March would sit at the
+ * top for ever, and "featured" would quietly mean "featured once". One zset
+ * per day means the row is built from the trailing week and last season's
+ * favourite falls out on its own.
+ *
+ * The bucket expires itself after nine days — two more than the seven the
+ * reader wants, so a bucket is never mid-expiry while still inside the
+ * window, and an abandoned key cleans up without a cron.
+ *
+ * Slugs only, and only things shaped like slugs. The value arrives from the
+ * client, and unlike a search term it is joined back against the published
+ * destination list before anything renders — an invented slug costs a redis
+ * member and nothing else.
+ */
+const FEATURED_KEY_PREFIX = "white-glove:featured";
+const FEATURED_BUCKET_TTL_SECONDS = 9 * 24 * 60 * 60;
+
+function featuredDayKey(daysAgo = 0) {
+  return `${FEATURED_KEY_PREFIX}:${new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}`;
+}
+
+export async function trackDestinationOpen(slug: string) {
+  const label = cleanLabel(slug, 80).toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(label)) return;
+  const key = featuredDayKey();
+  // Sequential on purpose: EXPIRE on a key that does not exist yet is a no-op,
+  // so the increment has to land first.
+  await redis(`zincrby/${key}/1/${encodeURIComponent(label)}`);
+  await redis(`expire/${key}/${FEATURED_BUCKET_TTL_SECONDS}`);
+}
+
+/**
+ * The trailing week's day buckets, merged. Pure, and exported so the merge
+ * can be tested without a redis to talk to.
+ *
+ * Ties break alphabetically rather than by whichever bucket answered first,
+ * so the same week of data always produces the same front page.
+ */
+export function mergeDestinationDayBuckets(
+  days: ReadonlyArray<ReadonlyArray<{ label: string; count: number }>>,
+): string[] {
+  const totals = new Map<string, number>();
+  for (const day of days) {
+    for (const { label, count } of day) totals.set(label, (totals.get(label) ?? 0) + count);
+  }
+  return [...totals.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([slug]) => slug);
+}
+
+/** Most-opened destination slugs over the trailing `days`, busiest first. */
+export async function topSearchedDestinations(days = 7): Promise<string[]> {
+  if (!analyticsIsConfigured()) return [];
+  const buckets = await Promise.all(
+    Array.from({ length: Math.max(1, days) }, (_, daysAgo) =>
+      redis<unknown>(`zrange/${featuredDayKey(daysAgo)}/0/-1/WITHSCORES`),
+    ),
+  );
+  return mergeDestinationDayBuckets(buckets.map((bucket) => pairs(bucket?.result)));
+}
+
+/**
  * A filter chip or facet used on search — privacy-safe labels only
  * (e.g. "country:Italy", "kind:hotel"), never free-text PII.
  */
