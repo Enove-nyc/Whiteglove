@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
+import SiteAssistant from "@/components/SiteAssistant";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import { SignInGateProvider } from "@/components/SignInGate";
 import IdleLogout from "@/components/IdleLogout";
@@ -108,6 +109,10 @@ export default async function RootLayout({
             </SignInGateProvider>
           </BookingLinkProvider>
         </div>
+        {/* ON EVERY PAGE, IN THE CORNER. Outside #main-content on purpose: it
+            is not part of the page's own content and must not land in the
+            middle of the tab order of whatever page somebody is reading. */}
+        <SiteAssistant />
         {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
             The component asks for /_vercel/speed-insights/script.js, which
             only exists on Vercel's edge — served from Railway it is a 404 on
