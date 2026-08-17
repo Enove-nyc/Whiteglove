@@ -650,3 +650,26 @@ describe("a partial answer is not the whole market", () => {
     assert.match(source, /\.length >= \(result\.result \?\? \[\]\)\.length\) result = answer/);
   });
 });
+
+describe("a timeout says whose patience ran out", () => {
+  it("prints how long we waited, because that is the whole diagnosis", () => {
+    // "Timed out" on its own cannot tell a slow provider from a limit of ours
+    // set too low, and those want opposite responses. RouteStack came back at
+    // 20,003ms against a twenty-second limit and read as broken.
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /we stopped waiting at \$\{\(attempt\.ms \/ 1000\)\.toFixed\(1\)\}s/);
+  });
+
+  it("gives both flight providers the same patience", () => {
+    // Otherwise a comparison reporting two timeouts is telling us about two
+    // different arbitrary limits of ours rather than about the providers.
+    const timeoutIn = (path: string) => {
+      const source = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      return Number(/timeoutMs: (\d+)|^\s*(\d{5}),$/m.exec(source)?.slice(1).find(Boolean));
+    };
+    assert.equal(
+      timeoutIn("lib/travel/adapters/duffel-flights.ts"),
+      timeoutIn("lib/travel/adapters/routestack-flights.ts"),
+    );
+  });
+});

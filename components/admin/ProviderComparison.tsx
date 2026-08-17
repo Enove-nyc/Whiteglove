@@ -160,7 +160,15 @@ export default function ProviderComparison() {
                     ) : (
                       <>
                         <p className="mt-1 text-sm font-semibold text-red-700">
-                          {attempt.error === "not-configured" ? "No key set" : attempt.timedOut ? "Timed out" : attempt.error}
+                          {attempt.error === "not-configured"
+                            ? "No key set"
+                            : attempt.timedOut
+                              ? // SAY WHOSE PATIENCE RAN OUT. "Timed out" alone
+                                // cannot tell a slow provider from a limit of
+                                // ours set too low, and the two want opposite
+                                // responses. The number is the whole diagnosis.
+                                `Timed out — we stopped waiting at ${(attempt.ms / 1000).toFixed(1)}s`
+                              : attempt.error}
                         </p>
                         {attempt.detail ? (
                           <p className="mt-1 break-words text-xs leading-5 text-stone-500">{attempt.detail}</p>
