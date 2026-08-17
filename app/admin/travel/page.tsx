@@ -41,6 +41,20 @@ const PROVIDER_VARS: Record<ProviderId, string[]> = {
   routestack: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_SECRET", "ROUTESTACK_API_BASE"],
 };
 
+/**
+ * A provider answering with invented data, said out loud.
+ *
+ * Duffel issues separate tokens for test and live, and a test one returns
+ * made-up flights at made-up prices. On this screen both read "Present", so a
+ * Duffel column full of plausible fares could be either the market or a
+ * fixture — and the whole point of the comparison is deciding which company to
+ * trust. Nothing else here has two modes, so nothing else needs a word.
+ */
+function sandboxNote(provider: ProviderId): string | null {
+  if (provider !== "duffel") return null;
+  return inspectConfiguredDuffelToken().kind === "test" ? "Test key — these fares are invented" : null;
+}
+
 /** Whether the environment has what this provider needs. Never the value. */
 function configuredFor(provider: ProviderId): boolean {
   if (provider === "stay22") return stay22ApiConfigured();
@@ -110,6 +124,9 @@ export default async function AdminTravelProvidersPage() {
                       ) : (
                         <span className={`${chip} border-stone-300 bg-stone-50 text-stone-600`}>Not set</span>
                       )}
+                      {sandboxNote(provider) ? (
+                        <p className="mt-1.5 text-[11px] font-semibold leading-4 text-amber-800">{sandboxNote(provider)}</p>
+                      ) : null}
                       <ul className="mt-1.5 space-y-0.5">
                         {PROVIDER_VARS[provider].map((name) => {
                           const value = process.env[name];

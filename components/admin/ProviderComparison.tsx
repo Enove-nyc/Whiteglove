@@ -31,6 +31,13 @@ type Result = { tried: Attempt[]; offers: Offer[]; partial: boolean } | { error:
 const field =
   "min-h-11 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none";
 
+/** What the two dates are called in each category. */
+const DATE_LABELS: Record<TravelCategory, [string, string]> = {
+  flight: ["Depart", "Return"],
+  hotel: ["Check in", "Check out"],
+  car: ["Pick up", "Drop off"],
+};
+
 export default function ProviderComparison() {
   const [category, setCategory] = useState<TravelCategory>("car");
   const [origin, setOrigin] = useState("");
@@ -97,12 +104,17 @@ export default function ProviderComparison() {
           {category === "flight" ? "Going to" : "Where"}
           <input value={destination} onChange={(e) => setDestination(e.target.value)} className={`mt-1 ${field}`} placeholder="Kraków" />
         </label>
+        {/* NOT "FROM" AND "TO". A flight search already has a place it leaves
+            from and a place it goes to, and two more boxes wearing the same two
+            words sat beside them. The first flight comparison came back marked
+            one way in both columns because the second date never got filled in.
+            Each category names its own dates. */}
         <label className="text-xs font-semibold text-stone-600">
-          From
+          {DATE_LABELS[category][0]}
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={`mt-1 ${field}`} />
         </label>
         <label className="text-xs font-semibold text-stone-600">
-          To
+          {DATE_LABELS[category][1]}
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={`mt-1 ${field}`} />
         </label>
         <div className="sm:col-span-6">

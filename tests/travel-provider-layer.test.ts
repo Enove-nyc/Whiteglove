@@ -545,3 +545,42 @@ describe("both flight providers read a place the same way", () => {
     assert.ok(own >= 20000 && own < deadline, `the adapter's own timeout is ${own}ms`);
   });
 });
+
+describe("the comparison form says which date is which", () => {
+  it("DOES NOT PUT TWO BOXES CALLED FROM AND TO BESIDE TWO MORE", () => {
+    // A flight search already has a place it leaves from and a place it goes
+    // to. Two date boxes wearing the same two words sat next to them, and the
+    // first flight comparison came back marked one way in both columns because
+    // the second date never got filled in. A form that loses half a search
+    // without saying so is not a form.
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /flight: \["Depart", "Return"\]/);
+    assert.match(source, /hotel: \["Check in", "Check out"\]/);
+    assert.match(source, /car: \["Pick up", "Drop off"\]/);
+    // The old bare labels must be gone, not merely joined by better ones.
+    assert.doesNotMatch(source, /^\s+From\n/m);
+    assert.doesNotMatch(source, /^\s+To\n/m);
+  });
+});
+
+describe("a provider answering with invented data says so", () => {
+  it("names a Duffel test key on the screen where its prices are read", () => {
+    // Duffel issues separate test and live tokens and a test one returns
+    // made-up fares. Both read "Present", so a column of plausible prices
+    // could be the market or a fixture — on the one screen whose entire
+    // purpose is deciding which company to believe.
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(source, /inspectConfiguredDuffelToken\(\)\.kind === "test"/);
+    assert.match(source, /invented/);
+  });
+
+  it("still never prints a key, whatever it says about one", () => {
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    // The only thing rendered from an environment variable is its fingerprint.
+    const rendered = source.match(/\{process\.env\.[A-Z_]+\}/g);
+    assert.equal(rendered, null, "an environment variable is being rendered whole");
+    assert.match(source, /fingerprint\(value\)/);
+  });
+});
