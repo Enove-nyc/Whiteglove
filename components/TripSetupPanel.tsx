@@ -225,8 +225,8 @@ export default function TripSetupPanel({
             {signedIn === false ? (
               <>
                 <p className="mt-1.5 text-sm leading-6 text-stone-600">
-                  It saves as you type — <span className="font-semibold text-[var(--navy)]">in this browser only</span>.
-                  Signing in keeps it with your account, so it follows you between devices.
+                  Trips are saved securely to your account, so yours is on every device you sign in on.
+                  Sign in and the first thing you add starts it.
                 </p>
                 <Link
                   href="/login?next=%2Fitinerary"
@@ -236,10 +236,10 @@ export default function TripSetupPanel({
                 </Link>
               </>
             ) : signedIn ? (
-              <p className="mt-1.5 text-sm leading-6 text-stone-600">Saved to your account as you type.</p>
+              <p className="mt-1.5 text-sm leading-6 text-stone-600">Saved securely to your account as you type.</p>
             ) : (
-              /* Still asking. Saying nothing beats telling somebody who is
-                 signed in that their trip lives in a browser. */
+              /* Still asking. Nothing is kept in the browser either way — the
+                 account is the only place a trip is written. */
               <p className="mt-1.5 text-sm leading-6 text-stone-500">Checking where this trip is being kept…</p>
             )}
           </div>

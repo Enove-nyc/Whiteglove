@@ -140,15 +140,33 @@ describe("the header renders the list rather than its own copy", () => {
     assert.match(NAVBAR, /label=\{signedIn \? "Account" : "Sign in"\}/);
   });
 
-  it("opens dropdowns on hover, click and focus — and click cannot undo focus", () => {
-    assert.match(NAVBAR, /onMouseEnter=\{\(\) => openOnHover/);
-    assert.match(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
-    assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick/);
-    // The pre-interaction state is recorded at pointer-down, before focus
-    // fires — the fix for the menu that flashed open and shut on click.
-    assert.match(NAVBAR, /onPointerDown=\{\(\) => \{ openBeforePress\.current = open; \}\}/);
+  it("a press opens the menu; hover and focus never do", () => {
+    // THE RULE THAT REPLACED "opens on hover, click and focus". Opening on
+    // hover meant the click that followed the hover read the menu as already
+    // open and shut it again, so the buttons looked dead — reported from the
+    // live site as all four dropdowns failing to open. Hover now only slides
+    // between menus once one is open, and nothing opens the first one but a
+    // press.
+    assert.match(NAVBAR, /onMouseEnter=\{\(\) => switchOnHover\(key\)\}/);
+    assert.match(NAVBAR, /setOpenKey\(\(current\) => \(current === null \? null : key\)\)/);
+    assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick\(key\)\}/);
+    // The toggle reads live state, never a value captured during render —
+    // that staleness is what let hover and click disagree.
+    assert.match(NAVBAR, /setOpenKey\(\(current\) => \(current === key \? null : key\)\)/);
+    // Neither opening on focus nor the pointer-down bookkeeping it needed.
+    assert.doesNotMatch(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
+    assert.doesNotMatch(NAVBAR, /openBeforePress/);
     // Focus leaving a category closes its panel.
     assert.match(NAVBAR, /onBlur=/);
+  });
+
+  it("Escape closes and gives the trigger its focus back, and a press outside closes", () => {
+    assert.match(NAVBAR, /event\.key !== "Escape"/);
+    assert.match(NAVBAR, /triggerRefs\.current\[key\]\?\.focus\(\)/);
+    assert.match(NAVBAR, /addEventListener\("mousedown", closeOutside\)/);
+    // A real button, so Enter and Space are clicks and need no separate path.
+    assert.match(NAVBAR, /type="button"/);
+    assert.match(NAVBAR, /aria-expanded=\{open\}/);
   });
 
   it("sign in points at the sign-in page", () => {

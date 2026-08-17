@@ -12,6 +12,15 @@ import type { SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-typ
 import { SITE_HIT_KINDS, SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 
 const SECTION_ORDER: SiteHitSection[] = [...SITE_HIT_SECTIONS];
+
+/** Where somebody goes when the search found nothing. */
+const NO_RESULT_DOORS = [
+  { label: "Destinations", href: "/destinations" },
+  { label: "Where to stay", href: "/hotels" },
+  { label: "Kosher food", href: "/kosher" },
+  { label: "Things to do", href: "/things-to-do" },
+  { label: "Map", href: "/map" },
+];
 const HERITAGE_FIRST: SiteHitSection[] = [
   "Heritage",
   "Vacation",
@@ -85,14 +94,29 @@ export default function SearchResults({
   }
 
   if (results.length === 0) {
+    // A dead end used to be one line and one link. Somebody who has just
+    // mistyped a town, or searched for something this site does not carry,
+    // needs somewhere to go next — so: what the search covers, then the
+    // places most people are looking for when they end up here.
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10">
         <p className="text-lg text-[var(--navy)]">No results for “{query}”.</p>
-        <p className="mt-6 text-sm font-semibold">
-          <Link href="/destinations" className="text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-            Browse vacation destinations
-          </Link>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          Check the spelling, or try a city or country on its own — Rome, Switzerland, Antwerp.
         </p>
+        <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Try instead</p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {NO_RESULT_DOORS.map((door) => (
+            <li key={door.href}>
+              <Link
+                href={door.href}
+                className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-white px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
+              >
+                {door.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     );
   }

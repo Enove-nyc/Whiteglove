@@ -109,7 +109,14 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [view, setView] = useState<ItineraryView>("days");
   const requireSignIn = useRequireSignIn();
 
-  // Load: account first, then localStorage.
+  // Load: the account, and nothing else.
+  //
+  // THERE IS NO BROWSER COPY TO FALL BACK TO. A trip used to be kept in
+  // localStorage as well, which meant a signed-out visitor could build a real
+  // itinerary that existed on one device, in one browser, and was gone the
+  // moment they cleared their history or picked up their phone — and they
+  // were told so in the smallest print on the page. A trip is somebody's
+  // travel plans; the only honest place for it is their account.
   useEffect(() => {
     let active = true;
     (async () => {
@@ -118,23 +125,19 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         if (res.ok) {
           const data = await res.json();
           if (!active) return;
-          // Signed in — the account is the answer, even when the answer is an
-          // empty trip. Falling through to localStorage here would drag the
-          // last trip's stops into a newly started one.
           setItin(data?.itinerary ? { ...emptyItinerary(), ...data.itinerary } : emptyItinerary());
           setLoaded(true);
           return;
         }
       } catch {
-        /* not logged in / offline */
+        /* signed out, or offline */
       }
-      try {
-        const local = localStorage.getItem(LS_KEY);
-        if (active && local) setItin({ ...emptyItinerary(), ...JSON.parse(local) });
-      } catch {
-        /* ignore */
+      // Signed out: an empty planner they can look around. The first thing
+      // they try to change opens the sign-in dialog (see persist).
+      if (active) {
+        setItin(emptyItinerary());
+        setLoaded(true);
       }
-      if (active) setLoaded(true);
     })();
     return () => {
       active = false;
@@ -149,11 +152,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   function persist(next: Itinerary) {
     requireSignIn(() => {
       setItin(next);
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
       void fetch("/api/account/itinerary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

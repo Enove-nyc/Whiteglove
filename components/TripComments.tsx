@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRequireSignIn } from "@/components/SignInGate";
 import {
   MAX_COMMENT,
   type TripComment,
@@ -47,6 +48,7 @@ export default function TripComments({
   const [body, setBody] = useState("");
   const [about, setAbout] = useState("");
   const [busy, setBusy] = useState(false);
+  const requireSignIn = useRequireSignIn();
   const [error, setError] = useState("");
 
   // Fetched once, and the answer written from the promise's own callback
@@ -79,6 +81,15 @@ export default function TripComments({
       setError(problem);
       return;
     }
+    // A comment is signed with a name and kept on somebody's trip, so it needs
+    // an account like every other write on the site. The endpoint has always
+    // refused without one; asking here means the visitor meets the same dialog
+    // as everywhere else instead of a red line under a form they had already
+    // filled in — and the comment they typed is still there afterwards.
+    requireSignIn(() => void post(), "Sign in to comment");
+  }
+
+  async function post() {
     setBusy(true);
     setError("");
     const res = await fetch(`/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}`, {

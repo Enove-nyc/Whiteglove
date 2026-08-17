@@ -15,9 +15,12 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
 /**
  * The header: logo, four dropdown categories, four utility icons.
  *
- * What each dropdown holds is in lib/navigation.ts, not here. Dropdowns open
- * on hover, click, focus and tap — all four, not the one the last redesign
- * had (a single click-toggled panel). Only one is open at a time.
+ * What each dropdown holds is in lib/navigation.ts, not here. A dropdown is
+ * opened by a press — mouse, touch, Enter or Space — never by hovering or
+ * focusing onto it; hovering only slides between menus once one is already
+ * open. Escape closes and returns focus to its trigger, a press outside
+ * closes, and only one is open at a time. See the note above the handlers for
+ * why opening on hover made the buttons look dead.
  */
 
 export default function Navbar() {
@@ -103,29 +106,44 @@ export default function Navbar() {
   }, [openKey]);
 
   /**
-   * THE CLICK BUG, and the fix. Clicking a trigger fires focus first — which
-   * opens the menu — and then the click itself, which used to toggle the
-   * just-opened menu shut again: the panel flashed and vanished. Pointer-down
-   * fires before focus does, so the state recorded there is the state BEFORE
-   * this interaction, and the click decides from that instead of from what
-   * the focus handler changed in between. Keyboard interactions have no
-   * pointer-down; for them onFocus records the pre-open state itself.
+   * THE CLICK BUG, and what actually fixes it.
+   *
+   * The menu opened on hover and toggled on click. Moving a mouse to a
+   * trigger therefore did two things in a row: hover opened the panel, then
+   * the click read "it is open" and shut it again. The panel appeared and
+   * vanished under the pointer, which reads as a dead button — and it raced,
+   * so the first press of a session often worked and the rest did not. An
+   * earlier attempt recorded the pre-press state at pointer-down, but that
+   * only covered the focus path; hover still fired first and still won.
+   *
+   * Two rules kill it outright:
+   *
+   *   1. The click toggles from the LIVE state, via the functional updater —
+   *      never from a value captured while rendering, which is what went
+   *      stale between hover and press.
+   *   2. Hover SWITCHES between menus but never opens the first one. This is
+   *      how a real menubar behaves: once something is open, sliding across
+   *      moves with you; with nothing open, hovering is not a command. So a
+   *      press is always the thing that opens, and a press always decides.
+   *
+   * Focus does not open either, for the same reason: tab to it, then press
+   * Enter or Space. A <button> turns both into a click, so the keyboard needs
+   * no separate path.
    */
-  const openBeforePress = useRef(false);
-
-  function openOnHover(key: string) {
+  function switchOnHover(key: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpenKey(key);
+    // Only when a menu is already open — see rule 2 above.
+    setOpenKey((current) => (current === null ? null : key));
   }
 
-  function openOnFocus(key: string, open: boolean) {
-    openBeforePress.current = open;
-    openOnHover(key);
+  function stayOpen() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
   }
 
   function toggleOnClick(key: string) {
-    setOpenKey(openBeforePress.current ? null : key);
+    setOpenKey((current) => (current === key ? null : key));
   }
+
   function closeOnHoverOut() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setOpenKey(null), 150);
@@ -176,7 +194,7 @@ export default function Navbar() {
                 <div
                   key={key}
                   className="relative"
-                  onMouseEnter={() => openOnHover(key)}
+                  onMouseEnter={() => switchOnHover(key)}
                   onMouseLeave={closeOnHoverOut}
                   onBlur={(event) => {
                     // Focus moved outside this category: close its panel, so a
@@ -192,9 +210,7 @@ export default function Navbar() {
                     aria-expanded={open}
                     aria-haspopup="true"
                     aria-controls={`nav-${key}`}
-                    onPointerDown={() => { openBeforePress.current = open; }}
                     onClick={() => toggleOnClick(key)}
-                    onFocus={() => openOnFocus(key, open)}
                     className={`relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition ${
                       current || open
                         ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
@@ -208,7 +224,7 @@ export default function Navbar() {
                     <div
                       id={`nav-${key}`}
                       role="menu"
-                      onMouseEnter={() => openOnHover(key)}
+                      onMouseEnter={stayOpen}
                       onMouseLeave={closeOnHoverOut}
                       className={`absolute left-0 top-full z-[1] mt-1 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
                         category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"

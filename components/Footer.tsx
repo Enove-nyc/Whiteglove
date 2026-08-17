@@ -4,7 +4,7 @@ import Link from "next/link";
 /**
  * The bottom of every page — kept extremely small at the owner's word.
  *
- * Contact, Advertise, Terms, Privacy, Admin. Nothing else. Every page that
+ * Contact, Advertise, Terms, Privacy. Nothing else. Every page that
  * used to be reachable only through the four-column footer this replaces now
  * has a real home in the header's five dropdowns (lib/navigation.ts) or a
  * direct link from the page it's most relevant to — see the destinations hub
@@ -13,19 +13,17 @@ import Link from "next/link";
  * /command-center for rating a finished trip. None of it depended on being
  * in the footer specifically; the footer was just where it had always lived.
  *
- * ADMIN IS BACK IN THE FOOTER, and that reverses a deliberate earlier
- * decision (tests/contact-reasons.test.ts once asserted the opposite) — the
- * owner named it explicitly as one of exactly five links when this pass was
- * specified, so it is taken as a considered reversal rather than an
- * oversight. It is still one small link among five, not a call to action,
- * and /admin is still gated the same way it always was.
+ * ADMIN IS NOT HERE. It has been in and out twice; it rests out. The owner
+ * reaches the admin at its own subdomain, and a link to it on three hundred
+ * customer pages is furniture for one person put in front of everybody else.
+ * Removing it weakens nothing: /admin was gated before and is gated now, and
+ * robots.txt has always disallowed it. See tests/contact-reasons.test.ts.
  */
 const FOOTER_LINKS = [
   { label: "Contact", href: "/contact" },
   { label: "Advertise", href: "/contact?reason=advertise" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
-  { label: "Admin", href: "/admin" },
 ];
 
 export default function Footer() {
@@ -47,7 +45,10 @@ export default function Footer() {
           />
           <span className="flex flex-col leading-none">
             <span className="font-[family-name:var(--font-display)] text-xl text-[#f7f3eb]">White Glove</span>
-            <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">Kosher Travel</span>
+            {/* --gold-light, not --gold: on the navy sections that is the text
+                accent, and --gold is a border colour that does not clear 4.5:1
+                as words. See the note in globals.css. */}
+            <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)]">Kosher Travel</span>
           </span>
         </div>
 

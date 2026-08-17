@@ -188,6 +188,41 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ---- 4. Explore ---------------------------------------------------
+          The front page had been cut back to a search, six places and three
+          doors, which is a clean opening and a poor map: things to do, where
+          to stay, kosher food, heritage, the map, the directory, who this is
+          and how it checks what it prints were all real parts of the site
+          with no way in from the page everybody lands on. This is a plain
+          list of names — no pictures, no counts, no sales copy — so it adds a
+          way through without adding weight. */}
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Explore</h2>
+        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
+          {(
+            [
+              { label: "Things to do", href: "/things-to-do" },
+              { label: "Where to stay", href: "/hotels" },
+              { label: "Kosher food", href: "/kosher" },
+              { label: "Jewish heritage", href: "/heritage" },
+              { label: "Map", href: "/map" },
+              { label: "Directory", href: "/directory" },
+              { label: "About", href: "/about" },
+              { label: "Verification", href: "/verification" },
+            ] as const
+          ).map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] underline-offset-4 transition hover:decoration-[var(--gold)]"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {inlinePromotions.length ? (
         <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">
           <PromotionBanner promotion={inlinePromotions[0] ?? null} placement="inline-content" compact />

@@ -10,9 +10,9 @@ import {
   type CuratedKosherPlaceNearby,
 } from "@/lib/curated-kosher";
 import HechsherBadge from "@/components/HechsherBadge";
+import { useRequireSignIn } from "@/components/SignInGate";
 import { hechsherOf, useHechsherim } from "@/lib/use-hechsherim";
 
-const LS_KEY = "whiteGloveItinerary";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 function formatKm(km?: number) {
@@ -21,10 +21,21 @@ function formatKm(km?: number) {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km · ${Math.round(mi)} mi`;
 }
 
-function addKosherToTrip(place: CuratedKosherPlace) {
+/**
+ * Add one kosher place to the traveler's trip.
+ *
+ * THE TRIP IS READ FROM THE ACCOUNT, NOT FROM THE BROWSER. This used to open
+ * localStorage, append to whatever it found and write it back, which meant a
+ * signed-out visitor could "add to my trip" all afternoon into a trip that
+ * existed nowhere but that browser. The caller gates on sign-in; this reads
+ * the account's own trip so the stop lands on the real one.
+ */
+async function addKosherToTrip(place: CuratedKosherPlace): Promise<boolean> {
   try {
-    const saved = localStorage.getItem(LS_KEY);
-    const itinerary = saved ? JSON.parse(saved) : { title: "My trip", startDate: "", endDate: "", flights: [], lodging: [], activities: [] };
+    const res = await fetch("/api/account/itinerary", { cache: "no-store" });
+    if (!res.ok) return false;
+    const data = await res.json();
+    const itinerary = data?.itinerary ?? { title: "My trip", startDate: "", endDate: "", flights: [], lodging: [], activities: [] };
     const activity: ItinActivity = {
       id: uid(),
       name: place.name,
@@ -35,13 +46,12 @@ function addKosherToTrip(place: CuratedKosherPlace) {
       bookedOnSite: false,
     };
     itinerary.activities = [...(itinerary.activities ?? []), activity];
-    localStorage.setItem(LS_KEY, JSON.stringify(itinerary));
-    void fetch("/api/account/itinerary", {
+    const saved = await fetch("/api/account/itinerary", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itinerary }),
-    }).catch(() => undefined);
-    return true;
+    });
+    return saved.ok;
   } catch {
     return false;
   }
@@ -66,6 +76,7 @@ export default function KosherNearby({
 }) {
   const point = useMemo(() => coordinatesToPoint(coordinates), [coordinates]);
   const [added, setAdded] = useState<Record<string, boolean>>({});
+  const requireSignIn = useRequireSignIn();
   const places = useMemo<CuratedKosherPlaceNearby[]>(() => {
     if (query?.trim()) return searchCuratedKosherPlaces(query);
     return point ? curatedKosherPlacesNear(point, radiusKm) : [];
@@ -122,9 +133,11 @@ export default function KosherNearby({
                   {showAddToTrip && (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (addKosherToTrip(place)) setAdded((current) => ({ ...current, [place.id]: true }));
-                      }}
+                      onClick={() =>
+                        requireSignIn(async () => {
+                          if (await addKosherToTrip(place)) setAdded((current) => ({ ...current, [place.id]: true }));
+                        }, "Sign in to add to your trip")
+                      }
                       className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
                     >
                       {added[place.id] ? "Added ✓" : "Add to my trip"}
