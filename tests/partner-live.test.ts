@@ -82,7 +82,22 @@ describe("live partner search wiring", () => {
     assert.match(flights, /Compare on Kayak/);
     assert.match(cars, /PartnerSearchWidget/);
     assert.match(cars, /carsEmbedPath/);
-    assert.doesNotMatch(cars, /AddressAutocomplete|DateField|SearchGrid/);
+    // CARS DO HAVE A FORM NOW, AND DID NOT BEFORE. The old rule was that the
+    // partner panel carried its own boxes, so a White Glove form above it
+    // would have been two forms asking the same question. That held while the
+    // panel was the whole answer. It stopped holding when White Glove got car
+    // prices of its own, which need a place and two dates and had nowhere to
+    // read them from: /book opened on Cars with an empty panel and no way to
+    // search anything.
+    //
+    // What survives from the old rule is that there is exactly ONE White Glove
+    // form and it feeds both — our prices and the panel's location — and that
+    // no partner address is written in the browser. carsEmbedPath is our own
+    // /embed path; the partner is resolved on the server, as everywhere else.
+    assert.match(cars, /<SearchGrid/, "the Cars tab must be searchable");
+    assert.equal((cars.match(/<SearchGrid/g) ?? []).length, 1, "one form, not two");
+    assert.match(cars, /carsEmbedPath\(\{ location: loc \}\)/, "the panel must follow the form");
+    assert.doesNotMatch(cars, /localrent\.com|https?:\/\//, "no partner address in the browser");
     assert.doesNotMatch(ui, /wanted\.trip === "multi-city"/);
     assert.doesNotMatch(ui, /Live prices are not available/);
     assert.doesNotMatch(ui, /Live prices could not be loaded/);
