@@ -631,3 +631,22 @@ describe("a sandbox is never mistaken for a market", () => {
     assert.match(source, /name\.endsWith\("_BASE"\)/);
   });
 });
+
+describe("a partial answer is not the whole market", () => {
+  it("WAITS FOR THEIR SEARCH TO FINISH BEFORE BELIEVING THE COUNT", () => {
+    // RouteStack's hotel search reports its own progress. The loop used to
+    // stop at the first response carrying any hotels at all, which was
+    // invisible against their sandbox — that answered Completed on the first
+    // call with hundreds of rooms. Against production the first response is
+    // partial: a Kraków search came back with two hostels in two seconds and
+    // read as a city with two hotels in it.
+    const source = readFileSync("lib/travel/adapters/routestack-hotels.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.match(source, /answer\.status === "Completed"/);
+    // The old exit condition. Its presence anywhere in the loop is the bug.
+    assert.doesNotMatch(source, /if \(\(result\.result \?\? \[\]\)\.length\) break/);
+    // A later partial must never replace an earlier fuller answer.
+    assert.match(source, /\.length >= \(result\.result \?\? \[\]\)\.length\) result = answer/);
+  });
+});

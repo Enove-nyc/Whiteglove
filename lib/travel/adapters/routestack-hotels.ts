@@ -84,8 +84,8 @@ type HotelSearchResult = {
   result?: RouteStackHotel[];
 };
 
-/** How many times to ask again when they answer InProgress. */
-const MAX_POLLS = 3;
+/** How many times to ask again while they are still working. */
+const MAX_POLLS = 5;
 const POLL_PAUSE_MS = 1500;
 
 function coordinatesOf(place: RouteStackDestination): { lat: number; long: number } | null {
@@ -148,6 +148,20 @@ export const routestackHotels: ProviderSearch = {
       })),
     };
 
+    /**
+     * WAIT FOR "COMPLETED", NOT FOR THE FIRST THING THAT ARRIVES.
+     *
+     * This loop used to stop the moment a response carried any hotels at all.
+     * Against their sandbox that was invisible, because the first response
+     * already said Completed with hundreds of rooms in it. Against production
+     * the first response is a partial one — a Kraków search returned two
+     * hostels in two seconds and looked like a city with two hotels in it.
+     * Their status field is the only thing that says whether they have
+     * finished, so it is the only thing that ends this loop.
+     *
+     * The fullest response wins rather than the last, because a later partial
+     * must never replace an earlier fuller one.
+     */
     let body: Record<string, unknown> = base;
     let result: HotelSearchResult = {};
     for (let attempt = 0; attempt <= MAX_POLLS; attempt++) {
@@ -158,16 +172,17 @@ export const routestackHotels: ProviderSearch = {
         signal,
         12000,
       );
-      result = response.result ?? {};
-      if ((result.result ?? []).length) break;
-      if (result.status === "Completed" || !result.correlationId) break;
+      const answer = response.result ?? {};
+      if ((answer.result ?? []).length >= (result.result ?? []).length) result = answer;
+      if (answer.status === "Completed") break;
+      if (!answer.correlationId) break;
       // Same session, their cursor — never a fresh correlationId, which would
       // start a new search and never converge.
       body = {
         ...base,
-        correlationId: result.correlationId,
-        token: result.token,
-        ...(result.nextResultsKey ? { nextResultsKey: result.nextResultsKey } : {}),
+        correlationId: answer.correlationId,
+        token: answer.token,
+        ...(answer.nextResultsKey ? { nextResultsKey: answer.nextResultsKey } : {}),
       };
       await new Promise((resolve) => setTimeout(resolve, POLL_PAUSE_MS));
     }
