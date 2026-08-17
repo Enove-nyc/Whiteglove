@@ -380,3 +380,27 @@ describe("waiting is said out loud", () => {
     }
   });
 });
+
+describe("one heading per page", () => {
+  it("the sign-in page has a single h1", () => {
+    // It had two — the sign-in box's title and the pitch column's headline —
+    // so the page announced two starts of document and offered search engines
+    // two titles. The box's heading is the page's; the pitch is an h2.
+    const login = readFileSync("app/login/page.tsx", "utf8");
+    assert.equal((login.match(/<h1/g) ?? []).length, 1);
+    assert.match(login, /<h1 id="login-title"/);
+  });
+});
+
+describe("nothing on the page asks for a file that is not there", () => {
+  it("does not load Vercel Speed Insights, which 404s off Vercel", () => {
+    // The site is served from Railway; the component requests
+    // /_vercel/speed-insights/script.js, which only exists on Vercel's edge —
+    // a 404 on every page load for every visitor, measuring nothing.
+    const layout = readFileSync("app/layout.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+    assert.doesNotMatch(layout, /SpeedInsights/);
+    assert.doesNotMatch(layout, /speed-insights/);
+  });
+});

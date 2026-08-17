@@ -148,16 +148,31 @@ describe("the header renders the list rather than its own copy", () => {
     // between menus once one is open, and nothing opens the first one but a
     // press.
     assert.match(NAVBAR, /onMouseEnter=\{\(\) => switchOnHover\(key\)\}/);
-    assert.match(NAVBAR, /setOpenKey\(\(current\) => \(current === null \? null : key\)\)/);
     assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick\(key\)\}/);
-    // The toggle reads live state, never a value captured during render —
+    // Hover only moves an already-open menu; it never opens the first one.
+    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // Every decision is made from live state through the functional updater —
     // that staleness is what let hover and click disagree.
-    assert.match(NAVBAR, /setOpenKey\(\(current\) => \(current === key \? null : key\)\)/);
+    assert.match(NAVBAR, /setMenu\(\(current\) =>/);
     // Neither opening on focus nor the pointer-down bookkeeping it needed.
     assert.doesNotMatch(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
     assert.doesNotMatch(NAVBAR, /openBeforePress/);
     // Focus leaving a category closes its panel.
     assert.match(NAVBAR, /onBlur=/);
+  });
+
+  it("clicking a second menu switches to it instead of closing everything", () => {
+    // THE HOVER-SWITCH BUG. With one menu open, moving the pointer onto
+    // another opened it (correct) — and then the click on it read "already
+    // open" and shut it, so pressing a second menu closed the whole bar. A
+    // toggle has to know WHY a menu is open, so `pressed` records only what a
+    // press opened; hover moves `open` and never touches it.
+    assert.match(NAVBAR, /open: string \| null; pressed: string \| null/);
+    assert.match(NAVBAR, /current\.pressed === key \? \{ open: null, pressed: null \} : \{ open: key, pressed: key \}/);
+    // Hover leaves `pressed` alone.
+    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // One piece of state, so the two halves cannot go stale against each other.
+    assert.doesNotMatch(NAVBAR, /setOpenKey\(/);
   });
 
   it("Escape closes and gives the trigger its focus back, and a press outside closes", () => {

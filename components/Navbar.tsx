@@ -26,7 +26,25 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  /**
+   * WHICH MENU IS OPEN, AND WHICH ONE A PRESS OPENED.
+   *
+   * Both together, in one piece of state, because every rule below decides
+   * from the pair and two separate values cannot be updated from each other
+   * without going stale — which is the exact fault this header has had twice.
+   *
+   * `pressed` is why the second fix was needed. Hover-switching reintroduced
+   * the original bug one level down: with Destinations open, moving the
+   * pointer onto Travel opened Travel (correct), and then the click on Travel
+   * saw "Travel is open" and shut it, so clicking a second menu closed the
+   * whole bar instead of switching to it. Hover moves `open` and never
+   * touches `pressed`; only a press writes it. A click on a menu the pointer
+   * merely slid onto therefore opens it for real, and a click on the menu a
+   * press opened closes it — which is what a toggle means.
+   */
+  const [menu, setMenu] = useState<{ open: string | null; pressed: string | null }>({ open: null, pressed: null });
+  const openKey = menu.open;
+  const closeAll = () => setMenu({ open: null, pressed: null });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
@@ -36,7 +54,7 @@ export default function Navbar() {
   const [trackedPathname, setTrackedPathname] = useState(pathname);
   if (trackedPathname !== pathname) {
     setTrackedPathname(pathname);
-    setOpenKey(null);
+    setMenu({ open: null, pressed: null });
     setMobileOpen(false);
     setMobileSection(null);
   }
@@ -87,7 +105,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const closeOutside = (event: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenKey(null);
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setMenu({ open: null, pressed: null });
+      }
     };
     document.addEventListener("mousedown", closeOutside);
     return () => document.removeEventListener("mousedown", closeOutside);
@@ -98,7 +118,7 @@ export default function Navbar() {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       const key = openKey;
-      setOpenKey(null);
+      setMenu({ open: null, pressed: null });
       if (key) triggerRefs.current[key]?.focus();
     };
     document.addEventListener("keydown", onKey);
@@ -129,11 +149,15 @@ export default function Navbar() {
    * Focus does not open either, for the same reason: tab to it, then press
    * Enter or Space. A <button> turns both into a click, so the keyboard needs
    * no separate path.
+   *
+   * The third rule — a press remembers itself, so hover cannot make the next
+   * click read as "close" — is `pressedKey`, declared with the state above.
    */
   function switchOnHover(key: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    // Only when a menu is already open — see rule 2 above.
-    setOpenKey((current) => (current === null ? null : key));
+    // Only when a menu is already open — see rule 2 above. `pressed` is left
+    // alone: sliding the pointer across is not a press.
+    setMenu((current) => (current.open === null ? current : { ...current, open: key }));
   }
 
   function stayOpen() {
@@ -141,12 +165,14 @@ export default function Navbar() {
   }
 
   function toggleOnClick(key: string) {
-    setOpenKey((current) => (current === key ? null : key));
+    setMenu((current) =>
+      current.pressed === key ? { open: null, pressed: null } : { open: key, pressed: key },
+    );
   }
 
   function closeOnHoverOut() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenKey(null), 150);
+    closeTimer.current = setTimeout(closeAll, 150);
   }
 
   async function signOut() {
@@ -199,7 +225,9 @@ export default function Navbar() {
                   onBlur={(event) => {
                     // Focus moved outside this category: close its panel, so a
                     // keyboard user tabbing on never leaves a menu floating.
-                    if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpenKey((k) => (k === key ? null : k));
+                    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                      setMenu((current) => (current.open === key ? { open: null, pressed: null } : current));
+                    }
                   }}
                 >
                   <button
@@ -242,7 +270,7 @@ export default function Navbar() {
                                     role="menuitem"
                                     href={link.href}
                                     aria-current={linkCurrent ? "page" : undefined}
-                                    onClick={() => setOpenKey(null)}
+                                    onClick={closeAll}
                                     className={`flex min-h-11 items-center rounded-md px-2 py-2 text-sm transition ${
                                       linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                                     }`}
@@ -263,7 +291,7 @@ export default function Navbar() {
                             aria-current={linkCurrent ? "page" : undefined}
                             aria-label={link.description}
                             title={link.description}
-                            onClick={() => setOpenKey(null)}
+                            onClick={closeAll}
                             className={`flex min-h-11 items-center px-4 py-2 text-sm transition ${
                               linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                             }`}
