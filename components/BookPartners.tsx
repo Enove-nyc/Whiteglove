@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import AirportAutocomplete from "@/components/AirportAutocomplete";
 import { airportCode, describeSearch, searchProblem, type SearchShape } from "@/lib/kayak-search";
 import { hotelButtonLabel } from "@/lib/stay22";
 import DateField from "@/components/DateField";
@@ -14,9 +13,8 @@ import { useRequireSignIn } from "@/components/SignInGate";
 import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
+import AirportAutocomplete from "@/components/AirportAutocomplete";
 import CarPrices from "@/components/CarPrices";
-import PartnerSearchWidget from "@/components/PartnerSearchWidget";
-import { carsEmbedPath } from "@/lib/partner-widget-paths";
 import type { PartnerLiveCapabilities } from "@/lib/partner-live";
 
 // Unified "Book" experience. The traveler makes two choices, in order:
@@ -136,6 +134,28 @@ export default function BookPartners({
   const [pay, setPay] = useState<Pay>("cash");
   const requireSignIn = useRequireSignIn();
   const [kind, setKind] = useState<Kind>(initialKind);
+
+  /**
+   * THE TAB SURVIVES A RELOAD, WHICH IT DID NOT.
+   *
+   * The tab lived only in this component's state, and the page defaults to
+   * Where to stay. So anybody halfway through a car search who reloaded — or
+   * came back to the tab, or was reloaded by the browser — landed on Where to
+   * stay with everything they had typed gone, and no way to tell what had
+   * happened.
+   *
+   * Written with replaceState rather than a router navigation on purpose: a
+   * navigation would re-render the page and throw away the very form state
+   * this exists to protect. It also costs nothing and gives something back —
+   * the address bar now describes the search, so it can be sent to somebody.
+   */
+  const chooseKind = (next: Kind) => {
+    setKind(next);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("type", next);
+    window.history.replaceState(null, "", url);
+  };
   const [pending, setPending] = useState<PendingBooking | null>(null);
   const [live, setLive] = useState<PartnerLiveCapabilities>({ hotels: false, flights: false, cars: false });
 
@@ -221,9 +241,9 @@ export default function BookPartners({
 
       {/* ---- What are you booking? ---- */}
       <div className="grid grid-cols-3 gap-1.5 border-b border-[var(--gold-light)] bg-white px-5 py-4 sm:px-8">
-        <TabButton active={kind === "hotels"} onClick={() => setKind("hotels")}>Where to stay</TabButton>
-        <TabButton active={kind === "flights"} onClick={() => setKind("flights")}>Flights</TabButton>
-        <TabButton active={kind === "cars"} onClick={() => setKind("cars")}>Cars</TabButton>
+        <TabButton active={kind === "hotels"} onClick={() => chooseKind("hotels")}>Where to stay</TabButton>
+        <TabButton active={kind === "flights"} onClick={() => chooseKind("flights")}>Flights</TabButton>
+        <TabButton active={kind === "cars"} onClick={() => chooseKind("cars")}>Cars</TabButton>
       </div>
 
       <div className="px-5 py-7 sm:px-8 sm:py-9">
@@ -918,7 +938,6 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
   const [error, setError] = useState("");
 
   const loc = place.trim();
-  const widgetSrc = carsEmbedPath({ location: loc });
   const summary = loc ? `Rental car — ${loc}` : "Rental car";
 
   function search() {
@@ -936,6 +955,17 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
     }
     setError("");
     setAsked({ place: loc, pickup, dropoff });
+    // The same reason the tab is in the address bar: a reload halfway through
+    // a car search should come back to the car search, with the city and the
+    // dates still in it. The page already reads these three on the way in.
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("type", "cars");
+      url.searchParams.set("destination", loc);
+      url.searchParams.set("depart", pickup);
+      url.searchParams.set("return", dropoff);
+      window.history.replaceState(null, "", url);
+    }
   }
 
   function addToTrip(confirmation?: string) {
@@ -955,13 +985,13 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
   return (
     <div>
       <SearchGrid className="mb-4 sm:grid-cols-[2fr_1fr_1fr_auto]">
+        {/* THE SITE'S OWN LIST, NOT THE PROVIDER'S. RouteStack can resolve a
+            place name, but their plan allows four hundred calls a month and an
+            autocomplete spends one per keystroke — a single impatient typist
+            would eat a week of the allowance. This list is local, free, and
+            already knows Kraków whichever way it is spelled. */}
         <Field label="Pick-up city or airport">
-          <input
-            value={place}
-            onChange={(e) => setPlace(e.target.value)}
-            placeholder="Kraków"
-            className={bareInput}
-          />
+          <AirportAutocomplete value={place} onChange={setPlace} placeholder="Kraków" className={bareInput} />
         </Field>
         <Field label="Pick-up">
           <input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} />
@@ -981,12 +1011,12 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
       </SearchGrid>
       {error ? <p className="mb-4 text-sm font-semibold text-red-700">{error}</p> : null}
 
-      {/* ABOVE THE PARTNER SEARCH, NOT INSTEAD OF IT. The widget below earns
-          today and answers instantly; these prices take about ten seconds to
-          arrive and may not arrive at all. Somebody who reads down the page
-          has a working car search either way. */}
+      {/* THE PARTNER PANEL IS GONE FROM HERE. It sat under these prices while
+          they were unproven, on the reasoning that a page must not be left
+          with nothing if a provider fails. It carried a thin, fixed set of
+          cars, and White Glove's own list is now both wider and real — so the
+          panel had become a second, worse answer under the first one. */}
       <CarPrices destination={asked?.place ?? ""} startDate={asked?.pickup ?? ""} endDate={asked?.dropoff ?? ""} />
-      <PartnerSearchWidget src={widgetSrc} title="Car search" minHeight={640} />
       <button
         type="button"
         onClick={() => onOpened({ kind: "car", summary, save: (confirmation) => addToTrip(confirmation) })}

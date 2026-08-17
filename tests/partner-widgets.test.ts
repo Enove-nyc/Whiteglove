@@ -186,12 +186,15 @@ describe("how the widgets are loaded", () => {
   it("keeps the marker off the public booking panel", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
     // Flights hand off through /go, which builds the marked address on the
-    // server; cars still embed on our own origin. Neither carries the marker.
+    // server; cars are searched through our own API. Neither carries the marker.
     assert.match(panel, /goHref\(/);
-    assert.match(panel, /\/embed\/cars|carsEmbedPath/);
+    assert.doesNotMatch(panel, /\/embed\/cars|carsEmbedPath/);
     assert.doesNotMatch(panel, /tp\.media|shmarker|TRAVELPAYOUTS_MARKER/);
     assert.match(panel, /\/api\/partners\/flights\/search/);
     assert.doesNotMatch(panel, /\/api\/partners\/cars\/search/);
+    // The car search that DOES exist is the provider layer's, not the old
+    // compare-row endpoint.
+    assert.match(panel, /\/api\/travel\/cars\/search|<CarPrices/);
   });
 
   it("keeps the embed addresses out of the sitemap and robots list", () => {
@@ -201,7 +204,7 @@ describe("how the widgets are loaded", () => {
     assert.equal(isPrivatePath("/embedded-tours"), false);
   });
 
-  it("hands cash flights off to Aviasales/Kayak from one White Glove form; cars keep the partner widget", () => {
+  it("hands cash flights off to Aviasales/Kayak from one White Glove form; cars show our own prices", () => {
     const panel = readFileSync("components/BookPartners.tsx", "utf8");
     const flights = panel.slice(panel.indexOf("function FlightsForm"), panel.indexOf("function HotelsForm"));
     const cars = panel.slice(panel.indexOf("function CarsForm"), panel.indexOf("function BookedPrompt"));
@@ -215,8 +218,13 @@ describe("how the widgets are loaded", () => {
     assert.match(flights, /one-way/);
     assert.match(flights, /multi-city/);
     assert.match(flights, /Nonstop only/);
-    assert.match(cars, /PartnerSearchWidget/);
-    assert.doesNotMatch(cars, /AddressAutocomplete|DateField|Driver age/);
+    // THE CARS TAB NO LONGER EMBEDS A PARTNER. Its Localrent panel carried a
+    // thin, fixed set of cars and sat under White Glove's own live prices,
+    // which are wider and real — a second, worse answer under the first one.
+    // The embed route and its helper still exist; this panel does not use them.
+    assert.doesNotMatch(cars, /PartnerSearchWidget/);
+    assert.match(cars, /<CarPrices/);
+    assert.doesNotMatch(cars, /AddressAutocomplete|Driver age/);
     assert.match(panel, /\/api\/partners\/hotels\/search/);
     assert.doesNotMatch(panel, /@duffel|BookingSearch|FlightReview/);
   });

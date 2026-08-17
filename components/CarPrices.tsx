@@ -26,6 +26,9 @@ type Car = {
   mileage?: string;
   cancellation?: string;
   deposit?: string;
+  image?: string;
+  supplier?: string;
+  supplierLogo?: string;
   bookHref?: string;
 };
 
@@ -93,13 +96,43 @@ export default function CarPrices({
       </h3>
       <ul className="mt-3 divide-y divide-[var(--gold-light)] rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6]">
         {cars.map((car) => (
-          <li key={car.id} className="flex flex-wrap items-start justify-between gap-3 px-5 py-4">
-            <div className="min-w-0">
-              <p className="text-base font-semibold text-[var(--navy)]">{car.headline}</p>
-              {car.detail ? <p className="mt-1 text-sm leading-6 text-stone-600">{car.detail}</p> : null}
-              <p className="mt-1 text-xs leading-5 text-stone-500">
-                {[car.mileage, car.cancellation, car.deposit].filter(Boolean).join(" · ")}
-              </p>
+          <li key={car.id} className="flex flex-wrap items-start justify-between gap-4 px-5 py-4">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              {/* PLAIN img, NOT next/image. These are a provider's own CDN and
+                  the set changes with every search, so there is nothing to
+                  configure a remote pattern against and nothing to optimise
+                  that they have not already sized. A car with no photograph
+                  shows no box at all — see the adapter for why a quarter of
+                  them have none. */}
+              {car.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={car.image}
+                  alt=""
+                  loading="lazy"
+                  className="h-14 w-24 shrink-0 rounded-lg bg-white object-contain"
+                />
+              ) : null}
+              <div className="min-w-0">
+                <p className="text-base font-semibold text-[var(--navy)]">{car.headline}</p>
+                {car.detail ? <p className="mt-1 text-sm leading-6 text-stone-600">{car.detail}</p> : null}
+                <p className="mt-1 text-xs leading-5 text-stone-500">
+                  {[car.mileage, car.cancellation, car.deposit].filter(Boolean).join(" · ")}
+                </p>
+                {car.supplierLogo ? (
+                  // The rental company's own mark. The alt text names them,
+                  // because a traveler is choosing a desk as much as a car.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={car.supplierLogo}
+                    alt={car.supplier ?? ""}
+                    loading="lazy"
+                    className="mt-2 h-5 w-auto max-w-[7rem] object-contain"
+                  />
+                ) : car.supplier ? (
+                  <p className="mt-2 text-xs font-semibold text-stone-600">{car.supplier}</p>
+                ) : null}
+              </div>
             </div>
             <div className="shrink-0 text-right">
               {car.price ? (

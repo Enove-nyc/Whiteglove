@@ -92,15 +92,19 @@ describe("no hand-off goes out unnamed", () => {
     assert.deepEqual(unnamed, [], `a hand-off /go cannot route: ${unnamed.join(" | ")}`);
   });
 
-  it("hotels hand off on-site; both cash flight buttons go through /go; cars keep the partner form", () => {
+  it("hotels hand off on-site; both cash flight buttons go through /go; cars show our own prices", () => {
     // Hotels show Stay22 results on this site, then /go. Flights keep one White
     // Glove form and BOTH of its buttons name their partner to /go, which is
     // the only way two peer buttons can open two different partners without a
-    // partner address being written here. Cars still use the Localrent widget.
+    // partner address being written here.
+    // THE CARS TAB NO LONGER EMBEDS A PARTNER. Its Localrent panel carried a
+    // thin, fixed set of cars and sat under White Glove's own live prices,
+    // which are wider and real — a second, worse answer under the first one.
+    // The embed route and its helper still exist; this panel does not use them.
     assert.match(SOURCE, /product: "hotel"/);
     assert.match(SOURCE, /product: "flight"/);
-    assert.match(SOURCE, /carsEmbedPath/);
-    assert.match(SOURCE, /PartnerSearchWidget/);
+    assert.doesNotMatch(SOURCE, /carsEmbedPath/);
+    assert.doesNotMatch(SOURCE, /PartnerSearchWidget/);
     const flights = SOURCE.slice(SOURCE.indexOf("function FlightsForm"), SOURCE.indexOf("function HotelsForm"));
     const cars = SOURCE.slice(SOURCE.indexOf("function CarsForm"), SOURCE.indexOf("function BookedPrompt"));
     assert.doesNotMatch(flights, /PartnerSearchWidget/);
@@ -110,7 +114,7 @@ describe("no hand-off goes out unnamed", () => {
     assert.match(flights, /flightHandoff\("kayak"\)/);
     assert.match(flights, /Open Aviasales/);
     assert.match(flights, /Compare on Kayak/);
-    assert.match(cars, /PartnerSearchWidget/);
+    assert.match(cars, /<CarPrices/);
   });
 
   it("goes out through /go or a live tracked link, and nothing else", () => {

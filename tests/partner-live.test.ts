@@ -51,9 +51,12 @@ describe("live partner search wiring", () => {
     assert.match(ui, /\/api\/partners\/flights\/search/);
     assert.doesNotMatch(ui, /\/api\/partners\/cars\/search/);
     assert.match(ui, /goHref\(/);
-    assert.match(ui, /carsEmbedPath/);
+    // carsEmbedPath and PartnerSearchWidget were here for the Cars tab's
+    // partner panel, which White Glove's own car prices have replaced. The
+    // helper and the embed route still exist; this screen no longer uses them.
+    assert.doesNotMatch(ui, /carsEmbedPath/);
+    assert.doesNotMatch(ui, /PartnerSearchWidget/);
     assert.match(ui, /View & book/);
-    assert.match(ui, /PartnerSearchWidget/);
     assert.match(ui, /Open Aviasales/);
     assert.match(ui, /Compare on Kayak/);
     assert.doesNotMatch(ui, /Passengers/);
@@ -80,8 +83,14 @@ describe("live partner search wiring", () => {
     assert.match(flights, /\/api\/partners\/flights\/search/);
     assert.match(flights, /Open Aviasales/);
     assert.match(flights, /Compare on Kayak/);
-    assert.match(cars, /PartnerSearchWidget/);
-    assert.match(cars, /carsEmbedPath/);
+    // THE PARTNER PANEL HAS LEFT THE CARS TAB. It sat under White Glove's own
+    // prices while those were unproven, on the reasoning that a page must not
+    // be left with nothing if a provider fails. It carried a thin, fixed set
+    // of cars; the list above it is wider and real, so the panel had become a
+    // second, worse answer under the first one.
+    assert.doesNotMatch(cars, /PartnerSearchWidget/);
+    assert.doesNotMatch(cars, /carsEmbedPath/);
+    assert.match(cars, /<CarPrices/, "then the prices are the whole answer and must be there");
     // CARS DO HAVE A FORM NOW, AND DID NOT BEFORE. The old rule was that the
     // partner panel carried its own boxes, so a White Glove form above it
     // would have been two forms asking the same question. That held while the
@@ -95,8 +104,8 @@ describe("live partner search wiring", () => {
     // no partner address is written in the browser. carsEmbedPath is our own
     // /embed path; the partner is resolved on the server, as everywhere else.
     assert.match(cars, /<SearchGrid/, "the Cars tab must be searchable");
+    assert.match(cars, /<AirportAutocomplete/, "the place must be chosen from a list, not typed blind");
     assert.equal((cars.match(/<SearchGrid/g) ?? []).length, 1, "one form, not two");
-    assert.match(cars, /carsEmbedPath\(\{ location: loc \}\)/, "the panel must follow the form");
     assert.doesNotMatch(cars, /localrent\.com|https?:\/\//, "no partner address in the browser");
     assert.doesNotMatch(ui, /wanted\.trip === "multi-city"/);
     assert.doesNotMatch(ui, /Live prices are not available/);

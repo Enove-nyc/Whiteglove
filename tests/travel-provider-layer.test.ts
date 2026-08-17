@@ -848,11 +848,15 @@ describe("the checkout hand-off leaves nothing on White Glove", () => {
 describe("prices that take ten seconds do not hold up a page", () => {
   const source = readFileSync("components/CarPrices.tsx", "utf8");
 
-  it("loads after the page and leaves the partner search working meanwhile", () => {
+  it("loads after the page rather than holding it", () => {
+    // It once loaded above a partner panel that answered instantly, so a slow
+    // provider cost nothing. The panel has gone — its inventory was thin and
+    // these prices are wider and real — which makes loading after the page the
+    // only thing keeping ten seconds off the page paint.
     assert.match(source, /useEffect/);
-    // Rendered above the widget, and the widget is not conditional on it.
     const book = readFileSync("components/BookPartners.tsx", "utf8");
-    assert.match(book, /<CarPrices[\s\S]{0,200}<PartnerSearchWidget/);
+    assert.match(book, /<CarPrices destination=/);
+    assert.doesNotMatch(book, /PartnerSearchWidget/);
   });
 
   it("abandons a search the traveler has moved on from", () => {
@@ -909,5 +913,141 @@ describe("the Cars tab can be searched", () => {
     assert.match(cars, /Enter a pick-up city or airport/);
     assert.match(cars, /Choose pick-up and drop-off dates/);
     assert.match(cars, /Drop-off must be on or after pick-up/);
+  });
+});
+
+describe("a reload does not throw away a search", () => {
+  const source = readFileSync("components/BookPartners.tsx", "utf8");
+
+  it("KEEPS THE CHOSEN TAB, WHICH USED TO SNAP BACK TO WHERE TO STAY", () => {
+    // The tab lived only in component state and the page defaults to Where to
+    // stay, so anybody halfway through a car search who reloaded landed
+    // somewhere else with everything they had typed gone.
+    assert.match(source, /const chooseKind = \(next: Kind\) => \{/);
+    assert.match(source, /url\.searchParams\.set\("type", next\)/);
+    // Every tab must go through it, or the one that does not is the one that
+    // loses the search.
+    assert.equal((source.match(/onClick=\{\(\) => chooseKind\(/g) ?? []).length, 3);
+    assert.doesNotMatch(source, /onClick=\{\(\) => setKind\(/);
+  });
+
+  it("writes the address bar without navigating, or it would undo itself", () => {
+    // A router navigation re-renders the page and throws away the form state
+    // this exists to protect.
+    assert.match(source, /window\.history\.replaceState/);
+    assert.doesNotMatch(source, /router\.(push|replace)\(/);
+  });
+
+  it("brings the car search back with its city and dates", () => {
+    const cars = source.slice(source.indexOf("function CarsForm"));
+    for (const param of ["destination", "depart", "return"]) {
+      assert.match(cars, new RegExp(`searchParams\\.set\\("${param}"`), param);
+    }
+  });
+});
+
+describe("a provider with a monthly allowance is counted and stopped", () => {
+  it("KNOWS ROUTESTACK'S FOUR HUNDRED AND LEAVES UNMETERED PROVIDERS ALONE", async () => {
+    // Four hundred a month, a car search costs two, a hotel search up to six.
+    // Inventing a ceiling for the affiliate integrations would turn a working
+    // page off for no reason.
+    const { monthlyLimit } = await import("@/lib/travel/provider-budget");
+    assert.equal(monthlyLimit("routestack"), 400);
+    assert.equal(monthlyLimit("stay22"), null);
+    assert.equal(monthlyLimit("travelpayouts"), null);
+    assert.equal(monthlyLimit("duffel"), null);
+  });
+
+  it("takes the number from the environment, because the plan is not ours to hardcode", async () => {
+    const { monthlyLimit } = await import("@/lib/travel/provider-budget");
+    const before = process.env.ROUTESTACK_MONTHLY_CALL_LIMIT;
+    process.env.ROUTESTACK_MONTHLY_CALL_LIMIT = "2500";
+    try {
+      assert.equal(monthlyLimit("routestack"), 2500);
+      process.env.ROUTESTACK_MONTHLY_CALL_LIMIT = "nonsense";
+      assert.equal(monthlyLimit("routestack"), 400, "a bad value must not remove the ceiling");
+    } finally {
+      if (before === undefined) delete process.env.ROUTESTACK_MONTHLY_CALL_LIMIT;
+      else process.env.ROUTESTACK_MONTHLY_CALL_LIMIT = before;
+    }
+  });
+
+  it("counts by calendar month in UTC, so a month cannot be spent twice", async () => {
+    const { monthKey } = await import("@/lib/travel/provider-budget");
+    assert.equal(monthKey(new Date("2026-08-17T23:30:00Z")), "2026-08");
+    assert.equal(monthKey(new Date("2026-09-01T00:00:00Z")), "2026-09");
+    assert.equal(monthKey(new Date("2026-01-05T00:00:00Z")), "2026-01");
+  });
+
+  it("counts at the one place every call goes through", () => {
+    // A counter kept beside each adapter would miss the next adapter somebody
+    // writes.
+    const auth = readFileSync("lib/travel/adapters/routestack-auth.ts", "utf8");
+    assert.match(auth, /spendProviderCall\("routestack"\)/);
+    assert.equal((auth.match(/spendProviderCall\(/g) ?? []).length, 2, "the search call and the token mint");
+    // Never awaited: a counter must not add a round trip to a search.
+    assert.match(auth, /void spendProviderCall/);
+  });
+
+  it("stops asking a provider that has spent its month, for the admin too", () => {
+    const engine = readFileSync("lib/travel/engine.ts", "utf8");
+    assert.match(engine, /providerHasBudget/);
+    // No audience check around the budget filter — testing spends the same
+    // allowance a traveler does, and exempting the admin would make the number
+    // on the screen a lie.
+    const budgetLine = engine.slice(engine.indexOf("providerHasBudget"));
+    assert.doesNotMatch(budgetLine.slice(0, 400), /audience === "admin"/);
+  });
+
+  it("keeps calling when it cannot tell, rather than silently disabling a good provider", async () => {
+    // If the counter is unreachable the provider itself refuses, visibly, and
+    // the page falls back. Refusing to call a provider that is probably fine
+    // because a cache is down is the worse of the two.
+    const source = readFileSync("lib/travel/provider-budget.ts", "utf8");
+    assert.match(source, /if \(used === null\) return true/);
+  });
+});
+
+describe("a car is shown as a car", () => {
+  const component = readFileSync("components/CarPrices.tsx", "utf8");
+  const adapter = readFileSync("lib/travel/adapters/routestack-cars.ts", "utf8");
+
+  it("carries the provider's photograph and the rental company's mark", () => {
+    assert.match(adapter, /image: car\.heroImage/);
+    assert.match(adapter, /supplierLogo: car\.partner\?\.logo/);
+    assert.match(component, /src=\{car\.image\}/);
+    assert.match(component, /src=\{car\.supplierLogo\}/);
+  });
+
+  it("REFUSES THEIR 'NO PHOTOGRAPH' PLACEHOLDER, WHICH IS NOT A PHOTOGRAPH", () => {
+    // About a quarter of cars point at no_car.jpg. A row showing that beside
+    // rows showing real cars reads as a broken listing rather than an
+    // unphotographed one, so it shows nothing instead.
+    assert.match(adapter, /no_car/);
+    assert.match(component, /car\.image \?/, "a car with no photograph must render no box");
+  });
+
+  it("names the rental company in the logo's alt text", () => {
+    // Somebody choosing a car is choosing a desk as much as a vehicle, and a
+    // logo with an empty alt tells a screen reader nothing at all.
+    assert.match(component, /alt=\{car\.supplier \?\? ""\}/);
+    // The car photograph is decoration beside a name that is already there.
+    assert.match(component, /src=\{car\.image\}[\s\S]{0,80}alt=""/);
+  });
+
+  it("falls back to the company's name when there is no mark", () => {
+    assert.match(component, /\) : car\.supplier \?/);
+  });
+});
+
+describe("the place is chosen, not guessed at", () => {
+  it("USES THE SITE'S OWN LIST RATHER THAN SPENDING THE PROVIDER'S ALLOWANCE", () => {
+    // RouteStack can resolve a place name, and their plan allows four hundred
+    // calls a month. An autocomplete calling them spends one per keystroke —
+    // a single impatient typist would eat a week of the allowance.
+    const source = readFileSync("components/BookPartners.tsx", "utf8");
+    const cars = source.slice(source.indexOf("function CarsForm"));
+    assert.match(cars, /<AirportAutocomplete value=\{place\}/);
+    assert.doesNotMatch(cars, /\/mcp\/car\/locations/);
   });
 });

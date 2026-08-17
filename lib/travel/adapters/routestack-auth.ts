@@ -44,6 +44,7 @@
  */
 
 import { createHmac, randomUUID } from "node:crypto";
+import { spendProviderCall } from "@/lib/travel/provider-budget";
 import { providerFetch } from "@/lib/travel/search";
 
 export type RouteStackConfig = { apiKey: string; secret: string; base: string };
@@ -74,6 +75,9 @@ export async function routestackToken(config: RouteStackConfig, signal: AbortSig
 
   const timestamp = Math.floor(now / 1000);
   const nonce = randomUUID();
+  // Minting counts too. It is one call a day in practice, since the token is
+  // held, but counting it keeps the number on the admin screen honest.
+  void spendProviderCall("routestack");
   const response = await providerFetch(`${config.base}/mcp/auth/partner-token`, {
     signal,
     method: "POST",
@@ -117,6 +121,11 @@ export async function routestackPost<T>(
   timeoutMs = 12000,
 ): Promise<T> {
   const token = await routestackToken(config, signal);
+  // COUNTED HERE BECAUSE EVERY CALL COMES THROUGH HERE. Four hundred a month
+  // is the plan, a car search is two of them, and a counter kept beside each
+  // adapter would miss the next adapter somebody writes. Not awaited: a
+  // counter must never add a round trip to a search or fail one.
+  void spendProviderCall("routestack");
   const response = await providerFetch(`${config.base}${path}`, {
     signal,
     method: "POST",

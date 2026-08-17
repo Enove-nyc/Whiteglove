@@ -7,6 +7,7 @@ import { routestackConfig } from "@/lib/travel/adapters/routestack-auth";
 import { travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
 import { KNOWN_PAIRS, STAGE_LABELS, stageOf, type ProviderStage } from "@/lib/travel/registry";
 import { weWouldBeTheSeller } from "@/lib/travel/engine";
+import { callsThisMonth, monthlyLimit } from "@/lib/travel/provider-budget";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { healthRows, readTravelHealth } from "@/lib/travel/telemetry";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
@@ -100,6 +101,16 @@ export default async function AdminTravelProvidersPage() {
   const rows = healthRows(health);
   const healthFor = (provider: ProviderId, category: TravelCategory) =>
     rows.find((row) => row.provider === provider && row.category === category);
+  // What is left of each metered provider's month. Read once for the table
+  // rather than per row, since every row of a provider shares one allowance.
+  const meteredProviders = [...new Set(KNOWN_PAIRS.map((pair) => pair.provider))].filter(
+    (provider) => monthlyLimit(provider) !== null,
+  );
+  const usage = new Map(
+    await Promise.all(
+      meteredProviders.map(async (provider) => [provider, await callsThisMonth(provider)] as const),
+    ),
+  );
 
   return (
     <>
@@ -144,6 +155,24 @@ export default async function AdminTravelProvidersPage() {
                       ) : (
                         <span className={`${chip} border-stone-300 bg-stone-50 text-stone-600`}>Not set</span>
                       )}
+                      {(() => {
+                        const limit = monthlyLimit(provider);
+                        const used = usage.get(provider);
+                        if (limit === null) return null;
+                        const spent = used ?? 0;
+                        const gone = spent >= limit;
+                        return (
+                          <p
+                            className={`mt-1.5 text-[11px] font-semibold leading-4 ${
+                              gone ? "text-red-700" : spent > limit * 0.8 ? "text-amber-800" : "text-stone-600"
+                            }`}
+                          >
+                            {gone
+                              ? `${spent} of ${limit} calls used this month — not being asked`
+                              : `${spent} of ${limit} calls used this month`}
+                          </p>
+                        );
+                      })()}
                       {(() => {
                         const mode = keyMode(provider);
                         return mode ? (
@@ -241,7 +270,9 @@ export default async function AdminTravelProvidersPage() {
           the real one. Keys live in the environment and are set on Settings → Connections. A provider marked
           &ldquo;White Glove would be the seller&rdquo; cannot be shown to visitors at all: with that kind of company
           the booking, the refund and the chargeback are ours, and the site hands travelers to somebody else&rsquo;s
-          checkout instead.
+          checkout instead. Where a plan has a monthly call allowance, the count below the key is every call this
+          site made — testing here spends the same allowance a traveler does — and a provider that has spent its
+          month stops being asked until the month turns.
         </p>
       </section>
 

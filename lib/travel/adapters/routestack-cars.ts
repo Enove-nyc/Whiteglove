@@ -56,7 +56,8 @@ type RouteStackCar = {
   manual_transmission?: boolean;
   creditCardRequired?: boolean;
   inclusions?: string[];
-  partner?: { code?: string; name?: string };
+  partner?: { code?: string; name?: string; logo?: string };
+  heroImage?: string;
   pickup?: { location?: string; location_code?: string; airport_name?: string };
   display_price?: number;
   price_postpaid?: RouteStackRate | null;
@@ -188,6 +189,13 @@ export const routestackCars: ProviderSearch = {
           refundable,
           cancellation: rate?.free_cancellation === true ? "Free cancellation" : undefined,
           carClass: car.type_name ?? car.description,
+          // THEIR PLACEHOLDER IS NOT A PHOTOGRAPH. About a quarter of cars come
+          // back pointing at no_car.jpg, and a row showing "no image available"
+          // where the others show a car reads as a broken listing rather than
+          // an unphotographed one. Nothing is better.
+          image: car.heroImage && !/\/no_car\./.test(car.heroImage) ? car.heroImage : undefined,
+          supplier: car.partner?.name,
+          supplierLogo: car.partner?.logo,
           // Their `mileage: false` means limited, not "no mileage". Said in
           // words here so nothing downstream has to remember that.
           mileage: car.mileage === true ? "Unlimited" : car.mileage === false ? "Limited" : undefined,

@@ -82,6 +82,11 @@ export type OfferMeta = {
   carClass?: string;
   mileage?: string;
   deposit?: string;
+  /** The car, pictured by the provider. Absent when they have no photograph. */
+  image?: string;
+  /** Who is actually at the desk — Sixt, Green Motion — and their mark. */
+  supplier?: string;
+  supplierLogo?: string;
 
   /** What we earn, when the provider tells us. Never shown publicly. */
   commission?: { model: "share" | "cpa" | "none"; note?: string };

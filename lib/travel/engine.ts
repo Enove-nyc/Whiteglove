@@ -10,6 +10,7 @@
  * admin screen until the owner has watched it work and says otherwise.
  */
 
+import { providerHasBudget } from "@/lib/travel/provider-budget";
 import { providerIsAllowed } from "@/lib/travel/registry";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { searchProviders, type SearchOptions } from "@/lib/travel/search";
@@ -70,7 +71,7 @@ export async function searchTravel(
   options: SearchOptions = {},
 ): Promise<SearchOutcome> {
   const stages = await readProviderStages();
-  const allowed = ADAPTERS[category].filter((provider) => {
+  const permitted = ADAPTERS[category].filter((provider) => {
     if (!providerIsAllowed(stages, provider.id, category, audience)) return false;
     // THE RULE THAT NO SETTING CAN OVERRIDE. Even set to "public" by hand, in
     // the store, a provider that would make us the seller does not answer a
@@ -78,6 +79,14 @@ export async function searchTravel(
     // decides what it is allowed to be trusted with.
     return audience === "admin" || provider.fulfilment !== "api-booking";
   });
+
+  // A provider that has spent its month is not asked, by anybody. Checked in
+  // parallel so a second metered provider does not cost a second round trip,
+  // and the page that loses one shows what it showed before that provider
+  // existed rather than an error.
+  const budgets = await Promise.all(permitted.map((provider) => providerHasBudget(provider.id)));
+  const allowed = permitted.filter((_, index) => budgets[index]);
+
   return searchProviders(category, allowed, query, options);
 }
 
