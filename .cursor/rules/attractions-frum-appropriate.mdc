@@ -11,7 +11,7 @@ Vacation listings do **not** have to be Jewish places or kosher venues. A Jewish
 
 They **must** be places those travelers would go. Do **not** list mixed concerts, clubs, nightlife, bars, casinos, mixed swimming sold on that draw, or similar venues. Prefer rejecting the venue over publishing it with a warning.
 
-**Customer-facing wording** lives in `data/listing-audience.ts` and is shown in the site footer, About, Things to do, and Where to stay. Reuse that copy; do not invent a second public standard. Public pages say Orthodox / Torah-observant — not internal “frum” jargon.
+**Customer-facing wording** lives in `data/listing-audience.ts` and is shown in the site footer, About, and Where to stay. It was removed from Things to do at the owner's word; do not put it back there. Reuse that copy; do not invent a second public standard. Public pages say Orthodox / Torah-observant — not internal “frum” jargon.
 
 Keep scopes separate:
 

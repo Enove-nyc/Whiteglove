@@ -1,7 +1,6 @@
 import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
-import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
@@ -42,7 +41,6 @@ export default async function AttractionsPage() {
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               How far it is from the kosher food, and what it does on Shabbos.
             </p>
-            <ListingAudienceNote />
           </div>
         </div>
       </section>
