@@ -135,6 +135,14 @@ export type ProviderAttempt = {
   error?: ErrorCategory;
   /** True when this provider ran out of time rather than failing. */
   timedOut?: boolean;
+  /**
+   * What the provider actually said, for the admin comparison screen.
+   *
+   * NEVER STORED. lib/travel/telemetry.ts builds its rows from named fields
+   * and this is not among them, because a provider's error text can quote the
+   * search back at us — and a search is somebody's travel plans.
+   */
+  detail?: string;
 };
 
 /**

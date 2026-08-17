@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
       count: attempt.count,
       error: attempt.error,
       timedOut: attempt.timedOut,
+      // Admin only — this route is 404 to everyone else.
+      detail: attempt.detail,
     })),
     offers: outcome.offers.map((offer) => ({
       id: offer.id,

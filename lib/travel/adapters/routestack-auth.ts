@@ -2,9 +2,20 @@
  * Getting a token out of RouteStack.
  *
  * NOT A STATIC KEY. Their credentials are a public apiKey and a private
- * secret, and a request is authorised by signing `apiKey:timestamp:nonce` with
- * the secret, posting that to /mcp/auth/partner-token, and using the JWT that
- * comes back as an ordinary bearer token for twenty-four hours.
+ * secret, traded at /mcp/auth/partner-token for a JWT that serves as an
+ * ordinary bearer token for twenty-four hours.
+ *
+ * THEIR LIVE SERVER AND THEIR PUBLISHED SPEC DISAGREE, AND THE SERVER WINS.
+ * The OpenAPI document describes a signed request — apiKey, timestamp, nonce
+ * and an HMAC of `apiKey:timestamp:nonce` — with the secret never leaving our
+ * side. The sandbox answers that request with "Partner credentials (apiKey and
+ * apiSecret) are required", and it says so ONLY for a key it recognises: an
+ * unknown key gets "partner account is not found" instead. So the account is
+ * real and the server wants the secret in the body.
+ *
+ * Both are therefore sent: the signature the spec documents, and the secret
+ * the server asks for. If they later enforce the documented scheme, this keeps
+ * working unchanged.
  *
  * The signature never leaves this file and the secret never leaves the server.
  * The timestamp and nonce are what stop a captured request being replayed, so
@@ -52,6 +63,10 @@ export async function routestackToken(config: RouteStackConfig, signal: AbortSig
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       apiKey: config.apiKey,
+      // What their live server asks for by name. Sent over TLS to them alone,
+      // and never logged — see the error handling in lib/travel/search.ts,
+      // which keeps a category rather than a message.
+      apiSecret: config.secret,
       timestamp,
       nonce,
       hmac: signPartnerRequest(config, timestamp, nonce),

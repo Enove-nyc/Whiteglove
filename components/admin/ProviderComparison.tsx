@@ -16,7 +16,7 @@ import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory 
  * column and leaves the judgement to a person.
  */
 
-type Attempt = { provider: ProviderId; ok: boolean; ms: number; count: number; error?: string; timedOut?: boolean };
+type Attempt = { provider: ProviderId; ok: boolean; ms: number; count: number; error?: string; timedOut?: boolean; detail?: string };
 type Offer = {
   id: string;
   headline: string;
@@ -124,9 +124,14 @@ export default function ProviderComparison() {
                         {lowest ? <> · lowest {lowest.currency} {lowest.amount}</> : null}
                       </p>
                     ) : (
-                      <p className="mt-1 text-sm font-semibold text-red-700">
-                        {attempt.error === "not-configured" ? "No key set" : attempt.timedOut ? "Timed out" : attempt.error}
-                      </p>
+                      <>
+                        <p className="mt-1 text-sm font-semibold text-red-700">
+                          {attempt.error === "not-configured" ? "No key set" : attempt.timedOut ? "Timed out" : attempt.error}
+                        </p>
+                        {attempt.detail ? (
+                          <p className="mt-1 break-words text-xs leading-5 text-stone-500">{attempt.detail}</p>
+                        ) : null}
+                      </>
                     )}
                     <ul className="mt-3 space-y-1.5">
                       {offers.slice(0, 5).map((offer) => (

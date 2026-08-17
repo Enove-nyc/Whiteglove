@@ -255,3 +255,22 @@ describe("RouteStack is reached the way RouteStack asks", () => {
     assert.doesNotMatch(source, /get-payment-url/, "taking the checkout link is a later decision, not this adapter's job");
   });
 });
+
+describe("a provider's own words help the admin and never reach the store", () => {
+  it("the stored health row carries no provider message", () => {
+    const withDetail = {
+      provider: "routestack" as const,
+      category: "car" as const,
+      ok: false,
+      ms: 400,
+      count: 0,
+      error: "auth" as const,
+      detail: "Partner account is not found. Traveler searched Kraków 2026-09-07",
+    };
+    const folded = foldAttempt(undefined, withDetail, "2026-08-17T10:00:00Z");
+    const serialised = JSON.stringify(folded);
+    assert.doesNotMatch(serialised, /Kraków/, "a search must not reach the health record");
+    assert.doesNotMatch(serialised, /Partner account/);
+    assert.deepEqual(Object.keys(folded.recentErrors[0]).sort(), ["at", "error"]);
+  });
+});

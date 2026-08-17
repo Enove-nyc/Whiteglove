@@ -73,6 +73,14 @@ export async function searchProviders(
             count: 0,
             error: kind,
             timedOut: kind === "timeout",
+            // Admin-screen only. foldAttempt builds the stored row from named
+            // fields, so this cannot reach the health record.
+            detail:
+              error && typeof error === "object" && "detail" in error
+                ? String((error as { detail?: string }).detail ?? "").slice(0, 300) || undefined
+                : error instanceof Error
+                  ? error.message.slice(0, 300)
+                  : undefined,
           });
         }
       }),
@@ -109,10 +117,17 @@ export async function providerFetch(
   const signal = AbortSignal.any([init.signal, own]);
   const response = await fetch(url, { ...init, signal, cache: "no-store" });
   if (!response.ok) {
-    // Carries the status so categoriseError can tell auth from rate limit from
-    // outage, without keeping whatever the provider wrote in its body.
-    const error = new Error(`provider responded ${response.status}`) as Error & { status: number };
+    // The status is what categoriseError needs — auth, rate limit, outage.
+    // The body excerpt is for a person staring at the admin screen wondering
+    // WHY a provider is refusing us: "partner account not found" and "invalid
+    // signature" are two different afternoons. It is passed to the admin
+    // comparison screen and never written to the health record.
+    const error = new Error(`provider responded ${response.status}`) as Error & {
+      status: number;
+      detail?: string;
+    };
     error.status = response.status;
+    error.detail = (await response.text().catch(() => ""))?.slice(0, 300) || undefined;
     throw error;
   }
   return response;
