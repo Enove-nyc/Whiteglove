@@ -205,3 +205,53 @@ describe("what the admin will read", () => {
     assert.deepEqual(Object.keys(folded.recentErrors[0]).sort(), ["at", "error"]);
   });
 });
+
+describe("RouteStack is reached the way RouteStack asks", () => {
+  it("signs apiKey:timestamp:nonce with the secret", async () => {
+    const { signPartnerRequest } = await import("@/lib/travel/adapters/routestack-auth");
+    const { createHmac } = await import("node:crypto");
+    const config = { apiKey: "pub-key", secret: "the-secret", base: "https://example.test" };
+    const expected = createHmac("sha256", "the-secret").update("pub-key:1700000000:abc").digest("hex");
+    assert.equal(signPartnerRequest(config, 1700000000, "abc"), expected);
+  });
+
+  it("a different nonce or timestamp gives a different signature", async () => {
+    const { signPartnerRequest } = await import("@/lib/travel/adapters/routestack-auth");
+    const config = { apiKey: "k", secret: "s", base: "https://example.test" };
+    const base = signPartnerRequest(config, 1700000000, "abc");
+    assert.notEqual(signPartnerRequest(config, 1700000001, "abc"), base, "the timestamp must matter");
+    assert.notEqual(signPartnerRequest(config, 1700000000, "abd"), base, "the nonce must matter");
+  });
+
+  it("needs both halves of the credential, never one", async () => {
+    const { routestackConfig } = await import("@/lib/travel/adapters/routestack-auth");
+    const before = { key: process.env.ROUTESTACK_API_KEY, secret: process.env.ROUTESTACK_API_SECRET };
+    try {
+      process.env.ROUTESTACK_API_KEY = "only-the-key";
+      delete process.env.ROUTESTACK_API_SECRET;
+      assert.equal(routestackConfig(), null, "a key without its secret cannot sign anything");
+      process.env.ROUTESTACK_API_SECRET = "and-the-secret";
+      assert.ok(routestackConfig(), "both together are a usable credential");
+    } finally {
+      if (before.key === undefined) delete process.env.ROUTESTACK_API_KEY;
+      else process.env.ROUTESTACK_API_KEY = before.key;
+      if (before.secret === undefined) delete process.env.ROUTESTACK_API_SECRET;
+      else process.env.ROUTESTACK_API_SECRET = before.secret;
+    }
+  });
+
+  it("is a hand-off, not a booking — no create-booking anywhere in the adapter", async () => {
+    const { readFileSync } = await import("node:fs");
+    const raw = readFileSync("lib/travel/adapters/routestack-cars.ts", "utf8");
+    // Comments stripped: the file explains RouteStack's payment model at
+    // length, and the rule is about what the code does, not what it says.
+    const source = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    // They are merchant of record and own the checkout (/mcp/car/get-payment-url).
+    assert.match(source, /fulfilment: "deep-link"/);
+    // No booking call, and nothing that could carry a card. "creditCardRequired"
+    // is theirs — a fact about the rental desk, not a payment path of ours.
+    assert.doesNotMatch(source, /createBooking|createCarBooking/);
+    assert.doesNotMatch(source, /payment_method|cardNumber|cvv|card_holder/i);
+    assert.doesNotMatch(source, /get-payment-url/, "taking the checkout link is a later decision, not this adapter's job");
+  });
+});

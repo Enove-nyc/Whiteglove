@@ -45,6 +45,7 @@ export default function ConnectionSettings() {
     STAY22_AID: process.env.STAY22_AID,
     STAY22_API_KEY: process.env.STAY22_API_KEY,
     ROUTESTACK_API_KEY: process.env.ROUTESTACK_API_KEY,
+    ROUTESTACK_API_SECRET: process.env.ROUTESTACK_API_SECRET,
     ROUTESTACK_API_BASE: process.env.ROUTESTACK_API_BASE,
     SITE_ACCESS_PASSWORD: process.env.SITE_ACCESS_PASSWORD,
     SITE_PREVIEW_PASSWORD: process.env.SITE_PREVIEW_PASSWORD,

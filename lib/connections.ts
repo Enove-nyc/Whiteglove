@@ -193,12 +193,12 @@ export const CONNECTIONS: Connection[] = [
     where: "Travelpayouts dashboard → API token. Separate from the marker.",
   },
   {
-    vars: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_BASE"],
+    vars: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_SECRET", "ROUTESTACK_API_BASE"],
     what: "RouteStack rental cars — the one category the site has no inventory for. Off until it is switched on under Settings → Travel providers, and admin-only until you set it live.",
     without:
       "Nothing changes: cars keep working exactly as they do now, through the tracked compare link. This is an addition, not a replacement.",
     weight: "nicety",
-    where: "routestack.ai — start with their sandbox key. ROUTESTACK_API_BASE only needs setting to point at the sandbox host; leave it blank for production.",
+    where: "routestack.ai → sandbox credentials. Three values: the API key, the API secret (they are signed together — neither works alone) and the endpoint, which is the sandbox host for testing.",
   },
   {
     vars: ["STAY22_API_KEY"],
