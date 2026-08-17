@@ -1,5 +1,7 @@
 "use server";
 
+import { currentAdmin } from "@/lib/admin-current";
+import { mayUse } from "@/lib/admin-permissions";
 import { KNOWN_PAIRS, type ProviderStage } from "@/lib/travel/registry";
 import { readProviderStages, writeProviderStages } from "@/lib/travel/registry-store";
 import type { ProviderId, TravelCategory } from "@/lib/travel/types";
@@ -14,6 +16,9 @@ const STAGES: ProviderStage[] = ["off", "testing", "public"];
  * a company is shown to.
  */
 export async function setProviderStage(formData: FormData): Promise<void> {
+  const { identity, areas } = await currentAdmin();
+  if (!identity || !mayUse(areas, "money")) return;
+
   const provider = String(formData.get("provider") ?? "") as ProviderId;
   const category = String(formData.get("category") ?? "") as TravelCategory;
   const stage = String(formData.get("stage") ?? "") as ProviderStage;

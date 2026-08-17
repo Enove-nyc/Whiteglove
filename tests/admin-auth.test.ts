@@ -126,6 +126,22 @@ describe("admin authorisation", () => {
   }
 });
 
+describe("travel-provider changes", () => {
+  const source = readFileSync(path.join(process.cwd(), "app/admin/travel/actions.ts"), "utf8");
+
+  it("requires an administrator with money access before reading or changing provider stages", () => {
+    const identity = source.indexOf("currentAdmin()");
+    const permission = source.indexOf('mayUse(areas, "money")');
+    const read = source.indexOf("readProviderStages()");
+    const write = source.indexOf("writeProviderStages(");
+
+    assert.ok(identity >= 0, "the action does not identify the administrator");
+    assert.ok(permission > identity, "the action does not require money access");
+    assert.ok(read > permission, "the action reads provider stages before authorisation");
+    assert.ok(write > permission, "the action changes provider stages before authorisation");
+  });
+});
+
 describe("every mutating admin route refuses a cross-site request", () => {
   const files = routeFiles(ADMIN_API);
 
