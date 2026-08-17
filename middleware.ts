@@ -128,6 +128,7 @@ const ADMIN_SCREENS = new Set([
   "recycle",
   "reports",
   "settings",
+  "travel",
   "shomrim",
   "team",
 ]);

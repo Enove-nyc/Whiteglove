@@ -83,7 +83,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "Words", blurb: "Headline, contact line and footer." },
@@ -103,6 +103,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         blurb: "The Amazon shelf.",
       },
       { href: "/admin/settings/travel-essentials", label: "Travel essentials", blurb: "Transfers, data and insurance." },
+      { href: "/admin/travel", label: "Travel providers", blurb: "Who supplies flights, hotels and cars." },
       {
         href: "/admin/settings/earnings",
         label: "Earnings",
