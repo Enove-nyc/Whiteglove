@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { comparable, lowestComparable } from "@/lib/travel/compare";
+import { cheapestFirst, comparable, lowestComparable } from "@/lib/travel/compare";
 import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
 import { providerIsAllowed, stageOf, DEFAULT_STAGES } from "@/lib/travel/registry";
 import { searchProviders } from "@/lib/travel/search";
@@ -479,5 +479,40 @@ describe("a provider's document is not a provider's answer", () => {
     // only be printed after it has been proven to be a number.
     assert.match(source, /typeof hotel\.reviews\?\.rating === "number"/);
     assert.match(source, /typeof hotel\.ourprice === "number"/);
+  });
+});
+
+describe("two columns in different orders are not a comparison", () => {
+  it("PUTS THE CHEAPEST FIRST, WHICH IS WHAT THE HEADING ALREADY CLAIMS", () => {
+    // A live Pune search: the heading said lowest USD 251.49 and the rows
+    // under it ran 591, 994, 1086, 1131, 292. The provider with the better
+    // price read as the expensive one.
+    const priced = [591.66, 994.45, 1086.49, 1131.06, 292.91, 251.49].map((amount, index) =>
+      offer({ id: `h${index}`, price: { amount, currency: "USD" } }),
+    );
+    assert.deepEqual(
+      cheapestFirst(priced).map((o) => o.price?.amount),
+      [251.49, 292.91, 591.66, 994.45, 1086.49, 1131.06],
+    );
+  });
+
+  it("sorts an offer with no price last, because a missing number is not a low one", () => {
+    const withNone = offer({ id: "none", price: undefined });
+    const cheap = offer({ id: "cheap", price: { amount: 10, currency: "USD" } });
+    assert.deepEqual(cheapestFirst([withNone, cheap]).map((o) => o.id), ["cheap", "none"]);
+  });
+
+  it("does not reorder the array it was handed", () => {
+    const given = [
+      offer({ id: "b", price: { amount: 9, currency: "USD" } }),
+      offer({ id: "a", price: { amount: 1, currency: "USD" } }),
+    ];
+    cheapestFirst(given);
+    assert.deepEqual(given.map((o) => o.id), ["b", "a"], "the caller's list must be left alone");
+  });
+
+  it("the comparison screen uses it rather than printing whatever arrived first", () => {
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /cheapestFirst\(/);
   });
 });

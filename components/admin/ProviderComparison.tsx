@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cheapestFirst } from "@/lib/travel/compare";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
 
 /**
@@ -58,8 +59,19 @@ export default function ProviderComparison() {
     }
   }
 
+  /**
+   * CHEAPEST FIRST, BECAUSE THE HEADING ALREADY SAYS CHEAPEST.
+   *
+   * The column heading reports a provider's lowest price and the list below it
+   * used to show whichever five the provider happened to send first. On a Pune
+   * search that read "lowest USD 251.49" above five hotels priced 591, 994,
+   * 1086, 1131 and 292 — so the provider with the better price looked like the
+   * expensive one. Same order in both columns or there is nothing to compare.
+   */
   const byProvider = (provider: ProviderId) =>
-    result && "offers" in result ? result.offers.filter((offer) => offer.provider === provider) : [];
+    cheapestFirst(
+      result && "offers" in result ? result.offers.filter((offer) => offer.provider === provider) : [],
+    );
 
   return (
     <div className="rounded-xl border border-[var(--gold-light)] bg-white p-5 sm:p-6">
@@ -158,8 +170,10 @@ export default function ProviderComparison() {
             </div>
           )}
           <p className="mt-4 text-xs leading-5 text-stone-500">
-            Each column shows that provider&rsquo;s own lowest price. No cheapest is named across providers — two offers
-            are only comparable when cabin, bags, room type, car class, refundability and the rest actually match.
+            Each column shows that provider&rsquo;s own five cheapest, and its own lowest price. No cheapest is named
+            across providers — two offers are only comparable when cabin, bags, room type, car class, refundability and
+            the rest actually match, and on a hotel search they rarely do: one company&rsquo;s list can be apartments
+            where the other&rsquo;s is hotels.
           </p>
         </div>
       )}

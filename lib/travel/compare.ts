@@ -90,3 +90,23 @@ export function lowestComparable(offers: TravelOffer[]): TravelOffer | null {
     (offer.price?.amount ?? Infinity) < (cheapest.price?.amount ?? Infinity) ? offer : cheapest,
   );
 }
+
+/**
+ * The same offers, cheapest first, without touching the caller's array.
+ *
+ * WHY THIS IS A FUNCTION AND NOT A `.sort()` AT THE CALL SITE. The admin
+ * comparison prints a provider's lowest price as a heading and then five of
+ * its offers below. Unsorted, those five were whichever the provider happened
+ * to send first: a Pune hotel search read "lowest USD 251.49" above rows
+ * priced 591, 994, 1086, 1131 and 292, so the cheaper of the two companies
+ * looked like the dearer one. Two columns in different orders are not a
+ * comparison.
+ *
+ * An offer with no price sorts last rather than first, because a missing
+ * number is not a low one.
+ */
+export function cheapestFirst<T extends { price?: { amount: number } }>(offers: T[]): T[] {
+  return offers
+    .slice()
+    .sort((a, b) => (a.price?.amount ?? Infinity) - (b.price?.amount ?? Infinity));
+}
