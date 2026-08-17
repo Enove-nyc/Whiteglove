@@ -33,14 +33,6 @@ export default async function AttractionsPage() {
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">For the days in between</p>
             <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">Things to do</h1>
-            {/* IT OPENED "Nobody davens for eight hours a day", which is a joke
-                between people who already know each other and reads as a dig at
-                the reader's religious life to everybody else — including the
-                family this page is written for. The point it was making is
-                worth keeping and is made below it. */}
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              How far it is from the kosher food, and what it does on Shabbos.
-            </p>
           </div>
         </div>
       </section>
