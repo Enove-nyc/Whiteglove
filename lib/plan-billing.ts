@@ -1,9 +1,9 @@
 /**
- * Whether Pro and Business are offered at all, and how somebody pays for one.
+ * Whether Gold and Business are offered at all, and how somebody pays for one.
  *
  * ONE SWITCH DECIDES WHETHER ANY OF THIS EXISTS. `open: false` — which is what
  * a deployment that has never been configured gets — means the account page
- * says nothing about Pro or Business, the checkout answers "not open", and the
+ * says nothing about Gold or Business, the checkout answers "not open", and the
  * site is exactly what it was before this file was written. The owner turns it
  * on when he wants it on, and nothing happens in the meantime.
  *
@@ -202,7 +202,7 @@ export function periodsFor(offering: PlanOffering, plan: PaidPlan): BillingPerio
 export function offeringProblem(offering: PlanOffering, stripeReady: { secretKey: boolean; webhookSecret: boolean }): string | null {
   if (!offering.open) return null; // Closed is always a valid thing to be.
   const chosen = PAID_PLANS.filter((plan) => offering.plans[plan]);
-  if (chosen.length === 0) return "Turn on at least one of Pro or Business, or leave the whole thing closed.";
+  if (chosen.length === 0) return "Turn on at least one of Gold or Business, or leave the whole thing closed.";
   if (offering.how !== "stripe") return null;
 
   if (!stripeReady.secretKey) return "Stripe cannot take payment until STRIPE_SECRET_KEY is set on the deployment.";
@@ -225,7 +225,7 @@ export function offeringProblem(offering: PlanOffering, stripeReady: { secretKey
  */
 export function describeOffering(offering: PlanOffering): string {
   if (!offering.open) {
-    return "Closed. Nobody is shown Pro or Business, and nothing on the site can charge anybody.";
+    return "Closed. Nobody is shown Gold or Business, and nothing on the site can charge anybody.";
   }
   const names = offerablePlans(offering).map((plan) => PLAN_LABELS[plan]);
   if (names.length === 0) {

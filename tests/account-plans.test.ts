@@ -64,7 +64,7 @@ describe("what a plan gets you", () => {
 });
 
 describe("what you can ask about", () => {
-  it("offers Pro and Business to somebody on Traveler", () => {
+  it("offers Gold and Business to somebody on Traveler", () => {
     assert.deepEqual(plansToAskAbout("traveler"), ["pro", "business"]);
   });
 
@@ -75,7 +75,7 @@ describe("what you can ask about", () => {
     assert.ok(!plansToAskAbout("business").includes("business"));
   });
 
-  it("still offers Business to somebody on Pro", () => {
+  it("still offers Business to somebody on Gold", () => {
     // Business is not further up than Pro, it is a different thing — a hotel
     // or a kitchen rather than a person who plans a lot of trips.
     assert.deepEqual(plansToAskAbout("pro"), ["business"]);
@@ -93,7 +93,7 @@ describe("what you can ask about", () => {
 });
 
 describe("asking for one", () => {
-  it("takes a plain request for Pro", () => {
+  it("takes a plain request for Gold", () => {
     assert.equal(requestProblem({ current: "traveler", wanted: "pro" }), null);
   });
 
@@ -103,7 +103,7 @@ describe("asking for one", () => {
   });
 
   it("says so when you are already on it", () => {
-    assert.equal(requestProblem({ current: "pro", wanted: "pro" }), "You are already on Pro.");
+    assert.equal(requestProblem({ current: "pro", wanted: "pro" }), "You are already on Gold.");
   });
 
   it("will not take a downgrade through this door", () => {
@@ -151,7 +151,7 @@ describe("what the account page says", () => {
   it("says an open request is with a person", () => {
     // Somebody who asked and heard nothing needs to know the ask still exists.
     const said = describePlan("traveler", request());
-    assert.match(said, /You asked about Pro/);
+    assert.match(said, /You asked about Gold/);
     assert.match(said, /we will be in touch/);
   });
 

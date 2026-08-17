@@ -51,7 +51,7 @@ describe("the request reaches a person", () => {
 
   it("says Pro, not pro — the label a person reads", () => {
     assert.match(ROUTE, /PLAN_LABELS\[/);
-    assert.equal(PLAN_LABELS.pro, "Pro");
+    assert.equal(PLAN_LABELS.pro, "Gold");
     assert.equal(PLAN_LABELS.business, "Business");
   });
 });

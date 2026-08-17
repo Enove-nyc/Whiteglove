@@ -126,11 +126,10 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
             onClick={() => set({ verifiedOnly: !filters.verifiedOnly })}
             aria-pressed={filters.verifiedOnly}
             disabled={available.checked === 0}
-            title={available.checked === 0 ? "Nothing has been checked yet." : undefined}
             className={`${filters.verifiedOnly ? chipOn : chipOff} disabled:cursor-not-allowed disabled:opacity-40`}
           >
             <span aria-hidden="true" className="mr-1.5">{filters.verifiedOnly ? "✓" : "○"}</span>
-            Checked information ({available.checked})
+            Verified details
           </button>
           {NEEDS.map((need) => {
             const on = filters.needs.includes(need.value);
@@ -142,7 +141,7 @@ export default function DestinationDirectory({ entries, initialQuery = "" }: { e
                 onClick={() => toggleNeed(need.value)}
                 aria-pressed={on}
                 disabled={count === 0}
-                title={count === 0 ? `No ${need.label.toLowerCase()} has been published yet.` : undefined}
+                title={count === 0 ? `No ${need.label.toLowerCase()} listed.` : undefined}
                 className={`${on ? chipOn : chipOff} disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 <span aria-hidden="true" className="mr-1.5">{on ? "✓" : "○"}</span>

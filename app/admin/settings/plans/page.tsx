@@ -28,7 +28,7 @@ export default async function PlanOfferingSettings() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Pro and Business
+              Gold and Business
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Whether the two paid accounts are offered, and how somebody comes by one. Off is the state a site that has
@@ -58,7 +58,7 @@ export default async function PlanOfferingSettings() {
       <section className={`${card} mt-8`}>
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Nothing is taken away</h2>
         <p className="mt-3 text-sm leading-6 text-stone-600">
-          Turning this off does not close anybody&rsquo;s account or demote anybody. People already on Pro or Business
+          Turning this off does not close anybody&rsquo;s account or demote anybody. People already on Gold or Business
           stay on it; the offering simply stops being shown to anybody new. The same is true of a subscription that
           ends — the trips, the notes and the shared links are all still there on a Traveler account, with the two free
           limits back in place for anything new.

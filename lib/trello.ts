@@ -71,7 +71,7 @@ export const CARD_KINDS: readonly KindInfo[] = [
   { kind: "rating", label: "An experience rating", href: "/admin/ratings", why: "Somebody said how a listing or trip went. It is not published." },
   { kind: "suggestion", label: "A suggested correction", href: "/admin/reports", why: "Somebody found something wrong and took the trouble to say so." },
   { kind: "listing", label: "A business asking to be listed", href: "/admin/directory-listings", why: "A directory entry nobody has looked at yet." },
-  { kind: "plan", label: "A Pro or Business request", href: "/admin/accounts", why: "A person waiting on an answer from you. Nothing is charged either way." },
+  { kind: "plan", label: "A Gold or Business request", href: "/admin/accounts", why: "A person waiting on an answer from you. Nothing is charged either way." },
   { kind: "report", label: "Something reported as wrong", href: "/admin/reports", why: "The quickest signal that a page has gone stale." },
   { kind: "contact", label: "A message through the contact form", href: "/admin", why: "These already come by email; a card is for when you would rather work from the board." },
   {

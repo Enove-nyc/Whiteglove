@@ -83,6 +83,7 @@ const THEME_WASH: Record<TripTheme, string> = {
   family: "from-[#23405f] to-[#44526b]",
   couples: "from-[#2a2f52] to-[#5b4a63]",
   "short-break": "from-[var(--navy-deep)] to-[#3a4d6f]",
+  heritage: "from-[var(--navy)] to-[#344461]",
 };
 
 export default async function Home() {

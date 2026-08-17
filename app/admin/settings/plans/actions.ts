@@ -57,6 +57,6 @@ export async function savePlanOfferingAction(
     ok: true,
     message: next.open
       ? "Saved. This is live on the account page now."
-      : "Saved. Nothing about Pro or Business is shown to anybody.",
+      : "Saved. Nothing about Gold or Business is shown to anybody.",
   };
 }

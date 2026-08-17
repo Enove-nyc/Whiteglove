@@ -33,7 +33,7 @@
 // list. A destination whose cities match nothing renders as a page with honest
 // empty states rather than a broken one — and the test suite says so.
 
-export type TripTheme = "beach" | "city" | "mountains" | "family" | "couples" | "short-break";
+export type TripTheme = "beach" | "city" | "mountains" | "family" | "couples" | "short-break" | "heritage";
 
 export type Season = "spring" | "summer" | "autumn" | "winter";
 
@@ -44,6 +44,22 @@ export const TRIP_THEMES: ReadonlyArray<{ value: TripTheme; label: string; blurb
   { value: "family", label: "Family", blurb: "Enough for children and enough for you." },
   { value: "couples", label: "Couples", blurb: "Somewhere calm and unhurried." },
   { value: "short-break", label: "Short Trips", blurb: "Three or four days, one flight." },
+  /**
+   * HERITAGE IS A KIND OF TRIP, NOT A SECOND WEBSITE.
+   *
+   * It is not a top-level section and is not going back to being one — the
+   * navigation stays Destinations / Kosher / Plan / Travel. This is the other
+   * half of that decision, and the half that was missing: somebody choosing
+   * where to go who wants the kevarim and the old kehillos within reach had no
+   * way to say so, and the destinations that answer it were sitting in the hub
+   * unmarked. Kraków's own write-up already says it is "a vacation destination
+   * and a heritage base at the same time"; the filter just lets a visitor ask
+   * for that.
+   *
+   * Marked where the heritage is genuinely part of the trip — a quarter you
+   * walk, kevarim within reach — not on every city that has a shul.
+   */
+  { value: "heritage", label: "Heritage", blurb: "Kevarim and old kehillos within reach." },
 ] as const;
 
 export const SEASONS: ReadonlyArray<{ value: Season; label: string }> = [
@@ -106,7 +122,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Rome",
     country: "Italy",
     cities: ["Rome"],
-    themes: ["city", "family", "couples", "short-break"],
+    themes: ["city", "family", "couples", "short-break", "heritage"],
     seasons: ["spring", "autumn", "winter"],
     whyGo: "The oldest Jewish community in Europe, living in the same few streets as its kosher restaurants — with the Forum a walk away.",
     bestFor: ["First-time Europe", "Families", "Couples"],
@@ -174,7 +190,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Venice",
     country: "Italy",
     cities: ["Venice"],
-    themes: ["city", "couples", "short-break"],
+    themes: ["city", "couples", "short-break", "heritage"],
     seasons: ["spring", "autumn", "winter"],
     whyGo: "The original Ghetto, in a city with no cars, where everything is walked — which is what makes Shabbos there work.",
     bestFor: ["Couples", "Short break", "Jewish history"],
@@ -385,7 +401,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Amsterdam",
     country: "Netherlands",
     cities: ["Amsterdam"],
-    themes: ["city", "short-break", "family"],
+    themes: ["city", "short-break", "family", "heritage"],
     seasons: ["spring", "summer", "autumn"],
     whyGo: "The Esnoga, one of the great shul buildings of the world, and a compact city you can see in three days.",
     bestFor: ["Short break", "Jewish history", "Museums"],
@@ -410,7 +426,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Prague",
     country: "Czechia",
     cities: ["Prague"],
-    themes: ["city", "short-break", "couples"],
+    themes: ["city", "short-break", "couples", "heritage"],
     seasons: ["spring", "autumn", "winter"],
     whyGo: "The Altneuschul — the oldest working shul in Europe — with the old town around it.",
     bestFor: ["Short break", "Jewish history", "Couples"],
@@ -435,7 +451,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Vienna",
     country: "Austria",
     cities: ["Vienna"],
-    themes: ["city", "couples", "family"],
+    themes: ["city", "couples", "family", "heritage"],
     seasons: ["spring", "autumn", "winter"],
     whyGo: "A real kehilla in Leopoldstadt with the food to match, and an imperial city on the other side of the canal.",
     bestFor: ["Couples", "Families", "Alpine base"],
@@ -459,7 +475,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Budapest",
     country: "Hungary",
     cities: ["Budapest"],
-    themes: ["city", "short-break", "family"],
+    themes: ["city", "short-break", "family", "heritage"],
     seasons: ["spring", "summer", "autumn"],
     whyGo: "The largest shul in Europe, a Jewish quarter you can stay inside, and a river city that costs less than its neighbours.",
     bestFor: ["Short break", "Jewish history", "Value"],
@@ -713,7 +729,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     name: "Kraków",
     country: "Poland",
     cities: ["Kraków"],
-    themes: ["city", "short-break", "family"],
+    themes: ["city", "short-break", "family", "heritage"],
     seasons: ["spring", "summer", "autumn"],
     whyGo: "Kazimierz — a whole Jewish quarter still standing — and the natural base for the Polish kevarim.",
     bestFor: ["Jewish history", "Short break", "Heritage base"],

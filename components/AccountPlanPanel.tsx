@@ -28,7 +28,7 @@ import {
  * card and mentions no card. On "soon" it says plainly that neither account is
  * open and offers to write when one is; on "ask" it does what it always did,
  * which is take a request a person answers. With the offering closed it says
- * nothing about Pro or Business at all.
+ * nothing about Gold or Business at all.
  *
  * AND IT STILL DOES NOT INVENT A FEATURE LIST. What Pro gets you is the two
  * free limits lifted, which `limitsLine` already says in the traveller's own

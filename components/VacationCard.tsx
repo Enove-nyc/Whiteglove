@@ -41,6 +41,12 @@ const THEME_WASH: Record<TripTheme, string> = {
   family: "from-[#23405f] to-[#44526b]",
   couples: "from-[#2a2f52] to-[#5b4a63]",
   "short-break": "from-[var(--navy-deep)] to-[#3a4d6f]",
+  // The same pair as "city", which the audit measures at 5.90 — the best of
+  // the six. Reused rather than invented because a new gradient is a new
+  // contrast measurement, and this one is already made. In practice it is
+  // rarely drawn: the wash comes from themes[0], and heritage is a second
+  // theme on every destination that carries it.
+  heritage: "from-[var(--navy)] to-[#344461]",
 };
 
 function SignalChip({ signal }: { signal: Signal<string> }) {

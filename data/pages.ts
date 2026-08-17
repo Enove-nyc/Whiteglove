@@ -157,7 +157,7 @@ export const editablePages: PageDef[] = [
         kind: "text",
         heading: "How the business is paid",
         body:
-          "Two ways, and both are stated where they apply. Booking searches on this site hand off to travel partners who may pay a commission on a booking; that never changes what you pay, and the disclosure sits beside every search rather than only in the footer. Separately, we are paid to plan trips — that work is quoted before any of it starts, and the planner, the routing, the kosher lookups and the heritage database stay free whether or not you ever hire us.",
+          "One way, and it is stated where it applies. Booking searches on this site hand off to travel partners who may pay a commission on a booking; that never changes what you pay, and the disclosure sits beside every search rather than only in the footer. Everything else — the planner, the routing, the kosher lookups and the heritage information — is free to use.",
       },
       {
         id: "about-not",

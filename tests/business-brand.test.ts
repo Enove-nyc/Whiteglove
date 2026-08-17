@@ -22,7 +22,7 @@ describe("who may brand an itinerary", () => {
     assert.equal(mayBrandOwnItinerary("traveler"), false);
   });
 
-  it("keeps Pro about the limits rather than a feature list", () => {
+  it("keeps Gold about the limits rather than a feature list", () => {
     // Pro is "the same site without the two free limits", which is what was
     // asked for. The day it grows an entitlement, this test is where the
     // change is noticed.

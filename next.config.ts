@@ -130,6 +130,16 @@ const nextConfig: NextConfig = {
       // the links that had it. See app/book/page.tsx.
       { source: "/cars", destination: "/book?type=cars", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
+      // /flight-booking-assistance was the done-for-you flight offer — "Ask a
+      // person", "Send what you have and a person picks it up". That offer was
+      // removed from the site outright, and this was the last page still
+      // making it; it was also the resolved fallback for every Flights /
+      // Hotels / Cars link whenever the search was locked, so it could become
+      // the whole booking journey without anybody choosing that. The fallback
+      // now goes to Contact (lib/booking-access.ts) and the address goes to
+      // the search that does the work, so an old link lands somewhere that can
+      // still book a flight.
+      { source: "/flight-booking-assistance", destination: "/book?type=flights", permanent: true },
       // Lizhensk was a hand-built page at /lizensk while every other guided
       // town rendered from the shared route at /uman, /belz, /sanz. It is an
       // ordinary town guide now, at the spelling the cemetery listing, the

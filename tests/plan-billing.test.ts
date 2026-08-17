@@ -195,7 +195,7 @@ describe("what may be saved", () => {
   it("refuses Stripe with keys but no price", () => {
     const cards = offering({ how: "stripe" });
     const problem = offeringProblem(cards, READY) ?? "";
-    assert.match(problem, /Pro and Business/);
+    assert.match(problem, /Gold and Business/);
     assert.match(problem, /price/i);
   });
 

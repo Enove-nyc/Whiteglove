@@ -104,9 +104,9 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
-    what: "Taking a subscription payment for Pro or Business.",
+    what: "Taking a subscription payment for Gold or Business.",
     without:
-      "Pro and Business can still be offered and granted — somebody asks, you answer, and you put them on the plan yourself. What cannot happen is a card being charged: Settings → Pro and Business refuses to be switched to Stripe without both of these, so no subscribe button is ever drawn that would fail when pressed.",
+      "Gold and Business can still be offered and granted — somebody asks, you answer, and you put them on the plan yourself. What cannot happen is a card being charged: Settings → Gold and Business refuses to be switched to Stripe without both of these, so no subscribe button is ever drawn that would fail when pressed.",
     weight: "nicety",
     where:
       "Stripe. The secret key is under Developers → API keys. The webhook secret comes from adding an endpoint at /api/billing/webhook listening for checkout.session.completed, customer.subscription.updated and customer.subscription.deleted.",

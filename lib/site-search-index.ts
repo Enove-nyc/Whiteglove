@@ -744,15 +744,6 @@ function pushSitePages(docs: DraftDoc[]) {
       keywords: ["verify", "source"],
     },
     {
-      id: "page-flight-assistance",
-      kind: "Site page",
-      title: "Flight booking assistance",
-      subtitle: "Ask a person to help with a flight that does not fit a search box",
-      href: "/flight-booking-assistance",
-      names: ["flight booking assistance", "flight help", "complicated flight"],
-      keywords: ["flights", "booking"],
-    },
-    {
       id: "page-stops",
       kind: "Site page",
       title: "Towns and guides",

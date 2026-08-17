@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
+import { getDestinationRecord } from "@/data/destination-database";
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { isPrivatePath, PRIVATE_PATHS, publicPaths } from "@/lib/site-map";
 import { allTzaddikim } from "@/lib/tzaddikim";
@@ -50,7 +51,16 @@ describe("every page on the site is accounted for", () => {
     // The counts come from the same lists generateStaticParams reads, so a town
     // that exists has a line by construction.
     for (const guide of cityGuides) assert.ok(pathSet.has(`/${guide.slug}`), `missing city guide ${guide.slug}`);
-    for (const place of bulkDestinations) assert.ok(pathSet.has(`/heritage/towns/${place.slug}`), place.slug);
+    // A heritage town is listed ONLY once it has something on it. All 109 of
+    // them were in here and not one rendered a kever, a listing or a sentence
+    // — the sitemap was asking Google to index a hundred and nine identical
+    // empty pages. The page noindexes on exactly this condition, so the two
+    // signals cannot disagree; that is what the next check enforces.
+    for (const place of bulkDestinations) {
+      const listed = pathSet.has(`/heritage/towns/${place.slug}`);
+      const hasContent = Boolean(getDestinationRecord(place.slug)?.cemeteries.length) || Boolean(place.summary);
+      assert.equal(listed, hasContent, `${place.slug}: listed=${listed} but hasContent=${hasContent}`);
+    }
     for (const cemetery of cemeteries) assert.ok(pathSet.has(`/cemeteries/${cemetery.slug}`), cemetery.slug);
     for (const t of allTzaddikim()) assert.ok(pathSet.has(`/tzaddikim/${t.slug}`), t.slug);
     for (const d of vacationDestinations) assert.ok(pathSet.has(`/destinations/${d.slug}`), d.slug);

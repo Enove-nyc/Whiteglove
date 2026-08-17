@@ -185,6 +185,24 @@ export default async function PracticalInformation({
           // section yet. Printing an empty heading for it would tell a
           // visitor there is a hospital section and then say nothing in it.
           if (!key && dbPlaces.length === 0) return null;
+          // AND NEITHER IS A SECTION WHOSE RECORD IS EMPTY. "Unavailable" is
+          // the status for a section nobody has filled in, and it was drawing
+          // a card headed כשרות עסן that said "— NOT PUBLISHED YET" over
+          // "Information is not available yet. Kosher food information will be
+          // published only after it is checked for this exact destination."
+          // Five of those on every town guide: a screen of our publishing
+          // schedule where a traveller was looking for somewhere to eat. The
+          // same absence, said by not saying it.
+          //
+          // Only the empty ones go. Verified, partially verified,
+          // community-submitted and update-in-progress all still draw their
+          // card and their label — those say something about the place.
+          //
+          // PUBLIC PRESENTATION ONLY. The record keeps its status, the admin
+          // completeness queue still counts it as a gap, and lib/verification
+          // is untouched: this component is rendered by /[city] and
+          // /heritage/towns/[place] and by nothing else.
+          if (key && dbPlaces.length === 0 && record[key].status === "unavailable") return null;
           return (
             <article key={english} className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
               {/* Yiddish where there is a heading for it. The sections added
@@ -201,7 +219,6 @@ export default async function PracticalInformation({
               )}
               {dbPlaces.length ? (
                 <>
-                  <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">Checked information</p>
                   <div className="mt-4 space-y-4">
                     {dbPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
                   </div>
