@@ -137,7 +137,16 @@ describe("the header renders the list rather than its own copy", () => {
     for (const label of ["Search", "Route", "Itinerary"]) {
       assert.match(NAVBAR, new RegExp(`label="${label}"`), `${label} icon missing`);
     }
-    assert.match(NAVBAR, /label=\{signedIn \? "Account" : "Sign in"\}/);
+    // THE FOURTH ICON IS NOW TWO THINGS. Signed in it is a menu of the four
+    // places an account has — /account used to be one link to a page holding
+    // all four, so somebody who wanted their trips landed on their own name
+    // and scrolled. Signed out it is a door: it opens the sign-in dialog
+    // rather than leaving whatever page somebody is reading.
+    assert.match(NAVBAR, /<AccountMenu \/>/);
+    assert.match(NAVBAR, /label="Sign in"/);
+    // Both carry a label, which is what this test is actually protecting.
+    const menu = readFileSync("components/AccountMenu.tsx", "utf8");
+    assert.match(menu, /aria-label="Account"/);
   });
 
   it("a press opens the menu; hover and focus never do", () => {

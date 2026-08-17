@@ -320,7 +320,10 @@ describe("signing in does not take you off the page", () => {
     // Back — several of them, from a page three levels deep.
     const nav = readFileSync("components/Navbar.tsx", "utf8");
     assert.match(nav, /const openSignIn = useOpenSignIn\(\)/);
-    assert.match(nav, /onClick=\{signedIn \? undefined : \(\) => openSignIn\(\)\}/);
+    // Signed in the icon is now a menu of the four places an account has, so
+    // the sign-in branch is the signed-OUT one rather than a prop on a shared
+    // icon. See tests/account-menu.test.ts.
+    assert.match(nav, /<IconLink icon="account" label="Sign in"[\s\S]{0,120}onClick=\{\(\) => openSignIn\(\)\}/);
     const bar = readFileSync("components/MobileBottomBar.tsx", "utf8");
     assert.match(bar, /onPress: signedIn \? undefined : \(\) => openSignIn\(\)/);
   });
@@ -338,6 +341,6 @@ describe("signing in does not take you off the page", () => {
     const gate = readFileSync("components/SignInGate.tsx", "utf8");
     assert.match(gate, /\/login remains a real page/);
     const nav = readFileSync("components/Navbar.tsx", "utf8");
-    assert.match(nav, /href=\{signedIn \? "\/account" : signInHref\(\)\}/, "the href stays as the fallback");
+    assert.match(nav, /href=\{signInHref\(\)\}/, "the href stays as the fallback");
   });
 });

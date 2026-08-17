@@ -9,6 +9,7 @@ import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
+import AccountMenu, { ACCOUNT_PLACES } from "@/components/AccountMenu";
 import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
@@ -314,14 +315,15 @@ export default function Navbar() {
               <IconLink icon="search" label="Search" href="/search" />
               <IconLink icon="route" label="Route" href="/my-route" />
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
-              {/* Signed out, this opens the dialog rather than leaving the
-                  page — see useOpenSignIn. The href stays as the fallback. */}
-              <IconLink
-                icon="account"
-                label={signedIn ? "Account" : "Sign in"}
-                href={signedIn ? "/account" : signInHref()}
-                onClick={signedIn ? undefined : () => openSignIn()}
-              />
+              {/* Signed in, the icon opens the four places an account has —
+                  /account is a page holding all four, and somebody who wanted
+                  their trips used to land on their own name and scroll. Signed
+                  out it opens the sign-in dialog instead of leaving the page. */}
+              {signedIn ? (
+                <AccountMenu />
+              ) : (
+                <IconLink icon="account" label="Sign in" href={signInHref()} onClick={() => openSignIn()} />
+              )}
             </div>
 
             {/* xl and up: the bar above is the navigation. Below xl: this is
@@ -376,9 +378,21 @@ export default function Navbar() {
             <div className="flex items-center justify-between gap-3 border-t border-[var(--gold-light)] px-5 py-4 sm:px-8">
               {signedIn ? (
                 <>
-                  <Link onClick={() => setMobileOpen(false)} href="/account" className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
-                    Account
-                  </Link>
+                  {/* The same four the header icon offers. Named here too,
+                      because this menu is the navigation below xl and one
+                      "Account" link hides three of them. */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {ACCOUNT_PLACES.map((place) => (
+                      <Link
+                        key={place.href}
+                        onClick={() => setMobileOpen(false)}
+                        href={place.href}
+                        className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]"
+                      >
+                        {place.label}
+                      </Link>
+                    ))}
+                  </div>
                   <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
                     Sign out
                   </button>
