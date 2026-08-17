@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listReportedPlaceReviews, removePlaceReview } from "@/lib/place-review-store";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
+import { publicUrl } from "@/lib/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get("host")?.toLowerCase().split(":")[0] ?? "";
     const configured = process.env.ADMIN_HOST?.trim().toLowerCase().split(":")[0] ?? "";
     const path = configured && host === configured ? "/ratings" : "/admin/ratings";
-    return NextResponse.redirect(new URL(path, request.url), 303);
+    return NextResponse.redirect(publicUrl(request, path), 303);
   }
   return NextResponse.json({ ok: true });
 }

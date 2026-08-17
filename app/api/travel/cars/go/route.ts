@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { routestackConfig, routestackPost } from "@/lib/travel/adapters/routestack-auth";
 import { readForCheckout } from "@/lib/travel/checkout-handles";
+import { publicUrl } from "@/lib/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   // An expired quote is the ordinary case, not an error: prices move and desks
   // sell out, and thirty minutes is all a handle lives. So the traveler is sent
   // back to search again rather than shown anything about handles.
-  const searchAgain = new URL("/book?kind=cars&expired=1", request.url);
+  const searchAgain = publicUrl(request, "/book?kind=cars&expired=1");
   if (!chosen || kept?.provider !== "routestack") return NextResponse.redirect(searchAgain, 303);
 
   const config = routestackConfig();

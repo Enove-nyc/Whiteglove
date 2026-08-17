@@ -6,7 +6,7 @@ import { Icon } from "@/components/icons/Icon";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { ASSISTANT_INPUT_NOTICE } from "@/lib/assistant-disclosure";
 import {
-  HAND_OFF_HREF,
+  handOffHref,
   HAND_OFF_LABEL,
   NOT_COVERED_MESSAGE,
   SITE_ANSWER_LABEL,
@@ -177,7 +177,7 @@ export default function SiteAssistant() {
                     <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--navy)]">{turn.text}</p>
                     {turn.notCovered ? (
                       <Link
-                        href={HAND_OFF_HREF}
+                        href={handOffHref(thread.turns[index - 1]?.text ?? "")}
                         className="mt-2 inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
                       >
                         {HAND_OFF_LABEL}

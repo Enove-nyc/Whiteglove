@@ -9,6 +9,7 @@ import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
+import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
@@ -24,6 +25,7 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  */
 
 export default function Navbar() {
+  const openSignIn = useOpenSignIn();
   const pathname = usePathname();
   const router = useRouter();
   /**
@@ -312,7 +314,14 @@ export default function Navbar() {
               <IconLink icon="search" label="Search" href="/search" />
               <IconLink icon="route" label="Route" href="/my-route" />
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
-              <IconLink icon="account" label={signedIn ? "Account" : "Sign in"} href={signedIn ? "/account" : signInHref()} />
+              {/* Signed out, this opens the dialog rather than leaving the
+                  page — see useOpenSignIn. The href stays as the fallback. */}
+              <IconLink
+                icon="account"
+                label={signedIn ? "Account" : "Sign in"}
+                href={signedIn ? "/account" : signInHref()}
+                onClick={signedIn ? undefined : () => openSignIn()}
+              />
             </div>
 
             {/* xl and up: the bar above is the navigation. Below xl: this is

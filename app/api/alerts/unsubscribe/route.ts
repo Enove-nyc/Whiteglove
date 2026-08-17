@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unsubscribeByToken } from "@/lib/email-alerts-store";
 import { TEST_UNSUB_TOKEN } from "@/lib/email-blast";
+import { publicUrl } from "@/lib/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -31,13 +32,13 @@ export async function GET(request: NextRequest) {
   // "not valid" error, which reads as a fault in the one part of an email that
   // has to work and taught him nothing about what a reader would get.
   if (token === TEST_UNSUB_TOKEN) {
-    const url = new URL("/alerts/unsubscribed", request.url);
+    const url = publicUrl(request, "/alerts/unsubscribed");
     url.searchParams.set("test", "1");
     return NextResponse.redirect(url);
   }
 
   const result = await unsubscribeByToken(token);
-  const url = new URL("/alerts/unsubscribed", request.url);
+  const url = publicUrl(request, "/alerts/unsubscribed");
   url.searchParams.set("ok", result.ok ? "1" : "0");
   if (result.error) url.searchParams.set("error", result.error);
   return NextResponse.redirect(url);

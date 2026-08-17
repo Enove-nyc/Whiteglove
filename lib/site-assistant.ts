@@ -34,7 +34,19 @@ export const SITE_ANSWER_LABEL = "AI-generated from White Glove pages · Not rev
 export const NOT_COVERED_MESSAGE =
   "White Glove doesn't have a page covering that yet.";
 export const HAND_OFF_LABEL = "Ask the AI travel assistant instead";
-export const HAND_OFF_HREF = "/itinerary#assistant";
+
+/**
+ * Where an unanswerable question goes, WITH the question.
+ *
+ * A hand-off that drops what somebody typed and shows them an empty box is a
+ * hand-off most people abandon. The travel assistant reads `ask` on arrival,
+ * opens itself and asks it — see components/TravelAssistantBox.tsx — and then
+ * takes it out of the address so a reload does not ask it twice.
+ */
+export function handOffHref(question: string): string {
+  const asked = question.trim().slice(0, 500);
+  return asked ? `/itinerary?ask=${encodeURIComponent(asked)}` : "/itinerary";
+}
 
 export const SITE_ASSISTANT_SYSTEM = [
   "You are White Glove Kosher Travel's site assistant.",

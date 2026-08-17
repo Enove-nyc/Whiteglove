@@ -231,3 +231,113 @@ describe("keeping the conversation is a Pro feature; asking is not", () => {
     }
   });
 });
+
+describe("the hand-off carries the question", () => {
+  it("SENDS THE QUESTION WITH IT RATHER THAN AN EMPTY BOX", async () => {
+    // A hand-off that drops what somebody typed and shows them a fresh empty
+    // box is one most people abandon there.
+    const { handOffHref } = await import("@/lib/site-assistant");
+    assert.equal(handOffHref("kosher food in Tokyo"), "/itinerary?ask=kosher%20food%20in%20Tokyo");
+    assert.equal(handOffHref("   "), "/itinerary", "nothing to carry is just the page");
+    assert.ok(handOffHref("x".repeat(900)).length < 600, "a pasted essay must not become the address");
+  });
+
+  it("hands over the question that was asked, not the answer that failed", () => {
+    // The turn before the refusal is the traveler's; taking the assistant's
+    // own "I don't have that" would send it back to be answered.
+    assert.match(PANEL, /handOffHref\(thread\.turns\[index - 1\]\?\.text \?\? ""\)/);
+  });
+
+  it("opens the travel assistant already open, and asks once", () => {
+    const box = readFileSync("components/TravelAssistantBox.tsx", "utf8");
+    assert.match(box, /useState\(embedded \|\| Boolean\(initialAsk\)\)/);
+    assert.match(box, /useState\(initialAsk\)/);
+    // A ref, not state: asking is a network call and an effect that runs twice
+    // would make it twice.
+    assert.match(box, /if \(!initialAsk \|\| asked\.current\) return/);
+    assert.match(box, /asked\.current = true/);
+  });
+
+  it("takes the question back out of the address afterwards", () => {
+    // Otherwise a reload asks it again, and a copied link carries somebody
+    // else's question to whoever it is sent to.
+    const box = readFileSync("components/TravelAssistantBox.tsx", "utf8");
+    assert.match(box, /url\.searchParams\.delete\("ask"\)/);
+    assert.match(box, /window\.history\.replaceState/);
+  });
+
+  it("reads it on the server, so the panel does not flicker open", () => {
+    const page = readFileSync("app/itinerary/page.tsx", "utf8");
+    assert.match(page, /searchParams: Promise<\{ ask\?: string \| string\[\] \}>/);
+    assert.match(page, /<TravelAssistantBox initialAsk=\{initialAsk\} \/>/);
+    // A repeated ?ask= arrives as an array, which would render as one string.
+    assert.match(page, /Array\.isArray\(asked\.ask\)/);
+  });
+});
+
+describe("answers typed into /plan do not follow somebody around", () => {
+  it("SAYS WHEN THEY WERE ANSWERED, TRUTHFULLY", async () => {
+    // The planner offered them back under "You answered these a moment ago",
+    // hardcoded. Somebody returning a week later, signed out, was told they
+    // had just typed their family's travel dates.
+    const { describeAnswered } = await import("@/lib/trip-plan");
+    const now = Date.parse("2026-08-17T12:00:00.000Z");
+    const at = (iso: string) => describeAnswered({ savedAt: iso } as never, now);
+    assert.equal(at("2026-08-17T11:59:40.000Z"), "a moment ago");
+    assert.equal(at("2026-08-17T11:45:00.000Z"), "15 minutes ago");
+    assert.equal(at("2026-08-17T09:00:00.000Z"), "3 hours ago");
+    assert.equal(at("2026-08-10T12:00:00.000Z"), "yesterday");
+    assert.equal(describeAnswered({} as never, now), "earlier", "no stamp, no claim");
+  });
+
+  it("STOPS OFFERING THEM AFTER A DAY", async () => {
+    // They exist to carry somebody from /plan into the planner in one sitting.
+    // Past that they are a note about a family's travel plans sitting in a
+    // browser on a machine that may not be theirs.
+    const { answersAreFresh } = await import("@/lib/trip-plan");
+    const now = Date.parse("2026-08-17T12:00:00.000Z");
+    assert.equal(answersAreFresh({ savedAt: "2026-08-17T11:00:00.000Z" } as never, now), true);
+    assert.equal(answersAreFresh({ savedAt: "2026-08-16T11:00:00.000Z" } as never, now), false);
+    // Written before stamping existed, so at least as old as this code.
+    assert.equal(answersAreFresh({} as never, now), false);
+    // A clock ahead of ours is not a reason to trust it further.
+    assert.equal(answersAreFresh({ savedAt: "2026-08-18T12:00:00.000Z" } as never, now), false);
+    assert.equal(answersAreFresh(null, now), false);
+  });
+
+  it("is stamped when written and checked when offered", () => {
+    const flow = readFileSync("components/TripStartFlow.tsx", "utf8");
+    assert.match(flow, /savedAt: new Date\(\)\.toISOString\(\)/);
+    const panel = readFileSync("components/TripSetupPanel.tsx", "utf8");
+    assert.match(panel, /answersAreFresh\(answers\)/);
+    assert.match(panel, /You answered these \{describeAnswered\(answers\)\}/);
+  });
+});
+
+describe("signing in does not take you off the page", () => {
+  it("OPENS THE DIALOG FROM THE HEADER AND THE MOBILE BAR", () => {
+    // Pressing Sign in used to navigate to /login, and changing your mind meant
+    // Back — several of them, from a page three levels deep.
+    const nav = readFileSync("components/Navbar.tsx", "utf8");
+    assert.match(nav, /const openSignIn = useOpenSignIn\(\)/);
+    assert.match(nav, /onClick=\{signedIn \? undefined : \(\) => openSignIn\(\)\}/);
+    const bar = readFileSync("components/MobileBottomBar.tsx", "utf8");
+    assert.match(bar, /onPress: signedIn \? undefined : \(\) => openSignIn\(\)/);
+  });
+
+  it("renders a real button, not a link with its navigation cancelled", () => {
+    const action = readFileSync("components/icons/IconAction.tsx", "utf8");
+    assert.match(action, /if \(onClick\) \{[\s\S]{0,200}<button type="button"/);
+    const bar = readFileSync("components/MobileBottomBar.tsx", "utf8");
+    assert.match(bar, /<button key=\{item\.key\} type="button" onClick=\{press\}/);
+  });
+
+  it("KEEPS /login AS A REAL PAGE, BECAUSE GOOGLE HAS TO LAND SOMEWHERE", () => {
+    // Google's sign-in is a full redirect out and back, and somebody arriving
+    // from an email or a bookmark needs a page rather than a dialog on nothing.
+    const gate = readFileSync("components/SignInGate.tsx", "utf8");
+    assert.match(gate, /\/login remains a real page/);
+    const nav = readFileSync("components/Navbar.tsx", "utf8");
+    assert.match(nav, /href=\{signedIn \? "\/account" : signInHref\(\)\}/, "the href stays as the fallback");
+  });
+});

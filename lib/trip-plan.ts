@@ -151,6 +151,19 @@ export const ACCESSIBILITY_NEEDS: readonly string[] = [
 ] as const;
 
 export type TripPlanAnswers = {
+  /**
+   * WHEN THEY WERE ANSWERED, AND WHY THAT MATTERS.
+   *
+   * These live in the browser so /plan can hand them to the planner, and the
+   * planner offered them back under the words "You answered these a moment
+   * ago" — which was hardcoded. Somebody came back a week later, on a machine
+   * where they were not signed in, and was told they had just typed their
+   * family's travel dates. The sentence was wrong and the keeping was worse.
+   *
+   * ISO, stamped when they are saved. Absent on anything written before this
+   * existed, which is treated as old rather than as new.
+   */
+  savedAt?: string;
   kind: TripKind | "";
   /** A place, or empty. Free text: somebody may type "somewhere warm". */
   destination: string;
@@ -263,10 +276,42 @@ export function readAnswers(raw: string | null | undefined): TripPlanAnswers | n
       method: (["myself", "unsure"] as const).find((m) => m === parsed.method) ?? "",
       kevarim: text(parsed.kevarim),
       notes: text(parsed.notes),
+      ...(typeof parsed.savedAt === "string" ? { savedAt: parsed.savedAt } : {}),
     };
   } catch {
     return null;
   }
+}
+
+/**
+ * How long answers kept in a browser may be offered back.
+ *
+ * A day. They exist to carry somebody from /plan to the planner in one
+ * sitting, and past that they are a week-old note about a family's travel
+ * plans sitting on a machine that may not be theirs. Anything older is not
+ * shown and not used.
+ */
+export const ANSWERS_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+export function answersAreFresh(answers: TripPlanAnswers | null, now = Date.now()): boolean {
+  if (!answers) return false;
+  // No stamp means written before stamping existed, which is at least as old
+  // as this code. Old.
+  const at = answers.savedAt ? Date.parse(answers.savedAt) : NaN;
+  if (!Number.isFinite(at)) return false;
+  return at <= now && now - at <= ANSWERS_MAX_AGE_MS;
+}
+
+/** "a few minutes ago", "yesterday" — what was actually true. */
+export function describeAnswered(answers: TripPlanAnswers, now = Date.now()): string {
+  const at = answers.savedAt ? Date.parse(answers.savedAt) : NaN;
+  if (!Number.isFinite(at)) return "earlier";
+  const minutes = Math.max(0, Math.floor((now - at) / 60_000));
+  if (minutes < 1) return "a moment ago";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  return "yesterday";
 }
 
 /** Has anybody actually answered anything? Decides whether to offer them back. */

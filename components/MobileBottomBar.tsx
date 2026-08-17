@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/icons/Icon";
 import { isCurrent } from "@/lib/navigation";
+import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
 
 /**
@@ -23,7 +24,19 @@ const ITEMS: Array<{ key: string; icon: IconName; label: string; href: string }>
 
 export default function MobileBottomBar({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname();
-  const items = [...ITEMS, { key: "account", icon: "account" as IconName, label: "Account", href: signedIn ? "/account" : signInHref() }];
+  const openSignIn = useOpenSignIn();
+  const items = [
+    ...ITEMS,
+    {
+      key: "account",
+      icon: "account" as IconName,
+      label: "Account",
+      href: signedIn ? "/account" : signInHref(),
+      // Signed out, the bar opens the sign-in dialog instead of navigating, so
+      // somebody reading a destination page stays on it. See useOpenSignIn.
+      onPress: signedIn ? undefined : () => openSignIn(),
+    },
+  ];
 
   return (
     <nav
@@ -32,17 +45,29 @@ export default function MobileBottomBar({ signedIn }: { signedIn: boolean }) {
     >
       {items.map((item) => {
         const active = isCurrent(item.href, pathname);
-        return (
-          <Link
-            key={item.key}
-            href={item.href}
-            aria-current={active ? "page" : undefined}
-            className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold ${
-              active ? "text-[var(--navy)]" : "text-stone-500"
-            }`}
-          >
+        const inner = (
+          <>
             <Icon name={item.icon} className={`h-5 w-5 ${active ? "text-[var(--gold-ink)]" : ""}`} />
             {item.label}
+          </>
+        );
+        const shared = `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold ${
+          active ? "text-[var(--navy)]" : "text-stone-500"
+        }`;
+        // Signed out, Account opens the sign-in dialog rather than navigating,
+        // so somebody halfway down a destination page stays on it. A real
+        // button, not a link with its navigation cancelled.
+        const press = "onPress" in item ? item.onPress : undefined;
+        if (press) {
+          return (
+            <button key={item.key} type="button" onClick={press} className={shared}>
+              {inner}
+            </button>
+          );
+        }
+        return (
+          <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined} className={shared}>
+            {inner}
           </Link>
         );
       })}

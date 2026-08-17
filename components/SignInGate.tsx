@@ -63,6 +63,27 @@ export function useRequireSignIn(): (onSuccess: () => void, reason?: string) => 
   );
 }
 
+/**
+ * Open the sign-in dialog for its own sake, with nothing waiting behind it.
+ *
+ * THE HEADER'S SIGN IN USED TO BE A LINK TO /login. Pressing it took somebody
+ * off whatever they were reading, and changing their mind meant Back — from a
+ * destination page three levels deep, several Backs. The dialog was already
+ * built for interrupted actions; this is the same dialog with no action to
+ * resume, so the page stays where it is and the X returns them to it.
+ *
+ * /login remains a real page, and has to: Google's sign-in is a full redirect
+ * out and back, and somebody arriving from an email or a bookmark needs
+ * somewhere to land.
+ */
+export function useOpenSignIn(): (reason?: string) => void {
+  const requireSignIn = useRequireSignIn();
+  return useCallback(
+    (reason?: string) => requireSignIn(() => {}, reason || "Sign in"),
+    [requireSignIn],
+  );
+}
+
 export function SignInGateProvider({
   googleAvailable,
   phoneSignupAvailable,

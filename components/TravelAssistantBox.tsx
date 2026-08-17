@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { Icon } from "@/components/icons/Icon";
@@ -48,12 +48,15 @@ export default function TravelAssistantBox({
   embedded = false,
   /** The page already shows the label above it, so the panel does not repeat it. */
   labelledOutside = false,
+  /** A question handed over by the site assistant. See the note below. */
+  initialAsk = "",
 }: {
   embedded?: boolean;
   labelledOutside?: boolean;
+  initialAsk?: string;
 }) {
-  const [open, setOpen] = useState(embedded);
-  const [question, setQuestion] = useState("");
+  const [open, setOpen] = useState(embedded || Boolean(initialAsk));
+  const [question, setQuestion] = useState(initialAsk);
   const [answer, setAnswer] = useState<string | null>(null);
   const [sources, setSources] = useState<AssistantSource[]>([]);
   const [note, setNote] = useState<string | null>(null);
@@ -86,6 +89,42 @@ export default function TravelAssistantBox({
       setBusy(false);
     }
   }
+
+  /**
+   * ARRIVING FROM THE SITE ASSISTANT WITH THE QUESTION ALREADY ASKED.
+   *
+   * The corner assistant answers only from published pages, and when it has
+   * nothing it offers this one instead. Sending somebody here to type their
+   * question a second time is the sort of hand-off that gets abandoned
+   * halfway, so it travels in the address: /itinerary?ask=… opens this panel
+   * and asks it.
+   *
+   * READ ON THE SERVER AND HANDED DOWN, not read from window here. The page
+   * already has the query string, and taking it there means this panel opens
+   * ALREADY open with the question in it — one render, no flicker, and no
+   * difference between what the server drew and what the browser draws.
+   *
+   * The asking happens after paint, guarded by a ref: it is a network call,
+   * and an effect that runs twice would make it twice.
+   */
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!initialAsk || asked.current) return;
+    asked.current = true;
+    const timer = setTimeout(() => void ask(initialAsk), 0);
+    // Taken out of the address, so a reload does not ask it again and a copied
+    // link does not carry somebody else's question.
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("ask");
+      window.history.replaceState(null, "", url);
+    }
+    return () => clearTimeout(timer);
+    // `ask` is deliberately not a dependency. It is redefined on every render,
+    // and this effect must run once for one arriving question — the ref above
+    // is what guarantees that, not the dependency list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialAsk]);
 
   const visible = showMoreExamples ? EXAMPLES : EXAMPLES.slice(0, VISIBLE_EXAMPLES);
 
