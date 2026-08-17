@@ -50,7 +50,13 @@ export default function HechsherBadge({
   // replacing a mark does not mean editing the repository. Either way it is
   // loaded lazily: /hechsherim draws every agency at once, and that is a few
   // hundred of these circles on one screen.
-  const logoSrc = hechsher ? (hechsher.logo ?? `/hechsherim/${hechsher.id}.svg`) : null;
+  // ONLY THE MAPPING, NEVER A GUESS. This used to fall back to
+  // `/hechsherim/{id}.svg` for any agency without a logo field. No agency
+  // without one has a file of ANY extension — every mark that ships is named
+  // explicitly below — so the guess was seventeen certain 404s on /hechsherim,
+  // recovered by onError into the letters that were always going to be drawn.
+  // Asking for the letters directly is the same picture without the requests.
+  const logoSrc = hechsher?.logo ?? null;
   const px = size === "sm" ? 28 : 36;
   const markSize = size === "sm" ? 9 : 11;
 
@@ -80,13 +86,13 @@ export default function HechsherBadge({
         style={{ width: px, height: px, fontSize: inside.length > 2 ? markSize - 2 : markSize }}
         aria-hidden="true"
       >
-        {hechsher && (confirmed || reported) && !logoFailed ? (
+        {hechsher && logoSrc && (confirmed || reported) && !logoFailed ? (
           /* eslint-disable-next-line @next/next/no-img-element -- a plain img
              so onError can fall back to the letters; these are tiny local
              files, already sized for the circle, with nothing for the image
              optimizer to do. */
           <img
-            src={logoSrc ?? ""}
+            src={logoSrc}
             alt=""
             loading="lazy"
             decoding="async"

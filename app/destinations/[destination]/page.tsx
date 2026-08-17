@@ -689,9 +689,8 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           </div>
 
           <p className="mt-6 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-3 text-sm leading-6 text-stone-600">
-            <span className="font-semibold text-[var(--navy)]">This part is our opinion,</span> not a checked fact —
-            which is why it carries no verification label. The practical sections below do, and each of them comes from
-            a listing with a source behind it.
+            <span className="font-semibold text-[var(--navy)]">This section is our view of the place.</span> The
+            practical detail below comes from listings with a named source.
           </p>
         </Fold>
 

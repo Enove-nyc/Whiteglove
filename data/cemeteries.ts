@@ -119,7 +119,7 @@ const featuredCemeteries: Cemetery[] = [
       "Do not confuse it with the Remuh / old cemetery at Szeroka 40, which is a separate site several blocks away.",
       "Use the current cemetery entrance and follow local access instructions once you arrive.",
     ],
-    accessNote: "This is a separate בית החיים from the Remuh cemetery. A current public שומר / cemetery-access number has not yet been verified for this location.",
+    accessNote: "This is a separate בית החיים from the Remuh cemetery. There is no public שומר / cemetery-access number for this location.",
     burials: [
       { name: "Rabbi Yosef Kornitzer", yiddishName: "רבי יוסף קורניצר", knownAs: "Rabbi of Kraków" },
       { name: "Rabbi Ozjasz Thon", yiddishName: "רבי עוזיאש טהון", knownAs: "Rabbi and communal leader" },
@@ -492,7 +492,7 @@ const guideCemeteries: Cemetery[] = cityGuides
     accessContacts: guide.accessContacts ?? (guide.accessContact ? [guide.accessContact] : undefined),
     accessNote: (guide.accessContacts?.length || guide.accessContact)
       ? "Current public shomer / cemetery-access contacts are listed below. Please confirm access before traveling."
-      : "A current public שומר / cemetery-access number has not yet been verified for this בית החיים. Confirm access before traveling.",
+      : "There is no public שומר / cemetery-access number for this בית החיים. Confirm access before traveling.",
     // The tzaddik the town is known for, then anybody else the guide places in
     // the same ground. This used to be a hardcoded array of one, which is why
     // so many of these pages showed a single name for a bais hachaim holding

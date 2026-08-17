@@ -66,15 +66,14 @@ export function publicReferralStatus(settings: ReferralSettings): {
   if (!settings.enabled) {
     return {
       open: false,
-      headline: "Referral programme not open yet",
-      body: "A friend-referral programme is being prepared. It is not live, and no rewards are available yet.",
+      headline: "Invitations are not open",
+      body: "There is no referral programme running at the moment.",
     };
   }
   return {
     open: true,
     headline: "Invite a friend",
     body:
-      settings.rulesText.trim() ||
-      "Share your link. Reward details are explained here once the owner has finalised them.",
+      settings.rulesText.trim() || "Share your link with a friend.",
   };
 }

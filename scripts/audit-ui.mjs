@@ -84,12 +84,16 @@ const PAGES = [
   ["/destinations/rome", "vacation destination"],
   ["/kosher-travel", "kosher travel hub"],
   ["/heritage", "heritage landing"],
-  ["/services", "services"],
+  // NOT /services, and not ?reason=trip. Both were the personal trip-planning
+  // offer, which was removed from the site outright — /services now redirects
+  // to /plan, and "trip" is not a contact reason any more (lib/contact-reasons
+  // says so, and forbids adding it back). Auditing either measured a redirect
+  // or a fallback and reported it under the name of a page that is gone.
   ["/sample-itinerary", "sample itinerary"],
   ["/contact", "contact reasons"],
   // The conditional fields only exist behind a reason, so auditing the bare
   // page would measure a form nobody is shown.
-  ["/contact?reason=trip", "contact — trip"],
+  ["/contact?reason=question", "contact — question"],
   ["/contact?reason=advertise", "contact — advertising"],
   ["/verification", "verification method"],
   ["/stops", "destination directory"],

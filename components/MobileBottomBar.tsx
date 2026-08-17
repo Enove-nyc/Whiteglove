@@ -23,7 +23,18 @@ const ITEMS: Array<{ key: string; icon: IconName; label: string; href: string }>
 
 export default function MobileBottomBar({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname();
-  const items = [...ITEMS, { key: "account", icon: "account" as IconName, label: "Account", href: signedIn ? "/account" : signInHref() }];
+  // The label follows the signed-in state, exactly as the desktop icon row
+  // does — a bar that says "Account" to somebody with no account sends them to
+  // a sign-in box they did not ask for. Same state, same destination as before.
+  const items = [
+    ...ITEMS,
+    {
+      key: "account",
+      icon: "account" as IconName,
+      label: signedIn ? "Account" : "Sign in",
+      href: signedIn ? "/account" : signInHref(),
+    },
+  ];
 
   return (
     <nav

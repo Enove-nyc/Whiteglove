@@ -124,20 +124,28 @@ async function run(width, viewport) {
   // ---- the homepage search, which is the site's primary action -----------
   await flow("homepage vacation search reaches our own page", viewport, width, async (page) => {
     await open(page, "/");
-    const form = page.locator("form").filter({ has: page.locator('[name="destination"]') }).first();
-    assert(await form.count(), "no search form with a destination field on the front page");
-    // It must land on /hotels, not on a partner. That is the one decision the
-    // front page exists to defend.
-    assert((await form.getAttribute("action")) === "/hotels", "the front page search no longer posts to /hotels");
-    await form.locator('[name="destination"]').fill("Rome");
-    await Promise.all([page.waitForURL(/\/hotels/, { timeout: 30000 }), form.locator('button[type="submit"]').first().click()]);
-    assert(/destination=Rome/i.test(page.url()), `search lost the destination: ${page.url()}`);
+    // THE FRONT PAGE SEARCH IS THE SITE-WIDE ONE NOW, not the stay search it
+    // used to be: it is components/DestinationSearch and it goes to /search,
+    // which lists our own destinations, stays, activities and kosher listings.
+    // This check used to require a [name="destination"] field posting to
+    // /hotels and had been failing ever since — on a change that was made
+    // deliberately. What it is really defending is unchanged and still
+    // checked below: the front page search lands on US, never on a partner.
+    const input = page.locator("#home-hero-search");
+    assert(await input.count(), "no site search on the front page");
+    await input.fill("Rome");
+    await Promise.all([
+      page.waitForURL(/\/search\?q=/, { timeout: 30000 }),
+      page.getByRole("button", { name: /^search$/i }).first().click(),
+    ]);
+    assert(page.url().startsWith(BASE), `the front page search left the site: ${page.url()}`);
+    assert(/q=Rome/i.test(page.url()), `search lost the term: ${page.url()}`);
     return page.url().replace(BASE, "");
   });
 
   await flow("one search form on the front page, not two", viewport, width, async (page) => {
     await open(page, "/");
-    const forms = await page.locator('form [name="destination"]').count();
+    const forms = await page.locator("main form").count();
     assert(forms === 1, `${forms} search forms on the front page`);
   });
 
@@ -158,6 +166,12 @@ async function run(width, viewport) {
     await flow(`${label}: filters go into the address and reset again`, viewport, width, async (page) => {
       await open(page, path);
       await page.waitForTimeout(1500);
+      // The filters sit inside a collapsed <details><summary>Filter</summary>
+      // now, so every selectOption here timed out on an element that was
+      // present and not visible. Open the disclosure first; the rest of the
+      // check — address bar, "n of m", reset — is exactly as it was.
+      const disclosure = page.locator("main details").first();
+      if (await disclosure.count()) await disclosure.evaluate((node) => { node.open = true; });
       const select = page.locator("label", { hasText: filterLabel }).locator("select").first();
       assert(await select.count(), `no ${filterLabel} filter on ${path}`);
       const values = await select.locator("option").evaluateAll((options) => options.map((o) => o.value).filter(Boolean));
@@ -347,7 +361,11 @@ async function run(width, viewport) {
       const after = await page.locator("main").innerText();
       assert(after !== before, "pressing next changed nothing");
     }
-    assert(/three short steps/i.test(before), "the plan page no longer describes itself as three short steps");
+    // It counts the steps for the visitor ("Step 1 of 3") rather than
+    // promising "three short steps" in prose, which is what this used to
+    // match. The promise being checked — that the flow is three steps and
+    // says so before you start — is the same.
+    assert(/three short steps|step\s*1\s*of\s*3/i.test(before), "the plan page no longer presents itself as three steps");
   });
 
   await flow("an itinerary survives a reload", viewport, width, async (page) => {
@@ -383,7 +401,15 @@ async function run(width, viewport) {
     await page.waitForTimeout(1000);
     const text = await page.locator("main").innerText();
     assert(/advertis/i.test(text), "the advertising reason is missing from contact");
-    assert(await page.locator("form").count(), "no form on the contact page");
+    // /contact IS the reason chooser — the fields belong to a reason and
+    // appear for that reason only (lib/contact-reasons), so a form on the bare
+    // page would be the bug. Follow a reason and check the form is there.
+    assert(!(await page.locator("main form").count()), "the bare contact page should offer reasons, not a form");
+    await open(page, "/contact?reason=advertise");
+    await page.waitForTimeout(1000);
+    assert(await page.locator("main form").count(), "no form behind the advertising reason");
+    const required = await page.locator("main [required]").count();
+    assert(required > 0, "the contact form asks for nothing before sending");
   });
 
   // ---- maps and directions -------------------------------------------------
