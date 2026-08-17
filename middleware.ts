@@ -162,7 +162,7 @@ export async function middleware(request: NextRequest) {
 
   // On the admin hostname, a bare path means the admin screen OF THAT NAME —
   // and only if a screen of that name exists. /version stays where it is so
-  // the deployed build can always be checked, and anything else is a link back
+  // the deployment health check remains available, and anything else is a link back
   // out to the public site, handled below.
   const adminPath =
     onAdminHost && !pathname.startsWith("/admin") && pathname !== "/version"
@@ -261,8 +261,8 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // /version reports only the deployed commit — no private content. It stays
-  // reachable while the site is locked so the build can always be checked.
+  // /version is the deployment health check and contains no private content.
+  // It stays reachable while the site is locked so health checks keep working.
   if (pathname !== "/access" && pathname !== "/version" && !pathname.startsWith("/admin")) {
     let locked = hostIsOpen(request) ? false : await edgeSiteIsLocked();
     if (!locked && !hostIsOpen(request)) {
