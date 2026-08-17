@@ -570,8 +570,13 @@ describe("a provider answering with invented data says so", () => {
     // could be the market or a fixture — on the one screen whose entire
     // purpose is deciding which company to believe.
     const source = readFileSync("app/admin/travel/page.tsx", "utf8");
-    assert.match(source, /inspectConfiguredDuffelToken\(\)\.kind === "test"/);
+    assert.match(source, /kind === "test"/);
     assert.match(source, /invented/);
+    // Both directions. Warning only on the test key left silence carrying the
+    // good news, and the fingerprint cannot settle it — every Duffel key on
+    // earth prints as "duffel…", because both kinds share those six characters.
+    assert.match(source, /kind === "live"/);
+    assert.match(source, /real fares/i);
   });
 
   it("still never prints a key, whatever it says about one", () => {

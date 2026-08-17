@@ -42,17 +42,22 @@ const PROVIDER_VARS: Record<ProviderId, string[]> = {
 };
 
 /**
- * A provider answering with invented data, said out loud.
+ * Which Duffel account a column of prices came out of, said either way.
  *
  * Duffel issues separate tokens for test and live, and a test one returns
- * made-up flights at made-up prices. On this screen both read "Present", so a
- * Duffel column full of plausible fares could be either the market or a
- * fixture — and the whole point of the comparison is deciding which company to
- * trust. Nothing else here has two modes, so nothing else needs a word.
+ * made-up flights at made-up prices. Warning only on the test key made silence
+ * carry the good news, and silence is a poor way to say anything on a screen
+ * whose whole purpose is deciding which company to believe. The fingerprint
+ * cannot settle it either: both kinds begin with the same six characters, so
+ * every Duffel key on earth prints as "duffel…". So the row states the mode
+ * outright, in both directions. Nothing else here has two modes.
  */
-function sandboxNote(provider: ProviderId): string | null {
+function keyMode(provider: ProviderId): { text: string; invented: boolean } | null {
   if (provider !== "duffel") return null;
-  return inspectConfiguredDuffelToken().kind === "test" ? "Test key — these fares are invented" : null;
+  const kind = inspectConfiguredDuffelToken().kind;
+  if (kind === "test") return { text: "Test key — these fares are invented", invented: true };
+  if (kind === "live") return { text: "Live key — real fares, real account", invented: false };
+  return null;
 }
 
 /** Whether the environment has what this provider needs. Never the value. */
@@ -124,9 +129,18 @@ export default async function AdminTravelProvidersPage() {
                       ) : (
                         <span className={`${chip} border-stone-300 bg-stone-50 text-stone-600`}>Not set</span>
                       )}
-                      {sandboxNote(provider) ? (
-                        <p className="mt-1.5 text-[11px] font-semibold leading-4 text-amber-800">{sandboxNote(provider)}</p>
-                      ) : null}
+                      {(() => {
+                        const mode = keyMode(provider);
+                        return mode ? (
+                          <p
+                            className={`mt-1.5 text-[11px] font-semibold leading-4 ${
+                              mode.invented ? "text-amber-800" : "text-emerald-800"
+                            }`}
+                          >
+                            {mode.text}
+                          </p>
+                        ) : null;
+                      })()}
                       <ul className="mt-1.5 space-y-0.5">
                         {PROVIDER_VARS[provider].map((name) => {
                           const value = process.env[name];
