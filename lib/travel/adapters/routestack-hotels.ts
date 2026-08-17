@@ -109,6 +109,7 @@ export function routestackHotelsConfigured(): boolean {
 export const routestackHotels: ProviderSearch = {
   id: "routestack",
   category: "hotel",
+  fulfilment: "deep-link",
   configured: routestackHotelsConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {

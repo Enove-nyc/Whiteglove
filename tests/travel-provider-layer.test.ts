@@ -37,10 +37,17 @@ const offer = (over: OfferOverride = {}): TravelOffer => ({
 
 const provider = (
   id: ProviderSearch["id"],
-  behaviour: { offers?: TravelOffer[]; fail?: Error; delayMs?: number; configured?: boolean },
+  behaviour: {
+    offers?: TravelOffer[];
+    fail?: Error;
+    delayMs?: number;
+    configured?: boolean;
+    fulfilment?: ProviderSearch["fulfilment"];
+  },
 ): ProviderSearch => ({
   id,
   category: "car",
+  fulfilment: behaviour.fulfilment ?? "deep-link",
   configured: () => behaviour.configured !== false,
   async search(_query, signal) {
     if (behaviour.delayMs) {
@@ -671,5 +678,61 @@ describe("a timeout says whose patience ran out", () => {
       timeoutIn("lib/travel/adapters/duffel-flights.ts"),
       timeoutIn("lib/travel/adapters/routestack-flights.ts"),
     );
+  });
+});
+
+describe("no booking ever lands on White Glove", () => {
+  it("REFUSES A SELLING PROVIDER A VISITOR EVEN WHEN THE SETTING SAYS PUBLIC", async () => {
+    // The owner's rule: third parties take the booking, or nobody does. Duffel
+    // is a real booking API — its order is ours, and so is the refund, the
+    // chargeback and the phone call when a gate is locked. A stage is how far
+    // a provider has been trusted; this is what it may be trusted with, and no
+    // stage can grant it.
+    const { weWouldBeTheSeller } = await import("@/lib/travel/engine");
+    assert.equal(weWouldBeTheSeller("duffel", "flight"), true);
+    assert.equal(weWouldBeTheSeller("routestack", "flight"), false);
+    assert.equal(weWouldBeTheSeller("stay22", "hotel"), false);
+    assert.equal(weWouldBeTheSeller("routestack", "car"), false);
+
+    const source = readFileSync("lib/travel/engine.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.match(source, /audience === "admin" \|\| provider\.fulfilment !== "api-booking"/);
+  });
+
+  it("refuses it at the setting too, and does not offer it on the screen", () => {
+    const action = readFileSync("app/admin/travel/actions.ts", "utf8");
+    assert.match(action, /stage === "public" && weWouldBeTheSeller\(provider, category\)/);
+    const page = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(page, /sells \? null : <option value="public">/);
+    assert.match(page, /White Glove would be the seller/);
+  });
+
+  it("every adapter says which kind of company it is", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    for (const category of ["flight", "hotel", "car"] as const) {
+      for (const adapter of adaptersFor(category)) {
+        assert.ok(
+          ["api-booking", "deep-link", "widget"].includes(adapter.fulfilment),
+          `${adapter.id} does not say who sells`,
+        );
+      }
+    }
+    // Exactly one selling provider exists today, and it is the one the rule
+    // was written about. A second appearing without this test changing is
+    // worth a person looking at it.
+    const selling = (["flight", "hotel", "car"] as const).flatMap((c) =>
+      adaptersFor(c).filter((a) => a.fulfilment === "api-booking").map((a) => `${a.id}:${c}`),
+    );
+    assert.deepEqual(selling, ["duffel:flight"]);
+  });
+
+  it("the default stages never start a selling provider in public", async () => {
+    const { DEFAULT_STAGES } = await import("@/lib/travel/registry");
+    const { weWouldBeTheSeller } = await import("@/lib/travel/engine");
+    for (const [key, stage] of Object.entries(DEFAULT_STAGES)) {
+      const [provider, category] = key.split(":") as ["duffel", "flight"];
+      if (weWouldBeTheSeller(provider, category)) assert.notEqual(stage, "public", key);
+    }
   });
 });

@@ -91,6 +91,7 @@ export function routestackFlightsConfigured(): boolean {
 export const routestackFlights: ProviderSearch = {
   id: "routestack",
   category: "flight",
+  fulfilment: "deep-link",
   configured: routestackFlightsConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {

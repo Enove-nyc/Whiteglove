@@ -54,6 +54,8 @@ export function duffelFlightsConfigured(): boolean {
 export const duffelFlights: ProviderSearch = {
   id: "duffel",
   category: "flight",
+  // Duffel sells. That is why this one can never be public — see engine.ts.
+  fulfilment: "api-booking",
   configured: duffelFlightsConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {
