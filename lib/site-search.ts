@@ -18,7 +18,7 @@
 
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { getSearchIndex } from "@/lib/site-search-index";
-import { compact, normalize, queryTokens } from "@/lib/site-search-match";
+import { compact, damerauLevenshtein, maxEditsFor, normalize, queryTokens } from "@/lib/site-search-match";
 import {
   groupHits,
   hasHeritageIntent,
@@ -28,6 +28,7 @@ import {
   sortScored,
   type ScoredHit,
 } from "@/lib/site-search-rank";
+import { hasHebrew, hebrewToLatin } from "@/lib/hebrew-latin";
 import type { SearchResponse, SiteHit, SiteHitKind, SiteHitSection } from "@/lib/site-search-types";
 import { sectionForKind, SITE_HIT_SECTIONS } from "@/lib/site-search-types";
 import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
@@ -69,16 +70,55 @@ export async function searchSite(query: string, limit = 10): Promise<SearchRespo
 
   const heritageIntent = hasHeritageIntent(q);
   const index = await getSearchIndex();
-  const scored: ScoredHit[] = [];
-  const qTokens = queryTokens(q);
 
-  for (const doc of index) {
-    // Cheap gate before Damerau work: every meaningful query token must share a
-    // 2-letter prefix (or be a substring) with some indexed token, or the compact
-    // name must be within a plausible length of the query. Skips most tzaddikim.
-    if (!isPlausibleCandidate(qTokens, doc.normTokens, doc.normCompact)) continue;
-    const hit = scoreDocument(q, doc, heritageIntent);
-    if (hit) scored.push(hit);
+  const pass = (text: string): ScoredHit[] => {
+    const qTokens = queryTokens(text);
+    const scored: ScoredHit[] = [];
+    for (const doc of index) {
+      // Cheap gate before Damerau work: every meaningful query token must share
+      // a 2-letter prefix (or be a substring) with some indexed token, or the
+      // compact name must be close enough. Skips most tzaddikim.
+      if (!isPlausibleCandidate(qTokens, doc.normTokens, doc.normCompact)) continue;
+      const hit = scoreDocument(text, doc, heritageIntent);
+      if (hit) scored.push(hit);
+    }
+    return scored;
+  };
+
+  /**
+   * THREE ATTEMPTS, AND ONLY EVER AFTER THE ONE BEFORE FOUND NOTHING.
+   *
+   * Each of these was a real search that came back empty from a site that had
+   * the answer:
+   *
+   *   "tours and activities" — every token had to match something, and no page
+   *   carries all three. Dropping the words that carry no meaning leaves
+   *   "tours activities"; when even that finds nothing, the longest word alone
+   *   is a better answer than none.
+   *
+   *   בארדיאב — the town is indexed as Bardejov, with bardiov beside it, and
+   *   its Yiddish name בארטפעלד, which is Bartfeld. Both are right and neither
+   *   is a misspelling of the other, so no fuzziness bridges them. Sounding
+   *   the query out does: see lib/hebrew-latin.ts.
+   *
+   * The order matters and so does the guard: a query that already found
+   * something never reaches these, so nothing here can dilute a good result.
+   */
+  let scored = pass(q);
+
+  if (!scored.length) {
+    const meaningful = withoutStopWords(q);
+    if (meaningful && meaningful !== q) scored = pass(meaningful);
+  }
+
+  if (!scored.length && hasHebrew(q)) {
+    const sounded = hebrewToLatin(q);
+    if (sounded) scored = pass(sounded);
+  }
+
+  if (!scored.length) {
+    const longest = longestWord(q);
+    if (longest && longest !== q) scored = pass(longest);
   }
 
   const sorted = sortScored(scored);
@@ -91,6 +131,34 @@ export async function searchSite(query: string, limit = 10): Promise<SearchRespo
     heritageIntent,
     mode: "search",
   };
+}
+
+/**
+ * Words that mean nothing on their own in a search of this site.
+ *
+ * Not a general stop-word list — "kosher" and "jewish" stay, because on this
+ * site they narrow a search rather than padding it. These are the joining
+ * words that a person types because English needs them.
+ */
+const STOP_WORDS = new Set([
+  "a", "an", "and", "are", "at", "be", "by", "do", "for", "from", "how", "in",
+  "is", "it", "me", "my", "near", "of", "on", "or", "the", "to", "what", "when",
+  "where", "with",
+]);
+
+export function withoutStopWords(query: string): string {
+  const kept = query
+    .split(/\s+/)
+    .filter((word) => word && !STOP_WORDS.has(word.toLowerCase().replace(/[^a-z]/g, "")));
+  return kept.length ? kept.join(" ") : "";
+}
+
+/** The word most likely to be the point of the question. */
+export function longestWord(query: string): string {
+  return withoutStopWords(query)
+    .split(/\s+/)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)[0] ?? "";
 }
 
 /**
@@ -182,7 +250,16 @@ function isPlausibleCandidate(qTokens: string[], docTokens: string[], docCompact
     // Compact fuzzy: “dolomits” vs “thedolomites” / “dolomites”.
     if (qt.length >= 4) {
       const cq = compact(qt);
-      return docCompact.some((c) => Math.abs(c.length - cq.length) <= 3 && (c.startsWith(cq.slice(0, 3)) || cq.startsWith(c.slice(0, 3))));
+      const near = docCompact.filter((c) => Math.abs(c.length - cq.length) <= 3);
+      if (near.some((c) => c.startsWith(cq.slice(0, 3)) || cq.startsWith(c.slice(0, 3)))) return true;
+      // A VARIANT THAT DIFFERS AT THE FRONT IS STILL A CANDIDATE. Every gate
+      // above compares the first two or three letters, so a word whose first
+      // letters are the ones that differ can never be reached at all. That is
+      // rare in English and ordinary in Yiddish, where the ayin written as a
+      // vowel is optional: קרעסטיר and קערעסטיר are the same place, and the
+      // difference is the second letter. Paid for only by tokens that got
+      // past nothing else.
+      return near.some((c) => damerauLevenshtein(c, cq) <= maxEditsFor(cq));
     }
     return false;
   });
