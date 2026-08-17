@@ -3,29 +3,50 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 /**
- * How this site is deployed, and the one setting that took a day to find.
+ * How this site is deployed, and the setting that took two attempts to find.
  *
- * Every single deployment sent a "Deploy Crashed!" email while the site itself
- * never went down. The explanation is in the first line of the deploy log:
- * the service mounts a volume. lib/media.ts keeps uploaded adverts and
- * portraits on it, so it is not a leftover and cannot be detached.
+ * Every single deployment sends a "Deploy Crashed!" email while the site never
+ * goes down.
  *
- * A volume can only be mounted by one container. Railway's default is to start
- * the new container before stopping the old one, so the new one reaches for a
- * volume the old one is still holding, fails, and is reported as crashed —
- * then retries under the restart policy until the old container lets go. Hence
- * a crash notice on a deploy that succeeds, and deploys that sometimes took
- * twelve minutes instead of three.
+ * THE FIRST EXPLANATION WAS WRONG, and it is left here because it was
+ * plausible and somebody will think of it again. The service mounts a volume —
+ * lib/media.ts keeps uploaded adverts and portraits on it — and a volume can
+ * only be mounted by one container, so a new container reaching for a volume
+ * the old one still held would fail and be reported as crashed.
+ * overlapSeconds: 0 stops the old container first and made no difference: the
+ * next deployment emailed a crash exactly as before.
  *
- * overlapSeconds: 0 stops the old container first. The cost is a few seconds
- * where the site is not being served, which is the honest price of a volume.
+ * WHAT IT ACTUALLY LOOKS LIKE. Railway's drainingSeconds is the time between
+ * sending the previous deploy a SIGTERM and sending it a SIGKILL. A process
+ * that is killed does not exit zero — it exits 137 — and a container exiting
+ * 137 on every release is a crash as far as the platform is concerned, whether
+ * or not the release worked. Nothing about the new deployment is wrong; it is
+ * the old one's death being reported.
+ *
+ * Next's own self-hosting guide asks for this directly: on SIGTERM the server
+ * finishes in-flight requests and runs pending after() callbacks before
+ * exiting, and it says platforms should allow ten to thirty seconds to do it.
+ * Nothing was allowing any. Thirty seconds is the top of their range, because
+ * the cost of being generous is a slower release and the cost of being mean is
+ * a killed process halfway through answering somebody.
  */
 const config = JSON.parse(readFileSync("railway.json", "utf8")) as {
   deploy?: Record<string, unknown>;
 };
 
 describe("the deploy configuration", () => {
-  it("DOES NOT OVERLAP CONTAINERS, BECAUSE THIS SERVICE HAS A VOLUME", () => {
+  it("GIVES THE OLD CONTAINER TIME TO DIE OF ITS OWN ACCORD", () => {
+    // Killed, it exits 137 and the platform calls that a crash. Next asks for
+    // ten to thirty seconds to finish in-flight requests and pending after()
+    // callbacks.
+    const draining = Number(config.deploy?.drainingSeconds);
+    assert.ok(draining >= 10, `drainingSeconds is ${draining}; Next's guide asks for at least ten`);
+  });
+
+  it("does not overlap containers, because this service has a volume", () => {
+    // A volume mounts to one container at a time. This did not stop the crash
+    // notices — see the note above — but it is still the right setting for a
+    // service that cannot run two copies of itself.
     assert.equal(config.deploy?.overlapSeconds, 0);
   });
 
