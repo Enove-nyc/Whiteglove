@@ -281,19 +281,18 @@ describe("the page that said it was being built", () => {
   });
 });
 
-describe("the owner's door, in the minimal footer", () => {
-  // REVERSED, at the owner's explicit word. /admin used to be kept out of the
-  // footer entirely — it protected nothing (gated, and robots.txt disallows
-  // it) but reading "one person runs this, and here is his way in" from three
-  // hundred pages was a branding cost with no security benefit. The redesign
-  // brief named "Contact, Advertise, Terms, Privacy, Admin" as exactly five
-  // footer links, Admin included, so this is taken as a considered decision
-  // rather than an oversight — see components/Footer.tsx's own comment.
-  it("is exactly five links, Admin among them, and nothing gated stronger than that", () => {
+describe("the owner's door is not in the footer", () => {
+  // REVERSED TWICE, and this is where it rests. It was out (a door nobody
+  // but the owner uses, advertised from three hundred pages), then in at his
+  // explicit word as one of five named footer links, and now out again at his
+  // word — admin is reached at its own subdomain. The link protected nothing
+  // either way; what settles it is that it is furniture for one person on a
+  // page written for everybody else.
+  it("carries no Admin link at all", () => {
     const footer = readFileSync("components/Footer.tsx", "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/\/\/[^\n]*/g, "");
-    assert.match(footer, /"\/admin"/);
-    assert.doesNotMatch(footer, /Owner login/, "still just \"Admin\", not a phrase that reads as an invitation");
+    assert.doesNotMatch(footer, /"\/admin"/, "the owner's door is not customer-facing furniture");
+    assert.doesNotMatch(footer, /Admin/, "no Admin label in the public footer");
   });
 });

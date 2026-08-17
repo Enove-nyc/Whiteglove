@@ -53,7 +53,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="lg:col-start-1 lg:row-start-1">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Your White Glove account</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Keep every journey in one place.</h1>
+          {/* h2, not a second h1. The page has one heading — the sign-in box's
+              "Your personal travel book.", which the form is labelled by. This
+              column is the pitch beside it; two h1s gave the page two titles
+              and made a screen reader announce a second start of document. */}
+          <h2 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">Keep every journey in one place.</h2>
           <p className="mt-7 max-w-xl text-lg leading-8 text-stone-600">Save kevarim, keep your travel notes together, and return to a personalized itinerary whenever you are ready to plan.</p>
           <div className="mt-10 space-y-4 border-t border-[var(--gold-light)] pt-7 text-stone-700">
             <p>Save destinations and map links.</p>

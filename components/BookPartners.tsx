@@ -10,6 +10,7 @@ import type { AffiliateRequest } from "@/lib/affiliate/partners";
 import { goHref } from "@/lib/affiliate/request";
 import { isPricedFlightRow } from "@/lib/flight-book-href";
 import { useFocusTrap } from "@/components/useFocusTrap";
+import { useRequireSignIn } from "@/components/SignInGate";
 import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
@@ -65,7 +66,6 @@ function Field({ label, children, className = "" }: { label: string; children: R
   );
 }
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
-const LS_KEY = "whiteGloveItinerary";
 
 /**
  * Hand the traveller off, by asking /go for the partner rather than knowing one.
@@ -133,6 +133,7 @@ export default function BookPartners({
   initialKind?: Kind;
 }) {
   const [pay, setPay] = useState<Pay>("cash");
+  const requireSignIn = useRequireSignIn();
   const [kind, setKind] = useState<Kind>(initialKind);
   const [pending, setPending] = useState<PendingBooking | null>(null);
   const [live, setLive] = useState<PartnerLiveCapabilities>({ hotels: false, flights: false, cars: false });
@@ -156,35 +157,44 @@ export default function BookPartners({
     };
   }, []);
 
+  /**
+   * Put a booked flight, stay or car onto the traveler's trip.
+   *
+   * SIGNED IN, AND ONTO THE ACCOUNT'S OWN TRIP. This used to merge into
+   * whatever localStorage held and write it back, so a signed-out visitor
+   * could book through a partner and "add it to the trip" into a browser
+   * that no other device would ever see. The sign-in dialog opens first and
+   * the add runs on the far side of it, against the account's real trip.
+   */
   function addToTrip(patch: { flights?: ItinFlight[]; lodging?: ItinLodging[]; activities?: ItinActivity[]; dates?: string[] }) {
-    let itin: Itinerary = emptyItinerary();
-    try {
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved) itin = { ...emptyItinerary(), ...JSON.parse(saved) };
-    } catch {
-      /* start fresh */
-    }
-    const next: Itinerary = {
-      ...itin,
-      flights: [...(itin.flights ?? []), ...(patch.flights ?? [])],
-      lodging: [...(itin.lodging ?? []), ...(patch.lodging ?? [])],
-      activities: [...(itin.activities ?? []), ...(patch.activities ?? [])],
-    };
-    const dates = (patch.dates ?? []).filter(Boolean).sort();
-    if (dates.length) {
-      if (!next.startDate || dates[0] < next.startDate) next.startDate = dates[0];
-      if (!next.endDate || dates[dates.length - 1] > next.endDate) next.endDate = dates[dates.length - 1];
-    }
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-    void fetch("/api/account/itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itinerary: next }),
-    }).catch(() => undefined);
+    requireSignIn(async () => {
+      let itin: Itinerary = emptyItinerary();
+      try {
+        const res = await fetch("/api/account/itinerary", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.itinerary) itin = { ...emptyItinerary(), ...data.itinerary };
+        }
+      } catch {
+        /* start fresh */
+      }
+      const next: Itinerary = {
+        ...itin,
+        flights: [...(itin.flights ?? []), ...(patch.flights ?? [])],
+        lodging: [...(itin.lodging ?? []), ...(patch.lodging ?? [])],
+        activities: [...(itin.activities ?? []), ...(patch.activities ?? [])],
+      };
+      const dates = (patch.dates ?? []).filter(Boolean).sort();
+      if (dates.length) {
+        if (!next.startDate || dates[0] < next.startDate) next.startDate = dates[0];
+        if (!next.endDate || dates[dates.length - 1] > next.endDate) next.endDate = dates[dates.length - 1];
+      }
+      await fetch("/api/account/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itinerary: next }),
+      }).catch(() => undefined);
+    }, "Sign in to add this to your trip");
   }
 
   // Whether the tab you are looking at searches here or hands off to a

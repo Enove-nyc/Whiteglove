@@ -102,7 +102,20 @@ export function matchField(
     if (token.startsWith(q) && q.length >= minPrefix) return { ok: true, rank: 2, fuzzy: false, matched: field };
   }
 
-  if (f.includes(q) && q.length >= 3) return { ok: true, rank: 3, fuzzy: false, matched: field };
+  // INSIDE A LONGER WORD IS NOT A MATCH — for a single word.
+  //
+  // "Rome" is a substring of "promenade", so searching Rome returned seaside
+  // promenades ranked as solidly as the city, and did it for every short
+  // place name on the site: Bath inside "bathroom", Ur inside "Zurich". A
+  // one-word query has to land on a word — the whole field, a whole token, or
+  // the start of one, all of which are ranked above this line.
+  //
+  // A MULTI-WORD QUERY IS DIFFERENT: "sally mayer" inside "Around Via Sally
+  // Mayer and the Via Guastalla synagogue" is the visitor quoting a phrase
+  // out of the middle of a name, which is exactly what they meant. Those keep
+  // working, one rank below a name match.
+  const isPhrase = q.includes(" ");
+  if (isPhrase && f.includes(q) && q.length >= 3) return { ok: true, rank: 3, fuzzy: false, matched: field };
 
   if (!allowFuzzy) return { ok: false };
 

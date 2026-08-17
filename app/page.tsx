@@ -10,6 +10,8 @@ import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { featuredDestinations } from "@/lib/featured-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons/Icon";
+import TravelAssistantBox from "@/components/TravelAssistantBox";
+import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
 import type { TripTheme } from "@/data/vacation-destinations";
@@ -186,6 +188,58 @@ export default async function Home() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* ---- 4. The AI assistant ------------------------------------------
+          Public, and labelled as what it is. It sits below the three doors and
+          well below the search box at the top, because the search returns
+          pages this site checked and this returns prose a model wrote — the
+          quieter of the two belongs lower. Everything it claims about itself
+          is in lib/assistant-disclosure.ts, so the wording here, the wording
+          beside the input and the label on every answer cannot drift apart. */}
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+        <div className="rounded-xl border border-dashed border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{ASSISTANT_HOME_LABEL}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
+          <div className="mt-4">
+            <TravelAssistantBox labelledOutside />
+          </div>
+        </div>
+      </section>
+
+      {/* ---- 4. Explore ---------------------------------------------------
+          The front page had been cut back to a search, six places and three
+          doors, which is a clean opening and a poor map: things to do, where
+          to stay, kosher food, heritage, the map, the directory, who this is
+          and how it checks what it prints were all real parts of the site
+          with no way in from the page everybody lands on. This is a plain
+          list of names — no pictures, no counts, no sales copy — so it adds a
+          way through without adding weight. */}
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Explore</h2>
+        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
+          {(
+            [
+              { label: "Things to do", href: "/things-to-do" },
+              { label: "Where to stay", href: "/hotels" },
+              { label: "Kosher food", href: "/kosher" },
+              { label: "Jewish heritage", href: "/heritage" },
+              { label: "Map", href: "/map" },
+              { label: "Directory", href: "/directory" },
+              { label: "About", href: "/about" },
+              { label: "Verification", href: "/verification" },
+            ] as const
+          ).map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                className="flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] underline-offset-4 transition hover:decoration-[var(--gold)]"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {inlinePromotions.length ? (

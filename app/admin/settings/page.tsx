@@ -84,6 +84,11 @@ export default async function AdminSettingsPage() {
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
+            href="/admin/travel"
+            title="Travel providers"
+            detail="Who supplies flights, hotels and cars — and who sees them."
+          />
+          <Card
             href="/admin/settings/travel-essentials"
             title="Travel Essentials"
             detail="Insurance, eSIM, transfers and tours."

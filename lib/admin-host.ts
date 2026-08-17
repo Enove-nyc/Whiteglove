@@ -51,6 +51,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "settings",
   "shomrim",
   "team",
+  "travel",
   "users",
 ] as const;
 

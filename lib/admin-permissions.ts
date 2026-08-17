@@ -54,6 +54,10 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   // The one screen that can charge a card and issue a ticket. Filed with the
   // money rather than with the content, and gated by the same area.
   ["/admin/duffel", "money"],
+  // Which company supplies flights, hotels and cars — and, in one column, who
+  // is allowed to see them. Filed with the money because setting a provider
+  // live is a commercial decision, and gated by the same area as Duffel.
+  ["/admin/travel", "money"],
   ["/admin/advertisements", "advertisements"],
   ["/admin/pages", "content"],
   ["/admin/photos", "content"],

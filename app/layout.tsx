@@ -9,7 +9,6 @@ import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getBetaNotice } from "@/lib/beta-notice-store";
 import { googleConfig } from "@/lib/google-signin";
 import { smsConfigured } from "@/lib/sms";
@@ -109,11 +108,13 @@ export default async function RootLayout({
             </SignInGateProvider>
           </BookingLinkProvider>
         </div>
-        {/* Real page-speed numbers from real visitors, on the Speed Insights
-            tab in Vercel. Last in the body so it never delays anything the
-            visitor came for, and only ever measures — it reads no content and
-            sends nothing about who the visitor is. */}
-        <SpeedInsights />
+        {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
+            The component asks for /_vercel/speed-insights/script.js, which
+            only exists on Vercel's edge — served from Railway it is a 404 on
+            every page load of every visit, measuring nothing. Removed rather
+            than left as a broken request in everybody's browser. The package
+            stays in package.json; put the component back if the site ever
+            returns to Vercel. */}
       </body>
     </html>
   );

@@ -171,7 +171,12 @@ function isPlausibleCandidate(qTokens: string[], docTokens: string[], docCompact
   return qTokens.every((qt) => {
     if (qt.length < 2) return docTokens.some((t) => t.startsWith(qt));
     const prefix = qt.slice(0, 2);
-    if (docTokens.some((t) => t.startsWith(prefix) || t.includes(qt) || (qt.includes(t) && t.length >= 4))) {
+    // `t.includes(qt)` used to be here — the prefilter's half of the
+    // "promenade contains rome" problem. A token that merely swallows the
+    // query somewhere in its middle is not a candidate; one that starts with
+    // it, or that the query itself contains (a longer query against a shorter
+    // real word), still is.
+    if (docTokens.some((t) => t.startsWith(prefix) || (qt.includes(t) && t.length >= 4))) {
       return true;
     }
     // Compact fuzzy: “dolomits” vs “thedolomites” / “dolomites”.

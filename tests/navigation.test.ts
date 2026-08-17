@@ -140,15 +140,48 @@ describe("the header renders the list rather than its own copy", () => {
     assert.match(NAVBAR, /label=\{signedIn \? "Account" : "Sign in"\}/);
   });
 
-  it("opens dropdowns on hover, click and focus — and click cannot undo focus", () => {
-    assert.match(NAVBAR, /onMouseEnter=\{\(\) => openOnHover/);
-    assert.match(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
-    assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick/);
-    // The pre-interaction state is recorded at pointer-down, before focus
-    // fires — the fix for the menu that flashed open and shut on click.
-    assert.match(NAVBAR, /onPointerDown=\{\(\) => \{ openBeforePress\.current = open; \}\}/);
+  it("a press opens the menu; hover and focus never do", () => {
+    // THE RULE THAT REPLACED "opens on hover, click and focus". Opening on
+    // hover meant the click that followed the hover read the menu as already
+    // open and shut it again, so the buttons looked dead — reported from the
+    // live site as all four dropdowns failing to open. Hover now only slides
+    // between menus once one is open, and nothing opens the first one but a
+    // press.
+    assert.match(NAVBAR, /onMouseEnter=\{\(\) => switchOnHover\(key\)\}/);
+    assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick\(key\)\}/);
+    // Hover only moves an already-open menu; it never opens the first one.
+    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // Every decision is made from live state through the functional updater —
+    // that staleness is what let hover and click disagree.
+    assert.match(NAVBAR, /setMenu\(\(current\) =>/);
+    // Neither opening on focus nor the pointer-down bookkeeping it needed.
+    assert.doesNotMatch(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
+    assert.doesNotMatch(NAVBAR, /openBeforePress/);
     // Focus leaving a category closes its panel.
     assert.match(NAVBAR, /onBlur=/);
+  });
+
+  it("clicking a second menu switches to it instead of closing everything", () => {
+    // THE HOVER-SWITCH BUG. With one menu open, moving the pointer onto
+    // another opened it (correct) — and then the click on it read "already
+    // open" and shut it, so pressing a second menu closed the whole bar. A
+    // toggle has to know WHY a menu is open, so `pressed` records only what a
+    // press opened; hover moves `open` and never touches it.
+    assert.match(NAVBAR, /open: string \| null; pressed: string \| null/);
+    assert.match(NAVBAR, /current\.pressed === key \? \{ open: null, pressed: null \} : \{ open: key, pressed: key \}/);
+    // Hover leaves `pressed` alone.
+    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // One piece of state, so the two halves cannot go stale against each other.
+    assert.doesNotMatch(NAVBAR, /setOpenKey\(/);
+  });
+
+  it("Escape closes and gives the trigger its focus back, and a press outside closes", () => {
+    assert.match(NAVBAR, /event\.key !== "Escape"/);
+    assert.match(NAVBAR, /triggerRefs\.current\[key\]\?\.focus\(\)/);
+    assert.match(NAVBAR, /addEventListener\("mousedown", closeOutside\)/);
+    // A real button, so Enter and Space are clicks and need no separate path.
+    assert.match(NAVBAR, /type="button"/);
+    assert.match(NAVBAR, /aria-expanded=\{open\}/);
   });
 
   it("sign in points at the sign-in page", () => {

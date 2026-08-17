@@ -3,13 +3,21 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      // Planning and Services were two pages saying overlapping things: one
-      // listed the services, the other described the main one. They are a
-      // single Services page now. The old address keeps working —
-      // permanently, so a search engine carries its ranking across rather than
-      // treating the new page as a stranger — because links to it exist in
-      // the wild and in people's bookmarks.
-      { source: "/planning", destination: "/services", permanent: true },
+      // /planning and /services were two pages about done-for-you trip
+      // planning, and that offer was removed from the site outright (commit
+      // "Remove personal trip planning from the site outright", and AGENTS.md
+      // — it is not coming back). /services went with it.
+      //
+      // WHICH LEFT /planning REDIRECTING TO A 404: the old address kept its
+      // promise to keep working and landed on a page that no longer existed.
+      // Both now point at the planner the site actually offers, so an old
+      // bookmark or a search result reaches a working page rather than a dead
+      // end. Permanent, so the ranking carries across.
+      //
+      // These are redirects, not an offer: /plan gives recommendations and
+      // the visitor does the planning. Nothing here restores a service.
+      { source: "/planning", destination: "/plan", permanent: true },
+      { source: "/services", destination: "/plan", permanent: true },
       // The same story, for the same reason. /book and /booking were two
       // travel-booking pages: different headings ("Book with cash, or with
       // miles" and "Flights & hotels"), different search components, two

@@ -7,6 +7,7 @@ import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
 import AlertSignup from "@/components/AlertSignup";
 import DestinationBookingOptions from "@/components/DestinationBookingOptions";
+import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
@@ -21,7 +22,7 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { fromHechsherState, fromKosherClaim, reconfirmBeforeTravel } from "@/lib/trust-status";
 import {
-  addToTripHref,
+  destinationHref,
   factsFor,
   kosherAvailability,
   shabbosPracticality,
@@ -628,12 +629,14 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             >
               See places to stay in {destination.name}
             </Link>
-            <Link
-              href={addToTripHref(destination)}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Add {destination.name} to a trip
-            </Link>
+            {/* An action, not a link to the questionnaire — see
+                components/AddDestinationToTrip.tsx for what this used to do
+                and why it was the one ungated trip action on the site. */}
+            <AddDestinationToTrip
+              name={destination.name}
+              href={destinationHref(destination)}
+              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)] disabled:opacity-60"
+            />
           </div>
         </div>
       </section>

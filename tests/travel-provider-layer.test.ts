@@ -1,0 +1,518 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+import { cheapestFirst, comparable, lowestComparable } from "@/lib/travel/compare";
+import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
+import { providerIsAllowed, stageOf, DEFAULT_STAGES } from "@/lib/travel/registry";
+import { searchProviders } from "@/lib/travel/search";
+import { categoriseError, foldAttempt } from "@/lib/travel/telemetry";
+import type { ProviderSearch } from "@/lib/travel/provider";
+import type { TravelOffer } from "@/lib/travel/types";
+
+/**
+ * The provider layer's three promises: nothing reaches a visitor before the
+ * owner says so, one slow company cannot hold up a search, and two offers are
+ * never called comparable unless they really are.
+ */
+
+type OfferOverride = Omit<Partial<TravelOffer>, "meta"> & { meta?: Partial<TravelOffer["meta"]> };
+
+const offer = (over: OfferOverride = {}): TravelOffer => ({
+  id: over.id ?? "a",
+  category: over.category ?? "flight",
+  headline: over.headline ?? "Test",
+  price: over.price ?? { amount: 200, currency: "USD" },
+  fulfilment: over.fulfilment ?? "deep-link",
+  meta: {
+    provider: "duffel",
+    providerOfferId: "x",
+    refundable: true,
+    cabin: "economy",
+    bags: 1,
+    stops: 0,
+    cancellation: "24h",
+    ...over.meta,
+  },
+});
+
+const provider = (
+  id: ProviderSearch["id"],
+  behaviour: { offers?: TravelOffer[]; fail?: Error; delayMs?: number; configured?: boolean },
+): ProviderSearch => ({
+  id,
+  category: "car",
+  configured: () => behaviour.configured !== false,
+  async search(_query, signal) {
+    if (behaviour.delayMs) {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, behaviour.delayMs);
+        signal.addEventListener("abort", () => {
+          clearTimeout(timer);
+          const error = new Error("aborted");
+          error.name = "AbortError";
+          reject(error);
+        });
+      });
+    }
+    if (behaviour.fail) throw behaviour.fail;
+    return behaviour.offers ?? [];
+  },
+});
+
+const QUERY = { destination: "Kraków", startDate: "2026-09-07", endDate: "2026-09-14" };
+
+describe("nothing reaches a visitor until it is set live", () => {
+  it("RouteStack starts off in every category", () => {
+    for (const category of ["car", "hotel", "flight"] as const) {
+      assert.equal(stageOf({}, "routestack", category), "off");
+      assert.equal(providerIsAllowed({}, "routestack", category, "admin"), false);
+      assert.equal(providerIsAllowed({}, "routestack", category, "public"), false);
+    }
+  });
+
+  it("a provider in testing answers the admin and never a visitor", () => {
+    const stages = { "routestack:car": "testing" } as const;
+    assert.equal(providerIsAllowed(stages, "routestack", "car", "admin"), true);
+    assert.equal(providerIsAllowed(stages, "routestack", "car", "public"), false);
+  });
+
+  it("only an explicit public stage reaches visitors", () => {
+    const stages = { "routestack:car": "public" } as const;
+    assert.equal(providerIsAllowed(stages, "routestack", "car", "public"), true);
+  });
+
+  it("the companies already serving visitors keep serving them", () => {
+    // This file describes the site as it is. Turning these down would be a
+    // change to the public site dressed up as configuration.
+    assert.equal(DEFAULT_STAGES["stay22:hotel"], "public");
+    assert.equal(DEFAULT_STAGES["travelpayouts:flight"], "public");
+    // Duffel has always been admin-only, guarded at the endpoint.
+    assert.equal(DEFAULT_STAGES["duffel:flight"], "testing");
+  });
+});
+
+describe("one provider cannot ruin a search", () => {
+  it("returns what worked when another throws", async () => {
+    const outcome = await searchProviders(
+      "car",
+      [
+        provider("routestack", { fail: Object.assign(new Error("boom"), { status: 500 }) }),
+        provider("stay22", { offers: [offer({ id: "kept", category: "car" })] }),
+      ],
+      QUERY,
+      { record: false },
+    );
+    assert.equal(outcome.offers.length, 1);
+    assert.equal(outcome.offers[0].id, "kept");
+    assert.equal(outcome.partial, true);
+    assert.equal(outcome.tried.find((t) => t.provider === "routestack")?.error, "provider-error");
+  });
+
+  it("a slow provider is abandoned at the deadline, not waited for", async () => {
+    const started = Date.now();
+    const outcome = await searchProviders(
+      "car",
+      [
+        provider("routestack", { delayMs: 5000 }),
+        provider("stay22", { offers: [offer({ id: "fast", category: "car" })] }),
+      ],
+      QUERY,
+      { record: false, deadlineMs: 300 },
+    );
+    const elapsed = Date.now() - started;
+    assert.ok(elapsed < 2000, `search took ${elapsed}ms — the deadline did not fire`);
+    assert.equal(outcome.offers.length, 1);
+    assert.equal(outcome.tried.find((t) => t.provider === "routestack")?.timedOut, true);
+  });
+
+  it("an unconfigured provider is not a failure", async () => {
+    const outcome = await searchProviders(
+      "car",
+      [provider("routestack", { configured: false }), provider("stay22", { offers: [] })],
+      QUERY,
+      { record: false },
+    );
+    assert.equal(outcome.partial, false, "a company we have not signed up with is a normal state");
+    assert.equal(outcome.tried.find((t) => t.provider === "routestack")?.error, "not-configured");
+  });
+});
+
+describe("two offers are never called comparable unless they are", () => {
+  it("accepts genuinely like-for-like", () => {
+    assert.equal(comparable(offer(), offer({ id: "b" })).comparable, true);
+  });
+
+  it("refuses on cabin, bags, refundability, currency and how it is booked", () => {
+    const cases: Array<[OfferOverride, string]> = [
+      [{ meta: { cabin: "business" } }, "cabin"],
+      [{ meta: { bags: 0 } }, "baggage"],
+      [{ meta: { refundable: false } }, "refundability"],
+      [{ price: { amount: 200, currency: "EUR" } }, "currency"],
+      [{ fulfilment: "api-booking" }, "how it is booked"],
+    ];
+    for (const [over, field] of cases) {
+      const verdict = comparable(offer(), offer({ id: "b", ...over }));
+      assert.equal(verdict.comparable, false, `${field} should have stopped it`);
+      assert.ok(verdict.differences.includes(field), `${field} not named: ${verdict.differences.join()}`);
+    }
+  });
+
+  it("treats unknown as not comparable — silence is not a yes", () => {
+    const unknown = offer({ id: "b", meta: { refundable: "unknown" } });
+    assert.equal(comparable(offer(), unknown).comparable, false);
+    // And two unknowns are still not a match.
+    assert.equal(comparable(offer({ meta: { refundable: "unknown" } }), unknown).comparable, false);
+  });
+
+  it("refuses to name a cheapest across unlike products", () => {
+    const cheapButWorse = offer({ id: "b", price: { amount: 90, currency: "USD" }, meta: { bags: 0 } });
+    assert.equal(lowestComparable([offer(), cheapButWorse]), null);
+  });
+
+  it("names the cheapest when they really are alternatives", () => {
+    const cheaper = offer({ id: "b", price: { amount: 150, currency: "USD" } });
+    assert.equal(lowestComparable([offer(), cheaper])?.id, "b");
+  });
+});
+
+describe("what the admin will read", () => {
+  it("folds an attempt into a rolling record", () => {
+    const first = foldAttempt(undefined, { provider: "routestack", category: "car", ok: true, ms: 400, count: 3 }, "2026-08-17T10:00:00Z");
+    assert.equal(first.calls, 1);
+    assert.equal(first.averageMs, 400);
+    assert.equal(first.lastSuccessAt, "2026-08-17T10:00:00Z");
+
+    const second = foldAttempt(first, { provider: "routestack", category: "car", ok: false, ms: 800, count: 0, error: "timeout" }, "2026-08-17T10:05:00Z");
+    assert.equal(second.calls, 2);
+    assert.equal(second.failures, 1);
+    assert.equal(second.averageMs, 600);
+    assert.equal(second.recentErrors[0].error, "timeout");
+    // A failure must not erase the last time it worked.
+    assert.equal(second.lastSuccessAt, "2026-08-17T10:00:00Z");
+  });
+
+  it("groups errors into kinds that have different fixes", () => {
+    assert.equal(categoriseError(Object.assign(new Error("x"), { status: 401 })), "auth");
+    assert.equal(categoriseError(Object.assign(new Error("x"), { status: 429 })), "rate-limited");
+    assert.equal(categoriseError(Object.assign(new Error("x"), { status: 503 })), "provider-error");
+    assert.equal(categoriseError(Object.assign(new Error("nope"), { name: "AbortError" })), "timeout");
+    assert.equal(categoriseError(new Error("fetch failed")), "network");
+  });
+
+  it("keeps nothing a traveler typed", () => {
+    // The record is provider, category, timing and an error KIND. If a
+    // provider's own message could reach the store, a destination or a date
+    // could travel with it.
+    const folded = foldAttempt(undefined, { provider: "routestack", category: "car", ok: false, ms: 10, count: 0, error: "bad-request" }, "2026-08-17T10:00:00Z");
+    assert.deepEqual(Object.keys(folded.recentErrors[0]).sort(), ["at", "error"]);
+  });
+});
+
+describe("RouteStack is reached the way RouteStack asks", () => {
+  it("signs apiKey:timestamp:nonce as base64url — hex is refused as a dead account", async () => {
+    // THE ENCODING IS THE WHOLE TRICK. Signed as hex the request is
+    // well-formed and refused with "partner account is not found or not
+    // active", which reads like a provisioning problem rather than a wrong
+    // digest. This test is here so nobody has to learn that twice.
+    const { signPartnerRequest } = await import("@/lib/travel/adapters/routestack-auth");
+    const { createHmac } = await import("node:crypto");
+    const config = { apiKey: "pub-key", secret: "the-secret", base: "https://example.test" };
+    const message = "pub-key:1700000000:abc";
+    assert.equal(
+      signPartnerRequest(config, 1700000000, "abc"),
+      createHmac("sha256", "the-secret").update(message).digest("base64url"),
+    );
+    assert.notEqual(
+      signPartnerRequest(config, 1700000000, "abc"),
+      createHmac("sha256", "the-secret").update(message).digest("hex"),
+    );
+  });
+
+  it("signs with the secret rather than sending it", async () => {
+    const { readFileSync } = await import("node:fs");
+    const source = readFileSync("lib/travel/adapters/routestack-auth.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(source, /apiSecret:/, "the secret must not travel in the request body");
+    assert.match(source, /hmac: signPartnerRequest/);
+  });
+
+  it("a different nonce or timestamp gives a different signature", async () => {
+    const { signPartnerRequest } = await import("@/lib/travel/adapters/routestack-auth");
+    const config = { apiKey: "k", secret: "s", base: "https://example.test" };
+    const base = signPartnerRequest(config, 1700000000, "abc");
+    assert.notEqual(signPartnerRequest(config, 1700000001, "abc"), base, "the timestamp must matter");
+    assert.notEqual(signPartnerRequest(config, 1700000000, "abd"), base, "the nonce must matter");
+  });
+
+  it("needs both halves of the credential, never one", async () => {
+    const { routestackConfig } = await import("@/lib/travel/adapters/routestack-auth");
+    const before = { key: process.env.ROUTESTACK_API_KEY, secret: process.env.ROUTESTACK_API_SECRET };
+    try {
+      process.env.ROUTESTACK_API_KEY = "only-the-key";
+      delete process.env.ROUTESTACK_API_SECRET;
+      assert.equal(routestackConfig(), null, "a key without its secret cannot sign anything");
+      process.env.ROUTESTACK_API_SECRET = "and-the-secret";
+      assert.ok(routestackConfig(), "both together are a usable credential");
+    } finally {
+      if (before.key === undefined) delete process.env.ROUTESTACK_API_KEY;
+      else process.env.ROUTESTACK_API_KEY = before.key;
+      if (before.secret === undefined) delete process.env.ROUTESTACK_API_SECRET;
+      else process.env.ROUTESTACK_API_SECRET = before.secret;
+    }
+  });
+
+  it("is a hand-off, not a booking — no create-booking anywhere in the adapter", async () => {
+    const { readFileSync } = await import("node:fs");
+    const raw = readFileSync("lib/travel/adapters/routestack-cars.ts", "utf8");
+    // Comments stripped: the file explains RouteStack's payment model at
+    // length, and the rule is about what the code does, not what it says.
+    const source = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    // They are merchant of record and own the checkout (/mcp/car/get-payment-url).
+    assert.match(source, /fulfilment: "deep-link"/);
+    // No booking call, and nothing that could carry a card. "creditCardRequired"
+    // is theirs — a fact about the rental desk, not a payment path of ours.
+    assert.doesNotMatch(source, /createBooking|createCarBooking/);
+    assert.doesNotMatch(source, /payment_method|cardNumber|cvv|card_holder/i);
+    assert.doesNotMatch(source, /get-payment-url/, "taking the checkout link is a later decision, not this adapter's job");
+  });
+});
+
+describe("a provider's own words help the admin and never reach the store", () => {
+  it("the stored health row carries no provider message", () => {
+    const withDetail = {
+      provider: "routestack" as const,
+      category: "car" as const,
+      ok: false,
+      ms: 400,
+      count: 0,
+      error: "auth" as const,
+      detail: "Partner account is not found. Traveler searched Kraków 2026-09-07",
+    };
+    const folded = foldAttempt(undefined, withDetail, "2026-08-17T10:00:00Z");
+    const serialised = JSON.stringify(folded);
+    assert.doesNotMatch(serialised, /Kraków/, "a search must not reach the health record");
+    assert.doesNotMatch(serialised, /Partner account/);
+    assert.deepEqual(Object.keys(folded.recentErrors[0]).sort(), ["at", "error"]);
+  });
+});
+
+describe("a fingerprint compares a credential without revealing one", () => {
+  it("shows the ends and the length, and nothing in between", () => {
+    const key = "sb_rst_PxcjqYYV0g8iRzQ4ImUMXTCTuJdEmFR2";
+    const print = String(fingerprint(key));
+    assert.match(print, /^sb_rst…mFR2 · 39 chars$/);
+    // The whole point: what is shown must not be enough to sign with.
+    assert.doesNotMatch(print, /PxcjqYYV0g8iRzQ4/);
+    assert.ok(print.length < key.length, "a fingerprint longer than the secret is not a fingerprint");
+  });
+
+  it("says nothing at all for a variable that is not set", () => {
+    assert.equal(fingerprint(undefined), null);
+    assert.equal(fingerprint(""), null);
+    assert.equal(fingerprint("   "), null);
+  });
+
+  it("REFUSES TO SPELL OUT A SHORT VALUE, which would be the whole of it", () => {
+    // Six and four of a twelve-character value is ten of its twelve characters.
+    const print = String(fingerprint("abcd1234efgh"));
+    assert.equal(print, "12 characters");
+    assert.doesNotMatch(print, /abcd/);
+  });
+
+  it("names the mistake it exists to catch: a masked value pasted from a dashboard", () => {
+    const masked = "sb_b3ab20b6469c4170c2…884d59f3";
+    assert.ok(looksMasked(masked));
+    assert.match(String(fingerprint(masked)), /contains …/);
+    assert.equal(looksMasked("sb_b3ab20b6469c4170c21179502d73ae55bc38cd25f3af1af8e8ca6b39884d59f3"), false);
+    assert.equal(looksMasked(undefined), false);
+  });
+
+  it("counts a trailing space, because that is what a failed paste looks like", () => {
+    assert.match(String(fingerprint(" sb_rst_PxcjqYYV0g8iRzQ4ImUMXTCTuJdEmFR2 ")), /39 chars/);
+  });
+});
+
+describe("every category now has more than one company to ask", () => {
+  it("registers two providers for flights and two for hotels", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    assert.deepEqual(adaptersFor("flight").map((a) => a.id).sort(), ["duffel", "routestack"]);
+    assert.deepEqual(adaptersFor("hotel").map((a) => a.id).sort(), ["routestack", "stay22"]);
+    // Cars still have one. Said out loud so the next person adding a car
+    // company knows this is the gap and not an oversight of theirs.
+    assert.deepEqual(adaptersFor("car").map((a) => a.id), ["routestack"]);
+  });
+
+  it("declares each adapter under the category it actually answers", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    for (const category of ["flight", "hotel", "car"] as const) {
+      for (const adapter of adaptersFor(category)) {
+        assert.equal(adapter.category, category, `${adapter.id} is filed under the wrong category`);
+      }
+    }
+  });
+});
+
+describe("a flight search that cannot be answered is not guessed at", () => {
+  const withRouteStackEnv = async (run: () => Promise<void>) => {
+    const before = { key: process.env.ROUTESTACK_API_KEY, secret: process.env.ROUTESTACK_API_SECRET };
+    process.env.ROUTESTACK_API_KEY = "sb_rst_test";
+    process.env.ROUTESTACK_API_SECRET = "sb_secret_test";
+    try {
+      await run();
+    } finally {
+      if (before.key === undefined) delete process.env.ROUTESTACK_API_KEY;
+      else process.env.ROUTESTACK_API_KEY = before.key;
+      if (before.secret === undefined) delete process.env.ROUTESTACK_API_SECRET;
+      else process.env.ROUTESTACK_API_SECRET = before.secret;
+    }
+  };
+
+  it("RETURNS NOTHING RATHER THAN INVENTING A DEPARTURE CITY", async () => {
+    // Every other search on this site has one place in it. A flight has two,
+    // and a missing origin is not a hint to be filled in from the visitor's
+    // country or the last thing they looked at — it is a question the provider
+    // cannot be asked. Nothing is sent, so nothing is spent.
+    await withRouteStackEnv(async () => {
+      const { routestackFlights } = await import("@/lib/travel/adapters/routestack-flights");
+      const offers = await routestackFlights.search(
+        { destination: "KRK", startDate: "2026-09-30" },
+        AbortSignal.timeout(1000),
+      );
+      assert.deepEqual(offers, []);
+    });
+  });
+
+  it("refuses a flight comparison with no origin before spending a provider call", async () => {
+    const source = readFileSync("app/api/admin/travel/compare/route.ts", "utf8");
+    assert.match(source, /category === "flight" && !origin/);
+    // The refusal must come before the search, not after it.
+    assert.ok(
+      source.indexOf('category === "flight" && !origin') < source.indexOf("await searchTravel"),
+      "the check is below the call it is meant to prevent",
+    );
+  });
+});
+
+describe("the new adapters take money from nobody", () => {
+  const readSource = (path: string) =>
+    readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+  it("RouteStack hotels and flights hand off and never book", () => {
+    for (const path of [
+      "lib/travel/adapters/routestack-hotels.ts",
+      "lib/travel/adapters/routestack-flights.ts",
+    ]) {
+      const source = readSource(path);
+      assert.match(source, /fulfilment: "deep-link"/, path);
+      assert.doesNotMatch(source, /get-payment-url/, `${path} takes their checkout link`);
+      assert.doesNotMatch(source, /cancel-booking|create-booking|revalidate/, path);
+      assert.doesNotMatch(source, /payment_method|cardNumber|cvv|card_holder/i, path);
+    }
+  });
+
+  it("Duffel is search only, however capable Duffel is of more", () => {
+    const source = readSource("lib/travel/adapters/duffel-flights.ts");
+    assert.match(source, /offer_requests/);
+    // Duffel's booking calls. None of them belong in a search adapter.
+    assert.doesNotMatch(source, /\/air\/orders|payment_intents|\/air\/payments/);
+    assert.doesNotMatch(source, /payment_method|cardNumber|cvv/i);
+  });
+
+  it("no adapter writes a credential into what it returns", () => {
+    for (const path of [
+      "lib/travel/adapters/routestack-hotels.ts",
+      "lib/travel/adapters/routestack-flights.ts",
+      "lib/travel/adapters/duffel-flights.ts",
+      "lib/travel/adapters/routestack-cars.ts",
+    ]) {
+      const source = readSource(path);
+      // A token or secret in a headline, detail or meta field would travel to
+      // the browser with the offer.
+      assert.doesNotMatch(source, /headline:.*(token|secret|apiKey)/i, path);
+      assert.doesNotMatch(source, /providerOfferId:.*(token|secret|apiKey)/i, path);
+    }
+  });
+});
+
+describe("a place a provider spells differently is still that place", () => {
+  it("asks the flight index for a code when the car index draws a blank", () => {
+    // Their car location index has no "Kraków" and no "Krakow"; it wants the
+    // exonym "Cracow" or the code KRK. Their flight index answers KRK for
+    // Kraków. Without this fallback every accented European destination on
+    // this site returned no cars and looked like an empty market.
+    const source = readFileSync("lib/travel/adapters/routestack-cars.ts", "utf8");
+    assert.match(source, /routestackAirportCode/);
+    const stripped = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.ok(
+      stripped.lastIndexOf("routestackAirportCode") > stripped.indexOf("let best = pick(await ask(term))"),
+      "the fallback must run after the ordinary lookup, not instead of it",
+    );
+  });
+});
+
+describe("a provider's document is not a provider's answer", () => {
+  it("READS THEIR FIELD WHATEVER SHAPE IT ARRIVES IN", async () => {
+    // RouteStack's OpenAPI declares mainamenity a string. Live, it is an array
+    // of strings, and reviews — declared an object — is null on every hotel in
+    // a 452-result Kraków search. Calling .trim() on the first one crashed the
+    // whole search, which is the wrong way for one optional amenity line to
+    // matter. Nothing read from a provider is trusted to be its declared type.
+    const { asText } = await import("@/lib/travel/adapters/routestack-hotels");
+    assert.equal(asText("accessible rooms"), "accessible rooms");
+    assert.equal(asText(["accessible rooms"]), "accessible rooms");
+    assert.equal(asText(["pool", "spa", "gym", "parking"]), "pool, spa, gym");
+    assert.equal(asText([]), undefined);
+    assert.equal(asText(null), undefined);
+    assert.equal(asText(undefined), undefined);
+    assert.equal(asText(42), undefined);
+    assert.equal(asText({ name: "pool" }), undefined);
+    assert.equal(asText("   "), undefined);
+  });
+
+  it("does not put a number through a string method anywhere it reads a hotel", () => {
+    const source = readFileSync("lib/travel/adapters/routestack-hotels.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(source, /hotel\.mainamenity\?\.trim/);
+    // reviews is null on every hotel their sandbox returns, so a rating may
+    // only be printed after it has been proven to be a number.
+    assert.match(source, /typeof hotel\.reviews\?\.rating === "number"/);
+    assert.match(source, /typeof hotel\.ourprice === "number"/);
+  });
+});
+
+describe("two columns in different orders are not a comparison", () => {
+  it("PUTS THE CHEAPEST FIRST, WHICH IS WHAT THE HEADING ALREADY CLAIMS", () => {
+    // A live Pune search: the heading said lowest USD 251.49 and the rows
+    // under it ran 591, 994, 1086, 1131, 292. The provider with the better
+    // price read as the expensive one.
+    const priced = [591.66, 994.45, 1086.49, 1131.06, 292.91, 251.49].map((amount, index) =>
+      offer({ id: `h${index}`, price: { amount, currency: "USD" } }),
+    );
+    assert.deepEqual(
+      cheapestFirst(priced).map((o) => o.price?.amount),
+      [251.49, 292.91, 591.66, 994.45, 1086.49, 1131.06],
+    );
+  });
+
+  it("sorts an offer with no price last, because a missing number is not a low one", () => {
+    const withNone = offer({ id: "none", price: undefined });
+    const cheap = offer({ id: "cheap", price: { amount: 10, currency: "USD" } });
+    assert.deepEqual(cheapestFirst([withNone, cheap]).map((o) => o.id), ["cheap", "none"]);
+  });
+
+  it("does not reorder the array it was handed", () => {
+    const given = [
+      offer({ id: "b", price: { amount: 9, currency: "USD" } }),
+      offer({ id: "a", price: { amount: 1, currency: "USD" } }),
+    ];
+    cheapestFirst(given);
+    assert.deepEqual(given.map((o) => o.id), ["b", "a"], "the caller's list must be left alone");
+  });
+
+  it("the comparison screen uses it rather than printing whatever arrived first", () => {
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /cheapestFirst\(/);
+  });
+});

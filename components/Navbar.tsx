@@ -15,15 +15,36 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
 /**
  * The header: logo, four dropdown categories, four utility icons.
  *
- * What each dropdown holds is in lib/navigation.ts, not here. Dropdowns open
- * on hover, click, focus and tap — all four, not the one the last redesign
- * had (a single click-toggled panel). Only one is open at a time.
+ * What each dropdown holds is in lib/navigation.ts, not here. A dropdown is
+ * opened by a press — mouse, touch, Enter or Space — never by hovering or
+ * focusing onto it; hovering only slides between menus once one is already
+ * open. Escape closes and returns focus to its trigger, a press outside
+ * closes, and only one is open at a time. See the note above the handlers for
+ * why opening on hover made the buttons look dead.
  */
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  /**
+   * WHICH MENU IS OPEN, AND WHICH ONE A PRESS OPENED.
+   *
+   * Both together, in one piece of state, because every rule below decides
+   * from the pair and two separate values cannot be updated from each other
+   * without going stale — which is the exact fault this header has had twice.
+   *
+   * `pressed` is why the second fix was needed. Hover-switching reintroduced
+   * the original bug one level down: with Destinations open, moving the
+   * pointer onto Travel opened Travel (correct), and then the click on Travel
+   * saw "Travel is open" and shut it, so clicking a second menu closed the
+   * whole bar instead of switching to it. Hover moves `open` and never
+   * touches `pressed`; only a press writes it. A click on a menu the pointer
+   * merely slid onto therefore opens it for real, and a click on the menu a
+   * press opened closes it — which is what a toggle means.
+   */
+  const [menu, setMenu] = useState<{ open: string | null; pressed: string | null }>({ open: null, pressed: null });
+  const openKey = menu.open;
+  const closeAll = () => setMenu({ open: null, pressed: null });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
@@ -33,7 +54,7 @@ export default function Navbar() {
   const [trackedPathname, setTrackedPathname] = useState(pathname);
   if (trackedPathname !== pathname) {
     setTrackedPathname(pathname);
-    setOpenKey(null);
+    setMenu({ open: null, pressed: null });
     setMobileOpen(false);
     setMobileSection(null);
   }
@@ -84,7 +105,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const closeOutside = (event: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenKey(null);
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setMenu({ open: null, pressed: null });
+      }
     };
     document.addEventListener("mousedown", closeOutside);
     return () => document.removeEventListener("mousedown", closeOutside);
@@ -95,7 +118,7 @@ export default function Navbar() {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       const key = openKey;
-      setOpenKey(null);
+      setMenu({ open: null, pressed: null });
       if (key) triggerRefs.current[key]?.focus();
     };
     document.addEventListener("keydown", onKey);
@@ -103,32 +126,53 @@ export default function Navbar() {
   }, [openKey]);
 
   /**
-   * THE CLICK BUG, and the fix. Clicking a trigger fires focus first — which
-   * opens the menu — and then the click itself, which used to toggle the
-   * just-opened menu shut again: the panel flashed and vanished. Pointer-down
-   * fires before focus does, so the state recorded there is the state BEFORE
-   * this interaction, and the click decides from that instead of from what
-   * the focus handler changed in between. Keyboard interactions have no
-   * pointer-down; for them onFocus records the pre-open state itself.
+   * THE CLICK BUG, and what actually fixes it.
+   *
+   * The menu opened on hover and toggled on click. Moving a mouse to a
+   * trigger therefore did two things in a row: hover opened the panel, then
+   * the click read "it is open" and shut it again. The panel appeared and
+   * vanished under the pointer, which reads as a dead button — and it raced,
+   * so the first press of a session often worked and the rest did not. An
+   * earlier attempt recorded the pre-press state at pointer-down, but that
+   * only covered the focus path; hover still fired first and still won.
+   *
+   * Two rules kill it outright:
+   *
+   *   1. The click toggles from the LIVE state, via the functional updater —
+   *      never from a value captured while rendering, which is what went
+   *      stale between hover and press.
+   *   2. Hover SWITCHES between menus but never opens the first one. This is
+   *      how a real menubar behaves: once something is open, sliding across
+   *      moves with you; with nothing open, hovering is not a command. So a
+   *      press is always the thing that opens, and a press always decides.
+   *
+   * Focus does not open either, for the same reason: tab to it, then press
+   * Enter or Space. A <button> turns both into a click, so the keyboard needs
+   * no separate path.
+   *
+   * The third rule — a press remembers itself, so hover cannot make the next
+   * click read as "close" — is `pressedKey`, declared with the state above.
    */
-  const openBeforePress = useRef(false);
-
-  function openOnHover(key: string) {
+  function switchOnHover(key: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpenKey(key);
+    // Only when a menu is already open — see rule 2 above. `pressed` is left
+    // alone: sliding the pointer across is not a press.
+    setMenu((current) => (current.open === null ? current : { ...current, open: key }));
   }
 
-  function openOnFocus(key: string, open: boolean) {
-    openBeforePress.current = open;
-    openOnHover(key);
+  function stayOpen() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
   }
 
   function toggleOnClick(key: string) {
-    setOpenKey(openBeforePress.current ? null : key);
+    setMenu((current) =>
+      current.pressed === key ? { open: null, pressed: null } : { open: key, pressed: key },
+    );
   }
+
   function closeOnHoverOut() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenKey(null), 150);
+    closeTimer.current = setTimeout(closeAll, 150);
   }
 
   async function signOut() {
@@ -176,12 +220,14 @@ export default function Navbar() {
                 <div
                   key={key}
                   className="relative"
-                  onMouseEnter={() => openOnHover(key)}
+                  onMouseEnter={() => switchOnHover(key)}
                   onMouseLeave={closeOnHoverOut}
                   onBlur={(event) => {
                     // Focus moved outside this category: close its panel, so a
                     // keyboard user tabbing on never leaves a menu floating.
-                    if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpenKey((k) => (k === key ? null : k));
+                    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                      setMenu((current) => (current.open === key ? { open: null, pressed: null } : current));
+                    }
                   }}
                 >
                   <button
@@ -192,9 +238,7 @@ export default function Navbar() {
                     aria-expanded={open}
                     aria-haspopup="true"
                     aria-controls={`nav-${key}`}
-                    onPointerDown={() => { openBeforePress.current = open; }}
                     onClick={() => toggleOnClick(key)}
-                    onFocus={() => openOnFocus(key, open)}
                     className={`relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition ${
                       current || open
                         ? "bg-[var(--cream-deep)] text-[var(--navy)] after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--gold)] after:content-['']"
@@ -208,7 +252,7 @@ export default function Navbar() {
                     <div
                       id={`nav-${key}`}
                       role="menu"
-                      onMouseEnter={() => openOnHover(key)}
+                      onMouseEnter={stayOpen}
                       onMouseLeave={closeOnHoverOut}
                       className={`absolute left-0 top-full z-[1] mt-1 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
                         category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"
@@ -226,7 +270,7 @@ export default function Navbar() {
                                     role="menuitem"
                                     href={link.href}
                                     aria-current={linkCurrent ? "page" : undefined}
-                                    onClick={() => setOpenKey(null)}
+                                    onClick={closeAll}
                                     className={`flex min-h-11 items-center rounded-md px-2 py-2 text-sm transition ${
                                       linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                                     }`}
@@ -247,7 +291,7 @@ export default function Navbar() {
                             aria-current={linkCurrent ? "page" : undefined}
                             aria-label={link.description}
                             title={link.description}
-                            onClick={() => setOpenKey(null)}
+                            onClick={closeAll}
                             className={`flex min-h-11 items-center px-4 py-2 text-sm transition ${
                               linkCurrent ? "font-semibold text-[var(--navy)]" : "text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]"
                             }`}
