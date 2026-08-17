@@ -3,6 +3,7 @@ import ProviderComparison from "@/components/admin/ProviderComparison";
 import { routestackConfigured } from "@/lib/travel/adapters/routestack-cars";
 import { stay22ApiConfigured } from "@/lib/stay22-api";
 import { inspectConfiguredDuffelToken } from "@/lib/duffel-token";
+import { routestackConfig } from "@/lib/travel/adapters/routestack-auth";
 import { travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
 import { KNOWN_PAIRS, STAGE_LABELS, stageOf, type ProviderStage } from "@/lib/travel/registry";
 import { readProviderStages } from "@/lib/travel/registry-store";
@@ -53,10 +54,22 @@ const PROVIDER_VARS: Record<ProviderId, string[]> = {
  * outright, in both directions. Nothing else here has two modes.
  */
 function keyMode(provider: ProviderId): { text: string; invented: boolean } | null {
-  if (provider !== "duffel") return null;
-  const kind = inspectConfiguredDuffelToken().kind;
-  if (kind === "test") return { text: "Test key — these fares are invented", invented: true };
-  if (kind === "live") return { text: "Live key — real fares, real account", invented: false };
+  if (provider === "duffel") {
+    const kind = inspectConfiguredDuffelToken().kind;
+    if (kind === "test") return { text: "Test key — these fares are invented", invented: true };
+    if (kind === "live") return { text: "Live key — real fares, real account", invented: false };
+    return null;
+  }
+  if (provider === "routestack") {
+    // RouteStack has the same two worlds behind two hostnames rather than two
+    // key prefixes. Same reason for saying it: their sandbox answers with
+    // well-formed prices for places that are not for sale.
+    const config = routestackConfig();
+    if (!config) return null;
+    return config.base.includes("evolvemcp.")
+      ? { text: "Sandbox — these prices are not a live market", invented: true }
+      : { text: "Live market", invented: false };
+  }
   return null;
 }
 
@@ -144,7 +157,10 @@ export default async function AdminTravelProvidersPage() {
                       <ul className="mt-1.5 space-y-0.5">
                         {PROVIDER_VARS[provider].map((name) => {
                           const value = process.env[name];
-                          const print = fingerprint(value);
+                          // AN ADDRESS IS NOT A CREDENTIAL. Fingerprinting the
+                          // endpoint hid the one thing worth reading — whether
+                          // this is the sandbox host or the live one.
+                          const print = name.endsWith("_BASE") ? value?.trim() || null : fingerprint(value);
                           return (
                             <li key={name} className="whitespace-nowrap text-[11px] leading-4 text-stone-500">
                               <span className="text-stone-400">{name.replace(/^[A-Z]+_/, "")}</span>{" "}

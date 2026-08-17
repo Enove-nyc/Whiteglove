@@ -589,3 +589,45 @@ describe("a provider answering with invented data says so", () => {
     assert.match(source, /fingerprint\(value\)/);
   });
 });
+
+describe("a sandbox is never mistaken for a market", () => {
+  it("DEFAULTS TO THE PRODUCTION HOST, BECAUSE THE OTHER DEFAULT FAILS QUIETLY", async () => {
+    // RouteStack has two hosts: mcp is the live market, evolvemcp the sandbox.
+    // Defaulting to the sandbox meant a deleted environment variable would go
+    // on serving invented prices with nothing on any screen saying so.
+    // Defaulting to production, the same mistake simply cannot authenticate.
+    const before = {
+      key: process.env.ROUTESTACK_API_KEY,
+      secret: process.env.ROUTESTACK_API_SECRET,
+      base: process.env.ROUTESTACK_API_BASE,
+    };
+    process.env.ROUTESTACK_API_KEY = "rst_test";
+    process.env.ROUTESTACK_API_SECRET = "secret_test";
+    delete process.env.ROUTESTACK_API_BASE;
+    try {
+      const { routestackConfig } = await import("@/lib/travel/adapters/routestack-auth");
+      assert.equal(routestackConfig()?.base, "https://mcp.routestack.ai");
+      process.env.ROUTESTACK_API_BASE = "https://evolvemcp.routestack.ai/";
+      assert.equal(routestackConfig()?.base, "https://evolvemcp.routestack.ai", "a trailing slash must not survive");
+    } finally {
+      for (const [name, value] of [
+        ["ROUTESTACK_API_KEY", before.key],
+        ["ROUTESTACK_API_SECRET", before.secret],
+        ["ROUTESTACK_API_BASE", before.base],
+      ] as const) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    }
+  });
+
+  it("says on the screen which of the two worlds a column of prices came from", () => {
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(source, /evolvemcp\./);
+    assert.match(source, /not a live market/);
+    assert.match(source, /Live market/);
+    // The endpoint is an address, not a credential — fingerprinting it hid the
+    // one thing worth reading.
+    assert.match(source, /name\.endsWith\("_BASE"\)/);
+  });
+});

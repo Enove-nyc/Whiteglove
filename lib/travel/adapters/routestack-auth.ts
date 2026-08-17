@@ -19,9 +19,18 @@
  * but with the correct digest it is not needed, and a secret that stays home
  * is the point of signing in the first place.
  *
- * THE HOST IS THE SANDBOX ONE, NOT THE ONE IN THEIR GUIDE. Their sample uses
- * mcp.routestack.ai, which does not know this account; the sandbox host from
- * the dashboard does. Hence ROUTESTACK_API_BASE.
+ * THE HOST COMES FROM THE ENVIRONMENT, AND THE DEFAULT IS PRODUCTION. There
+ * are two of them — mcp.routestack.ai is the live market, evolvemcp.
+ * routestack.ai is the sandbox — and a sandbox key against the production host
+ * is refused with "partner account is not found or not active", which reads
+ * like a dead account rather than the wrong address. That message cost an
+ * afternoon once already.
+ *
+ * The default is deliberately the production host and not the sandbox one.
+ * Both failure modes are then loud: sandbox credentials with the variable
+ * missing simply cannot authenticate, and somebody notices. The other way
+ * round — defaulting to the sandbox — a deleted variable would quietly serve
+ * invented prices to travelers, and nothing on any screen would say so.
  *
  * The signature never leaves this file and the secret never leaves the server.
  * The timestamp and nonce are what stop a captured request being replayed, so
@@ -42,7 +51,7 @@ export type RouteStackConfig = { apiKey: string; secret: string; base: string };
 export function routestackConfig(): RouteStackConfig | null {
   const apiKey = process.env.ROUTESTACK_API_KEY?.trim();
   const secret = process.env.ROUTESTACK_API_SECRET?.trim();
-  const base = (process.env.ROUTESTACK_API_BASE?.trim() || "https://evolvemcp.routestack.ai").replace(/\/$/, "");
+  const base = (process.env.ROUTESTACK_API_BASE?.trim() || "https://mcp.routestack.ai").replace(/\/$/, "");
   return apiKey && secret ? { apiKey, secret, base } : null;
 }
 
