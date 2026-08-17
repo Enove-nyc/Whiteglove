@@ -879,3 +879,35 @@ describe("prices that take ten seconds do not hold up a page", () => {
     assert.match(stripped, /if \(!cars\.length\) return null/);
   });
 });
+
+describe("the Cars tab can be searched", () => {
+  const source = readFileSync("components/BookPartners.tsx", "utf8");
+
+  it("ASKS WHERE AND WHEN, LIKE FLIGHTS AND HOTELS ALREADY DID", () => {
+    // It never did. Cars showed a partner panel using whatever destination
+    // arrived in the query string, so opening /book and pressing Cars gave a
+    // panel with nothing in it and no way to say where or when. Survivable
+    // while the panel was the whole answer; not once White Glove had prices of
+    // its own, which need a place and two dates.
+    const cars = source.slice(source.indexOf("function CarsForm"));
+    assert.match(cars, /Pick-up city or airport/);
+    assert.match(cars, /label="Pick-up"/);
+    assert.match(cars, /label="Drop-off"/);
+    assert.match(cars, /Search cars/);
+  });
+
+  it("searches on the button, not on every keystroke", () => {
+    // A ten-second provider called from an onChange is a queue of abandoned
+    // searches, one per letter typed.
+    const cars = source.slice(source.indexOf("function CarsForm"));
+    assert.match(cars, /<CarPrices destination=\{asked\?\.place/);
+    assert.doesNotMatch(cars, /<CarPrices destination=\{place/);
+  });
+
+  it("refuses an incomplete search in its own words, before any provider is called", () => {
+    const cars = source.slice(source.indexOf("function CarsForm"));
+    assert.match(cars, /Enter a pick-up city or airport/);
+    assert.match(cars, /Choose pick-up and drop-off dates/);
+    assert.match(cars, /Drop-off must be on or after pick-up/);
+  });
+});

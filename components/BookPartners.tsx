@@ -892,10 +892,51 @@ function HotelsForm({
  * same hire twice. A destination the site already knows is passed in; they
  * fill the rest once, in the partner form.
  */
+/**
+ * THE CARS TAB HAD NO FORM, which is why nothing could be searched from it.
+ *
+ * Flights and hotels each ask what you want; cars showed a partner's panel
+ * with whatever destination happened to arrive in the page's query string, and
+ * arriving at /book and pressing Cars gave a panel with nothing in it and no
+ * way to say where or when. That was survivable while the panel was the whole
+ * answer and had its own boxes inside it. It stopped being survivable the
+ * moment White Glove had prices of its own to show, because prices need a
+ * place and two dates and there was nowhere to type them.
+ */
 function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: PendingBooking) => void; prefill?: Prefill }) {
-  const loc = (prefill?.destination ?? "").trim();
+  const [place, setPlace] = useState(prefill?.destination ?? "");
+  const [pickup, setPickup] = useState(prefill?.depart ?? "");
+  const [dropoff, setDropoff] = useState(prefill?.ret ?? "");
+  // Searched, not typed. Prices reload when the traveler presses the button,
+  // not on every keystroke — a ten-second provider called from an onChange
+  // would be a queue of abandoned searches.
+  const [asked, setAsked] = useState<{ place: string; pickup: string; dropoff: string } | null>(
+    prefill?.destination && prefill?.depart && prefill?.ret
+      ? { place: prefill.destination, pickup: prefill.depart, dropoff: prefill.ret }
+      : null,
+  );
+  const [error, setError] = useState("");
+
+  const loc = place.trim();
   const widgetSrc = carsEmbedPath({ location: loc });
   const summary = loc ? `Rental car — ${loc}` : "Rental car";
+
+  function search() {
+    if (!loc) {
+      setError("Enter a pick-up city or airport.");
+      return;
+    }
+    if (!pickup || !dropoff) {
+      setError("Choose pick-up and drop-off dates.");
+      return;
+    }
+    if (dropoff < pickup) {
+      setError("Drop-off must be on or after pick-up.");
+      return;
+    }
+    setError("");
+    setAsked({ place: loc, pickup, dropoff });
+  }
 
   function addToTrip(confirmation?: string) {
     onAdd({
@@ -913,11 +954,38 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
 
   return (
     <div>
+      <SearchGrid className="mb-4 sm:grid-cols-[2fr_1fr_1fr_auto]">
+        <Field label="Pick-up city or airport">
+          <input
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
+            placeholder="Kraków"
+            className={bareInput}
+          />
+        </Field>
+        <Field label="Pick-up">
+          <input type="date" value={pickup} onChange={(e) => setPickup(e.target.value)} className={bareInput} />
+        </Field>
+        <Field label="Drop-off">
+          <input type="date" value={dropoff} onChange={(e) => setDropoff(e.target.value)} className={bareInput} />
+        </Field>
+        <div className="flex items-center bg-[#fcfaf6] px-4 py-2.5 sm:py-3">
+          <button
+            type="button"
+            onClick={search}
+            className="min-h-11 w-full rounded-xl border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          >
+            Search cars
+          </button>
+        </div>
+      </SearchGrid>
+      {error ? <p className="mb-4 text-sm font-semibold text-red-700">{error}</p> : null}
+
       {/* ABOVE THE PARTNER SEARCH, NOT INSTEAD OF IT. The widget below earns
           today and answers instantly; these prices take about ten seconds to
           arrive and may not arrive at all. Somebody who reads down the page
           has a working car search either way. */}
-      <CarPrices destination={loc} startDate={prefill?.depart ?? ""} endDate={prefill?.ret ?? ""} />
+      <CarPrices destination={asked?.place ?? ""} startDate={asked?.pickup ?? ""} endDate={asked?.dropoff ?? ""} />
       <PartnerSearchWidget src={widgetSrc} title="Car search" minHeight={640} />
       <button
         type="button"
