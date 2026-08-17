@@ -15,7 +15,7 @@
  * same shape, and pretending otherwise now would cost more than it saves.
  */
 
-import type { ProviderId, SearchQuery, TravelCategory, TravelOffer } from "@/lib/travel/types";
+import type { Fulfilment, ProviderId, SearchQuery, TravelCategory, TravelOffer } from "@/lib/travel/types";
 
 export type { SearchQuery } from "@/lib/travel/types";
 
@@ -29,6 +29,18 @@ export type { SearchQuery } from "@/lib/travel/types";
 export type ProviderSearch = {
   id: ProviderId;
   category: TravelCategory;
+  /**
+   * WHO SELLS THE TICKET, DECLARED ONCE AND NOT PER OFFER.
+   *
+   * Every offer already carries a fulfilment, which is what the page renders.
+   * This is the same fact stated about the company, which is what the site
+   * makes a rule out of: an `api-booking` provider is one where White Glove is
+   * the seller and therefore owns the refund, the chargeback and the phone
+   * call. The owner's decision is that no such provider faces a visitor, and a
+   * decision like that belongs in the type rather than in a setting somebody
+   * could flip on a Friday. See searchTravel in engine.ts, which enforces it.
+   */
+  fulfilment: Fulfilment;
   /** Whether the keys and settings this provider needs are present. */
   configured(): boolean;
   /**

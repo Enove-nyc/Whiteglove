@@ -21,6 +21,7 @@
  * returns nothing rather than inventing a departure city.
  */
 
+import { resolveEndpoint } from "@/lib/flight-endpoint";
 import { routestackAirportCode, routestackConfig, routestackPost } from "@/lib/travel/adapters/routestack-auth";
 import type { ProviderSearch } from "@/lib/travel/provider";
 import type { SearchQuery, TravelOffer } from "@/lib/travel/types";
@@ -53,14 +54,28 @@ type RouteStackFare = {
 
 const codeCache = new Map<string, string>();
 
-/** Their search wants IATA. A three-letter term already is one. */
+/**
+ * Their search wants IATA, and asking them for it costs seconds we do not have.
+ *
+ * OUR OWN LIST FIRST. lib/flight-endpoint.ts already turns "London" into LON
+ * and "Kraków" into KRK without leaving this server, and it is the resolver the
+ * flight page has always used, so both flight providers now read a place the
+ * same way. That matters twice over: it removes two network round trips from
+ * every search — which is what pushed the first Kraków comparison past its
+ * deadline — and it hands RouteStack the metropolitan code where there is one.
+ * LON returns 201 fares including Gatwick; LHR returns 183 and misses the
+ * cheaper one.
+ *
+ * Their index is still asked about anywhere our list has never heard of.
+ */
 async function iata(
   config: NonNullable<ReturnType<typeof routestackConfig>>,
   term: string,
   signal: AbortSignal,
 ): Promise<string | null> {
   const trimmed = term.trim();
-  if (/^[A-Za-z]{3}$/.test(trimmed)) return trimmed.toUpperCase();
+  const ours = resolveEndpoint(trimmed);
+  if (ours) return ours.code;
   const key = trimmed.toLowerCase();
   const cached = codeCache.get(key);
   if (cached) return cached;
@@ -76,6 +91,7 @@ export function routestackFlightsConfigured(): boolean {
 export const routestackFlights: ProviderSearch = {
   id: "routestack",
   category: "flight",
+  fulfilment: "deep-link",
   configured: routestackFlightsConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {
@@ -108,7 +124,13 @@ export const routestackFlights: ProviderSearch = {
         type: tripType,
       },
       signal,
-      15000,
+      // Their flight search is slow, and their live market is slower than their
+      // sandbox: eleven to seventeen seconds there, past twenty on a London to
+      // Kraków return here, with both location lookups already removed and
+      // nothing left to cut. Measured, not guessed. A shorter figure does not
+      // make the search quicker — it only reports a timeout instead of an
+      // answer, which is what a twenty-second limit did.
+      28000,
     );
 
     const currency = data.currency ?? query.currency ?? "USD";

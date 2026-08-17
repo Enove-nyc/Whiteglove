@@ -20,6 +20,7 @@ import type { SearchQuery, TravelOffer } from "@/lib/travel/types";
 export const stay22Hotels: ProviderSearch = {
   id: "stay22",
   category: "hotel",
+  fulfilment: "deep-link",
   configured: () => stay22ApiConfigured(),
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {

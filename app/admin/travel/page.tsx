@@ -3,8 +3,10 @@ import ProviderComparison from "@/components/admin/ProviderComparison";
 import { routestackConfigured } from "@/lib/travel/adapters/routestack-cars";
 import { stay22ApiConfigured } from "@/lib/stay22-api";
 import { inspectConfiguredDuffelToken } from "@/lib/duffel-token";
+import { routestackConfig } from "@/lib/travel/adapters/routestack-auth";
 import { travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
 import { KNOWN_PAIRS, STAGE_LABELS, stageOf, type ProviderStage } from "@/lib/travel/registry";
+import { weWouldBeTheSeller } from "@/lib/travel/engine";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { healthRows, readTravelHealth } from "@/lib/travel/telemetry";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
@@ -40,6 +42,37 @@ const PROVIDER_VARS: Record<ProviderId, string[]> = {
   travelpayouts: ["TRAVELPAYOUTS_TOKEN"],
   routestack: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_SECRET", "ROUTESTACK_API_BASE"],
 };
+
+/**
+ * Which Duffel account a column of prices came out of, said either way.
+ *
+ * Duffel issues separate tokens for test and live, and a test one returns
+ * made-up flights at made-up prices. Warning only on the test key made silence
+ * carry the good news, and silence is a poor way to say anything on a screen
+ * whose whole purpose is deciding which company to believe. The fingerprint
+ * cannot settle it either: both kinds begin with the same six characters, so
+ * every Duffel key on earth prints as "duffel…". So the row states the mode
+ * outright, in both directions. Nothing else here has two modes.
+ */
+function keyMode(provider: ProviderId): { text: string; invented: boolean } | null {
+  if (provider === "duffel") {
+    const kind = inspectConfiguredDuffelToken().kind;
+    if (kind === "test") return { text: "Test key — these fares are invented", invented: true };
+    if (kind === "live") return { text: "Live key — real fares, real account", invented: false };
+    return null;
+  }
+  if (provider === "routestack") {
+    // RouteStack has the same two worlds behind two hostnames rather than two
+    // key prefixes. Same reason for saying it: their sandbox answers with
+    // well-formed prices for places that are not for sale.
+    const config = routestackConfig();
+    if (!config) return null;
+    return config.base.includes("evolvemcp.")
+      ? { text: "Sandbox — these prices are not a live market", invented: true }
+      : { text: "Live market", invented: false };
+  }
+  return null;
+}
 
 /** Whether the environment has what this provider needs. Never the value. */
 function configuredFor(provider: ProviderId): boolean {
@@ -100,6 +133,7 @@ export default async function AdminTravelProvidersPage() {
                 const stage = stageOf(stages, provider, category);
                 const configured = configuredFor(provider);
                 const row = healthFor(provider, category);
+                const sells = weWouldBeTheSeller(provider, category);
                 return (
                   <tr key={`${provider}-${category}`} className="border-b border-[var(--gold-light)] last:border-0 align-top">
                     <td className="px-4 py-3 font-semibold text-[var(--navy)]">{PROVIDER_LABELS[provider]}</td>
@@ -110,10 +144,25 @@ export default async function AdminTravelProvidersPage() {
                       ) : (
                         <span className={`${chip} border-stone-300 bg-stone-50 text-stone-600`}>Not set</span>
                       )}
+                      {(() => {
+                        const mode = keyMode(provider);
+                        return mode ? (
+                          <p
+                            className={`mt-1.5 text-[11px] font-semibold leading-4 ${
+                              mode.invented ? "text-amber-800" : "text-emerald-800"
+                            }`}
+                          >
+                            {mode.text}
+                          </p>
+                        ) : null;
+                      })()}
                       <ul className="mt-1.5 space-y-0.5">
                         {PROVIDER_VARS[provider].map((name) => {
                           const value = process.env[name];
-                          const print = fingerprint(value);
+                          // AN ADDRESS IS NOT A CREDENTIAL. Fingerprinting the
+                          // endpoint hid the one thing worth reading — whether
+                          // this is the sandbox host or the live one.
+                          const print = name.endsWith("_BASE") ? value?.trim() || null : fingerprint(value);
                           return (
                             <li key={name} className="whitespace-nowrap text-[11px] leading-4 text-stone-500">
                               <span className="text-stone-400">{name.replace(/^[A-Z]+_/, "")}</span>{" "}
@@ -150,6 +199,11 @@ export default async function AdminTravelProvidersPage() {
                         <input type="hidden" name="provider" value={provider} />
                         <input type="hidden" name="category" value={category} />
                         <StageChip stage={stage} />
+                        {sells ? (
+                          <p className="w-full text-[11px] font-semibold leading-4 text-stone-600">
+                            Admin only — White Glove would be the seller
+                          </p>
+                        ) : null}
                         <select
                           name="stage"
                           defaultValue={stage}
@@ -158,7 +212,13 @@ export default async function AdminTravelProvidersPage() {
                         >
                           <option value="off">Off</option>
                           <option value="testing">Testing — admin only</option>
-                          <option value="public">Live for visitors</option>
+                          {/* NOT OFFERED WHERE WE WOULD BE THE SELLER. Duffel
+                              is a real booking API: its order is ours, and so
+                              is the refund and the chargeback. The rule is the
+                              owner's and it is enforced three times over — the
+                              option is absent here, the action refuses it, and
+                              the search refuses it again. */}
+                          {sells ? null : <option value="public">Live for visitors</option>}
                         </select>
                         <button
                           type="submit"
@@ -178,7 +238,10 @@ export default async function AdminTravelProvidersPage() {
           &ldquo;Key&rdquo; never shows a credential. The line under it is a fingerprint — first six characters, last
           four, and the length — which is enough to compare against what a provider&rsquo;s dashboard shows, and not
           enough to use. A fingerprint in red contains an ellipsis, which means a masked value was pasted instead of
-          the real one. Keys live in the environment and are set on Settings → Connections.
+          the real one. Keys live in the environment and are set on Settings → Connections. A provider marked
+          &ldquo;White Glove would be the seller&rdquo; cannot be shown to visitors at all: with that kind of company
+          the booking, the refund and the chargeback are ours, and the site hands travelers to somebody else&rsquo;s
+          checkout instead.
         </p>
       </section>
 

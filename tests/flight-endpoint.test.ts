@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { describe } from "node:test";
 import { AIRPORTS, METRO_AREAS } from "../data/airports";
-import { airportsInMetro, metroMatches, resolveEndpoint } from "../lib/flight-endpoint";
+import { airportsInMetro, foldAccents, metroMatches, resolveEndpoint } from "../lib/flight-endpoint";
 import { explainDuffelError } from "../app/api/flights/search/route";
 import { redact } from "../lib/redact";
 
@@ -170,5 +170,35 @@ describe("the token cannot reach the browser", () => {
     // is still a token.
     const out = redact("token duffel_live_zyxwvutsrqponml0987654321 rejected");
     assert.ok(!out.includes("duffel_live_zyxwvutsrqponml0987654321"));
+  });
+});
+
+describe("a city typed the way its own destination page spells it", () => {
+  test("FINDS THE AIRPORT WHEN THE NAME CARRIES ACCENTS", () => {
+    // data/airports.ts files the city as "Krakow". Somebody typing Kraków —
+    // which is how this site spells it everywhere else, including on the
+    // destination page they just came from — resolved to nothing, so a flight
+    // search returned no airports, no offers, and no reason why. Both flight
+    // providers read places through this function, so both went quiet at once.
+    const found = resolveEndpoint("Kraków");
+    assert.equal(found?.code, "KRK");
+    assert.equal(resolveEndpoint("Krakow")?.code, "KRK", "the unaccented spelling must still work");
+    assert.equal(resolveEndpoint("KRK")?.code, "KRK");
+  });
+
+  test("still knows the difference between a city and one of its airports", () => {
+    // Folding accents must not blur LON into LHR: a whole-city code is a
+    // different and usually better question, and that distinction is this
+    // file's whole reason for existing.
+    assert.equal(resolveEndpoint("London")?.wholeCity, true);
+    assert.equal(resolveEndpoint("LHR")?.wholeCity, false);
+  });
+
+  test("folds only for the comparison, never for what a traveler is shown", () => {
+    assert.equal(foldAccents("Kraków"), "krakow");
+    assert.equal(foldAccents("Zürich"), "zurich");
+    assert.equal(foldAccents("São Paulo"), "sao paulo");
+    // The label keeps its accents — folding is a matching device, not a rename.
+    assert.doesNotMatch(String(resolveEndpoint("London")?.label), /—\s*$/);
   });
 });

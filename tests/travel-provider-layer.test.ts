@@ -37,10 +37,17 @@ const offer = (over: OfferOverride = {}): TravelOffer => ({
 
 const provider = (
   id: ProviderSearch["id"],
-  behaviour: { offers?: TravelOffer[]; fail?: Error; delayMs?: number; configured?: boolean },
+  behaviour: {
+    offers?: TravelOffer[];
+    fail?: Error;
+    delayMs?: number;
+    configured?: boolean;
+    fulfilment?: ProviderSearch["fulfilment"];
+  },
 ): ProviderSearch => ({
   id,
   category: "car",
+  fulfilment: behaviour.fulfilment ?? "deep-link",
   configured: () => behaviour.configured !== false,
   async search(_query, signal) {
     if (behaviour.delayMs) {
@@ -514,5 +521,218 @@ describe("two columns in different orders are not a comparison", () => {
   it("the comparison screen uses it rather than printing whatever arrived first", () => {
     const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
     assert.match(source, /cheapestFirst\(/);
+  });
+});
+
+describe("both flight providers read a place the same way", () => {
+  it("uses the site's own airport list before asking a provider for a code", () => {
+    // Two reasons, and the second one is why the first Kraków flight
+    // comparison timed out. Asking RouteStack to resolve both ends costs two
+    // network round trips before the search even starts, and our own resolver
+    // already knows the answer. It also returns the metropolitan code where
+    // there is one: LON finds 201 fares including Gatwick, LHR finds 183 and
+    // misses the cheaper one.
+    for (const path of [
+      "lib/travel/adapters/routestack-flights.ts",
+      "lib/travel/adapters/duffel-flights.ts",
+    ]) {
+      assert.match(readFileSync(path, "utf8"), /resolveEndpoint/, path);
+    }
+  });
+
+  it("gives RouteStack long enough to answer, because it was measured", () => {
+    // Their flight search takes eleven to seventeen seconds on a European
+    // route with both location lookups already removed. A fifteen-second
+    // deadline reported a timeout for a provider that was going to answer.
+    const route = readFileSync("app/api/admin/travel/compare/route.ts", "utf8");
+    const deadline = Number(/deadlineMs:\s*(\d+)/.exec(route)?.[1]);
+    assert.ok(deadline >= 35000, `the comparison deadline is ${deadline}ms and RouteStack needs longer`);
+    const adapter = readFileSync("lib/travel/adapters/routestack-flights.ts", "utf8");
+    const own = Number(/^\s*(\d{4,}),$/m.exec(adapter.split("/mcp/flight/search")[1] ?? "")?.[1]);
+    assert.ok(own >= 25000 && own < deadline, `the adapter's own timeout is ${own}ms`);
+  });
+});
+
+describe("the comparison form says which date is which", () => {
+  it("DOES NOT PUT TWO BOXES CALLED FROM AND TO BESIDE TWO MORE", () => {
+    // A flight search already has a place it leaves from and a place it goes
+    // to. Two date boxes wearing the same two words sat next to them, and the
+    // first flight comparison came back marked one way in both columns because
+    // the second date never got filled in. A form that loses half a search
+    // without saying so is not a form.
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /flight: \["Depart", "Return"\]/);
+    assert.match(source, /hotel: \["Check in", "Check out"\]/);
+    assert.match(source, /car: \["Pick up", "Drop off"\]/);
+    // The old bare labels must be gone, not merely joined by better ones.
+    assert.doesNotMatch(source, /^\s+From\n/m);
+    assert.doesNotMatch(source, /^\s+To\n/m);
+  });
+});
+
+describe("a provider answering with invented data says so", () => {
+  it("names a Duffel test key on the screen where its prices are read", () => {
+    // Duffel issues separate test and live tokens and a test one returns
+    // made-up fares. Both read "Present", so a column of plausible prices
+    // could be the market or a fixture — on the one screen whose entire
+    // purpose is deciding which company to believe.
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(source, /kind === "test"/);
+    assert.match(source, /invented/);
+    // Both directions. Warning only on the test key left silence carrying the
+    // good news, and the fingerprint cannot settle it — every Duffel key on
+    // earth prints as "duffel…", because both kinds share those six characters.
+    assert.match(source, /kind === "live"/);
+    assert.match(source, /real fares/i);
+  });
+
+  it("still never prints a key, whatever it says about one", () => {
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    // The only thing rendered from an environment variable is its fingerprint.
+    const rendered = source.match(/\{process\.env\.[A-Z_]+\}/g);
+    assert.equal(rendered, null, "an environment variable is being rendered whole");
+    assert.match(source, /fingerprint\(value\)/);
+  });
+});
+
+describe("a sandbox is never mistaken for a market", () => {
+  it("DEFAULTS TO THE PRODUCTION HOST, BECAUSE THE OTHER DEFAULT FAILS QUIETLY", async () => {
+    // RouteStack has two hosts: mcp is the live market, evolvemcp the sandbox.
+    // Defaulting to the sandbox meant a deleted environment variable would go
+    // on serving invented prices with nothing on any screen saying so.
+    // Defaulting to production, the same mistake simply cannot authenticate.
+    const before = {
+      key: process.env.ROUTESTACK_API_KEY,
+      secret: process.env.ROUTESTACK_API_SECRET,
+      base: process.env.ROUTESTACK_API_BASE,
+    };
+    process.env.ROUTESTACK_API_KEY = "rst_test";
+    process.env.ROUTESTACK_API_SECRET = "secret_test";
+    delete process.env.ROUTESTACK_API_BASE;
+    try {
+      const { routestackConfig } = await import("@/lib/travel/adapters/routestack-auth");
+      assert.equal(routestackConfig()?.base, "https://mcp.routestack.ai");
+      process.env.ROUTESTACK_API_BASE = "https://evolvemcp.routestack.ai/";
+      assert.equal(routestackConfig()?.base, "https://evolvemcp.routestack.ai", "a trailing slash must not survive");
+    } finally {
+      for (const [name, value] of [
+        ["ROUTESTACK_API_KEY", before.key],
+        ["ROUTESTACK_API_SECRET", before.secret],
+        ["ROUTESTACK_API_BASE", before.base],
+      ] as const) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    }
+  });
+
+  it("says on the screen which of the two worlds a column of prices came from", () => {
+    const source = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(source, /evolvemcp\./);
+    assert.match(source, /not a live market/);
+    assert.match(source, /Live market/);
+    // The endpoint is an address, not a credential — fingerprinting it hid the
+    // one thing worth reading.
+    assert.match(source, /name\.endsWith\("_BASE"\)/);
+  });
+});
+
+describe("a partial answer is not the whole market", () => {
+  it("WAITS FOR THEIR SEARCH TO FINISH BEFORE BELIEVING THE COUNT", () => {
+    // RouteStack's hotel search reports its own progress. The loop used to
+    // stop at the first response carrying any hotels at all, which was
+    // invisible against their sandbox — that answered Completed on the first
+    // call with hundreds of rooms. Against production the first response is
+    // partial: a Kraków search came back with two hostels in two seconds and
+    // read as a city with two hotels in it.
+    const source = readFileSync("lib/travel/adapters/routestack-hotels.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.match(source, /answer\.status === "Completed"/);
+    // The old exit condition. Its presence anywhere in the loop is the bug.
+    assert.doesNotMatch(source, /if \(\(result\.result \?\? \[\]\)\.length\) break/);
+    // A later partial must never replace an earlier fuller answer.
+    assert.match(source, /\.length >= \(result\.result \?\? \[\]\)\.length\) result = answer/);
+  });
+});
+
+describe("a timeout says whose patience ran out", () => {
+  it("prints how long we waited, because that is the whole diagnosis", () => {
+    // "Timed out" on its own cannot tell a slow provider from a limit of ours
+    // set too low, and those want opposite responses. RouteStack came back at
+    // 20,003ms against a twenty-second limit and read as broken.
+    const source = readFileSync("components/admin/ProviderComparison.tsx", "utf8");
+    assert.match(source, /we stopped waiting at \$\{\(attempt\.ms \/ 1000\)\.toFixed\(1\)\}s/);
+  });
+
+  it("gives both flight providers the same patience", () => {
+    // Otherwise a comparison reporting two timeouts is telling us about two
+    // different arbitrary limits of ours rather than about the providers.
+    const timeoutIn = (path: string) => {
+      const source = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      return Number(/timeoutMs: (\d+)|^\s*(\d{5}),$/m.exec(source)?.slice(1).find(Boolean));
+    };
+    assert.equal(
+      timeoutIn("lib/travel/adapters/duffel-flights.ts"),
+      timeoutIn("lib/travel/adapters/routestack-flights.ts"),
+    );
+  });
+});
+
+describe("no booking ever lands on White Glove", () => {
+  it("REFUSES A SELLING PROVIDER A VISITOR EVEN WHEN THE SETTING SAYS PUBLIC", async () => {
+    // The owner's rule: third parties take the booking, or nobody does. Duffel
+    // is a real booking API — its order is ours, and so is the refund, the
+    // chargeback and the phone call when a gate is locked. A stage is how far
+    // a provider has been trusted; this is what it may be trusted with, and no
+    // stage can grant it.
+    const { weWouldBeTheSeller } = await import("@/lib/travel/engine");
+    assert.equal(weWouldBeTheSeller("duffel", "flight"), true);
+    assert.equal(weWouldBeTheSeller("routestack", "flight"), false);
+    assert.equal(weWouldBeTheSeller("stay22", "hotel"), false);
+    assert.equal(weWouldBeTheSeller("routestack", "car"), false);
+
+    const source = readFileSync("lib/travel/engine.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.match(source, /audience === "admin" \|\| provider\.fulfilment !== "api-booking"/);
+  });
+
+  it("refuses it at the setting too, and does not offer it on the screen", () => {
+    const action = readFileSync("app/admin/travel/actions.ts", "utf8");
+    assert.match(action, /stage === "public" && weWouldBeTheSeller\(provider, category\)/);
+    const page = readFileSync("app/admin/travel/page.tsx", "utf8");
+    assert.match(page, /sells \? null : <option value="public">/);
+    assert.match(page, /White Glove would be the seller/);
+  });
+
+  it("every adapter says which kind of company it is", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    for (const category of ["flight", "hotel", "car"] as const) {
+      for (const adapter of adaptersFor(category)) {
+        assert.ok(
+          ["api-booking", "deep-link", "widget"].includes(adapter.fulfilment),
+          `${adapter.id} does not say who sells`,
+        );
+      }
+    }
+    // Exactly one selling provider exists today, and it is the one the rule
+    // was written about. A second appearing without this test changing is
+    // worth a person looking at it.
+    const selling = (["flight", "hotel", "car"] as const).flatMap((c) =>
+      adaptersFor(c).filter((a) => a.fulfilment === "api-booking").map((a) => `${a.id}:${c}`),
+    );
+    assert.deepEqual(selling, ["duffel:flight"]);
+  });
+
+  it("the default stages never start a selling provider in public", async () => {
+    const { DEFAULT_STAGES } = await import("@/lib/travel/registry");
+    const { weWouldBeTheSeller } = await import("@/lib/travel/engine");
+    for (const [key, stage] of Object.entries(DEFAULT_STAGES)) {
+      const [provider, category] = key.split(":") as ["duffel", "flight"];
+      if (weWouldBeTheSeller(provider, category)) assert.notEqual(stage, "public", key);
+    }
   });
 });

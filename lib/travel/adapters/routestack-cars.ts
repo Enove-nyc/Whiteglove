@@ -113,6 +113,7 @@ async function resolveLocationCode(
 export const routestackCars: ProviderSearch = {
   id: "routestack",
   category: "car",
+  fulfilment: "deep-link",
   configured: routestackConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {

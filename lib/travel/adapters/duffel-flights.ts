@@ -54,6 +54,8 @@ export function duffelFlightsConfigured(): boolean {
 export const duffelFlights: ProviderSearch = {
   id: "duffel",
   category: "flight",
+  // Duffel sells. That is why this one can never be public — see engine.ts.
+  fulfilment: "api-booking",
   configured: duffelFlightsConfigured,
 
   async search(query: SearchQuery, signal: AbortSignal): Promise<TravelOffer[]> {
@@ -88,7 +90,14 @@ export const duffelFlights: ProviderSearch = {
           return_offers: true,
         },
       }),
-      timeoutMs: 15000,
+      // Fifteen seconds was a guess and it was wrong twice over. A London
+      // search is five airports and a return doubles it, so an offer request
+      // that normally answers in six can take far longer on a cold connection.
+      // Matched to the RouteStack adapter so that when a comparison reports a
+      // timeout, both columns waited the same length of time and the two are
+      // telling us something about the providers rather than about two
+      // different arbitrary limits of ours.
+      timeoutMs: 28000,
     });
 
     const result = (await response.json()) as { data?: { offers?: DuffelOffer[] } };

@@ -24,6 +24,24 @@ export type Endpoint = {
   airports: string[];
 };
 
+/**
+ * A place name with its accents taken off, for comparing against data that has
+ * none.
+ *
+ * data/airports.ts spells the city "Krakow". Somebody typing the Polish
+ * spelling their own destination page uses — Kraków — matched nothing at all,
+ * so a flight search from that city returned no airports, no offers and no
+ * explanation. Zürich, Málaga, Düsseldorf and São Paulo were the same. Eight
+ * other modules on this site already fold accents before matching; this one
+ * did not, and it is the one a flight search goes through.
+ *
+ * Folding is only ever applied to the comparison. What is shown to a traveler
+ * keeps its accents.
+ */
+export function foldAccents(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 /** The airports inside a metropolitan code, in a stable order. */
 export function airportsInMetro(metro: string): string[] {
   return AIRPORTS.filter((a) => a.cityCode === metro)
@@ -69,15 +87,18 @@ export function resolveEndpoint(input: unknown): Endpoint | null {
 
   // The label the picker writes back, in case it was stored without its code —
   // by an older version of this box, or by somebody typing what they saw.
-  const byLabel = Object.entries(METRO_AREAS).find(([, area]) => area.label.toLowerCase() === text.toLowerCase());
+  const byLabel = Object.entries(METRO_AREAS).find(([, area]) => foldAccents(area.label) === foldAccents(text));
   if (byLabel) return metroEndpoint(byLabel[0]);
 
   // A city name. Prefer the whole area when that city has one, because that is
   // what somebody typing a city rather than an airport is asking for.
   // "London — all airports" reduces to "London" here.
-  const lower = text.toLowerCase().replace(/\s*[—-]\s*all airports\s*$/i, "").trim();
+  const lower = foldAccents(text).replace(/\s*[—-]\s*all airports\s*$/i, "").trim();
   const named = AIRPORTS.filter(
-    (a) => a.city.toLowerCase() === lower || a.aliases.includes(lower) || a.city.toLowerCase().includes(lower),
+    (a) =>
+      foldAccents(a.city) === lower ||
+      a.aliases.some((alias) => foldAccents(alias) === lower) ||
+      foldAccents(a.city).includes(lower),
   );
   const metro = named.find((a) => a.cityCode)?.cityCode;
   if (metro) return metroEndpoint(metro);
@@ -101,7 +122,7 @@ export function metroMatches(
   airports: Airport[] = AIRPORTS,
   metros: Record<string, { label: string; country: string }> = METRO_AREAS,
 ): Array<{ code: string; label: string; airports: string[] }> {
-  const q = query.trim().toLowerCase();
+  const q = foldAccents(query.trim());
   if (!q) return [];
   const inGroup = (code: string) =>
     airports.filter((a) => a.cityCode?.toUpperCase() === code.toUpperCase()).map((a) => a.code);
@@ -111,7 +132,7 @@ export function metroMatches(
       // A group holding one airport is a duplicate row saying the same thing
       // twice, so it is never offered — see lib/airport-admin.ts.
       if (inside.length < 2) return false;
-      return `${code} ${area.label} ${area.country} ${inside.join(" ")}`.toLowerCase().includes(q);
+      return foldAccents(`${code} ${area.label} ${area.country} ${inside.join(" ")}`).includes(q);
     })
     .map(([code, area]) => ({ code, label: area.label, airports: inGroup(code) }));
 }

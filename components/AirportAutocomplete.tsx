@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { anchoredStyle, measureAnchor, useAnchorTracking, type AnchorBox } from "@/lib/anchored-panel";
 import { AIRPORTS, type Airport } from "@/data/airports";
-import { metroMatches } from "@/lib/flight-endpoint";
+import { foldAccents, metroMatches } from "@/lib/flight-endpoint";
 import { searchTermFor } from "@/lib/kayak-search";
 import { type AddedAirport, type AddedMetro, mergeAirports, mergeMetros } from "@/lib/airport-admin";
 
@@ -77,13 +77,15 @@ export default function AirportAutocomplete({
   // label — "New York — all airports (NYC)" — which matches nothing, so the
   // list reopened empty and there was no way to choose a different airport
   // without deleting the text by hand. Picking one airport locked the field.
-  const q = searchTermFor(query).toLowerCase();
+  // Folded, so "Kraków" finds the airport filed as "Krakow". See
+  // lib/flight-endpoint.ts for what typing the correct spelling used to cost.
+  const q = foldAccents(searchTermFor(query));
   // The built-in list with the owner's on top. Until the fetch lands `extras`
   // is empty, so this is exactly the built-in list and the box works at once.
   const all: Airport[] = extras.airports.length ? mergeAirports(extras.airports) : AIRPORTS;
   const cities = q.length >= 1 ? metroMatches(q, all, mergeMetros(extras.metros)) : [];
   const matches = q.length >= 1
-    ? all.filter((a) => `${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`.toLowerCase().includes(q)).slice(0, 8)
+    ? all.filter((a) => foldAccents(`${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`).includes(q)).slice(0, 8)
     : [];
 
   useEffect(() => {
