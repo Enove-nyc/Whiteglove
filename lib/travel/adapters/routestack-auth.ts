@@ -5,17 +5,23 @@
  * secret, traded at /mcp/auth/partner-token for a JWT that serves as an
  * ordinary bearer token for twenty-four hours.
  *
- * THEIR LIVE SERVER AND THEIR PUBLISHED SPEC DISAGREE, AND THE SERVER WINS.
- * The OpenAPI document describes a signed request — apiKey, timestamp, nonce
- * and an HMAC of `apiKey:timestamp:nonce` — with the secret never leaving our
- * side. The sandbox answers that request with "Partner credentials (apiKey and
- * apiSecret) are required", and it says so ONLY for a key it recognises: an
- * unknown key gets "partner account is not found" instead. So the account is
- * real and the server wants the secret in the body.
+ * THE SIGNATURE IS base64url, AND THAT IS THE WHOLE TRICK. Their OpenAPI
+ * document says only "HMAC signature of apiKey:timestamp:nonce using the
+ * partner secret key" and does not name an encoding; their key-usage guide
+ * does, in one word buried in a code sample — `.digest('base64url')`. Signed
+ * as hex or as ordinary base64 the request is well-formed and refused, and the
+ * refusal says "partner account is not found or not active", which reads like
+ * a dead account rather than a wrong encoding. That message cost an afternoon,
+ * so it is written down here.
  *
- * Both are therefore sent: the signature the spec documents, and the secret
- * the server asks for. If they later enforce the documented scheme, this keeps
- * working unchanged.
+ * THE SECRET NEVER LEAVES THIS SERVER. It signs; it is not sent. An earlier
+ * attempt did put it in the body — their error text asks for an "apiSecret" —
+ * but with the correct digest it is not needed, and a secret that stays home
+ * is the point of signing in the first place.
+ *
+ * THE HOST IS THE SANDBOX ONE, NOT THE ONE IN THEIR GUIDE. Their sample uses
+ * mcp.routestack.ai, which does not know this account; the sandbox host from
+ * the dashboard does. Hence ROUTESTACK_API_BASE.
  *
  * The signature never leaves this file and the secret never leaves the server.
  * The timestamp and nonce are what stop a captured request being replayed, so
@@ -46,9 +52,11 @@ let cached: { token: string; expiresAt: number } | null = null;
 const EARLY_RENEWAL_MS = 5 * 60 * 1000;
 
 export function signPartnerRequest(config: RouteStackConfig, timestamp: number, nonce: string) {
-  // Their documented string to sign: apiKey:timestamp:nonce.
+  // Their documented string to sign, and their documented encoding. base64url
+  // — not hex, not plain base64. See the note above for what the wrong one
+  // looks like from the outside.
   const message = `${config.apiKey}:${timestamp}:${nonce}`;
-  return createHmac("sha256", config.secret).update(message).digest("hex");
+  return createHmac("sha256", config.secret).update(message).digest("base64url");
 }
 
 export async function routestackToken(config: RouteStackConfig, signal: AbortSignal): Promise<string> {
@@ -63,10 +71,6 @@ export async function routestackToken(config: RouteStackConfig, signal: AbortSig
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       apiKey: config.apiKey,
-      // What their live server asks for by name. Sent over TLS to them alone,
-      // and never logged — see the error handling in lib/travel/search.ts,
-      // which keeps a category rather than a message.
-      apiSecret: config.secret,
       timestamp,
       nonce,
       hmac: signPartnerRequest(config, timestamp, nonce),

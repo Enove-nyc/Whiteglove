@@ -207,12 +207,32 @@ describe("what the admin will read", () => {
 });
 
 describe("RouteStack is reached the way RouteStack asks", () => {
-  it("signs apiKey:timestamp:nonce with the secret", async () => {
+  it("signs apiKey:timestamp:nonce as base64url — hex is refused as a dead account", async () => {
+    // THE ENCODING IS THE WHOLE TRICK. Signed as hex the request is
+    // well-formed and refused with "partner account is not found or not
+    // active", which reads like a provisioning problem rather than a wrong
+    // digest. This test is here so nobody has to learn that twice.
     const { signPartnerRequest } = await import("@/lib/travel/adapters/routestack-auth");
     const { createHmac } = await import("node:crypto");
     const config = { apiKey: "pub-key", secret: "the-secret", base: "https://example.test" };
-    const expected = createHmac("sha256", "the-secret").update("pub-key:1700000000:abc").digest("hex");
-    assert.equal(signPartnerRequest(config, 1700000000, "abc"), expected);
+    const message = "pub-key:1700000000:abc";
+    assert.equal(
+      signPartnerRequest(config, 1700000000, "abc"),
+      createHmac("sha256", "the-secret").update(message).digest("base64url"),
+    );
+    assert.notEqual(
+      signPartnerRequest(config, 1700000000, "abc"),
+      createHmac("sha256", "the-secret").update(message).digest("hex"),
+    );
+  });
+
+  it("signs with the secret rather than sending it", async () => {
+    const { readFileSync } = await import("node:fs");
+    const source = readFileSync("lib/travel/adapters/routestack-auth.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(source, /apiSecret:/, "the secret must not travel in the request body");
+    assert.match(source, /hmac: signPartnerRequest/);
   });
 
   it("a different nonce or timestamp gives a different signature", async () => {
