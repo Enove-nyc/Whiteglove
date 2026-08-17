@@ -151,6 +151,12 @@ export const routestackCars: ProviderSearch = {
     };
     const cars = data.result?.cars ?? [];
     const fallbackCurrency = data.result?.currency ?? query.currency ?? "USD";
+    // What their checkout will want back, alongside the car itself. Built once
+    // here because this is the only place that knows which desk was searched.
+    const desk = {
+      pickup: { name: place.name, code: place.code, date: query.startDate, time: "10:00" },
+      dropoff: { name: place.name, code: place.code, date: query.endDate ?? query.startDate, time: "10:00" },
+    };
 
     return cars.map((car, index): TravelOffer => {
       const rate = car.price_postpaid ?? car.price_prepaid ?? null;
@@ -173,6 +179,9 @@ export const routestackCars: ProviderSearch = {
         // They own the checkout — /mcp/car/get-payment-url — so this is a
         // hand-off, never a booking of ours.
         fulfilment: "deep-link",
+        // Server-side only; the public route mints a handle for it and drops
+        // it before anything reaches a browser. See lib/travel/types.ts.
+        raw: { car, ...desk },
         meta: {
           provider: "routestack",
           providerOfferId: rate?.fareCode ?? car.vehicle_code ?? String(index),

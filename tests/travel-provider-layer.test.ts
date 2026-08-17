@@ -777,3 +777,105 @@ describe("Travelpayouts answers without changing what /book does", () => {
     );
   });
 });
+
+describe("a provider's payload never reaches a browser", () => {
+  const routes = [
+    "app/api/travel/cars/search/route.ts",
+    "app/api/admin/travel/compare/route.ts",
+  ];
+
+  it("EVERY ROUTE BUILDS ITS ANSWER FROM NAMED FIELDS, NEVER BY SPREADING AN OFFER", () => {
+    // TravelOffer.raw carries RouteStack's whole car object, because their
+    // checkout wants it back. One `...offer` anywhere would put a hundred
+    // fields of a provider's internals on a public page and let anyone edit
+    // the car they are about to be quoted for.
+    for (const path of routes) {
+      const source = readFileSync(path, "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/[^\n]*/g, "");
+      assert.doesNotMatch(source, /\.\.\.offer\b/, `${path} spreads an offer`);
+      assert.doesNotMatch(source, /\braw\s*:/, `${path} serialises a provider payload`);
+      assert.doesNotMatch(source, /JSON\.stringify\(\s*outcome/, path);
+    }
+  });
+
+  it("the public search sends a handle, not the car", () => {
+    const source = readFileSync("app/api/travel/cars/search/route.ts", "utf8");
+    assert.match(source, /keepForCheckout/);
+    assert.match(source, /\/api\/travel\/cars\/go\?h=/);
+    // One handle for the whole search. Seventy-one cars must not be
+    // seventy-one writes.
+    assert.equal((source.match(/keepForCheckout\(/g) ?? []).length, 1);
+  });
+
+  it("asks the public engine as the public, which is the whole point of the gate", () => {
+    const source = readFileSync("app/api/travel/cars/search/route.ts", "utf8");
+    assert.match(source, /searchTravel\("car",[\s\S]{0,120}"public"/);
+  });
+});
+
+describe("the checkout hand-off leaves nothing on White Glove", () => {
+  const source = readFileSync("app/api/travel/cars/go/route.ts", "utf8");
+
+  it("REDIRECTS ONLY TO THE PROVIDER, SO A PUBLIC ROUTE IS NOT AN OPEN REDIRECT", () => {
+    // The destination arrives from a third party. Following it wherever it
+    // points would turn a link on this site into a way of sending somebody
+    // anywhere at all.
+    assert.match(source, /routestack\\\.ai\$\/\.test\(target\.hostname\)/);
+  });
+
+  it("takes the car from the server's handle, never from the request", () => {
+    // Otherwise the price somebody is sent to pay is whatever they last typed
+    // into the address bar.
+    assert.match(source, /readForCheckout\(handle\)/);
+    assert.doesNotMatch(source, /request\.json\(\)/);
+    assert.match(source, /car: car\.car/);
+  });
+
+  it("holds no card, creates no order, and stores nothing about the traveler", () => {
+    assert.doesNotMatch(source, /payment_method|cardNumber|cvv|card_holder/i);
+    assert.doesNotMatch(source, /createOrder|prisma|recordBooking/i);
+  });
+
+  it("sends an expired quote back to search rather than explaining itself", () => {
+    // Thirty minutes is all a handle lives, and an expired one is the ordinary
+    // case: prices move and desks sell out.
+    assert.match(source, /\/book\?kind=cars&expired=1/);
+    assert.doesNotMatch(source, /handle (expired|not found)/i);
+  });
+});
+
+describe("prices that take ten seconds do not hold up a page", () => {
+  const source = readFileSync("components/CarPrices.tsx", "utf8");
+
+  it("loads after the page and leaves the partner search working meanwhile", () => {
+    assert.match(source, /useEffect/);
+    // Rendered above the widget, and the widget is not conditional on it.
+    const book = readFileSync("components/BookPartners.tsx", "utf8");
+    assert.match(book, /<CarPrices[\s\S]{0,200}<PartnerSearchWidget/);
+  });
+
+  it("abandons a search the traveler has moved on from", () => {
+    assert.match(source, /new AbortController\(\)/);
+    assert.match(source, /return \(\) => abort\.abort\(\)/);
+  });
+
+  it("SAYS WHITE GLOVE DOES NOT TAKE PAYMENT, ON THE PAGE WITH THE BUTTON", () => {
+    assert.match(source, /White Glove does not take payment/);
+    assert.match(source, /rental company&rsquo;s own checkout/);
+  });
+
+  it("SHOWS A VISITOR NOTHING AT ALL WHEN A PROVIDER FAILS", () => {
+    // A traveler can do nothing about a provider being down, and the partner
+    // search under this is a complete answer on its own. So a failure renders
+    // as absence, not as an apology: no error state, no message, no mention of
+    // any company by name.
+    const stripped = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(stripped, /setError|errorMessage|\berror\b\s*&&/);
+    assert.doesNotMatch(stripped, /RouteStack|Duffel|Stay22/);
+    // The catch hands back an empty list, which the render treats as nothing
+    // to show.
+    assert.match(stripped, /catch \{[\s\S]{0,240}setAnswer\(\{ key, cars: \[\] \}\)/);
+    assert.match(stripped, /if \(!cars\.length\) return null/);
+  });
+});

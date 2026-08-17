@@ -99,6 +99,20 @@ export type TravelOffer = {
   fulfilment: Fulfilment;
   /** Where the traveler goes. Absent for a widget. */
   bookHref?: string;
+  /**
+   * The provider's own payload for this offer. SERVER-SIDE ONLY.
+   *
+   * RouteStack's car checkout does not take a fare code — it takes the whole
+   * car object back — so something has to carry it from the search to the
+   * click. It rides here rather than to the browser and back, which would put
+   * a provider's internals on a public page and let anyone edit the car they
+   * are about to be quoted for.
+   *
+   * EVERY ROUTE THAT ANSWERS A BROWSER MUST DROP THIS. They all build their
+   * response from named fields rather than spreading an offer, and a test
+   * holds them to it — see tests/travel-provider-layer.test.ts.
+   */
+  raw?: unknown;
   meta: OfferMeta;
 };
 

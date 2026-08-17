@@ -14,6 +14,7 @@ import { useRequireSignIn } from "@/components/SignInGate";
 import { emptyItinerary, type ItinActivity, type ItinFlight, type ItinLodging, type Itinerary } from "@/data/itinerary";
 import { correctedEnd, earliestEnd, nextDay, notBefore, today } from "@/lib/date-range";
 import { PartnerResultsPanel, moneyLabel, type PartnerResultRow } from "@/components/PartnerResultsPanel";
+import CarPrices from "@/components/CarPrices";
 import PartnerSearchWidget from "@/components/PartnerSearchWidget";
 import { carsEmbedPath } from "@/lib/partner-widget-paths";
 import type { PartnerLiveCapabilities } from "@/lib/partner-live";
@@ -912,6 +913,11 @@ function CarsForm({ onAdd, onOpened, prefill }: { onAdd: AddFn; onOpened: (b: Pe
 
   return (
     <div>
+      {/* ABOVE THE PARTNER SEARCH, NOT INSTEAD OF IT. The widget below earns
+          today and answers instantly; these prices take about ten seconds to
+          arrive and may not arrive at all. Somebody who reads down the page
+          has a working car search either way. */}
+      <CarPrices destination={loc} startDate={prefill?.depart ?? ""} endDate={prefill?.ret ?? ""} />
       <PartnerSearchWidget src={widgetSrc} title="Car search" minHeight={640} />
       <button
         type="button"
