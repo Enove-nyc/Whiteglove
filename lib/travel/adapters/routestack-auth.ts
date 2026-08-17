@@ -92,3 +92,58 @@ export async function routestackToken(config: RouteStackConfig, signal: AbortSig
 export function forgetRouteStackToken(): void {
   cached = null;
 }
+
+/**
+ * One POST to RouteStack, authenticated.
+ *
+ * Every one of their endpoints is a POST with a JSON body and a bearer token,
+ * so the three adapters were about to write the same six lines each. Written
+ * once here, where the token already lives.
+ */
+export async function routestackPost<T>(
+  config: RouteStackConfig,
+  path: string,
+  body: unknown,
+  signal: AbortSignal,
+  timeoutMs = 12000,
+): Promise<T> {
+  const token = await routestackToken(config, signal);
+  const response = await providerFetch(`${config.base}${path}`, {
+    signal,
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+    timeoutMs,
+  });
+  return (await response.json()) as T;
+}
+
+/**
+ * An IATA code for a place, asked of their flight index.
+ *
+ * WHY THIS IS HERE AND NOT IN THE CAR ADAPTER. Their car location index is a
+ * different index from their flight one, and it does not know every name a
+ * traveler would type: "Krakow" and "Kraków" both return nothing from cars,
+ * while "Cracow" and "KRK" return the airport. The flight index does know
+ * Kraków, and answers KRK. So when the car index draws a blank, this asks the
+ * flight index for a code and tries again with that. Shared because a hotel
+ * search may want the same trick later.
+ */
+export async function routestackAirportCode(
+  config: RouteStackConfig,
+  term: string,
+  signal: AbortSignal,
+): Promise<string | null> {
+  const data = await routestackPost<{ result?: Array<{ code?: string }> }>(
+    config,
+    "/mcp/flight/locations",
+    { term },
+    signal,
+    8000,
+  );
+  return data.result?.find((row) => row.code)?.code ?? null;
+}

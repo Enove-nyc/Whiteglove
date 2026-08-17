@@ -32,6 +32,7 @@ const field =
 
 export default function ProviderComparison() {
   const [category, setCategory] = useState<TravelCategory>("car");
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("Kraków");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -46,7 +47,7 @@ export default function ProviderComparison() {
       const res = await fetch("/api/admin/travel/compare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, destination, startDate, endDate }),
+        body: JSON.stringify({ category, origin, destination, startDate, endDate }),
       });
       const data = await res.json();
       setResult(res.ok ? data : { error: data?.error || "That search could not run." });
@@ -62,7 +63,7 @@ export default function ProviderComparison() {
 
   return (
     <div className="rounded-xl border border-[var(--gold-light)] bg-white p-5 sm:p-6">
-      <form onSubmit={run} className="grid gap-3 sm:grid-cols-5">
+      <form onSubmit={run} className="grid gap-3 sm:grid-cols-6">
         <label className="text-xs font-semibold text-stone-600">
           Category
           <select value={category} onChange={(e) => setCategory(e.target.value as TravelCategory)} className={`mt-1 ${field}`}>
@@ -71,8 +72,17 @@ export default function ProviderComparison() {
             ))}
           </select>
         </label>
-        <label className="text-xs font-semibold text-stone-600 sm:col-span-2">
-          Where
+        {/* A flight is the one search with two ends. Both flight adapters return
+            nothing rather than guessing a departure city, so the field appears
+            where it is needed and stays out of the way where it is not. */}
+        {category === "flight" ? (
+          <label className="text-xs font-semibold text-stone-600">
+            Leaving from
+            <input value={origin} onChange={(e) => setOrigin(e.target.value)} className={`mt-1 ${field}`} placeholder="London" />
+          </label>
+        ) : null}
+        <label className={`text-xs font-semibold text-stone-600 ${category === "flight" ? "" : "sm:col-span-2"}`}>
+          {category === "flight" ? "Going to" : "Where"}
           <input value={destination} onChange={(e) => setDestination(e.target.value)} className={`mt-1 ${field}`} placeholder="Kraków" />
         </label>
         <label className="text-xs font-semibold text-stone-600">
@@ -83,7 +93,7 @@ export default function ProviderComparison() {
           To
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={`mt-1 ${field}`} />
         </label>
-        <div className="sm:col-span-5">
+        <div className="sm:col-span-6">
           <button
             type="submit"
             disabled={busy}

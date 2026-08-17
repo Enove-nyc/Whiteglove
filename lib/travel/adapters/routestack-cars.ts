@@ -21,7 +21,7 @@
  */
 
 import { providerFetch } from "@/lib/travel/search";
-import { routestackConfig, routestackToken } from "@/lib/travel/adapters/routestack-auth";
+import { routestackAirportCode, routestackConfig, routestackToken } from "@/lib/travel/adapters/routestack-auth";
 import type { ProviderSearch } from "@/lib/travel/provider";
 import type { SearchQuery, TravelOffer } from "@/lib/travel/types";
 
@@ -75,18 +75,36 @@ async function resolveLocationCode(
   const cachedCode = locationCache.get(key);
   if (cachedCode) return { code: cachedCode, name: term };
 
-  const response = await providerFetch(`${base}/mcp/car/locations`, {
-    signal,
-    method: "POST",
-    headers: { "content-type": "application/json", accept: "application/json", authorization: `Bearer ${token}` },
-    body: JSON.stringify({ term }),
-    timeoutMs: 8000,
-  });
-  const data = (await response.json()) as { result?: RouteStackLocation[] };
+  const ask = async (searchTerm: string): Promise<RouteStackLocation[]> => {
+    const response = await providerFetch(`${base}/mcp/car/locations`, {
+      signal,
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify({ term: searchTerm }),
+      timeoutMs: 8000,
+    });
+    const data = (await response.json()) as { result?: RouteStackLocation[] };
+    return data.result ?? [];
+  };
+
   // Airports first: a traveler searching "Kraków" for a car almost always
   // means the airport desk, and their own example uses an airport code.
-  const rows = data.result ?? [];
-  const best = rows.find((row) => row.type === "airport" && row.code) ?? rows.find((row) => row.code);
+  const pick = (rows: RouteStackLocation[]) =>
+    rows.find((row) => row.type === "airport" && row.code) ?? rows.find((row) => row.code);
+
+  let best = pick(await ask(term));
+
+  // THEIR CAR INDEX DOES NOT KNOW EVERY PLACE NAME. It has no "Kraków" and no
+  // "Krakow" — it wants the English exonym "Cracow", or the code KRK. Their
+  // FLIGHT index does know Kraków and answers KRK, so a blank here is worth a
+  // second question rather than an empty search. Every European destination on
+  // this site with an accent in its name depended on it.
+  if (!best) {
+    const config = routestackConfig();
+    const code = config ? await routestackAirportCode(config, term, signal) : null;
+    if (code) best = pick(await ask(code));
+  }
+
   if (!best?.code) return null;
   locationCache.set(key, best.code);
   return { code: best.code, name: best.name ?? term };

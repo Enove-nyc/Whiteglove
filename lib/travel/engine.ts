@@ -13,7 +13,10 @@
 import { providerIsAllowed } from "@/lib/travel/registry";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { searchProviders, type SearchOptions } from "@/lib/travel/search";
+import { duffelFlights } from "@/lib/travel/adapters/duffel-flights";
 import { routestackCars } from "@/lib/travel/adapters/routestack-cars";
+import { routestackFlights } from "@/lib/travel/adapters/routestack-flights";
+import { routestackHotels } from "@/lib/travel/adapters/routestack-hotels";
 import { stay22Hotels } from "@/lib/travel/adapters/stay22-hotels";
 import type { ProviderSearch } from "@/lib/travel/provider";
 import type { SearchOutcome, SearchQuery, TravelCategory } from "@/lib/travel/types";
@@ -21,15 +24,20 @@ import type { SearchOutcome, SearchQuery, TravelCategory } from "@/lib/travel/ty
 /**
  * Every adapter the site has, by category.
  *
- * Duffel and Travelpayouts are deliberately absent for now. Both already
- * answer through their own routes — Duffel behind its admin guard, Travelpayouts
- * on /book — and wrapping a working public path is the one change in this
- * project that could break something a visitor uses today. They join when the
- * seam has proven itself on a category where nothing is at stake.
+ * TWO IN EVERY CATEGORY, WHICH IS WHAT MAKES IT A COMPARISON. One row per
+ * category is a list. Flights now ask Duffel and RouteStack; hotels ask Stay22
+ * and RouteStack; cars ask RouteStack, and a second car company is the next
+ * thing missing here.
+ *
+ * DUFFEL IS IN, TRAVELPAYOUTS IS STILL OUT, AND THE REASON IS THE SAME ONE.
+ * The rule was never "leave the existing integrations alone" — it was don't
+ * wrap a path a visitor is using today. Duffel's search is admin-only behind
+ * duffelRefusal, so reading the same account from here risks nothing a
+ * customer can see. Travelpayouts is answering on /book right now, so it waits.
  */
 const ADAPTERS: Record<TravelCategory, ProviderSearch[]> = {
-  flight: [],
-  hotel: [stay22Hotels],
+  flight: [duffelFlights, routestackFlights],
+  hotel: [stay22Hotels, routestackHotels],
   car: [routestackCars],
 };
 

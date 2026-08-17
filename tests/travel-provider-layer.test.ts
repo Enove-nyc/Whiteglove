@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { comparable, lowestComparable } from "@/lib/travel/compare";
 import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
@@ -329,5 +330,154 @@ describe("a fingerprint compares a credential without revealing one", () => {
 
   it("counts a trailing space, because that is what a failed paste looks like", () => {
     assert.match(String(fingerprint(" sb_rst_PxcjqYYV0g8iRzQ4ImUMXTCTuJdEmFR2 ")), /39 chars/);
+  });
+});
+
+describe("every category now has more than one company to ask", () => {
+  it("registers two providers for flights and two for hotels", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    assert.deepEqual(adaptersFor("flight").map((a) => a.id).sort(), ["duffel", "routestack"]);
+    assert.deepEqual(adaptersFor("hotel").map((a) => a.id).sort(), ["routestack", "stay22"]);
+    // Cars still have one. Said out loud so the next person adding a car
+    // company knows this is the gap and not an oversight of theirs.
+    assert.deepEqual(adaptersFor("car").map((a) => a.id), ["routestack"]);
+  });
+
+  it("declares each adapter under the category it actually answers", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    for (const category of ["flight", "hotel", "car"] as const) {
+      for (const adapter of adaptersFor(category)) {
+        assert.equal(adapter.category, category, `${adapter.id} is filed under the wrong category`);
+      }
+    }
+  });
+});
+
+describe("a flight search that cannot be answered is not guessed at", () => {
+  const withRouteStackEnv = async (run: () => Promise<void>) => {
+    const before = { key: process.env.ROUTESTACK_API_KEY, secret: process.env.ROUTESTACK_API_SECRET };
+    process.env.ROUTESTACK_API_KEY = "sb_rst_test";
+    process.env.ROUTESTACK_API_SECRET = "sb_secret_test";
+    try {
+      await run();
+    } finally {
+      if (before.key === undefined) delete process.env.ROUTESTACK_API_KEY;
+      else process.env.ROUTESTACK_API_KEY = before.key;
+      if (before.secret === undefined) delete process.env.ROUTESTACK_API_SECRET;
+      else process.env.ROUTESTACK_API_SECRET = before.secret;
+    }
+  };
+
+  it("RETURNS NOTHING RATHER THAN INVENTING A DEPARTURE CITY", async () => {
+    // Every other search on this site has one place in it. A flight has two,
+    // and a missing origin is not a hint to be filled in from the visitor's
+    // country or the last thing they looked at — it is a question the provider
+    // cannot be asked. Nothing is sent, so nothing is spent.
+    await withRouteStackEnv(async () => {
+      const { routestackFlights } = await import("@/lib/travel/adapters/routestack-flights");
+      const offers = await routestackFlights.search(
+        { destination: "KRK", startDate: "2026-09-30" },
+        AbortSignal.timeout(1000),
+      );
+      assert.deepEqual(offers, []);
+    });
+  });
+
+  it("refuses a flight comparison with no origin before spending a provider call", async () => {
+    const source = readFileSync("app/api/admin/travel/compare/route.ts", "utf8");
+    assert.match(source, /category === "flight" && !origin/);
+    // The refusal must come before the search, not after it.
+    assert.ok(
+      source.indexOf('category === "flight" && !origin') < source.indexOf("await searchTravel"),
+      "the check is below the call it is meant to prevent",
+    );
+  });
+});
+
+describe("the new adapters take money from nobody", () => {
+  const readSource = (path: string) =>
+    readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+  it("RouteStack hotels and flights hand off and never book", () => {
+    for (const path of [
+      "lib/travel/adapters/routestack-hotels.ts",
+      "lib/travel/adapters/routestack-flights.ts",
+    ]) {
+      const source = readSource(path);
+      assert.match(source, /fulfilment: "deep-link"/, path);
+      assert.doesNotMatch(source, /get-payment-url/, `${path} takes their checkout link`);
+      assert.doesNotMatch(source, /cancel-booking|create-booking|revalidate/, path);
+      assert.doesNotMatch(source, /payment_method|cardNumber|cvv|card_holder/i, path);
+    }
+  });
+
+  it("Duffel is search only, however capable Duffel is of more", () => {
+    const source = readSource("lib/travel/adapters/duffel-flights.ts");
+    assert.match(source, /offer_requests/);
+    // Duffel's booking calls. None of them belong in a search adapter.
+    assert.doesNotMatch(source, /\/air\/orders|payment_intents|\/air\/payments/);
+    assert.doesNotMatch(source, /payment_method|cardNumber|cvv/i);
+  });
+
+  it("no adapter writes a credential into what it returns", () => {
+    for (const path of [
+      "lib/travel/adapters/routestack-hotels.ts",
+      "lib/travel/adapters/routestack-flights.ts",
+      "lib/travel/adapters/duffel-flights.ts",
+      "lib/travel/adapters/routestack-cars.ts",
+    ]) {
+      const source = readSource(path);
+      // A token or secret in a headline, detail or meta field would travel to
+      // the browser with the offer.
+      assert.doesNotMatch(source, /headline:.*(token|secret|apiKey)/i, path);
+      assert.doesNotMatch(source, /providerOfferId:.*(token|secret|apiKey)/i, path);
+    }
+  });
+});
+
+describe("a place a provider spells differently is still that place", () => {
+  it("asks the flight index for a code when the car index draws a blank", () => {
+    // Their car location index has no "Kraków" and no "Krakow"; it wants the
+    // exonym "Cracow" or the code KRK. Their flight index answers KRK for
+    // Kraków. Without this fallback every accented European destination on
+    // this site returned no cars and looked like an empty market.
+    const source = readFileSync("lib/travel/adapters/routestack-cars.ts", "utf8");
+    assert.match(source, /routestackAirportCode/);
+    const stripped = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.ok(
+      stripped.lastIndexOf("routestackAirportCode") > stripped.indexOf("let best = pick(await ask(term))"),
+      "the fallback must run after the ordinary lookup, not instead of it",
+    );
+  });
+});
+
+describe("a provider's document is not a provider's answer", () => {
+  it("READS THEIR FIELD WHATEVER SHAPE IT ARRIVES IN", async () => {
+    // RouteStack's OpenAPI declares mainamenity a string. Live, it is an array
+    // of strings, and reviews — declared an object — is null on every hotel in
+    // a 452-result Kraków search. Calling .trim() on the first one crashed the
+    // whole search, which is the wrong way for one optional amenity line to
+    // matter. Nothing read from a provider is trusted to be its declared type.
+    const { asText } = await import("@/lib/travel/adapters/routestack-hotels");
+    assert.equal(asText("accessible rooms"), "accessible rooms");
+    assert.equal(asText(["accessible rooms"]), "accessible rooms");
+    assert.equal(asText(["pool", "spa", "gym", "parking"]), "pool, spa, gym");
+    assert.equal(asText([]), undefined);
+    assert.equal(asText(null), undefined);
+    assert.equal(asText(undefined), undefined);
+    assert.equal(asText(42), undefined);
+    assert.equal(asText({ name: "pool" }), undefined);
+    assert.equal(asText("   "), undefined);
+  });
+
+  it("does not put a number through a string method anywhere it reads a hotel", () => {
+    const source = readFileSync("lib/travel/adapters/routestack-hotels.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(source, /hotel\.mainamenity\?\.trim/);
+    // reviews is null on every hotel their sandbox returns, so a rating may
+    // only be printed after it has been proven to be a number.
+    assert.match(source, /typeof hotel\.reviews\?\.rating === "number"/);
+    assert.match(source, /typeof hotel\.ourprice === "number"/);
   });
 });

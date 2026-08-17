@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json().catch(() => null)) as {
     category?: string;
+    origin?: string;
     destination?: string;
     startDate?: string;
     endDate?: string;
@@ -39,6 +40,13 @@ export async function POST(request: NextRequest) {
   }
   const destination = String(body?.destination ?? "").trim().slice(0, 120);
   if (!destination) return NextResponse.json({ error: "Enter somewhere to search." }, { status: 400 });
+  // A flight has two ends. Both adapters answer with nothing rather than
+  // guessing a departure city, so an empty origin would look like two providers
+  // carrying no inventory — which is the wrong thing to learn from a test.
+  const origin = String(body?.origin ?? "").trim().slice(0, 120) || undefined;
+  if (category === "flight" && !origin) {
+    return NextResponse.json({ error: "Enter where the flight leaves from." }, { status: 400 });
+  }
 
   const date = (value: unknown) => {
     const text = String(value ?? "").trim();
@@ -53,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   const outcome = await searchTravel(
     category,
-    { destination, startDate, endDate },
+    { origin, destination, startDate, endDate },
     "admin",
     // Longer than a visitor would wait: here a slow honest answer is the thing
     // being measured. Not recorded either — measuring is not real traffic.
