@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { comparable, lowestComparable } from "@/lib/travel/compare";
+import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
 import { providerIsAllowed, stageOf, DEFAULT_STAGES } from "@/lib/travel/registry";
 import { searchProviders } from "@/lib/travel/search";
 import { categoriseError, foldAttempt } from "@/lib/travel/telemetry";
@@ -292,5 +293,41 @@ describe("a provider's own words help the admin and never reach the store", () =
     assert.doesNotMatch(serialised, /Kraków/, "a search must not reach the health record");
     assert.doesNotMatch(serialised, /Partner account/);
     assert.deepEqual(Object.keys(folded.recentErrors[0]).sort(), ["at", "error"]);
+  });
+});
+
+describe("a fingerprint compares a credential without revealing one", () => {
+  it("shows the ends and the length, and nothing in between", () => {
+    const key = "sb_rst_PxcjqYYV0g8iRzQ4ImUMXTCTuJdEmFR2";
+    const print = String(fingerprint(key));
+    assert.match(print, /^sb_rst…mFR2 · 39 chars$/);
+    // The whole point: what is shown must not be enough to sign with.
+    assert.doesNotMatch(print, /PxcjqYYV0g8iRzQ4/);
+    assert.ok(print.length < key.length, "a fingerprint longer than the secret is not a fingerprint");
+  });
+
+  it("says nothing at all for a variable that is not set", () => {
+    assert.equal(fingerprint(undefined), null);
+    assert.equal(fingerprint(""), null);
+    assert.equal(fingerprint("   "), null);
+  });
+
+  it("REFUSES TO SPELL OUT A SHORT VALUE, which would be the whole of it", () => {
+    // Six and four of a twelve-character value is ten of its twelve characters.
+    const print = String(fingerprint("abcd1234efgh"));
+    assert.equal(print, "12 characters");
+    assert.doesNotMatch(print, /abcd/);
+  });
+
+  it("names the mistake it exists to catch: a masked value pasted from a dashboard", () => {
+    const masked = "sb_b3ab20b6469c4170c2…884d59f3";
+    assert.ok(looksMasked(masked));
+    assert.match(String(fingerprint(masked)), /contains …/);
+    assert.equal(looksMasked("sb_b3ab20b6469c4170c21179502d73ae55bc38cd25f3af1af8e8ca6b39884d59f3"), false);
+    assert.equal(looksMasked(undefined), false);
+  });
+
+  it("counts a trailing space, because that is what a failed paste looks like", () => {
+    assert.match(String(fingerprint(" sb_rst_PxcjqYYV0g8iRzQ4ImUMXTCTuJdEmFR2 ")), /39 chars/);
   });
 });

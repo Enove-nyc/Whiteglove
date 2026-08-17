@@ -8,6 +8,7 @@ import { KNOWN_PAIRS, STAGE_LABELS, stageOf, type ProviderStage } from "@/lib/tr
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { healthRows, readTravelHealth } from "@/lib/travel/telemetry";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
+import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,18 @@ export const dynamic = "force-dynamic";
  *
  * No key is displayed here, ever. Only whether one is present.
  */
+
+/**
+ * The variables each provider reads, so the screen can show a fingerprint of
+ * what the server is actually holding — see lib/travel/fingerprint.ts for why
+ * "Present" was not enough.
+ */
+const PROVIDER_VARS: Record<ProviderId, string[]> = {
+  duffel: ["DUFFEL_ACCESS_TOKEN"],
+  stay22: ["STAY22_API_KEY"],
+  travelpayouts: ["TRAVELPAYOUTS_TOKEN"],
+  routestack: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_SECRET", "ROUTESTACK_API_BASE"],
+};
 
 /** Whether the environment has what this provider needs. Never the value. */
 function configuredFor(provider: ProviderId): boolean {
@@ -97,6 +110,22 @@ export default async function AdminTravelProvidersPage() {
                       ) : (
                         <span className={`${chip} border-stone-300 bg-stone-50 text-stone-600`}>Not set</span>
                       )}
+                      <ul className="mt-1.5 space-y-0.5">
+                        {PROVIDER_VARS[provider].map((name) => {
+                          const value = process.env[name];
+                          const print = fingerprint(value);
+                          return (
+                            <li key={name} className="whitespace-nowrap text-[11px] leading-4 text-stone-500">
+                              <span className="text-stone-400">{name.replace(/^[A-Z]+_/, "")}</span>{" "}
+                              {print ? (
+                                <code className={looksMasked(value) ? "font-semibold text-red-700" : ""}>{print}</code>
+                              ) : (
+                                <span className="text-stone-400">—</span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </td>
                     <td className="px-4 py-3 text-stone-600">
                       {row ? (
@@ -146,8 +175,10 @@ export default async function AdminTravelProvidersPage() {
           </table>
         </div>
         <p className="mt-3 max-w-2xl text-xs leading-5 text-stone-500">
-          &ldquo;Key&rdquo; says only whether the server has one — never what it is. Keys live in the environment and
-          are set on Settings → Connections.
+          &ldquo;Key&rdquo; never shows a credential. The line under it is a fingerprint — first six characters, last
+          four, and the length — which is enough to compare against what a provider&rsquo;s dashboard shows, and not
+          enough to use. A fingerprint in red contains an ellipsis, which means a masked value was pasted instead of
+          the real one. Keys live in the environment and are set on Settings → Connections.
         </p>
       </section>
 
