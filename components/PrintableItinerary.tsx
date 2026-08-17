@@ -165,7 +165,17 @@ export default function PrintableItinerary({
             // cover's own display face so the page still opens with something.
             <p className="wg-crest-name">{brand.name}</p>
           ) : (
-            <Image src="/logo.png" alt="White Glove Kosher Travel" width={480} height={320} className="wg-crest" priority />
+            // THE WORDMARK SAYS "WHITE GLOVE ITINERARIES", WHICH IS THE OLD
+            // NAME. It is drawn into the artwork, so it cannot be corrected by
+            // changing a label — and this is the cover of the document a
+            // client is handed. The hand is ink on transparent and carries no
+            // words, so the name is set beside it as text, exactly as the site
+            // footer already does.
+            <>
+              <Image src="/logo-hand-navy.png" alt="" width={355} height={460} className="wg-crest-hand" priority />
+              <p className="wg-crest-wordmark">White Glove</p>
+              <p className="wg-crest-wordmark-sub">Kosher Travel</p>
+            </>
           )}
           <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : "A White Glove Kosher Travel journey"}</p>
           {brand?.contactLine && <p className="wg-cover-contact">{brand.contactLine}</p>}
@@ -199,7 +209,7 @@ export default function PrintableItinerary({
                 // eslint-disable-next-line @next/next/no-img-element -- see the cover
                 <img src={brand.logoUrl} alt="" className="wg-head-mark" />
               ) : brand ? null : (
-                <Image src="/logo.png" alt="" width={160} height={110} className="wg-head-mark" />
+                <Image src="/logo-hand-navy.png" alt="" width={355} height={460} className="wg-head-mark" />
               )}
               <span className="wg-head-name">{brand ? brand.name : "White Glove Kosher Travel"} · {title}</span>
               <span className="wg-head-day">Day {String(index + 1).padStart(2, "0")}</span>
@@ -306,6 +316,22 @@ const css = `
   .wg-arc { position: absolute; top: 0; right: 0; width: 2.6in; height: 2.6in; }
   .wg-cover-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
   .wg-crest { width: 2.1in; height: auto; max-height: 1.5in; object-fit: contain; }
+  .wg-crest-hand { width: auto; height: 0.9in; object-fit: contain; }
+  .wg-crest-wordmark {
+    margin-top: 6pt;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 20pt;
+    line-height: 1.05;
+    color: #1e2a44;
+  }
+  .wg-crest-wordmark-sub {
+    margin-top: 3pt;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8a6f3c;
+  }
   /* A business with a name and no logo. The same weight the crest carries, so
      the cover still opens on something rather than starting at the eyebrow. */
   .wg-crest-name {
@@ -351,7 +377,7 @@ const css = `
   .wg-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid ${GOLD_RULE}; }
   /* Capped both ways. An uploaded logo can be any shape at all, and a tall one
      with only a width set would push the whole day's header down the page. */
-  .wg-head-mark { width: 34px; height: auto; max-height: 34px; object-fit: contain; }
+  .wg-head-mark { width: auto; height: 34px; max-height: 34px; object-fit: contain; }
   .wg-head-name { flex: 1; font-family: Georgia, "Times New Roman", serif; font-size: 15px; color: ${INK}; }
   .wg-head-day { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${MAROON}; }
 

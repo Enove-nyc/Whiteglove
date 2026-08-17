@@ -188,7 +188,10 @@ export function renderBlastHtml(input: BlastRenderInput): string {
     .map((block) => blockHtml(block, origin))
     .join("");
 
-  const crest = `${origin}/logo.png`;
+  // NOT /logo.png: that artwork has "White Glove Itineraries" — the old name —
+  // drawn into it, so every email was signed with a company that no longer
+  // exists. The hand carries no words and the name is set as text below it.
+  const crest = `${origin}/logo-hand-navy.png`;
   const unsubscribe = safeHref(input.unsubscribeUrl) || escapeEmailHtml(input.unsubscribeUrl);
 
   return (
@@ -203,10 +206,17 @@ export function renderBlastHtml(input: BlastRenderInput): string {
     `<table role="presentation" width="${WIDTH}" cellpadding="0" cellspacing="0" border="0" ` +
     `style="width:100%;max-width:${WIDTH}px;background:${SURFACE};border:1px solid ${GOLD_RULE};">` +
 
-    // ---- the crest ----
+    // ---- the crest, and the name as words beside it ----
+    // The artwork carries no name of its own, so the name is set as text — the
+    // same lockup the site header and footer use. An email client that blocks
+    // pictures then still shows who wrote.
     `<tr><td align="center" style="padding:30px 40px 0;">` +
-    `<img src="${escapeEmailHtml(crest)}" alt="White Glove Kosher Travel" width="150" ` +
-    `style="display:block;width:150px;max-width:60%;height:auto;border:0;" /></td></tr>` +
+    `<img src="${escapeEmailHtml(crest)}" alt="" width="54" ` +
+    `style="display:block;width:54px;max-width:30%;height:auto;border:0;" /></td></tr>` +
+    `<tr><td align="center" style="padding:10px 40px 0;">` +
+    `<div style="font-family:${DISPLAY};font-size:24px;line-height:1.1;color:${NAVY};">White Glove</div>` +
+    `<div style="font-family:${SANS};font-size:10px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:${GOLD_INK};padding-top:6px;">` +
+    `Kosher Travel</div></td></tr>` +
     `<tr><td align="center" style="padding:14px 40px 0;">` +
     `<div style="font-family:${SANS};font-size:10px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:${GOLD_INK};">` +
     `Kosher travel, planned properly</div></td></tr>` +

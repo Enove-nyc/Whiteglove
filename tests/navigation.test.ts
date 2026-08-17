@@ -197,3 +197,35 @@ describe("the header renders the list rather than its own copy", () => {
     assert.equal(SIGN_IN.href, "/login");
   });
 });
+
+describe("search opens across the page, not on a page of its own", () => {
+  const NAV = readFileSync("components/Navbar.tsx", "utf8");
+
+  it("TOGGLES A BAR INSTEAD OF NAVIGATING AWAY", () => {
+    // Searching used to mean leaving whatever somebody was reading, and coming
+    // back meant Back.
+    assert.match(NAV, /onClick=\{\(\) => setSearchOpen\(\(v\) => !v\)\}/);
+    assert.match(NAV, /\{searchOpen && \(/);
+    assert.match(NAV, /<DestinationSearch compact autoFocus id="header-search" \/>/);
+  });
+
+  it("KEEPS /search AS A REAL PAGE BEHIND IT", () => {
+    // A typed URL, a bookmark, and Enter on a query worth its own screen.
+    assert.match(NAV, /href="\/search"/);
+  });
+
+  it("closes on Escape, on the X, and when a result is followed", () => {
+    assert.match(NAV, /if \(event\.key === "Escape"\) setSearchOpen\(false\)/);
+    assert.match(NAV, /aria-label="Close search"/);
+    // Following a result is the end of that search; leaving the bar open would
+    // cover the top of the page somebody just arrived at.
+    assert.match(NAV, /setSearchOpen\(false\);\s*\n\s*\}/);
+  });
+
+  it("uses the site's own search box rather than a second one", () => {
+    // DestinationSearch is the box with the typeahead, the keyboard handling
+    // and the sections. A plain input here would be a worse search wearing the
+    // same icon.
+    assert.match(NAV, /import DestinationSearch from "@\/components\/DestinationSearch"/);
+  });
+});

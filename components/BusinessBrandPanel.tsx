@@ -183,9 +183,19 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
             ) : enabled && name.trim() ? (
               <p className="font-[family-name:var(--font-display)] text-lg leading-tight text-[var(--navy)]">{name}</p>
             ) : (
-              // The site's own crest, at a size next/image would not help with.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/logo.png" alt="White Glove Kosher Travel" className="max-h-16 max-w-full object-contain" />
+              // The hand and the name as words, which is what the printed
+              // cover does — /logo.png has "White Glove Itineraries" drawn
+              // into the artwork, so it cannot be corrected by a label.
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-hand-navy.png" alt="" className="h-12 w-auto object-contain" />
+                <p className="mt-2 font-[family-name:var(--font-display)] text-lg leading-none text-[var(--navy)]">
+                  White Glove
+                </p>
+                <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+                  Kosher Travel
+                </p>
+              </>
             )}
             <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">
               {enabled && name.trim() ? `Prepared by ${name}` : "A White Glove Kosher Travel journey"}
