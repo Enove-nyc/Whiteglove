@@ -18,25 +18,31 @@ import { routestackCars } from "@/lib/travel/adapters/routestack-cars";
 import { routestackFlights } from "@/lib/travel/adapters/routestack-flights";
 import { routestackHotels } from "@/lib/travel/adapters/routestack-hotels";
 import { stay22Hotels } from "@/lib/travel/adapters/stay22-hotels";
+import { travelpayoutsFlights } from "@/lib/travel/adapters/travelpayouts-flights";
 import type { ProviderSearch } from "@/lib/travel/provider";
 import type { ProviderId, SearchOutcome, SearchQuery, TravelCategory } from "@/lib/travel/types";
 
 /**
  * Every adapter the site has, by category.
  *
- * TWO IN EVERY CATEGORY, WHICH IS WHAT MAKES IT A COMPARISON. One row per
- * category is a list. Flights now ask Duffel and RouteStack; hotels ask Stay22
- * and RouteStack; cars ask RouteStack, and a second car company is the next
- * thing missing here.
+ * TWO WHO CAN FACE A TRAVELER, WHICH IS WHAT MAKES IT A COMPARISON. Duffel is
+ * counted in the flight list and cannot be counted on: it would make White
+ * Glove the seller, so it answers the admin and nobody else, whatever its
+ * stage says. That leaves RouteStack and Travelpayouts as the two third
+ * parties who could publicly answer a flight search, and Stay22 and RouteStack
+ * for hotels.
  *
- * DUFFEL IS IN, TRAVELPAYOUTS IS STILL OUT, AND THE REASON IS THE SAME ONE.
- * The rule was never "leave the existing integrations alone" — it was don't
- * wrap a path a visitor is using today. Duffel's search is admin-only behind
- * duffelRefusal, so reading the same account from here risks nothing a
- * customer can see. Travelpayouts is answering on /book right now, so it waits.
+ * CARS HAVE ONE. That is the real gap in this table and it is not an
+ * oversight: no second car company is signed up. It is also the category
+ * where one is worth the least — cars had no inventory here at all until
+ * RouteStack, so the choice today is one company or none.
+ *
+ * Each adapter wraps the module its own public page already calls rather than
+ * replacing it. Delete any of these files and /book, the flight page and the
+ * places-to-stay page all carry on unchanged.
  */
 const ADAPTERS: Record<TravelCategory, ProviderSearch[]> = {
-  flight: [duffelFlights, routestackFlights],
+  flight: [duffelFlights, routestackFlights, travelpayoutsFlights],
   hotel: [stay22Hotels, routestackHotels],
   car: [routestackCars],
 };

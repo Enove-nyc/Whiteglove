@@ -343,11 +343,22 @@ describe("a fingerprint compares a credential without revealing one", () => {
 describe("every category now has more than one company to ask", () => {
   it("registers two providers for flights and two for hotels", async () => {
     const { adaptersFor } = await import("@/lib/travel/engine");
-    assert.deepEqual(adaptersFor("flight").map((a) => a.id).sort(), ["duffel", "routestack"]);
+    assert.deepEqual(adaptersFor("flight").map((a) => a.id).sort(), ["duffel", "routestack", "travelpayouts"]);
     assert.deepEqual(adaptersFor("hotel").map((a) => a.id).sort(), ["routestack", "stay22"]);
     // Cars still have one. Said out loud so the next person adding a car
     // company knows this is the gap and not an oversight of theirs.
     assert.deepEqual(adaptersFor("car").map((a) => a.id), ["routestack"]);
+  });
+
+  it("LEAVES TWO WHO MAY ACTUALLY FACE A TRAVELER IN EVERY CATEGORY BUT CARS", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    // Duffel is in the flight list and can never be counted among them: it
+    // would make White Glove the seller. Without a second third party, setting
+    // RouteStack public would give a visitor one company and call it a choice.
+    for (const category of ["flight", "hotel"] as const) {
+      const facing = adaptersFor(category).filter((a) => a.fulfilment !== "api-booking");
+      assert.ok(facing.length >= 2, `${category} has ${facing.length} provider a visitor could ever see`);
+    }
   });
 
   it("declares each adapter under the category it actually answers", async () => {
@@ -734,5 +745,35 @@ describe("no booking ever lands on White Glove", () => {
       const [provider, category] = key.split(":") as ["duffel", "flight"];
       if (weWouldBeTheSeller(provider, category)) assert.notEqual(stage, "public", key);
     }
+  });
+});
+
+describe("Travelpayouts answers without changing what /book does", () => {
+  it("wraps the module rather than replacing it, exactly as Stay22 does", () => {
+    const adapter = readFileSync("lib/travel/adapters/travelpayouts-flights.ts", "utf8");
+    assert.match(adapter, /searchTravelpayoutsFlights/);
+    // The public route must still call the module directly. If this adapter
+    // ever became the path /book takes, deleting it would take /book with it.
+    const route = readFileSync("app/api/partners/flights/offer/route.ts", "utf8");
+    assert.doesNotMatch(route, /travel\/adapters/, "/book must not depend on the provider layer");
+  });
+
+  it("is a third party and says so, since that is the whole reason it is here", async () => {
+    const { adaptersFor } = await import("@/lib/travel/engine");
+    const tp = adaptersFor("flight").find((a) => a.id === "travelpayouts");
+    assert.equal(tp?.fulfilment, "deep-link");
+  });
+
+  it("returns nothing rather than guessing when it cannot be asked", async () => {
+    const { travelpayoutsFlights } = await import("@/lib/travel/adapters/travelpayouts-flights");
+    const signal = AbortSignal.timeout(1000);
+    assert.deepEqual(await travelpayoutsFlights.search({ destination: "KRK", startDate: "2026-09-30" }, signal), []);
+    assert.deepEqual(
+      await travelpayoutsFlights.search(
+        { origin: "London", destination: "Nowhere-at-all", startDate: "2026-09-30" },
+        signal,
+      ),
+      [],
+    );
   });
 });
