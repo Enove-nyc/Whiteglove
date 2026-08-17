@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { Icon } from "@/components/icons/Icon";
+import {
+  ANSWER_LABEL,
+  ASSISTANT_HOME_LABEL,
+  ASSISTANT_HOME_SUPPORT,
+  ASSISTANT_INPUT_NOTICE,
+  SOURCED_LABEL,
+  type AssistantSource,
+} from "@/lib/assistant-disclosure";
 
 /**
  * The AI assistant, folded behind one compact control.
@@ -36,10 +44,18 @@ const EXAMPLES = [
 
 const VISIBLE_EXAMPLES = 3;
 
-export default function TravelAssistantBox({ embedded = false }: { embedded?: boolean }) {
+export default function TravelAssistantBox({
+  embedded = false,
+  /** The page already shows the label above it, so the panel does not repeat it. */
+  labelledOutside = false,
+}: {
+  embedded?: boolean;
+  labelledOutside?: boolean;
+}) {
   const [open, setOpen] = useState(embedded);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
+  const [sources, setSources] = useState<AssistantSource[]>([]);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -50,6 +66,7 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
     if (!value) return;
     setBusy(true);
     setAnswer(null);
+    setSources([]);
     setNote(null);
     setExpanded(false);
     try {
@@ -59,8 +76,10 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
         body: JSON.stringify({ question: value }),
       });
       const data = await res.json().catch(() => ({ available: false, reason: "Something went wrong." }));
-      if (data.available) setAnswer(data.text || "");
-      else setNote(data.reason || "The assistant is unavailable right now.");
+      if (data.available) {
+        setAnswer(data.text || "");
+        setSources(Array.isArray(data.sources) ? data.sources : []);
+      } else setNote(data.reason || "The assistant is unavailable right now.");
     } catch {
       setNote("Could not reach the assistant. Please try again.");
     } finally {
@@ -77,12 +96,12 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="travel-assistant-panel"
-        aria-label="Assistant — ask an AI kosher-travel question"
-        title="Ask the AI assistant"
+        aria-label={ASSISTANT_HOME_LABEL}
+        title={ASSISTANT_HOME_LABEL}
         className="inline-flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
       >
         <Icon name="sparkle" className="h-4 w-4" />
-        Assistant
+        AI assistant
       </button>
 
       {open && (
@@ -90,12 +109,20 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
           id="travel-assistant-panel"
           className="mt-3 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6"
         >
-          <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">Assistant</h2>
+          {labelledOutside ? null : (
+            <>
+              <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{ASSISTANT_HOME_LABEL}</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
+            </>
+          )}
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            AI-generated answers about destinations, kosher food, Shabbos and itineraries — not a search of White
-            Glove&apos;s curated listings. For those, use the{" "}
+            For White Glove&apos;s own checked listings, use the{" "}
             <Link href="/kosher" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
               kosher food finder
+            </Link>{" "}
+            or the{" "}
+            <Link href="/search" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+              site search
             </Link>
             .
           </p>
@@ -148,6 +175,9 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
             </button>
           </form>
 
+          {/* Beside the box they type into, not buried in the fold above it. */}
+          <p className="mt-3 text-xs leading-5 text-stone-500">{ASSISTANT_INPUT_NOTICE}</p>
+
           <div className="mt-3 flex flex-wrap gap-2">
             {visible.map((ex) => (
               <button
@@ -174,12 +204,45 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
           </div>
 
           {answer && (
-            <div className="mt-5 border-l-4 border-[var(--gold)] bg-white">
+            /* NOT STYLED LIKE THE REST OF THE SITE, on purpose. Editorial
+               content is navy on cream with a gold rule; this is a dashed
+               border on plain white with the label above the words, so an
+               answer can never be mistaken at a glance for a page somebody
+               checked. */
+            <section
+              aria-label="AI-generated answer"
+              className="mt-5 rounded-lg border-2 border-dashed border-[var(--gold)] bg-white"
+            >
+              <p className="flex flex-wrap items-center gap-2 border-b border-dashed border-[var(--gold-light)] px-4 py-2 text-[11px] font-bold tracking-[0.02em] text-[var(--gold-ink)]">
+                <Icon name="sparkle" className="h-3.5 w-3.5" aria-hidden="true" />
+                {ANSWER_LABEL}
+              </p>
               <div className={`overflow-y-auto overscroll-contain p-4 text-sm leading-6 text-stone-700 ${expanded ? "" : "max-h-80"}`}>
                 <AssistantAnswer answer={answer} />
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--gold-light)] px-4 py-2">
-                <p className="text-[11px] text-stone-400">AI-generated — please confirm details (hours, access, kashrus) before you rely on them.</p>
+              {sources.length > 0 && (
+                /* Shown only when the answer actually pointed at a published
+                   page — and it sits UNDER the label above, which stays put:
+                   the information is ours, this answer about it still is not
+                   something anybody read. */
+                <div className="border-t border-dashed border-[var(--gold-light)] px-4 py-3">
+                  <p className="text-[11px] font-bold tracking-[0.02em] text-[var(--navy)]">{SOURCED_LABEL}</p>
+                  <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                    {sources.map((source) => (
+                      <li key={source.href}>
+                        <Link
+                          href={source.href}
+                          className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                        >
+                          {source.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-[var(--gold-light)] px-4 py-2">
+                <p className="text-[11px] text-stone-500">{ASSISTANT_INPUT_NOTICE}</p>
                 <button
                   type="button"
                   onClick={() => setExpanded((v) => !v)}
@@ -188,7 +251,7 @@ export default function TravelAssistantBox({ embedded = false }: { embedded?: bo
                   {expanded ? "Collapse" : "Expand full answer"}
                 </button>
               </div>
-            </div>
+            </section>
           )}
           {note && <p className="mt-5 text-sm font-semibold text-stone-500">{note}</p>}
         </div>

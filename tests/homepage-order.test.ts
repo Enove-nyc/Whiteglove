@@ -140,12 +140,27 @@ describe("the order of the page", () => {
   });
 
   it("OFFERS ONE SEARCH, NOT THREE COMPETING FORMS", () => {
-    // Search / Ask / Plan lived here as tabs. Ask lives on /itinerary and the
-    // stay search on /hotels — both one press away, neither lost. What the
-    // front page must not do is put three forms in front of somebody who has
-    // typed nothing yet.
-    assert.doesNotMatch(HOME, /<HomeDiscoveryTools|<StaySearchForm|<TravelAssistantBox/);
+    // Search / Ask / Plan lived here as tabs — three boxes in front of
+    // somebody who had typed nothing. One search box remains, and the stay
+    // search stays on /hotels.
+    assert.doesNotMatch(HOME, /<HomeDiscoveryTools|<StaySearchForm/);
     assert.equal(HOME.match(/<DestinationSearch/g)?.length, 1);
+  });
+
+  it("carries the AI assistant, publicly and below the search", () => {
+    // REVERSED AT THE OWNER'S WORD. The assistant used to be kept off the
+    // front page entirely, as one of the three competing forms. He asked for
+    // it back, displayed and labelled as AI — so it is here, under "Ask the
+    // AI travel assistant", beneath the search box rather than beside it:
+    // the search returns pages this site checked, the assistant returns prose
+    // a model wrote, and the quieter of the two belongs lower.
+    assert.match(HOME, /<TravelAssistantBox/);
+    const search = HOME.indexOf("<DestinationSearch");
+    const assistant = HOME.indexOf("<TravelAssistantBox");
+    assert.ok(assistant > search, "the assistant has moved above the search box");
+    // Its own words come from the one file that defines them.
+    assert.match(HOME, /ASSISTANT_HOME_LABEL/);
+    assert.match(HOME, /ASSISTANT_HOME_SUPPORT/);
   });
 
   it("does not explain kosher food and Shabbos twice on one page", () => {

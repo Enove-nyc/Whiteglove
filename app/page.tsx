@@ -10,6 +10,8 @@ import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { featuredDestinations } from "@/lib/featured-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons/Icon";
+import TravelAssistantBox from "@/components/TravelAssistantBox";
+import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
 import type { TripTheme } from "@/data/vacation-destinations";
@@ -185,6 +187,23 @@ export default async function Home() {
               <span className="text-sm font-bold uppercase tracking-[0.12em]">{card.label}</span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* ---- 4. The AI assistant ------------------------------------------
+          Public, and labelled as what it is. It sits below the three doors and
+          well below the search box at the top, because the search returns
+          pages this site checked and this returns prose a model wrote — the
+          quieter of the two belongs lower. Everything it claims about itself
+          is in lib/assistant-disclosure.ts, so the wording here, the wording
+          beside the input and the label on every answer cannot drift apart. */}
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+        <div className="rounded-xl border border-dashed border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{ASSISTANT_HOME_LABEL}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
+          <div className="mt-4">
+            <TravelAssistantBox labelledOutside />
+          </div>
         </div>
       </section>
 
