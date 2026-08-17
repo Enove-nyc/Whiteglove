@@ -49,6 +49,9 @@ import { providerFetch } from "@/lib/travel/search";
 
 export type RouteStackConfig = { apiKey: string; secret: string; base: string };
 
+/** The endpoints RouteStack charges for. Everything else is free traffic. */
+const BILLED_PATHS = ["/mcp/car/search", "/mcp/hotel/search-hotels", "/mcp/flight/search"] as const;
+
 export function routestackConfig(): RouteStackConfig | null {
   const apiKey = process.env.ROUTESTACK_API_KEY?.trim();
   const secret = process.env.ROUTESTACK_API_SECRET?.trim();
@@ -75,9 +78,6 @@ export async function routestackToken(config: RouteStackConfig, signal: AbortSig
 
   const timestamp = Math.floor(now / 1000);
   const nonce = randomUUID();
-  // Minting counts too. It is one call a day in practice, since the token is
-  // held, but counting it keeps the number on the admin screen honest.
-  void spendProviderCall("routestack");
   const response = await providerFetch(`${config.base}/mcp/auth/partner-token`, {
     signal,
     method: "POST",
@@ -121,11 +121,16 @@ export async function routestackPost<T>(
   timeoutMs = 12000,
 ): Promise<T> {
   const token = await routestackToken(config, signal);
-  // COUNTED HERE BECAUSE EVERY CALL COMES THROUGH HERE. Four hundred a month
-  // is the plan, a car search is two of them, and a counter kept beside each
-  // adapter would miss the next adapter somebody writes. Not awaited: a
-  // counter must never add a round trip to a search or fail one.
-  void spendProviderCall("routestack");
+  // COUNTED HERE BECAUSE EVERY CALL COMES THROUGH HERE, and a counter kept
+  // beside each adapter would miss the next adapter somebody writes.
+  //
+  // ONLY THE SEARCHES COUNT. RouteStack bills a search, not the lookups
+  // around it: resolving a place name and minting a token are free, so
+  // counting them would stop the provider early and put a number on the admin
+  // screen that does not match theirs. This is the owner's reading of his own
+  // dashboard — a car search shows as one call, not two — so if their billing
+  // ever disagrees, the list below is the one line to change.
+  if (BILLED_PATHS.some((billed) => path.startsWith(billed))) void spendProviderCall("routestack");
   const response = await providerFetch(`${config.base}${path}`, {
     signal,
     method: "POST",

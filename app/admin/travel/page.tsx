@@ -168,8 +168,8 @@ export default async function AdminTravelProvidersPage() {
                             }`}
                           >
                             {gone
-                              ? `${spent} of ${limit} calls used this month — not being asked`
-                              : `${spent} of ${limit} calls used this month`}
+                              ? `${spent} of ${limit} searches used this month — not being asked`
+                              : `${spent} of ${limit} searches used this month`}
                           </p>
                         );
                       })()}
@@ -270,9 +270,10 @@ export default async function AdminTravelProvidersPage() {
           the real one. Keys live in the environment and are set on Settings → Connections. A provider marked
           &ldquo;White Glove would be the seller&rdquo; cannot be shown to visitors at all: with that kind of company
           the booking, the refund and the chargeback are ours, and the site hands travelers to somebody else&rsquo;s
-          checkout instead. Where a plan has a monthly call allowance, the count below the key is every call this
-          site made — testing here spends the same allowance a traveler does — and a provider that has spent its
-          month stops being asked until the month turns.
+          checkout instead. Where a plan has a monthly allowance, the count below the key is every search this site sent that
+          provider — the place lookups and tokens around a search are not billed and are not counted. Testing here
+          spends the same allowance a traveler does, and a provider that has spent its month stops being asked until
+          the month turns.
         </p>
       </section>
 

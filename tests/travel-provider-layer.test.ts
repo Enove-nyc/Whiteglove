@@ -979,12 +979,15 @@ describe("a provider with a monthly allowance is counted and stopped", () => {
     assert.equal(monthKey(new Date("2026-01-05T00:00:00Z")), "2026-01");
   });
 
-  it("counts at the one place every call goes through", () => {
-    // A counter kept beside each adapter would miss the next adapter somebody
-    // writes.
+  it("COUNTS THE SEARCHES AND NOT THE LOOKUPS AROUND THEM", () => {
+    // RouteStack bills a search. Resolving a place name and minting a token
+    // are free, so counting them would stop the provider early and put a
+    // number on the admin screen that does not match theirs.
     const auth = readFileSync("lib/travel/adapters/routestack-auth.ts", "utf8");
-    assert.match(auth, /spendProviderCall\("routestack"\)/);
-    assert.equal((auth.match(/spendProviderCall\(/g) ?? []).length, 2, "the search call and the token mint");
+    assert.match(auth, /BILLED_PATHS\.some\(\(billed\) => path\.startsWith\(billed\)\)/);
+    assert.match(auth, /"\/mcp\/car\/search", "\/mcp\/hotel\/search-hotels", "\/mcp\/flight\/search"/);
+    // The token mint is not counted, and neither is a location lookup.
+    assert.equal((auth.match(/spendProviderCall\(/g) ?? []).length, 1);
     // Never awaited: a counter must not add a round trip to a search.
     assert.match(auth, /void spendProviderCall/);
   });
