@@ -539,10 +539,10 @@ describe("both flight providers read a place the same way", () => {
     // deadline reported a timeout for a provider that was going to answer.
     const route = readFileSync("app/api/admin/travel/compare/route.ts", "utf8");
     const deadline = Number(/deadlineMs:\s*(\d+)/.exec(route)?.[1]);
-    assert.ok(deadline >= 25000, `the comparison deadline is ${deadline}ms and RouteStack needs longer`);
+    assert.ok(deadline >= 35000, `the comparison deadline is ${deadline}ms and RouteStack needs longer`);
     const adapter = readFileSync("lib/travel/adapters/routestack-flights.ts", "utf8");
     const own = Number(/^\s*(\d{4,}),$/m.exec(adapter.split("/mcp/flight/search")[1] ?? "")?.[1]);
-    assert.ok(own >= 20000 && own < deadline, `the adapter's own timeout is ${own}ms`);
+    assert.ok(own >= 25000 && own < deadline, `the adapter's own timeout is ${own}ms`);
   });
 });
 

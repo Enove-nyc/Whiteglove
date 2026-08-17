@@ -123,10 +123,13 @@ export const routestackFlights: ProviderSearch = {
         type: tripType,
       },
       signal,
-      // Their flight search is slow — eleven to seventeen seconds on a European
-      // route with the location lookups already removed. Measured, not guessed;
-      // a shorter figure here simply reports a timeout instead of an answer.
-      20000,
+      // Their flight search is slow, and their live market is slower than their
+      // sandbox: eleven to seventeen seconds there, past twenty on a London to
+      // Kraków return here, with both location lookups already removed and
+      // nothing left to cut. Measured, not guessed. A shorter figure does not
+      // make the search quicker — it only reports a timeout instead of an
+      // answer, which is what a twenty-second limit did.
+      28000,
     );
 
     const currency = data.currency ?? query.currency ?? "USD";
