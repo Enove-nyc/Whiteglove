@@ -7,6 +7,7 @@ import {
   ratingSummary,
   averageScore,
   nearestScoreLabel,
+  filterExperienceRatings,
   SCORE_LABELS,
 } from "@/lib/experience-ratings";
 
@@ -61,6 +62,16 @@ describe("rating copy helpers", () => {
     assert.equal(averageScore([1, 3, 3]), 7 / 3);
     assert.equal(nearestScoreLabel(2.6), "Glad we went");
     assert.equal(averageScore([5, 4]), null);
+  });
+
+  it("filters the admin inbox by kind, score and words", () => {
+    const rows = [
+      { ...good, id: "1", kind: "listing" as const, score: 3 as const, at: "2026-03-03T00:00:00.000Z", label: "The Colosseum", email: "a@example.com" },
+      { ...good, id: "2", kind: "trip" as const, score: 1 as const, at: "2026-03-03T00:00:00.000Z", label: "Kraków", email: "b@example.com", name: "B. Cohen" },
+    ];
+    assert.equal(filterExperienceRatings(rows, { kind: "trip" }).length, 1);
+    assert.equal(filterExperienceRatings(rows, { score: "3" })[0].id, "1");
+    assert.equal(filterExperienceRatings(rows, { q: "cohen" })[0].id, "2");
   });
 });
 

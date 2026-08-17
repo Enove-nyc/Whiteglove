@@ -160,6 +160,22 @@ export function stillLogged(rows: Change[], today: string): Change[] {
     .slice(0, KEEP_COUNT);
 }
 
+export function changeMatchesQuery(change: Change, query: string): boolean {
+  const needle = query.trim().toLocaleLowerCase("en");
+  if (!needle) return true;
+  const haystack = [
+    change.title,
+    change.who,
+    CHANGE_WORDS[change.kind],
+    describeChange(change),
+    ...change.fields.flatMap((field) => [fieldLabel(field.field), field.before, field.after]),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("en");
+  return haystack.includes(needle);
+}
+
 /** The one sentence at the top. */
 export function logSummary(rows: Change[]): string {
   if (!rows.length) return "Nothing has been changed in the last month.";

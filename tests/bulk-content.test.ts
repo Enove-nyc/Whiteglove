@@ -202,6 +202,27 @@ describe("bulk content deduplication", () => {
     }]);
     assert.deepEqual(duplicate, { id: "attraction:old", reason: "name-and-location" });
   });
+
+  it("skips a pair the editor already kept as both", () => {
+    const candidate = prepareBulkContentCandidate({
+      ...officialSourceAttraction,
+      summary: "A useful museum source candidate for editorial review.",
+    });
+    const duplicate = findBulkContentDuplicate(
+      candidate,
+      [{
+        id: "candidate:old",
+        kind: "EXISTING",
+        name: "A renamed museum",
+        city: "Elsewhere",
+        country: "Elsewhere",
+        sourceUrl: "https://example-museum.test/visit",
+        sourceId: "official:example-museum",
+      }],
+      new Set(["candidate:old"]),
+    );
+    assert.equal(duplicate, null);
+  });
 });
 
 describe("checked-in import packages", () => {

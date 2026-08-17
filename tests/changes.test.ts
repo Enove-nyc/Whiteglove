@@ -9,6 +9,7 @@ import {
   fieldLabel,
   fieldsChanged,
   logSummary,
+  changeMatchesQuery,
   shorten,
   stillLogged,
   undoValues,
@@ -189,6 +190,13 @@ describe("the summary", () => {
       logSummary([change({ id: "a", who: "a@x.com" }), change({ id: "b", who: "b@x.com" })]),
       /by 2 people/,
     );
+  });
+
+  it("finds a change by listing, person or field", () => {
+    const row = change({ title: "Hotel Sanz", who: "owner@example.com" });
+    assert.equal(changeMatchesQuery(row, "sanz"), true);
+    assert.equal(changeMatchesQuery(row, "phone"), true);
+    assert.equal(changeMatchesQuery(row, "rome"), false);
   });
 });
 

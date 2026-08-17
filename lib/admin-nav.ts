@@ -110,13 +110,16 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
+    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry attraction things to do stay food",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/add", label: "Add", blurb: "A cemetery, a tzadik, or a new page." },
       { href: "/admin/kevarim", label: "Tzaddikim", blurb: "Who is buried where." },
       { href: "/admin/shomrim", label: "Shomrim", blurb: "Getting into a cemetery." },
       { href: "/admin/destinations", label: "Towns", blurb: "Kosher food, lodging, minyanim." },
+      { href: "/admin/directory/attractions", label: "Things to do", blurb: "Attractions already listed." },
+      { href: "/admin/directory/stays", label: "Where to stay", blurb: "Lodging already listed." },
+      { href: "/admin/directory/food", label: "Kosher food", blurb: "Food listings on the site." },
       { href: "/admin/countries", label: "Countries", blurb: "Country notes." },
       { href: "/admin/airports", label: "Airports", blurb: "Flight search and the planner." },
       { href: "/admin/planner", label: "Planner", blurb: "How a day is judged packed." },
@@ -264,7 +267,9 @@ export function adminBreadcrumbs(pathname: string): Crumb[] {
   if (here === "/admin") return [home];
 
   const section = activeSection(here);
-  const child = section.children?.find((c) => here === c.href || here.startsWith(`${c.href}/`));
+  const child = [...(section.children ?? [])]
+    .filter((c) => here === c.href || here.startsWith(`${c.href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 
   const trail: Crumb[] = [home];
   if (section.href !== "/admin") {

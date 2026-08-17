@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
+import { reviewContentImportCandidateAction } from "@/app/admin/imports/actions";
 import type {
   ImportReviewQueue,
   ReviewQueueItem,
@@ -18,10 +19,12 @@ const countCardClass =
 
 function CountCard({
   label,
+  value,
   active,
   onClick,
 }: {
   label: string;
+  value?: number;
   active: boolean;
   onClick: () => void;
 }) {
@@ -35,6 +38,9 @@ function CountCard({
         active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(23,45,82,.08)]" : ""
       }`}
     >
+      {typeof value === "number" && (
+        <span className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{value}</span>
+      )}
       <span className="block text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</span>
     </button>
   );
@@ -77,6 +83,7 @@ export default function ImportNeedsReviewQueue({
   const [limit, setLimit] = useState(100);
   const [focusIndex, setFocusIndex] = useState(0);
   const [skipNote, setSkipNote] = useState("");
+  const [queueState, queueAction, queuePending] = useActionState(reviewContentImportCandidateAction, null);
   const queueRef = useRef<HTMLElement | null>(null);
 
   const markets = useMemo(
@@ -227,7 +234,44 @@ export default function ImportNeedsReviewQueue({
                 >
                   Skip for now
                 </button>
+                {current.origin === "database" && (
+                  <>
+                    <form action={queueAction}>
+                      <input type="hidden" name="id" value={current.id.replace(/^db:/, "")} />
+                      <button
+                        type="submit"
+                        name="intent"
+                        value="reject"
+                        disabled={queuePending}
+                        onClick={(event) => {
+                          if (!window.confirm(`Reject “${current.name}”? It stays in the private audit trail.`)) event.preventDefault();
+                        }}
+                        className="inline-flex min-h-11 items-center border border-rose-300 px-4 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </form>
+                    <form action={queueAction}>
+                      <input type="hidden" name="id" value={current.id.replace(/^db:/, "")} />
+                      <button
+                        type="submit"
+                        name="intent"
+                        value="duplicate"
+                        disabled={queuePending}
+                        onClick={(event) => {
+                          if (!window.confirm(`Mark “${current.name}” as a duplicate? Both records are kept.`)) event.preventDefault();
+                        }}
+                        className="inline-flex min-h-11 items-center border border-amber-400 px-4 text-xs font-bold uppercase tracking-[0.12em] text-amber-950 disabled:opacity-50"
+                      >
+                        Duplicate
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
+              {queueState && (
+                <p className={`text-sm font-semibold ${queueState.ok ? "text-emerald-700" : "text-red-700"}`}>{queueState.message}</p>
+              )}
               {skipNote && <p className="text-sm text-stone-600">{skipNote}</p>}
             </div>
           </div>

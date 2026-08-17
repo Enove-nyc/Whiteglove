@@ -391,7 +391,12 @@ export default function BlockEditor({ page }: { page: Page }) {
         </div>
       </details>
 
-      <form action={saveAction} className="mt-8 flex flex-wrap items-center gap-3 border-t border-[var(--gold-light)] pt-5">
+      <form action={saveAction} onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (submitter?.name === "publish" && submitter.value === "1") {
+          if (!window.confirm(`Publish “${page.label}”? Visitors will see this version.`)) event.preventDefault();
+        }
+      }} className="mt-8 flex flex-wrap items-center gap-3 border-t border-[var(--gold-light)] pt-5">
         <input type="hidden" name="slug" value={page.slug} />
         <input type="hidden" name="blocks" value={JSON.stringify(blocks)} />
         <input type="hidden" name="seoTitle" value={seoTitle} />

@@ -360,11 +360,13 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
 export function findBulkContentDuplicate(
   candidate: PreparedBulkContentCandidate,
   existing: readonly KnownContentRecord[],
+  ignoreIds?: ReadonlySet<string>,
 ): DuplicateMatch | null {
   const normalizedSource = normalizeSourceUrl(candidate.sourceUrl);
   const location = locationKey(candidate.name, candidate.city, candidate.country);
 
   for (const item of existing) {
+    if (ignoreIds?.has(item.id)) continue;
     const sameSourceUrl = normalizedSource && normalizeSourceUrl(item.sourceUrl) === normalizedSource;
     const sameSourceId =
       candidate.sourceId.trim() &&
@@ -390,7 +392,7 @@ export function findBulkContentDuplicate(
       sourceUrl: candidate.sourceUrl,
       coordinates: candidate.coordinates,
     },
-    existing,
+    existing.filter((item) => !ignoreIds?.has(item.id)),
   ).find((hit) => hit.confidence !== "possible");
   if (near) {
     return { id: near.id, reason: near.matched.includes("coordinates") ? "coordinates" : "website" };

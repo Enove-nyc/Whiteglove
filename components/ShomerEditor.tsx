@@ -95,7 +95,14 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {!retired && row.builtIn && !row.override && (
-                        <form action={retireAction}>
+                        <form
+                          action={retireAction}
+                          onSubmit={(event) => {
+                            if (!window.confirm(`Hide the ${row.label} number on ${selected.city}? Travelers will not see it.`)) {
+                              event.preventDefault();
+                            }
+                          }}
+                        >
                           <input type="hidden" name="slug" value={selected.slug} />
                           <input type="hidden" name="label" value={row.label} />
                           <button type="submit" className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700">
@@ -104,7 +111,12 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
                         </form>
                       )}
                       {row.override && (
-                        <form action={removeAction}>
+                        <form
+                          action={removeAction}
+                          onSubmit={(event) => {
+                            if (!window.confirm(`Remove “${row.label}” from ${selected.city}?`)) event.preventDefault();
+                          }}
+                        >
                           <input type="hidden" name="id" value={row.override.id} />
                           <input type="hidden" name="slug" value={selected.slug} />
                           <button type="submit" className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700">

@@ -207,6 +207,9 @@ describe("every static admin page is reachable from nav or a hub", () => {
       "/admin/airports",
       "/admin/planner",
       "/admin/recycle",
+      "/admin/directory/attractions",
+      "/admin/directory/stays",
+      "/admin/directory/food",
     ]) {
       assert.ok(hrefs.has(required), `Directory sectionScreens() omits ${required}`);
     }

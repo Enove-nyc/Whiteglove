@@ -22,9 +22,10 @@ describe("the admin trail", () => {
     }
   });
 
-  it("names the section and the screen", () => {
-    assert.deepEqual(labels("/admin/kevarim"), ["Dashboard", "Tzaddikim"]);
-    assert.deepEqual(labels("/admin/shomrim"), ["Dashboard", "Directory", "Shomrim"]);
+  it("names a nested directory catalog, not the hub", () => {
+    assert.deepEqual(labels("/admin/directory/attractions"), ["Dashboard", "Directory", "Things to do"]);
+    assert.deepEqual(labels("/admin/directory/stays"), ["Dashboard", "Directory", "Where to stay"]);
+    assert.deepEqual(labels("/admin/directory/food"), ["Dashboard", "Directory", "Kosher food"]);
   });
 
   it("links every crumb except the last", () => {

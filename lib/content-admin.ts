@@ -15,6 +15,7 @@ import { remember } from "@/lib/recycle-store";
 import { recordChange } from "@/lib/changes-store";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
 import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
+import { assertVerifiedListing } from "@/lib/listing-verification";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -421,20 +422,22 @@ async function contentChanged(): Promise<void> {
 }
 
 export async function createPlace(destinationId: string, fields: PlaceFields) {
+  assertVerifiedListing(fields);
   const prisma = await db();
   const row = await prisma.practicalPlace.create({
-    data: { ...fields, lastVerified: new Date(), destinationId },
+    data: { ...fields, destinationId },
   });
   await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
   return row;
 }
 
 export async function updatePlace(id: string, fields: PlaceFields) {
+  assertVerifiedListing(fields);
   const prisma = await db();
   const before = await prisma.practicalPlace.findUnique({ where: { id } });
   const row = await prisma.practicalPlace.update({
     where: { id },
-    data: { ...fields, lastVerified: new Date() },
+    data: fields,
   });
   await recordChange({
     kind: "listing",
