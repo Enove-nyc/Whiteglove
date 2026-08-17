@@ -76,15 +76,18 @@ describe("the conversation belongs to an account or to nobody", () => {
     assert.doesNotMatch(PANEL, /localStorage|sessionStorage|indexedDB|document\.cookie/i);
   });
 
-  it("says which of the two is happening, rather than leaving it to be assumed", () => {
+  it("SAYS WHICH OF THE THREE IS HAPPENING, RATHER THAN LEAVING IT ASSUMED", () => {
+    // Kept, signed in but not kept, and signed out. "Signed in" stopped being
+    // the answer the moment keeping the thread became a Pro feature.
     assert.match(PANEL, /Saved to your account/);
+    assert.match(PANEL, /keeping the conversation between visits comes with Pro/);
     assert.match(PANEL, /this conversation is not saved anywhere/);
   });
 
   it("is not an error to be signed out", () => {
     // Most people opening the panel are signed out; that is a normal state of
     // the world, not a 401 for the page to translate.
-    assert.match(ACCOUNT, /if \(!email\) return NextResponse\.json\(\{ signedIn: false, turns: \[\] \}\)/);
+    assert.match(ACCOUNT, /if \(!email\) return NextResponse\.json\(\{ signedIn: false, kept: false, turns: \[\] \}\)/);
     assert.doesNotMatch(ACCOUNT, /status: 401/);
   });
 
@@ -181,5 +184,50 @@ describe("it is on every page and in nobody's way", () => {
   it("carries the AI label on every answer it did not hand off", () => {
     assert.match(PANEL, /\{SITE_ANSWER_LABEL\}/);
     assert.match(PANEL, /\{ASSISTANT_INPUT_NOTICE\}/);
+  });
+});
+
+describe("keeping the conversation is a Pro feature; asking is not", () => {
+  it("GATES THE STORING AND NEVER THE ANSWERING", async () => {
+    // A traveler on the free plan gets exactly the same answers from exactly
+    // the same pages. What Pro buys is that the thread is still there
+    // tomorrow. Withholding an answer over it would be a different product.
+    const { keepsAssistantHistory } = await import("@/lib/account-limits");
+    assert.equal(keepsAssistantHistory("traveler"), false);
+    assert.equal(keepsAssistantHistory("pro"), true);
+    assert.equal(keepsAssistantHistory("business"), true);
+    // The site assistant's own route knows nothing about plans.
+    assert.doesNotMatch(ROUTE, /getPlan|keepsAssistantHistory|plan/i);
+  });
+
+  it("applies the gate in exactly one place", () => {
+    assert.match(ACCOUNT, /keepsAssistantHistory\(await getPlan\(email\)\)/);
+    // Read on the way out and checked on the way in; nowhere else decides.
+    const code = ACCOUNT.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^import .*$/gm, "");
+    assert.equal((code.match(/keepsAssistantHistory\(/g) ?? []).length, 2, "one read, one write");
+    // The panel is told, and does not decide.
+    assert.doesNotMatch(PANEL, /keepsAssistantHistory|"pro"|"business"/);
+  });
+
+  it("DOES NOT DELETE A THREAD WHEN A PLAN LAPSES, ONLY STOPS SHOWING IT", () => {
+    // An account that upgrades again finds its conversation where it left it.
+    // Deleting on downgrade would make a billing change destroy something the
+    // traveler wrote.
+    assert.match(ACCOUNT, /if \(!kept\) return NextResponse\.json\(\{ signedIn: true, kept: false, turns: \[\] \}\)/);
+    const del = ACCOUNT.slice(ACCOUNT.indexOf("export async function DELETE"));
+    assert.doesNotMatch(del, /keepsAssistantHistory/, "clearing is the traveler's to do on any plan");
+  });
+
+  it("says it in the words a traveler reads, and keeps those in step with the gate", async () => {
+    const { whatYouGet } = await import("@/lib/account-plans");
+    const { keepsAssistantHistory } = await import("@/lib/account-limits");
+    for (const plan of ["traveler", "pro", "business"] as const) {
+      const promised = whatYouGet(plan).some((line) => /assistant remembers/i.test(line));
+      assert.equal(
+        promised,
+        keepsAssistantHistory(plan),
+        `${plan}: what the plan page promises and what the code allows have drifted apart`,
+      );
+    }
   });
 });

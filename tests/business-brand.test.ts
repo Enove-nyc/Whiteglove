@@ -22,12 +22,20 @@ describe("who may brand an itinerary", () => {
     assert.equal(mayBrandOwnItinerary("traveler"), false);
   });
 
-  it("keeps Pro about the limits rather than a feature list", () => {
-    // Pro is "the same site without the two free limits", which is what was
-    // asked for. The day it grows an entitlement, this test is where the
-    // change is noticed.
-    assert.deepEqual(PLAN_FEATURES.pro, { ownBranding: false });
-    assert.deepEqual(featuresFor("traveler"), featuresFor("pro"));
+  it("KEEPS BRANDING A BUSINESS THING, NOW THAT PRO HAS AN ENTITLEMENT", () => {
+    // This test said Pro was "the same site without the two free limits" and
+    // that the day it grew an entitlement, here is where it would be noticed.
+    // That day came: Pro keeps the assistant's conversation between visits.
+    //
+    // What it still holds is the thing it was really protecting — branding is
+    // what Business buys, and a new Pro entitlement must not quietly become
+    // one. Traveler and Pro are no longer identical, so that comparison is
+    // replaced by the claim underneath it.
+    assert.equal(PLAN_FEATURES.pro.ownBranding, false);
+    assert.equal(PLAN_FEATURES.traveler.ownBranding, false);
+    assert.equal(PLAN_FEATURES.business.ownBranding, true);
+    assert.equal(featuresFor("pro").assistantHistory, true);
+    assert.equal(featuresFor("traveler").assistantHistory, false);
   });
 });
 

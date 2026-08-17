@@ -37,11 +37,11 @@ import type { AssistantTurn } from "@/lib/assistant-conversation";
  * entitled to know whether it is being written down.
  */
 
-type Thread = { turns: AssistantTurn[]; signedIn: boolean };
+type Thread = { turns: AssistantTurn[]; signedIn: boolean; kept: boolean };
 
 export default function SiteAssistant() {
   const [open, setOpen] = useState(false);
-  const [thread, setThread] = useState<Thread>({ turns: [], signedIn: false });
+  const [thread, setThread] = useState<Thread>({ turns: [], signedIn: false, kept: false });
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const panelRef = useFocusTrap<HTMLDivElement>(open, () => setOpen(false));
@@ -61,6 +61,7 @@ export default function SiteAssistant() {
         setThread({
           turns: Array.isArray(data.turns) ? data.turns : [],
           signedIn: Boolean(data.signedIn),
+          kept: Boolean(data.kept),
         });
       } catch {
         /* An unreachable store is an empty thread, not an error to read. */
@@ -239,9 +240,15 @@ export default function SiteAssistant() {
             </div>
             <p className="mt-2 text-[11px] leading-4 text-stone-500">{ASSISTANT_INPUT_NOTICE}</p>
             <p className="mt-1 text-[11px] leading-4 text-stone-500">
-              {thread.signedIn
+              {/* THREE STATES, AND EACH ONE SAID PLAINLY. Somebody asking where
+                  their family is going in August is entitled to know whether it
+                  is being written down, and "signed in" alone no longer answers
+                  that — keeping the thread is a Pro feature. */}
+              {thread.kept
                 ? "Saved to your account, so it is here next time."
-                : "Not signed in — this conversation is not saved anywhere."}
+                : thread.signedIn
+                  ? "Not saved — keeping the conversation between visits comes with Pro."
+                  : "Not signed in — this conversation is not saved anywhere."}
             </p>
           </form>
         </div>

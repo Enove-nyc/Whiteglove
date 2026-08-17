@@ -102,15 +102,19 @@ export function isUpgrade(from: AccountPlan, to: AccountPlan): boolean {
 /**
  * What each plan gets you, in words.
  *
- * Empty for all three, and this is the table those lines go in on the day
- * there are any. Until then the pages that read it must say so in a sentence
- * rather than render an empty list — an empty list under a heading reads as
- * something that failed to load.
+ * This was empty for all three and is the table those lines go in. The first
+ * one is here. A page reading it must still cope with an empty list, because
+ * Traveler has none — an empty list under a heading reads as something that
+ * failed to load, so those pages say it in a sentence instead.
+ *
+ * The words are what the traveler GETS, not what the code calls it. The gate
+ * itself lives in lib/account-limits.ts, once, and this line and that gate
+ * must not drift apart — tests/site-assistant.test.ts holds them together.
  */
 const PLAN_INCLUDES: Record<AccountPlan, readonly string[]> = {
   traveler: [],
-  pro: [],
-  business: [],
+  pro: ["The assistant remembers your conversation between visits"],
+  business: ["The assistant remembers your conversation between visits"],
 };
 
 export function whatYouGet(plan: AccountPlan): readonly string[] {
