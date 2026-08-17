@@ -516,3 +516,32 @@ describe("two columns in different orders are not a comparison", () => {
     assert.match(source, /cheapestFirst\(/);
   });
 });
+
+describe("both flight providers read a place the same way", () => {
+  it("uses the site's own airport list before asking a provider for a code", () => {
+    // Two reasons, and the second one is why the first Kraków flight
+    // comparison timed out. Asking RouteStack to resolve both ends costs two
+    // network round trips before the search even starts, and our own resolver
+    // already knows the answer. It also returns the metropolitan code where
+    // there is one: LON finds 201 fares including Gatwick, LHR finds 183 and
+    // misses the cheaper one.
+    for (const path of [
+      "lib/travel/adapters/routestack-flights.ts",
+      "lib/travel/adapters/duffel-flights.ts",
+    ]) {
+      assert.match(readFileSync(path, "utf8"), /resolveEndpoint/, path);
+    }
+  });
+
+  it("gives RouteStack long enough to answer, because it was measured", () => {
+    // Their flight search takes eleven to seventeen seconds on a European
+    // route with both location lookups already removed. A fifteen-second
+    // deadline reported a timeout for a provider that was going to answer.
+    const route = readFileSync("app/api/admin/travel/compare/route.ts", "utf8");
+    const deadline = Number(/deadlineMs:\s*(\d+)/.exec(route)?.[1]);
+    assert.ok(deadline >= 25000, `the comparison deadline is ${deadline}ms and RouteStack needs longer`);
+    const adapter = readFileSync("lib/travel/adapters/routestack-flights.ts", "utf8");
+    const own = Number(/^\s*(\d{4,}),$/m.exec(adapter.split("/mcp/flight/search")[1] ?? "")?.[1]);
+    assert.ok(own >= 20000 && own < deadline, `the adapter's own timeout is ${own}ms`);
+  });
+});

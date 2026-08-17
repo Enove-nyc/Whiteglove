@@ -64,8 +64,10 @@ export async function POST(request: NextRequest) {
     { origin, destination, startDate, endDate },
     "admin",
     // Longer than a visitor would wait: here a slow honest answer is the thing
-    // being measured. Not recorded either — measuring is not real traffic.
-    { deadlineMs: 15000, record: false },
+    // being measured, and fifteen seconds was reporting RouteStack as a timeout
+    // on flights when it was going to answer in seventeen. Not recorded either —
+    // measuring is not real traffic.
+    { deadlineMs: 30000, record: false },
   );
 
   return NextResponse.json({
