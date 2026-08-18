@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchSite } from "@/lib/site-search";
 import { citedSources, stripFalseAttribution, type AssistantSource } from "@/lib/assistant-disclosure";
+import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -83,7 +84,33 @@ function buildUserMessage(body: { question?: string; location?: string; date?: s
   ].filter(Boolean).join("\n");
 }
 
+/**
+ * WHAT THE SYSTEM PROMPT CANNOT DO. The assistant already refuses anything that
+ * is not travel, and that is worth having — it stops the site's own assistant
+ * being used to write somebody's homework under our name. But that refusal is
+ * written BY the model, which means the model is called, which means the call
+ * is paid for. An off-topic question costs very nearly what a real answer costs,
+ * because the system prompt and the published-page context are sent either way.
+ *
+ * So the topic rule protects the brand and this protects the bill. The endpoint
+ * takes no sign-in and sits on the front page: with a free Gemini key the worst
+ * case was a wasted 503, and the moment a paid key is added the worst case is a
+ * stranger with a loop. Twelve questions a minute is far more than a person
+ * reading a page will ever type and far less than a script wants.
+ *
+ * Same limiter as the reviews, ratings and sign-in routes, so there is one
+ * definition of "too many" on this site. It fails open when Redis is down —
+ * see lib/rate-limit.ts — with the in-process counter still applying.
+ */
+const ASSISTANT_LIMIT = { limit: 12, windowSeconds: 60 };
+
 export async function POST(request: NextRequest) {
+  const who = requesterKey(request.headers);
+  const flood = await rateLimit(`assistant:${who}`, ASSISTANT_LIMIT);
+  if (!flood.ok) {
+    return NextResponse.json({ available: false, reason: tooManyMessage(flood.retryAfter) }, { status: 429 });
+  }
+
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
   const openaiKey = process.env.OPENAI_API_KEY?.trim();
