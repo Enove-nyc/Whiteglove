@@ -3915,6 +3915,102 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Copernicus_Science_Centre",
   },
+  {
+    slug: "lviv-rynok-square",
+    name: "Rynok Square and the Old Town",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The medieval market square at the centre of Lviv's UNESCO old town, ringed by burghers' houses, with the town hall and its climbable tower in the middle.",
+    address: "Ploshcha Rynok, Lviv 79008",
+    coordinates: "49.8419, 24.0315",
+    notes: [
+      "The square is free; the Ratusha tower is a ticketed climb for the view over the tiled roofs.",
+      "The old town around it is walked — one of the best-preserved in Central Europe, and largely intact from the war.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Market_Square,_Lviv",
+  },
+  {
+    slug: "lviv-opera",
+    name: "Lviv Opera",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The grand Viennese-style opera house of 1900 at the head of Freedom Avenue — one of the landmarks of the city.",
+    address: "Prospekt Svobody 28, Lviv 79000",
+    coordinates: "49.8443, 24.0264",
+    notes: [
+      "The façade and the tree-lined avenue in front are free; the interior is seen on a performance or a day tour.",
+      "The avenue is the promenade of the city, busy in the evenings.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lviv_Theatre_of_Opera_and_Ballet",
+  },
+  {
+    slug: "lviv-high-castle",
+    name: "High Castle Hill",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Viewpoint",
+    summary:
+      "The park on the hill where the city's castle once stood, the highest point in Lviv, with the whole old town spread out below.",
+    address: "Vysokyi Zamok, Lviv 79000",
+    coordinates: "49.8506, 24.0397",
+    notes: [
+      "Free; a climb up through the park to the summit and the panorama.",
+      "Little of the castle remains — the view is the reason to go up.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/High_Castle_(Lviv)",
+  },
+  {
+    slug: "lviv-lychakiv-cemetery",
+    name: "Lychakiv Cemetery",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The historic garden cemetery of 1787, a state museum-reserve — wooded avenues of carved tombs and sculpture, the resting place of the city's artists and writers.",
+    address: "Vulytsia Mechnykova 33, Lviv 79010",
+    coordinates: "49.8331, 24.0561",
+    notes: [
+      "Ticketed as a museum-reserve; the sculpture and the old avenues are the visit.",
+      "East of the centre, a tram ride from the old town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lychakiv_Cemetery",
+  },
+  {
+    slug: "lviv-space-of-synagogues",
+    name: "The Space of Synagogues and the Golden Rose",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Jewish heritage",
+    summary:
+      "A memorial on the site of the Golden Rose Synagogue of 1582 — the oldest in what is now Ukraine — desecrated by the Nazis in 1941 and demolished in 1943.",
+    address: "Vulytsia Ivana Fedorova, Lviv 79008",
+    coordinates: "49.8461, 24.0297",
+    notes: [
+      "Open and free; the outlines of the lost synagogues are marked in the ground, with quotations from Lviv Jews on stone tablets.",
+      "In the old town, a few minutes from Rynok Square.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Golden_Rose_Synagogue_(Lviv)",
+  },
+  {
+    slug: "lviv-shevchenkivskyi-hai",
+    name: "Shevchenkivskyi Hai",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Museum",
+    summary:
+      "An open-air museum of folk life on a wooded hillside — wooden churches, cottages and windmills brought here from villages across western Ukraine.",
+    address: "Vulytsia Chernecha Hora 1, Lviv 79014",
+    coordinates: "49.8331, 24.0669",
+    notes: [
+      "Ticketed; a large park you walk, so an easy couple of hours with children.",
+      "The buildings are the real thing, moved and rebuilt on the hill.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Shevchenkivskyi_Hai",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
