@@ -81,6 +81,8 @@ export type PublicReview = {
   score: ReviewScore;
   text: string;
   initials: string;
+  /** "Yaakov C." — shown as the review's byline. See reviewBylineOf. */
+  name: string;
   avatarUrl?: string;
   at: string;
   mine: boolean;
@@ -105,6 +107,21 @@ export function isReviewScore(value: unknown): value is ReviewScore {
  * upper case, and whose letters do not fit in one UTF-16 unit less often than
  * Latin — comes out as its own first letters and not as broken halves.
  */
+/**
+ * "Yaakov Cohen" → "Yaakov C." — the first name in full and the last name's
+ * initial. Enough to see a real person stands behind the review without
+ * publishing anybody's full name; the owner chose this over initials-only and
+ * over the full name. One word gives that word alone; nothing gives "A traveler".
+ * Split by code point so a Hebrew name survives.
+ */
+export function reviewBylineOf(name: string | null | undefined): string {
+  const words = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "A traveler";
+  if (words.length === 1) return words[0];
+  const last = [...words[words.length - 1]];
+  return `${words[0]} ${last[0]}.`;
+}
+
 export function initialsOf(name: string | null | undefined): string {
   const words = (name ?? "").trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "?";
@@ -177,6 +194,7 @@ export function toPublicReview(review: PlaceReview, viewerEmail: string | null):
     score: review.score,
     text: review.text,
     initials: initialsOf(review.authorName),
+    name: reviewBylineOf(review.authorName),
     avatarUrl: review.avatarUrl,
     at: review.at,
     mine: viewerEmail !== null && viewerEmail === review.authorEmail,

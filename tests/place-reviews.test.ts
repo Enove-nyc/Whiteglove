@@ -6,6 +6,7 @@ import {
   REVIEW_SCORE_LABELS,
   averageReviewScore,
   initialsOf,
+  reviewBylineOf,
   isSacredPlaceKind,
   nearestReviewScore,
   reviewProblem,
@@ -59,6 +60,15 @@ describe("initials, which are all the public ever sees of a name", () => {
 
   it("is not confused by extra spaces", () => {
     assert.equal(initialsOf("  Yaakov   Moshe   Cohen  "), "YC");
+  });
+
+  it("builds the review byline as a first name and a last initial", () => {
+    assert.equal(reviewBylineOf("Yaakov Cohen"), "Yaakov C.");
+    assert.equal(reviewBylineOf("sara leah levy"), "sara l.");
+    assert.equal(reviewBylineOf("Rivka"), "Rivka");
+    assert.equal(reviewBylineOf("יעקב כהן"), "יעקב כ.");
+    assert.equal(reviewBylineOf(""), "A traveler");
+    assert.equal(reviewBylineOf(undefined), "A traveler");
   });
 });
 
@@ -124,11 +134,16 @@ describe("what leaves the server", () => {
     at: "2026-08-01T00:00:00.000Z",
   };
 
-  it("carries initials and never the name or the email", () => {
+  it("carries a first-name-and-initial byline, never the full surname or email", () => {
+    // The owner asked for a name on reviews; the chosen form is "Yaakov C." —
+    // enough to show a real person, without publishing the full surname or the
+    // email. So the first name and the last initial may appear; the whole
+    // surname and the email may not.
     const pub = toPublicReview(stored, null);
     assert.equal(pub.initials, "YC");
+    assert.equal(pub.name, "Yaakov C.");
     const words = JSON.stringify(pub);
-    assert.ok(!words.includes("Yaakov"), "the author's name reached the public shape");
+    assert.ok(!words.includes("Cohen"), "the author's full surname reached the public shape");
     assert.ok(!words.includes("example.com"), "the author's email reached the public shape");
   });
 
