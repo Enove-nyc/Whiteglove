@@ -173,6 +173,17 @@ describe("the new table can reach a database that already exists", () => {
     assert.match(SETUP, /already exists/i);
   });
 
+  it("tells the owner to press the button rather than failing on save", () => {
+    // The site has no migration step on deploy, so the day this ships the
+    // table is not there yet. Without this the first save failed with a raw
+    // Postgres error naming a relation, which says nothing about what to do.
+    const STORE_SRC = readFileSync("lib/vacation-destinations-admin.ts", "utf8");
+    assert.match(STORE_SRC, /export async function vacationDestinationsTableReady/);
+    assert.match(PAGE, /vacationDestinationsTableReady/);
+    assert.match(PAGE, /<DbSetupButton \/>/);
+    assert.match(PAGE, /The database needs one update before this screen can save/);
+  });
+
   it("adds the picture column by ALTER, because Photo already exists", () => {
     // On an existing database the CREATE TABLE carrying this column is
     // skipped — the table is already there — so the column has to arrive on

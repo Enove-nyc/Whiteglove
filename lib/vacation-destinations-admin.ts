@@ -130,3 +130,24 @@ export async function vacationDestinationPhotos(slug: string) {
     return [];
   }
 }
+
+/**
+ * Whether the table this screen writes to is actually there yet.
+ *
+ * IT IS NOT THERE THE DAY THIS SHIPS. The site has no migration step on
+ * deploy — an older database is brought up to date by the button on the Towns
+ * screen (lib/db-setup.ts). So the first person to open this screen after the
+ * deploy has a database with no VacationDestination table in it, and without
+ * this check the first save would fail with a raw Postgres error naming a
+ * relation, which says nothing about what to press.
+ */
+export async function vacationDestinationsTableReady(): Promise<boolean> {
+  if (!enabled()) return false;
+  try {
+    const prisma = await db();
+    await prisma.vacationDestination.count();
+    return true;
+  } catch {
+    return false;
+  }
+}

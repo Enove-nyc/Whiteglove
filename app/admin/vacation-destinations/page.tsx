@@ -3,7 +3,8 @@ import type { Photo } from "@prisma/client";
 import CreateVacationDestinationForm from "@/components/CreateVacationDestinationForm";
 import VacationDestinationEditor from "@/components/VacationDestinationEditor";
 import { listVacationDestinationsForAdmin } from "@/lib/vacation-destinations-view";
-import { vacationDestinationPhotos } from "@/lib/vacation-destinations-admin";
+import { vacationDestinationPhotos, vacationDestinationsTableReady } from "@/lib/vacation-destinations-admin";
+import DbSetupButton from "@/components/DbSetupButton";
 
 // Admin data must always reflect the latest state.
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function AdminVacationDestinationsPage({
   searchParams: Promise<{ slug?: string }>;
 }) {
   const { slug } = await searchParams;
+  const ready = await vacationDestinationsTableReady();
   const all = await listVacationDestinationsForAdmin();
   const selected = slug ? all.find((entry) => entry.destination.slug === slug) : undefined;
   const photos: Photo[] = selected ? ((await vacationDestinationPhotos(selected.destination.slug)) as Photo[]) : [];
@@ -45,6 +47,23 @@ export default async function AdminVacationDestinationsPage({
           screen. Changes go live within a minute.
         </p>
       </header>
+
+      {!ready && (
+        <section className="mt-8 rounded-2xl border border-[var(--gold)] bg-[#fcfaf6] p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">One thing first</p>
+          <h2 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+            The database needs one update before this screen can save.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+            Holiday destinations are new, so your database has nowhere to put them yet. Press this once. It adds what
+            is missing and leaves every word you have already entered alone. The list below still shows the
+            destinations that ship with the site, and they are on the site as normal.
+          </p>
+          <div className="mt-5">
+            <DbSetupButton />
+          </div>
+        </section>
+      )}
 
       <section className="mt-10 grid gap-8 lg:grid-cols-[18rem_1fr]">
         <nav aria-label="Destinations" className="rounded-2xl border border-[var(--gold-light)] bg-white p-4">
