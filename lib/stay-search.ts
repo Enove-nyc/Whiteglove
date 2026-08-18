@@ -26,7 +26,7 @@
  */
 
 import { normalize } from "@/lib/place-search";
-import { vacationDestinations } from "@/data/vacation-destinations";
+import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 
 export type StaySearch = {
   /** What the visitor typed, kept as typed for the heading. */
@@ -127,11 +127,19 @@ export function nights(search: StaySearch): number | null {
  * name would miss entirely. Then a city by name, then a country. Anything else
  * resolves to nothing, and nothing is a real answer here.
  */
-export function citiesFor(destination: string): { cities: string[]; label: string } | null {
+export function citiesFor(
+  destination: string,
+  /**
+   * The merged destination list, when the caller has read it. Defaults to
+   * the built-in list, so a caller outside a request still resolves the
+   * twenty shipped destinations without touching the database.
+   */
+  known: readonly VacationDestination[] = vacationDestinations,
+): { cities: string[]; label: string } | null {
   const query = normalize(destination);
   if (!query) return null;
 
-  for (const record of vacationDestinations) {
+  for (const record of known) {
     const names = [record.name, record.slug, record.region ?? ""].map(normalize).filter(Boolean);
     if (names.some((name) => name === query || (query.length >= 4 && name.includes(query)))) {
       return { cities: [...record.cities, ...(record.kosherBase?.cities ?? [])], label: record.name };
@@ -139,12 +147,12 @@ export function citiesFor(destination: string): { cities: string[]; label: strin
   }
 
   const cities = new Set<string>();
-  for (const record of vacationDestinations) {
+  for (const record of known) {
     for (const city of record.cities) if (normalize(city) === query) cities.add(city);
   }
   if (cities.size > 0) return { cities: [...cities], label: destination };
 
-  for (const record of vacationDestinations) {
+  for (const record of known) {
     if (normalize(record.country) === query) for (const city of record.cities) cities.add(city);
   }
   if (cities.size > 0) return { cities: [...cities], label: destination };

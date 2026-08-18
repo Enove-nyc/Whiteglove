@@ -9,6 +9,7 @@ import SearchMemory from "@/components/SearchMemory";
 import StayQuarters from "@/components/StayQuarters";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
+import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 
 // Rendered per request, not frozen at build time.
 //
@@ -61,7 +62,11 @@ export default async function KosherStaysPage({
 }) {
   const search = readStaySearch(await searchParams);
   const searching = isSearch(search);
-  const resolved = searching ? citiesFor(search.destination) : null;
+  // Through the view, so a destination the owner added resolves to its
+  // towns here the same as a built-in one.
+  const resolved = searching
+    ? citiesFor(search.destination, await getVacationDestinations())
+    : null;
 
   // Read through the view so owner-added stays and quarters appear here and in
   // every search without a redeploy.

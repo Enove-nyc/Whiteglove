@@ -30,12 +30,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!origin) return [];
   const lastModified = new Date();
 
-  const entries: MetadataRoute.Sitemap = publicPaths().map(({ path, priority, changeFrequency }) => ({
-    url: new URL(path, origin).toString(),
-    lastModified,
-    changeFrequency,
-    priority,
-  }));
+  // Through the view, so a destination the owner added is offered to
+  // crawlers rather than sitting unlisted until the next deploy.
+  const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
+  const entries: MetadataRoute.Sitemap = publicPaths(await getVacationDestinations()).map(
+    ({ path, priority, changeFrequency }) => ({
+      url: new URL(path, origin).toString(),
+      lastModified,
+      changeFrequency,
+      priority,
+    }),
+  );
 
   const studies = await readPublicCaseStudies();
   if (caseStudiesPageShouldExist(studies)) {

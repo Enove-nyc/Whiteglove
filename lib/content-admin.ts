@@ -286,11 +286,13 @@ export type PhotoFields = {
  */
 export type PhotoOwner =
   | { kind: "destination"; id: string }
+  | { kind: "vacation-destination"; id: string }
   | { kind: "cemetery"; id: string }
   | { kind: "place"; id: string };
 
 function ownerWhere(owner: PhotoOwner) {
   if (owner.kind === "destination") return { destinationId: owner.id };
+  if (owner.kind === "vacation-destination") return { vacationDestinationId: owner.id };
   if (owner.kind === "cemetery") return { cemeteryId: owner.id };
   return { placeId: owner.id };
 }

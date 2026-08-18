@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import StartingPoints from "@/components/StartingPoints";
 import TripStartFlow from "@/components/TripStartFlow";
-import { getVacationDestination } from "@/data/vacation-destinations";
+import { getVacationDestinationBySlug } from "@/lib/vacation-destinations-view";
 import { pageMetadata } from "@/lib/seo";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
 
@@ -37,7 +37,7 @@ export default async function PlanPage({
   // "Add Rome to a trip" from a destination card. The slug is looked up rather
   // than printed, so a made-up query string cannot put arbitrary text into the
   // field as though the visitor had typed it.
-  const destination = slug ? getVacationDestination(slug) : undefined;
+  const destination = slug ? await getVacationDestinationBySlug(slug) : undefined;
   const initialKind = (TRIP_KINDS.find((entry) => entry.value === kind)?.value ?? "") as TripKind | "";
 
   return (

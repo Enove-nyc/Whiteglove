@@ -23,11 +23,12 @@ import { type ActionResult, deletePhotoAction, savePhotoAction } from "@/app/adm
 /**
  * What the picture is of.
  *
- * `ref` is a database id for a destination or a listing, and a SLUG for a beis
- * hachaim — the 97 built-in ones have no row until something is saved against
- * them, so the row is made on demand exactly as it is for a shomer's number.
+ * `ref` is a database id for a town or a listing, and a SLUG for a beis
+ * hachaim or a holiday destination — the built-in ones of both have no row
+ * until something is saved against them, so the row is made on demand exactly
+ * as it is for a shomer's number.
  */
-export type PhotoTarget = { kind: "destination" | "cemetery" | "place"; ref: string };
+export type PhotoTarget = { kind: "destination" | "vacation-destination" | "cemetery" | "place"; ref: string };
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none";

@@ -3,7 +3,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
-import { SEASONS, TRIP_THEMES, vacationDestinations, type Season, type TripTheme } from "@/data/vacation-destinations";
+import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
+import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { cardModels } from "@/lib/vacation-ideas";
@@ -37,8 +38,14 @@ export default async function VacationIdeasPage({
   searchParams: Promise<{ kind?: string; season?: string }>;
 }) {
   const { kind, season } = await searchParams;
-  const [page, sources] = await Promise.all([resolvePage("getaways"), loadVacationSources()]);
-  const cards = cardModels(vacationDestinations, sources);
+  const [page, sources, destinations] = await Promise.all([
+    resolvePage("getaways"),
+    loadVacationSources(),
+    // Read through the view, not the data file, so a destination the owner
+    // adds or edits in the admin is on this hub without a deploy.
+    getVacationDestinations(),
+  ]);
+  const cards = cardModels(destinations, sources);
   // Arrived from a category or a time of year on the front page. Anything
   // unrecognised is ignored rather than showing an empty list for a filter
   // nobody chose.
@@ -53,7 +60,7 @@ export default async function VacationIdeasPage({
             name: "Kosher vacation ideas",
             description: "Vacation destinations with practical kosher food and Shabbos guidance.",
             path: "/destinations",
-            count: vacationDestinations.length,
+            count: destinations.length,
           }),
           breadcrumbs([
             { name: "Home", path: "/" },

@@ -6,8 +6,14 @@ import { heritageTownHref } from "@/lib/route-migration";
  * defend publishing.
  */
 
-/** What a picture can be of. Exactly one — never two. */
-export const PHOTO_OWNER_KINDS = ["destination", "cemetery", "place"] as const;
+/**
+ * What a picture can be of. Exactly one — never two.
+ *
+ * "destination" is a town with kevarim in it; "vacation-destination" is a
+ * holiday destination like Rome or the Dolomites. Two different lists that
+ * have always been separate on this site, and a picture belongs to one.
+ */
+export const PHOTO_OWNER_KINDS = ["destination", "vacation-destination", "cemetery", "place"] as const;
 export type PhotoOwnerKind = (typeof PHOTO_OWNER_KINDS)[number];
 
 export function isPhotoOwnerKind(value: string): value is PhotoOwnerKind {
@@ -61,5 +67,8 @@ export function photoDecision(requested: string, credit: string | null, isNew: b
  */
 export function pathsToRefresh(kind: string, slug: string): string[] {
   if (kind === "cemetery") return [`/cemeteries/${slug}`, "/cemeteries", "/admin/kevarim"];
+  if (kind === "vacation-destination") {
+    return [`/destinations/${slug}`, "/destinations", "/", "/admin/vacation-destinations"];
+  }
   return [`/${slug}`, heritageTownHref(slug), "/admin/destinations"];
 }

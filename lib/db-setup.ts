@@ -127,21 +127,42 @@ export async function ensureTables(prisma: PrismaClient): Promise<{ created: boo
   // still needs — the columns and enum values a from-empty script cannot add,
   // because on an existing table every CREATE in it fails "already exists" and
   // is skipped. Both, in that order, so one button does the whole job.
-  for (const statement of [...splitSql(INIT_SQL), ...splitSql(UPGRADE_SQL)]) {
+  const run = async (statement: string, lastChance: boolean): Promise<boolean> => {
     try {
       await prisma.$executeRawUnsafe(statement);
+      return true;
     } catch (error) {
       // Ignore objects that already exist (table/type/index/constraint), so
       // re-runs and incremental schema additions are safe; rethrow anything else.
       const message = error instanceof Error ? error.message : String(error);
-      if (/already exists/i.test(message)) continue;
+      if (/already exists/i.test(message)) return true;
+      if (!lastChance) return false;
       // Say WHICH statement failed. Without this the admin screen showed a bare
       // Postgres error with nothing to connect it to, and the only way to find
       // out what had broken was to read the whole script by hand.
       const first = statement.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("--")) ?? statement.trim();
       throw new Error(`${message} — while running: ${first.slice(0, 120)}`);
     }
+  };
+
+  // TWO PASSES, AND THE SECOND ONE IS NOT BELT AND BRACES.
+  //
+  // INIT_SQL ends with the foreign keys, and a foreign key needs its column to
+  // be there. On an existing database the CREATE TABLE that would have carried
+  // a NEW column is skipped — the table already exists — so the column arrives
+  // from UPGRADE_SQL, which runs afterwards. A foreign key onto that column
+  // therefore cannot succeed on the first pass, and failing it took the whole
+  // setup down with it rather than the one statement.
+  //
+  // So anything that fails for a reason other than "already exists" is held
+  // back and tried once more at the end, by which time UPGRADE_SQL has run.
+  // Still failing then is a real error and is raised, naming the statement.
+  const deferred: string[] = [];
+  for (const statement of [...splitSql(INIT_SQL), ...splitSql(UPGRADE_SQL)]) {
+    if (!(await run(statement, false))) deferred.push(statement);
   }
+  for (const statement of deferred) await run(statement, true);
+
   return { created: !alreadyProvisioned };
 }
 

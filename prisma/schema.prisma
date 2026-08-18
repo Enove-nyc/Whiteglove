@@ -322,6 +322,63 @@ model PracticalPlace {
 // Unlike a kever, a coordinate here is a public landmark and is safe to
 // navigate to. Hours and prices are deliberately not stored — they go stale.
 
+// A holiday destination — Rome, the Dolomites, Miami Beach.
+//
+// NOT THE SAME THING AS `Destination`, which is a town with kevarim in it. A
+// family choosing between a week in the mountains and four days in Rome is
+// asking a different question than a kevarim directory answers, and the two
+// lists were deliberately kept apart. See data/vacation-destinations.ts.
+//
+// THIS TABLE IS AN OVERLAY, NOT A REPLACEMENT. The twenty built-in
+// destinations still live in that file, which stays the edited copy for
+// anything shipped with the site. A row here either overrides one of them
+// field by field — only the fields actually filled in — or adds a destination
+// the file never had. lib/vacation-destinations-view.ts is the one place that
+// merges them, and every screen reads through it.
+//
+// WHY OVERRIDE RATHER THAN COPY THE FILE INTO THE DATABASE. Copying would
+// freeze twenty carefully written records at whatever they said on the day of
+// the copy, and every later improvement to the file would be invisible behind
+// a stale row. An overlay means an untouched destination keeps tracking the
+// file, and a touched one changes only where it was touched.
+model VacationDestination {
+  id     String @id @default(cuid())
+  slug   String @unique
+  /**
+   * Whether this row shows at all. HIDDEN takes a destination off the site
+   * even when the built-in file still carries it — the only way the owner can
+   * retire a shipped destination without a deploy.
+   */
+  status ContentStatus @default(PUBLISHED)
+
+  // Every field below is optional on purpose: an empty one means "leave the
+  // built-in text alone", which is what makes this an overlay. A new
+  // destination fills in the ones a page cannot render without.
+  name             String?
+  country          String?
+  region           String?
+  cities           String[] @default([])
+  kosherBaseCities String[] @default([])
+  kosherBaseNote   String?
+  themes           String[] @default([])
+  seasons          String[] @default([])
+  whyGo            String?
+  bestFor          String[] @default([])
+  suggestedLength  String?
+  overview         String?
+  whyVisit         String[] @default([])
+  bestTime         String?
+  suits            String?
+  transport        String?
+  outlineTitle     String?
+  outlineDays      String[] @default([])
+  cautions         String[] @default([])
+
+  photos    Photo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Something to do: a museum, a mountain, a castle, a Jewish-heritage site.
 model Attraction {
   id          String        @id @default(cuid())
@@ -517,6 +574,12 @@ model Photo {
 
   destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
   destinationId String?
+  /**
+   * A picture of a holiday destination — Rome, the Dolomites. Separate from
+   * `destination` above, which is a town with kevarim in it.
+   */
+  vacationDestination   VacationDestination? @relation(fields: [vacationDestinationId], references: [id], onDelete: Cascade)
+  vacationDestinationId String?
   cemetery      Cemetery?    @relation(fields: [cemeteryId], references: [id], onDelete: Cascade)
   cemeteryId    String?
   /**

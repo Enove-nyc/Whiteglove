@@ -91,5 +91,8 @@ export async function featuredDestinations(limit = 6): Promise<FeaturedDestinati
   } catch {
     searched = [];
   }
-  return pickFeatured(searched, { limit });
+  // Read through the view so a destination the owner added can be featured,
+  // and one they hid stops being. pickFeatured stays pure and takes the list.
+  const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
+  return pickFeatured(searched, { limit, destinations: await getVacationDestinations() });
 }

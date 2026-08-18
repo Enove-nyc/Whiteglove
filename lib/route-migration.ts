@@ -66,8 +66,14 @@ function firstSegment(pathname: string): { head: string; rest: string } {
  * The two lists, read from the data files.
  *
  * Held here rather than passed in by the middleware because the middleware
- * runs on the edge and cannot reach the database: these are both static files
- * in this repo, and a slug added to either arrives with a deploy.
+ * runs on the edge and cannot reach the database.
+ *
+ * DELIBERATELY THE BUILT-IN LIST, not the merged one from
+ * lib/vacation-destinations-view.ts. This map exists to send an address that
+ * USED to be served elsewhere to where it lives now — it is a record of the
+ * site's own past. A destination the owner adds in the admin has no past
+ * address to redirect, so its absence here is correct rather than a gap, and
+ * the edge could not read it anyway.
  */
 export const MIGRATION_LISTS: MigrationLists = {
   vacationSlugs: vacationDestinations.map((destination) => destination.slug),

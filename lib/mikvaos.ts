@@ -14,7 +14,7 @@ import { getBulkDestination } from "@/data/destinations-bulk";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { cachedRead } from "@/lib/cache-tags";
 import { heritageTownHref } from "@/lib/route-migration";
-import { vacationDestinations } from "@/data/vacation-destinations";
+import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
 
 /**
@@ -58,8 +58,20 @@ function isAllowedSource(sourceUrl: string | null | undefined): boolean {
   });
 }
 
-function destinationHrefFor(slug: string, city: string): string {
-  const vacation = vacationDestinations.find((item) => item.slug === slug || item.cities.includes(city));
+/**
+ * Which page a listing's town links to.
+ *
+ * `known` is the merged destination list when the caller has read it. It
+ * defaults to the built-in list so a synchronous caller still resolves the
+ * twenty shipped destinations; pass the merged one and a destination the owner
+ * added links to itself rather than falling through to a heritage town.
+ */
+function destinationHrefFor(
+  slug: string,
+  city: string,
+  known: readonly VacationDestination[] = vacationDestinations,
+): string {
+  const vacation = known.find((item) => item.slug === slug || item.cities.includes(city));
   if (vacation) return vacationHref(vacation);
   const heritage = heritageDestinations.find((item) => item.slug === slug);
   if (heritage) return heritageDestinationHref(heritage);
@@ -68,7 +80,7 @@ function destinationHrefFor(slug: string, city: string): string {
 }
 
 /** Static, source-backed mikvah entries shipped in the repo. */
-export function staticMikvahListings(): MikvahListing[] {
+export function staticMikvahListings(known: readonly VacationDestination[] = vacationDestinations): MikvahListing[] {
   const out: MikvahListing[] = [];
 
   for (const [slug, content] of Object.entries(practicalContent)) {
@@ -93,7 +105,7 @@ export function staticMikvahListings(): MikvahListing[] {
         city,
         country,
         destinationSlug: slug,
-        href: destinationHrefFor(slug, city),
+        href: destinationHrefFor(slug, city, known),
         fromDatabase: false,
       });
     }
@@ -157,7 +169,7 @@ type DbMikvahRow = {
 };
 
 /** Pure mapper — exported for tests. */
-export function mikvahListingFromDbRow(row: DbMikvahRow): MikvahListing | null {
+export function mikvahListingFromDbRow(row: DbMikvahRow, known: readonly VacationDestination[] = vacationDestinations): MikvahListing | null {
   if (row.status !== "PUBLISHED") return null;
   if (!isAllowedSource(row.sourceUrl)) return null;
   return {
@@ -173,14 +185,18 @@ export function mikvahListingFromDbRow(row: DbMikvahRow): MikvahListing | null {
     city: row.destination.city,
     country: row.destination.country,
     destinationSlug: row.destination.slug,
-    href: destinationHrefFor(row.destination.slug, row.destination.city),
+    href: destinationHrefFor(row.destination.slug, row.destination.city, known),
     fromDatabase: true,
     status: row.status,
   };
 }
 
 async function listPublishedMikvaosUncached(): Promise<MikvahListing[]> {
-  if (!process.env.DATABASE_URL) return staticMikvahListings();
+  // Read once and handed down, so every href on this list points at the
+  // destination page the owner's own list says exists.
+  const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
+  const known = await getVacationDestinations();
+  if (!process.env.DATABASE_URL) return staticMikvahListings(known);
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.practicalPlace.findMany({
@@ -200,12 +216,14 @@ async function listPublishedMikvaosUncached(): Promise<MikvahListing[]> {
       },
       orderBy: [{ destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
     });
-    const published = rows.map(mikvahListingFromDbRow).filter((row): row is MikvahListing => Boolean(row));
+    // Wrapped rather than passed by name: .map hands the callback an index as
+    // its second argument, which is not a destination list.
+    const published = rows.map((row) => mikvahListingFromDbRow(row, known)).filter((row): row is MikvahListing => Boolean(row));
     if (published.length > 0) return published;
   } catch (error) {
     console.error("[mikvaos] DB read failed — using static catalog", error);
   }
-  return staticMikvahListings();
+  return staticMikvahListings(known);
 }
 
 /**
@@ -225,8 +243,10 @@ export async function listPublishedMikvaos(): Promise<MikvahListing[]> {
 export async function listMikvaosForAdmin(): Promise<
   Array<MikvahListing & { status: "PUBLISHED" | "DRAFT" | "NEEDS_REVIEW"; verification: string }>
 > {
+  const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
+  const known = await getVacationDestinations();
   if (!process.env.DATABASE_URL) {
-    return staticMikvahListings().map((listing) => ({
+    return staticMikvahListings(known).map((listing) => ({
       ...listing,
       status: "PUBLISHED" as const,
       verification: "NEEDS_VERIFICATION",
@@ -265,7 +285,7 @@ export async function listMikvaosForAdmin(): Promise<
       city: row.destination.city,
       country: row.destination.country,
       destinationSlug: row.destination.slug,
-      href: destinationHrefFor(row.destination.slug, row.destination.city),
+      href: destinationHrefFor(row.destination.slug, row.destination.city, known),
       fromDatabase: true,
       status: row.status,
       verification: row.verification,

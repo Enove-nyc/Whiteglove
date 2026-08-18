@@ -77,6 +77,9 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/kevarim", "directory"],
   ["/admin/shomrim", "directory"],
   ["/admin/destinations", "directory"],
+  // Holiday destinations. Same area as Towns — both are the destination
+  // directory, one heritage and one holiday.
+  ["/admin/vacation-destinations", "directory"],
   ["/admin/countries", "directory"],
   ["/admin/hechsherim", "directory"],
   ["/admin/mikvaos", "directory"],

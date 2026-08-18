@@ -15,7 +15,7 @@ import { getBulkDestination } from "@/data/destinations-bulk";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { cachedRead } from "@/lib/cache-tags";
 import { heritageTownHref } from "@/lib/route-migration";
-import { vacationDestinations } from "@/data/vacation-destinations";
+import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 import { destinationHref as vacationHref } from "@/lib/vacation-ideas";
 import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 
@@ -41,8 +41,20 @@ function isAllowedSource(sourceUrl: string | null | undefined): boolean {
   return !isDisallowedImportSource({ sourceUrl, sourceName: "", attribution: "" });
 }
 
-function destinationHrefFor(slug: string, city: string): string {
-  const vacation = vacationDestinations.find((item) => item.slug === slug || item.cities.includes(city));
+/**
+ * Which page a listing's town links to.
+ *
+ * `known` is the merged destination list when the caller has read it. It
+ * defaults to the built-in list so a synchronous caller still resolves the
+ * twenty shipped destinations; pass the merged one and a destination the owner
+ * added links to itself rather than falling through to a heritage town.
+ */
+function destinationHrefFor(
+  slug: string,
+  city: string,
+  known: readonly VacationDestination[] = vacationDestinations,
+): string {
+  const vacation = known.find((item) => item.slug === slug || item.cities.includes(city));
   if (vacation) return vacationHref(vacation);
   const heritage = heritageDestinations.find((item) => item.slug === slug);
   if (heritage) return heritageDestinationHref(heritage);
@@ -67,7 +79,7 @@ function dedupeByNameCity(listings: ShulListing[]): ShulListing[] {
 }
 
 /** Static, source-backed shul/minyan entries shipped in the repo. */
-export function staticShulListings(): ShulListing[] {
+export function staticShulListings(known: readonly VacationDestination[] = vacationDestinations): ShulListing[] {
   const out: ShulListing[] = [];
 
   for (const [slug, content] of Object.entries(practicalContent)) {
@@ -92,7 +104,7 @@ export function staticShulListings(): ShulListing[] {
         city,
         country,
         destinationSlug: slug,
-        href: destinationHrefFor(slug, city),
+        href: destinationHrefFor(slug, city, known),
         fromDatabase: false,
       });
     }
@@ -140,7 +152,7 @@ type DbShulRow = {
 };
 
 /** Pure mapper — exported for tests. */
-export function shulListingFromDbRow(row: DbShulRow): ShulListing | null {
+export function shulListingFromDbRow(row: DbShulRow, known: readonly VacationDestination[] = vacationDestinations): ShulListing | null {
   if (row.status !== "PUBLISHED") return null;
   if (!isAllowedSource(row.sourceUrl)) return null;
   return {
@@ -156,13 +168,17 @@ export function shulListingFromDbRow(row: DbShulRow): ShulListing | null {
     city: row.destination.city,
     country: row.destination.country,
     destinationSlug: row.destination.slug,
-    href: destinationHrefFor(row.destination.slug, row.destination.city),
+    href: destinationHrefFor(row.destination.slug, row.destination.city, known),
     fromDatabase: true,
   };
 }
 
 async function listPublishedShulsUncached(): Promise<ShulListing[]> {
-  if (!process.env.DATABASE_URL) return staticShulListings();
+  // Read once and handed down, so every href on this list points at the
+  // destination page the owner's own list says exists.
+  const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
+  const known = await getVacationDestinations();
+  if (!process.env.DATABASE_URL) return staticShulListings(known);
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.practicalPlace.findMany({
@@ -182,12 +198,14 @@ async function listPublishedShulsUncached(): Promise<ShulListing[]> {
       },
       orderBy: [{ destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
     });
-    const published = rows.map(shulListingFromDbRow).filter((row): row is ShulListing => Boolean(row));
+    // Wrapped rather than passed by name: .map hands the callback an index as
+    // its second argument, which is not a destination list.
+    const published = rows.map((row) => shulListingFromDbRow(row, known)).filter((row): row is ShulListing => Boolean(row));
     if (published.length > 0) return published;
   } catch (error) {
     console.error("[shuls] DB read failed — using static catalog", error);
   }
-  return staticShulListings();
+  return staticShulListings(known);
 }
 
 /** Public shuls: published DB rows when available, otherwise the static catalog. */

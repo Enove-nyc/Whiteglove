@@ -168,6 +168,36 @@ CREATE TABLE "PracticalPlace" (
 );
 
 -- CreateTable
+CREATE TABLE "VacationDestination" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "name" TEXT,
+    "country" TEXT,
+    "region" TEXT,
+    "cities" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "kosherBaseCities" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "kosherBaseNote" TEXT,
+    "themes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "seasons" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "whyGo" TEXT,
+    "bestFor" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "suggestedLength" TEXT,
+    "overview" TEXT,
+    "whyVisit" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "bestTime" TEXT,
+    "suits" TEXT,
+    "transport" TEXT,
+    "outlineTitle" TEXT,
+    "outlineDays" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "cautions" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "VacationDestination_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Attraction" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -327,6 +357,7 @@ CREATE TABLE "Photo" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "destinationId" TEXT,
+    "vacationDestinationId" TEXT,
     "cemeteryId" TEXT,
     "placeId" TEXT,
     "submittedAt" TIMESTAMP(3),
@@ -513,6 +544,9 @@ CREATE INDEX "Contact_cemeteryId_idx" ON "Contact"("cemeteryId");
 CREATE INDEX "PracticalPlace_destinationId_category_idx" ON "PracticalPlace"("destinationId", "category");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "VacationDestination_slug_key" ON "VacationDestination"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Attraction_slug_key" ON "Attraction"("slug");
 
 -- CreateIndex
@@ -634,6 +668,9 @@ ALTER TABLE "ContentImportCandidate" ADD CONSTRAINT "ContentImportCandidate_batc
 
 -- AddForeignKey
 ALTER TABLE "Photo" ADD CONSTRAINT "Photo_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Photo" ADD CONSTRAINT "Photo_vacationDestinationId_fkey" FOREIGN KEY ("vacationDestinationId") REFERENCES "VacationDestination"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Photo" ADD CONSTRAINT "Photo_cemeteryId_fkey" FOREIGN KEY ("cemeteryId") REFERENCES "Cemetery"("id") ON DELETE CASCADE ON UPDATE CASCADE;
