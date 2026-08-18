@@ -165,7 +165,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         label: "Travel gear",
         blurb: "The Amazon shelf.",
       },
-      { href: "/admin/settings/travel-essentials", label: "Travel essentials", blurb: "Transfers, data and insurance." },
+      // TRAVEL ESSENTIALS IS NOT LISTED HERE, and that is the finished half of
+      // a move somebody left half-done. The cards — insurance, eSIM, transfers,
+      // tours — are a section of "What the site earns" now, because two screens
+      // answering "is this site earning, and where" meant whichever one you
+      // opened looked complete on its own. The old address still exists and
+      // redirects to that section, for a bookmark or the admin's own history;
+      // a menu entry pointing at a redirect is a different thing, and it was
+      // still here, sending anybody who used it bouncing.
       { href: "/admin/travel", label: "Travel providers", blurb: "Who supplies flights, hotels and cars." },
       {
         href: "/admin/settings/earnings",

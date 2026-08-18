@@ -179,9 +179,21 @@ export default async function AdminHome() {
   // /admin/accounts, and announced nowhere — while the person who asked was
   // told "we have it, and we will be in touch".
   const plansWaiting = (await listPlanRequests()).filter((r) => r.state === "asked").length;
+  // ONE PERSON IS ONE PERSON. "Account requests are waiting" read like a queue
+  // whatever the number, and a queue is easier to leave until later than
+  // somebody waiting. The number is said now, and said grammatically.
+  //
+  // And what answering costs, said here rather than found out by clicking:
+  // while plans are asked for rather than bought, saying yes or no charges
+  // nobody and starts no subscription — see lib/plan-billing.ts. That sentence
+  // is what turns "I'll look at this properly later" into a decision somebody
+  // can make now.
   if (plansWaiting > 0) {
     alerts.push({
-      text: "Account requests are waiting for an answer.",
+      text:
+        plansWaiting === 1
+          ? "One person has asked about a plan. Nothing is charged either way."
+          : `${plansWaiting} people have asked about a plan. Nothing is charged either way.`,
       href: "/admin/accounts",
       label: "Answer them",
     });
