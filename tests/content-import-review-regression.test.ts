@@ -15,7 +15,16 @@ describe("content import review regressions", () => {
 
     assert.match(editor, /name="sourceEvidence"/);
     assert.match(action, /sourceEvidence: sourceEvidence\(formData\)/);
-    assert.match(storage, /sourceEvidence: rawSourceEvidence\(prepared\.sourceEvidence\)/);
+    // WHAT THE EDITOR TYPED HAS TO SURVIVE THE SAVE, and this used to be
+    // checked by looking for one exact expression —
+    // `rawSourceEvidence(prepared.sourceEvidence)`. The save then got better:
+    // it reads what is already stored and merges the two, so evidence added by
+    // an earlier reviewer is not overwritten by a later one who did not retype
+    // it. The behaviour the test exists for is stronger than it was, and the
+    // test failed anyway, because it was matching the shape of one line rather
+    // than asking whether the evidence gets written.
+    assert.match(storage, /mergeKeepBothEvidence\(existing\.sourceEvidence, prepared\.sourceEvidence\)/);
+    assert.match(storage, /sourceEvidence: rawSourceEvidence\(evidence\)/);
   });
 
   it("uses stable source IDs for candidate links while retaining ID lookup compatibility", () => {
