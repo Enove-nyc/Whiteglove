@@ -229,7 +229,7 @@ function sourceKey(sourceUrl: string, sourceId: string): string {
   return url && id ? `source:${url}#${id}` : "";
 }
 
-function locationKey(name: string, city: string, country: string): string {
+export function locationKey(name: string, city: string, country: string): string {
   return `${normalizeContentText(name)}|${normalizeContentText(city)}|${normalizeContentText(country)}`;
 }
 

@@ -26,6 +26,8 @@ import {
   type KnownContentRecord,
   type PreparedBulkContentCandidate,
   isTemplateFillerCandidate,
+  locationKey,
+  normalizeSourceUrl,
 } from "@/lib/bulk-content";
 import { bustTag } from "@/lib/cache-tags";
 import { createAttraction, createKosherStay, isDbEnabled } from "@/lib/content-admin";
@@ -234,6 +236,51 @@ function countsFor(candidates: readonly ContentImportCandidateView[], readyToSta
   };
 }
 
+/**
+ * Take candidates that are already on the site out of the review count.
+ *
+ * The queue's duplicate flag is set ONCE, when a pack is staged, and frozen
+ * after. So a candidate staged before its place was published keeps saying
+ * "needs review" even though the place is now live — which is exactly why the
+ * number did not fall as countries were worked through. This re-checks each
+ * still-open candidate against the current site on every read, so the moment a
+ * place is published its candidate drops out of the count.
+ *
+ * SAFE SIGNALS ONLY, so nothing real is hidden by mistake: the same
+ * name-in-the-same-town that the staging dedup uses, the same source URL, or
+ * coordinates within about a hundred metres. No fuzzy name-guessing, and it
+ * only ever moves a candidate OUT of "needs review", never removes the row.
+ */
+function coordKey(value: string | null | undefined): string | null {
+  const m = (value ?? "").match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  return `${Number(m[1]).toFixed(3)},${Number(m[2]).toFixed(3)}`;
+}
+
+function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
+  views: readonly T[],
+): T[] {
+  const owned = staticOwnedContent();
+  const keys = new Set(owned.map((o) => locationKey(o.name, o.city, o.country)));
+  const sources = new Set(owned.map((o) => normalizeSourceUrl(o.sourceUrl ?? "")).filter(Boolean));
+  const coords = new Set(
+    [...attractions, ...kosherStays, ...kosherEateries]
+      .map((item) => coordKey((item as { coordinates?: string | null }).coordinates ?? null))
+      .filter((k): k is string => Boolean(k)),
+  );
+  return views.map((view) => {
+    if (view.status !== "NEEDS_REVIEW") return view;
+    const onSite =
+      keys.has(locationKey(view.name, view.city, view.country)) ||
+      (view.sourceUrl ? sources.has(normalizeSourceUrl(view.sourceUrl)) : false) ||
+      (() => {
+        const c = coordKey(view.coordinates);
+        return c ? coords.has(c) : false;
+      })();
+    return onSite ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
+  });
+}
+
 function staticOwnedContent(): KnownContentRecord[] {
   return [
     ...attractions.map((item) => ({
@@ -322,8 +369,10 @@ function storedInput(candidate: ContentImportCandidateView): BulkContentCandidat
 
 /** Source package + persisted queue. A failed DB read intentionally exposes no pseudo-published data. */
 export async function getContentImportDashboard(): Promise<ContentImportDashboard> {
-  const packageRows = BUILT_IN_CONTENT_IMPORT_PACKAGES.flatMap((sourcePackage) =>
-    packageCandidates(sourcePackage).map((candidate) => viewFromPrepared(sourcePackage, candidate)),
+  const packageRows = alreadyOnSite(
+    BUILT_IN_CONTENT_IMPORT_PACKAGES.flatMap((sourcePackage) =>
+      packageCandidates(sourcePackage).map((candidate) => viewFromPrepared(sourcePackage, candidate)),
+    ),
   );
   const packageBatches = BUILT_IN_CONTENT_IMPORT_PACKAGES.map(packageBatch);
   if (!isDbEnabled()) {
@@ -384,12 +433,13 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
       // isTemplateFillerCandidate. The rows stay in the table; they just stop
       // being counted or shown, which is what the queue number is meant to mean.
       .filter((candidate) => !isTemplateFillerCandidate(candidate.name));
+    const reconciled = alreadyOnSite(candidateViews);
     return {
       configured: true,
       databaseReady: true,
       batches: batchesToShow,
-      candidates: candidateViews,
-      counts: countsFor(candidateViews, readyToStage),
+      candidates: reconciled,
+      counts: countsFor(reconciled, readyToStage),
     };
   } catch {
     // DATABASE_URL can be set before tables are provisioned. The source package
