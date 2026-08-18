@@ -5,19 +5,14 @@ import { cspReportStoreAvailable, readCspSummary } from "@/lib/csp-reports";
 export const dynamic = "force-dynamic";
 
 /**
- * What the Report-Only security policy would have blocked, so it can be read.
+ * What the security policy has blocked, so it can be read.
  *
- * The policy in lib/csp-policy.ts is sent Report-Only: it stops nothing and
- * reports what an enforcing version would have stopped. Those reports collect
- * in the private store; this is where they are read. A row here that names a
- * host the policy does not already allow is the whole reason the phase exists —
- * it is a host some page really loads that we did not know about, most likely
- * inside the Travelpayouts search widget or the Duffel card form.
- *
- * READING IT. An empty table after the booking search and the card screen have
- * both been used is the goal: it means the policy already covers everything the
- * site loads, and the header can lose "-Report-Only" to start enforcing. Rows
- * that keep appearing name what has to be added first.
+ * The policy in lib/csp-policy.ts now enforces, and still reports: a resource
+ * it stops is both blocked and recorded here. Through the report-only phase
+ * this table was how the policy was proven; now it is how a block is caught —
+ * an empty table is the healthy state, and a row means a real page loaded
+ * something the policy does not allow and it was stopped. That is worth seeing
+ * fast, which is why enforcing did not also turn reporting off.
  */
 export default async function AdminSecurityPage() {
   const summary = await readCspSummary();
@@ -32,14 +27,14 @@ export default async function AdminSecurityPage() {
               Security policy
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              The site now tells the browser which outside services a page is allowed to load — maps, the booking
-              search, the card form. For now it only <strong className="font-semibold text-[var(--navy)]">watches</strong>:
-              nothing is blocked, and anything the rule would have stopped is listed here instead. This is how the rule
-              is proven safe before it is switched on.
+              The site tells the browser which outside services a page is allowed to load — maps, the booking
+              search, the card form — and now <strong className="font-semibold text-[var(--navy)]">enforces</strong> it:
+              anything not on the list is stopped. It still records what it stops, so a block shows up here rather than
+              breaking a page in silence.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-              When this list stays empty after the flight and car search and a card entry have all been used, the rule
-              is covering everything and can be turned on. Until then, each line below is a service to allow first.
+              An empty list is the healthy state. A line appearing means a real page loaded a service the rule does not
+              allow and it was blocked — worth looking at, since it may be something to add.
             </p>
           </div>
           <Link
@@ -63,9 +58,9 @@ export default async function AdminSecurityPage() {
           <div className="border border-[var(--gold)] bg-[#fcfaf6] p-8">
             <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Nothing has been blocked.</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">
-              No page has tried to load a service the rule does not already allow. If the booking search and a card
-              entry have both been opened since this started and this is still empty, the rule is ready to switch on.
-              If they have not, open them once and check back — that is where a surprise, if there is one, will show.
+              The policy is enforcing and no page has loaded a service it does not allow. This empty state is the one to
+              want — every page, the maps, the booking search and the card form are working within the rule. If a line
+              ever appears here, it names a real service that was stopped, and it is worth a look.
             </p>
           </div>
         ) : (

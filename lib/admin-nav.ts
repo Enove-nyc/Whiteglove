@@ -169,7 +169,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/team", label: "Team", blurb: "Who else can get in." },
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
-      { href: "/admin/settings/security", label: "Security policy", blurb: "What the load rule would block." },
+      { href: "/admin/settings/security", label: "Security policy", blurb: "The load rule, and what it blocks." },
       { href: "/admin/settings/trello", label: "Trello", blurb: "Pictures, listings and reports." },
       { href: "/admin/accounts", label: "Users", blurb: "People who signed up." },
       { href: "/admin/messages", label: "Messages", blurb: "What people wrote from the site." },

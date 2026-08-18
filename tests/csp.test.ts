@@ -120,16 +120,26 @@ describe("the report sink understands the browser", () => {
   });
 });
 
-describe("the report-only header is wired in", () => {
-  it("is served as Report-Only, never as the enforcing name yet", async () => {
+describe("the header is wired in and now enforces", () => {
+  it("ships as the enforcing Content-Security-Policy, not Report-Only", async () => {
     const { readFileSync } = await import("node:fs");
     const config = readFileSync("next.config.ts", "utf8");
-    assert.match(config, /Content-Security-Policy-Report-Only/);
+    // The report-only pass is done: real use of the maps, the booking search
+    // and the card form reported nothing left to allow, so the header enforces.
+    assert.match(config, /key: "Content-Security-Policy",/, "the header should enforce now");
     assert.doesNotMatch(
       config,
-      /key: "Content-Security-Policy"/,
-      "the enforcing header must not ship until the reports are silent",
+      /key: "Content-Security-Policy-Report-Only"/,
+      "the report-only header should be gone once enforcing",
     );
     assert.match(config, /Reporting-Endpoints/);
+  });
+
+  it("keeps reporting on while enforcing, so a block is never silent", () => {
+    // An enforcing policy that also reports: a resource stopped on a page the
+    // report-only pass never exercised is both blocked and surfaced on the
+    // admin Security screen, rather than just breaking.
+    assert.match(CSP, /report-uri \/api\/csp-report/);
+    assert.match(CSP, /report-to csp/);
   });
 });

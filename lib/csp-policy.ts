@@ -1,12 +1,13 @@
 /**
- * The Content-Security-Policy, in one place, sent Report-Only for now.
+ * The Content-Security-Policy, in one place. It enforces now.
  *
- * WHAT A REPORT-ONLY POLICY IS FOR. Every directive below is the policy this
- * site would enforce — but sent as Content-Security-Policy-Report-Only, it
- * blocks nothing. It only asks the browser to report anything the enforcing
- * version WOULD have stopped. So a wrong line here cannot take a page down; it
- * can only teach us that the line is wrong, which is the entire reason to run
- * this phase before switching the header to the enforcing name.
+ * HOW IT GOT HERE SAFELY. Every directive below was first run as
+ * Content-Security-Policy-Report-Only — blocking nothing, only reporting what
+ * an enforcing version would have stopped — through real use of the maps, the
+ * booking search and the card form. When those reports went silent (see the
+ * host list below for the few surprises they turned up), the header in
+ * next.config.ts dropped "-Report-Only" and this policy began to enforce. It
+ * still carries report-uri, so a block is reported as well as made.
  *
  * WHAT IS ALLOWED, AND WHY EACH IS HERE. The list was built by reading every
  * script, iframe, image source and browser fetch in the app (not the citation

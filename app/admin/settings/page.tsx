@@ -173,8 +173,8 @@ export default async function AdminSettingsPage() {
           <Card
             href="/admin/settings/security"
             title="Security policy"
-            detail="The rule that says which outside services a page may load — maps, the booking search, the card form. Watching only for now; nothing is blocked."
-            state="Watching"
+            detail="The rule that says which outside services a page may load — maps, the booking search, the card form. Enforcing, and reporting anything it blocks."
+            state="On"
           />
           <Card
             href="/admin/settings/trello"
