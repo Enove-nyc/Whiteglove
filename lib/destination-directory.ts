@@ -30,8 +30,7 @@
  */
 
 import { getDestinationRecord } from "@/data/destination-database";
-import { destinations as heritageDestinations } from "@/data/destinations";
-import { heritageTownHref } from "@/lib/route-migration";
+import { destinationHref, destinations as heritageDestinations } from "@/data/destinations";
 
 export type HeritageCardModel = {
   slug: string;
@@ -66,7 +65,13 @@ export function heritageCards(): HeritageCardModel[] {
       name: town.city,
       yiddishName: town.yiddishCity,
       country: town.country,
-      href: heritageTownHref(town.slug),
+      // destinationHref, NOT heritageTownHref — a town with a written guide is
+      // served at /uman and one without at /heritage/towns/belz, and the two
+      // routes generate from different lists (cityGuides and bulkDestinations).
+      // Sending every card to /heritage/towns gave fourteen of the fifty a 404,
+      // which is what happens when a link is built from the shape of an address
+      // rather than asked for from the module that owns it.
+      href: destinationHref(town),
       kevarim: getDestinationRecord(town.slug)?.cemeteries.length ?? 0,
       summary: town.summary,
     }));
