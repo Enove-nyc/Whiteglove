@@ -6732,4 +6732,303 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://www.orlando.gov/Parks-the-Environment/Directory/Leu-Gardens",
   },
+
+  // ---- Lithuania ------------------------------------------------------
+  {
+    slug: "vilnius-old-town",
+    name: "Vilnius Old Town",
+    city: "Vilnius",
+    country: "Lithuania",
+    kind: "Landmark",
+    summary: "One of the largest surviving medieval old towns in Northern Europe, a UNESCO site, in the city that was the Yerushalayim d'Lita.",
+    address: "Senamiestis, Vilnius",
+    coordinates: "54.6797, 25.2860",
+    notes: [
+      "Before the war Vilna was among the great Jewish cities of Europe, the seat of the Vilna Gaon and of the mussar and yeshiva world that grew around him.",
+      "Listed by UNESCO in 1994. The old streets are walkable end to end; the Jewish quarter lay around Žydų and Stiklių streets.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Vilnius",
+  },
+  {
+    slug: "vilnius-great-synagogue-site",
+    name: "The Great Synagogue of Vilna site",
+    city: "Vilnius",
+    country: "Lithuania",
+    kind: "Jewish heritage",
+    summary: "The site of the shul completed in 1633, burned by the Nazis and levelled by the Soviets, with a memorial to the Vilna Gaon nearby.",
+    address: "Vokiečių / Žydų area, Vilnius",
+    coordinates: "54.6800, 25.2847",
+    notes: [
+      "A house of prayer stood here from 1440 and the great building from 1633. The Nazis looted and burned it; the Soviets cleared the ruin and put a school on the ground.",
+      "Archaeologists have been uncovering the bimah and the prayer hall since 2011. A bust of the Vilna Gaon stands close by, near where his beis medrash stood.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Vilna",
+  },
+  {
+    slug: "paneriai-memorial",
+    name: "Paneriai (Ponar)",
+    city: "Vilnius",
+    country: "Lithuania",
+    kind: "Jewish heritage",
+    summary: "The forest pits outside Vilnius where about seventy thousand Jews of the Vilna ghetto were murdered, now a memorial with a small museum.",
+    address: "Agrastų g. 15, Vilnius",
+    coordinates: "54.6264, 25.1612",
+    notes: [
+      "From 1941 to 1944 the killing squads brought the Jews of Vilna here to the pits. It is the kever of the kehilla the city was built around.",
+      "A short train ride south-west of the centre. The site is open ground with monuments and a small museum; go quietly.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ponary_massacre",
+  },
+
+  // ---- Turkey ---------------------------------------------------------
+  {
+    slug: "istanbul-hagia-sophia",
+    name: "Hagia Sophia",
+    city: "Istanbul",
+    country: "Turkey",
+    kind: "Landmark",
+    summary: "The great domed building of Sultanahmet, a Byzantine church for nine centuries, then an Ottoman mosque, on the old city's ridge.",
+    address: "Sultan Ahmet, Ayasofya Meydanı, Fatih, Istanbul",
+    coordinates: "41.0086, 28.9802",
+    notes: [
+      "The dome was the largest in the world for a thousand years. It is a working mosque again; dress modestly and check the visiting hours around prayer times.",
+      "The Blue Mosque, Topkapı Palace and the Grand Bazaar are all within a short walk on the same hill.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Hagia_Sophia",
+  },
+  {
+    slug: "istanbul-neve-shalom",
+    name: "Neve Shalom Synagogue",
+    city: "Istanbul",
+    country: "Turkey",
+    kind: "Jewish heritage",
+    summary: "The central and largest Sephardic synagogue of Istanbul, in the Galata quarter, home to the city's old Ladino-speaking kehilla.",
+    address: "Büyük Hendek Caddesi 61, Karaköy, Beyoğlu, Istanbul",
+    coordinates: "41.0269, 28.9725",
+    notes: [
+      "Opened in 1951 in Galata, long the Jewish quarter of the city. Istanbul's Jews descend largely from those expelled from Spain in 1492.",
+      "Visits are by prior arrangement with security screening — contact the community ahead. Bring a passport.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Neve_Shalom_Synagogue",
+  },
+
+  // ---- Ireland --------------------------------------------------------
+  {
+    slug: "dublin-trinity-book-of-kells",
+    name: "Trinity College and the Book of Kells",
+    city: "Dublin",
+    country: "Ireland",
+    kind: "Museum",
+    summary: "The 9th-century illuminated gospel book, and the Long Room library above it, at the heart of Dublin's old university.",
+    address: "College Green, Dublin 2",
+    coordinates: "53.3438, -6.2546",
+    website: "https://www.tcd.ie/visitors/book-of-kells/",
+    notes: [
+      "Book a timed ticket; the queue on the day is long. The Long Room — the barrel-vaulted library — is the part people photograph.",
+      "In the centre of Dublin, a few minutes from Grafton Street and the old town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Book_of_Kells",
+  },
+  {
+    slug: "dublin-irish-jewish-museum",
+    name: "The Irish Jewish Museum",
+    city: "Dublin",
+    country: "Ireland",
+    kind: "Jewish heritage",
+    summary: "The history of Ireland's Jews in a former synagogue of 1917, in the old Jewish quarter of Portobello.",
+    address: "3–4 Walworth Road, Portobello, Dublin 8",
+    coordinates: "53.3307, -6.2696",
+    website: "https://www.jewishmuseum.ie/",
+    notes: [
+      "The little shul upstairs is kept with its fittings; downstairs is the story of the community that lived around here, off the South Circular Road.",
+      "Small and volunteer-run, with limited opening days — check before going.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Irish_Jewish_Museum",
+  },
+
+  // ---- Denmark --------------------------------------------------------
+  {
+    slug: "copenhagen-nyhavn",
+    name: "Nyhavn",
+    city: "Copenhagen",
+    country: "Denmark",
+    kind: "Landmark",
+    summary: "The painted 17th-century harbour front of Copenhagen, tall houses and old wooden boats along a canal.",
+    address: "Nyhavn, 1051 København",
+    coordinates: "55.6799, 12.5913",
+    notes: [
+      "The row of coloured houses is the picture of the city. The canal boat tours leave from here and are the easy way to see the waterfront.",
+      "In the war Denmark ferried almost all its Jews across to Sweden in 1943; the community survived nearly whole, and still functions in the city.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Nyhavn",
+  },
+  {
+    slug: "copenhagen-tivoli",
+    name: "Tivoli Gardens",
+    city: "Copenhagen",
+    country: "Denmark",
+    kind: "Family",
+    summary: "A pleasure garden of 1843 in the middle of the city — rides, lawns and lights, one of the oldest amusement parks in the world.",
+    address: "Vesterbrogade 3, 1630 København",
+    coordinates: "55.6737, 12.5681",
+    website: "https://www.tivoli.dk/en",
+    notes: [
+      "Gentle and green rather than a thrill park — it holds young children and grandparents alike. Best in the evening when the lights come on.",
+      "Across the road from the main station, in the centre of Copenhagen.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Tivoli_Gardens",
+  },
+
+  // ---- Sweden ---------------------------------------------------------
+  {
+    slug: "stockholm-gamla-stan",
+    name: "Gamla Stan",
+    city: "Stockholm",
+    country: "Sweden",
+    kind: "Landmark",
+    summary: "The old town of Stockholm on its own island, narrow lanes and ochre houses around the royal palace.",
+    address: "Gamla Stan, Stockholm",
+    coordinates: "59.3251, 18.0711",
+    notes: [
+      "One of the best-kept medieval town centres in Europe. The changing of the guard at the palace runs most days in summer.",
+      "Stockholm has a working kehilla and kosher provision; the old town is walkable and car-free in its heart.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Gamla_stan",
+  },
+  {
+    slug: "stockholm-vasa-museum",
+    name: "The Vasa Museum",
+    city: "Stockholm",
+    country: "Sweden",
+    kind: "Museum",
+    summary: "A 17th-century warship that sank on her maiden voyage in 1628 and was raised whole in 1961, standing almost complete indoors.",
+    address: "Galärvarvsvägen 14, 115 21 Stockholm",
+    coordinates: "59.3280, 18.0915",
+    website: "https://www.vasamuseet.se/en",
+    notes: [
+      "The most visited museum in Scandinavia, and rightly — nothing else like this survives. The ship fills the whole hall.",
+      "On the museum island of Djurgården, reached on foot or by the harbour ferry.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Vasa_(ship)",
+  },
+
+  // ---- Latvia ---------------------------------------------------------
+  {
+    slug: "riga-old-town",
+    name: "Riga Old Town",
+    city: "Riga",
+    country: "Latvia",
+    kind: "Landmark",
+    summary: "The medieval and art-nouveau centre of the Latvian capital, a UNESCO site on the Daugava.",
+    address: "Vecrīga, Riga",
+    coordinates: "56.9489, 24.1064",
+    notes: [
+      "The old town and the art-nouveau district north of it are the two things to walk. House of the Blackheads and the Dome cathedral are the landmarks.",
+      "The Riga ghetto and the Rumbula forest, where the city's Jews were murdered in 1941, are remembered at museums and memorials on the edge of town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Old_Town_(Riga)",
+  },
+
+  // ---- Slovakia -------------------------------------------------------
+  {
+    slug: "bratislava-old-town",
+    name: "Bratislava Old Town and Castle",
+    city: "Bratislava",
+    country: "Slovakia",
+    kind: "Landmark",
+    summary: "The compact old town of the Slovak capital under its four-towered castle, an hour down the Danube from Vienna.",
+    address: "Staré Mesto, Bratislava",
+    coordinates: "48.1424, 17.1078",
+    notes: [
+      "Small enough for an afternoon. The castle hill gives the view over the river and across to Austria.",
+      "The Chatam Sofer memorial — the preserved graves of the Pressburg rov and other gedolim — is nearby and reached through the Kosher section.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Bratislava",
+  },
+
+  // ---- Norway ---------------------------------------------------------
+  {
+    slug: "oslo-vigeland-park",
+    name: "Vigeland Sculpture Park",
+    city: "Oslo",
+    country: "Norway",
+    kind: "Nature",
+    summary: "Two hundred figures in bronze and granite by Gustav Vigeland, set through the open lawns of Frogner Park.",
+    address: "Nobels gate 32, 0268 Oslo",
+    coordinates: "59.9270, 10.7002",
+    notes: [
+      "Free and open always. The largest sculpture park by a single artist anywhere; the Monolith at the top is the centrepiece.",
+      "A green day in the city, easy with children. Oslo has a small kehilla and limited kosher provision — carry food.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Vigeland_installation_in_Frogner_Park",
+  },
+
+  // ---- Finland --------------------------------------------------------
+  {
+    slug: "helsinki-suomenlinna",
+    name: "Suomenlinna",
+    city: "Helsinki",
+    country: "Finland",
+    kind: "Landmark",
+    summary: "An 18th-century sea fortress spread across islands off Helsinki, a UNESCO site reached by the public ferry.",
+    address: "Suomenlinna, 00190 Helsinki",
+    coordinates: "60.1454, 24.9881",
+    website: "https://www.suomenlinna.fi/en/",
+    notes: [
+      "The ferry from the market square takes about fifteen minutes and runs on the ordinary transport ticket. Allow half a day.",
+      "Ramparts, tunnels and open shore — good for children who need to run. Take food; the islands have little.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Suomenlinna",
+  },
+
+  // ---- Croatia --------------------------------------------------------
+  {
+    slug: "zagreb-upper-town",
+    name: "Zagreb Upper Town",
+    city: "Zagreb",
+    country: "Croatia",
+    kind: "Landmark",
+    summary: "The medieval hilltop core of the Croatian capital — St Mark's tiled roof, the funicular, and the view over the lower city.",
+    address: "Gornji Grad, Zagreb",
+    coordinates: "45.8150, 15.9740",
+    notes: [
+      "The short funicular up from the lower town is one of the oldest and shortest in the world. St Mark's coloured-tile roof is the picture.",
+      "A walkable capital; the Upper Town and the main square below make an easy day.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Zagreb",
+  },
+
+  // ---- Serbia ---------------------------------------------------------
+  {
+    slug: "belgrade-kalemegdan",
+    name: "Belgrade Fortress and Kalemegdan",
+    city: "Belgrade",
+    country: "Serbia",
+    kind: "Landmark",
+    summary: "The old fortress on the ridge where the Sava meets the Danube, with the park of Kalemegdan spread around it.",
+    address: "Kalemegdan, Beograd",
+    coordinates: "44.8225, 20.4508",
+    notes: [
+      "Free and open ground, with the best view in the city out over the meeting of the two rivers. Good at sunset.",
+      "The park holds paths, playgrounds and old ramparts — an easy couple of hours with children.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Belgrade_Fortress",
+  },
+
+  // ---- Bulgaria -------------------------------------------------------
+  {
+    slug: "sofia-synagogue",
+    name: "Sofia Synagogue",
+    city: "Sofia",
+    country: "Bulgaria",
+    kind: "Jewish heritage",
+    summary: "The largest synagogue in south-eastern Europe, opened in 1909 for Sofia's Sephardic kehilla, near the central market.",
+    address: "Ekzarh Yosif St 16, Sofia",
+    coordinates: "42.7000, 23.3211",
+    notes: [
+      "Built in 1909 for a community descended from the Spanish expulsion; it is the third-largest synagogue in Europe and still in use.",
+      "It also houses the Jewish museum of Bulgaria, which tells how nearly all the country's Jews were saved from deportation in 1943.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Sofia_Synagogue",
+  },
 ];
