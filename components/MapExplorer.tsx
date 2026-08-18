@@ -12,6 +12,8 @@ export type MapKever = {
   city: string;
   country: string;
   coordinates: string;
+  /** External link for a locator-only bais hachaim; defaults to its /cemeteries page. */
+  href?: string;
 };
 
 export type MapAirport = { code: string; name: string; city: string; lat: number; lng: number; size: string };
@@ -116,7 +118,7 @@ export default function MapExplorer({
         subtitle: `${k.city} · ${k.country}`,
         lat: p.lat,
         lng: p.lng,
-        href: `/cemeteries/${k.slug}`,
+        href: k.href ?? `/cemeteries/${k.slug}`,
         kind: "kever",
       });
     }
