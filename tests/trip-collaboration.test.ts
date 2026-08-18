@@ -71,10 +71,16 @@ describe("rooms", () => {
   });
 
   it("keeps room grouping on the itinerary the planner already holds", () => {
-    const panel = readFileSync("components/RoomGroupsPanel.tsx", "utf8");
-    assert.match(panel, /itinerary/);
-    assert.match(panel, /onChange/);
-    assert.doesNotMatch(panel, /import \{[^}]*useSyncExternalStore/);
-    assert.doesNotMatch(panel, /localStorage/);
+    // AGAINST THE CODE, NOT THE EXPLANATION. This read the file whole, so the
+    // comment explaining why the panel stopped touching localStorage — three
+    // separate bugs, worth writing down — was itself enough to fail it. A rule
+    // that punishes its own reasoning gets the reasoning deleted, which is the
+    // opposite of what it wants.
+    const source = readFileSync("components/RoomGroupsPanel.tsx", "utf8");
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.match(code, /itinerary/);
+    assert.match(code, /onChange/);
+    assert.doesNotMatch(code, /useSyncExternalStore/);
+    assert.doesNotMatch(code, /localStorage/);
   });
 });

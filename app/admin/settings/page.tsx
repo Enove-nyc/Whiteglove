@@ -88,8 +88,11 @@ export default async function AdminSettingsPage() {
             title="Travel providers"
             detail="Who supplies flights, hotels and cars — and who sees them."
           />
+          {/* The cards live inside "What the site earns" — see lib/admin-nav.ts.
+              Pointed straight at the section rather than at the old address,
+              which only redirects there. */}
           <Card
-            href="/admin/settings/travel-essentials"
+            href="/admin/settings/earnings#travel-essentials"
             title="Travel Essentials"
             detail="Insurance, eSIM, transfers and tours."
             state={stats.configured ? undefined : "Needs the private store"}

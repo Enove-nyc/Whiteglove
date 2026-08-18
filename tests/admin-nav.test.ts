@@ -159,8 +159,27 @@ describe("every static admin page is reachable from nav or a hub", () => {
 
     const excluded = new Set(["/admin/login"]);
 
+    /**
+     * A PAGE THAT ONLY REDIRECTS IS NOT A SCREEN NOBODY CAN REACH.
+     *
+     * This rule exists because a real admin screen with no way in is invisible
+     * work. A file whose whole body is redirect() is the opposite: it is the
+     * kept half of a move, there so an old bookmark or the admin's own history
+     * still lands somewhere right. Listing it in the navigation would be the
+     * actual fault — a menu entry that bounces you somewhere else.
+     *
+     * Read from the source rather than kept as a list here, so the exemption
+     * cannot outlive the redirect it was granted for.
+     */
+    const onlyRedirects = (route: string): boolean => {
+      const file = join(process.cwd(), "app", ...route.split("/").filter(Boolean), "page.tsx");
+      const body = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      return /\bredirect\(/.test(body) && !/return \(/.test(body);
+    };
+
     for (const route of listAdminPageRoutes()) {
       if (excluded.has(route)) continue;
+      if (onlyRedirects(route)) continue;
 
       if (destinations.has(route)) continue;
       if (settingsOverview.has(route) || home.has(route)) continue;
