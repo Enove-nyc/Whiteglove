@@ -43,11 +43,41 @@ describe("the holiday destinations screen exists and is reachable", () => {
     );
   });
 
-  it("says which screen is which, so two lists are not both called Destinations", () => {
+  it("NAMES SAY WHICH IS WHICH — 'Towns' and 'Destinations' did not", () => {
+    // The two lists share exactly one place (Prague) and answer different
+    // questions, but the first names given to the screens could be read either
+    // way, and were. The names now carry the distinction on their own.
     const NAV = readFileSync("lib/admin-nav.ts", "utf8");
-    assert.match(NAV, /href: "\/admin\/destinations",\s*\n\s*label: "Towns"/);
-    assert.match(NAV, /href: "\/admin\/vacation-destinations",\s*\n\s*label: "Destinations"/);
-    assert.match(PAGE, /Towns with kevarim in them are on the/);
+    assert.match(NAV, /href: "\/admin\/destinations",\s*\n\s*label: "Heritage towns"/);
+    assert.match(NAV, /href: "\/admin\/vacation-destinations",\s*\n\s*label: "Vacation destinations"/);
+    assert.match(PAGE, /Vacation destinations/);
+
+    // And each screen points at the other, so neither is a dead end for
+    // somebody who opened the wrong one.
+    const TOWNS = readFileSync("app/admin/destinations/page.tsx", "utf8");
+    assert.match(TOWNS, /href="\/admin\/vacation-destinations"/);
+    assert.match(PAGE, /href="\/admin\/destinations"/);
+  });
+
+  it("can be searched, like the heritage towns screen", () => {
+    // It shipped without one, so the two destination screens behaved
+    // differently for no reason anybody could have guessed.
+    const PICKER = readFileSync("components/VacationDestinationPicker.tsx", "utf8");
+    assert.match(PAGE, /<VacationDestinationPicker/);
+    assert.match(PICKER, /Find a destination/);
+    // Folded, so "Krakow" finds Kraków — nobody types the accent.
+    assert.match(PICKER, /normalize\(query\)/);
+    // Country and towns are searchable too: "Italy" should bring back all of
+    // them, and so should "Bellagio".
+    assert.match(PICKER, /destination\.country/);
+    assert.match(PICKER, /destination\.cities\.join\(" "\)/);
+  });
+
+  it("points across when one place really is on both lists", () => {
+    // Prague, today. Editing it here and wondering why the shomer's number has
+    // not changed is the obvious mistake.
+    assert.match(PAGE, /is on both lists/);
+    assert.match(PAGE, /its Heritage towns page/);
   });
 });
 
