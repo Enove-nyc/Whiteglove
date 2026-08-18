@@ -159,3 +159,33 @@ describe("a destination can carry pictures", () => {
     assert.match(TOWN_ACTIONS, /VACATION_DESTINATIONS_TAG/);
   });
 });
+
+describe("the new table can reach a database that already exists", () => {
+  const UPGRADE = readFileSync("lib/upgrade-sql.ts", "utf8");
+  const INIT = readFileSync("lib/init-sql.ts", "utf8");
+  const SETUP = readFileSync("lib/db-setup.ts", "utf8");
+
+  it("creates the table from the generated script", () => {
+    // Plain CREATE TABLE, not IF NOT EXISTS — the generated script relies on
+    // ensureTables swallowing "already exists", which is how it doubles as the
+    // way a new table reaches a database that was set up before it.
+    assert.match(INIT, /CREATE TABLE "VacationDestination"/);
+    assert.match(SETUP, /already exists/i);
+  });
+
+  it("adds the picture column by ALTER, because Photo already exists", () => {
+    // On an existing database the CREATE TABLE carrying this column is
+    // skipped — the table is already there — so the column has to arrive on
+    // its own or every destination picture fails to save.
+    assert.match(UPGRADE, /ALTER TABLE "Photo" ADD COLUMN IF NOT EXISTS "vacationDestinationId" TEXT;/);
+  });
+
+  it("retries a foreign key that needed a column the upgrade had not added yet", () => {
+    // INIT_SQL ends with the foreign keys and UPGRADE_SQL runs after it, so a
+    // key onto a newly-added column cannot succeed on the first pass. It used
+    // to take the whole setup down rather than just itself.
+    assert.match(SETUP, /const deferred: string\[\] = \[\];/);
+    assert.match(SETUP, /for \(const statement of deferred\) await run\(statement, true\);/);
+    assert.match(INIT, /ADD CONSTRAINT "Photo_vacationDestinationId_fkey"/);
+  });
+});

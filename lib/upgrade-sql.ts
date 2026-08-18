@@ -128,4 +128,11 @@ CREATE TABLE IF NOT EXISTS "ExperienceRating" (
 );
 CREATE INDEX IF NOT EXISTS "ExperienceRating_kind_ref_idx" ON "ExperienceRating"("kind", "ref");
 CREATE INDEX IF NOT EXISTS "ExperienceRating_createdAt_idx" ON "ExperienceRating"("createdAt");
+
+-- Holiday destinations, August 2026. The table itself comes from INIT_SQL,
+-- which creates it on an existing database as easily as on an empty one. This
+-- column cannot: it belongs to "Photo", which already exists, so the CREATE
+-- TABLE carrying it is skipped. Its foreign key is in INIT_SQL and is retried
+-- after this has run — see ensureTables in lib/db-setup.ts.
+ALTER TABLE "Photo" ADD COLUMN IF NOT EXISTS "vacationDestinationId" TEXT;
 `;
