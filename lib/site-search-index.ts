@@ -444,7 +444,9 @@ function pushEateries(docs: DraftDoc[]) {
       title: e.name,
       subtitle: `${e.city} · ${e.country} · ${e.kind}`,
       href: `/kosher#${e.slug}`,
-      names: [e.name, e.city, e.country, e.kind, e.diet, e.slug.replace(/-/g, " "), extraSpellings([e.slug, e.city])].filter(Boolean),
+      names: [e.name, e.city, e.country, e.kind, e.diet, e.slug.replace(/-/g, " "), extraSpellings([e.slug, e.city])].filter(
+        (value): value is string => Boolean(value),
+      ),
       keywords: [
         "kosher",
         "kosher food",
@@ -457,7 +459,10 @@ function pushEateries(docs: DraftDoc[]) {
         "eatery",
         "food",
         e.kind,
-        e.diet,
+        // diet is optional on the directory set — a certifier listing a place
+        // as kosher without saying meat/dairy. Dropped when absent rather than
+        // fed to the index as undefined.
+        ...(e.diet ? [e.diet] : []),
       ],
       body: e.summary,
       city: e.city,
