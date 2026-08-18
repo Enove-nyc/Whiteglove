@@ -98,7 +98,7 @@ describe("a town's listing is reachable from its page", () => {
   });
 
   it("the towns paired by hand actually resolve", () => {
-    for (const slug of ["mikulov", "anipoli", "pinsk", "stropkov", "chernivtsi"]) {
+    for (const slug of ["mikulov", "anipoli", "pinsk", "stropkov", "chernivtsi", "zagarė"]) {
       const record = getDestinationRecord(slug);
       assert.ok(record, `${slug} is not a destination`);
       assert.ok(record.cemeteries.length > 0, `${slug} was paired but resolves to nothing`);

@@ -509,7 +509,7 @@ const guideCemeteries: Cemetery[] = cityGuides
     sourceUrl: guide.sourceUrl,
   }));
 
-export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9, ...bulkCemeteries10, ...bulkCemeteries11, ...bulkCemeteries12, ...bulkCemeteries13, ...bulkCemeteries14, ...bulkCemeteries15, ...bulkCemeteries16, ...bulkCemeteries16b, ...bulkCemeteries17, ...bulkCemeteries18, ...bulkCemeteries19, ...bulkCemeteries20, ...bulkCemeteries21, ...bulkCemeteries22, ...bulkCemeteries23, ...bulkCemeteries24, ...bulkCemeteries25, ...bulkCemeteries26, ...bulkCemeteries27, ...bulkCemeteries28];
+export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9, ...bulkCemeteries10, ...bulkCemeteries11, ...bulkCemeteries12, ...bulkCemeteries13, ...bulkCemeteries14, ...bulkCemeteries15, ...bulkCemeteries16, ...bulkCemeteries16b, ...bulkCemeteries17, ...bulkCemeteries18, ...bulkCemeteries19, ...bulkCemeteries20, ...bulkCemeteries21, ...bulkCemeteries22, ...bulkCemeteries23, ...bulkCemeteries24, ...bulkCemeteries25, ...bulkCemeteries26, ...bulkCemeteries27, ...bulkCemeteries28, ...bulkCemeteries29];
 
 export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
@@ -543,4 +543,5 @@ import { bulkCemeteries25 } from "@/data/cemeteries-bulk-25";
 import { bulkCemeteries26 } from "@/data/cemeteries-bulk-26";
 import { bulkCemeteries27 } from "@/data/cemeteries-bulk-27";
 import { bulkCemeteries28 } from "@/data/cemeteries-bulk-28";
+import { bulkCemeteries29 } from "@/data/cemeteries-bulk-29";
 import type { ContentPlace } from "@/data/practical-content";

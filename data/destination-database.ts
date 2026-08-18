@@ -162,6 +162,10 @@ const SAME_TOWN_OTHER_NAME: Record<string, string> = {
   // own. The Ruzhiner's ohel is there, and the listing is filed under the
   // district while the directory entry is the city that absorbed it.
   chernivtsi: "sadhora-ruzhiner",
+  // The directory slug for Žagarė carries a Lithuanian diacritic, so the
+  // prefix match cannot reach a listing filed under the ASCII spelling. Paired
+  // by hand rather than renaming the town and breaking a live URL.
+  "zagarė": "zagare",
 };
 
 const cemeteriesForTown = (slug: string) => {
