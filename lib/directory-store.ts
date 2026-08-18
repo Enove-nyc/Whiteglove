@@ -53,21 +53,41 @@ export function directoryStoreAvailable() {
   return Boolean(redisConfig());
 }
 
-async function redisGet(): Promise<StoredProvider[]> {
+/**
+ * The listings, AND whether we actually managed to read them.
+ *
+ * THE DISTINCTION IS THE WHOLE POINT, and not having it cost the owner his
+ * entries. Every listing lives in this one key as a single list, so saving one
+ * means reading the whole list, adding to it, and writing the whole thing back.
+ * This read used to return `[]` on any failure — a network blip, a rate limit,
+ * a non-2xx — which is indistinguishable from "there are no listings". The save
+ * then wrote a list of exactly one, and every other listing was gone. Deleting
+ * had the same shape: a failed read wrote an empty list and wiped everything.
+ *
+ * So a failure now says so, and the two write paths refuse to write on one. A
+ * save that does not happen is an error message; a save that happens against a
+ * list we could not read is silent data loss.
+ */
+type Reading = { ok: boolean; items: StoredProvider[] };
+
+async function redisRead(): Promise<Reading> {
   const config = redisConfig();
-  if (!config) return [];
+  if (!config) return { ok: false, items: [] };
   try {
     const res = await fetch(`${config.url}/get/${encodeURIComponent(KEY)}`, {
       headers: { Authorization: `Bearer ${config.token}` },
       cache: "no-store",
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { ok: false, items: [] };
     const raw = ((await res.json()) as { result?: string }).result;
-    if (!raw) return [];
+    // No key yet is a real, successful read of an empty list — that is how the
+    // very first listing ever gets saved.
+    if (!raw) return { ok: true, items: [] };
     const parsed = JSON.parse(raw) as StoredProvider[];
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return { ok: false, items: [] };
+    return { ok: true, items: parsed };
   } catch {
-    return [];
+    return { ok: false, items: [] };
   }
 }
 
@@ -87,8 +107,15 @@ async function redisSet(items: StoredProvider[]): Promise<boolean> {
   }
 }
 
+/**
+ * The listings, for anybody showing them.
+ *
+ * A failed read is an empty list here, which is right for a page: showing
+ * nothing for a moment is better than an error. Anything that WRITES must use
+ * redisRead directly and check `ok` — see the note on it.
+ */
 export async function listStoredProviders(): Promise<StoredProvider[]> {
-  return redisGet();
+  return (await redisRead()).items;
 }
 
 const CATEGORIES = new Set(["TOUR_OPERATOR", "VACATION_PLANNER", "TRAVEL_AGENCY", "GUIDE_DRIVER"]);
@@ -98,7 +125,10 @@ export async function saveStoredProvider(input: Partial<StoredProvider> & { name
   if (!directoryStoreAvailable()) return null;
   const name = clean(input.name, 160);
   if (!name) return null;
-  const items = await listStoredProviders();
+  // Read strictly: writing a whole list we could not read would erase it.
+  const reading = await redisRead();
+  if (!reading.ok) return null;
+  const items = reading.items;
   const category = (CATEGORIES.has(String(input.category)) ? input.category : "TOUR_OPERATOR") as StoredProvider["category"];
   const base: StoredProvider = {
     id: clean(input.id, 60) || `dir-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -132,6 +162,9 @@ export async function saveStoredProvider(input: Partial<StoredProvider> & { name
 
 export async function deleteStoredProvider(id: string): Promise<boolean> {
   if (!directoryStoreAvailable()) return false;
-  const items = await listStoredProviders();
-  return redisSet(items.filter((p) => p.id !== id));
+  // Same rule as saving, and it mattered more here: a failed read used to make
+  // this write an empty list, so deleting one listing deleted all of them.
+  const reading = await redisRead();
+  if (!reading.ok) return false;
+  return redisSet(reading.items.filter((p) => p.id !== id));
 }

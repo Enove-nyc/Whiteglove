@@ -26,6 +26,7 @@ export const MAP_STYLE: Record<MapKind, { color: string; label: string; /** Pin 
   attraction: { color: "#8e2c11", label: "Things to do", size: 36 },
   stay: { color: "#0d4c5e", label: "Places to stay", size: 36 },
   kosher: { color: "#125c37", label: "Kosher food", size: 34 },
+  shul: { color: "#7a1f4b", label: "Shuls", size: 36 },
   airport: { color: "#4c2a7d", label: "Airports", size: 34 },
 };
 
@@ -103,4 +104,4 @@ export function markPinFor(kind: MapKind, zoom = 11): GlovePin {
 }
 
 /** The kinds a visitor can switch on and off, in the order they are offered. */
-export const TOGGLEABLE_KINDS: MapKind[] = ["kever", "attraction", "stay", "kosher", "airport"];
+export const TOGGLEABLE_KINDS: MapKind[] = ["kever", "attraction", "stay", "kosher", "shul", "airport"];

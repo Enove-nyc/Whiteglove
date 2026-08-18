@@ -8,7 +8,7 @@ import { coordinatesToPoint } from "@/data/route-utils";
  * has to look to show them all.
  */
 
-export type MapKind = "center" | "kever" | "attraction" | "stay" | "kosher" | "airport";
+export type MapKind = "center" | "kever" | "attraction" | "stay" | "kosher" | "shul" | "airport";
 
 export type MapMarker = {
   id: string;
@@ -63,7 +63,7 @@ export function withinArea(markers: MapMarker[], center: Point | null, radiusKm:
 }
 
 export function countByKind(markers: MapMarker[]): Record<MapKind, number> {
-  const counts: Record<MapKind, number> = { center: 0, kever: 0, attraction: 0, stay: 0, kosher: 0, airport: 0 };
+  const counts: Record<MapKind, number> = { center: 0, kever: 0, attraction: 0, stay: 0, kosher: 0, shul: 0, airport: 0 };
   for (const marker of markers) counts[marker.kind] += 1;
   return counts;
 }
