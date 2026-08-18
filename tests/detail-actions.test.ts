@@ -104,8 +104,11 @@ describe("adding a stop reads the trip from the account, never from the browser"
     }
   });
 
-  it("the attraction cards on a destination page carry the button", () => {
-    const page = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
-    assert.match(page, /<AddToItineraryButton[\s>]/);
+  it("every attraction card carries the button, not only the destination page", () => {
+    // Both surfaces show the same places. Offering the trip on one and only
+    // the route on the other is the gap this closes.
+    for (const file of ["app/destinations/[destination]/page.tsx", "components/AttractionDirectory.tsx"]) {
+      assert.match(readFileSync(file, "utf8"), /<AddToItineraryButton[\s>]/, `${file} offers the route and not the trip`);
+    }
   });
 });
