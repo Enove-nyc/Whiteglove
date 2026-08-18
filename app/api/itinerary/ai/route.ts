@@ -116,8 +116,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ available: true, text, sources: citedSources(text, sources) });
   };
 
-  try {
-    if (geminiKey) {
+  /**
+   * A 503 FROM GEMINI IS "TRY AGAIN", AND WE WERE TREATING IT AS "GIVE UP".
+   *
+   * Measured against production: the assistant answered one call in six, and
+   * every failure logged `[assistant] gemini 503` — the model overloaded, which
+   * is transient by definition and says nothing about the question, the key or
+   * the quota. The route asked once and returned "could not answer that just
+   * now", so a feature promoted on the front page was dark five times in six
+   * for a reason that clears on its own in a second.
+   *
+   * WORSE: THE FALLBACK COULD NEVER RUN. The Anthropic call below used to sit
+   * after `if (geminiKey) { … return … }`, so it was reachable only on a
+   * deployment with NO Gemini key. Configure both, as production does, and the
+   * second provider became unreachable code — bought, configured, and never
+   * once asked.
+   *
+   * So: retry the statuses that mean "ask again" (429 and the 5xx family),
+   * briefly, then fall through to the other provider. A permanent refusal —
+   * 400, 401, 403 — is not retried, because asking twice with a bad key is
+   * just a slower failure.
+   */
+  const TRANSIENT = new Set([429, 500, 502, 503, 504]);
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  async function askGemini(): Promise<string | null> {
+    if (!geminiKey) return null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt) await sleep(attempt * 400);
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(geminiKey)}`,
         {
@@ -134,29 +160,49 @@ export async function POST(request: NextRequest) {
       );
       if (!res.ok) {
         const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        console.warn("[assistant] gemini", res.status, reason?.error?.message ?? "");
-        return NextResponse.json({ available: false, reason: "The assistant could not answer that just now. Please try again." });
+        console.warn("[assistant] gemini", res.status, `attempt ${attempt + 1}`, reason?.error?.message ?? "");
+        if (TRANSIENT.has(res.status)) continue;
+        return null;
       }
       const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
       const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text).filter(Boolean).join("\n").trim();
-      if (!text) return NextResponse.json({ available: false, reason: "The AI returned an empty response — try rephrasing." });
-      return answered(text);
+      if (text) return text;
+      // An empty candidate is not worth a second ask; the other provider might
+      // still have something to say.
+      return null;
     }
+    return null;
+  }
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": anthropicKey as string, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      // Matches the Gemini budget so a multi-part answer isn't cut off mid-list.
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1200, system: SYSTEM, messages: [{ role: "user", content: userMessage }] }),
-    });
-    if (!res.ok) {
-      const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-      console.warn("[assistant] anthropic", res.status, reason?.error?.message ?? "");
+  async function askAnthropic(): Promise<string | null> {
+    if (!anthropicKey) return null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt) await sleep(400);
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": anthropicKey as string, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        // Matches the Gemini budget so a multi-part answer isn't cut off mid-list.
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1200, system: SYSTEM, messages: [{ role: "user", content: userMessage }] }),
+      });
+      if (!res.ok) {
+        const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        console.warn("[assistant] anthropic", res.status, `attempt ${attempt + 1}`, reason?.error?.message ?? "");
+        if (TRANSIENT.has(res.status)) continue;
+        return null;
+      }
+      const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
+      const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
+      if (text) return text;
+      return null;
+    }
+    return null;
+  }
+
+  try {
+    const text = (await askGemini()) ?? (await askAnthropic());
+    if (!text) {
       return NextResponse.json({ available: false, reason: "The assistant could not answer that just now. Please try again." });
     }
-    const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
-    const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
-    if (!text) return NextResponse.json({ available: false, reason: "The AI returned an empty response — try rephrasing." });
     return answered(text);
   } catch {
     return NextResponse.json({ available: false, reason: "Could not reach the AI service." });
