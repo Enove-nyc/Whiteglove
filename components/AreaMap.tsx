@@ -74,7 +74,7 @@ export default function AreaMap({
   const [engine, setEngine] = useState<"deciding" | "google" | "osm">("deciding");
   const [zoom, setZoom] = useState(11);
   const [shown, setShown] = useState<Record<MapKind, boolean>>({
-    center: true, kever: true, attraction: true, stay: true, kosher: true, airport: true,
+    center: true, kever: true, attraction: true, stay: true, kosher: true, shul: true, airport: true,
   });
 
   const kosherMarkers = useMemo<MapMarker[]>(() => {
