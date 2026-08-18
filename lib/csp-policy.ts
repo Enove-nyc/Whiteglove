@@ -59,6 +59,25 @@ const TRAVELPAYOUTS = [
   "https://*.localrent.com",
 ];
 
+/**
+ * What the Report-Only pass caught the Travelpayouts widget actually doing.
+ *
+ * These were not in the source and could only be watched: the Emerald
+ * verification snippet (emrldco.com) phones home with a background request,
+ * the Aviasales flight widget reports its own errors to Sentry (sentry.avs.io)
+ * and carries Google's ad network with it (doubleclick, googlesyndication).
+ * None of it is White Glove's — it is the partner's widget behaviour, and it
+ * is allowed so that switching the policy to enforcing does not break the
+ * search the widget is there to provide. It rides only on the booking flow;
+ * nothing on the rest of the site calls these.
+ */
+const WIDGET_RUNTIME = [
+  "https://emrldco.com",
+  "https://sentry.avs.io",
+  "https://*.doubleclick.net",
+  "https://*.googlesyndication.com",
+];
+
 const DUFFEL_CARD = [
   "https://api.duffel.com",
   "https://api.duffel.cards",
@@ -96,7 +115,10 @@ export function contentSecurityPolicy(reportPath: string): string {
       ...GOOGLE_STATIC,
       ...DUFFEL_CARD,
     ]),
-    "style-src": ["'self'", "'unsafe-inline'"],
+    // A third-party component — the card form or the widget — pulls a Google
+    // Fonts stylesheet (reported as style-src-elem). The font files it names
+    // live on fonts.gstatic.com, allowed under font-src below.
+    "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     "img-src": dedupe([
       "'self'",
       "data:",
@@ -107,13 +129,14 @@ export function contentSecurityPolicy(reportPath: string): string {
       ...TRAVELPAYOUTS,
       "https://api.mapbox.com",
     ]),
-    "font-src": ["'self'", "data:"],
+    "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
     "connect-src": dedupe([
       "'self'",
       "https://photon.komoot.io",
       "https://maps.googleapis.com",
       ...GOOGLE_STATIC,
       ...TRAVELPAYOUTS,
+      ...WIDGET_RUNTIME,
       ...DUFFEL_CARD,
     ]),
     "frame-src": dedupe([
