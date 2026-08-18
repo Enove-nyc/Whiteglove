@@ -158,7 +158,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox security csp content policy report only block allow load rule",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "Words", blurb: "Headline, contact line and footer." },
@@ -169,6 +169,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/team", label: "Team", blurb: "Who else can get in." },
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
+      { href: "/admin/settings/security", label: "Security policy", blurb: "What the load rule would block." },
       { href: "/admin/settings/trello", label: "Trello", blurb: "Pictures, listings and reports." },
       { href: "/admin/accounts", label: "Users", blurb: "People who signed up." },
       { href: "/admin/messages", label: "Messages", blurb: "What people wrote from the site." },
