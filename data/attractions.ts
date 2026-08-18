@@ -10,8 +10,12 @@
 //   1. Where it sits relative to the kosher part of town. A museum twenty
 //      minutes' walk from the only kosher restaurant is a different plan from
 //      one across the city, and that is the fact a guidebook never gives you.
-//   2. What it does on Shabbos and yom tov, and whether it can be done at all
-//      without carrying, driving or handling money.
+//   2. (There used to be a second: what it does on Shabbos and yom tov. It is
+//      gone at the owner's word — people are not visiting attractions on
+//      Shabbos, they are with their families, and anybody who does mean to go
+//      will check for themselves rather than trust a line written here a year
+//      ago. Proximity to the kosher part of town is the whole differentiator
+//      now, and it is the stronger of the two anyway.)
 //
 // COORDINATES here are the real thing and are safe to navigate to — these are
 // public landmarks with published locations, not graves. That is the opposite
@@ -79,8 +83,6 @@ export type Attraction = {
   internalHref?: string;
   /** Practical notes, kosher-travel first. */
   notes?: string[];
-  /** How it sits with Shabbos and yom tov, when that is worth saying. */
-  shabbos?: string;
   sourceUrl: string;
 };
 
@@ -101,7 +103,6 @@ export const attractions: Attraction[] = [
       "About 2.5 km from the Jewish quarter by the Portico d'Ottavia, which is a comfortable walk or one bus.",
       "Timed entry, booked online. It sells out in season; this is the one thing in Rome worth booking before you fly.",
     ],
-    shabbos: "Open on Shabbos, but it is ticketed and the ticket is scanned — not something to plan for Shabbos itself.",
     sourceUrl: "https://en.wikipedia.org/wiki/Colosseum",
   },
   {
@@ -119,7 +120,6 @@ export const attractions: Attraction[] = [
       "The Great Synagogue can only be entered on a museum ticket and with security checks; bring passports.",
       "The Portico d'Ottavia ruins are in the middle of the quarter, so the sightseeing and the eating are the same few streets.",
     ],
-    shabbos: "The museum and synagogue tours are closed on Shabbos and yom tov. The quarter itself is where you will be anyway.",
     sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Rome",
   },
   {
@@ -137,7 +137,6 @@ export const attractions: Attraction[] = [
       "About 600 metres from the Portico d'Ottavia, so it is a walk from lunch rather than an expedition.",
       "The same timed ticket as the Colosseum and the Palatine, booked once for all three.",
     ],
-    shabbos: "Ticketed and scanned, so not one for Shabbos itself.",
     sourceUrl: "https://en.wikipedia.org/wiki/Roman_Forum",
   },
   {
@@ -152,7 +151,6 @@ export const attractions: Attraction[] = [
       "Under a kilometre from the Jewish quarter, and open ground rather than a ticket — one of the few sights in Rome that costs nothing and needs no plan.",
       "The square is closed to traffic, so it is somewhere a pushchair and small children can be let loose.",
     ],
-    shabbos: "Open air and free to walk into, which makes it one of the better Shabbos afternoon walks from the Ghetto.",
     sourceUrl: "https://en.wikipedia.org/wiki/Piazza_Navona",
   },
   {
@@ -167,7 +165,6 @@ export const attractions: Attraction[] = [
       "About 1.6 km from the Jewish quarter along the river, and the bridge in front of it is worth the walk on its own.",
       "The climb to the terrace is a spiral ramp rather than stairs for most of the way, which is easier with children than it looks.",
     ],
-    shabbos: "Ticketed. The bridge and the riverside outside it are not.",
     sourceUrl: "https://en.wikipedia.org/wiki/Castel_Sant%27Angelo",
   },
   {
@@ -183,7 +180,6 @@ export const attractions: Attraction[] = [
       "The park itself is free and open; the Galleria Borghese inside it is a separate timed ticket that sells out well ahead.",
       "Rowing boats on the lake, and bicycles for hire at the gates, which makes this the easiest afternoon in Rome with children.",
     ],
-    shabbos: "Open parkland with no gate and no ticket, so it works on Shabbos — though it is a walk of some distance from the kosher restaurants.",
     sourceUrl: "https://en.wikipedia.org/wiki/Villa_Borghese_gardens",
   },
   {
@@ -200,7 +196,6 @@ export const attractions: Attraction[] = [
       "Inside Villa Borghese, so it pairs with the park rather than competing with it.",
       "About 2.9 km from the Jewish quarter.",
     ],
-    shabbos: "Ticketed and gated.",
     sourceUrl: "https://en.wikipedia.org/wiki/Bioparco_di_Roma",
   },
   {
@@ -215,7 +210,6 @@ export const attractions: Attraction[] = [
       "About 1.4 km from the Jewish quarter, over the river and up — the climb is the whole cost of it.",
       "Free, unfenced and open at any hour, which is unusual for a view of this kind.",
     ],
-    shabbos: "Nothing to pay and nothing to carry, so it is one of the few real Shabbos walks in Rome with something at the end.",
     sourceUrl: "https://en.wikipedia.org/wiki/Janiculum",
   },
   {
@@ -232,7 +226,6 @@ export const attractions: Attraction[] = [
       "Sundays the road is closed to traffic, which is the day to walk or cycle it.",
       "The Jewish catacombs in this area are not open to casual visitors and are not what this listing is about — the road, the aqueducts and the fields are.",
     ],
-    shabbos: "Open country with no gate, but too far from the kehilla to reach on foot.",
     sourceUrl: "https://en.wikipedia.org/wiki/Appian_Way_Regional_Park",
   },
   {
@@ -249,7 +242,6 @@ export const attractions: Attraction[] = [
       "About 22 km from the Jewish quarter, reached by train from Piramide in around half an hour.",
       "A large open site with little shade; it is a morning in summer, not an afternoon.",
     ],
-    shabbos: "Ticketed, and a train journey away.",
     sourceUrl: "https://en.wikipedia.org/wiki/Ostia_Antica_(archaeological_site)",
   },
   {
@@ -283,7 +275,6 @@ export const attractions: Attraction[] = [
       "The tallest buildings in Venice are here, because the community could build up and not out.",
       "Kosher food in Venice is limited and often needs ordering ahead. Do not arrive on a Friday assuming you will find something.",
     ],
-    shabbos: "Museum and tours closed Shabbos and yom tov. Venice is a walking city, so a Shabbos here works well once food is arranged.",
     sourceUrl: "https://en.wikipedia.org/wiki/Venetian_Ghetto",
   },
   {
@@ -315,7 +306,6 @@ export const attractions: Attraction[] = [
       "Ten minutes' walk from the Duomo, so it fits into a normal Florence day rather than needing one of its own.",
       "Security at the door; bring passports.",
     ],
-    shabbos: "Museum closed Shabbos and yom tov; there are minyanim.",
     sourceUrl: "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
   },
   {
@@ -398,7 +388,6 @@ export const attractions: Attraction[] = [
       "The Agudath Hakehilot shul on rue Pavée was built by Hector Guimard, who designed the Métro entrances, and is a listed building.",
       "The Shoah Memorial with its Wall of Names is a few minutes away on rue Geoffroy-l'Asnier.",
     ],
-    shabbos: "The whole quarter is walkable, which is why people stay here for Shabbos rather than near the sights.",
     sourceUrl: "https://en.wikipedia.org/wiki/Marais",
   },
   {
@@ -527,7 +516,6 @@ export const attractions: Attraction[] = [
       "Zurich is the practical base for a Swiss trip: the kosher shops and restaurants are around Wiedikon, roughly 2 km from the old town, and the mountains are all day trips from here.",
       "Swiss Travel Pass or a regional pass usually beats buying tickets one at a time once you are doing day trips.",
     ],
-    shabbos: "Wiedikon is where to stay for Shabbos — the shuls, the food and the eruv are there, not in the old town.",
     sourceUrl: "https://en.wikipedia.org/wiki/Z%C3%BCrich",
   },
   {
@@ -863,7 +851,6 @@ export const attractions: Attraction[] = [
       "Both were taken as churches after 1492 and neither is a working shul. That is the history rather than a complaint, but people arrive expecting to daven and cannot.",
       "About an hour from Madrid by fast train, so it is a day trip from a Madrid base.",
     ],
-    shabbos: "Museum closed Shabbos. There is no kosher food in Toledo; bring the day's food from Madrid.",
     sourceUrl: "https://en.wikipedia.org/wiki/Synagogue_of_El_Transito",
   },
   {
@@ -1063,7 +1050,6 @@ export const attractions: Attraction[] = [
       "The memorial is a concrete room turned inside out — the books face outward and the door does not open. Beneath it are the foundations of the shul destroyed in the Wiener Gesera of 1420-21, reached through the museum.",
       "Vienna has a working kehilla with kosher food, largely in the 2nd district across the canal.",
     ],
-    shabbos: "Museum closed Shabbos; the square and the memorial are open air and always there.",
     sourceUrl: "https://en.wikipedia.org/wiki/Judenplatz_Holocaust_Memorial",
   },
   {
@@ -1115,7 +1101,6 @@ export const attractions: Attraction[] = [
       "The tunnel tour walks the full length of the wall underground and reaches the closest accessible point to the site of the Kodesh HaKodashim. Narrow and stepped in places.",
       "Separate men's and women's sections at the wall itself, as always.",
     ],
-    shabbos: "The Kosel is at its fullest on Friday night and it is worth being there for it. The tunnel tours do not run on Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Western_Wall_Tunnel",
   },
   {
@@ -1209,7 +1194,6 @@ export const attractions: Attraction[] = [
       "Half an hour's walk from the beis hachaim with the Maharam and the Rosh — most people do both in one morning.",
       "UNESCO listed in 2021 as one of the ShUM sites, with Speyer and Mainz.",
     ],
-    shabbos: "It is a working shul; the museum side closes. Ask the Jewish community office about davening rather than arriving expecting a minyan.",
     sourceUrl: "https://en.wikipedia.org/wiki/Worms_Synagogue",
   },
   {
@@ -1246,7 +1230,6 @@ export const attractions: Attraction[] = [
       "The building takes time — the voids and the Garden of Exile are not exhibits you walk past.",
       "Older children take it well; the Holocaust rooms are handled with restraint but they are there.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Jewish_Museum_Berlin",
   },
   {
@@ -1264,7 +1247,6 @@ export const attractions: Attraction[] = [
       "A kohen should ask his rov before going. It is a question at every camp site, and it is not the same answer everywhere.",
       "Not for young children.",
     ],
-    shabbos: "Free to enter, but it is not a place to be on Shabbos, and the journey is not one you would make.",
     sourceUrl: "https://en.wikipedia.org/wiki/Dachau_concentration_camp",
   },
   {
@@ -1280,7 +1262,6 @@ export const attractions: Attraction[] = [
       "Free, open, always there. Fifteen minutes unless you walk on to the Reichstag or the Holocaust memorial, both a few minutes away.",
       "The Memorial to the Murdered Jews of Europe is one block south — 2,711 concrete slabs you walk into rather than look at.",
     ],
-    shabbos: "An open square, free to walk through. Whether you can carry there depends on the Berlin eruv — ask the kehilla.",
     sourceUrl: "https://en.wikipedia.org/wiki/Brandenburg_Gate",
   },
   {
@@ -1298,7 +1279,6 @@ export const attractions: Attraction[] = [
       "Parts of the Pergamon Museum have been closed for a long renovation. Check what is actually open before you plan the day around it.",
       "A day pass covers all five. Two of them is honestly enough.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Museum_Island",
   },
   {
@@ -1317,7 +1297,6 @@ export const attractions: Attraction[] = [
       "The view of the castle from the Marienbrücke is the picture — and it costs nothing.",
       "Two hours from Munich by car; the kosher food is all in Munich.",
     ],
-    shabbos: "Timed ticket, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Neuschwanstein_Castle",
   },
   {
@@ -1335,7 +1314,6 @@ export const attractions: Attraction[] = [
       "Nothing kosher on the mountain. Bring food up; the nearest kosher kitchen is Munich, an hour and a half away.",
       "The Eibsee at the foot is a short flat walk and free, if the cable car is fogged in.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Zugspitze",
   },
   {
@@ -1353,7 +1331,6 @@ export const attractions: Attraction[] = [
       "The old town below is free to walk, and is most of what people remember.",
       "An hour from Worms and Speyer — it sits naturally in a ShUM trip.",
     ],
-    shabbos: "Ticketed, though the old town and the riverside walk cost nothing.",
     sourceUrl: "https://en.wikipedia.org/wiki/Heidelberg_Castle",
   },
   {
@@ -1371,7 +1348,6 @@ export const attractions: Attraction[] = [
       "Three hours goes quickly. There is a working airport, and day turns to night every fifteen minutes.",
       "Genuinely for adults as well; nobody has to pretend for the children's sake.",
     ],
-    shabbos: "Timed ticket, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Miniatur_Wunderland",
   },
   {
@@ -1388,7 +1364,6 @@ export const attractions: Attraction[] = [
       "There was a kehilla here from the 12th century; the Maharam of Rothenburg led it until his imprisonment in 1286.",
       "Two hours from Munich, and it fills a half day rather than a whole one.",
     ],
-    shabbos: "An open town — nothing to pay to walk it. Carrying depends on there being an eruv, and there is no kehilla here now.",
     sourceUrl: "https://en.wikipedia.org/wiki/Rothenburg_ob_der_Tauber",
   },
 
@@ -1409,7 +1384,6 @@ export const attractions: Attraction[] = [
       "The Ets Haim library beside it is the oldest working Jewish library in the world.",
       "One ticket covers the Esnoga, the Jewish Museum, the Hollandsche Schouwburg and the National Holocaust Museum — they are all within a few streets.",
     ],
-    shabbos: "It is a working shul on Shabbos; the visitor side is closed. Come to daven, not to tour.",
     sourceUrl: "https://en.wikipedia.org/wiki/Portuguese_Synagogue_(Amsterdam)",
   },
   {
@@ -1426,7 +1400,6 @@ export const attractions: Attraction[] = [
       "The children's museum inside is one of the few anywhere built for Jewish children rather than about them.",
       "Part of the Jewish Cultural Quarter — the same ticket as the Esnoga, opposite it across the square.",
     ],
-    shabbos: "Closed on Shabbos and yomim tovim.",
     sourceUrl: "https://en.wikipedia.org/wiki/Joods_Historisch_Museum",
   },
   {
@@ -1444,7 +1417,6 @@ export const attractions: Attraction[] = [
       "The rooms are empty — Otto Frank asked that they stay that way. It is a harder visit for it, not an easier one.",
       "Narrow steep stairs, and no lift into the annexe itself.",
     ],
-    shabbos: "Timed ticket bought in advance, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Anne_Frank_House",
   },
   {
@@ -1462,7 +1434,6 @@ export const attractions: Attraction[] = [
       "Two hours in the Gallery of Honour covers what most people came for.",
       "The passage under the building is a public cycle tunnel and free — worth walking through even without a ticket.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Rijksmuseum",
   },
   {
@@ -1480,7 +1451,6 @@ export const attractions: Attraction[] = [
       "Often falls over Pesach, which is exactly when families are travelling — check the dates against the yom tov calendar early.",
       "Flat, pushchair-friendly, and about three hours.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Keukenhof",
   },
   {
@@ -1498,7 +1468,6 @@ export const attractions: Attraction[] = [
       "Easy on the train from Amsterdam Centraal, then a fifteen-minute walk.",
       "Half a day, and good with small children — flat paths, animals, room to run.",
     ],
-    shabbos: "The village is open and free to walk through; the mills and shops are not.",
     sourceUrl: "https://en.wikipedia.org/wiki/Zaanse_Schans",
   },
   {
@@ -1516,7 +1485,6 @@ export const attractions: Attraction[] = [
       "Quieter and more striking than Zaanse Schans, but further out — near Rotterdam rather than Amsterdam.",
       "Flat and open. Wind off the water; dress for it.",
     ],
-    shabbos: "The dyke path is free and open.",
     sourceUrl: "https://en.wikipedia.org/wiki/Kinderdijk_windmills",
   },
 
@@ -1537,7 +1505,6 @@ export const attractions: Attraction[] = [
       "This is a neighbourhood people live in, not a site. Walk it; do not photograph people.",
       "Coordinates deliberately not given for a quarter rather than a building — head for Antwerp Centraal and walk.",
     ],
-    shabbos: "The one place in Belgium where Shabbos looks like Shabbos. Shuls, an eruv and a community — ask locally before relying on any of it.",
     sourceUrl: "https://en.wikipedia.org/wiki/Antwerp_diamond_district",
   },
   {
@@ -1556,7 +1523,6 @@ export const attractions: Attraction[] = [
       "Halfway between Brussels and Antwerp, twenty minutes by train from either.",
       "Under half of one per cent of those sent from here survived.",
     ],
-    shabbos: "Ticketed, and closed on some days — check before travelling.",
     sourceUrl: "https://en.wikipedia.org/wiki/Kazerne_Dossin",
   },
   {
@@ -1572,7 +1538,6 @@ export const attractions: Attraction[] = [
       "Free and open at all hours. Best early, before the crowds and while the light is low on the gold.",
       "Twenty minutes on foot from Brussels Central. The kosher food is not here — it is out in Anderlecht and around Avenue Louise.",
     ],
-    shabbos: "An open square, free to walk through.",
     sourceUrl: "https://en.wikipedia.org/wiki/Grand-Place",
   },
   {
@@ -1590,7 +1555,6 @@ export const attractions: Attraction[] = [
       "The view from the top sphere is the point; the exhibitions in the others are thin.",
       "Metro to Heysel, then a short walk. Out of the centre — half a day with the journey.",
     ],
-    shabbos: "Ticketed, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Atomium",
   },
   {
@@ -1607,7 +1571,6 @@ export const attractions: Attraction[] = [
       "An hour from Brussels by train, and it works as a day out from either Brussels or Antwerp.",
       "No kosher food in Bruges. Come from Antwerp with lunch.",
     ],
-    shabbos: "An open town, free to walk. There is no kehilla here — nothing local to rely on.",
     sourceUrl: "https://en.wikipedia.org/wiki/Markt,_Bruges",
   },
 
@@ -1628,7 +1591,6 @@ export const attractions: Attraction[] = [
       "The Maharal's kever is in the Old Jewish Cemetery a few streets away, and is the reason many people come to Prague at all.",
       "The other Josefov shuls — Pinkas, Klausen, Maisel, Spanish — are a separate ticket run by the Jewish Museum.",
     ],
-    shabbos: "Working shul on Shabbos; the visitor ticket does not apply. Ask the kehilla about times.",
     sourceUrl: "https://en.wikipedia.org/wiki/Old_New_Synagogue",
   },
   {
@@ -1648,7 +1610,6 @@ export const attractions: Attraction[] = [
       "A kohen should ask his rov before going.",
       "An hour north of Prague. Buses run from Nádraží Holešovice.",
     ],
-    shabbos: "Ticketed, and an hour out of Prague — not a Shabbos visit.",
     sourceUrl: "https://en.wikipedia.org/wiki/Theresienstadt_Ghetto",
   },
   {
@@ -1664,7 +1625,6 @@ export const attractions: Attraction[] = [
       "Free and always open. Before seven in the morning it is empty; by ten it is a crowd.",
       "One thing to know before you stand there: the gilded Hebrew letters around the crucifix at the centre were paid for in 1696 by a fine imposed on a Jew accused of blaspheming it. A plaque in Czech, English and Hebrew was added in 2000 explaining that the words were placed there as a humiliation. Many people cross the bridge and do not stop at that statue.",
     ],
-    shabbos: "Open and free. Carrying depends on the Prague eruv — ask the kehilla in Josefov, five minutes away.",
     sourceUrl: "https://en.wikipedia.org/wiki/Charles_Bridge",
   },
   {
@@ -1680,7 +1640,6 @@ export const attractions: Attraction[] = [
       "The apostles come out on the hour. It lasts under a minute and the square is full for it; the clock face itself is the interesting part.",
       "Five minutes' walk from Josefov and the kosher restaurants.",
     ],
-    shabbos: "An open square, free to stand in.",
     sourceUrl: "https://en.wikipedia.org/wiki/Prague_astronomical_clock",
   },
   {
@@ -1698,7 +1657,6 @@ export const attractions: Attraction[] = [
       "Walk up through Malá Strana rather than taking the tram — the climb is the good part.",
       "Golden Lane, the row of tiny houses along the wall, is inside the paid circuit.",
     ],
-    shabbos: "The grounds are open and free; the ticketed buildings are not.",
     sourceUrl: "https://en.wikipedia.org/wiki/Prague_Castle",
   },
   {
@@ -1716,7 +1674,6 @@ export const attractions: Attraction[] = [
       "Two hours from Prague. A full day, and a real walk rather than a stroll.",
       "Nothing kosher anywhere near. Carry the day's food.",
     ],
-    shabbos: "There is a small entry fee at the arch itself, and it is a two-hour drive out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Prav%C4%8Dick%C3%A1_br%C3%A1na",
   },
   {
@@ -1734,7 +1691,6 @@ export const attractions: Attraction[] = [
       "Nearly three hours from Prague — worth a night rather than a day trip if you are going at all.",
       "The castle tower is a hard climb with a small view; the bridge over the river gives the picture for nothing.",
     ],
-    shabbos: "The town is open and free. No kehilla and no kosher food.",
     sourceUrl: "https://whc.unesco.org/en/list/617/",
   },
 
@@ -1756,7 +1712,6 @@ export const attractions: Attraction[] = [
       "The Hungarian Jewish Museum stands on the site of the house where Herzl was born, next door.",
       "In the heart of the old Jewish quarter of Pest, where Budapest's kosher food still is.",
     ],
-    shabbos: "It is a working shul. The visitor ticket does not run on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Doh%C3%A1ny_Street_Synagogue",
   },
   {
@@ -1774,7 +1729,6 @@ export const attractions: Attraction[] = [
       "Free, open, on the riverbank three hundred metres south of the Parliament.",
       "Ten minutes' walk from the Dohány shul across the Pest side.",
     ],
-    shabbos: "Open and free at all hours.",
     sourceUrl: "https://en.wikipedia.org/wiki/Shoes_on_the_Danube_Bank",
   },
   {
@@ -1791,7 +1745,6 @@ export const attractions: Attraction[] = [
       "Best at dusk when the Parliament lights up across the water.",
       "The funicular up from the Chain Bridge saves the hill and is worth it with children.",
     ],
-    shabbos: "The lower terraces are open and free.",
     sourceUrl: "https://en.wikipedia.org/wiki/Fisherman%27s_Bastion",
   },
   {
@@ -1809,7 +1762,6 @@ export const attractions: Attraction[] = [
       "The best view is from the Buda side — from Fisherman's Bastion or the riverbank.",
       "The shoes memorial is a few minutes south along the same embankment.",
     ],
-    shabbos: "Timed ticket for the interior; the square and the riverbank are open.",
     sourceUrl: "https://en.wikipedia.org/wiki/Hungarian_Parliament_Building",
   },
   {
@@ -1827,7 +1779,6 @@ export const attractions: Attraction[] = [
       "Walk on from the Margaret Bridge; trams stop at both ends.",
       "Note that the island's thermal baths are mixed bathing. The park is the reason to come; the baths are not part of it.",
     ],
-    shabbos: "An open park, free, and walkable from the Pest side. Carrying depends on the Budapest eruv — ask the kehilla.",
     sourceUrl: "https://en.wikipedia.org/wiki/Margaret_Island",
   },
   {
@@ -1845,7 +1796,6 @@ export const attractions: Attraction[] = [
       "It treated wounded through the siege of Budapest in 1945, when the city above was being fought street by street.",
       "Older children find it gripping; the wax figures unsettle small ones.",
     ],
-    shabbos: "Ticketed guided tour, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Hospital_in_the_Rock",
   },
 
@@ -1870,7 +1820,6 @@ export const attractions: Attraction[] = [
       "It stands opposite the Ghetto Heroes monument, on what was the middle of the ghetto.",
       "Allow three hours. There is more here than a morning holds.",
     ],
-    shabbos: "Closed on Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/POLIN_Museum_of_the_History_of_Polish_Jews",
   },
   {
@@ -1890,7 +1839,6 @@ export const attractions: Attraction[] = [
       "Six hours including the drive from Kraków. Not for young children.",
       "Take food and water. There is nothing kosher within an hour.",
     ],
-    shabbos: "Not a Shabbos visit under any circumstances.",
     sourceUrl: "https://en.wikipedia.org/wiki/Auschwitz-Birkenau_State_Museum",
   },
   {
@@ -1909,7 +1857,6 @@ export const attractions: Attraction[] = [
       "This is where a Kraków trip is based: the kosher food, the shuls and the walk to everything are all here.",
       "Ten minutes on foot from Kazimierz to Wawel, twenty to the Main Square.",
     ],
-    shabbos: "A neighbourhood, not a site — free to walk, with a working kehilla. Ask locally about the eruv.",
     sourceUrl: "https://en.wikipedia.org/wiki/Szeroka_Street,_Krak%C3%B3w",
   },
   {
@@ -1928,7 +1875,6 @@ export const attractions: Attraction[] = [
       "Fifteen minutes' walk from Kazimierz, across the river in Podgórze — where the ghetto was.",
       "The Ghetto Heroes Square with its empty chairs is on the way, and costs nothing.",
     ],
-    shabbos: "Timed ticket, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Oskar_Schindler%27s_Enamel_Factory",
   },
   {
@@ -1947,7 +1893,6 @@ export const attractions: Attraction[] = [
       "The best half day near Kraków with children, and it works when it rains.",
       "Book ahead in summer; the English tours fill first.",
     ],
-    shabbos: "Ticketed guided tour, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Wieliczka_Salt_Mine",
   },
   {
@@ -1965,7 +1910,6 @@ export const attractions: Attraction[] = [
       "The riverside path below the walls is the pleasant way to arrive from Kazimierz.",
       "An hour on the hill is enough unless you are going inside.",
     ],
-    shabbos: "The grounds are open and free; the interiors are ticketed.",
     sourceUrl: "https://en.wikipedia.org/wiki/Wawel_Castle",
   },
   {
@@ -1982,7 +1926,6 @@ export const attractions: Attraction[] = [
       "The Rynek Underground museum beneath the square is ticketed and good on a wet day.",
       "Twenty minutes on foot from Kazimierz, where the kosher food is.",
     ],
-    shabbos: "An open square, free to walk through.",
     sourceUrl: "https://en.wikipedia.org/wiki/Main_Square,_Krak%C3%B3w",
   },
   {
@@ -2000,7 +1943,6 @@ export const attractions: Attraction[] = [
       "Free and open. An hour, unless you go into the Royal Castle.",
       "Twenty-five minutes' walk from POLIN, and the two fit into one Warsaw day.",
     ],
-    shabbos: "An open square, free to walk through.",
     sourceUrl: "https://en.wikipedia.org/wiki/Old_Town_Market_Place,_Warsaw",
   },
   {
@@ -2019,7 +1961,6 @@ export const attractions: Attraction[] = [
       "Two hours from Kraków. A full day.",
       "Nothing kosher in Zakopane. Carry the day's food from Kraków.",
     ],
-    shabbos: "There is a park entry fee, and it is a two-hour drive each way.",
     sourceUrl: "https://en.wikipedia.org/wiki/Morskie_Oko",
   },
   {
@@ -2039,7 +1980,6 @@ export const attractions: Attraction[] = [
       "A kohen should ask his rov before going.",
       "Two hours north-east of Warsaw, and there is no public transport to it. Half a day at least.",
     ],
-    shabbos: "Two hours out of Warsaw with nothing there — not a Shabbos visit.",
     sourceUrl: "https://en.wikipedia.org/wiki/Treblinka_memorial",
   },
   {
@@ -2058,7 +1998,6 @@ export const attractions: Attraction[] = [
       "Fifteen minutes from the centre of Lublin, and Lublin is where the Chozeh, Rav Shabsi and the Yeshivas Chachmei Lublin are — most people are there already.",
       "Coordinates deliberately not listed: the sources we found disagree by several kilometres about the visitor entrance, so use the museum's own directions rather than a pin from us.",
     ],
-    shabbos: "Free to enter, but not a Shabbos visit.",
     sourceUrl: "https://en.wikipedia.org/wiki/Majdanek_State_Museum",
   },
 
@@ -2083,7 +2022,6 @@ export const attractions: Attraction[] = [
       "Allow three hours and expect to want the rest of the day quiet. Do not put a tour of the Old City after it.",
       "Reachable on the light rail to Mount Herzl and then a short walk or the shuttle.",
     ],
-    shabbos: "Closed on Shabbos and yomim tovim.",
     sourceUrl: "https://en.wikipedia.org/wiki/Yad_Vashem",
   },
   {
@@ -2102,7 +2040,6 @@ export const attractions: Attraction[] = [
       "The Second Temple model in the grounds is the clearest way anyone has found to show a child what the Har HaBayis looked like.",
       "The whole Israel Museum is large. The Shrine and the model can be done in two hours if that is all you want.",
     ],
-    shabbos: "Ticketed and closed on Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Shrine_of_the_Book",
   },
   {
@@ -2121,7 +2058,6 @@ export const attractions: Attraction[] = [
       "It fills easily in Chol HaMoed, which is exactly when most families are there. Go early.",
       "Kosher food on site, and the surrounding Malha area has more.",
     ],
-    shabbos: "Ticketed and closed on Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Jerusalem_Biblical_Zoo",
   },
   {
@@ -2140,7 +2076,6 @@ export const attractions: Attraction[] = [
       "Half an hour north of Akko and an hour from Tzfat, so it works as the non-kever half of a Galilee day.",
       "This is a working border. There is a sealed railway tunnel to Lebanon here, and the security situation can close the site at short notice.",
     ],
-    shabbos: "Ticketed cable car, so not on Shabbos or yom tov.",
     sourceUrl: "https://en.wikipedia.org/wiki/Rosh_HaNikra_grottoes",
   },
   {
@@ -2159,7 +2094,6 @@ export const attractions: Attraction[] = [
       "The reserve also holds a Greek shrine to Pan cut into the cliff, with niches still visible. Worth knowing what it is before a child asks.",
       "About forty minutes from Tzfat, so it pairs with the Galilee kevarim rather than needing a day of its own.",
     ],
-    shabbos: "Israel Nature and Parks Authority site — ticketed, and closes early on Erev Shabbos.",
     sourceUrl: "https://en.parks.org.il/reserve-park/banias/",
   },
   {
@@ -2178,7 +2112,6 @@ export const attractions: Attraction[] = [
       "Flat, shaded in places, and manageable with children — one of the easier archaeological sites in the country to walk.",
       "Forty minutes from Haifa and about an hour from Tel Aviv; it sits naturally on the drive between the two.",
     ],
-    shabbos: "Israel Nature and Parks Authority site — ticketed, and closes early on Erev Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Caesarea_Maritima",
   },
   {
@@ -2197,7 +2130,6 @@ export const attractions: Attraction[] = [
       "The park is spread out and needs a car to move between the sections; do not plan to walk it end to end.",
       "About fifty minutes from Yerushalayim, which makes it a real half-day rather than an expedition.",
     ],
-    shabbos: "Israel Nature and Parks Authority site — ticketed, and closes early on Erev Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Beit_Guvrin-Maresha_National_Park",
   },
   {
@@ -2214,7 +2146,6 @@ export const attractions: Attraction[] = [
       "Golf carts and covered wagons are the usual way round Agamon HaHula, which makes it workable with small children and grandparents.",
       "An hour from Tzfat, so it pairs with the Galilee kevarim in winter — which is exactly when nobody thinks to go.",
     ],
-    shabbos: "Ticketed, and an hour and a half from the nearest kosher infrastructure in Tzfat.",
     sourceUrl: "https://www.touristisrael.com/hula-valley/2540/",
   },
   {
@@ -2233,7 +2164,6 @@ export const attractions: Attraction[] = [
       "Immediately inside Jaffa Gate, so it costs no travel at all — five minutes from the Kosel on foot.",
       "Steps and uneven stone throughout; not a pushchair site.",
     ],
-    shabbos: "Ticketed and closed on Shabbos. The Old City around it is open and free to walk.",
     sourceUrl: "https://en.wikipedia.org/wiki/Tower_of_David",
   },
   {
@@ -2253,7 +2183,6 @@ export const attractions: Attraction[] = [
       "The tunnels under the hill were cut by the fighters of the Bar Kochba revolt, and you walk through them.",
       "It is in Area C in the West Bank. The road is used and the park is open, but check the current position before setting out rather than assuming.",
     ],
-    shabbos: "Israel Nature and Parks Authority site — ticketed, and closes early on Erev Shabbos.",
     sourceUrl: "https://en.wikipedia.org/wiki/Herodium",
   },
   {
@@ -2272,7 +2201,6 @@ export const attractions: Attraction[] = [
       "A glass lift runs up the middle of the dome to a viewing platform over the city and the Alps.",
       "Coordinates deliberately not listed: we could not find a source we would stand behind for the pin. Navigate to Via Montebello 20 — it is the tallest thing in Turin and impossible to miss.",
     ],
-    shabbos: "Ticketed museum and lift, so not on Shabbos or yom tov. The building itself is visible from the street at any hour.",
     sourceUrl: "https://en.wikipedia.org/wiki/Mole_Antonelliana",
   },
 
@@ -2297,7 +2225,6 @@ export const attractions: Attraction[] = [
       "About two hours from London and exposed to the weather on all sides. Dress for a field.",
       "It combines with Bath or Salisbury into a full day; on its own it is ninety minutes at the site.",
     ],
-    shabbos: "Ticketed and two hours from London — not a Shabbos visit.",
     sourceUrl: "https://en.wikipedia.org/wiki/Stonehenge",
   },
 
@@ -2330,7 +2257,6 @@ export const attractions: Attraction[] = [
       "Weather turns fast and the plateau is exposed. Take a layer even in July.",
       "Carry the day's food; there is nothing kosher on the plateau. The nearest kosher kitchen is My Kosher Hotel at Alba di Canazei in the Val di Fassa, which is across the Dolomites rather than nearby, but is a great deal closer than Milan.",
     ],
-    shabbos: "A toll road and a long drive from anything — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Tre_Cime_di_Lavaredo",
   },
   {
@@ -2349,7 +2275,6 @@ export const attractions: Attraction[] = [
       "There is boat hire on the lake. Note that swimming here is in an open public lake with no separate arrangement of any kind.",
       "Carry the day's food; there is nothing kosher in the Prags valley itself. The nearest kosher kitchen in the Dolomites is at Alba di Canazei, listed on this site under places to stay.",
     ],
-    shabbos: "A long drive from any kehilla, with restricted seasonal access — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Pragser_Wildsee",
   },
   {
@@ -2367,7 +2292,6 @@ export const attractions: Attraction[] = [
       "It is inside the Hohe Tauern national park, at the western end of the Pinzgau valley, and pairs naturally with the Grossglockner road.",
       "There is no kosher shop in the Pinzgau, and there is no kosher shop anywhere in Austria outside Vienna. Kosher Tirol delivers prepared meals and Shabbos food across Tirol and the Salzburg province in season and is listed on this site; otherwise it is Vienna, five hours east. Either way, carry the day's food.",
     ],
-    shabbos: "Ticketed, and hours from any kehilla.",
     sourceUrl: "https://en.wikipedia.org/wiki/Krimml_Waterfalls",
   },
   {
@@ -2387,7 +2311,6 @@ export const attractions: Attraction[] = [
       "Marmots and ibex on the upper stretches, close to the road. Children who have had enough of driving revive at the Franz-Josefs-Höhe.",
       "Not a road to take on in bad weather or with a nervous driver — it is high, exposed, and the hairpins are continuous.",
     ],
-    shabbos: "A toll road, closed in winter, and hours from anywhere kosher.",
     sourceUrl: "https://en.wikipedia.org/wiki/Grossglockner_High_Alpine_Road",
   },
 
@@ -2424,7 +2347,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the published pin for the Seiser Alm sits out in the middle of the plateau, where there is no road. Navigate to the cable car valley station at Siusi allo Sciliar, or to the lift at Ortisei.",
       "Carry the day's food. The nearest kosher kitchen is at Alba di Canazei in the Val di Fassa, listed on this site.",
     ],
-    shabbos: "A ticketed lift, or a road with a timed closure, and hours from any kehilla — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Seiser_Alm",
   },
   {
@@ -2445,7 +2367,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the published pin for the Mer de Glace is on the glacier, which is not somewhere you navigate to. The train leaves from the Gare du Montenvers in Chamonix.",
       "No kosher food in Chamonix. Lyon is the nearest real provision, about two and a half hours away, and Geneva is closer still — both are listed on this site.",
     ],
-    shabbos: "Ticketed, and Chamonix has no kehilla — not a Shabbos day out.",
     sourceUrl: "https://en.wikipedia.org/wiki/Mer_de_Glace",
   },
   {
@@ -2465,7 +2386,6 @@ export const attractions: Attraction[] = [
       "The stations were designed by Zaha Hadid and opened in 2007. Worth a minute even if architecture is not why you came.",
       "No kosher food in Innsbruck or anywhere else in Tyrol. Kosher Tirol delivers in season, and Munich is about two hours by road; both are listed on this site.",
     ],
-    shabbos: "Ticketed, and the shul is down in the town at Sillgasse 15 — a mountain morning for a weekday, not for Shabbos.",
     sourceUrl: "https://www.innsbruck.info/en/destinations/m/innsbruck-s-nordkettenbahnen-lifts-and-cable-cars.html",
   },
 
@@ -2496,7 +2416,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: we found no pin for the building we would stand behind. It is on Schillerstraße in the old town, a short walk from the thermal baths, and the town is small enough to walk from anywhere in it.",
       "Merano is about an hour from Bolzano and puts the western Dolomites within a morning, which makes this the rest day on a mountain trip rather than a detour from one.",
     ],
-    shabbos: "An active shul, so what happens here on Shabbos is davening rather than visiting. The museum side is a weekday matter — arrange it with the community.",
     sourceUrl: "https://www.visitjewishitaly.it/en/listing/synagogue-of-merano/",
   },
   {
@@ -2515,7 +2434,6 @@ export const attractions: Attraction[] = [
       "Grenoble is the reason this is listed rather than a hundred other lifts: it is a real city, an hour and a quarter from Lyon, and it has kosher food. Almost nowhere in the French Alps has both.",
       "Coordinates deliberately not listed: the pin most maps carry is on the fort at the top rather than the station at the bottom. Navigate to 3 Quai Stéphane Jay on the river.",
     ],
-    shabbos: "Ticketed and turnstiled. Grenoble has a kehilla, so Shabbos here is a town Shabbos — the cable car is for the rest of the week.",
     sourceUrl: "https://en.wikipedia.org/wiki/Grenoble-Bastille_cable_car",
   },
   {
@@ -2535,7 +2453,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the cave mouth is on a mountainside and the pin is not drivable. Navigate to Werfen and follow the signs to the visitor centre.",
       "Salzburg is about forty minutes north and is where the food comes from — Chabad there does Shabbos and yom tov meals on advance registration, and is listed on this site. There is no kosher shop in the province.",
     ],
-    shabbos: "Ticketed, timed and guided, up a mountain. Not a Shabbos outing.",
     sourceUrl: "https://en.wikipedia.org/wiki/Eisriesenwelt",
   },
 
@@ -2564,7 +2481,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the summit pin is on a glacier and the station is in the valley. Navigate to the cable car at Malga Ciapela.",
       "Alba di Canazei, where the kosher hotel is, is over the pass to the west — this is the nearest high mountain to it by some way.",
     ],
-    shabbos: "A ticketed cable car up a glacier. Not a Shabbos outing.",
     sourceUrl: "https://www.dolomiti.org/en/marmolada/da-non-perdere/funivia-marmolada/",
   },
   {
@@ -2584,7 +2500,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the gorge itself is a line rather than a point and the pins disagree. Navigate to Lovagny.",
       "Annecy is twenty minutes away and has a shul but no kosher food; the nearest shops are Geneva or Grenoble, both listed on this site.",
     ],
-    shabbos: "Ticketed, and out of town. A weekday hour.",
     sourceUrl: "https://en.lac-annecy.com/equipment/les-gorges-du-fier-lovagny/",
   },
   {
@@ -2604,7 +2519,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: this is a town, a lake and a glacier rather than one place, and the useful pin depends on which of the three you are going to. Navigate to Zell am See or to Kaprun.",
       "No kosher food in the Pinzgau. Kosher Tirol delivers into this valley in season and Salzburg has Chabad; both are listed here.",
     ],
-    shabbos: "The lifts are ticketed and there is no kehilla in the valley. A weekday mountain, with Shabbos arranged from Salzburg.",
     sourceUrl: "https://www.austria.info/en-gb/regions/zell-am-see-kaprun/",
   },
 
@@ -2640,7 +2554,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the summit pin is on a glacier ridge and the station is down in the valley. Navigate to Courmayeur and follow the signs.",
       "No kosher food in the Aosta valley. Turin is the nearest provision and is listed on this site; Milan is the other option and is further.",
     ],
-    shabbos: "A ticketed cable car, and the valley has no kehilla. A weekday morning.",
     sourceUrl: "https://www.lovevda.it/en/experiences/cableways-4000-metres/mont-blanc-cableway",
   },
   {
@@ -2660,7 +2573,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: it is a national park rather than a place. Navigate to Cogne, or to Valnontey a little beyond it.",
       "Nothing kosher in the valley or anywhere near it. Turin is the nearest provision and is listed on this site — carry the day's food in.",
     ],
-    shabbos: "No ticket and no turnstile at the paths themselves, but it is a long way from any kehilla and the walking is the point. A weekday.",
     sourceUrl: "https://www.italia.it/en/italy/il-parco-nazionale-del-gran-paradiso",
   },
   {
@@ -2680,7 +2592,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: it is a road 684 km long. Navigate to Thonon-les-Bains for the northern end or Menton for the southern.",
       "In between there is nothing kosher for the entire length. This is a trip carried out of Geneva or Lyon at one end and topped up at Nice at the other.",
     ],
-    shabbos: "A driving route with no kehilla along it. Plan the Shabbatos at the ends, or off the route entirely — Geneva, Lyon and Nice are all listed on this site.",
     sourceUrl: "https://en.wikipedia.org/wiki/Route_des_Grandes_Alpes",
   },
   {
@@ -2701,7 +2612,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the fortress pin is on top of a rock and the funicular station is in the old town below it. Navigate to the Altstadt.",
       "Chabad of Salzburg does Shabbos and yom tov meals on advance registration and is listed on this site. There is no kosher shop in the city.",
     ],
-    shabbos: "Ticketed, with a funicular. The old town is walkable from the Neustadt where the community is, so the streets themselves are a Shabbos walk even though the fortress is not.",
     sourceUrl: "https://www.salzburg.info/en/sights/top10/hohensalzburg-fortress",
   },
 
@@ -2737,7 +2647,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the cave is inside a glacier and the pin is meaningless from a car. Navigate to Hintertux at the head of the Tuxertal.",
       "This is Tirol, so Kosher Tirol delivers here in season — it is listed on this site. Innsbruck is about an hour away and has a shul but no kosher shop.",
     ],
-    shabbos: "Ticketed lifts and a guided tour, an hour from the nearest shul. A weekday.",
     sourceUrl: "https://www.tux.at/en/nature-ice-palace/",
   },
   {
@@ -2756,7 +2665,6 @@ export const attractions: Attraction[] = [
       "Open in summer and closed in stretches through the winter, as any road over three passes is. Check the passes rather than the road.",
       "Coordinates deliberately not listed: it is a hundred and ten kilometres of road. Navigate to Bolzano for the western end or Cortina d'Ampezzo for the eastern.",
     ],
-    shabbos: "A driving day with no kehilla along it.",
     sourceUrl: "https://www.guidedolomiti.com/en/great-dolomites-road/",
   },
   {
@@ -2776,7 +2684,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: the terminus is a mountain halt at 2,372 m. Navigate to the station at Le Fayet in the valley.",
       "No kosher food in the valley. Geneva is the nearest and is listed on this site; Lyon is the bigger shop.",
     ],
-    shabbos: "Ticketed, and the valley has no kehilla. A weekday.",
     sourceUrl: "https://en.wikipedia.org/wiki/Mont_Blanc_tramway",
   },
   {
@@ -2797,7 +2704,6 @@ export const attractions: Attraction[] = [
       "Coordinates deliberately not listed: we found no pin for the entrance we would stand behind. Navigate to Wattens, which is signed from the Inn valley motorway.",
       "No kosher food in Wattens or Innsbruck. Kosher Tirol delivers across Tirol in season and is listed on this site.",
     ],
-    shabbos: "Ticketed, and twenty kilometres from the Innsbruck shul. A weekday, and a good one for a wet one.",
     sourceUrl: "https://www.innsbruck.info/en/sightseeing/i/swarovski-crystal-worlds.html",
   },
 
@@ -2816,7 +2722,6 @@ export const attractions: Attraction[] = [
       "The City describes it as a pedestrian, non-motorized route. Choose the section nearest your hotel rather than treating the full length as one walk.",
       "It passes parks, fountains and playgrounds, so it works as a simple outdoor break between planned stops.",
     ],
-    shabbos: "A walking route rather than a ticketed attraction. Choose a section within the distance you can comfortably walk before Shabbos.",
     sourceUrl: "https://www.miamibeachfl.gov/city-hall/parks-and-recreation/parks-facilities-directory/beachwalk/",
   },
   {
@@ -2833,7 +2738,6 @@ export const attractions: Attraction[] = [
       "The memorial's own visitor information covers directions, accessibility and group visits; use it for the current arrangements before traveling.",
       "This is a reflective stop rather than a quick photo stop. Give it the time it deserves.",
     ],
-    shabbos: "The memorial and education center have their own visitor arrangements; check the official visitor information before building a Shabbos plan around it.",
     sourceUrl: "https://holocaustmemorialmiamibeach.org/visit/",
   },
   {
@@ -2850,7 +2754,6 @@ export const attractions: Attraction[] = [
       "The garden publishes visitor and parking information itself. Check the current programme rather than planning around a previous event listing.",
       "It works well as a short, low-key stop between the memorial and the Beachwalk.",
     ],
-    shabbos: "Plan this for a weekday and use the garden's own visitor information for current arrangements.",
     sourceUrl: "https://www.mbgarden.org/contact",
   },
   {
@@ -2867,7 +2770,6 @@ export const attractions: Attraction[] = [
       "The City identifies it as a walking and biking route. It is best treated as a promenade, not as an all-day attraction.",
       "The City shuttle links the barrier island and downtown; check its current route before relying on it.",
     ],
-    shabbos: "A walking route rather than a ticketed attraction. Plan how you will reach the section you want before Shabbos.",
     sourceUrl: "https://www.hollywoodfl.org/facilities/facility/details/Hollywood-Beach-Broadwalk-109",
   },
   {
@@ -2884,7 +2786,6 @@ export const attractions: Attraction[] = [
       "The City publishes its events and activities separately. Check what is scheduled for your dates rather than assuming a class or demonstration is running.",
       "The play space and walking path make this a useful gentler stop for a family day in Hollywood.",
     ],
-    shabbos: "An outdoor park; leave scheduled activities for a weekday and check the City's calendar for current programmes.",
     sourceUrl: "https://hollywoodfl.org/1727/ArtsPark",
   },
   {
@@ -2900,7 +2801,6 @@ export const attractions: Attraction[] = [
       "The County's nature-center material identifies the site and its environmental education programmes; check it for current visitor arrangements.",
       "Treat the trails and programmes as a weekday plan, and bring the food you need for a longer outdoor stop.",
     ],
-    shabbos: "Nature-center programmes are scheduled. Check Broward County Parks for current access and plan a weekday visit.",
     sourceUrl: "https://www.broward.org/Parks/Documents/STEAMinParksProgramSummariesrev10-3-2024.pdf",
   },
 
@@ -2919,7 +2819,6 @@ export const attractions: Attraction[] = [
       "Disney’s own planning information is the live source for the parks, visitor arrangements and accessibility details.",
       "Lake Buena Vista is a separate part of the wider Orlando region, so build the journey there into the day rather than treating it as a short walk from other park clusters.",
     ],
-    shabbos: "A ticketed theme-park visit. Plan it for a weekday and use Disney’s official visitor information for current arrangements.",
     sourceUrl: "https://disneyworld.disney.go.com/",
   },
   {
@@ -2936,7 +2835,6 @@ export const attractions: Attraction[] = [
       "Universal’s official directions list 6000 Universal Boulevard for Universal Studios Florida, Islands of Adventure, Volcano Bay and CityWalk.",
       "Epic Universe has a separate arrival area, so use the operator’s current directions for the specific park on your plan.",
     ],
-    shabbos: "A ticketed theme-park visit. Keep it to a weekday and use Universal’s official visitor information for current arrangements.",
     sourceUrl: "https://www.universalorlando.com/web/en/us/plan-your-visit/hours-information/directions-and-parking",
   },
   {
@@ -2953,7 +2851,6 @@ export const attractions: Attraction[] = [
       "SeaWorld’s own visitor information covers animal encounters, rides and current park planning.",
       "It is a separate outing from the Disney and Universal districts, even though all three are part of the wider Orlando holiday.",
     ],
-    shabbos: "A ticketed park with scheduled attractions. Plan a weekday visit and use the operator’s current visitor information before you go.",
     sourceUrl: "https://seaworld.com/orlando/park-info/directions/",
   },
   {
@@ -2970,7 +2867,6 @@ export const attractions: Attraction[] = [
       "Gatorland is in South Orlando, near the Orlando–Kissimmee line, and is best treated as its own outing rather than a stop between parks.",
       "Use the operator’s visitor information for current access and activity arrangements.",
     ],
-    shabbos: "A ticketed wildlife attraction. Plan it for a weekday and check the operator’s current visitor information before setting the day.",
     sourceUrl: "https://www.gatorland.com/plan-your-visit/directions/",
   },
   {
@@ -2986,7 +2882,6 @@ export const attractions: Attraction[] = [
       "The Science Center’s own visitor guide is the live source for exhibits, scheduled programmes and accessibility information.",
       "It is a useful indoor change of pace between the large park days.",
     ],
-    shabbos: "Exhibits and live programmes are scheduled. Treat this as a weekday visit and use the official visitor guide for current arrangements.",
     sourceUrl: "https://www.osc.org/visit/",
   },
   {
@@ -3004,7 +2899,6 @@ export const attractions: Attraction[] = [
       "The City of Orlando publishes the garden’s location, visitor information and walking-path amenities.",
       "Use the garden’s own visitor information for current programme and arrival arrangements.",
     ],
-    shabbos: "A managed garden with visitor arrangements. Plan it for a weekday and check the official information before you go.",
     sourceUrl: "https://www.orlando.gov/Parks-the-Environment/Directory/Leu-Gardens",
   },
 ];

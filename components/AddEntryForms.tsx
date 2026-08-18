@@ -92,7 +92,6 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
           <label className="block sm:col-span-2"><span className={captionClass}>Address</span><AddressAutocomplete name="address" className={inputClass} placeholder="Start typing the address…" /></label>
           <label className="block"><span className={captionClass}>Coordinates</span><input name="coordinates" className={inputClass} placeholder="41.8902, 12.4922" /></label>
           <label className="block"><span className={captionClass}>Official website</span><input name="website" className={inputClass} /></label>
-          <label className="block sm:col-span-2"><span className={captionClass}>Shabbos and yom tov — carrying, tickets, whether it can be done at all</span><input name="shabbos" className={inputClass} /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>Practical notes — one per line</span><textarea name="notes" rows={3} className={inputClass} /></label>
           <label className="block sm:col-span-2"><span className={captionClass}>Source *</span><input name="sourceUrl" className={inputClass} placeholder="https://…" required /></label>
         </div>

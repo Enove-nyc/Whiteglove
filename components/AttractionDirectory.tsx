@@ -21,13 +21,13 @@ import type { Attraction } from "@/data/attractions";
 /** How many cards before the page stops and asks. */
 const PAGE = 24;
 
-const DEFAULTS = { q: "", country: "", kind: "", city: "", shabbos: "" };
+const DEFAULTS = { q: "", country: "", kind: "", city: "" };
 
 export default function AttractionDirectory({ attractions }: { attractions: Attraction[] }) {
   // In the address bar, so a filtered list is a link somebody can send and
   // survives a press of the back button from an entry. components/useListUrl.ts.
   const [filters, setFilters, reset] = useListUrl(DEFAULTS);
-  const { q: query, country, kind, city, shabbos } = filters;
+  const { q: query, country, kind, city } = filters;
   const [openNearby, setOpenNearby] = useState<string | null>(null);
   const [limit, setLimit] = useState(PAGE);
 
@@ -65,10 +65,6 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
         (!country || a.country === country) &&
         (!kind || a.kind === kind) &&
         (!city || a.city === city) &&
-        // Not a judgement about whether a place is suitable — a filter for
-        // whether this entry can tell you what it does on Shabbos at all,
-        // which is the question that decides a Friday or a Saturday.
-        (!shabbos || Boolean(a.shabbos?.trim())) &&
         listMatches(
           [a.name, a.city, a.country, a.kind, a.summary, (a.notes ?? []).join(" "), extraSpellings([a.slug, a.city])].join(" "),
           query,
@@ -99,13 +95,6 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
           },
           { label: "City", value: city, onChange: (value) => { setFilters({ city: value }); setLimit(PAGE); }, options: cities, allLabel: "Any city" },
           { label: "Category", value: kind, onChange: (value) => { setFilters({ kind: value }); setLimit(PAGE); }, options: kinds, allLabel: "Anything" },
-          {
-            label: "Shabbos",
-            value: shabbos,
-            onChange: (value) => { setFilters({ shabbos: value }); setLimit(PAGE); },
-            options: [{ value: "known", label: "Says what it does on Shabbos" }],
-            allLabel: "Any",
-          },
         ]}
       />
 
@@ -126,14 +115,6 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
                 ))}
               </ul>
-            )}
-
-            {/* Said separately from the rest, because it is the thing that
-                decides whether a day works or not. */}
-            {a.shabbos && (
-              <p className="mt-4 border-l-4 border-[var(--gold)] bg-[var(--cream)] px-3 py-2 text-sm leading-6 text-[var(--navy)]">
-                <strong>Shabbos</strong> — {a.shabbos}
-              </p>
             )}
 
             <div className="mt-5 flex flex-wrap gap-2 text-sm">

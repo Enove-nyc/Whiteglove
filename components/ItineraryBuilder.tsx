@@ -1804,7 +1804,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       country: x.country,
       // The Shabbos line first — it is the fact that decides whether the day
       // works at all — then whatever practical note came with the entry.
-      notes: prev.notes || [x.shabbos ? `Shabbos: ${x.shabbos}` : null, x.notes].filter(Boolean).join(" ") || undefined,
+      notes: prev.notes || x.notes || undefined,
     }));
   }
 
@@ -1943,7 +1943,6 @@ function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void })
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{x.name}</span>
                 <span className="block text-xs text-stone-500">{[x.city, x.country, x.kind].filter(Boolean).join(", ")}</span>
-                {x.shabbos ? <span className="block text-xs text-[var(--gold-ink)]">Shabbos: {x.shabbos}</span> : null}
               </button>
             </li>
           ))}

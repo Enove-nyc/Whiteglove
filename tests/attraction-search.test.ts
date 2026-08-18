@@ -112,7 +112,7 @@ describe("what does not go in the list", () => {
 
   test("no bars, nightlife or gambling anywhere in an entry", () => {
     for (const a of attractions) {
-      const text = [a.name, a.summary, (a.notes ?? []).join(" "), a.shabbos ?? ""].join(" ");
+      const text = [a.name, a.summary, (a.notes ?? []).join(" ")].join(" ");
       const hit = BARRED.exec(text);
       assert.equal(hit, null, `${a.slug} mentions "${hit?.[0]}"`);
     }

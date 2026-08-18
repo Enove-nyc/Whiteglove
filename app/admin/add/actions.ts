@@ -122,7 +122,6 @@ export async function addAttractionAction(_prev: ActionResult | null, formData: 
       address: nullable(formData, "address"),
       coordinates: nullable(formData, "coordinates"),
       website: nullable(formData, "website"),
-      shabbos: nullable(formData, "shabbos"),
       notes: lines(formData, "notes"),
       sourceUrl,
     });
