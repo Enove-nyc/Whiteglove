@@ -2848,6 +2848,122 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Roonstrasse_Synagogue",
   },
+  {
+    slug: "vienna-belvedere",
+    name: "The Belvedere",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Museum",
+    summary:
+      "Prince Eugene's Baroque summer palace, now the Austrian national gallery — and the home of Klimt's The Kiss.",
+    address: "Prinz-Eugen-Straße 27, 1030 Wien",
+    coordinates: "48.1911, 16.3803",
+    website: "https://www.belvedere.at/en",
+    notes: [
+      "The Upper Belvedere holds the Klimt; timed tickets, and it is busy around The Kiss all day.",
+      "The formal gardens running down to the Lower Belvedere are free to walk.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Belvedere,_Vienna",
+  },
+  {
+    slug: "vienna-hofburg",
+    name: "The Hofburg",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Museum",
+    summary:
+      "The vast imperial palace at the centre of Vienna, the Habsburgs' winter seat — the Imperial Apartments, the Sisi Museum and the Spanish Riding School.",
+    address: "Michaelerkuppel, 1010 Wien",
+    coordinates: "48.2077, 16.3657",
+    website: "https://www.hofburg-wien.at/en/",
+    notes: [
+      "A complex rather than one sight: the apartments and Sisi Museum are one ticket, the treasury and riding school their own.",
+      "The courtyards and the passage through to the Heldenplatz are free to walk.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Hofburg",
+  },
+  {
+    slug: "vienna-stephansdom",
+    name: "St. Stephen's Cathedral",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Landmark",
+    summary:
+      "The Gothic cathedral at the heart of Vienna, its tiled roof and single 137-metre spire the mark of the old city.",
+    address: "Stephansplatz 3, 1010 Wien",
+    coordinates: "48.2086, 16.3731",
+    notes: [
+      "The back of the nave is free; the main body, the tower climbs and the catacombs are each ticketed.",
+      "The south tower is 343 steps with no lift; a lift serves the shorter north tower.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/St._Stephen%27s_Cathedral,_Vienna",
+  },
+  {
+    slug: "vienna-kunsthistorisches",
+    name: "Kunsthistorisches Museum",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Museum",
+    summary:
+      "The imperial art collection — the world's largest holding of Bruegel, with Vermeer, Rubens and Raphael — in a palatial building facing its twin, the natural history museum.",
+    address: "Maria-Theresien-Platz, 1010 Wien",
+    coordinates: "48.2039, 16.3616",
+    website: "https://www.khm.at/en/",
+    notes: [
+      "Ticketed; largely religious and court painting of its centuries, and the domed café is worth the stop.",
+      "The Natural History Museum opposite is its architectural twin, and the better choice with young children.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Kunsthistorisches_Museum",
+  },
+  {
+    slug: "vienna-prater",
+    name: "The Prater and the Riesenrad",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Family",
+    summary:
+      "The old imperial hunting park, public since 1766, and the Wurstelprater funfair inside it — with the giant Ferris wheel of 1897 turning over the city.",
+    address: "Prater, 1020 Wien",
+    coordinates: "48.2166, 16.3958",
+    notes: [
+      "The park and the funfair grounds are free to walk into; each ride is paid for on its own, the Riesenrad included.",
+      "The wheel turns year-round; the fairground rides mostly run mid-March to October.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Wurstelprater",
+  },
+  {
+    slug: "vienna-stadttempel",
+    name: "Stadttempel",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Jewish heritage",
+    summary:
+      "Vienna's main shul, a Biedermeier building of 1826 hidden behind a plain street front — the only one of the city's 94 synagogues to survive Kristallnacht.",
+    address: "Seitenstettengasse 4, 1010 Wien",
+    coordinates: "48.2117, 16.3747",
+    notes: [
+      "It survived because an imperial edict had barred non-Catholic buildings from a street-facing front, so it could not be burned without the houses around it — those were destroyed, this was not.",
+      "A working Orthodox kehilla, visited only on booked guided tours with a passport and a heavy security check, never by walking in.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Stadttempel",
+  },
+  {
+    slug: "vienna-jewish-museum",
+    name: "Jewish Museum Vienna",
+    city: "Vienna",
+    country: "Austria",
+    kind: "Jewish heritage",
+    summary:
+      "The city's Jewish museum, on two sites — the main house on Dorotheergasse, and Judenplatz over the excavated foundations of the medieval synagogue.",
+    address: "Dorotheergasse 11, 1010 Wien",
+    coordinates: "48.2079, 16.3696",
+    website: "https://www.jmw.at/en",
+    notes: [
+      "One ticket covers both houses; the Judenplatz site sits beneath the Shoah memorial already on this site.",
+      "Central, a few minutes from the Hofburg and St Stephen's.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Jewish_Museum,_Vienna",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
