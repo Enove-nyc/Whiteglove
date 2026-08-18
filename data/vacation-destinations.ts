@@ -153,7 +153,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
     cautions: [
       "The Colosseum is timed-entry and sells out in season. It is the one thing worth booking before you leave.",
       "The Great Synagogue can only be entered on a museum ticket and with security checks — bring passports.",
-      "The Vatican Museums are on this site as a listing, not a recommendation. Some frum travelers go and some do not; it is named so the choice is made deliberately.",
+      "The Vatican Museums are a church complex, and the collection is largely religious art.",
     ],
   },
   {
