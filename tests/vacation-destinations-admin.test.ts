@@ -43,11 +43,27 @@ describe("the holiday destinations screen exists and is reachable", () => {
     );
   });
 
-  it("says which screen is which, so two lists are not both called Destinations", () => {
+  it("NAMES SAY WHICH IS WHICH — 'Towns' and 'Destinations' did not", () => {
+    // The two lists share exactly one place (Prague) and answer different
+    // questions, but the first names given to the screens could be read either
+    // way, and were. The names now carry the distinction on their own.
     const NAV = readFileSync("lib/admin-nav.ts", "utf8");
-    assert.match(NAV, /href: "\/admin\/destinations",\s*\n\s*label: "Towns"/);
-    assert.match(NAV, /href: "\/admin\/vacation-destinations",\s*\n\s*label: "Destinations"/);
-    assert.match(PAGE, /Towns with kevarim in them are on the/);
+    assert.match(NAV, /href: "\/admin\/destinations",\s*\n\s*label: "Heritage towns"/);
+    assert.match(NAV, /href: "\/admin\/vacation-destinations",\s*\n\s*label: "Vacation destinations"/);
+    assert.match(PAGE, /Vacation destinations/);
+
+    // And each screen points at the other, so neither is a dead end for
+    // somebody who opened the wrong one.
+    const TOWNS = readFileSync("app/admin/destinations/page.tsx", "utf8");
+    assert.match(TOWNS, /href="\/admin\/vacation-destinations"/);
+    assert.match(PAGE, /href="\/admin\/destinations"/);
+  });
+
+  it("points across when one place really is on both lists", () => {
+    // Prague, today. Editing it here and wondering why the shomer's number has
+    // not changed is the obvious mistake.
+    assert.match(PAGE, /is on both lists/);
+    assert.match(PAGE, /its Heritage towns page/);
   });
 });
 

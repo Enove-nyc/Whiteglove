@@ -3,6 +3,7 @@ import type { Photo } from "@prisma/client";
 import CreateVacationDestinationForm from "@/components/CreateVacationDestinationForm";
 import VacationDestinationEditor from "@/components/VacationDestinationEditor";
 import { listVacationDestinationsForAdmin } from "@/lib/vacation-destinations-view";
+import { destinations as heritageTowns } from "@/data/destinations";
 import { vacationDestinationPhotos, vacationDestinationsTableReady } from "@/lib/vacation-destinations-admin";
 import DbSetupButton from "@/components/DbSetupButton";
 
@@ -32,19 +33,45 @@ export default async function AdminVacationDestinationsPage({
   const selected = slug ? all.find((entry) => entry.destination.slug === slug) : undefined;
   const photos: Photo[] = selected ? ((await vacationDestinationPhotos(selected.destination.slug)) as Photo[]) : [];
 
+  /**
+   * The same place on both lists.
+   *
+   * Nearly nowhere is: 123 heritage towns and 21 holiday destinations share
+   * exactly one place today. But when one does, editing it here and wondering
+   * why the shomer's number has not changed is the obvious mistake, so the
+   * screen points at the other record rather than leaving it to be guessed.
+   */
+  const alsoATown = selected
+    ? heritageTowns.find(
+        (town) =>
+          town.slug === selected.destination.slug ||
+          selected.destination.cities.some((city) => city.toLowerCase() === town.city.toLowerCase()),
+      )
+    : undefined;
+
   return (
     <>
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-          Destinations
+          Vacation destinations
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-          Where to go on holiday — Rome, the Dolomites, Miami Beach. Towns with kevarim in them are on the{" "}
-          <Link href="/admin/destinations" className="font-semibold underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-            Towns
-          </Link>{" "}
-          screen. Changes go live within a minute.
+          The 21 places somebody goes on holiday — Rome, the Dolomites, Miami Beach. What you write here is the advice:
+          why go, how long to give it, when in the year, what catches people out. The practical detail on each page is
+          taken from your own listings in those towns, so it is never typed twice. Changes go live within a minute.
+        </p>
+        {/* SAYING WHICH SCREEN IS WHICH, because "Towns" and "Destinations"
+            did not. Two lists, one place in common, different questions. */}
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Towns with kevarim in them — Lizhensk, Kerestir, Uman — are on{" "}
+          <Link
+            href="/admin/destinations"
+            className="font-semibold underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Heritage towns
+          </Link>
+          .
         </p>
       </header>
 
@@ -91,13 +118,28 @@ export default async function AdminVacationDestinationsPage({
 
         <div>
           {selected ? (
-            <VacationDestinationEditor
+            <>
+              {alsoATown && (
+                <p className="mb-6 rounded-xl border border-[var(--gold-light)] bg-[var(--cream)] p-4 text-sm leading-6 text-stone-600">
+                  {alsoATown.city} is on both lists. The holiday advice is here; its shomrim, minyanim and cemetery
+                  details are on{" "}
+                  <Link
+                    href={`/admin/destinations?slug=${alsoATown.slug}`}
+                    className="font-semibold underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                  >
+                    its Heritage towns page
+                  </Link>
+                  .
+                </p>
+              )}
+              <VacationDestinationEditor
               destination={selected.destination}
               hidden={selected.hidden}
               hasRow={selected.hasRow}
               builtIn={!selected.destination.ownerAdded}
-              photos={photos}
-            />
+                photos={photos}
+              />
+            </>
           ) : (
             <div className="space-y-8">
               <div className="rounded-2xl border border-[var(--gold-light)] bg-white p-6">
