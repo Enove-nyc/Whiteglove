@@ -315,6 +315,67 @@ input::placeholder, textarea::placeholder { color: #78716c; }
   }
 }
 
+/**
+ * The kevarim directory's cards, moved out of the markup.
+ *
+ * /tzaddikim renders three hundred and twenty-seven of these, and every one of
+ * them was carrying the same two hundred and fifty characters of utility
+ * classes — the same words, written out again for each person, in a page a
+ * phone has to download whole. The classes here are exactly what those
+ * utilities compiled to, so nothing about the page looks different; there is
+ * simply one copy of the description instead of three hundred.
+ *
+ * THE HOVER IS DELIBERATELY NOT HERE. The card keeps its inline hover
+ * utilities and its .wg-card, which already has a hover rule of its own; the
+ * two interact, and moving one of them is a visual change dressed up as a
+ * saving. Only what cannot vary was taken.
+ */
+.wg-kever-card {
+  display: block;
+  height: 100%;
+  border: 1px solid var(--gold-light);
+  background: #fcfaf6;
+  padding: 1.25rem;
+}
+
+.wg-kever-yiddish {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: var(--navy);
+}
+
+.wg-kever-name {
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.wg-kever-alt {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #78716c;
+}
+
+.wg-kever-place {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #78716c;
+}
+
+.wg-kever-yahrzeit {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #a8a29e;
+}
+
 .wg-prose {
   font-size: 1rem;
   line-height: 1.85;
