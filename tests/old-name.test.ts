@@ -72,3 +72,36 @@ describe("what each of them shows instead", () => {
     assert.match(seo, /width: 355, height: 460/);
   });
 });
+
+describe("a Business putting its own name on the cover", () => {
+  const PANEL = readFileSync("components/BusinessBrandPanel.tsx", "utf8");
+
+  it("TURNS THE SWITCH ON WHEN A NAME OR A LOGO IS GIVEN", () => {
+    // The switch decides whether the cover carries the business's own name,
+    // and it starts off. So somebody typed their name, chose their logo,
+    // watched the preview go on showing the White Glove cover, and could not
+    // tell whether the preview was broken or they were. Filling either field
+    // is unambiguously asking for it.
+    assert.match(PANEL, /if \(e\.target\.value\.trim\(\)\) turnOwnBrandOn\(\)/);
+    const picked = PANEL.slice(PANEL.indexOf("function pickLogo"));
+    assert.match(picked.slice(0, 900), /turnOwnBrandOn\(\)/, "choosing a logo must turn it on too");
+  });
+
+  it("NEVER TURNS IT OFF BY ITSELF", () => {
+    // Quietly taking a business's name off its own itineraries is not a thing
+    // this screen may do. Off is an explicit act, and only the checkbox does it.
+    const offs = PANEL.match(/setEnabled\(([^)]*)\)/g) ?? [];
+    for (const call of offs) {
+      assert.ok(
+        /setEnabled\(true\)/.test(call) || /setEnabled\(e\.target\.checked\)/.test(call),
+        `something sets enabled another way: ${call}`,
+      );
+    }
+  });
+
+  it("says so when the switch is off and there is something to show", () => {
+    // The one case where the preview is right and looks wrong.
+    assert.match(PANEL, /is off, so this is what prints/);
+    assert.match(PANEL, /!enabled && \(name\.trim\(\) \|\| logoUrl\)/);
+  });
+});

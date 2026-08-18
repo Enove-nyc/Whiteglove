@@ -37,6 +37,24 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
+  /**
+   * TYPING YOUR NAME IS ASKING FOR YOUR NAME ON IT.
+   *
+   * The switch above these fields decides whether the cover carries the
+   * business's own name, and it starts off. So somebody typed their name,
+   * chose their logo, watched the preview go on showing the White Glove cover,
+   * and had no way to tell whether the preview was broken or they were. The
+   * switch was three inches away and read as a heading rather than as the
+   * thing standing between them and what they were doing.
+   *
+   * Filling either field now turns it on, because that is unambiguously what
+   * the person is asking for. Turning it OFF stays an explicit act — nothing
+   * here ever quietly takes a business's name off its own itineraries.
+   */
+  function turnOwnBrandOn() {
+    setEnabled(true);
+  }
+
   function pickLogo(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -53,6 +71,7 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
       setLogoDataUrl(result);
       setLogoUrl(result);
       setRemoveLogo(false);
+      turnOwnBrandOn();
     };
     reader.readAsDataURL(file);
   }
@@ -112,7 +131,10 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
             <input
               className={inputClass}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (e.target.value.trim()) turnOwnBrandOn();
+              }}
               maxLength={MAX_BRAND_NAME}
               placeholder="Kesser Travel"
             />
@@ -206,6 +228,14 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
           <p className="mt-3 text-[10px] leading-5 text-stone-500">
             {enabled && name.trim() ? "Planned with whitegloveitineraries.com" : "whitegloveitineraries.com"}
           </p>
+          {/* The one case where the preview is right and looks wrong: the
+              switch is off and there is something to show. Said here rather
+              than left as a silent contradiction. */}
+          {!enabled && (name.trim() || logoUrl) ? (
+            <p className="mt-2 text-xs leading-5 text-amber-800">
+              &ldquo;Use my own name and logo&rdquo; is off, so this is what prints.
+            </p>
+          ) : null}
         </div>
       </form>
     </section>
