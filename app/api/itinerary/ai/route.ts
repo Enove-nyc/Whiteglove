@@ -86,13 +86,14 @@ function buildUserMessage(body: { question?: string; location?: string; date?: s
 export async function POST(request: NextRequest) {
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  if (!geminiKey && !anthropicKey) {
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!geminiKey && !anthropicKey && !openaiKey) {
     // WHAT THE VISITOR READS, NOT WHAT THE OWNER HAS TO DO. This used to name
     // the environment variables to set — fine when the assistant lived behind
     // a button on the planner, wrong now that it is on the front page, where a
     // traveler would be reading the site's own setup instructions. The cause
     // goes to the server log instead.
-    console.warn("[assistant] no AI provider key configured (GEMINI_API_KEY / ANTHROPIC_API_KEY)");
+    console.warn("[assistant] no AI provider key configured (GEMINI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY)");
     return NextResponse.json({ available: false, reason: "The assistant is unavailable right now." });
   }
 
@@ -198,8 +199,53 @@ export async function POST(request: NextRequest) {
     return null;
   }
 
+  async function askOpenAI(): Promise<string | null> {
+    if (!openaiKey) return null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt) await sleep(400);
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { authorization: `Bearer ${openaiKey}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          max_tokens: 1200,
+          temperature: 0.6,
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: userMessage },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const reason = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+        console.warn("[assistant] openai", res.status, `attempt ${attempt + 1}`, reason?.error?.message ?? "");
+        if (TRANSIENT.has(res.status)) continue;
+        return null;
+      }
+      const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+      const text = (data.choices?.[0]?.message?.content ?? "").trim();
+      if (text) return text;
+      return null;
+    }
+    return null;
+  }
+
   try {
-    const text = (await askGemini()) ?? (await askAnthropic());
+    /**
+     * THREE PROVIDERS, TRIED IN ORDER, AND EVERY ONE OF THEM OPTIONAL.
+     *
+     * Two was not enough, and production proved it rather than a guess: with
+     * Gemini returning 503 on all three attempts and no ANTHROPIC_API_KEY set,
+     * the chain had exactly one link and the assistant was dark. A fallback is
+     * only a fallback if something is behind it.
+     *
+     * Each provider is skipped when its key is absent, so this file does not
+     * care how many are configured — one, two or three — and adding a key is
+     * the whole of the work. The order is deliberate: Gemini first because it
+     * is what the site has always used and is the cheapest of the three, then
+     * Anthropic, then OpenAI.
+     */
+    const text = (await askGemini()) ?? (await askAnthropic()) ?? (await askOpenAI());
     if (!text) {
       return NextResponse.json({ available: false, reason: "The assistant could not answer that just now. Please try again." });
     }
