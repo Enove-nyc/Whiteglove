@@ -59,6 +59,14 @@ const HERITAGE_INTENT = [
   "nesios",
   "kivrei",
   "kivrei tzaddikim",
+  // The literal word, which was missing. Without it the query "heritage" set
+  // no heritage intent, so the /heritage landing page took the +3 demotion
+  // meant to keep heritage content below hotels for a CITY query — and lost
+  // its own name to a things-to-do anchor that merely mentions the word. A
+  // query that says "heritage" is a heritage query; only queries containing
+  // the word are affected, so a city search like "rome" is untouched.
+  "heritage",
+  "jewish heritage",
 ];
 
 /** Category cues that should prefer a content kind without needing a place name. */
