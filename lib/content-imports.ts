@@ -786,7 +786,6 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
       address: prepared.address,
       coordinates: prepared.coordinates,
       website: prepared.website,
-      shabbos: null,
       notes: [sourceNote],
       sourceUrl: prepared.sourceUrl,
     });

@@ -108,7 +108,6 @@ async function attractionListUncached(cities?: CityFilter): Promise<AttractionIt
         coordinates: opt(r.coordinates),
         website: opt(r.website),
         notes: r.notes,
-        shabbos: opt(r.shabbos),
         sourceUrl: r.sourceUrl,
         ownerAdded: true,
       })),

@@ -166,7 +166,6 @@ export function templatesFrom(
           .map((attraction) => ({
             name: attraction.name,
             coordinates: attraction.coordinates,
-            notes: attraction.shabbos ? `On Shabbos: ${attraction.shabbos}` : undefined,
           })),
       };
     });

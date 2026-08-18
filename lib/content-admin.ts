@@ -1060,7 +1060,6 @@ export type NewAttractionFields = {
   address: string | null;
   coordinates: string | null;
   website: string | null;
-  shabbos: string | null;
   notes: string[];
   sourceUrl: string;
 };
@@ -1078,7 +1077,6 @@ export async function createAttraction(fields: NewAttractionFields) {
       address: fields.address,
       coordinates: fields.coordinates,
       website: fields.website,
-      shabbos: fields.shabbos,
       notes: fields.notes,
       sourceUrl: fields.sourceUrl,
       status: "PUBLISHED",

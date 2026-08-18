@@ -443,12 +443,6 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
               {attraction.name}
             </h3>
             <p className="mt-2 text-sm leading-6 text-stone-600">{attraction.summary}</p>
-            {attraction.shabbos && (
-              <p className="mt-3 border-t border-[var(--gold-light)] pt-3 text-sm leading-6 text-stone-600">
-                <span className="font-semibold text-[var(--navy)]">On Shabbos: </span>
-                {attraction.shabbos}
-              </p>
-            )}
           </li>
         ))}
       </ul>

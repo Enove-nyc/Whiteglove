@@ -247,7 +247,6 @@ export function buildSeedRows(): SeedRows {
     coordinates: a.coordinates ?? null,
     website: a.website ?? null,
     notes: a.notes ?? [],
-    shabbos: a.shabbos ?? null,
     sourceUrl: a.sourceUrl,
     status: "PUBLISHED",
   }));

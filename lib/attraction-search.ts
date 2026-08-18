@@ -21,7 +21,6 @@ export type AttractionResult = {
   address?: string;
   coordinates?: string;
   website?: string;
-  shabbos?: string;
   notes?: string;
   href: string;
 };
@@ -66,7 +65,6 @@ function toAttractionResult(a: AttractionItem): AttractionResult {
     address: a.address,
     coordinates: a.coordinates,
     website: a.website,
-    shabbos: a.shabbos,
     notes: a.notes?.[0],
     // The directory is one page with an anchor per entry rather than a page
     // each — there is not enough on any single attraction to fill one.
