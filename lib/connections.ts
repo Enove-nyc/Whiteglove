@@ -194,11 +194,66 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["ROUTESTACK_API_KEY", "ROUTESTACK_API_SECRET", "ROUTESTACK_API_BASE"],
-    what: "RouteStack rental cars — the one category the site has no inventory for. Off until it is switched on under Settings → Travel providers, and admin-only until you set it live.",
+    what: "RouteStack — rental cars on Search booking partners, and hotels and flights for the comparison screen. Each is off until it is switched on under Settings → Travel providers.",
     without:
-      "Nothing changes: cars keep working exactly as they do now, through the tracked compare link. This is an addition, not a replacement.",
+      "Rental car prices disappear from the Cars tab and nothing else changes. Hotels and flights carry on through the partners they already use.",
+    weight: "feature",
+    where:
+      "routestack.ai → API credentials. Three values: the key, the secret (they are signed together — neither works alone) and the endpoint. The endpoint decides which world the prices come from: mcp.routestack.ai is the live market, evolvemcp.routestack.ai is the sandbox, and the providers screen says which one is in use.",
+  },
+  {
+    vars: ["ROUTESTACK_MONTHLY_CALL_LIMIT"],
+    what: "How many searches RouteStack's plan allows in a calendar month. The site counts them and stops asking once they are spent.",
+    without: "Four hundred is assumed, which is their entry plan. Set this when the plan changes, and no deploy is needed.",
     weight: "nicety",
-    where: "routestack.ai → sandbox credentials. Three values: the API key, the API secret (they are signed together — neither works alone) and the endpoint, which is the sandbox host for testing.",
+    where: "Whatever the RouteStack plan says. A number, nothing else.",
+  },
+  {
+    vars: ["ADMIN_HOST"],
+    what: "The hostname the admin answers on, so admin screens live at their own address rather than under /admin on the public site.",
+    without: "The admin is still reachable at /admin on the main site, gated as always. Nothing becomes public either way.",
+    weight: "nicety",
+    where: "A subdomain pointed at this same deployment — set it in DNS first, then here.",
+  },
+  {
+    vars: ["RAILWAY_GIT_COMMIT_SHA", "RAILWAY_GIT_COMMIT_MESSAGE", "RAILWAY_GIT_BRANCH"],
+    what: "Which code this deployment is running. Shown on the status page to a signed-in admin, and to nobody else.",
+    without:
+      "The status page still answers the health check and still tells a visitor the site is available; it just cannot tell you whether the deploy you are waiting for has landed.",
+    weight: "nicety",
+    where: "Railway sets all three itself. Nothing to do — they are listed here so the page's silence is explainable if they ever go missing.",
+  },
+  {
+    vars: ["MEDIA_DIR"],
+    what: "Where uploaded pictures are kept on disk — adverts and portraits, which are larger than the store will take.",
+    without:
+      "Pictures fall back to the database with a smaller size limit. The default is the mounted volume, and it is only used where that volume actually exists.",
+    weight: "nicety",
+    where: "The mount path of this service's volume. On Railway that is set when the volume is attached.",
+  },
+  {
+    vars: ["NOMINATIM_URL"],
+    what: "The address-lookup service used when a place is added without coordinates.",
+    without: "The public OpenStreetMap service is used, which is rate-limited and asks that heavy users run their own.",
+    weight: "nicety",
+    where: "Your own Nominatim instance, if you ever run one.",
+  },
+  {
+    vars: [
+      "TRELLO_API_KEY",
+      "TRELLO_TOKEN",
+      "TRELLO_BOARD_ID",
+      "TRELLO_REVIEW_LIST_ID",
+      "TRELLO_DONE_LIST_ID",
+      "TRELLO_CANDIDATE_SYNC_ENABLED",
+    ],
+    what:
+      "Where candidate listings go for review in Trello: the key and token that let this site write there, the board, the list they arrive in, the list they move to once handled, and the switch that turns the whole thing on.",
+    without:
+      "Candidates stay in the review queue on this site, which is a complete way to work through them. Nothing is sent anywhere.",
+    weight: "nicety",
+    where:
+      "Trello → Power-Ups → API key for the first two; the board's URL for the board id; each list's own id from the board's export. The switch is the last thing to set, once the rest are right.",
   },
   {
     vars: ["STAY22_API_KEY"],

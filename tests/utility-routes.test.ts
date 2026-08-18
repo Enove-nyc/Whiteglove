@@ -31,8 +31,16 @@ describe("the version route", () => {
     assert.equal(railway.deploy?.healthcheckPath, "/version");
   });
 
-  it("shows only a simple customer-safe status page", () => {
-    const html = renderToStaticMarkup(VersionPage());
+  it("SHOWS ONLY A SIMPLE CUSTOMER-SAFE STATUS PAGE TO A STRANGER", async () => {
+    // The page reads the admin cookie now, which makes it async — the commit
+    // is back on this route but only for somebody signed in as the owner. It
+    // is the only way to answer "did that deploy land?", and without it the
+    // honest failure is watching an unchanged page and concluding the code is
+    // broken. See tests/version-page.test.ts for the divide itself.
+    //
+    // With no cookie there is no admin, so this renders exactly what a
+    // customer reaching the health check would see.
+    const html = renderToStaticMarkup(await VersionPage());
 
     assert.match(html, /Site status/);
     assert.match(html, /White Glove is available\./);

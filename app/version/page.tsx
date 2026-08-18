@@ -22,8 +22,24 @@ export const metadata: Metadata = {
  * the status line and nothing else, and an authenticated admin gets the sha
  * underneath it.
  */
+/**
+ * Outside a request there is nobody signed in, which is the right answer.
+ *
+ * `cookies()` throws when this component is rendered outside a request scope —
+ * a test rendering the page directly, for one. Treating that as "no admin"
+ * gives exactly the customer-safe page, which is what a caller with no request
+ * should see anyway, and lets the health check's own test render it.
+ */
+async function adminCookie(): Promise<string | undefined> {
+  try {
+    return (await cookies()).get("white_glove_admin")?.value;
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function VersionPage() {
-  const admin = isValidAccessToken("admin", (await cookies()).get("white_glove_admin")?.value);
+  const admin = isValidAccessToken("admin", await adminCookie());
   // Vercel and Railway name these differently; whichever platform built the
   // site, this answers the same question.
   const sha = process.env.VERCEL_GIT_COMMIT_SHA || process.env.RAILWAY_GIT_COMMIT_SHA || "unknown (not a platform build)";

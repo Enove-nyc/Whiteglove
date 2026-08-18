@@ -36,8 +36,24 @@ const TTL_SECONDS = 62 * 24 * 60 * 60;
  * and Travelpayouts are affiliate integrations with no published call ceiling,
  * and inventing one for them would turn a working page off for no reason.
  */
+/**
+ * Written out rather than assembled from the provider's name.
+ *
+ * `process.env[\`${provider.toUpperCase()}_...\`]` worked and was invisible:
+ * Next substitutes environment variables by name at build time, and nothing
+ * that reads the source — including the check that every variable this site
+ * uses is described on the Connections screen — can see a name that is built
+ * at runtime. One line per metered provider is the price of being findable.
+ */
+const LIMIT_VARS: Partial<Record<ProviderId, () => string | undefined>> = {
+  // Read when asked rather than when this file loads: a value fixed at module
+  // load cannot be changed without a restart, and could not be tested at all.
+  routestack: () => process.env.ROUTESTACK_MONTHLY_CALL_LIMIT,
+};
+
+/** What each plan allows per calendar month. */
 export function monthlyLimit(provider: ProviderId): number | null {
-  const named = process.env[`${provider.toUpperCase()}_MONTHLY_CALL_LIMIT`]?.trim();
+  const named = LIMIT_VARS[provider]?.()?.trim();
   if (named) {
     const parsed = Number(named);
     if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
