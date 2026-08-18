@@ -27,16 +27,22 @@ const nextConfig: NextConfig = {
    * is deliberately absent from the list: Duffel's card component handles card
    * entry, and switching that capability off is not a guess worth making.
    *
-   * THE CSP IS HERE NOW, AND IT IS REPORT-ONLY. The note above used to say a
+   * THE CSP IS HERE NOW, AND IT ENFORCES. The note above used to say a
    * Content-Security-Policy was deferred because it is the header that breaks
-   * the booking and card flows if written blind. It is written now — see
-   * lib/csp-policy.ts — but sent as Content-Security-Policy-Report-Only, which
-   * blocks nothing and only reports what the enforcing version would have
-   * stopped. The reports land at /api/csp-report and are read on the admin
-   * Security screen. Nothing here enforces until those reports are silent on
-   * the two hand-offs the policy cannot fully see from source; only then does
-   * the header name lose "-Report-Only". Reporting-Endpoints declares the
-   * group the policy's report-to names, for browsers that dropped report-uri.
+   * the booking and card flows if written blind. So it was written and run as
+   * Content-Security-Policy-Report-Only first — blocking nothing, only
+   * reporting what an enforcing version would have stopped — until the reports
+   * from real use of the maps, the booking search and the card form went
+   * silent. They did (the widget's ad and error hosts and a Google Fonts
+   * stylesheet were the only surprises, all now in lib/csp-policy.ts), so the
+   * header lost "-Report-Only" and now enforces.
+   *
+   * REPORTING STAYS ON. The policy still carries report-uri / report-to, so a
+   * resource that is ever blocked — on a page the report-only pass did not
+   * happen to exercise — is both stopped AND reported, landing on the admin
+   * Security screen rather than failing in silence. Reporting-Endpoints
+   * declares the group the policy's report-to names, for browsers that dropped
+   * report-uri. Rolling back is one word: put "-Report-Only" back on the key.
    */
   async headers() {
     const CSP_REPORT_PATH = "/api/csp-report";
@@ -52,7 +58,7 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           { key: "Reporting-Endpoints", value: reportingEndpointsHeader(CSP_REPORT_PATH) },
-          { key: "Content-Security-Policy-Report-Only", value: contentSecurityPolicy(CSP_REPORT_PATH) },
+          { key: "Content-Security-Policy", value: contentSecurityPolicy(CSP_REPORT_PATH) },
         ],
       },
     ];
