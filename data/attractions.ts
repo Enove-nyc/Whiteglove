@@ -2964,6 +2964,154 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Jewish_Museum,_Vienna",
   },
+  {
+    slug: "zurich-kunsthaus",
+    name: "Kunsthaus Zürich",
+    city: "Zurich",
+    country: "Switzerland",
+    kind: "Museum",
+    summary:
+      "The largest art museum in Switzerland — Swiss painting, the Giacometti holdings, and Impressionist and modern work, in an old building and a big new Chipperfield wing.",
+    address: "Heimplatz 1, 8001 Zürich",
+    coordinates: "47.3703, 8.5483",
+    website: "https://www.kunsthaus.ch/en/",
+    notes: [
+      "Ticketed; wide-ranging rather than religious, and rarely crowded.",
+      "In the old town, an easy add to a day on foot.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Kunsthaus_Z%C3%BCrich",
+  },
+  {
+    slug: "zurich-national-museum",
+    name: "Swiss National Museum",
+    city: "Zurich",
+    country: "Switzerland",
+    kind: "Museum",
+    summary:
+      "The story of Switzerland from prehistory to now, in a fairytale château of 1898 beside the main station.",
+    address: "Museumstrasse 2, 8001 Zürich",
+    coordinates: "47.3786, 8.5403",
+    website: "https://www.landesmuseum.ch/en",
+    notes: [
+      "Ticketed, and one of the better indoor options with children on a wet day.",
+      "Right behind the Hauptbahnhof, so it is the first thing off the train.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Swiss_National_Museum",
+  },
+  {
+    slug: "zurich-uetliberg",
+    name: "Uetliberg",
+    city: "Zurich",
+    country: "Switzerland",
+    kind: "Viewpoint",
+    summary:
+      "The mountain over Zurich, 870 metres, with the city, the lake and the Alps beyond laid out from the top.",
+    address: "Uetliberg, 8143 Zürich",
+    coordinates: "47.3494, 8.4914",
+    notes: [
+      "Free; a suburban train from the main station climbs most of the way, then a ten-minute walk up.",
+      "A ridge path runs along the top for the views, and there is a lookout tower to climb.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Uetliberg",
+  },
+  {
+    slug: "zurich-lowenstrasse-synagogue",
+    name: "Synagoge Löwenstrasse",
+    city: "Zurich",
+    country: "Switzerland",
+    kind: "Jewish heritage",
+    summary:
+      "The oldest and largest shul in Zurich, a Moorish-revival building of 1884 with twin domed towers — the seat of the city's main community, the ICZ.",
+    address: "Löwenstrasse 10, 8001 Zürich",
+    coordinates: "47.3730, 8.5370",
+    notes: [
+      "A working Orthodox kehilla; the striped façade is seen from the street, and going in is by arrangement with the community, with security.",
+      "In the centre, a few minutes from the station.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Synagoge_Z%C3%BCrich_L%C3%B6wenstrasse",
+  },
+  {
+    slug: "geneva-jet-deau",
+    name: "The Jet d'Eau",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Landmark",
+    summary:
+      "Geneva's water jet, 140 metres up off the lake — the mark of the city, thrown to 200 km/h and visible from all around.",
+    address: "Quai Gustave-Ador, 1207 Genève",
+    coordinates: "46.2074, 6.1557",
+    notes: [
+      "Free; a stone jetty runs out to the base, where a shift of wind will soak you.",
+      "Runs in daylight through most of the year, off in frost and high wind.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Jet_d%27Eau",
+  },
+  {
+    slug: "geneva-old-town",
+    name: "The Old Town and St-Pierre Cathedral",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Landmark",
+    summary:
+      "The hilltop old town of cobbled lanes and squares, topped by the cathedral where Calvin preached, with a tower climb over the roofs and the lake.",
+    address: "Vieille Ville, 1204 Genève",
+    coordinates: "46.2010, 6.1483",
+    notes: [
+      "The lanes and the Place du Bourg-de-Four are free; the cathedral's tower climb and the archaeological site below it are ticketed.",
+      "Steep and cobbled, and the best of old Geneva is up here.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/St._Pierre_Cathedral,_Geneva",
+  },
+  {
+    slug: "geneva-palais-nations",
+    name: "Palais des Nations",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Landmark",
+    summary:
+      "The European seat of the United Nations, built for the League of Nations in the 1930s, in a park above the lake — visited on a guided tour.",
+    address: "Av. de la Paix 14, 1211 Genève",
+    coordinates: "46.2267, 6.1406",
+    website: "https://www.ungeneva.org/en/visit",
+    notes: [
+      "Tours are booked ahead and need a passport at the door — no booking and no passport, no entry.",
+      "The Ariana park around it, and the Broken Chair sculpture opposite, are free.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Palace_of_Nations",
+  },
+  {
+    slug: "geneva-cern",
+    name: "CERN Science Gateway",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Family",
+    summary:
+      "The public science centre at CERN, in a Renzo Piano building of 2023 — hands-on exhibitions on particle physics, the universe and the quantum world.",
+    address: "Esplanade des Particules 1, 1211 Meyrin",
+    coordinates: "46.2314, 6.0547",
+    website: "https://visit.cern/science-gateway",
+    notes: [
+      "Free, but registration is required; open Tuesday to Sunday, closed Mondays.",
+      "For ages five up, and a genuine half-day for a family; on the edge of the city by tram.",
+    ],
+    sourceUrl: "https://home.cern/science/science-gateway",
+  },
+  {
+    slug: "geneva-beth-yaacov",
+    name: "Grande Synagogue Beth-Yaacov",
+    city: "Geneva",
+    country: "Switzerland",
+    kind: "Jewish heritage",
+    summary:
+      "Geneva's main shul, a Moorish-revival building of 1859 with a dome and horseshoe windows — the first synagogue built in the city, on the square named for it.",
+    address: "Place de la Synagogue, 1204 Genève",
+    coordinates: "46.1994, 6.1417",
+    notes: [
+      "A working Orthodox kehilla; seen from the square, and entered by arrangement with the community, with security.",
+      "At the edge of the old town, near the Plainpalais.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Beth_Yaakov_Synagogue",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
