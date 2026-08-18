@@ -19,7 +19,7 @@ import { useSignedIn } from "@/lib/use-signed-in";
  * NO SIGNED-OUT LOCAL COPY ANY MORE. There used to be a second button that
  * wrote the shared trip into this browser's own storage instead of an
  * account — exactly the kind of browser-only plan the brief says not to
- * keep. Pressing "Add to my trips" signed out now opens the sign-in dialog
+ * keep. Pressing "Add to my itineraries" signed out now opens the sign-in dialog
  * and completes the same save the moment it succeeds.
  */
 export default function SharedItineraryActions({ itinerary, shareId }: { itinerary: Itinerary; shareId: string }) {
@@ -74,7 +74,7 @@ export default function SharedItineraryActions({ itinerary, shareId }: { itinera
           onClick={() => requireSignIn(() => void addAsOwnTrip(), "Sign in to save")}
           className={`${buttonBase} border border-[var(--navy)] bg-[var(--navy)] text-white hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60`}
         >
-          {busy ? "Adding…" : "Add to my trips"}
+          {busy ? "Adding…" : "Add to my itineraries"}
         </button>
       </div>
 
