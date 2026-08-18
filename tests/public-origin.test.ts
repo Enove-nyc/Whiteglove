@@ -26,11 +26,15 @@ describe("the address a visitor is actually at", () => {
   const configured = process.env.NEXT_PUBLIC_SITE_URL;
 
   it("PREFERS THE CONFIGURED ADDRESS, WHICH CANNOT BE SPOOFED BY A HEADER", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://whitegloveitineraries.com";
+    // A neutral domain on purpose: this is about a header not being allowed to
+    // win, not about which host the live site uses. Using the real domain made
+    // it fail the day the canonical host gained its www, which told us nothing
+    // about spoofing.
+    process.env.NEXT_PUBLIC_SITE_URL = "https://example.com";
     try {
       assert.equal(
         publicOrigin(request({ "x-forwarded-host": "evil.example", "x-forwarded-proto": "https" })),
-        "https://whitegloveitineraries.com",
+        "https://example.com",
       );
     } finally {
       if (configured === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;

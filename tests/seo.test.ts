@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, it } from "node:test";
+import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
 import { breadcrumbs, cemeteryPlace, collectionPage, touristAttraction } from "@/lib/structured-data";
 
 // Every page used to share one title and one description, so a search result
@@ -65,9 +67,9 @@ describe("a place", () => {
 
 describe("absolute URLs", () => {
   it("uses the site's own address when it has one", () => {
-    process.env.NEXT_PUBLIC_SITE_URL = "https://whitegloveitineraries.com";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://example.com";
     const data = collectionPage({ name: "Cemeteries", description: "…", path: "/cemeteries" }) as { url: string };
-    assert.equal(data.url, "https://whitegloveitineraries.com/cemeteries");
+    assert.equal(data.url, "https://example.com/cemeteries");
   });
 
   it("falls back to the path rather than to a wrong domain", () => {
@@ -88,5 +90,68 @@ describe("a directory", () => {
   it("leaves the count out when there isn't one, rather than claiming zero", () => {
     const data = collectionPage({ name: "Destinations", description: "…", path: "/stops" }) as { mainEntity?: unknown };
     assert.equal(data.mainEntity, undefined);
+  });
+});
+
+describe("the canonical host", () => {
+  const restore = () => {
+    if (ENV === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = ENV;
+  };
+
+  it("PUTS THE WWW BACK ON, BECAUSE THE BARE DOMAIN REDIRECTS TO IT", () => {
+    // The variable was set to the bare domain, so every canonical tag, every
+    // <loc> in the sitemap and the Sitemap: line in robots.txt named an
+    // address that answers 301 and sends the crawler to the www host. A
+    // canonical naming an address that redirects away from itself is the one
+    // instruction a search engine cannot follow.
+    for (const configured of [
+      "https://whitegloveitineraries.com",
+      "http://whitegloveitineraries.com",
+      "whitegloveitineraries.com",
+      "https://WhiteGloveItineraries.com/",
+    ]) {
+      process.env.NEXT_PUBLIC_SITE_URL = configured;
+      try {
+        assert.equal(siteOrigin()?.origin, CANONICAL_ORIGIN, `${configured} should canonicalise to the www host`);
+      } finally {
+        restore();
+      }
+    }
+  });
+
+  it("leaves it alone when it is already right", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = CANONICAL_ORIGIN;
+    try {
+      assert.equal(siteOrigin()?.origin, CANONICAL_ORIGIN);
+    } finally {
+      restore();
+    }
+  });
+
+  it("does not touch a preview, a local machine, or anybody else's domain", () => {
+    // Only the live domain is corrected. A preview deployment saying it is a
+    // preview deployment is right, and rewriting it would point every preview
+    // canonical at production.
+    for (const configured of ["https://white-glove-abc123.vercel.app", "http://localhost:3000", "https://example.com"]) {
+      process.env.NEXT_PUBLIC_SITE_URL = configured;
+      try {
+        assert.equal(siteOrigin()?.origin, new URL(configured).origin, `${configured} should be left as it is`);
+      } finally {
+        restore();
+      }
+    }
+  });
+
+  it("is the same host the alert emails link back to", () => {
+    // Two hardcoded fallbacks for the same feature disagreed with each other —
+    // the composer preview used the www host and the send action used the bare
+    // one — so a test blast and a real blast could carry different links.
+    const sendPage = readFileSync("app/admin/alerts/send/page.tsx", "utf8");
+    const sendAction = readFileSync("app/admin/alerts/send/actions.ts", "utf8");
+    for (const [name, source] of [["the composer", sendPage], ["the send action", sendAction]] as const) {
+      assert.doesNotMatch(source, /"https:\/\/(www\.)?whitegloveitineraries\.com"/, `${name} still hardcodes a host of its own`);
+      assert.match(source, /CANONICAL_ORIGIN/, `${name} should fall back to the one named host`);
+    }
   });
 });
