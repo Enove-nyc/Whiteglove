@@ -17,6 +17,7 @@ export type MapKever = {
 export type MapAirport = { code: string; name: string; city: string; lat: number; lng: number; size: string };
 export type MapAttraction = { slug: string; name: string; city: string; country: string; kind: string; coordinates?: string };
 export type MapStay = { slug: string; name: string; city: string; country: string; kind: string; coordinates?: string; season?: string };
+export type MapShul = { id: string; name: string; city: string; country: string; href: string; coordinates?: string | null };
 
 const RADII = [10, 25, 50, 100, 200];
 
@@ -25,11 +26,13 @@ export default function MapExplorer({
   airports,
   attractions,
   stays,
+  shuls,
 }: {
   kevarim: MapKever[];
   airports: MapAirport[];
   attractions: MapAttraction[];
   stays: MapStay[];
+  shuls: MapShul[];
 }) {
   // Null means nobody has searched, and the map opens on everything.
   //
@@ -62,6 +65,12 @@ export default function MapExplorer({
         coordinates: place.coordinates,
       }] : []),
       ...stays.flatMap((place) => place.coordinates ? [{
+        name: place.name,
+        city: place.city,
+        country: place.country,
+        coordinates: place.coordinates,
+      }] : []),
+      ...shuls.flatMap((place) => place.coordinates ? [{
         name: place.name,
         city: place.city,
         country: place.country,
@@ -137,6 +146,19 @@ export default function MapExplorer({
         kind: "stay",
       });
     }
+    for (const s of shuls) {
+      const p = pointFrom(s.coordinates);
+      if (!p) continue;
+      out.push({
+        id: `shul-${s.id}`,
+        name: s.name,
+        subtitle: `${s.city} · ${s.country}`,
+        lat: p.lat,
+        lng: p.lng,
+        href: s.href,
+        kind: "shul",
+      });
+    }
     for (const a of airports) {
       out.push({
         id: `airport-${a.code}`,
@@ -148,7 +170,7 @@ export default function MapExplorer({
       });
     }
     return out;
-  }, [kevarim, attractions, stays, airports]);
+  }, [kevarim, attractions, stays, shuls, airports]);
 
   const markers = useMemo<MapMarker[]>(() => {
     const inArea = withinArea(everything, center, radius);
@@ -160,7 +182,7 @@ export default function MapExplorer({
   }, [everything, center, name, radius]);
 
   const nearby = useMemo(
-    () => markers.filter((m) => m.kind === "kever" || m.kind === "attraction" || m.kind === "stay").sort((a, b) => (a.km ?? 0) - (b.km ?? 0)),
+    () => markers.filter((m) => m.kind === "kever" || m.kind === "attraction" || m.kind === "stay" || m.kind === "shul").sort((a, b) => (a.km ?? 0) - (b.km ?? 0)),
     [markers],
   );
 

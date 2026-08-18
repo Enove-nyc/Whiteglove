@@ -1,11 +1,12 @@
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
-import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type MapStay } from "@/components/MapExplorer";
+import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type MapShul, type MapStay } from "@/components/MapExplorer";
 import Navbar from "@/components/Navbar";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
+import { listPublishedShuls } from "@/lib/shuls";
 import { pointFrom } from "@/lib/map-markers";
 
 // Not force-dynamic. getAttractionList/getStayList (lib/attractions-view.ts)
@@ -14,14 +15,14 @@ import { pointFrom } from "@/lib/map-markers";
 // plots both lists plus static airports and cemeteries) on every visit.
 export const metadata = pageMetadata({
   title: "Map | White Glove Kosher Travel",
-  description: "Batei hachaim, things to do, places to stay and airports on one map. Search a town to see what is around it.",
+  description: "Batei hachaim, shuls, things to do, places to stay and airports on one map. Search a town to see what is around it.",
   path: "/map",
 });
 
 export default async function MapPage() {
   // Read through the view so anything the owner adds appears here without a
   // redeploy, the same as on the directories.
-  const [attractionList, stayList] = await Promise.all([getAttractionList(), getStayList()]);
+  const [attractionList, stayList, shulList] = await Promise.all([getAttractionList(), getStayList(), listPublishedShuls()]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
   const kevarim: MapKever[] = plottableCemeteries.map((c) => ({
@@ -42,6 +43,12 @@ export default async function MapPage() {
   const stays: MapStay[] = stayList
     .filter((s) => pointFrom(s.anchor?.coordinates))
     .map((s) => ({ slug: s.slug, name: s.name, city: s.city, country: s.country, kind: s.kind, coordinates: s.anchor.coordinates, season: s.season }));
+
+  // A shul is plotted where the listing itself is. Many carry no coordinate
+  // yet; those simply do not appear, the same as a cemetery with none.
+  const shuls: MapShul[] = shulList
+    .filter((s) => pointFrom(s.coordinates))
+    .map((s) => ({ id: s.id, name: s.name, city: s.city, country: s.country, href: s.href, coordinates: s.coordinates }));
 
   const airports: MapAirport[] = AIRPORTS.map((a) => ({
     code: a.code,
@@ -72,6 +79,7 @@ export default async function MapPage() {
             airports={airports}
             attractions={attractions}
             stays={stays}
+            shuls={shuls}
           />
         </div>
       </section>
