@@ -170,7 +170,23 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
                 <h2 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{cemetery.yiddishName}</h2>
                 <p className="mt-1 text-sm text-stone-500">{cemetery.name}</p>
                 {cemetery.address && <p className="mt-4 text-sm leading-6 text-stone-600">{cemetery.address}</p>}
-                {cemetery.arrivalNotes[0] && <p className="mt-4 border-l-2 border-[var(--gold)] pl-3 text-sm leading-6 text-stone-600">{cemetery.arrivalNotes[0]}</p>}
+                {/* EVERY ARRIVAL NOTE, not just the first.
+                    This card printed arrivalNotes[0] and dropped the rest,
+                    which quietly hid the most useful line on several towns:
+                    that Stropkov's dead are buried at Tisinec, that the key to
+                    Kolín is at the museum, that sources disagree about where
+                    the Beis HaLevi lies. Whichever note happened to be written
+                    first was the only one a visitor saw. They are all here
+                    now, in the order the listing gives them — the listings put
+                    the warning first on purpose, so order still carries
+                    meaning. */}
+                {cemetery.arrivalNotes.length > 0 && (
+                  <ul className="mt-4 space-y-3 border-l-2 border-[var(--gold)] pl-3">
+                    {cemetery.arrivalNotes.map((note) => (
+                      <li key={note} className="text-sm leading-6 text-stone-600">{note}</li>
+                    ))}
+                  </ul>
+                )}
                 {cemetery.address && <a href={placeDirectionsUrl(cemetery.address, cemetery.coordinates)} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Navigate to this beis hachaim</a>}
               </article>
             ))}

@@ -275,7 +275,9 @@ function defaultLocations(): EditableLocation[] {
     coordinates: cemetery.coordinates ?? "",
     shomerContact: cemetery.accessContacts?.[0]?.phone ?? "",
     source: cemetery.sourceUrl,
-    notes: cemetery.arrivalNotes[0] ?? "",
+    // All of them, joined. This took the first note and dropped the rest, so
+    // the owner's own location list hid the same lines the public card did.
+    notes: cemetery.arrivalNotes.join(" · "),
     status: cemetery.accessContacts?.length ? ("published" as const) : ("needs-review" as const),
     lastVerified: "",
   }));

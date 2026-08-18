@@ -185,3 +185,41 @@ describe("a town filed under its other name", () => {
     for (const name of tomaszow) assert.ok(!grodzisk.includes(name), `${name} is in both towns`);
   });
 });
+
+describe("arrival notes are not truncated", () => {
+  /**
+   * A cemetery card printed arrivalNotes[0] and dropped the rest, so whichever
+   * note happened to be written first was the only one a visitor saw. That hid
+   * the most useful line on several towns: that Stropkov's dead are buried at
+   * Tisinec, that the key to Kolín is held at the museum, that sources
+   * disagree about where the Beis HaLevi lies.
+   */
+  it("the town page renders every note, not the first", () => {
+    const page = readFileSync("app/heritage/towns/[place]/page.tsx", "utf8");
+    assert.match(page, /cemetery\.arrivalNotes\.map/);
+    // The stripped source, so the explanatory comment above it does not count.
+    const markup = page.replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.doesNotMatch(markup, /arrivalNotes\[0\]/);
+  });
+
+  it("nothing else in the app truncates them either", () => {
+    for (const file of ["app/[city]/page.tsx", "lib/admin-content.ts"]) {
+      const markup = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      assert.doesNotMatch(markup, /arrivalNotes\[0\]/, file);
+    }
+  });
+
+  it("the towns whose warning is not the first note now show it", () => {
+    // Brest's Beis HaLevi note and Nagykálló's epitaph were appended to
+    // listings that already had notes, so they were invisible before this.
+    for (const [slug, needle] of [
+      ["brest-brisk-cemetery", /Soloveitchik/],
+      ["nagykallo-kaliv", /Rebbe Eizik/],
+    ] as const) {
+      const cemetery = getCemetery(slug);
+      assert.ok(cemetery, slug);
+      assert.ok(cemetery.arrivalNotes.some((n) => needle.test(n)), `${slug} lost its note`);
+      assert.ok(cemetery.arrivalNotes.length > 1, `${slug} should have several notes`);
+    }
+  });
+});
