@@ -6,6 +6,7 @@ import KosherNearby from "@/components/KosherNearby";
 import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
@@ -186,6 +187,17 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   href: `/things-to-do#${a.slug}`,
                 }}
                 label="Add to my route"
+              />
+              {/* The route is the driving order; the itinerary is the trip.
+                  The card offered only the first, so a place you wanted on
+                  the trip could be saved as a stop and nothing more. */}
+              <AddToItineraryButton
+                place={{
+                  id: `attraction-${a.slug}`,
+                  name: a.name,
+                  address: a.address || `${a.city}, ${a.country}`,
+                  coordinates: a.coordinates,
+                }}
               />
               <Link
                 href={staySearchHref({ destination: a.city })}
