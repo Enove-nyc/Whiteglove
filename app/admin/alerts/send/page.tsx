@@ -5,7 +5,7 @@ import { ALERT_TOPICS } from "@/lib/email-alerts";
 import { alertsStoreAvailable, listAlertSignups } from "@/lib/email-alerts-store";
 import { audienceFor } from "@/lib/email-blast";
 import { alreadyHandled, blastStoreAvailable, listBlasts, readBlastSettings } from "@/lib/email-blast-store";
-import { siteOrigin } from "@/lib/seo";
+import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +91,7 @@ export default async function SendUpdatesPage() {
           reachByTopic={reachByTopic}
           audienceMasks={audienceMasks}
           blasts={blasts}
-          siteOrigin={siteOrigin()?.origin || "https://www.whitegloveitineraries.com"}
+          siteOrigin={siteOrigin()?.origin || CANONICAL_ORIGIN}
           remaining={remaining}
           deliveryWarning={deliveryWarning}
         />

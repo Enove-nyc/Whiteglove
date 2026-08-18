@@ -84,7 +84,7 @@ export const CONNECTIONS: Connection[] = [
     without:
       "Every page's canonical link and share image is relative, so a link posted to WhatsApp shows no picture and search engines may treat the preview deployments as copies of the site.",
     weight: "feature",
-    where: "Set it to https://whitegloveitineraries.com.",
+    where: "Set it to https://www.whitegloveitineraries.com — with the www, which is the address the bare domain redirects to.",
   },
   {
     vars: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
@@ -92,7 +92,7 @@ export const CONNECTIONS: Connection[] = [
     without:
       "The Google button does not appear on the sign-in page, and everybody signs in by typing an email and a password as before. Nothing else changes and no account is affected.",
     weight: "nicety",
-    where: "Google Cloud console, under APIs & Services → Credentials → OAuth client ID (Web application). The redirect URI must be exactly https://whitegloveitineraries.com/api/account/google/callback.",
+    where: "Google Cloud console, under APIs & Services → Credentials → OAuth client ID (Web application). The redirect URI must be exactly https://www.whitegloveitineraries.com/api/account/google/callback — with the www. Google matches it as text, so the version without the www is a different address to it and sign-in fails with redirect_uri_mismatch. Keeping both listed costs nothing and covers an older deployment.",
   },
   {
     vars: ["RESEND_API_KEY", "RESEND_FROM_EMAIL"],

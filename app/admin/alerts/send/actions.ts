@@ -33,7 +33,7 @@ import {
   writeBlast,
   writeBlastSettings,
 } from "@/lib/email-blast-store";
-import { siteOrigin } from "@/lib/seo";
+import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
 
 export type BlastActionResult = { ok: boolean; message: string; blastId?: string };
 
@@ -179,7 +179,7 @@ export async function testBlastAction(_prev: BlastActionResult | null, formData:
   if (!status.apiKeySet) return { ok: false, message: "Resend is not connected, so nothing can be sent." };
 
   const to = status.editsInbox;
-  const origin = siteOrigin()?.origin || "https://whitegloveitineraries.com";
+  const origin = siteOrigin()?.origin || CANONICAL_ORIGIN;
   const result = await sendBlastEmail({
     to,
     subject: `[test] ${blast.subject}`,
@@ -246,7 +246,7 @@ export async function sendBlastAction(_prev: BlastActionResult | null, formData:
     return { ok: true, message: `Everybody on this list has had it — ${blast.sentCount} sent.` };
   }
 
-  const origin = siteOrigin()?.origin || "https://whitegloveitineraries.com";
+  const origin = siteOrigin()?.origin || CANONICAL_ORIGIN;
   const batch = waiting.slice(0, BATCH_SIZE);
   const line = becauseLine(blast.topics);
   let sent = 0;
