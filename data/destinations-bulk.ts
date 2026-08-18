@@ -111,7 +111,7 @@ const rows: DestinationRow[] = [
   ["kaunas", "Kaunas", "קאוונע", "Lithuania", ["Kovno"]],
   ["kedainiai", "Kėdainiai", "קעידאן", "Lithuania"],
   ["telsiai", "Telšiai", "טעלז", "Lithuania"],
-  ["zagarė", "Žagarė", "זשאגער", "Lithuania"],
+  ["zagare", "Žagarė", "זשאגער", "Lithuania"],
   ["alytus", "Alytus", "אליטא", "Lithuania"],
   ["panevezys", "Panevėžys", "פאנעוועזש", "Lithuania"],
   ["siauliai", "Šiauliai", "שאוול", "Lithuania"],

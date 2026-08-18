@@ -98,10 +98,24 @@ describe("a town's listing is reachable from its page", () => {
   });
 
   it("the towns paired by hand actually resolve", () => {
-    for (const slug of ["mikulov", "anipoli", "pinsk", "stropkov", "chernivtsi", "zagarė"]) {
+    for (const slug of ["mikulov", "anipoli", "pinsk", "stropkov", "chernivtsi"]) {
       const record = getDestinationRecord(slug);
       assert.ok(record, `${slug} is not a destination`);
       assert.ok(record.cemeteries.length > 0, `${slug} was paired but resolves to nothing`);
     }
+  });
+});
+
+describe("every directory town has a slug its page can be reached at", () => {
+  it("keeps slugs to lowercase ASCII, digits and hyphens", () => {
+    // WHY. Žagarė's directory entry was written with its Lithuanian diacritic,
+    // `zagarė`, and its town page returned 404 at every URL encoding for as
+    // long as the entry existed. Nothing failed loudly, because a page nobody
+    // can open does not complain — it was found only when a beis hachaim
+    // listing was added to that town and the page still would not load. The
+    // town's display name keeps its diacritics; the slug is the URL and must
+    // not.
+    const bad = bulkDestinations.map((d) => d.slug).filter((slug) => !/^[a-z0-9-]+$/.test(slug));
+    assert.deepEqual(bad, [], `these slugs cannot be served as URLs: ${bad.join(", ")}`);
   });
 });

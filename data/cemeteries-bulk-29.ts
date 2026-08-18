@@ -4,11 +4,11 @@
 // cemetery is in the woodland behind that house's plot. Nobody would find it
 // otherwise.
 //
-// Žagarė is filed under `zagare-` and paired to the directory town by hand.
-// The directory slug carries a Lithuanian diacritic — `zagarė` — so the
-// automatic prefix match cannot reach it. The pairing is in
-// data/destination-database.ts with the others rather than renaming the town
-// and breaking a live URL.
+// A BUG THIS BATCH TURNED UP AND FIXED. Žagarė's directory slug was written
+// with a Lithuanian diacritic — `zagarė` — and its town page had been
+// returning 404 at every URL encoding for as long as the entry has existed.
+// Nothing was breaking loudly, because a page nobody can open does not
+// complain. The slug is ASCII now and the page resolves.
 //
 // SLABODKA IS NOT THE YESHIVA. People search the name because of the yeshiva
 // and its roshei yeshiva, and what is under it is a destroyed cemetery and
