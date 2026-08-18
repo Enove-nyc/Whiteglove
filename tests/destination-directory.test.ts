@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { bulkDestinations } from "@/data/destinations-bulk";
+import { cityGuides } from "@/data/destinations-detailed";
 import { destinations as heritageDestinations } from "@/data/destinations";
 import { TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { heritageCards, heritageTownHasContent } from "@/lib/destination-directory";
@@ -49,9 +51,23 @@ describe("the heritage half of the directory", () => {
     }
   });
 
-  it("points at the page the town actually has", () => {
+  it("POINTS AT THE PAGE THE TOWN ACTUALLY HAS, WHICHEVER OF THE TWO IT IS", () => {
+    // Two routes serve these towns and they generate from different lists: a
+    // town with a written guide is /uman (app/[city], from cityGuides) and one
+    // without is /heritage/towns/belz (from bulkDestinations). Building every
+    // card's link as /heritage/towns/<slug> gave fourteen of the fifty a 404 —
+    // shipped, and caught by pressing one. The address is asked for from the
+    // module that owns it now, and this checks each card against the same
+    // lists the routes build from.
+    const guided = new Set(cityGuides.map((guide) => guide.slug));
+    const bulk = new Set(bulkDestinations.map((town) => town.slug));
     for (const card of HERITAGE) {
-      assert.match(card.href, /^\/heritage\/towns\//, `${card.slug} points somewhere else`);
+      if (guided.has(card.slug)) {
+        assert.equal(card.href, `/${card.slug}`, `${card.slug} has a guide and is served at /${card.slug}`);
+      } else {
+        assert.ok(bulk.has(card.slug), `${card.slug} is on neither route's list`);
+        assert.equal(card.href, `/heritage/towns/${card.slug}`, `${card.slug} points somewhere with no page`);
+      }
     }
   });
 
