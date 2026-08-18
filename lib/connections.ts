@@ -146,11 +146,12 @@ export const CONNECTIONS: Connection[] = [
     where: "AeroDataBox, through RapidAPI. The free tier is small, so a busy minute can hit its limit.",
   },
   {
-    vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY"],
+    vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"],
     what: "The assistant that answers a traveller's question in words.",
     without: "The assistant says it cannot answer and points at the search instead. Nothing else changes.",
     weight: "nicety",
-    where: "Either one is enough.",
+    where:
+      "Any one is enough, and more than one is better. They are tried in order — Gemini, then Anthropic, then OpenAI — and a provider is skipped when its key is absent. With only one set there is nothing to fall back to: Gemini answered one call in six for a while, returning 503 (overloaded), and the assistant was dark for the other five because it was the only key configured.",
   },
   {
     vars: ["KAYAK_AFFILIATE_PARAMS"],
@@ -351,7 +352,8 @@ export function readConnections(env: Record<string, string | undefined>): Readin
  */
 const ANY_ONE_OF: Record<string, string[][]> = {
   TWILIO_ACCOUNT_SID: [["TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"]],
-  ANTHROPIC_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY"]],
+  ANTHROPIC_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
+  OPENAI_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
   OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"]],
 };
 
