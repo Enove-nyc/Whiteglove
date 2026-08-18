@@ -6,7 +6,6 @@ import ItineraryFooter from "@/components/ItineraryFooter";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
-import TravelAssistantBox from "@/components/TravelAssistantBox";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
@@ -22,16 +21,10 @@ export const metadata = pageMetadata({
   noIndex: true,
 });
 
-export default async function ItineraryPage({
-  searchParams,
-}: {
-  // `ask` carries a question handed over by the site assistant in the corner,
-  // so nobody has to type it twice. Read here rather than from the browser, so
-  // the panel opens already open with the question in it.
-  searchParams: Promise<{ ask?: string | string[] }>;
-}) {
-  const asked = await searchParams;
-  const initialAsk = (Array.isArray(asked.ask) ? asked.ask[0] : asked.ask ?? "").replace(/\s+/g, " ").trim().slice(0, 500);
+// The `ask` hand-off used to arrive here, because the travel assistant lived on
+// this page. It has its own page now — app/assistant — and this one is the
+// planner again, so there is no question to read out of the address.
+export default async function ItineraryPage() {
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
@@ -68,8 +61,6 @@ export default async function ItineraryPage({
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
-        <TravelAssistantBox initialAsk={initialAsk} />
-
         <div className="itinerary-planner mt-6">
           <SharedWithMe />
           <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} />

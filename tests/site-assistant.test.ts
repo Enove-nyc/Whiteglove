@@ -237,8 +237,11 @@ describe("the hand-off carries the question", () => {
     // A hand-off that drops what somebody typed and shows them a fresh empty
     // box is one most people abandon there.
     const { handOffHref } = await import("@/lib/site-assistant");
-    assert.equal(handOffHref("kosher food in Tokyo"), "/itinerary?ask=kosher%20food%20in%20Tokyo");
-    assert.equal(handOffHref("   "), "/itinerary", "nothing to carry is just the page");
+    // The assistant has its own page now. It used to land on /itinerary, so a
+    // person who asked a question was handed a trip planner they had not asked
+    // for, with their answer sitting above it.
+    assert.equal(handOffHref("kosher food in Tokyo"), "/assistant?ask=kosher%20food%20in%20Tokyo");
+    assert.equal(handOffHref("   "), "/assistant", "nothing to carry is just the page");
     assert.ok(handOffHref("x".repeat(900)).length < 600, "a pasted essay must not become the address");
   });
 
@@ -267,11 +270,18 @@ describe("the hand-off carries the question", () => {
   });
 
   it("reads it on the server, so the panel does not flicker open", () => {
-    const page = readFileSync("app/itinerary/page.tsx", "utf8");
+    const page = readFileSync("app/assistant/page.tsx", "utf8");
     assert.match(page, /searchParams: Promise<\{ ask\?: string \| string\[\] \}>/);
-    assert.match(page, /<TravelAssistantBox initialAsk=\{initialAsk\} \/>/);
+    assert.match(page, /<TravelAssistantBox initialAsk=\{initialAsk\}/);
     // A repeated ?ask= arrives as an array, which would render as one string.
     assert.match(page, /Array\.isArray\(asked\.ask\)/);
+  });
+
+  it("LEAVES THE PLANNER AS A PLANNER", () => {
+    // The whole point of giving the assistant a page: somebody who asked a
+    // question should not be handed a day-by-day trip builder underneath it.
+    const planner = readFileSync("app/itinerary/page.tsx", "utf8");
+    assert.ok(!planner.includes("TravelAssistantBox"), "the assistant is back on the planner page");
   });
 });
 
