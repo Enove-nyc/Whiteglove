@@ -3915,6 +3915,248 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Copernicus_Science_Centre",
   },
+  {
+    slug: "lviv-rynok-square",
+    name: "Rynok Square and the Old Town",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The medieval market square at the centre of Lviv's UNESCO old town, ringed by burghers' houses, with the town hall and its climbable tower in the middle.",
+    address: "Ploshcha Rynok, Lviv 79008",
+    coordinates: "49.8419, 24.0315",
+    notes: [
+      "The square is free; the Ratusha tower is a ticketed climb for the view over the tiled roofs.",
+      "The old town around it is walked — one of the best-preserved in Central Europe, and largely intact from the war.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Market_Square,_Lviv",
+  },
+  {
+    slug: "lviv-opera",
+    name: "Lviv Opera",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The grand Viennese-style opera house of 1900 at the head of Freedom Avenue — one of the landmarks of the city.",
+    address: "Prospekt Svobody 28, Lviv 79000",
+    coordinates: "49.8443, 24.0264",
+    notes: [
+      "The façade and the tree-lined avenue in front are free; the interior is seen on a performance or a day tour.",
+      "The avenue is the promenade of the city, busy in the evenings.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lviv_Theatre_of_Opera_and_Ballet",
+  },
+  {
+    slug: "lviv-high-castle",
+    name: "High Castle Hill",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Viewpoint",
+    summary:
+      "The park on the hill where the city's castle once stood, the highest point in Lviv, with the whole old town spread out below.",
+    address: "Vysokyi Zamok, Lviv 79000",
+    coordinates: "49.8506, 24.0397",
+    notes: [
+      "Free; a climb up through the park to the summit and the panorama.",
+      "Little of the castle remains — the view is the reason to go up.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/High_Castle_(Lviv)",
+  },
+  {
+    slug: "lviv-lychakiv-cemetery",
+    name: "Lychakiv Cemetery",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Landmark",
+    summary:
+      "The historic garden cemetery of 1787, a state museum-reserve — wooded avenues of carved tombs and sculpture, the resting place of the city's artists and writers.",
+    address: "Vulytsia Mechnykova 33, Lviv 79010",
+    coordinates: "49.8331, 24.0561",
+    notes: [
+      "Ticketed as a museum-reserve; the sculpture and the old avenues are the visit.",
+      "East of the centre, a tram ride from the old town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lychakiv_Cemetery",
+  },
+  {
+    slug: "lviv-space-of-synagogues",
+    name: "The Space of Synagogues and the Golden Rose",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Jewish heritage",
+    summary:
+      "A memorial on the site of the Golden Rose Synagogue of 1582 — the oldest in what is now Ukraine — desecrated by the Nazis in 1941 and demolished in 1943.",
+    address: "Vulytsia Ivana Fedorova, Lviv 79008",
+    coordinates: "49.8461, 24.0297",
+    notes: [
+      "Open and free; the outlines of the lost synagogues are marked in the ground, with quotations from Lviv Jews on stone tablets.",
+      "In the old town, a few minutes from Rynok Square.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Golden_Rose_Synagogue_(Lviv)",
+  },
+  {
+    slug: "lviv-shevchenkivskyi-hai",
+    name: "Shevchenkivskyi Hai",
+    city: "Lviv",
+    country: "Ukraine",
+    kind: "Museum",
+    summary:
+      "An open-air museum of folk life on a wooded hillside — wooden churches, cottages and windmills brought here from villages across western Ukraine.",
+    address: "Vulytsia Chernecha Hora 1, Lviv 79014",
+    coordinates: "49.8331, 24.0669",
+    notes: [
+      "Ticketed; a large park you walk, so an easy couple of hours with children.",
+      "The buildings are the real thing, moved and rebuilt on the hill.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Shevchenkivskyi_Hai",
+  },
+  {
+    slug: "bucharest-palace-parliament",
+    name: "Palace of the Parliament",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Landmark",
+    summary:
+      "Ceaușescu's colossal palace, the heaviest building in the world and the largest administrative one — a whole quarter of old Bucharest was razed to build it.",
+    address: "Strada Izvor 2-4, București 050563",
+    coordinates: "44.4275, 26.0875",
+    website: "https://cic.cdep.ro/en",
+    notes: [
+      "Seen only on a booked guided tour, with a passport at the door — no booking, no entry.",
+      "Most of the 1,100 rooms stand empty; the tour shows the state halls.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Palace_of_the_Parliament",
+  },
+  {
+    slug: "bucharest-athenaeum",
+    name: "The Romanian Athenaeum",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Landmark",
+    summary:
+      "The domed neoclassical concert hall of 1888, the home of the George Enescu Philharmonic — the symbol of cultured Bucharest.",
+    address: "Strada Benjamin Franklin 1-3, București 030167",
+    coordinates: "44.4413, 26.0972",
+    notes: [
+      "The exterior and the little park in front are free; the frescoed concert hall is seen at a concert or on a short day visit.",
+      "On Revolution Square, in the middle of the old royal quarter.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Romanian_Athenaeum",
+  },
+  {
+    slug: "bucharest-village-museum",
+    name: "The Village Museum",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Museum",
+    summary:
+      "One of Europe's oldest open-air museums, in the park by the lake — hundreds of real peasant houses, churches and mills brought from villages across Romania.",
+    address: "Șoseaua Kiseleff 28-30, București 011347",
+    coordinates: "44.4733, 26.0767",
+    website: "https://muzeul-satului.ro/en/",
+    notes: [
+      "Ticketed; a large park you walk, and an easy couple of hours with children.",
+      "In the Herăstrău park, north of the centre.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Dimitrie_Gusti_National_Village_Museum",
+  },
+  {
+    slug: "bucharest-old-town",
+    name: "The Old Town and Stavropoleos",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Landmark",
+    summary:
+      "The Lipscani quarter of the old merchant city — cobbled lanes, the little Brâncovenesc church of Stavropoleos, and the old princely court.",
+    address: "Strada Lipscani, București 030167",
+    coordinates: "44.4319, 26.1006",
+    notes: [
+      "Free to walk; the Stavropoleos monastery church and its carved stone courtyard are the quiet corner of it.",
+      "Busy and crowded in the evenings — a daytime walk suits the sightseeing and the old churches.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Lipscani",
+  },
+  {
+    slug: "bucharest-cismigiu",
+    name: "Cișmigiu Gardens",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Nature",
+    summary:
+      "The oldest public park in Bucharest, laid out in the 1840s around a lake in the middle of the city.",
+    address: "Bulevardul Regina Elisabeta, București 030167",
+    coordinates: "44.4361, 26.0906",
+    notes: [
+      "Free and open; rowing boats on the lake in summer, and the central green break from the traffic.",
+      "A few minutes from the old town and Revolution Square.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ci%C8%99migiu_Gardens",
+  },
+  {
+    slug: "bucharest-choral-temple",
+    name: "The Choral Temple",
+    city: "Bucharest",
+    country: "Romania",
+    kind: "Jewish heritage",
+    summary:
+      "The main shul of Bucharest, a Moorish-revival building of 1866 modelled on Vienna's — still the active heart of the community, with a Jewish history museum nearby.",
+    address: "Strada Sfânta Vineri 9-11, București 030167",
+    coordinates: "44.4311, 26.1067",
+    notes: [
+      "A working Orthodox kehilla with daily minyanim; visited by arrangement, with a security check, not by walking in.",
+      "In the old Jewish quarter east of the old town, near the Jewish history museum.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Choral_Temple_(Bucharest)",
+  },
+  {
+    slug: "cluj-st-michael",
+    name: "St. Michael's Church and Union Square",
+    city: "Cluj-Napoca",
+    country: "Romania",
+    kind: "Landmark",
+    summary:
+      "The great Gothic church begun in 1316, with a 76-metre tower, standing in the main square at the heart of Cluj.",
+    address: "Piața Unirii 16, Cluj-Napoca 400098",
+    coordinates: "46.7700, 23.5897",
+    notes: [
+      "A working church; the square around it is the centre of the city and free.",
+      "The second-largest church in Transylvania.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/St._Michael%27s_Church,_Cluj-Napoca",
+  },
+  {
+    slug: "cluj-botanical-garden",
+    name: "Alexandru Borza Botanical Garden",
+    city: "Cluj-Napoca",
+    country: "Romania",
+    kind: "Nature",
+    summary:
+      "The university's botanical garden of 1920, one of the largest in the region — glasshouses, a Japanese garden and a Roman section, on a hillside south of the centre.",
+    address: "Strada Republicii 42, Cluj-Napoca 400015",
+    coordinates: "46.7625, 23.5883",
+    notes: [
+      "Ticketed; a big hillside garden to walk, with a tower for the view over it.",
+      "A ten-minute walk from Union Square.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Alexandru_Borza_Botanical_Garden",
+  },
+  {
+    slug: "cluj-cetatuia",
+    name: "Cetățuia Hill",
+    city: "Cluj-Napoca",
+    country: "Romania",
+    kind: "Viewpoint",
+    summary:
+      "The old fortress hill across the Someș, with the best view over the roofs and spires of Cluj.",
+    address: "Dealul Cetățuia, Cluj-Napoca 400001",
+    coordinates: "46.7736, 23.5836",
+    notes: [
+      "Free; a short steep climb or a road up, and the panorama is the point.",
+      "Best at the end of the day for the light over the old town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Cluj-Napoca",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
