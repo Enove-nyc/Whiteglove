@@ -13,6 +13,7 @@ import {
   BUILT_IN_CONTENT_IMPORT_PACKAGES,
   type BuiltInContentImportPackage,
 } from "@/data/imports";
+import { heritageCemeteries } from "@/data/heritage-cemeteries";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherStays } from "@/data/kosher-stays";
 import {
@@ -270,7 +271,7 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
   const keys = new Set(owned.map((o) => locationKey(o.name, o.city, o.country)));
   const sources = new Set(owned.map((o) => normalizeSourceUrl(o.sourceUrl ?? "")).filter(Boolean));
   const coords = new Set(
-    [...attractions, ...kosherStays, ...kosherEateries]
+    [...attractions, ...kosherStays, ...kosherEateries, ...heritageCemeteries]
       .map((item) => coordKey((item as { coordinates?: string | null }).coordinates ?? null))
       .filter((k): k is string => Boolean(k)),
   );
@@ -307,6 +308,16 @@ function staticOwnedContent(): KnownContentRecord[] {
     })),
     ...kosherEateries.map((item) => ({
       id: `food:${item.slug}`,
+      kind: "EXISTING" as const,
+      name: item.name,
+      city: item.city,
+      country: item.country,
+      sourceUrl: item.sourceUrl,
+    })),
+    // The heritage-cemetery locator: each carries its Nesiya Tova listing URL,
+    // so the matching queue candidate reconciles out by source once published.
+    ...heritageCemeteries.map((item) => ({
+      id: `heritage-cemetery:${item.slug}`,
       kind: "EXISTING" as const,
       name: item.name,
       city: item.city,

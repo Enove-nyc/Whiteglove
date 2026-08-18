@@ -1,3 +1,4 @@
+import Link from "next/link";
 import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -45,6 +46,16 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
             <h1 lang="he" dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
               Known kevarim, navigation and arrival notes for each beis hachaim.
+            </p>
+            <p className="mt-4 max-w-2xl leading-7 text-stone-600">
+              Looking for a town&rsquo;s cemetery rather than a kever?{" "}
+              <Link
+                href="/cemeteries/heritage"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                Open the heritage cemetery locator
+              </Link>{" "}
+              — nearly two thousand batei hachaim worldwide, from Nesiya Tova.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 sm:block" />
