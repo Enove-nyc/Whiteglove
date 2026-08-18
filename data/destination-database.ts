@@ -145,7 +145,19 @@ const cityGuideRecords: DestinationRecord[] = guidedDestinations().map(({ guide 
  * The cost of being wrong here is somebody driving to it.
  */
 const SAME_TOWN_OTHER_NAME: Record<string, string> = {
+  // The Czech name and the German/Yiddish one. Reb Shmelke's town.
   mikulov: "nikolsburg",
+  // Hannopil is the Ukrainian name of the town chassidim call Anipoli. The
+  // Maggid of Mezritch spent his last years and is buried here, with Reb Zusha
+  // beside him — which is also why the listing is not filed under Mezritch.
+  anipoli: "hanipoli",
+  // Karlin is a quarter of Pinsk, not a separate town, and Reb Aharon HaGadol
+  // is buried there. The listing is filed under the quarter.
+  pinsk: "karlin-pinsk-aharon-hagadol",
+  // Stropkov's dead are buried at Tisinec, a village outside the town. The
+  // listing is filed under the burial ground, which is where somebody has to
+  // drive; the directory entry is the town people search for.
+  stropkov: "tisinec-stropkov",
 };
 
 const cemeteriesForTown = (slug: string) => {
