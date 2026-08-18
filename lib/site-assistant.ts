@@ -42,10 +42,14 @@ export const HAND_OFF_LABEL = "Ask the AI travel assistant instead";
  * hand-off most people abandon. The travel assistant reads `ask` on arrival,
  * opens itself and asks it — see components/TravelAssistantBox.tsx — and then
  * takes it out of the address so a reload does not ask it twice.
+ *
+ * IT USED TO LAND ON /itinerary, which is where the travel assistant lived —
+ * so a person who asked a question was handed a trip planner they had not
+ * asked for. The assistant has its own page now and the hand-off goes there.
  */
 export function handOffHref(question: string): string {
   const asked = question.trim().slice(0, 500);
-  return asked ? `/itinerary?ask=${encodeURIComponent(asked)}` : "/itinerary";
+  return asked ? `/assistant?ask=${encodeURIComponent(asked)}` : "/assistant";
 }
 
 export const SITE_ASSISTANT_SYSTEM = [

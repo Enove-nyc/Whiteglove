@@ -96,7 +96,7 @@ export default function TravelAssistantBox({
    * The corner assistant answers only from published pages, and when it has
    * nothing it offers this one instead. Sending somebody here to type their
    * question a second time is the sort of hand-off that gets abandoned
-   * halfway, so it travels in the address: /itinerary?ask=… opens this panel
+   * halfway, so it travels in the address: /assistant?ask=… opens this panel
    * and asks it.
    *
    * READ ON THE SERVER AND HANDED DOWN, not read from window here. The page
