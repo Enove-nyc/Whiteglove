@@ -20,6 +20,7 @@ export function IconLink({
   className = "",
   active = false,
   external = false,
+  onClick,
 }: {
   icon: IconName;
   label: string;
@@ -28,8 +29,26 @@ export function IconLink({
   active?: boolean;
   /** Opens in a new tab — a partner site, a map, a phone number's own app. */
   external?: boolean;
+  /**
+   * Do something here instead of going there.
+   *
+   * For the one case where a destination exists and is not the best answer:
+   * the header's Sign in, which has a real page behind it but should open a
+   * dialog and leave the reader where they are. It renders a button rather
+   * than a link with its navigation cancelled, so it is a button to a screen
+   * reader too, and the href stays as the fallback for anything that renders
+   * this without a handler.
+   */
+  onClick?: () => void;
 }) {
   const classes = `${BASE} ${active ? "bg-[var(--cream-deep)]" : ""} ${className}`;
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} aria-label={label} title={label} className={classes}>
+        <Icon name={icon} />
+      </button>
+    );
+  }
   if (external || href.startsWith("tel:") || href.startsWith("http")) {
     return (
       <a href={href} aria-label={label} title={label} target={href.startsWith("tel:") ? undefined : "_blank"} rel={href.startsWith("tel:") ? undefined : "noreferrer"} className={classes}>

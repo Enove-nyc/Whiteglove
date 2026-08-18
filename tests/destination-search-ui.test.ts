@@ -85,7 +85,13 @@ describe("DestinationSearch wiring", () => {
     // bottom bar carries the same icon with a visible one-word label —
     // hover tooltips never fire on a phone. The collapsing in-header field
     // (mobileCollapse) went with the old row.
-    assert.match(NAV, /icon="search" label="Search" href="\/search"/);
+    // THE HEADER ICON NOW OPENS A BAR ACROSS THE PAGE rather than navigating.
+    // Searching meant leaving whatever somebody was reading, and coming back
+    // meant Back. /search is still behind it — for a typed URL, a bookmark,
+    // and Enter on a query worth its own screen — so the href stays.
+    assert.match(NAV, /icon="search"[\s\S]{0,80}label="Search"[\s\S]{0,80}href="\/search"/);
+    assert.match(NAV, /setSearchOpen\(\(v\) => !v\)/);
+    assert.match(NAV, /<DestinationSearch compact autoFocus/);
     const BAR = readFileSync("components/MobileBottomBar.tsx", "utf8");
     assert.match(BAR, /icon: "search", label: "Search", href: "\/search"/);
   });

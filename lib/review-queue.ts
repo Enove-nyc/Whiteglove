@@ -34,6 +34,13 @@ export type ReviewQueueItem = {
   origin: "database" | "source_pack";
   href: string;
   publishBlockers: number;
+  aliases: string[];
+  address: string;
+  coordinates: string;
+  sourceUrl: string;
+  sourceName: string;
+  website: string;
+  region: string;
 };
 
 export type PrivateImportPackSummary = {

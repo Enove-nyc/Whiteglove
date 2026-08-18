@@ -22,7 +22,16 @@ export const metadata = pageMetadata({
   noIndex: true,
 });
 
-export default async function ItineraryPage() {
+export default async function ItineraryPage({
+  searchParams,
+}: {
+  // `ask` carries a question handed over by the site assistant in the corner,
+  // so nobody has to type it twice. Read here rather than from the browser, so
+  // the panel opens already open with the question in it.
+  searchParams: Promise<{ ask?: string | string[] }>;
+}) {
+  const asked = await searchParams;
+  const initialAsk = (Array.isArray(asked.ask) ? asked.ask[0] : asked.ask ?? "").replace(/\s+/g, " ").trim().slice(0, 500);
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
@@ -57,7 +66,7 @@ export default async function ItineraryPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
-        <TravelAssistantBox />
+        <TravelAssistantBox initialAsk={initialAsk} />
 
         <div className="itinerary-planner mt-6">
           <SharedWithMe />

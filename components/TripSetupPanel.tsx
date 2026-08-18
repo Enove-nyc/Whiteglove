@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import type { Itinerary } from "@/data/itinerary";
 import { vacationDestinations } from "@/data/vacation-destinations";
-import { hasAnswers, plannerSeed, readAnswers, summarize, TRIP_PLAN_KEY, type TripPlanAnswers } from "@/lib/trip-plan";
+import { answersAreFresh, describeAnswered, hasAnswers, plannerSeed, readAnswers, summarize, TRIP_PLAN_KEY, type TripPlanAnswers } from "@/lib/trip-plan";
 import { destinationForTrip, setupProgress, setupSteps, tripIsUntouched, type TripTemplate } from "@/lib/trip-setup";
 import { destinationHref } from "@/lib/vacation-ideas";
 
@@ -77,7 +77,11 @@ export default function TripSetupPanel({
   const progress = setupProgress(steps);
   const untouched = tripIsUntouched(itin);
   const suggested = destinationForTrip(itin, vacationDestinations);
-  const canSeed = hasAnswers(answers) && untouched;
+  // A DAY, NOT FOREVER. These answers exist to carry somebody from /plan into
+  // the planner in one sitting. Past that they are a week-old note about a
+  // family's travel plans sitting in a browser on a machine that may not be
+  // theirs, offered back to whoever opens the page next.
+  const canSeed = hasAnswers(answers) && answersAreFresh(answers) && untouched;
 
   return (
     <section aria-labelledby="trip-setup-heading" className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
@@ -110,8 +114,11 @@ export default function TripSetupPanel({
           {/* ---- carry the answers over ------------------------------------ */}
           {canSeed && answers && (
             <div className="rounded-xl border border-[var(--gold)] bg-white p-5">
+              {/* WHEN, TRUTHFULLY. This said "a moment ago" whatever the age,
+                  so somebody returning after a week was told they had just
+                  typed their family's travel dates. */}
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
-                You answered these a moment ago
+                You answered these {describeAnswered(answers)}
               </p>
               <ul className="mt-3 grid gap-x-8 gap-y-1 text-sm text-stone-600 sm:grid-cols-2">
                 {summarize(answers).slice(0, 6).map(([term, value]) => (

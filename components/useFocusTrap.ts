@@ -29,6 +29,25 @@ const FOCUSABLE = [
  */
 export function useFocusTrap<T extends HTMLElement>(active: boolean, onEscape?: () => void) {
   const ref = useRef<T>(null);
+  /**
+   * THE HANDLER LIVES IN A REF, AND THAT IS NOT TIDINESS.
+   *
+   * Every caller passes an inline arrow — `() => setThing(null)` — which is a
+   * new function on every render. With onEscape in the dependency list, the
+   * effect tore itself down and set itself up again on every render of an open
+   * dialog, and setting itself up means "move focus to the first control". So
+   * any dialog that re-rendered while open — which is any dialog with a text
+   * field in it — sent the cursor to its close button after every keystroke.
+   * It was found by typing into the assistant panel; it was equally true of
+   * every other dialog on this site with an input in it.
+   */
+  const escape = useRef(onEscape);
+  // Updated in an effect rather than during the render: writing a ref while
+  // rendering is the thing the lint rule is there to stop, and this one is
+  // only ever read from an event handler.
+  useEffect(() => {
+    escape.current = onEscape;
+  }, [onEscape]);
   // Read inside the effect, not in the render, so it is the element that was
   // focused when the dialog opened rather than whatever is focused now.
   const returnTo = useRef<HTMLElement | null>(null);
@@ -49,7 +68,7 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean, onEscape?: 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.stopPropagation();
-        onEscape?.();
+        escape.current?.();
         return;
       }
       if (event.key !== "Tab") return;
@@ -77,7 +96,10 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean, onEscape?: 
       document.removeEventListener("keydown", onKey, true);
       returnTo.current?.focus();
     };
-  }, [active, onEscape]);
+    // `active` only. See the note on `escape` above: anything else here is a
+    // dependency that changes on every render, and re-running this effect
+    // steals the cursor.
+  }, [active]);
 
   return ref;
 }

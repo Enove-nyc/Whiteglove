@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRequireSignIn } from "@/components/SignInGate";
+import { useSignedIn } from "@/lib/use-signed-in";
 import {
   SCORE_LABELS,
   RATING_SCORES,
@@ -29,6 +31,8 @@ export default function ExperienceRatingForm({
   /** Inside a card or the trip strip, without the page-scale heading. */
   compact?: boolean;
 }) {
+  const signedIn = useSignedIn();
+  const requireSignIn = useRequireSignIn();
   const [score, setScore] = useState<RatingScore | 0>(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -65,6 +69,21 @@ export default function ExperienceRatingForm({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (signedIn === false) {
+    return (
+      <div className={compact ? "mt-4 border-t border-[var(--gold-light)] pt-4" : ""}>
+        <p className="text-sm leading-6 text-stone-600">Sign in to rate {about}.</p>
+        <button
+          type="button"
+          onClick={() => requireSignIn(() => undefined, "Sign in to rate")}
+          className="mt-3 inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white"
+        >
+          Sign in to rate
+        </button>
+      </div>
+    );
   }
 
   if (done) {

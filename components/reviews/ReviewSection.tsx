@@ -5,6 +5,7 @@ import { IconButton } from "@/components/icons/IconAction";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { StarRating } from "@/components/reviews/StarRating";
 import { useRequireSignIn } from "@/components/SignInGate";
+import { useSignedIn } from "@/lib/use-signed-in";
 import {
   REVIEW_SCORE_LABELS,
   averageReviewScore,
@@ -143,6 +144,7 @@ export function ReviewSection({
   sacred?: boolean;
 }) {
   const requireSignIn = useRequireSignIn();
+  const signedIn = useSignedIn();
   const [reviews, setReviews] = useState<PublicReview[] | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [writing, setWriting] = useState(false);
@@ -251,7 +253,7 @@ export function ReviewSection({
                 onClick={() => requireSignIn(() => setWriting(true), "Sign in to review")}
                 className="min-h-11 rounded-full bg-[var(--navy)] px-5 text-sm font-semibold text-[var(--cream)] transition hover:opacity-90"
               >
-                Add review
+                {signedIn ? "Add review" : "Sign in to review"}
               </button>
             )}
           </div>

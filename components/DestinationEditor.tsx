@@ -247,17 +247,19 @@ function DeleteForm({
   action,
   hidden,
   label,
+  name,
 }: {
   action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
   hidden: Record<string, string>;
   label: string;
+  name?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
   return (
     <form
       action={formAction}
       onSubmit={(event) => {
-        if (!window.confirm("Remove this permanently? This can't be undone.")) event.preventDefault();
+        if (!window.confirm(`Remove ${name || "this"} permanently? This can't be undone.`)) event.preventDefault();
       }}
     >
       <Hidden values={hidden} />
@@ -461,7 +463,7 @@ export default function DestinationEditor({
               key={contact.id}
               title={contact.label || "Contact"}
               badge="Contact"
-              footer={<DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" />}
+              footer={<DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" name={contact.label || "this contact"} />}
             >
               <ActionForm action={saveContactAction} submitLabel="Save contact" hidden={{ ...base, contactId: contact.id }} draftName="contact">
                 <ContactFields contact={contact} />
@@ -496,7 +498,7 @@ export default function DestinationEditor({
               key={link.id}
               title={link.label || "Link"}
               badge="Link"
-              footer={<DeleteForm action={deleteLinkAction} hidden={{ slug, linkId: link.id }} label="Delete link" />}
+              footer={<DeleteForm action={deleteLinkAction} hidden={{ slug, linkId: link.id }} label="Delete link" name={link.label || "this link"} />}
             >
               <ActionForm action={saveLinkAction} submitLabel="Save link" hidden={{ ...base, linkId: link.id }} draftName="link">
                 <LinkFields link={link} />
@@ -535,7 +537,7 @@ export default function DestinationEditor({
               key={place.id}
               title={place.name || "Listing"}
               badge={sectionLabel(place.category)}
-              footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label="Delete listing" />}
+              footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label={`Delete ${place.name || "listing"}`} name={place.name || "this listing"} />}
             >
               <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }} draftName="listing">
                 <PlaceFields place={place} />

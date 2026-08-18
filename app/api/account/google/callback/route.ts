@@ -5,6 +5,7 @@ import { claimsFromIdToken, googleConfig, identityFrom, TOKEN_ENDPOINT } from "@
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { recordSignIn, whereFrom } from "@/lib/signin-log";
 import { PENDING_COOKIE } from "@/app/api/account/google/start/route";
+import { publicUrl } from "@/lib/public-origin";
 
 /**
  * Coming back from Google.
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
 type Pending = { state: string; nonce: string; verifier: string; next: string; redirectUri: string };
 
 function back(request: NextRequest, problem: string) {
-  const url = new URL("/login", request.url);
+  const url = publicUrl(request, "/login");
   url.searchParams.set("google", problem);
   const response = NextResponse.redirect(url);
   response.cookies.delete(PENDING_COOKIE);
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
   // address gets the account behind it. See lib/google-signin.ts.
   const who = identityFrom(claimsFromIdToken(idToken), { clientId: config.clientId, nonce: pending.nonce, now: Date.now() });
   if (!who.ok) {
-    const url = new URL("/login", request.url);
+    const url = publicUrl(request, "/login");
     url.searchParams.set("googleSays", who.reason);
     const refused = NextResponse.redirect(url);
     refused.cookies.delete(PENDING_COOKIE);
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
 
   const signedIn = await signInWithGoogle(who.identity);
   if (!signedIn.ok) {
-    const url = new URL("/login", request.url);
+    const url = publicUrl(request, "/login");
     url.searchParams.set("googleSays", signedIn.error);
     const failed = NextResponse.redirect(url);
     failed.cookies.delete(PENDING_COOKIE);
@@ -106,7 +107,10 @@ export async function GET(request: NextRequest) {
     ...whereFrom(request.headers),
   });
 
-  const response = NextResponse.redirect(new URL(pending.next, request.url));
+  // NOT request.url. Behind Railway's proxy that is localhost, and this is
+  // the redirect that takes somebody to their account after signing in — see
+  // lib/public-origin.ts for the sign-in that ended on a page nobody could load.
+  const response = NextResponse.redirect(publicUrl(request, pending.next));
   response.cookies.delete(PENDING_COOKIE);
   response.cookies.set(accountCookieName(), createSessionCookie(signedIn.email), {
     httpOnly: true,

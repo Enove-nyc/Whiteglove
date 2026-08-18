@@ -28,8 +28,17 @@ import {
 } from "@/lib/bulk-content";
 import { bustTag } from "@/lib/cache-tags";
 import { createAttraction, createKosherStay, isDbEnabled } from "@/lib/content-admin";
-import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
+import {
+  keepBothIdsFromEvidence,
+  mergeKeepBothEvidence,
+  noteListWithAliases,
+  notesWithAliases,
+  parseDuplicateTarget,
+  recordKeepBoth,
+  uniqueAliases,
+} from "@/lib/import-duplicate-resolution";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
+import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 
 const DB_OFF_MESSAGE = "Connect the private content database before staging source candidates.";
 
@@ -514,10 +523,11 @@ async function possibleQueueDuplicates(
 async function ownedDuplicateFor(
   candidate: PreparedBulkContentCandidate,
   ignoreCandidateId?: string,
+  ignoreIds?: ReadonlySet<string>,
 ): Promise<{ id: string; reason: string } | null> {
   const prisma = await db();
   const known = [...staticOwnedContent(), ...await databaseOwnedContent()];
-  const owned = findBulkContentDuplicate(candidate, known);
+  const owned = findBulkContentDuplicate(candidate, known, ignoreIds);
   if (owned) return owned;
 
   const queueRows = await possibleQueueDuplicates(prisma, candidate, ignoreCandidateId);
@@ -525,7 +535,7 @@ async function ownedDuplicateFor(
     ...item,
     id: `candidate:${item.id}`,
     kind: "EXISTING" as const,
-  })));
+  })), ignoreIds);
   return queued;
 }
 
@@ -537,8 +547,13 @@ async function ownedDuplicateFor(
 export async function updateContentImportCandidate(id: string, input: BulkContentCandidateInput): Promise<ContentImportCandidateView> {
   const prepared = prepareBulkContentCandidate(input);
   if (!prepared.canStage) throw new Error(prepared.stageErrors.join(" "));
-  const duplicate = await ownedDuplicateFor(prepared, id);
   const prisma = await db();
+  const existing = await prisma.contentImportCandidate.findUnique({ where: { id }, select: { sourceEvidence: true } });
+  if (!existing) throw new Error("That import candidate no longer exists.");
+  const evidence = mergeKeepBothEvidence(existing.sourceEvidence, prepared.sourceEvidence);
+  const ignoreIds = new Set(keepBothIdsFromEvidence(evidence));
+  const duplicate = await ownedDuplicateFor(prepared, id, ignoreIds);
+  const flagged = duplicate && !ignoreIds.has(duplicate.id) ? duplicate : null;
   const row = await prisma.contentImportCandidate.update({
     where: { id },
     data: {
@@ -563,13 +578,13 @@ export async function updateContentImportCandidate(id: string, input: BulkConten
       sourceName: prepared.sourceName,
       attribution: prepared.attribution,
       license: prepared.license,
-      sourceEvidence: rawSourceEvidence(prepared.sourceEvidence),
+      sourceEvidence: rawSourceEvidence(evidence),
       normalizedName: prepared.normalizedName,
       normalizedLocation: prepared.normalizedLocation,
       dedupeKey: prepared.dedupeKey,
-      status: duplicate ? "DUPLICATE" : "NEEDS_REVIEW",
+      status: flagged ? "DUPLICATE" : "NEEDS_REVIEW",
       validationErrors: prepared.publishBlockers,
-      duplicateOf: duplicate?.id ?? null,
+      duplicateOf: flagged?.id ?? null,
       reviewedAt: new Date(),
     },
     include: { batch: { select: { slug: true, name: true } } },
@@ -577,12 +592,102 @@ export async function updateContentImportCandidate(id: string, input: BulkConten
   return viewFromStored(row as unknown as StorageCandidate);
 }
 
-export async function setContentImportCandidateStatus(id: string, status: Extract<ContentImportStatus, "NEEDS_REVIEW" | "REJECTED">) {
+export async function setContentImportCandidateStatus(
+  id: string,
+  status: Extract<ContentImportStatus, "NEEDS_REVIEW" | "REJECTED" | "DUPLICATE">,
+) {
   const prisma = await db();
   return prisma.contentImportCandidate.update({
     where: { id },
     data: { status, reviewedAt: new Date() },
   });
+}
+
+export async function keepBothContentImportCandidate(id: string): Promise<ContentImportCandidateView> {
+  const prisma = await db();
+  const stored = await prisma.contentImportCandidate.findUnique({
+    where: { id },
+    include: { batch: { select: { slug: true, name: true } } },
+  });
+  if (!stored) throw new Error("That import candidate no longer exists.");
+  if (!stored.duplicateOf) throw new Error("This candidate is not flagged as a duplicate.");
+  const evidence = recordKeepBoth(stored.sourceEvidence, stored.duplicateOf);
+  const row = await prisma.contentImportCandidate.update({
+    where: { id },
+    data: {
+      status: "NEEDS_REVIEW",
+      duplicateOf: null,
+      sourceEvidence: rawSourceEvidence(evidence),
+      reviewedAt: new Date(),
+    },
+    include: { batch: { select: { slug: true, name: true } } },
+  });
+  return viewFromStored(row as unknown as StorageCandidate);
+}
+
+/**
+ * Copy unique aliases onto the kept listing, then mark this candidate as a
+ * duplicate. Never deletes either row, and never rewrites the kept listing's
+ * other fields.
+ */
+export async function mergeContentImportCandidate(id: string): Promise<{ kept: string; aliasesAdded: number }> {
+  const prisma = await db();
+  const stored = await prisma.contentImportCandidate.findUnique({ where: { id } });
+  if (!stored) throw new Error("That import candidate no longer exists.");
+  const target = parseDuplicateTarget(stored.duplicateOf);
+  if (!target) throw new Error("This candidate is not flagged as a duplicate.");
+
+  const incoming = uniqueAliases([], stored.aliases.filter((alias) => alias.trim() && alias.trim() !== stored.name));
+  let aliasesAdded = 0;
+  let kept = stored.duplicateOf ?? target.key;
+
+  if (target.kind === "candidate") {
+    const other = await prisma.contentImportCandidate.findUnique({ where: { id: target.key } });
+    if (!other) throw new Error("The other candidate is no longer there.");
+    const next = uniqueAliases(other.aliases, incoming);
+    aliasesAdded = next.length - other.aliases.length;
+    if (aliasesAdded > 0) {
+      await prisma.contentImportCandidate.update({ where: { id: other.id }, data: { aliases: next } });
+    }
+    kept = `candidate:${other.id}`;
+  } else if (target.kind === "attraction") {
+    const row = await prisma.attraction.findFirst({ where: { OR: [{ id: target.key }, { slug: target.key }] } });
+    if (!row) throw new Error("The matching attraction is no longer there.");
+    const notes = noteListWithAliases(row.notes, incoming);
+    aliasesAdded = notes.length - row.notes.length;
+    if (aliasesAdded > 0) await prisma.attraction.update({ where: { id: row.id }, data: { notes } });
+    kept = `attraction:${row.slug}`;
+  } else if (target.kind === "stay") {
+    const row = await prisma.kosherStay.findFirst({ where: { OR: [{ id: target.key }, { slug: target.key }] } });
+    if (!row) throw new Error("The matching place to stay is no longer there.");
+    const notes = noteListWithAliases(row.notes, incoming);
+    aliasesAdded = notes.length - row.notes.length;
+    if (aliasesAdded > 0) await prisma.kosherStay.update({ where: { id: row.id }, data: { notes } });
+    kept = `stay:${row.slug}`;
+  } else if (target.kind === "place") {
+    const row = await prisma.practicalPlace.findUnique({ where: { id: target.key } });
+    if (!row) throw new Error("The matching listing is no longer there.");
+    const notes = notesWithAliases(row.notes, incoming);
+    aliasesAdded = notes === (row.notes ?? "").trim() ? 0 : incoming.length;
+    if (notes !== (row.notes ?? "").trim()) {
+      await prisma.practicalPlace.update({ where: { id: row.id }, data: { notes } });
+    }
+    kept = `place:${row.id}`;
+  } else if (target.kind === "food") {
+    kept = stored.duplicateOf ?? `food:${target.key}`;
+  } else {
+    throw new Error("This duplicate cannot be merged from here.");
+  }
+
+  await prisma.contentImportCandidate.update({
+    where: { id },
+    data: {
+      status: "DUPLICATE",
+      duplicateOf: kept,
+      reviewedAt: new Date(),
+    },
+  });
+  return { kept, aliasesAdded };
 }
 
 function linkedText(value: string | null | undefined): string {

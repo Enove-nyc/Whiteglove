@@ -21,6 +21,7 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
   const categoryDefault = normalizeListingCategory(candidate.category) ?? candidate.category ?? "";
 
   return (
+    <>
     <form action={action} className="space-y-8">
       <input type="hidden" name="id" value={candidate.id} />
 
@@ -33,7 +34,11 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
       <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Review state</p>
         <p className="mt-2 text-lg font-semibold text-[var(--navy)]">{candidate.status.replace(/_/g, " ").toLocaleLowerCase("en")}</p>
-        {candidate.duplicateOf && <p className="mt-2 text-sm leading-6 text-amber-900">Possible duplicate of {candidate.duplicateOf}. Resolve it before publishing.</p>}
+        {candidate.duplicateOf && (
+          <p className="mt-2 text-sm leading-6 text-amber-900">
+            Possible duplicate of {candidate.duplicateOf}. Merge copies unique names onto that listing; keep both if they are different places.
+          </p>
+        )}
         {candidate.publishBlockers.length > 0 && (
           <div className="mt-4 border-l-4 border-amber-400 bg-amber-50 px-4 py-3">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-900">Publish blockers</p>
@@ -202,7 +207,16 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             {pending ? "Saving…" : "Save private review"}
           </button>
           {candidate.status === "NEEDS_REVIEW" && (
-            <button type="submit" name="intent" value="publish" disabled={pending} className="min-h-11 border border-emerald-700 bg-emerald-700 px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50">
+            <button
+              type="submit"
+              name="intent"
+              value="publish"
+              disabled={pending}
+              onClick={(event) => {
+                if (!window.confirm(`Publish “${candidate.name}”? Visitors will see it.`)) event.preventDefault();
+              }}
+              className="min-h-11 border border-emerald-700 bg-emerald-700 px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
+            >
               Save and publish
             </button>
           )}
@@ -216,12 +230,58 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
               Return to review
             </button>
           ) : (
-            <button type="submit" name="intent" value="reject" disabled={pending} className="min-h-11 border border-rose-300 px-5 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 disabled:opacity-50">
+            <button
+              type="submit"
+              name="intent"
+              value="reject"
+              disabled={pending}
+              onClick={(event) => {
+                if (!window.confirm(`Reject “${candidate.name}”? It stays in the private audit trail.`)) event.preventDefault();
+              }}
+              className="min-h-11 border border-rose-300 px-5 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 disabled:opacity-50"
+            >
               Reject candidate
             </button>
           )}
         </div>
       )}
     </form>
+    {editable && candidate.duplicateOf && (
+      <div className="mt-6 flex flex-wrap gap-3 border border-amber-200 bg-amber-50 p-5">
+        <p className="w-full text-sm leading-6 text-amber-950">
+          Flagged against {candidate.duplicateOf}. Merge never deletes a record.
+        </p>
+        <form action={action}>
+          <input type="hidden" name="id" value={candidate.id} />
+          <button
+            type="submit"
+            name="intent"
+            value="merge"
+            disabled={pending}
+            onClick={(event) => {
+              if (!window.confirm(`Merge unique names from “${candidate.name}” onto the existing listing? This candidate stays as a duplicate record.`)) {
+                event.preventDefault();
+              }
+            }}
+            className="min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
+          >
+            Merge unique names
+          </button>
+        </form>
+        <form action={action}>
+          <input type="hidden" name="id" value={candidate.id} />
+          <button
+            type="submit"
+            name="intent"
+            value="keep-both"
+            disabled={pending}
+            className="min-h-11 border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-50"
+          >
+            Keep both
+          </button>
+        </form>
+      </div>
+    )}
+    </>
   );
 }

@@ -31,6 +31,7 @@ describe("which area a screen belongs to", () => {
   it("knows the obvious ones", () => {
     assert.equal(areaForPath("/admin/kevarim"), "directory");
     assert.equal(areaForPath("/admin/finances"), "money");
+    assert.equal(areaForPath("/admin/travel"), "money");
     assert.equal(areaForPath("/admin/photos"), "content");
     assert.equal(areaForPath("/admin/ratings"), "content");
     assert.equal(areaForPath("/admin/advertisements"), "advertisements");
@@ -122,6 +123,7 @@ describe("may they open this screen", () => {
 
   it("shuts the rest — including the money and the way in", () => {
     assert.equal(canOpen(helper, "/admin/finances"), false);
+    assert.equal(canOpen(helper, "/admin/travel"), false);
     assert.equal(canOpen(helper, "/admin/settings/passwords"), false);
     assert.equal(canOpen(helper, "/admin/accounts"), false);
     assert.equal(canOpen(helper, "/admin/team"), false);

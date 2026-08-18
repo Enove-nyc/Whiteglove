@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { dismissChangeAction, undoChangeAction, type ActionResult } from "@/app/admin/history/actions";
 import {
   CHANGE_WORDS,
@@ -8,6 +8,7 @@ import {
   describeChange,
   fieldLabel,
   logSummary,
+  changeMatchesQuery,
   shorten,
   whenWords,
 } from "@/lib/changes";
@@ -95,6 +96,7 @@ export default function ChangeLog({
   today: string;
   storageReady: boolean;
 }) {
+  const [query, setQuery] = useState("");
   if (!storageReady) {
     return (
       <p className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
@@ -105,12 +107,30 @@ export default function ChangeLog({
     );
   }
 
+  const shown = changes.filter((change) => changeMatchesQuery(change, query));
+
   return (
     <div>
       <p className="text-sm leading-6 text-stone-600">{logSummary(changes)}</p>
       {changes.length > 0 && (
+        <label className="mt-4 block max-w-xl text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
+          Search the log
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="A listing, a person, a field…"
+            className="mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm normal-case tracking-normal text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+          />
+        </label>
+      )}
+      {query.trim() && (
+        <p className="mt-3 text-sm text-stone-600">
+          {shown.length === 0 ? "Nothing matches." : `${shown.length} of ${changes.length} match.`}
+        </p>
+      )}
+      {shown.length > 0 && (
         <ul className="mt-4 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
-          {changes.map((change) => (
+          {shown.map((change) => (
             <Row key={change.id} change={change} today={today} />
           ))}
         </ul>

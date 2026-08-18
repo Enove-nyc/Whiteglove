@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import AccessForm from "@/components/AccessForm";
 import AdminShell from "@/components/AdminShell";
 import IdleLogout from "@/components/IdleLogout";
 import { currentAdmin } from "@/lib/admin-current";
+import { adminLoginPath } from "@/lib/admin-host";
 
 // The admin area is its own installable app: a separate "White Glove Admin"
 // home-screen icon (scoped to /admin) that opens straight to the dashboard,
@@ -30,6 +32,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // It renders the sign-in rather than redirecting: this layout also wraps
   // /admin/login, and redirecting there from here would loop forever.
   const { identity, areas } = await currentAdmin();
+  const host = (await headers()).get("host")?.toLowerCase().split(":")[0] ?? "";
+  const configured = process.env.ADMIN_HOST?.trim().toLowerCase().split(":")[0] ?? "";
+  const onAdminHost = Boolean(configured && host === configured);
+  const loginHref = adminLoginPath(onAdminHost);
   if (!identity) {
     return (
       <main className="flex min-h-screen flex-col bg-[var(--cream)]">
@@ -52,7 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           refusing itself is done by the gate inside each area's folder — this
           only decides what to draw. */}
       <AdminShell areas={areas}>{children}</AdminShell>
-      <IdleLogout minutes={20} endpoint="/api/admin/logout" redirectTo="/admin/login" />
+      <IdleLogout minutes={20} endpoint="/api/admin/logout" redirectTo={loginHref} />
     </>
   );
 }

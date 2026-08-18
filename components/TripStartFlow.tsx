@@ -134,7 +134,9 @@ export default function TripStartFlow({
     const next = { ...answers, ...patch };
     setAnswers(next);
     try {
-      localStorage.setItem(TRIP_PLAN_KEY, JSON.stringify(next));
+      // Stamped, so the planner can say truthfully when these were answered
+      // and stop offering them once they are a day old. See lib/trip-plan.ts.
+      localStorage.setItem(TRIP_PLAN_KEY, JSON.stringify({ ...next, savedAt: new Date().toISOString() }));
     } catch {
       // A full or blocked storage is not worth breaking the flow over. The
       // answers still work for this visit; only carrying them to the next page

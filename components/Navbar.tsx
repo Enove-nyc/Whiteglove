@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import DestinationSearch from "@/components/DestinationSearch";
 import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
+import AccountMenu, { ACCOUNT_PLACES } from "@/components/AccountMenu";
+import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
@@ -24,6 +27,16 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  */
 
 export default function Navbar() {
+  const openSignIn = useOpenSignIn();
+  const [searchOpen, setSearchOpen] = useState(false);
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [searchOpen]);
   const pathname = usePathname();
   const router = useRouter();
   /**
@@ -57,6 +70,10 @@ export default function Navbar() {
     setMenu({ open: null, pressed: null });
     setMobileOpen(false);
     setMobileSection(null);
+    // The search bar closes with them: following a result is the end of that
+    // search, and leaving the bar open over the page somebody just arrived at
+    // would cover the top of it.
+    setSearchOpen(false);
   }
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef<HTMLElement>(null);
@@ -309,10 +326,28 @@ export default function Navbar() {
 
           <div className="ml-auto flex shrink-0 items-center gap-1">
             <div className="hidden items-center gap-1 sm:flex">
-              <IconLink icon="search" label="Search" href="/search" />
+              {/* A BAR ACROSS THIS PAGE, NOT A PAGE OF ITS OWN. Searching used
+                  to mean leaving whatever somebody was reading; the results
+                  drop down over the page and Escape gives it straight back.
+                  /search is still a real page for a typed URL, a bookmark, or
+                  pressing Enter on a query worth its own screen. */}
+              <IconLink
+                icon="search"
+                label="Search"
+                href="/search"
+                onClick={() => setSearchOpen((v) => !v)}
+              />
               <IconLink icon="route" label="Route" href="/my-route" />
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
-              <IconLink icon="account" label={signedIn ? "Account" : "Sign in"} href={signedIn ? "/account" : signInHref()} />
+              {/* Signed in, the icon opens the four places an account has —
+                  /account is a page holding all four, and somebody who wanted
+                  their trips used to land on their own name and scroll. Signed
+                  out it opens the sign-in dialog instead of leaving the page. */}
+              {signedIn ? (
+                <AccountMenu />
+              ) : (
+                <IconLink icon="account" label="Sign in" href={signInHref()} onClick={() => openSignIn()} />
+              )}
             </div>
 
             {/* xl and up: the bar above is the navigation. Below xl: this is
@@ -330,6 +365,24 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+
+        {searchOpen && (
+          <div className="border-t border-[var(--gold-light)] bg-[#fcfaf6]">
+            <div className="mx-auto flex max-w-7xl items-center gap-2 px-5 py-3 sm:px-8">
+              <div className="min-w-0 flex-1">
+                <DestinationSearch compact autoFocus id="header-search" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                aria-label="Close search"
+                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-stone-500 transition hover:bg-white hover:text-[var(--navy)]"
+              >
+                <Icon name="close" className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {mobileOpen && (
           <div id="mobile-menu" className="absolute left-0 right-0 top-full z-[1] max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] lg:hidden">
@@ -367,9 +420,21 @@ export default function Navbar() {
             <div className="flex items-center justify-between gap-3 border-t border-[var(--gold-light)] px-5 py-4 sm:px-8">
               {signedIn ? (
                 <>
-                  <Link onClick={() => setMobileOpen(false)} href="/account" className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
-                    Account
-                  </Link>
+                  {/* The same four the header icon offers. Named here too,
+                      because this menu is the navigation below xl and one
+                      "Account" link hides three of them. */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {ACCOUNT_PLACES.map((place) => (
+                      <Link
+                        key={place.href}
+                        onClick={() => setMobileOpen(false)}
+                        href={place.href}
+                        className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]"
+                      >
+                        {place.label}
+                      </Link>
+                    ))}
+                  </div>
                   <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
                     Sign out
                   </button>

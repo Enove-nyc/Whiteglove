@@ -1188,3 +1188,32 @@ export async function getCurrentAccountData(cookieValue?: string) {
 }
 
 export { accountCookieName };
+/* ---- the assistant's conversation --------------------------------------- */
+
+/**
+ * Kept beside the account rather than inside its data blob.
+ *
+ * The account record is read on nearly every request that touches a signed-in
+ * traveler; a conversation is read by one panel on demand. Its own key keeps
+ * the chat out of that hot path entirely, and means clearing it is one
+ * deletion rather than a rewrite of everything else about them.
+ */
+function assistantKey(email: string) {
+  return `white-glove:assistant-chat:${normalizeId(email)}`;
+}
+
+export async function getAssistantConversation(email: string): Promise<unknown> {
+  if (!hasAccountStorage()) return null;
+  return (await readJson<unknown>(assistantKey(email))) ?? null;
+}
+
+export async function saveAssistantConversation(email: string, conversation: unknown): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  return writeJson(assistantKey(email), conversation);
+}
+
+export async function clearAssistantConversation(email: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const response = await redis(`del/${encodeURIComponent(assistantKey(email))}`);
+  return Boolean(response);
+}

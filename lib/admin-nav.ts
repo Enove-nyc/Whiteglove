@@ -1,4 +1,8 @@
-// The five places in the admin, and everything that lives under each of them.
+import { toCanonicalAdminPath } from "@/lib/admin-host";
+
+// Operational screens sit at the top. Pages, Directory, Advertisements and
+// Settings still hold everything else, so a screen is never only reachable
+// from memory.
 //
 // Five is the whole navigation. Anything that used to be its own tile is now a
 // screen inside one of these, so the question is never "which of twelve buttons
@@ -21,10 +25,66 @@ export type AdminSection = {
 export const ADMIN_SECTIONS: AdminSection[] = [
   {
     href: "/admin",
-    label: "Home",
+    label: "Dashboard",
     blurb: "What needs you today.",
     icon: "◆",
-    keywords: "dashboard overview start",
+    keywords: "dashboard overview start home",
+  },
+  {
+    href: "/admin/imports/needs-review",
+    label: "Needs Review",
+    blurb: "One candidate at a time.",
+    icon: "◇",
+    keywords: "queue verify approve reject duplicate import candidate",
+  },
+  {
+    href: "/admin/imports",
+    label: "Imports",
+    blurb: "Source-backed listing candidates.",
+    icon: "▣",
+    keywords: "bulk import batch source pack trello",
+  },
+  {
+    href: "/admin/destinations",
+    label: "Destinations",
+    blurb: "Towns, kosher food, lodging, minyanim.",
+    icon: "◉",
+    keywords: "town city destination heritage",
+  },
+  {
+    href: "/admin/kevarim",
+    label: "Tzaddikim",
+    blurb: "Who is buried where.",
+    icon: "✦",
+    keywords: "kever kevarim tzadik cemetery beis hachaim",
+  },
+  {
+    href: "/admin/directory/businesses",
+    label: "Providers and Contacts",
+    blurb: "Operators, planners, guides.",
+    icon: "☎",
+    keywords: "provider contact business operator guide",
+  },
+  {
+    href: "/admin/ratings",
+    label: "Ratings",
+    blurb: "Reviews and private ratings.",
+    icon: "★",
+    keywords: "rating review report flag moderate",
+  },
+  {
+    href: "/admin/accounts",
+    label: "Users",
+    blurb: "People who signed up.",
+    icon: "☺",
+    keywords: "account user visitor signup",
+  },
+  {
+    href: "/admin/history",
+    label: "Audit Log",
+    blurb: "Edits, and how to undo them.",
+    icon: "☰",
+    keywords: "history audit change undo revision",
   },
   {
     href: "/admin/pages",
@@ -38,10 +98,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/growth", label: "Growth", blurb: "Searches, clicks and conversion." },
       { href: "/admin/alerts", label: "Alerts", blurb: "Destination and seasonal signups." },
       { href: "/admin/alerts/send", label: "Send an update", blurb: "Write to the people who asked." },
-      { href: "/admin/history", label: "History", blurb: "Edits, and how to undo them." },
+      { href: "/admin/history", label: "Audit log", blurb: "Edits, and how to undo them." },
       { href: "/admin/content", label: "Suggestions", blurb: "Corrections people sent in." },
       { href: "/admin/photos", label: "Photos", blurb: "Pictures waiting for you." },
-      { href: "/admin/ratings", label: "Ratings", blurb: "How a listing or trip went." },
+      { href: "/admin/ratings", label: "Ratings", blurb: "Reviews and private ratings." },
       { href: "/admin/inventory", label: "Checklist", blurb: "What is still unfinished." },
     ],
   },
@@ -50,13 +110,16 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry",
+    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry attraction things to do stay food",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/add", label: "Add", blurb: "A cemetery, a tzadik, or a new page." },
-      { href: "/admin/kevarim", label: "Kevarim", blurb: "Who is buried where." },
+      { href: "/admin/kevarim", label: "Tzaddikim", blurb: "Who is buried where." },
       { href: "/admin/shomrim", label: "Shomrim", blurb: "Getting into a cemetery." },
       { href: "/admin/destinations", label: "Towns", blurb: "Kosher food, lodging, minyanim." },
+      { href: "/admin/directory/attractions", label: "Things to do", blurb: "Attractions already listed." },
+      { href: "/admin/directory/stays", label: "Where to stay", blurb: "Lodging already listed." },
+      { href: "/admin/directory/food", label: "Kosher food", blurb: "Food listings on the site." },
       { href: "/admin/countries", label: "Countries", blurb: "Country notes." },
       { href: "/admin/airports", label: "Airports", blurb: "Flight search and the planner." },
       { href: "/admin/planner", label: "Planner", blurb: "How a day is judged packed." },
@@ -95,7 +158,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
       { href: "/admin/settings/trello", label: "Trello", blurb: "Pictures, listings and reports." },
-      { href: "/admin/accounts", label: "Accounts", blurb: "People who signed up." },
+      { href: "/admin/accounts", label: "Users", blurb: "People who signed up." },
       { href: "/admin/messages", label: "Messages", blurb: "What people wrote from the site." },
       {
         href: "/admin/settings/travel-gear",
@@ -115,7 +178,6 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
       { href: "/admin/duffel", label: "Duffel", blurb: "Book flights here. Not public." },
-      { href: "/admin/duffel/review", label: "Flight review", blurb: "Review the selected flight." },
     ],
   },
 ];
@@ -132,8 +194,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
  * The same transform the middleware does, in the other direction.
  */
 export function toAdminPath(pathname: string): string {
-  if (pathname.startsWith("/admin")) return pathname;
-  return pathname === "/" ? "/admin" : `/admin${pathname}`;
+  return toCanonicalAdminPath(pathname);
 }
 
 /**
@@ -173,9 +234,15 @@ export function sectionScreens(sectionHref: string): Array<{ href: string; label
 /** Everything the "go to" box can jump to. */
 export function allAdminDestinations(): Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> {
   const out: Array<{ href: string; label: string; blurb: string; section: string; keywords: string }> = [];
+  const seen = new Set<string>();
   for (const section of ADMIN_SECTIONS) {
-    out.push({ href: section.href, label: section.label, blurb: section.blurb, section: section.label, keywords: section.keywords ?? "" });
+    if (!seen.has(section.href)) {
+      seen.add(section.href);
+      out.push({ href: section.href, label: section.label, blurb: section.blurb, section: section.label, keywords: section.keywords ?? "" });
+    }
     for (const child of sectionScreens(section.href)) {
+      if (seen.has(child.href)) continue;
+      seen.add(child.href);
       out.push({ href: child.href, label: child.label, blurb: child.blurb, section: section.label, keywords: section.keywords ?? "" });
     }
   }
@@ -201,7 +268,9 @@ export function adminBreadcrumbs(pathname: string): Crumb[] {
   if (here === "/admin") return [home];
 
   const section = activeSection(here);
-  const child = section.children?.find((c) => here === c.href || here.startsWith(`${c.href}/`));
+  const child = [...(section.children ?? [])]
+    .filter((c) => here === c.href || here.startsWith(`${c.href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 
   const trail: Crumb[] = [home];
   if (section.href !== "/admin") {

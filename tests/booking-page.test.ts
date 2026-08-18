@@ -101,7 +101,10 @@ describe("hotels first", () => {
     assert.match(PANEL, /initialKind = "hotels"/);
     assert.match(PANEL, /useState<Kind>\(initialKind\)/);
     const tabs = PANEL.slice(PANEL.indexOf("What are you booking?"));
-    const order = ["hotels", "flights", "cars"].map((kind) => tabs.indexOf(`setKind("${kind}")`));
+    // chooseKind, not setKind: the tab is written to the address bar as well
+    // as to state, so a reload comes back to the search somebody was in the
+    // middle of. See tests/travel-provider-layer.test.ts.
+    const order = ["hotels", "flights", "cars"].map((kind) => tabs.indexOf(`chooseKind("${kind}")`));
     assert.ok(order[0] >= 0 && order[0] < order[1] && order[1] < order[2], "the tab order is not hotels, flights, cars");
   });
 

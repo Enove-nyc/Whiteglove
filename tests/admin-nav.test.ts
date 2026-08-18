@@ -47,12 +47,12 @@ describe("the highlight follows you on both hostnames", () => {
   test("a bare path finds its section", () => {
     // This is the one that was broken: every bare path landed on Home.
     assert.equal(activeSection(toAdminPath("/settings")).label, activeSection("/admin/settings").label);
-    assert.notEqual(activeSection(toAdminPath("/settings")).label, "Home");
+    assert.notEqual(activeSection(toAdminPath("/settings")).label, "Dashboard");
   });
 
-  test("the dashboard is Home on both", () => {
-    assert.equal(activeSection(toAdminPath("/")).label, "Home");
-    assert.equal(activeSection("/admin").label, "Home");
+  test("the dashboard is Dashboard on both", () => {
+    assert.equal(activeSection(toAdminPath("/")).label, "Dashboard");
+    assert.equal(activeSection("/admin").label, "Dashboard");
   });
 
   test("every section and child resolves from its bare path too", () => {
@@ -207,6 +207,9 @@ describe("every static admin page is reachable from nav or a hub", () => {
       "/admin/airports",
       "/admin/planner",
       "/admin/recycle",
+      "/admin/directory/attractions",
+      "/admin/directory/stays",
+      "/admin/directory/food",
     ]) {
       assert.ok(hrefs.has(required), `Directory sectionScreens() omits ${required}`);
     }
@@ -236,14 +239,14 @@ describe("every static admin page is reachable from nav or a hub", () => {
   });
 
   test("middleware lists every admin folder so the admin host serves it as a bare path", () => {
-    const middleware = readFileSync(join(process.cwd(), "middleware.ts"), "utf8");
+    const hostList = readFileSync(join(process.cwd(), "lib", "admin-host.ts"), "utf8");
     const folders = readdirSync(join(process.cwd(), "app", "admin"), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
     for (const folder of folders) {
       assert.ok(
-        middleware.includes(`"${folder}"`),
-        `middleware ADMIN_SCREENS omits "${folder}", so admin.…/${folder} would leave the admin host`,
+        hostList.includes(`"${folder}"`),
+        `ADMIN_HOST_SEGMENTS omits "${folder}", so admin.…/${folder} would leave the admin host`,
       );
     }
   });

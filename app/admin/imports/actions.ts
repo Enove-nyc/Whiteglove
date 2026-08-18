@@ -10,6 +10,8 @@ import {
 } from "@/lib/bulk-content";
 import {
   confirmLinkedKosherImportCandidate,
+  keepBothContentImportCandidate,
+  mergeContentImportCandidate,
   publishContentImportCandidate,
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
@@ -116,11 +118,40 @@ export async function reviewContentImportCandidateAction(
   if (!id) return { ok: false, message: "Missing import candidate." };
 
   try {
-    if (intent === "reject" || intent === "reopen") {
-      await setContentImportCandidateStatus(id, intent === "reject" ? "REJECTED" : "NEEDS_REVIEW");
+    if (intent === "reject" || intent === "reopen" || intent === "duplicate") {
+      const status = intent === "reject" ? "REJECTED" : intent === "duplicate" ? "DUPLICATE" : "NEEDS_REVIEW";
+      await setContentImportCandidateStatus(id, status);
       revalidatePath("/admin/imports");
+      revalidatePath("/admin/imports/needs-review");
       revalidatePath(`/admin/imports/${id}`);
-      return { ok: true, message: intent === "reject" ? "Candidate rejected. It remains in the private audit trail." : "Candidate returned to the review queue." };
+      return {
+        ok: true,
+        message:
+          intent === "reject"
+            ? "Candidate rejected. It remains in the private audit trail."
+            : intent === "duplicate"
+              ? "Marked as a duplicate. Both records were kept."
+              : "Candidate returned to the review queue.",
+      };
+    }
+    if (intent === "keep-both") {
+      await keepBothContentImportCandidate(id);
+      revalidatePath("/admin/imports");
+      revalidatePath("/admin/imports/needs-review");
+      revalidatePath(`/admin/imports/${id}`);
+      return { ok: true, message: "Kept both. This pair will not be flagged again." };
+    }
+    if (intent === "merge") {
+      const merged = await mergeContentImportCandidate(id);
+      revalidatePath("/admin/imports");
+      revalidatePath("/admin/imports/needs-review");
+      revalidatePath(`/admin/imports/${id}`);
+      return {
+        ok: true,
+        message: merged.aliasesAdded
+          ? `Merged unique names onto ${merged.kept}. This candidate was kept as a duplicate record.`
+          : `Marked as a duplicate of ${merged.kept}. Nothing was deleted.`,
+      };
     }
 
     const updated = await updateContentImportCandidate(id, candidateInput(formData));

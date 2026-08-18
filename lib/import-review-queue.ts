@@ -316,6 +316,13 @@ function fromDatabase(candidate: ContentImportCandidateView): ReviewQueueItem {
     origin: "database",
     href: contentImportCandidatePath(candidate.sourceId, candidate.id),
     publishBlockers: candidate.publishBlockers.length,
+    aliases: candidate.aliases,
+    address: candidate.address ?? "",
+    coordinates: candidate.coordinates ?? "",
+    sourceUrl: candidate.sourceUrl,
+    sourceName: candidate.sourceName,
+    website: candidate.website ?? "",
+    region: candidate.region ?? "",
   };
 }
 
@@ -336,6 +343,13 @@ function fromPack(pack: KnownPack, candidate: PackCandidate): ReviewQueueItem {
     origin: "source_pack",
     href: pack.href,
     publishBlockers: 0,
+    aliases: [],
+    address: "",
+    coordinates: "",
+    sourceUrl: candidate.sourceUrl,
+    sourceName: candidate.sourceName,
+    website: "",
+    region: "",
   };
 }
 

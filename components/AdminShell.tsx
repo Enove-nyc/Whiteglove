@@ -46,8 +46,10 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
   // the settings front page itself is closed to them — so the section is
   // listed and points at the screen they can actually use rather than at a
   // refusal.
+  const groupHrefs = new Set(["/admin", "/admin/pages", "/admin/directory", "/admin/advertisements", "/admin/settings"]);
+  const promoted = new Set(ADMIN_SECTIONS.filter((s) => !groupHrefs.has(s.href)).map((s) => s.href));
   const sections = ADMIN_SECTIONS.map((s) => {
-    const children = (s.children ?? []).filter((c) => canOpen(areas, c.href));
+    const children = (s.children ?? []).filter((c) => canOpen(areas, c.href) && !promoted.has(c.href));
     const own = canOpen(areas, s.href);
     if (!own && !children.length) return null;
     return { ...s, target: own ? s.href : children[0].href, children };

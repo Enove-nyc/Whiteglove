@@ -54,12 +54,26 @@ describe("which plan an account is on", () => {
 });
 
 describe("what a plan gets you", () => {
-  it("is nothing, for every one of them", () => {
-    // Deliberate. Whatever Pro eventually includes is the owner's to decide,
-    // and writing it here would put a promise on the website that nobody has
-    // agreed to keep. The page must say this in a sentence rather than render
-    // an empty list, which reads as something that failed to load.
-    for (const plan of ACCOUNT_PLANS) assert.deepEqual(whatYouGet(plan), [], plan);
+  it("IS NOTHING FOR TRAVELER, AND ONE THING FOR THE OTHERS", () => {
+    // This said "nothing, for every one of them", because whatever Pro
+    // included was the owner's to decide and writing it here would have put a
+    // promise on the website nobody had agreed to keep. He has now decided the
+    // first one: the assistant remembers a Pro conversation between visits.
+    //
+    // Traveler still gets an empty list, so the pages that read this must
+    // still cope with one — an empty list under a heading reads as something
+    // that failed to load, and they say it in a sentence instead.
+    assert.deepEqual(whatYouGet("traveler"), []);
+    for (const plan of ["pro", "business"] as const) {
+      assert.ok(whatYouGet(plan).length > 0, plan);
+    }
+    // Every line is a plain promise to a traveler, not a feature name.
+    for (const plan of ACCOUNT_PLANS) {
+      for (const line of whatYouGet(plan)) {
+        assert.ok(line.trim().length > 10, `${plan}: "${line}"`);
+        assert.doesNotMatch(line, /[A-Z]{2,}|_|\bboolean\b/, `${plan}: that is a field name, not a promise`);
+      }
+    }
   });
 });
 

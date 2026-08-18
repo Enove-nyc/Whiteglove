@@ -137,7 +137,16 @@ describe("the header renders the list rather than its own copy", () => {
     for (const label of ["Search", "Route", "Itinerary"]) {
       assert.match(NAVBAR, new RegExp(`label="${label}"`), `${label} icon missing`);
     }
-    assert.match(NAVBAR, /label=\{signedIn \? "Account" : "Sign in"\}/);
+    // THE FOURTH ICON IS NOW TWO THINGS. Signed in it is a menu of the four
+    // places an account has — /account used to be one link to a page holding
+    // all four, so somebody who wanted their trips landed on their own name
+    // and scrolled. Signed out it is a door: it opens the sign-in dialog
+    // rather than leaving whatever page somebody is reading.
+    assert.match(NAVBAR, /<AccountMenu \/>/);
+    assert.match(NAVBAR, /label="Sign in"/);
+    // Both carry a label, which is what this test is actually protecting.
+    const menu = readFileSync("components/AccountMenu.tsx", "utf8");
+    assert.match(menu, /aria-label="Account"/);
   });
 
   it("a press opens the menu; hover and focus never do", () => {
@@ -186,5 +195,37 @@ describe("the header renders the list rather than its own copy", () => {
 
   it("sign in points at the sign-in page", () => {
     assert.equal(SIGN_IN.href, "/login");
+  });
+});
+
+describe("search opens across the page, not on a page of its own", () => {
+  const NAV = readFileSync("components/Navbar.tsx", "utf8");
+
+  it("TOGGLES A BAR INSTEAD OF NAVIGATING AWAY", () => {
+    // Searching used to mean leaving whatever somebody was reading, and coming
+    // back meant Back.
+    assert.match(NAV, /onClick=\{\(\) => setSearchOpen\(\(v\) => !v\)\}/);
+    assert.match(NAV, /\{searchOpen && \(/);
+    assert.match(NAV, /<DestinationSearch compact autoFocus id="header-search" \/>/);
+  });
+
+  it("KEEPS /search AS A REAL PAGE BEHIND IT", () => {
+    // A typed URL, a bookmark, and Enter on a query worth its own screen.
+    assert.match(NAV, /href="\/search"/);
+  });
+
+  it("closes on Escape, on the X, and when a result is followed", () => {
+    assert.match(NAV, /if \(event\.key === "Escape"\) setSearchOpen\(false\)/);
+    assert.match(NAV, /aria-label="Close search"/);
+    // Following a result is the end of that search; leaving the bar open would
+    // cover the top of the page somebody just arrived at.
+    assert.match(NAV, /setSearchOpen\(false\);\s*\n\s*\}/);
+  });
+
+  it("uses the site's own search box rather than a second one", () => {
+    // DestinationSearch is the box with the typeahead, the keyboard handling
+    // and the sections. A plain input here would be a worse search wearing the
+    // same icon.
+    assert.match(NAV, /import DestinationSearch from "@\/components\/DestinationSearch"/);
   });
 });

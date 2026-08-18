@@ -116,8 +116,12 @@ describe("what the commercial links promise", () => {
     assert.match(BOOK, /destination\?: string \| string\[\]/);
     assert.match(BOOK, /initialKind=\{initialKind\}/);
     assert.match(BOOK, /q\.type === "cars"/);
-    // …and hands the place to the car widget, not a second White Glove form.
-    assert.match(PARTNERS, /carsEmbedPath\(\{ location: loc \}\)/);
+    // …and the Cars tab opens with that place already in its own field. It
+    // used to be handed to an embedded partner panel instead; that panel has
+    // gone, because White Glove now has live car prices of its own and the
+    // panel's inventory was both thinner and duplicated underneath them.
+    assert.doesNotMatch(PARTNERS, /carsEmbedPath/);
+    assert.match(PARTNERS, /useState\(prefill\?\.destination \?\? ""\)/);
     assert.match(PARTNERS, /prefill\?\.destination/);
   });
 

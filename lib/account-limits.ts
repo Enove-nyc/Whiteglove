@@ -65,16 +65,31 @@ export type PlanFeatures = {
    * is written down and enforced.
    */
   ownBranding: boolean;
+  /**
+   * Whether the assistant's conversation is kept between visits.
+   *
+   * The answers are the same on every plan — a traveler asking about Antwerp
+   * gets exactly what a Pro asks gets. What Pro buys is that the thread is
+   * still there tomorrow instead of starting again. That is a fair thing to
+   * charge for and a poor thing to withhold an answer over, so the gate is on
+   * the keeping and never on the asking.
+   */
+  assistantHistory: boolean;
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
-  traveler: { ownBranding: false },
-  pro: { ownBranding: false },
-  business: { ownBranding: true },
+  traveler: { ownBranding: false, assistantHistory: false },
+  pro: { ownBranding: false, assistantHistory: true },
+  business: { ownBranding: true, assistantHistory: true },
 };
 
 export function featuresFor(plan: AccountPlan): PlanFeatures {
   return PLAN_FEATURES[plan] ?? PLAN_FEATURES.traveler;
+}
+
+/** Whether the assistant remembers this plan's conversation. Named once. */
+export function keepsAssistantHistory(plan: AccountPlan): boolean {
+  return featuresFor(plan).assistantHistory;
 }
 
 /** Whether this plan may brand its own itineraries. The one gate, named once. */

@@ -18,7 +18,15 @@ export const SITE_NAME = "White Glove Kosher Travel";
  * The logo is a real asset that exists at build time; a missing image is worse
  * than a plain one, because the link then renders with no card at all.
  */
-const SOCIAL_IMAGE = { url: "/logo.png", width: 1599, height: 1066, alt: SITE_NAME };
+/**
+ * The picture that appears when somebody shares this site.
+ *
+ * NOT /logo.png. That artwork has "White Glove Itineraries" — the old company
+ * name — drawn into it, so every share, every message, every preview card was
+ * showing a name this business no longer uses. The mark carries no words at
+ * all, which is worse than a wordmark and far better than the wrong one.
+ */
+const SOCIAL_IMAGE = { url: "/logo-hand-navy.png", width: 355, height: 460, alt: SITE_NAME };
 
 function parseOrigin(raw?: string | null): URL | null {
   const value = raw?.trim();

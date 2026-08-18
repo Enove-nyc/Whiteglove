@@ -44,9 +44,13 @@
  */
 
 import { createHmac, randomUUID } from "node:crypto";
+import { spendProviderCall } from "@/lib/travel/provider-budget";
 import { providerFetch } from "@/lib/travel/search";
 
 export type RouteStackConfig = { apiKey: string; secret: string; base: string };
+
+/** The endpoints RouteStack charges for. Everything else is free traffic. */
+const BILLED_PATHS = ["/mcp/car/search", "/mcp/hotel/search-hotels", "/mcp/flight/search"] as const;
 
 export function routestackConfig(): RouteStackConfig | null {
   const apiKey = process.env.ROUTESTACK_API_KEY?.trim();
@@ -117,6 +121,16 @@ export async function routestackPost<T>(
   timeoutMs = 12000,
 ): Promise<T> {
   const token = await routestackToken(config, signal);
+  // COUNTED HERE BECAUSE EVERY CALL COMES THROUGH HERE, and a counter kept
+  // beside each adapter would miss the next adapter somebody writes.
+  //
+  // ONLY THE SEARCHES COUNT. RouteStack bills a search, not the lookups
+  // around it: resolving a place name and minting a token are free, so
+  // counting them would stop the provider early and put a number on the admin
+  // screen that does not match theirs. This is the owner's reading of his own
+  // dashboard — a car search shows as one call, not two — so if their billing
+  // ever disagrees, the list below is the one line to change.
+  if (BILLED_PATHS.some((billed) => path.startsWith(billed))) void spendProviderCall("routestack");
   const response = await providerFetch(`${config.base}${path}`, {
     signal,
     method: "POST",

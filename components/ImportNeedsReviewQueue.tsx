@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
+import { reviewContentImportCandidateAction } from "@/app/admin/imports/actions";
 import type {
   ImportReviewQueue,
   ReviewQueueItem,
@@ -18,10 +19,12 @@ const countCardClass =
 
 function CountCard({
   label,
+  value,
   active,
   onClick,
 }: {
   label: string;
+  value?: number;
   active: boolean;
   onClick: () => void;
 }) {
@@ -35,6 +38,9 @@ function CountCard({
         active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(23,45,82,.08)]" : ""
       }`}
     >
+      {typeof value === "number" && (
+        <span className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{value}</span>
+      )}
       <span className="block text-xs font-bold uppercase tracking-[0.13em] text-[var(--gold-ink)]">{label}</span>
     </button>
   );
@@ -75,6 +81,9 @@ export default function ImportNeedsReviewQueue({
   const [batch, setBatch] = useState("ALL");
   const [query, setQuery] = useState(initialQuery);
   const [limit, setLimit] = useState(100);
+  const [focusIndex, setFocusIndex] = useState(0);
+  const [skipNote, setSkipNote] = useState("");
+  const [queueState, queueAction, queuePending] = useActionState(reviewContentImportCandidateAction, null);
   const queueRef = useRef<HTMLElement | null>(null);
 
   const markets = useMemo(
@@ -101,6 +110,9 @@ export default function ImportNeedsReviewQueue({
     [queue.items, status, kind, origin, market, batch, query],
   );
   const shown = filtered.slice(0, limit);
+  const openItems = filtered.filter((item) => isOpenReviewStatus(item.status));
+  const current = openItems[Math.min(focusIndex, Math.max(openItems.length - 1, 0))] ?? null;
+  const currentNumber = current ? Math.min(focusIndex, openItems.length - 1) + 1 : 0;
 
   function applyCountFilter(next: {
     status?: StatusFilter;
@@ -111,6 +123,7 @@ export default function ImportNeedsReviewQueue({
     if (next.kind !== undefined) setKind(next.kind);
     if (next.origin !== undefined) setOrigin(next.origin);
     setLimit(100);
+    setFocusIndex(0);
     queueRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -119,25 +132,153 @@ export default function ImportNeedsReviewQueue({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CountCard
           label="Awaiting verification"
+          value={queue.counts.awaitingVerification}
           active={status === "OPEN" && origin === "ALL" && kind === "ALL"}
           onClick={() => applyCountFilter({ status: "OPEN", origin: "ALL", kind: "ALL" })}
         />
         <CountCard
           label="Needs review"
+          value={queue.counts.needsReview}
           active={status === "NEEDS_REVIEW" && origin === "ALL"}
           onClick={() => applyCountFilter({ status: "NEEDS_REVIEW", origin: "ALL" })}
         />
         <CountCard
           label="In source packs only"
+          value={queue.counts.sourcePackOnly}
           active={origin === "source_pack"}
           onClick={() => applyCountFilter({ status: "OPEN", origin: "source_pack" })}
         />
         <CountCard
           label="Possible duplicates"
+          value={queue.counts.duplicates}
           active={status === "DUPLICATE" && origin === "ALL"}
           onClick={() => applyCountFilter({ status: "DUPLICATE", origin: "ALL" })}
         />
       </div>
+
+      <section className="mt-8 border border-[var(--gold-light)] bg-[#fffdf9] p-5" aria-labelledby="review-one-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">One at a time</p>
+            <h2 id="review-one-heading" className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              Review this record
+            </h2>
+          </div>
+          <p className="text-sm font-semibold text-[var(--navy)]" aria-live="polite">
+            {openItems.length === 0 ? "None remaining" : `${currentNumber} of ${openItems.length} remaining`}
+          </p>
+        </div>
+        {current ? (
+          <div className="mt-5 grid gap-6 lg:grid-cols-2">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">{current.kindLabel}</p>
+              <p className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{current.name}</p>
+              {current.aliases.length > 0 && (
+                <p className="mt-2 text-sm text-stone-600">Also known as {current.aliases.join(", ")}</p>
+              )}
+              <dl className="mt-4 space-y-2 text-sm text-stone-700">
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Place</dt>
+                  <dd>
+                    {[current.address, current.city, current.region, current.country].filter(Boolean).join(", ") || current.destination}
+                  </dd>
+                </div>
+                {current.coordinates && (
+                  <div>
+                    <dt className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Coordinates</dt>
+                    <dd>{current.coordinates}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Source</dt>
+                  <dd>
+                    {current.sourceName || "Imported source"}
+                    {current.sourceUrl ? (
+                      <>
+                        {" · "}
+                        <a href={current.sourceUrl} target="_blank" rel="noreferrer" className="underline decoration-[var(--gold)] underline-offset-4">
+                          Open source
+                        </a>
+                      </>
+                    ) : null}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Status</dt>
+                  <dd>
+                    {current.statusLabel}
+                    {current.publishBlockers > 0 ? ` · ${current.publishBlockers} missing required field${current.publishBlockers === 1 ? "" : "s"}` : ""}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <div className="flex flex-col justify-between gap-4">
+              <p className="text-sm leading-6 text-stone-600">
+                Approve, edit, reject, or merge on the review screen. Skip leaves this record in the queue and does not
+                change the count.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={current.href}
+                  className="inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white"
+                >
+                  {rowActionLabel(current)}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkipNote("Skipped. Still in the queue.");
+                    setFocusIndex((index) => (openItems.length <= 1 ? 0 : (index + 1) % openItems.length));
+                  }}
+                  className="inline-flex min-h-11 items-center border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+                >
+                  Skip for now
+                </button>
+                {current.origin === "database" && (
+                  <>
+                    <form action={queueAction}>
+                      <input type="hidden" name="id" value={current.id.replace(/^db:/, "")} />
+                      <button
+                        type="submit"
+                        name="intent"
+                        value="reject"
+                        disabled={queuePending}
+                        onClick={(event) => {
+                          if (!window.confirm(`Reject “${current.name}”? It stays in the private audit trail.`)) event.preventDefault();
+                        }}
+                        className="inline-flex min-h-11 items-center border border-rose-300 px-4 text-xs font-bold uppercase tracking-[0.12em] text-rose-800 disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </form>
+                    <form action={queueAction}>
+                      <input type="hidden" name="id" value={current.id.replace(/^db:/, "")} />
+                      <button
+                        type="submit"
+                        name="intent"
+                        value="duplicate"
+                        disabled={queuePending}
+                        onClick={(event) => {
+                          if (!window.confirm(`Mark “${current.name}” as a duplicate? Both records are kept.`)) event.preventDefault();
+                        }}
+                        className="inline-flex min-h-11 items-center border border-amber-400 px-4 text-xs font-bold uppercase tracking-[0.12em] text-amber-950 disabled:opacity-50"
+                      >
+                        Duplicate
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+              {queueState && (
+                <p className={`text-sm font-semibold ${queueState.ok ? "text-emerald-700" : "text-red-700"}`}>{queueState.message}</p>
+              )}
+              {skipNote && <p className="text-sm text-stone-600">{skipNote}</p>}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 text-sm text-stone-600">Nothing in this filter still needs a decision.</p>
+        )}
+      </section>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {(Object.keys(queue.counts.byKind) as ReviewQueueKind[]).map((key) => (

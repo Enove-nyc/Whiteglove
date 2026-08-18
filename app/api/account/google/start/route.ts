@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorizeUrl, callbackUrl, googleConfig } from "@/lib/google-signin";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { siteOrigin } from "@/lib/seo";
+import { publicUrl } from "@/lib/public-origin";
 
 /**
  * Start signing in with Google.
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   });
-  if (!config) return NextResponse.redirect(new URL("/login?google=unavailable", request.url));
+  if (!config) return NextResponse.redirect(publicUrl(request, "/login?google=unavailable"));
 
   const gate = await rateLimit(`google-start:${requesterKey(request.headers)}`, { limit: 20, windowSeconds: 15 * 60 });
   if (!gate.ok) return NextResponse.json({ error: tooManyMessage(gate.retryAfter) }, { status: 429, headers: { "Retry-After": String(gate.retryAfter) } });

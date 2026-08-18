@@ -50,8 +50,18 @@ describe("addresses in an email", () => {
 describe("what the letter always carries", () => {
   const html = render([{ kind: "text", text: "Hello." }]);
 
-  it("puts the crest at the top, absolutely addressed", () => {
-    assert.ok(html.includes(`${ORIGIN}/logo.png`));
+  it("PUTS THE MARK AT THE TOP, ABSOLUTELY ADDRESSED, AND THE NAME AS TEXT", () => {
+    // It was /logo.png, whose artwork reads "White Glove Itineraries" — the
+    // old company name, drawn into the picture and so uncorrectable by an alt
+    // attribute. Every letter this site sent was signed with it.
+    //
+    // The mark carries no words, so the name is set as text below it. That is
+    // better than a wordmark would have been anyway: most clients block
+    // pictures by default, and a blocked crest says nothing about who wrote.
+    assert.ok(html.includes(`${ORIGIN}/logo-hand-navy.png`));
+    assert.ok(!html.includes("/logo.png"), "the old wordmark is back in the letter");
+    assert.ok(html.includes(">White Glove</div>"));
+    assert.ok(html.includes("Kosher Travel</div>"));
   });
 
   it("CANNOT BE SENT WITHOUT THE UNSUBSCRIBE AND THE REASON", () => {

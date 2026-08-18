@@ -82,6 +82,24 @@ export function rateHref(input: { kind: RatingKind; ref: string; label: string }
   return `/rate?${params.toString()}`;
 }
 
+export function filterExperienceRatings(
+  ratings: readonly ExperienceRating[],
+  filters: { kind?: string; q?: string; score?: string },
+): ExperienceRating[] {
+  const kind = filters.kind?.trim();
+  const score = filters.score?.trim();
+  const query = filters.q?.trim().toLocaleLowerCase("en") ?? "";
+  return ratings.filter((rating) => {
+    if (kind && kind !== "all" && rating.kind !== kind) return false;
+    if (score && String(rating.score) !== score) return false;
+    if (!query) return true;
+    const haystack = [rating.label, rating.name, rating.email, rating.note, rating.kind, rating.ref]
+      .join(" ")
+      .toLocaleLowerCase("en");
+    return haystack.includes(query);
+  });
+}
+
 /** One line for the admin list. */
 export function ratingSummary(rating: Pick<ExperienceRating, "score" | "label" | "kind">): string {
   const what =
