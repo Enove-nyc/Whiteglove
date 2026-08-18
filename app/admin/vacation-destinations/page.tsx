@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Photo } from "@prisma/client";
 import CreateVacationDestinationForm from "@/components/CreateVacationDestinationForm";
 import VacationDestinationEditor from "@/components/VacationDestinationEditor";
+import VacationDestinationPicker from "@/components/VacationDestinationPicker";
 import { listVacationDestinationsForAdmin } from "@/lib/vacation-destinations-view";
 import { destinations as heritageTowns } from "@/data/destinations";
 import { vacationDestinationPhotos, vacationDestinationsTableReady } from "@/lib/vacation-destinations-admin";
@@ -93,28 +94,19 @@ export default async function AdminVacationDestinationsPage({
       )}
 
       <section className="mt-10 grid gap-8 lg:grid-cols-[18rem_1fr]">
-        <nav aria-label="Destinations" className="rounded-2xl border border-[var(--gold-light)] bg-white p-4">
-          <ul className="space-y-1">
-            {all.map(({ destination, hidden, hasRow }) => {
-              const active = destination.slug === slug;
-              return (
-                <li key={destination.slug}>
-                  <Link
-                    href={`/admin/vacation-destinations?slug=${destination.slug}`}
-                    className={`flex min-h-11 items-center justify-between gap-2 rounded-md px-3 text-sm ${
-                      active ? "bg-[var(--navy)] font-semibold text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
-                    }`}
-                  >
-                    <span className="truncate">{destination.name}</span>
-                    <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.1em] ${active ? "text-white/70" : "text-stone-400"}`}>
-                      {hidden ? "Hidden" : destination.ownerAdded ? "Yours" : hasRow ? "Edited" : ""}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <VacationDestinationPicker
+          selectedSlug={slug}
+          destinations={all.map(({ destination, hidden }) => ({
+            slug: destination.slug,
+            name: destination.name,
+            country: destination.country,
+            region: destination.region,
+            cities: destination.cities,
+            ownerAdded: destination.ownerAdded,
+            edited: destination.edited,
+            hidden,
+          }))}
+        />
 
         <div>
           {selected ? (
