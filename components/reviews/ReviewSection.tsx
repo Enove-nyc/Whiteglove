@@ -24,7 +24,8 @@ import {
  * shows the words and the stars and stays quiet about how many there are —
  * "All reviews" is a door, not a number.
  *
- * Reviews come back from the API already stripped to initials; the name never
+ * Reviews come back from the API with a byline the server built — a first
+ * name and a last initial ("Yaakov C."), never the full name and never an email
  * reaches the browser. `avatarUrl` is a seam the account system fills when a
  * profile has a picture — until then the initials circle renders.
  */
@@ -89,7 +90,8 @@ function ReviewRow({
     <li className="flex gap-3 rounded-xl border border-[var(--gold-light)] bg-white p-4">
       <AuthorMark review={review} />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="text-sm font-semibold text-[var(--navy)]">{review.name}</span>
           <StarRating mode="display" score={review.score} size="sm" />
           <span className="text-xs text-stone-500">{when(review.at)}</span>
           {review.mine && <span className="text-xs font-semibold text-[var(--gold-ink)]">Your review</span>}

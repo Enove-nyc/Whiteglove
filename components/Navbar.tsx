@@ -143,38 +143,33 @@ export default function Navbar() {
   }, [openKey]);
 
   /**
-   * THE CLICK BUG, and what actually fixes it.
+   * HOVER OPENS THE MENU — and why that no longer breaks the buttons.
    *
-   * The menu opened on hover and toggled on click. Moving a mouse to a
-   * trigger therefore did two things in a row: hover opened the panel, then
-   * the click read "it is open" and shut it again. The panel appeared and
-   * vanished under the pointer, which reads as a dead button — and it raced,
-   * so the first press of a session often worked and the rest did not. An
-   * earlier attempt recorded the pre-press state at pointer-down, but that
-   * only covered the focus path; hover still fired first and still won.
+   * This used to open on hover and toggle on click, and the two fought:
+   * moving a mouse to a trigger hovered it open, then the click read "it is
+   * open" and shut it again, so the panel flickered and the button looked
+   * dead. Hover-open was removed to stop that. The owner wants it back, and it
+   * is safe now because of the split kept from that fix:
    *
-   * Two rules kill it outright:
+   *   - Hover sets only `open`. It never sets `pressed`.
+   *   - Click toggles on `pressed`, from the LIVE state via the functional
+   *     updater. After hover has opened a menu, `pressed` is still null, so
+   *     the first click commits the press and LEAVES IT OPEN rather than
+   *     closing it. A second click, now that `pressed` matches, closes it.
    *
-   *   1. The click toggles from the LIVE state, via the functional updater —
-   *      never from a value captured while rendering, which is what went
-   *      stale between hover and press.
-   *   2. Hover SWITCHES between menus but never opens the first one. This is
-   *      how a real menubar behaves: once something is open, sliding across
-   *      moves with you; with nothing open, hovering is not a command. So a
-   *      press is always the thing that opens, and a press always decides.
+   * So hovering opens, clicking never closes what hover opened, and the panel
+   * cannot flicker under the pointer. On touch there is no hover, so the tap
+   * is the open and the second tap the close — unchanged.
    *
-   * Focus does not open either, for the same reason: tab to it, then press
-   * Enter or Space. A <button> turns both into a click, so the keyboard needs
-   * no separate path.
-   *
-   * The third rule — a press remembers itself, so hover cannot make the next
-   * click read as "close" — is `pressedKey`, declared with the state above.
+   * Focus still does not open: tab to a trigger, then Enter or Space, which a
+   * <button> turns into a click. The 150ms leave-timer and the outside-click
+   * and Escape handlers close it.
    */
-  function switchOnHover(key: string) {
+  function openOnHover(key: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    // Only when a menu is already open — see rule 2 above. `pressed` is left
-    // alone: sliding the pointer across is not a press.
-    setMenu((current) => (current.open === null ? current : { ...current, open: key }));
+    // Open (or slide to) this menu. `pressed` is left alone: hovering is not a
+    // press, which is exactly what keeps the next click from reading as close.
+    setMenu((current) => (current.open === key ? current : { ...current, open: key }));
   }
 
   function stayOpen() {
@@ -237,7 +232,7 @@ export default function Navbar() {
                 <div
                   key={key}
                   className="relative"
-                  onMouseEnter={() => switchOnHover(key)}
+                  onMouseEnter={() => openOnHover(key)}
                   onMouseLeave={closeOnHoverOut}
                   onBlur={(event) => {
                     // Focus moved outside this category: close its panel, so a
