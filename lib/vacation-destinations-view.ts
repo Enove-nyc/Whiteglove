@@ -18,6 +18,8 @@
 // list, so the destination pages never go blank.
 
 import {
+  SEASONS as SEASON_OPTIONS,
+  TRIP_THEMES,
   vacationDestinations as builtIn,
   type Season,
   type TripTheme,
@@ -49,8 +51,20 @@ export type VacationDestinationItem = VacationDestination & {
   photos: readonly DestinationPhoto[];
 };
 
-const THEMES: readonly string[] = ["beach", "city", "mountains", "family", "couples", "short-break"];
-const SEASONS: readonly string[] = ["spring", "summer", "autumn", "winter"];
+/**
+ * READ FROM THE ONE LIST, NOT COPIED FROM IT.
+ *
+ * These were written out again here as six themes, and the site has seven —
+ * "heritage" was missing. The editor offers every one of the seven, because it
+ * reads TRIP_THEMES; the admin saved whichever the owner ticked; and then this
+ * filter threw "heritage" away on the way back out. So ticking Heritage,
+ * pressing save and being told it saved left the destination absent from the
+ * Heritage filter, with nothing anywhere to say why. A copy of a list is a
+ * list that will disagree with the original eventually, and this one already
+ * did on the day it was written.
+ */
+const THEMES: readonly string[] = TRIP_THEMES.map((theme) => theme.value);
+const SEASONS: readonly string[] = SEASON_OPTIONS.map((season) => season.value);
 
 /** A stored string is only a theme if it is one of ours; anything else is dropped. */
 function asThemes(values: readonly string[]): TripTheme[] {

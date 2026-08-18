@@ -1,3 +1,4 @@
+import type { HeritageCardModel } from "@/lib/destination-directory";
 /**
  * What the site can honestly say about a vacation destination.
  *
@@ -348,20 +349,88 @@ export function vacationBrowseHref({
   return query ? `/destinations?${query}` : "/destinations";
 }
 
-function haystack(card: VacationCardModel): string {
+/* ---- the directory: both kinds of destination ---------------------------- */
+
+/**
+ * A card in the directory — a holiday destination, or a heritage town.
+ *
+ * ONE LIST, TWO SHAPES, AND THE SHAPES ARE NOT MADE TO MATCH. A holiday
+ * destination carries editorial and two assessed signals; a heritage town
+ * carries its name, its country and how many kevarim are on record. Widening
+ * the heritage half to fit the holiday one would mean writing sentences nobody
+ * wrote, so the card renders what each actually has. See
+ * lib/destination-directory.ts for why they belong in one list at all.
+ */
+export type DirectoryCard =
+  | ({ kind: "vacation" } & VacationCardModel)
+  | ({ kind: "heritage" } & HeritageCardModel);
+
+export function asDirectoryCards(cards: readonly VacationCardModel[]): DirectoryCard[] {
+  return cards.map((card) => ({ kind: "vacation" as const, ...card }));
+}
+
+export function asHeritageCards(cards: readonly HeritageCardModel[]): DirectoryCard[] {
+  return cards.map((card) => ({ kind: "heritage" as const, ...card }));
+}
+
+/** What a card is called, whichever kind it is. */
+export function cardName(card: DirectoryCard): string {
+  return card.kind === "vacation" ? card.destination.name : card.name;
+}
+
+export function cardCountry(card: DirectoryCard): string {
+  return card.kind === "vacation" ? card.destination.country : card.country;
+}
+
+export function cardSlug(card: DirectoryCard): string {
+  return card.kind === "vacation" ? card.destination.slug : card.slug;
+}
+
+/**
+ * The trip types a card answers to.
+ *
+ * A HERITAGE TOWN IS A HERITAGE TRIP AND NOTHING ELSE. It is not being called
+ * a beach or a short break by omission — it is that the one thing anybody has
+ * assessed about it is that this is where the kevarim are, and the filter says
+ * only that.
+ */
+export function cardThemes(card: DirectoryCard): readonly TripTheme[] {
+  return card.kind === "vacation" ? card.destination.themes : ["heritage"];
+}
+
+/**
+ * The seasons a card answers to — none, for a heritage town.
+ *
+ * Deliberately empty rather than "all four". Nobody has written when in the
+ * year Lizhensk is best, and answering a season filter with a town that was
+ * never assessed for it is the site inventing an opinion. An empty list means
+ * a season filter narrows to the destinations that have one, which is what a
+ * filter is for.
+ */
+export function cardSeasons(card: DirectoryCard): readonly Season[] {
+  return card.kind === "vacation" ? card.destination.seasons : [];
+}
+
+function haystack(card: DirectoryCard): string {
+  if (card.kind === "heritage") {
+    return [card.name, card.yiddishName, card.country, card.summary].filter(Boolean).join(" ").toLowerCase();
+  }
   const d = card.destination;
   return [d.name, d.country, d.region, ...d.cities, ...d.bestFor, d.whyGo].filter(Boolean).join(" ").toLowerCase();
 }
 
-export function filterVacations(cards: readonly VacationCardModel[], filters: VacationFilters): VacationCardModel[] {
+export function filterVacations(cards: readonly DirectoryCard[], filters: VacationFilters): DirectoryCard[] {
   const query = filters.query.trim().toLowerCase();
   return cards.filter((card) => {
     if (query && !haystack(card).includes(query)) return false;
-    if (filters.theme && !card.destination.themes.includes(filters.theme)) return false;
-    if (filters.season && !card.destination.seasons.includes(filters.season)) return false;
-    if (filters.country && card.destination.country !== filters.country) return false;
-    if (filters.kosher && card.kosher.level !== filters.kosher) return false;
-    if (filters.shabbos && card.shabbos.level !== filters.shabbos) return false;
+    if (filters.theme && !cardThemes(card).includes(filters.theme)) return false;
+    if (filters.season && !cardSeasons(card).includes(filters.season)) return false;
+    if (filters.country && cardCountry(card) !== filters.country) return false;
+    // The two assessed signals exist only on a holiday destination. Filtering
+    // by one narrows to the destinations that have been assessed for it,
+    // rather than guessing on behalf of the towns that have not.
+    if (filters.kosher && (card.kind !== "vacation" || card.kosher.level !== filters.kosher)) return false;
+    if (filters.shabbos && (card.kind !== "vacation" || card.shabbos.level !== filters.shabbos)) return false;
     return true;
   });
 }
@@ -382,9 +451,9 @@ export function activeFilterCount(filters: VacationFilters): number {
 export type FilterOption<V extends string> = { value: V; label: string; count: number };
 
 function tally<V extends string>(
-  cards: readonly VacationCardModel[],
+  cards: readonly DirectoryCard[],
   options: ReadonlyArray<{ value: V; label: string }>,
-  has: (card: VacationCardModel, value: V) => boolean,
+  has: (card: DirectoryCard, value: V) => boolean,
 ): Array<FilterOption<V>> {
   return options
     .map((option) => ({ ...option, count: cards.filter((card) => has(card, option.value)).length }))
@@ -392,25 +461,25 @@ function tally<V extends string>(
 }
 
 export function themeOptions(
-  cards: readonly VacationCardModel[],
+  cards: readonly DirectoryCard[],
   themes: ReadonlyArray<{ value: TripTheme; label: string }>,
 ): Array<FilterOption<TripTheme>> {
-  return tally(cards, themes, (card, value) => card.destination.themes.includes(value));
+  return tally(cards, themes, (card, value) => cardThemes(card).includes(value));
 }
 
 export function seasonOptions(
-  cards: readonly VacationCardModel[],
+  cards: readonly DirectoryCard[],
   seasons: ReadonlyArray<{ value: Season; label: string }>,
 ): Array<FilterOption<Season>> {
-  return tally(cards, seasons, (card, value) => card.destination.seasons.includes(value));
+  return tally(cards, seasons, (card, value) => cardSeasons(card).includes(value));
 }
 
-export function countryOptions(cards: readonly VacationCardModel[]): Array<FilterOption<string>> {
-  const countries = [...new Set(cards.map((card) => card.destination.country))].sort();
+export function countryOptions(cards: readonly DirectoryCard[]): Array<FilterOption<string>> {
+  const countries = [...new Set(cards.map(cardCountry))].sort();
   return tally(
     cards,
     countries.map((country) => ({ value: country, label: country })),
-    (card, value) => card.destination.country === value,
+    (card, value) => cardCountry(card) === value,
   );
 }
 
@@ -427,12 +496,12 @@ export const SHABBOS_FILTERS: ReadonlyArray<{ value: ShabbosLevel; label: string
   { value: "not-checked", label: "Not checked yet" },
 ] as const;
 
-export function kosherOptions(cards: readonly VacationCardModel[]): Array<FilterOption<KosherLevel>> {
-  return tally(cards, KOSHER_FILTERS, (card, value) => card.kosher.level === value);
+export function kosherOptions(cards: readonly DirectoryCard[]): Array<FilterOption<KosherLevel>> {
+  return tally(cards, KOSHER_FILTERS, (card, value) => card.kind === "vacation" && card.kosher.level === value);
 }
 
-export function shabbosOptions(cards: readonly VacationCardModel[]): Array<FilterOption<ShabbosLevel>> {
-  return tally(cards, SHABBOS_FILTERS, (card, value) => card.shabbos.level === value);
+export function shabbosOptions(cards: readonly DirectoryCard[]): Array<FilterOption<ShabbosLevel>> {
+  return tally(cards, SHABBOS_FILTERS, (card, value) => card.kind === "vacation" && card.shabbos.level === value);
 }
 
 /** Tailwind per tone. Kept here so a second component cannot invent a palette. */

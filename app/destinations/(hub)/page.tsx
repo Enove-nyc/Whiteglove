@@ -7,7 +7,8 @@ import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacati
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
-import { cardModels } from "@/lib/vacation-ideas";
+import { heritageCards } from "@/lib/destination-directory";
+import { asDirectoryCards, asHeritageCards, cardModels } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -45,7 +46,21 @@ export default async function VacationIdeasPage({
     // adds or edits in the admin is on this hub without a deploy.
     getVacationDestinations(),
   ]);
-  const cards = cardModels(destinations, sources);
+  /**
+   * ONE DIRECTORY. The holiday destinations and the heritage towns are the
+   * same category — both are answers to "where should we go" — and the page
+   * behind the word "Destinations" used to hold only the first kind. The towns
+   * were reachable by search and from /heritage and were in this list not at
+   * all, while the site's own writing said they were part of it.
+   *
+   * Holiday destinations lead, because they are the ones with a written
+   * assessment behind them. Only towns with something actually on them join:
+   * the same condition the sitemap asks, so the two cannot disagree.
+   */
+  const cards = [
+    ...asDirectoryCards(cardModels(destinations, sources)),
+    ...asHeritageCards(heritageCards()),
+  ];
   // Arrived from a category or a time of year on the front page. Anything
   // unrecognised is ignored rather than showing an empty list for a filter
   // nobody chose.
@@ -60,7 +75,7 @@ export default async function VacationIdeasPage({
             name: "Kosher vacation ideas",
             description: "Vacation destinations with practical kosher food and Shabbos guidance.",
             path: "/destinations",
-            count: destinations.length,
+            count: cards.length,
           }),
           breadcrumbs([
             { name: "Home", path: "/" },

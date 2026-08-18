@@ -13,7 +13,9 @@ import {
 import {
   addToTripHref,
   cardModel,
+  cardCountry,
   cardModels,
+  cardThemes,
   countryOptions,
   factsFor,
   filterVacations,
@@ -42,6 +44,15 @@ import {
 
 const SOURCES: VacationSources = { attractions, stays: kosherStays, eateries: kosherEateries, areas: kosherAreas };
 const CARDS = cardModels(vacationDestinations, SOURCES);
+/**
+ * The same cards as directory entries.
+ *
+ * The directory holds two kinds now — holiday destinations and heritage towns
+ * — so the filters take the union. These are all the first kind, spread with
+ * the tag rather than passed through asDirectoryCards() so the assertions
+ * below can still reach `.destination` without narrowing on every line.
+ */
+const DIRECTORY = CARDS.map((card) => ({ kind: "vacation" as const, ...card }));
 
 function destination(slug: string): VacationDestination {
   const found = getVacationDestination(slug);
@@ -229,55 +240,55 @@ describe("the indicators never rest on colour", () => {
 
 describe("filtering", () => {
   it("returns everything when nothing is chosen", () => {
-    assert.equal(filterVacations(CARDS, NO_VACATION_FILTERS).length, CARDS.length);
+    assert.equal(filterVacations(DIRECTORY, NO_VACATION_FILTERS).length, CARDS.length);
   });
 
   it("narrows by theme, season and country together", () => {
-    const filtered = filterVacations(CARDS, { ...NO_VACATION_FILTERS, theme: "mountains", country: "Switzerland" });
+    const filtered = filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, theme: "mountains", country: "Switzerland" });
     assert.ok(filtered.length > 0);
     for (const card of filtered) {
-      assert.ok(card.destination.themes.includes("mountains"));
-      assert.equal(card.destination.country, "Switzerland");
+      assert.ok(cardThemes(card).includes("mountains"));
+      assert.equal(cardCountry(card), "Switzerland");
     }
   });
 
   it("searches the name, the country and the cities behind it", () => {
-    assert.ok(filterVacations(CARDS, { ...NO_VACATION_FILTERS, query: "rome" }).length > 0);
-    assert.ok(filterVacations(CARDS, { ...NO_VACATION_FILTERS, query: "lauterbrunnen" }).length > 0);
-    assert.equal(filterVacations(CARDS, { ...NO_VACATION_FILTERS, query: "qqqqq" }).length, 0);
+    assert.ok(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, query: "rome" }).length > 0);
+    assert.ok(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, query: "lauterbrunnen" }).length > 0);
+    assert.equal(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, query: "qqqqq" }).length, 0);
   });
 
   it("OFFERS NO FILTER WITH NOTHING BEHIND IT", () => {
     // THE ONE THAT MATTERS for the hub. Pressing a chip and landing on an
     // empty page is worse than never being offered the chip.
     for (const options of [
-      themeOptions(CARDS, TRIP_THEMES),
-      seasonOptions(CARDS, SEASONS),
-      countryOptions(CARDS),
-      kosherOptions(CARDS),
-      shabbosOptions(CARDS),
+      themeOptions(DIRECTORY, TRIP_THEMES),
+      seasonOptions(DIRECTORY, SEASONS),
+      countryOptions(DIRECTORY),
+      kosherOptions(DIRECTORY),
+      shabbosOptions(DIRECTORY),
     ]) {
       for (const option of options) {
         assert.ok(option.count > 0, `${option.label} is offered with nothing behind it`);
-        const found = filterVacations(CARDS, { ...NO_VACATION_FILTERS }).length;
+        const found = filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS }).length;
         assert.ok(found >= option.count);
       }
     }
   });
 
   it("counts what the filter will actually show", () => {
-    for (const option of themeOptions(CARDS, TRIP_THEMES)) {
-      assert.equal(filterVacations(CARDS, { ...NO_VACATION_FILTERS, theme: option.value }).length, option.count);
+    for (const option of themeOptions(DIRECTORY, TRIP_THEMES)) {
+      assert.equal(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, theme: option.value }).length, option.count);
     }
   });
 
   it("gives every advertised style a canonical URL for exactly its matching destinations", () => {
-    const options = new Map(themeOptions(CARDS, TRIP_THEMES).map((option) => [option.value, option]));
+    const options = new Map(themeOptions(DIRECTORY, TRIP_THEMES).map((option) => [option.value, option]));
     for (const theme of TRIP_THEMES) {
       const option = options.get(theme.value);
       assert.ok(option, `${theme.value} is shown without a destination count`);
       assert.equal(vacationBrowseHref({ theme: theme.value, season: "" }), `/destinations?kind=${theme.value}`);
-      assert.equal(filterVacations(CARDS, { ...NO_VACATION_FILTERS, theme: theme.value }).length, option.count);
+      assert.equal(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, theme: theme.value }).length, option.count);
     }
   });
 
