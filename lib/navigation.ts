@@ -131,6 +131,13 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       { label: "Transport", href: "/transfers" },
       { label: "Insurance", href: "/travel-insurance" },
       { label: "Gear", href: "/travel-gear" },
+      // THE DIRECTORY HAD NO ENTRY IN THE MENUS AT ALL. Thirty-one tour
+      // operators, agencies, guides and drivers, reachable only by somebody
+      // who already knew the address or stumbled through Explore — which is
+      // the same failure the "Before you go" column was added for. It belongs
+      // under Travel: everything else here is a thing you arrange, and this is
+      // the people who arrange it.
+      { label: "Directory", href: "/directory" },
     ],
   },
 ] as const;
