@@ -17,6 +17,9 @@ import { useEffect, useState } from "react";
  * booking lives. The wording says so rather than leaving somebody to find out.
  */
 
+/** The free hand-off shown when there are no prices of our own. */
+type Partner = { href: string; message: string };
+
 type Car = {
   id: string;
   headline: string;
@@ -47,7 +50,7 @@ export default function CarPrices({
   // an await — a synchronous reset in here is a second render for nothing.
   const key = `${destination.trim()}|${startDate}|${endDate}`;
   const ready = Boolean(destination.trim() && startDate && endDate);
-  const [answer, setAnswer] = useState<{ key: string; cars: Car[] } | null>(null);
+  const [answer, setAnswer] = useState<{ key: string; cars: Car[]; partner?: Partner } | null>(null);
 
   useEffect(() => {
     if (!ready) return;
@@ -64,7 +67,11 @@ export default function CarPrices({
         });
         const data = await response.json();
         if (!abort.signal.aborted) {
-          setAnswer({ key, cars: response.ok && Array.isArray(data.cars) ? data.cars : [] });
+          setAnswer({
+            key,
+            cars: response.ok && Array.isArray(data.cars) ? data.cars : [],
+            partner: response.ok && data.partner?.href ? data.partner : undefined,
+          });
         }
       } catch {
         // Never an error message about an API. The partner search below is a
@@ -76,6 +83,7 @@ export default function CarPrices({
   }, [key, ready, destination, startDate, endDate]);
 
   const cars = answer?.key === key ? answer.cars : null;
+  const partner = answer?.key === key ? answer.partner : undefined;
 
   if (!ready) return null;
 
@@ -87,7 +95,36 @@ export default function CarPrices({
     );
   }
 
-  if (!cars.length) return null;
+  if (!cars.length) {
+    // NO PRICES IS NOT NO CAR SEARCH. The provider that gives us prices is on
+    // a small monthly allowance and can be spent, switched off, or simply
+    // having a bad afternoon; the hand-off below costs nothing per search and
+    // cannot run out. Shown only when there is nothing better — a "compare
+    // with a partner" row under real prices is a worse version of what
+    // somebody is already reading.
+    if (!partner) return null;
+    return (
+      <section className="mb-6" aria-labelledby="car-partner-heading">
+        <h3 id="car-partner-heading" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+          Rental cars in {destination}
+        </h3>
+        <div className="mt-3 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-4">
+          <p className="text-sm leading-6 text-stone-700">{partner.message}</p>
+          <a
+            href={partner.href}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex min-h-11 items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          >
+            Compare cars
+          </a>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            Opens the partner&rsquo;s own search with your dates — White Glove does not take payment.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-6" aria-labelledby="car-prices-heading">

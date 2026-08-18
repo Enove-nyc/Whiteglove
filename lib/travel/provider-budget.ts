@@ -109,13 +109,28 @@ export async function callsThisMonth(provider: ProviderId, month = monthKey()): 
  * that is probably fine. Silently disabling a working provider because a cache
  * is down is the worse of the two.
  */
-export async function providerHasBudget(provider: ProviderId): Promise<boolean> {
+export async function providerHasBudget(provider: ProviderId, reserve = 0): Promise<boolean> {
   const limit = monthlyLimit(provider);
   if (limit === null) return true;
   const used = await callsThisMonth(provider);
   if (used === null) return true;
-  return used < limit;
+  return used < limit - reserve;
 }
+
+/**
+ * How many searches the admin's own comparison screen leaves for travelers.
+ *
+ * TESTING AND SERVING SHARE ONE ALLOWANCE, and on the free plan that allowance
+ * is four hundred a month. An afternoon of comparing providers could spend the
+ * lot and leave the public car search with nothing, which is the wrong way
+ * round: the screen exists to decide whether a provider is worth showing
+ * people, and it must not be able to stop showing them.
+ *
+ * So the comparison stops first, while there is still a month's worth of
+ * ordinary use left. The number on that screen keeps counting both, because a
+ * counter that hid the admin's own spending would be lying about the bill.
+ */
+export const ADMIN_RESERVE = 50;
 
 /** Count one call. Never throws, and never blocks the call it is counting. */
 export async function spendProviderCall(provider: ProviderId): Promise<void> {

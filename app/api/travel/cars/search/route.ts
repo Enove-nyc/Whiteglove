@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sameOrigin } from "@/lib/secure-access";
 import { keepForCheckout } from "@/lib/travel/checkout-handles";
 import { searchTravel } from "@/lib/travel/engine";
+import { searchPartnerCars } from "@/lib/partner-cars";
 
 export const dynamic = "force-dynamic";
 
@@ -80,8 +81,28 @@ export async function POST(request: NextRequest) {
     };
   });
 
+  /**
+   * WHEN THERE ARE NO PRICES, THERE IS STILL A CAR SEARCH.
+   *
+   * Our own prices come from a metered provider on a small monthly allowance.
+   * When it is spent, or switched off, or simply having a bad afternoon, the
+   * honest thing is not an empty list — it is the search this site had before
+   * it had prices of its own: one tracked hand-off to a booking partner, which
+   * costs nothing per search and cannot run out.
+   *
+   * It is a fallback and never an addition. Showing a "compare with a partner"
+   * row underneath a list of real prices is offering somebody a worse version
+   * of what they are already looking at.
+   */
+  const partner = cars.length
+    ? null
+    : (() => {
+        const found = searchPartnerCars({ destination, checkIn: startDate, checkOut: endDate });
+        return found.ok ? { href: found.cars[0]?.bookHref ?? "", message: found.message } : null;
+      })();
+
   return NextResponse.json(
-    { cars, partial: outcome.partial },
+    { cars, partial: outcome.partial, partner: partner?.href ? partner : undefined },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

@@ -7,7 +7,7 @@ import { routestackConfig } from "@/lib/travel/adapters/routestack-auth";
 import { travelpayoutsTokenConfigured } from "@/lib/travelpayouts-api";
 import { KNOWN_PAIRS, STAGE_LABELS, stageOf, type ProviderStage } from "@/lib/travel/registry";
 import { weWouldBeTheSeller } from "@/lib/travel/engine";
-import { callsThisMonth, monthlyLimit } from "@/lib/travel/provider-budget";
+import { ADMIN_RESERVE, callsThisMonth, monthlyLimit } from "@/lib/travel/provider-budget";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { healthRows, readTravelHealth } from "@/lib/travel/telemetry";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
@@ -170,6 +170,11 @@ export default async function AdminTravelProvidersPage() {
                             {gone
                               ? `${spent} of ${limit} searches used this month — not being asked`
                               : `${spent} of ${limit} searches used this month`}
+                            {!gone && spent >= limit - ADMIN_RESERVE ? (
+                              <span className="block font-normal text-stone-500">
+                                The comparison below has stopped, so the last {ADMIN_RESERVE} are left for visitors.
+                              </span>
+                            ) : null}
                           </p>
                         );
                       })()}
@@ -272,8 +277,10 @@ export default async function AdminTravelProvidersPage() {
           the booking, the refund and the chargeback are ours, and the site hands travelers to somebody else&rsquo;s
           checkout instead. Where a plan has a monthly allowance, the count below the key is every search this site sent that
           provider — the place lookups and tokens around a search are not billed and are not counted. Testing here
-          spends the same allowance a traveler does, and a provider that has spent its month stops being asked until
-          the month turns.
+          spends the same allowance a traveler does — though the comparison stops early, leaving the last {ADMIN_RESERVE}{" "}
+          searches for visitors — and a provider that has spent its month stops being asked until the month turns. A
+          category with no provider left is not an empty page: cars fall back to a booking partner, which costs nothing
+          per search and cannot run out.
         </p>
       </section>
 
