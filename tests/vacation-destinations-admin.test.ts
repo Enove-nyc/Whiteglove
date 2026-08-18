@@ -59,6 +59,20 @@ describe("the holiday destinations screen exists and is reachable", () => {
     assert.match(PAGE, /href="\/admin\/destinations"/);
   });
 
+  it("can be searched, like the heritage towns screen", () => {
+    // It shipped without one, so the two destination screens behaved
+    // differently for no reason anybody could have guessed.
+    const PICKER = readFileSync("components/VacationDestinationPicker.tsx", "utf8");
+    assert.match(PAGE, /<VacationDestinationPicker/);
+    assert.match(PICKER, /Find a destination/);
+    // Folded, so "Krakow" finds Kraków — nobody types the accent.
+    assert.match(PICKER, /normalize\(query\)/);
+    // Country and towns are searchable too: "Italy" should bring back all of
+    // them, and so should "Bellagio".
+    assert.match(PICKER, /destination\.country/);
+    assert.match(PICKER, /destination\.cities\.join\(" "\)/);
+  });
+
   it("points across when one place really is on both lists", () => {
     // Prague, today. Editing it here and wondering why the shomer's number has
     // not changed is the obvious mistake.
