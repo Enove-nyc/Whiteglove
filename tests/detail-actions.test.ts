@@ -26,10 +26,13 @@ describe("the icon action row", () => {
   });
 
   it("THE SUITCASE RENAMES ITSELF — an action before, a link after", () => {
-    assert.match(ROW, /label="Add to itinerary"/);
-    assert.match(ROW, /label="View itinerary" href="\/itinerary"/);
-    assert.match(ACTIONS, /label="Add to itinerary"/);
-    assert.match(ACTIONS, /label="View itinerary" href="\/itinerary"/);
+    // The name is built rather than literal now, because the suitcase has a
+    // third state: it says "Adding to itinerary" while the save is in flight.
+    // The rule is unchanged — the name always says what pressing it does.
+    for (const source of [ROW, ACTIONS]) {
+      assert.match(source, /"Adding to itinerary" : "Add to itinerary"/);
+      assert.match(source, /label="View itinerary" href="\/itinerary"/);
+    }
   });
 
   it("gates every save through the sign-in dialog", () => {
@@ -74,33 +77,75 @@ describe("Suggest edit — the pencil, everywhere, contextual", () => {
   });
 });
 
-describe("adding a stop reads the trip from the account, never from the browser", () => {
+describe("adding a stop to a trip", () => {
   /**
-   * This was a quiet way to lose a trip. Both action components built the new
-   * itinerary from a localStorage copy and POSTed the result to the account.
-   * That was correct while the planner kept a browser copy in step; it stopped
-   * being correct when the planner moved to the account alone. Nothing threw —
-   * the browser copy simply went stale, so one click on the suitcase could put
-   * an old itinerary, often an empty one, over a trip somebody had built.
+   * This was a quiet way to lose a trip. Each of the three surfaces that can
+   * add a stop built the new itinerary from a localStorage copy and POSTed the
+   * result to the account. That was correct while the planner kept a browser
+   * copy in step; it stopped being correct when the planner moved to the
+   * account alone. Nothing threw — the browser copy simply went stale, so one
+   * click could put an old itinerary, often an empty one, over a trip somebody
+   * had built.
    *
-   * The rule now: read the account, append, write back. If the read fails,
-   * write nothing.
+   * There is one implementation now, and it reads the account, asks which trip
+   * when the account holds more than one, and adds the stop without a day.
    */
+  const HOOK = readFileSync("components/useAddToItinerary.tsx", "utf8");
   const ADD = readFileSync("components/AddToItineraryButton.tsx", "utf8");
+  const SURFACES = [
+    ["DetailActionRow", ROW],
+    ["DestinationActions", ACTIONS],
+    ["AddToItineraryButton", ADD],
+  ] as const;
 
   it("no component builds an itinerary out of browser storage", () => {
-    for (const [name, source] of [["DetailActionRow", ROW], ["DestinationActions", ACTIONS], ["AddToItineraryButton", ADD]] as const) {
+    for (const [name, source] of [...SURFACES, ["useAddToItinerary", HOOK]] as const) {
       assert.doesNotMatch(source, /whiteGloveItinerary/, `${name} still reads the old browser key`);
     }
   });
 
-  it("reads /api/account/itinerary before it writes to it", () => {
-    for (const [name, source] of [["DetailActionRow", ROW], ["DestinationActions", ACTIONS], ["AddToItineraryButton", ADD]] as const) {
-      const read = source.indexOf('fetch("/api/account/itinerary")');
-      const write = source.indexOf('fetch("/api/account/itinerary", {');
-      assert.ok(read !== -1, `${name} never reads the trip`);
-      assert.ok(write !== -1, `${name} never saves the trip`);
-      assert.ok(read < write, `${name} writes before it has read`);
+  it("all three surfaces share one implementation rather than keeping their own", () => {
+    for (const [name, source] of SURFACES) {
+      assert.match(source, /useAddToItinerary/, `${name} does not use the shared hook`);
+      assert.doesNotMatch(source, /fetch\("\/api\/account\/itinerary/, `${name} still adds stops itself`);
+    }
+  });
+
+  it("reads the trip before it writes to it", () => {
+    const read = HOOK.indexOf("`/api/account/itinerary${query}`");
+    const write = HOOK.indexOf('fetch("/api/account/itinerary", {');
+    assert.ok(read !== -1, "the trip is never read");
+    assert.ok(write !== -1, "the trip is never saved");
+    assert.ok(read < write, "it writes before it has read");
+  });
+
+  it("ASKS WHICH TRIP when the account holds more than one", () => {
+    // Adding silently to whichever trip happens to be open is a guess, and a
+    // wrong guess is invisible — the stop lands in a trip nobody was looking at.
+    assert.match(HOOK, /fetch\("\/api\/account\/trips"\)/);
+    assert.match(HOOK, /trips\.length > 1/);
+    assert.match(HOOK, /Which trip\?/);
+    // One trip still adds straight away: nothing to ask about.
+    assert.match(HOOK, /addTo\(place, trips\[0\]\?\.id\)/);
+  });
+
+  it("the chosen trip is the one written to, not the open one", () => {
+    assert.match(HOOK, /\?trip=\$\{encodeURIComponent\(tripId\)\}/);
+    assert.match(HOOK, /tripId: tripId \?\? data\.tripId/);
+  });
+
+  it("the stop arrives without a day, and says so", () => {
+    // An undated stop lands in the planner's "Not scheduled yet" list, where a
+    // dropdown puts it on a day. Choosing one here would put a stop on a date
+    // nobody picked.
+    assert.match(HOOK, /date: "",/);
+    assert.match(HOOK, /not on a day yet/i);
+    assert.match(HOOK, /Place it on a day/);
+  });
+
+  it("names the trip it went on, on every surface", () => {
+    for (const [name, source] of SURFACES) {
+      assert.match(source, /AddedToTrip/, `${name} confirms without naming the trip`);
     }
   });
 

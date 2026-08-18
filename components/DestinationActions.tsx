@@ -7,8 +7,8 @@ import { IconButton, IconLink } from "@/components/icons/IconAction";
 import { bookingHref } from "@/lib/booking-access";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { placeDirectionsUrl, placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
-import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
 import { useSignedIn } from "@/lib/use-signed-in";
+import { AddedToTrip, useAddToItinerary } from "@/components/useAddToItinerary";
 
 /**
  * Everything you can do with a destination, in one bar, on every destination
@@ -29,7 +29,6 @@ const FAVORITES_KEY = "whiteGloveFavorites";
 
 export type NearbyAirport = { code: string; name: string; km: string; directionsUrl: string };
 
-const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 const NONE: SavedPlace[] = [];
 
@@ -110,7 +109,10 @@ export default function DestinationActions({
   const route = useSavedPlaces(ROUTE_KEY);
   const favorites = useSavedPlaces(FAVORITES_KEY);
   const favorite = favorites.some((item) => item.id === place.id);
-  const [onTrip, setOnTrip] = useState(false);
+  // One implementation of adding a stop, shared with the attraction
+  // cards: it reads the account, and asks which trip when the account
+  // holds more than one.
+  const trip = useAddToItinerary();
   const [panel, setPanel] = useState<"nearby" | "airports" | null>(null);
   const [nearby, setNearby] = useState<Nearby[] | null>(null);
   const [shared, setShared] = useState("");
@@ -139,49 +141,6 @@ export default function DestinationActions({
     }).catch(() => undefined);
   };
 
-  /**
-   * The itinerary is the day-by-day plan; the route is the list of stops.
-   * They are different things and a destination belongs on both — this puts
-   * it on the plan as a stop with its address, so the planner can work out
-   * driving time to it without anybody retyping where it is.
-   */
-  const addToItinerary = async () => {
-    // READ THE TRIP FROM THE ACCOUNT, NOT FROM THE BROWSER. This built the new
-    // itinerary from localStorage and posted the result to the account. That
-    // was right while the planner also kept a browser copy; it stopped being
-    // right when the planner moved to the account alone, and nothing failed
-    // loudly — the browser copy simply went stale, so adding one stop posted an
-    // old itinerary, often an empty one, over the trip somebody had built.
-    //
-    // If the account cannot be read, nothing is written. Writing over a trip we
-    // could not see is the failure this is here to prevent.
-    try {
-      const read = await fetch("/api/account/itinerary");
-      if (!read.ok) return;
-      const data = (await read.json()) as { itinerary?: Itinerary | null };
-      const itin: Itinerary = { ...emptyItinerary(), ...(data.itinerary ?? {}) };
-      const activity: ItinActivity = {
-        id: uid(),
-        name: place.name,
-        yiddishName: place.yiddishName,
-        address: place.address,
-        coordinates: place.coordinates,
-        // Empty means unscheduled: the planner places it. Guessing a date here
-        // would put a stop on a day nobody chose.
-        date: "",
-        bookedOnSite: false,
-      };
-      const next: Itinerary = { ...itin, activities: [...(itin.activities ?? []), activity] };
-      const saved = await fetch("/api/account/itinerary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itinerary: next }),
-      });
-      if (saved.ok) setOnTrip(true);
-    } catch {
-      /* Left as it was: a stop not added is better than a trip overwritten. */
-    }
-  };
 
   const openNearby = async () => {
     setPanel(panel === "nearby" ? null : "nearby");
@@ -247,14 +206,32 @@ export default function DestinationActions({
               active={role !== "absent"}
               onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
             />
-            {onTrip ? (
+            {trip.phase.kind === "added" ? (
               <IconLink icon="suitcase" label="View itinerary" href="/itinerary" active />
             ) : (
-              <IconButton icon="suitcase" label="Add to itinerary" onClick={() => requireSignIn(addToItinerary, "Sign in to add to your itinerary")} />
+              <IconButton
+                icon="suitcase"
+                label={trip.phase.kind === "working" ? "Adding to itinerary" : "Add to itinerary"}
+                onClick={() => trip.start(place)}
+              />
             )}
           </>
         )}
       </div>
+
+      {/* An icon that changes colour does not say which of several trips the
+          stop landed on. This does. */}
+      {trip.phase.kind === "added" && (
+        <p className="mt-2" role="status">
+          <AddedToTrip tripName={trip.phase.tripName} />
+        </p>
+      )}
+      {trip.phase.kind === "failed" && (
+        <p className="mt-2 text-sm font-semibold text-[var(--navy)]" role="status">
+          That did not save — try again.
+        </p>
+      )}
+      {trip.dialog}
 
       {/* The planner-specific extras keep their words: "start the route
           here" has no familiar icon, and an unfamiliar icon is a guess. */}
