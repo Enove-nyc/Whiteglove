@@ -20,6 +20,7 @@ import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage
 import {
   contentImportCandidatePath,
   isDisallowedImportSource,
+  isGeneratedDraftCandidate,
   isTemplateFillerCandidate,
   type BulkContentKind,
 } from "@/lib/bulk-content";
@@ -63,6 +64,8 @@ type PackCandidate = {
   sourceUrl: string;
   sourceName: string;
   attribution: string;
+  /** The prefilled summary, where the pack carries one — used to spot generator drafts. */
+  summary?: string | null;
 };
 
 type KnownPack = {
@@ -183,6 +186,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
         sourceUrl: candidate.sourceUrl,
         sourceName: candidate.sourceName,
         attribution: candidate.sourceAttribution,
+        summary: candidate.summary,
       })),
   },
   {
@@ -204,6 +208,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
         sourceUrl: candidate.sourceUrl,
         sourceName: candidate.sourceName,
         attribution: candidate.sourceAttribution,
+        summary: candidate.summary,
       })),
   },
   {
@@ -299,6 +304,9 @@ function allowedPackCandidate(candidate: PackCandidate): boolean {
   // Template placeholders that name no real place are dropped before they
   // reach the queue or its counts — see isTemplateFillerCandidate.
   if (isTemplateFillerCandidate(candidate.name)) return false;
+  // Machine-generated research drafts, told by their boilerplate summary, are
+  // not real listings and are cleared from the queue and its counts too.
+  if (isGeneratedDraftCandidate(candidate.summary)) return false;
   return !isDisallowedImportSource({
     sourceUrl: candidate.sourceUrl,
     sourceName: candidate.sourceName,

@@ -26,6 +26,7 @@ import {
   type KnownContentRecord,
   type PreparedBulkContentCandidate,
   isTemplateFillerCandidate,
+  isGeneratedDraftCandidate,
   locationKey,
   normalizeSourceUrl,
 } from "@/lib/bulk-content";
@@ -127,13 +128,18 @@ function packageCandidates(sourcePackage: BuiltInContentImportPackage): Prepared
     // Template placeholders that name no real place never enter the queue —
     // see isTemplateFillerCandidate in lib/bulk-content.ts for what and why.
     .filter((candidate) => !isTemplateFillerCandidate(candidate.name))
+    // Machine-generated research drafts, told by their boilerplate summary, are
+    // not real listings either — see isGeneratedDraftCandidate.
+    .filter((candidate) => !isGeneratedDraftCandidate(candidate.summary))
     .map(prepareBulkContentCandidate)
     .filter((candidate) => candidate.canStage);
 }
 
-/** A batch's real candidate count, with the template filler taken out. */
+/** A batch's real candidate count, with the filler and generator drafts taken out. */
 function realCandidateCount(sourcePackage: BuiltInContentImportPackage): number {
-  return sourcePackage.candidates.filter((candidate) => !isTemplateFillerCandidate(candidate.name)).length;
+  return sourcePackage.candidates.filter(
+    (candidate) => !isTemplateFillerCandidate(candidate.name) && !isGeneratedDraftCandidate(candidate.summary),
+  ).length;
 }
 
 function packageBatch(sourcePackage: BuiltInContentImportPackage): ContentImportBatchView {
@@ -432,7 +438,10 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
       // staged before the purge keeps counting all 25,808. See
       // isTemplateFillerCandidate. The rows stay in the table; they just stop
       // being counted or shown, which is what the queue number is meant to mean.
-      .filter((candidate) => !isTemplateFillerCandidate(candidate.name));
+      .filter((candidate) => !isTemplateFillerCandidate(candidate.name))
+      // The machine-generated research drafts go the same way, told by their
+      // boilerplate summary — see isGeneratedDraftCandidate.
+      .filter((candidate) => !isGeneratedDraftCandidate(candidate.summary));
     const reconciled = alreadyOnSite(candidateViews);
     return {
       configured: true,
