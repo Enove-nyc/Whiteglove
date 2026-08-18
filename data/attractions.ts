@@ -3112,6 +3112,170 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Beth_Yaakov_Synagogue",
   },
+  {
+    slug: "amsterdam-van-gogh-museum",
+    name: "Van Gogh Museum",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Museum",
+    summary:
+      "The largest collection of Van Gogh's work in the world — 200 paintings and hundreds of drawings and letters — on the Museumplein beside the Rijksmuseum.",
+    address: "Museumplein 6, 1071 DJ Amsterdam",
+    coordinates: "52.3584, 4.8811",
+    website: "https://www.vangoghmuseum.nl/en",
+    notes: [
+      "Timed tickets, online only — there is no ticket desk at the door, so book before you go.",
+      "On the Museumplein, a step from the Rijksmuseum, so the two make one day.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Van_Gogh_Museum",
+  },
+  {
+    slug: "amsterdam-canal-belt",
+    name: "The Canal Belt",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "The seventeenth-century ring of canals — the Herengracht, Keizersgracht and Prinsengracht — dug in the Golden Age and now a UNESCO site.",
+    address: "Grachtengordel, Amsterdam",
+    coordinates: "52.3676, 4.8869",
+    notes: [
+      "Free to walk; the canals are the city, and the bridges and gabled houses are the sight.",
+      "A canal boat is the classic way to see it from the water, and there are many operators along the main quays.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Canals_of_Amsterdam",
+  },
+  {
+    slug: "amsterdam-vondelpark",
+    name: "Vondelpark",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Nature",
+    summary:
+      "The city's big central park, laid out in the 1860s — lawns, ponds and cycle paths, a few minutes from the Museumplein.",
+    address: "Vondelpark, 1071 Amsterdam",
+    coordinates: "52.3580, 4.8686",
+    notes: [
+      "Free and open; the obvious green break between museums, and good with children.",
+      "Busy on a sunny weekend, and shared with a great many bicycles — watch the paths.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Vondelpark",
+  },
+  {
+    slug: "amsterdam-dam-square",
+    name: "Dam Square and the Royal Palace",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "The central square of the city, with the seventeenth-century Royal Palace — built as the town hall of a merchant republic at the height of its wealth.",
+    address: "Dam, 1012 Amsterdam",
+    coordinates: "52.3731, 4.8922",
+    website: "https://www.paleisamsterdam.nl/en/",
+    notes: [
+      "The square is free and open; the palace is ticketed and closes for state use at short notice.",
+      "The heart of the old centre, a few minutes from the station.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Royal_Palace_of_Amsterdam",
+  },
+  {
+    slug: "amsterdam-nemo",
+    name: "NEMO Science Museum",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Family",
+    summary:
+      "A hands-on science museum in a green ship-shaped building rising out of the harbour, with a stepped roof terrace open over the city.",
+    address: "Oosterdok 2, 1011 VX Amsterdam",
+    coordinates: "52.3742, 4.9122",
+    website: "https://www.nemosciencemuseum.nl/en/",
+    notes: [
+      "The best thing in Amsterdam for children; ticketed, and busiest in the school holidays.",
+      "The rooftop terrace, with its view over the old harbour, is free to walk up to even without a ticket.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/NEMO_(museum)",
+  },
+  {
+    slug: "rotterdam-markthal",
+    name: "The Markthal",
+    city: "Rotterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "A vast horseshoe of flats arched over a covered food market, its inner ceiling painted with a huge mural of fruit and flowers — opened in 2014.",
+    address: "Dominee Jan Scharpstraat 298, 3011 Rotterdam",
+    coordinates: "51.9200, 4.4869",
+    notes: [
+      "Free to walk through; a market to see rather than a kosher food stop.",
+      "In the old harbour quarter, beside the Cube Houses and the Blaak market.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Markthal",
+  },
+  {
+    slug: "rotterdam-erasmusbrug",
+    name: "Erasmusbrug",
+    city: "Rotterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "The white cable-stayed bridge over the Maas, angled like a swan's neck — the symbol of the rebuilt modern city.",
+    address: "Erasmusbrug, 3011 Rotterdam",
+    coordinates: "51.9095, 4.4870",
+    notes: [
+      "Free, open, walked and cycled; the view back to the skyline is the reason to cross.",
+      "Harbour tour boats leave from the quays beside it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Erasmusbrug",
+  },
+  {
+    slug: "rotterdam-euromast",
+    name: "Euromast",
+    city: "Rotterdam",
+    country: "Netherlands",
+    kind: "Viewpoint",
+    summary:
+      "The 185-metre observation tower of 1960, with a deck and restaurant near the top and the whole port and city beneath.",
+    address: "Parkhaven 20, 3016 Rotterdam",
+    coordinates: "51.9061, 4.4658",
+    website: "https://www.euromast.nl/en/",
+    notes: [
+      "Ticketed for the observation deck; a rotating lift runs higher up the spire for a further charge.",
+      "In the Park by the river, west of the centre.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Euromast",
+  },
+  {
+    slug: "rotterdam-cube-houses",
+    name: "The Cube Houses",
+    city: "Rotterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "Piet Blom's tilted yellow cube houses of 1984, set on their corners over a street — one is open as a show house.",
+    address: "Overblaak 70, 3011 Rotterdam",
+    coordinates: "51.9200, 4.4906",
+    notes: [
+      "Free to see from the street and the raised walkway; the show cube inside is a small ticket.",
+      "Next to the Markthal, so the two go together.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Cube_house",
+  },
+  {
+    slug: "rotterdam-delfshaven",
+    name: "Delfshaven",
+    city: "Rotterdam",
+    country: "Netherlands",
+    kind: "Landmark",
+    summary:
+      "The one old corner of Rotterdam to survive the 1940 bombing — a seventeenth-century harbour of gabled houses, from which the Pilgrims sailed in 1620.",
+    address: "Delfshaven, 3024 Rotterdam",
+    coordinates: "51.9070, 4.4530",
+    notes: [
+      "Free to walk; a rare piece of old Holland in a city that was rebuilt new.",
+      "West of the centre, on the metro.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Delfshaven",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
