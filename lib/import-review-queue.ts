@@ -17,7 +17,12 @@ import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/cand
 import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
 import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
 import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage-batch/candidates";
-import { contentImportCandidatePath, isDisallowedImportSource, type BulkContentKind } from "@/lib/bulk-content";
+import {
+  contentImportCandidatePath,
+  isDisallowedImportSource,
+  isTemplateFillerCandidate,
+  type BulkContentKind,
+} from "@/lib/bulk-content";
 import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
   isOpenReviewStatus,
@@ -291,6 +296,9 @@ const KNOWN_PACKS: readonly KnownPack[] = [
 ];
 
 function allowedPackCandidate(candidate: PackCandidate): boolean {
+  // Template placeholders that name no real place are dropped before they
+  // reach the queue or its counts — see isTemplateFillerCandidate.
+  if (isTemplateFillerCandidate(candidate.name)) return false;
   return !isDisallowedImportSource({
     sourceUrl: candidate.sourceUrl,
     sourceName: candidate.sourceName,
