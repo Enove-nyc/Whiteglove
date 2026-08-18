@@ -80,24 +80,104 @@ const clean = (v: string, max: number) => v.replace(/\s+/g, " ").trim().slice(0,
  */
 const PLACE_NAMES: ReadonlyArray<{ needle: string; term: string }> = (() => {
   const out = new Map<string, string>();
-  const add = (name: string) => {
-    const n = name.trim().toLowerCase();
-    // Two letters is not a place name, it is a coincidence waiting to happen.
-    if (n.length >= 4 && !out.has(n)) out.set(n, name);
+  const add = (needle: string, term: string) => {
+    const n = flatten(needle);
+    // Four letters is a name; two is a coincidence waiting to happen.
+    if (n.length >= 4 && !out.has(n)) out.set(n, term);
   };
-  for (const d of vacationDestinations) add(d.name);
-  for (const d of bulkDestinations) add(d.city);
-  for (const g of cityGuides) add(g.city);
+  const record = (name: string) => {
+    add(name, name);
+    // AND EACH WORD OF IT. "Lizhensk (Leżajsk)" is stored as one string, so a
+    // question saying "Lizhensk" matched nothing — the needle was the whole
+    // label, brackets and all. Now the town is findable by either spelling,
+    // which is how somebody actually types it.
+    for (const word of flatten(name).split(" ")) add(word, name);
+  };
+  for (const d of vacationDestinations) record(d.name);
+  for (const d of bulkDestinations) record(d.city);
+  for (const g of cityGuides) record(g.city);
   return [...out.entries()].map(([needle, term]) => ({ needle, term }));
 })();
 
+/**
+ * Lowercased, unaccented, punctuation to spaces, padded for whole-word tests.
+ *
+ * THE ACCENTS WERE THE BUG. "Kraków" is stored with the ó and typed without
+ * it; stripping non-letters alone turned the stored name into "krak w" and the
+ * two never met. So "How far is Lizhensk from Krakow?" named two towns this
+ * site has guides for and was treated as naming none — which cost it both the
+ * published-page context and, once the off-topic filter existed, the answer.
+ */
+function flatten(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
 /** The places this question names, longest first so "New York" beats "York". */
 function placesIn(question: string): string[] {
-  const q = ` ${question.toLowerCase().replace(/[^a-z0-9]+/g, " ")} `;
-  return PLACE_NAMES.filter(({ needle }) => q.includes(` ${needle.replace(/[^a-z0-9]+/g, " ")} `))
-    .map(({ term }) => term)
-    .sort((a, b) => b.length - a.length)
-    .slice(0, 3);
+  const q = ` ${flatten(question)} `;
+  const found = PLACE_NAMES.filter(({ needle }) => q.includes(` ${needle} `)).map(({ term }) => term);
+  return [...new Set(found)].sort((a, b) => b.length - a.length).slice(0, 3);
+}
+
+/**
+ * The sentence the system prompt tells the model to use when a question is not
+ * about travel. Reused verbatim, so a refusal reads the same whether it was
+ * caught here for nothing or by the model for the price of a call.
+ */
+const OFF_TOPIC =
+  "I can only help with kosher travel and trip planning — try asking me about a destination, a kever, or what to do somewhere.";
+
+/**
+ * Words that make a question a travel question on this site.
+ *
+ * WHY REFUSE BEFORE THE CALL. The model already refuses anything that is not
+ * travel, and that rule is worth keeping — but the refusal is written BY the
+ * model, so the model is called, so the call is paid for. With the system
+ * prompt and the published-page context going up every time, "write me a poem"
+ * cost very nearly what a real answer costs. The topic rule protected the
+ * brand; it never protected the bill.
+ *
+ * DELIBERATELY GENEROUS, AND IN THAT DIRECTION ON PURPOSE. Turning away a real
+ * traveller is a far worse failure than paying for one junk answer, so this
+ * refuses only a question that names NO place this site knows and contains NOT
+ * ONE of these words. Anything from the planner carries a location and is never
+ * tested. Unsure lets it through and the model decides, exactly as before.
+ *
+ * The list below grew by being tested against real phrasings rather than
+ * imagined ones — "We have 4 hours, any ideas?" and "How far is Lizhensk from
+ * Krakow?" are both travel questions containing none of the obvious nouns.
+ */
+const TRAVEL_WORDS = [
+  // the trip itself
+  "travel", "trip", "vacation", "holiday", "itinerary", "visit", "visiting", "go", "going", "stay", "staying",
+  "hotel", "hotels", "accommodation", "airbnb", "apartment", "flight", "flights", "fly", "flying", "airport",
+  "drive", "driving", "car", "train", "bus", "transfer", "route", "day", "days", "week", "weekend", "night",
+  "nights", "summer", "winter", "spring", "autumn", "season", "pesach", "sukkos", "sukkot", "yom tov",
+  // the kosher and Jewish side
+  "kosher", "kashrus", "kashrut", "hechsher", "hechsherim", "teudah", "shabbos", "shabbat", "shul", "shuls",
+  "minyan", "minyanim", "daven", "davening", "mikvah", "mikveh", "mikvaos", "mikvahs", "eruv", "kever",
+  "kevarim", "kivrei", "tzadik", "tzaddik", "tzaddikim", "rebbe", "ohel", "cemetery", "beis hachaim",
+  "heritage", "jewish", "chabad", "yeshiva", "cholov", "pas yisroel", "bishul",
+  // what a traveller asks
+  "eat", "eating", "restaurant", "restaurants", "food", "bakery", "where", "what to do", "things to do",
+  "see", "sightseeing", "attraction", "attractions", "museum", "family", "children", "kids", "walk",
+  "walking", "near", "nearby", "around", "recommend", "recommendation", "plan", "planning", "book", "booking",
+  "country", "city", "town", "destination", "beach", "mountains", "weather",
+  "hour", "hours", "idea", "ideas", "far", "long", "close", "distance", "between", "from", "there",
+  "anything", "somewhere", "suggest", "suggestions", "worth", "open", "closed", "time", "times", "zman", "zmanim",
+];
+
+/** Does this question look like it is about travel at all? */
+function looksLikeTravel(question: string, hasLocation: boolean): boolean {
+  if (hasLocation) return true;
+  if (placesIn(question).length) return true;
+  const q = ` ${flatten(question)} `;
+  return TRAVEL_WORDS.some((word) => q.includes(` ${flatten(word)} `));
 }
 
 async function publishedContext(question: string): Promise<{ block: string; sources: AssistantSource[] }> {
@@ -193,6 +273,13 @@ export async function POST(request: NextRequest) {
     | null;
   const baseMessage = buildUserMessage(body);
   if (!baseMessage) return NextResponse.json({ available: false, reason: "Type a travel question first." });
+
+  // Refused here, for nothing, instead of by the model for the price of a call.
+  // The traveller reads exactly what the model would have said.
+  const askedQuestion = clean(body?.question || "", 500);
+  if (askedQuestion && !looksLikeTravel(askedQuestion, Boolean(clean(body?.location || "", 160)))) {
+    return NextResponse.json({ available: true, text: OFF_TOPIC, sources: [] });
+  }
   const { block, sources } = await publishedContext(clean(body?.question || "", 500));
   const userMessage = block ? `${baseMessage}\n\n${block}` : baseMessage;
 
