@@ -880,7 +880,11 @@ describe("prices that take ten seconds do not hold up a page", () => {
     // The catch hands back an empty list, which the render treats as nothing
     // to show.
     assert.match(stripped, /catch \{[\s\S]{0,240}setAnswer\(\{ key, cars: \[\] \}\)/);
-    assert.match(stripped, /if \(!cars\.length\) return null/);
+    // A failure now leaves the traveler with the free partner search rather
+    // than with nothing — better than the silence this rule originally
+    // protected, and still not a word about why. Nothing at all only when even
+    // that is unavailable.
+    assert.match(stripped, /if \(!partner\) return null/);
   });
 });
 
@@ -1052,5 +1056,43 @@ describe("the place is chosen, not guessed at", () => {
     const cars = source.slice(source.indexOf("function CarsForm"));
     assert.match(cars, /<AirportAutocomplete value=\{place\}/);
     assert.doesNotMatch(cars, /\/mcp\/car\/locations/);
+  });
+});
+
+describe("staying on the free plan without leaving a page empty", () => {
+  it("KEEPS A MONTH'S ORDINARY USE BACK FROM THE ADMIN'S OWN TESTING", async () => {
+    // Testing and serving share one allowance, and on the free plan that is
+    // four hundred a month. An afternoon of comparisons could spend the lot
+    // and leave the public car search with nothing — the wrong way round, since
+    // the screen exists to decide whether to show a provider to people and
+    // must not be able to stop showing them.
+    const { ADMIN_RESERVE, providerHasBudget } = await import("@/lib/travel/provider-budget");
+    assert.ok(ADMIN_RESERVE > 0);
+    assert.equal(typeof providerHasBudget, "function");
+    const engine = readFileSync("lib/travel/engine.ts", "utf8");
+    assert.match(engine, /audience === "admin" \? ADMIN_RESERVE : 0/);
+  });
+
+  it("still counts what the admin spent, because a hidden bill is a lie", () => {
+    // The reserve changes who stops first, never what the number says.
+    const source = readFileSync("lib/travel/provider-budget.ts", "utf8");
+    assert.doesNotMatch(source, /audience/, "the counter must not know who is asking");
+  });
+
+  it("FALLS BACK TO A SEARCH THAT COSTS NOTHING AND CANNOT RUN OUT", async () => {
+    const route = readFileSync("app/api/travel/cars/search/route.ts", "utf8");
+    assert.match(route, /searchPartnerCars/);
+    // Only when there is nothing better. A "compare with a partner" row under
+    // real prices is a worse version of what somebody is already reading.
+    assert.match(route, /const partner = cars\.length\s*\n?\s*\? null/);
+  });
+
+  it("shows the fallback as the whole answer, not as an extra row", () => {
+    const component = readFileSync("components/CarPrices.tsx", "utf8");
+    assert.match(component, /if \(!cars\.length\) \{/);
+    assert.match(component, /if \(!partner\) return null/);
+    assert.match(component, /Compare cars/);
+    // And still says who takes the money.
+    assert.match(component, /White Glove does not take payment/);
   });
 });

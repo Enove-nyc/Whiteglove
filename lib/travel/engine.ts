@@ -10,7 +10,7 @@
  * admin screen until the owner has watched it work and says otherwise.
  */
 
-import { providerHasBudget } from "@/lib/travel/provider-budget";
+import { ADMIN_RESERVE, providerHasBudget } from "@/lib/travel/provider-budget";
 import { providerIsAllowed } from "@/lib/travel/registry";
 import { readProviderStages } from "@/lib/travel/registry-store";
 import { searchProviders, type SearchOptions } from "@/lib/travel/search";
@@ -84,7 +84,11 @@ export async function searchTravel(
   // parallel so a second metered provider does not cost a second round trip,
   // and the page that loses one shows what it showed before that provider
   // existed rather than an error.
-  const budgets = await Promise.all(permitted.map((provider) => providerHasBudget(provider.id)));
+  // The admin's comparison stops while a month's ordinary use is still left —
+  // see ADMIN_RESERVE. A traveler's search spends the allowance down to zero,
+  // because that is what the allowance is for.
+  const reserve = audience === "admin" ? ADMIN_RESERVE : 0;
+  const budgets = await Promise.all(permitted.map((provider) => providerHasBudget(provider.id, reserve)));
   const allowed = permitted.filter((_, index) => budgets[index]);
 
   return searchProviders(category, allowed, query, options);
