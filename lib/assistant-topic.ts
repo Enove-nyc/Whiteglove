@@ -59,6 +59,18 @@ export const TRAVEL_WORDS = [
   "see", "sightseeing", "attraction", "museum", "family", "children", "kid", "walk",
   "walking", "near", "nearby", "around", "recommend", "recommendation", "plan", "planning", "book", "booking",
   "country", "city", "town", "destination", "beach", "mountain", "weather",
+  // the concrete attractions a traveller names directly. "attraction" and
+  // "sightseeing" already pass, but nobody types those — they type "chairlift
+  // in Budapest", "the funicular", "castle hill". Without the concrete noun, a
+  // real question about a place the site does not list (or one mistyped, so the
+  // place match misses) is refused before the model is ever asked — the very
+  // failure this file exists to prevent.
+  "chairlift", "funicular", "gondola", "ropeway", "cable car", "ferris wheel",
+  "zoo", "aquarium", "castle", "palace", "fortress", "cathedral", "tower",
+  "bridge", "park", "garden", "promenade", "market", "viewpoint", "lookout",
+  "monument", "landmark", "gallery", "cruise", "boat", "ferry", "lake", "river",
+  "island", "harbour", "harbor", "port", "spa", "bath", "thermal", "cave",
+  "waterfall", "hike", "trail", "ski",
   "hour", "idea", "far", "long", "close", "distance", "between", "from", "there",
   "anything", "somewhere", "suggest", "suggestion", "worth", "open", "closed", "time", "zman", "zmanim",
 ] as const;

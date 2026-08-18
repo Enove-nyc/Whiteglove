@@ -46,6 +46,23 @@ describe("what counts as a travel question", () => {
     }
   });
 
+  it("ACCEPTS A CONCRETE ATTRACTION NAMED WITHOUT AN OBVIOUS TRAVEL NOUN", () => {
+    // The owner's own question. "chairlift in Budapest" named a real thing to
+    // do and was refused before the model ever saw it, because "chairlift" was
+    // not a travel word and a mistyped city ("badapest") matched no place.
+    for (const q of [
+      "chairlift in badapest",
+      "is there a funicular",
+      "gondola up the mountain",
+      "castle near town",
+      "thermal baths worth it",
+      "cable car up",
+      "ferris wheel",
+    ]) {
+      assert.equal(mentionsTravelWord(q), true, `refused: ${q}`);
+    }
+  });
+
   it("still accepts the awkward real phrasings it was built for", () => {
     assert.equal(mentionsTravelWord("We have 4 hours, any ideas?"), true);
     assert.equal(mentionsTravelWord("How far is it from Krakow?"), true);
