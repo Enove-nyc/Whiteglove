@@ -269,7 +269,36 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
 
   const publishBlockers = [...stageErrors];
   if (!clean(input.summary)) publishBlockers.push("Write a customer-ready summary before publishing.");
-  if (!coordinates && !clean(input.address)) publishBlockers.push("Add a published address or navigable coordinates before publishing.");
+  /**
+   * AN ADDRESS HAS TO BE AN ADDRESS, not the entry's own name again.
+   *
+   * This asked only whether the field held anything. Three of the packs fill it
+   * with the name and the city — "Roman Forum walk framing, Rome, Italy" — and
+   * 12,066 of the 12,120 candidates those packs called ready were addressed
+   * that way. The dashboard reported them as needing nothing before
+   * publishing, which was the difference between "twelve thousand listings
+   * ready to go" and "eleven".
+   *
+   * Nobody can navigate to a name. The test is whether the address says
+   * anything the name did not: a street, a number, a postcode. Coordinates
+   * still satisfy this on their own, because a map pin needs no words.
+   */
+  const addressIsJustTheName = (() => {
+    const address = clean(input.address);
+    if (!address) return false;
+    // An address that BEGINS with the entry's own name is that name with
+    // something stuck on the end — "Jewish Museum of Rome, Rome, Italy", or
+    // "Rome science or children's museum framing, Rome, Italy" where the name
+    // itself was truncated at an apostrophe. Neither is a place anybody can go.
+    if (name && address.toLowerCase().startsWith(name.toLowerCase())) return true;
+    const withoutName = address.replace(name, "").replace(city, "").replace(country, "");
+    // What is left after the name, the city and the country are taken out:
+    // punctuation and spaces only means the address added nothing.
+    return !/[a-z0-9]/i.test(withoutName);
+  })();
+  if (!coordinates && (!clean(input.address) || addressIsJustTheName)) {
+    publishBlockers.push("Add a published address or navigable coordinates before publishing.");
+  }
   if (!sourceEvidenceText(input.sourceEvidence).trim()) {
     publishBlockers.push("Keep source evidence for the editor before publishing.");
   }
