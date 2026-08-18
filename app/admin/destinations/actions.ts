@@ -25,6 +25,9 @@ import {
   updateLink,
   updatePlace,
 } from "@/lib/content-admin";
+import { vacationDestinationPhotoOwner } from "@/lib/vacation-destinations-admin";
+import { bustTag } from "@/lib/cache-tags";
+import { VACATION_DESTINATIONS_TAG } from "@/lib/vacation-destinations-view";
 import { safeExternalUrl } from "@/lib/useful-links";
 import { slugify } from "@/lib/admin-content";
 
@@ -46,8 +49,12 @@ function revalidateDestination(slug: string) {
 }
 
 /** The pages a picture could have changed — see pathsToRefresh for which and why. */
-function revalidatePhoto(ownerKind: string, slug: string) {
+async function revalidatePhoto(ownerKind: string, slug: string) {
   for (const path of pathsToRefresh(ownerKind, slug)) revalidatePath(path);
+  // A holiday destination's published pictures are part of the list
+  // lib/vacation-destinations-view.ts caches, so the paths alone are not
+  // enough — the list itself has changed.
+  if (ownerKind === "vacation-destination") await bustTag(VACATION_DESTINATIONS_TAG);
 }
 
 function str(formData: FormData, key: string): string {
@@ -156,7 +163,7 @@ export async function savePhotoAction(
       if (!url) return { ok: false, message: "Choose a picture first." };
       await createPhoto(await photoOwner(ownerKind, ownerRef), { ...fields, url });
     }
-    revalidatePhoto(ownerKind, slug);
+    await revalidatePhoto(ownerKind, slug);
     return { ok: true, message };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
@@ -166,12 +173,13 @@ export async function savePhotoAction(
 /**
  * What a picture is of, from what the screen sent.
  *
- * A destination and a listing arrive as database ids. A beis hachaim arrives
- * as a SLUG, because the built-in ones have no row until something is saved
- * against them — so the first picture of Lizhensk makes the row, carrying the
- * town's details across from the built-in record to fill it.
+ * A town and a listing arrive as database ids. A beis hachaim and a holiday
+ * destination arrive as a SLUG, because the built-in ones have no row until
+ * something is saved against them — so the first picture of Lizhensk, or of
+ * Rome, makes the row.
  */
 async function photoOwner(kind: PhotoOwnerKind, ref: string): Promise<PhotoOwner> {
+  if (kind === "vacation-destination") return vacationDestinationPhotoOwner(ref);
   if (kind !== "cemetery") return { kind, id: ref };
   const builtIn = getCemetery(ref);
   return cemeteryPhotoOwner(ref, {
@@ -192,7 +200,7 @@ export async function deletePhotoAction(
   if (!id) return { ok: false, message: "Missing picture." };
   try {
     await deletePhoto(id);
-    revalidatePhoto(str(formData, "ownerKind"), str(formData, "slug"));
+    await revalidatePhoto(str(formData, "ownerKind"), str(formData, "slug"));
     return { ok: true, message: "Picture removed." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };

@@ -45,11 +45,22 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     keywords: "bulk import batch source pack trello",
   },
   {
+    // RENAMED FROM "Destinations". Two lists were both called that: towns with
+    // kevarim in them, and places to go on holiday. Only the first had a
+    // screen, so Rome could not be found in the admin at all — the name said
+    // it should be here and it never was.
     href: "/admin/destinations",
-    label: "Destinations",
-    blurb: "Towns, kosher food, lodging, minyanim.",
+    label: "Towns",
+    blurb: "Kosher food, lodging, minyanim.",
     icon: "◉",
-    keywords: "town city destination heritage",
+    keywords: "town city heritage kever kevarim shomer",
+  },
+  {
+    href: "/admin/vacation-destinations",
+    label: "Destinations",
+    blurb: "Where to go on holiday.",
+    icon: "◈",
+    keywords: "destination holiday vacation rome venice florence paris dolomites getaway trip beach mountains photos pictures",
   },
   {
     href: "/admin/kevarim",
@@ -110,13 +121,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Directory",
     blurb: "Places and listings.",
     icon: "▣",
-    keywords: "destination cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry attraction things to do stay food",
+    keywords: "destination holiday vacation getaway cemetery kever shomer phone accommodation hotel provider listing town city country countries hechsher kashrus kosher supervision teudah mikvah mikvaos shul minyan zmanim border crossing frontier import batch source attribution review candidate duplicate publish queue needs review awaiting verification deleted removed restore undo bin trash airport flight metro planner assumptions driving day add entry attraction things to do stay food",
     children: [
       { href: "/admin/directory", label: "Everything", blurb: "One list of every entry." },
       { href: "/admin/add", label: "Add", blurb: "A cemetery, a tzadik, or a new page." },
       { href: "/admin/kevarim", label: "Tzaddikim", blurb: "Who is buried where." },
       { href: "/admin/shomrim", label: "Shomrim", blurb: "Getting into a cemetery." },
       { href: "/admin/destinations", label: "Towns", blurb: "Kosher food, lodging, minyanim." },
+      { href: "/admin/vacation-destinations", label: "Destinations", blurb: "Where to go on holiday." },
       { href: "/admin/directory/attractions", label: "Things to do", blurb: "Attractions already listed." },
       { href: "/admin/directory/stays", label: "Where to stay", blurb: "Lodging already listed." },
       { href: "/admin/directory/food", label: "Kosher food", blurb: "Food listings on the site." },

@@ -11,6 +11,7 @@ import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
+import DestinationPhotos from "@/components/DestinationPhotos";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
@@ -20,7 +21,6 @@ import StructuredData from "@/components/StructuredData";
 import { Icon } from "@/components/icons/Icon";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
-import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { fromHechsherState, fromKosherClaim, reconfirmBeforeTravel } from "@/lib/trust-status";
@@ -37,7 +37,8 @@ import { staySearchHref } from "@/lib/stay-search";
 import { loadDestinationSources } from "@/lib/vacation-sources";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { bookingHref } from "@/lib/booking-access";
-import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
+import { type VacationDestination } from "@/data/vacation-destinations";
+import { getVacationDestinations, getVacationDestinationBySlug } from "@/lib/vacation-destinations-view";
 import DestinationZmanim from "@/components/DestinationZmanim";
 import { publishedMikvaosForCities } from "@/lib/mikvaos";
 import { placeMapUrl } from "@/data/route-utils";
@@ -61,18 +62,29 @@ import { placeMapUrl } from "@/data/route-utils";
  * already in it. `revalidate` is the backstop for a change this process cannot
  * see: the owner adding a stay in Rome clears the tag and this page is rebuilt.
  *
- * `dynamicParams` is OFF because the destination list is a file in this repo —
- * a new destination arrives with a deploy and never between two of them. With
- * it on, an address that is not a destination was answered 200 with the loading
- * skeleton on it for ever: the notFound() below never reached the response,
- * because there is nothing to render it into once the shell has been served.
- * A wrong address should be a 404, and off is the only setting that gives one.
+ * `dynamicParams` USED TO BE OFF, and the reason was sound at the time: the
+ * destination list was a file in this repo, so a new destination arrived with a
+ * deploy and never between two of them. Off also fixed a real bug — with it on,
+ * an address that is not a destination was answered 200 with the loading
+ * skeleton on it for ever, because notFound() never reached the response once
+ * the shell had been served.
+ *
+ * The first half of that stopped being true: the owner can now add a
+ * destination in the admin, and off would answer it 404 until the next deploy,
+ * which is the whole thing this was built to avoid. So it is on again, and the
+ * bug it used to mask is held off by shape rather than by a flag — notFound()
+ * is the FIRST thing the page does, before any await and before any JSX is
+ * returned, and this route has no loading.tsx of its own to serve ahead of it.
+ * Move either of those and a wrong address starts answering 200 again.
  */
 export const revalidate = 900;
-export const dynamicParams = false;
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return vacationDestinations.map((destination) => ({ destination: destination.slug }));
+export async function generateStaticParams() {
+  // Built at deploy time from everything that exists then, owner-written
+  // destinations included. Anything added later is rendered on first request
+  // and cached from there — that is what dynamicParams is for.
+  return (await getVacationDestinations()).map((destination) => ({ destination: destination.slug }));
 }
 
 /**
@@ -88,7 +100,7 @@ const factsOf = cache(async (destination: VacationDestination): Promise<Vacation
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }) {
   const { destination: slug } = await params;
-  const destination = getVacationDestination(slug);
+  const destination = await getVacationDestinationBySlug(slug);
   if (!destination) {
     return pageMetadata({
       title: "Destination not found — White Glove Kosher Travel",
@@ -618,7 +630,7 @@ async function KosherFood({ destination }: { destination: VacationDestination })
 
 export default async function VacationDestinationPage({ params }: { params: Promise<{ destination: string }> }) {
   const { destination: slug } = await params;
-  const destination = getVacationDestination(slug);
+  const destination = await getVacationDestinationBySlug(slug);
   if (!destination) notFound();
 
   // The only await the SHELL does. Everything below the heading that needs a
@@ -676,6 +688,10 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             }}
           />
           <SuggestEditPanel targetType="location" targetId={destination.slug} title={destination.name} />
+
+          {/* Nothing at all until there is a credited picture — see
+              components/DestinationPhotos.tsx. */}
+          <DestinationPhotos photos={destination.photos} name={destination.name} />
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4">

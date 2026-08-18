@@ -53,6 +53,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "team",
   "travel",
   "users",
+  "vacation-destinations",
 ] as const;
 
 export function isAdminHostSegment(pathname: string): boolean {

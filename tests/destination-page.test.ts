@@ -31,15 +31,45 @@ describe("the destination page is prerendered", () => {
     assert.doesNotMatch(PAGE, /dynamic\s*=\s*["']force-dynamic["']/);
   });
 
-  it("builds every destination at deploy time", () => {
-    assert.match(PAGE, /export function generateStaticParams/);
-    assert.match(PAGE, /vacationDestinations\.map/);
+  it("builds every destination at deploy time, owner-written ones included", () => {
+    // Async now, and reading the merged list rather than the data file: the
+    // owner can add a destination in the admin, and one that exists at build
+    // time should be prerendered like any other.
+    assert.match(PAGE, /export async function generateStaticParams/);
+    assert.match(PAGE, /await getVacationDestinations\(\)/);
   });
 
   it("answers a wrong address with a 404 rather than a page", () => {
-    // dynamicParams stays off because the destination list is a file in this
-    // repo: a new one arrives with a deploy and never between two of them.
-    assert.match(PAGE, /export const dynamicParams = false/);
+    // THE FLAG THAT USED TO GUARANTEE THIS IS GONE, and it had to go: with
+    // dynamicParams off, a destination the owner added in the admin would be
+    // answered 404 until the next deploy, which is the whole thing the admin
+    // screen exists to avoid.
+    //
+    // The 404 is held by shape instead. It survives only while both of these
+    // are true, so both are pinned rather than described in a comment nobody
+    // has to obey.
+    assert.match(PAGE, /export const dynamicParams = true/);
+
+    // 1. notFound() runs before anything is awaited and before any JSX is
+    //    returned. Once a shell has been flushed, notFound() cannot set the
+    //    status any more — that is exactly how this page once answered 200
+    //    with a skeleton on it for ever.
+    const body = PAGE.slice(PAGE.indexOf("export default async function VacationDestinationPage"));
+    const notFoundAt = body.indexOf("notFound()");
+    const returnAt = body.indexOf("return (");
+    assert.ok(notFoundAt !== -1, "the page never refuses an unknown slug");
+    assert.ok(notFoundAt < returnAt, "notFound() has to run before anything is rendered");
+    const before = body.slice(0, notFoundAt);
+    // The one await ahead of it resolves the route's own params, which cannot
+    // be avoided. Anything else awaited here would flush the shell first.
+    assert.equal((before.match(/await /g) ?? []).length, 2, "only params and the destination may be awaited before the 404");
+
+    // 2. This route has no loading.tsx. One would be served ahead of the page
+    //    and take the status decision out of the page's hands.
+    assert.ok(
+      !existsSync("app/destinations/[destination]/loading.tsx"),
+      "a loading shell here would answer a wrong address 200",
+    );
   });
 
   it("still picks up an entry the owner adds, without a deploy", () => {

@@ -14,7 +14,8 @@ import { destinationHaystack, destinationHref as heritageDestinationHref, destin
 import { HECHSHERIM } from "@/data/hechsherim";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { practicalContent } from "@/data/practical-content";
-import { SEASONS, TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
+import { SEASONS, TRIP_THEMES, vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
+import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { bustTag, cachedRead } from "@/lib/cache-tags";
@@ -100,13 +101,18 @@ export type PublishedPracticalPlaceSearchRow = {
 export async function buildSearchIndex(): Promise<SearchDocument[]> {
   const docs: DraftDoc[] = [];
 
-  pushVacationDestinations(docs);
+  // Read through the view, so a destination the owner adds is findable in
+  // search the moment it is saved rather than at the next deploy. The two
+  // lookups further down get the same list for the same reason.
+  const destinations = await getVacationDestinations();
+
+  pushVacationDestinations(docs, destinations);
   pushHeritageTowns(docs);
   pushCemeteries(docs);
   pushTzaddikim(docs);
   await pushAttractionsStaysAreas(docs);
   await pushPublishedPracticalPlaces(docs);
-  pushStaticPracticalPlaces(docs);
+  pushStaticPracticalPlaces(docs, destinations);
   pushEateries(docs);
   pushSitePages(docs);
   await pushPublishedInfoPages(docs);
@@ -114,8 +120,8 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   return docs.map(finalize);
 }
 
-function pushVacationDestinations(docs: DraftDoc[]) {
-  vacationDestinations.forEach((d, index) => {
+function pushVacationDestinations(docs: DraftDoc[], destinations: readonly VacationDestination[]) {
+  destinations.forEach((d, index) => {
     const themeLabels = d.themes.map((t) => TRIP_THEMES.find((x) => x.value === t)?.label ?? t);
     const seasonLabels = d.seasons.map((s) => SEASONS.find((x) => x.value === s)?.label ?? s);
     const conceptKeywords = [
@@ -381,9 +387,16 @@ async function pushPublishedPracticalPlaces(docs: DraftDoc[]) {
 export function publishedPracticalPlaceSearchDocument(
   place: PublishedPracticalPlaceSearchRow,
   rankWeight = 0,
+  /**
+   * The merged destination list, when the caller has already read it. Defaults
+   * to the built-in list: this decides which URL the document points at, and
+   * an owner-added destination that is not in the list here would be linked as
+   * a heritage town instead of as itself.
+   */
+  destinations: readonly VacationDestination[] = vacationDestinations,
 ): SearchDocument {
   const staticDestination = getDestination(place.destination.slug);
-  const vacationDestination = vacationDestinations.find((item) => item.slug === place.destination.slug);
+  const vacationDestination = destinations.find((item) => item.slug === place.destination.slug);
   const href = vacationDestination
     ? vacationHref(vacationDestination)
     : staticDestination
@@ -858,7 +871,7 @@ function unique(values: string[]): string[] {
  * practical rows are added separately; this keeps those names searchable when
  * the database is off, and fills gaps the public mikvaos page already shows.
  */
-function pushStaticPracticalPlaces(docs: DraftDoc[]) {
+function pushStaticPracticalPlaces(docs: DraftDoc[], destinations: readonly VacationDestination[]) {
   const seen = new Set(docs.filter((d) => d.kind === "Practical travel").map((d) => `${normalize(d.title)}|${normalize(d.city ?? "")}`));
 
   for (const listing of staticMikvahListings()) {
@@ -887,7 +900,7 @@ function pushStaticPracticalPlaces(docs: DraftDoc[]) {
       const sourceUrl = place.source?.trim();
       if (!sourceUrl || isDisallowedImportSource({ sourceUrl, sourceName: "", attribution: "" })) continue;
       const staticDestination = getDestination(slug);
-      const vacationDestination = vacationDestinations.find((item) => item.slug === slug);
+      const vacationDestination = destinations.find((item) => item.slug === slug);
       const city = staticDestination?.city ?? vacationDestination?.cities[0] ?? slug;
       const country = staticDestination?.country ?? vacationDestination?.country ?? "";
       const key = `${normalize(place.name)}|${normalize(city)}`;

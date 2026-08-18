@@ -127,7 +127,14 @@ export type SitemapEntry = {
  * exists has a line here by construction, and one that is removed loses it
  * without anybody remembering to.
  */
-export function publicPaths(): SitemapEntry[] {
+export function publicPaths(
+  /**
+   * The merged destination list, when the caller has read it. Defaults to the
+   * built-in list so that anything calling this outside a request — a test,
+   * a script — still gets a complete sitemap without touching the database.
+   */
+  destinations: readonly { slug: string }[] = vacationDestinations,
+): SitemapEntry[] {
   const entries: SitemapEntry[] = [...STATIC_PAGES];
 
   // The detailed city guides live at the root: /uman, /lizhensk. Deliberately,
@@ -142,7 +149,7 @@ export function publicPaths(): SitemapEntry[] {
   for (const cemetery of cemeteries) {
     entries.push({ path: `/cemeteries/${cemetery.slug}`, priority: 0.7, changeFrequency: "monthly" });
   }
-  for (const destination of vacationDestinations) {
+  for (const destination of destinations) {
     entries.push({ path: vacationDestinationHref(destination.slug), priority: 0.8, changeFrequency: "monthly" });
   }
   for (const tzaddik of allTzaddikim()) {

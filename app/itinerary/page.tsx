@@ -11,7 +11,7 @@ import TravelEssentials from "@/components/TravelEssentials";
 import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
 import { readAssumptions } from "@/lib/planner-settings-store";
-import { vacationDestinations } from "@/data/vacation-destinations";
+import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { templatesFrom } from "@/lib/trip-setup";
 import { loadVacationSources } from "@/lib/vacation-sources";
 
@@ -44,7 +44,9 @@ export default async function ItineraryPage({
   // Somewhere real to start from. Built here rather than in the browser
   // because the places in each template come from the same lists the vacation
   // pages read, owner-added entries included — see lib/vacation-sources.ts.
-  const templates = templatesFrom(vacationDestinations, await loadVacationSources());
+  // Through the view, so a destination the owner added is offered as a
+  // starting point like any other.
+  const templates = templatesFrom(await getVacationDestinations(), await loadVacationSources());
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
