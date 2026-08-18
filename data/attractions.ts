@@ -250,12 +250,11 @@ export const attractions: Attraction[] = [
     city: "Rome",
     country: "Italy",
     kind: "Museum",
-    summary: "Among the largest art collections in the world. Some frum travelers visit and some do not; it is listed so the choice is made deliberately rather than by surprise.",
+    summary: "Among the largest art collections in the world, in the Vatican — a church complex, and the collection is largely religious art.",
     address: "Viale Vaticano, 00165 Roma",
     coordinates: "41.9065, 12.4536",
     website: "https://www.museivaticani.va/",
     notes: [
-      "Ask your rov. This is a church complex and the collection is largely religious art; people hold differently about going in, and the site is not the place to decide it for you.",
       "About 4 km from the Jewish quarter — the far side of the river, not a walk.",
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Vatican_Museums",
@@ -442,7 +441,7 @@ export const attractions: Attraction[] = [
     coordinates: "45.4306, 12.3311",
     website: "https://www.guggenheim-venice.it/en/",
     notes: [
-      "Modern art, including nudes and surrealist work. Named so the choice is made deliberately rather than at the door.",
+      "Twentieth-century modern art, including nudes and surrealist work.",
       "Small enough to see properly in an hour and a half, which is rare for a collection of this standing.",
       "The garden and the canal terrace are part of the ticket and are the quietest place to sit in Dorsoduro.",
     ],
@@ -685,7 +684,7 @@ export const attractions: Attraction[] = [
     coordinates: "45.4720, 9.1881",
     website: "https://pinacotecabrera.org/en/",
     notes: [
-      "Largely religious art of its period, as any collection of Italian painting is. Named plainly so the choice is made before the door rather than at it.",
+      "Largely religious art of its period, as any collection of Italian painting is.",
       "Ten minutes from the castle, in a quarter that is pleasant to walk in its own right.",
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Pinacoteca_di_Brera",
@@ -1363,7 +1362,7 @@ export const attractions: Attraction[] = [
     address: "Kalabaka 422 00",
     coordinates: "39.7217, 21.6306",
     notes: [
-      "The rock formations are the reason to come and are free to drive among and walk below. The monasteries themselves are churches — the same question as the Vatican, and the same answer: ask your rov.",
+      "The rock formations are the reason to come and are free to drive among and walk below. The monasteries built on them are working churches.",
       "About four and a half hours from Athens. An overnight, not a day trip.",
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Meteora",

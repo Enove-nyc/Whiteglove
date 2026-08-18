@@ -10,6 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Customer-facing copy
 
+- **Provide information, not hashkafa.** Describe what a place is and what visiting involves; leave the paskening to the traveler and their rov. Do not tell a customer whether to go, do not write "ask your rov," and do not frame an attraction as a choice to make carefully. A church, a museum of religious art, a gallery with nudes — say plainly what it is and stop there. What the site *lists at all* is still a selection decision (no nightlife, bars, mixed concerts, casinos — see below); how it *describes* what it lists is information only. This is a standing general rule, not specific to any one place.
 - Write public copy in a natural, confident and concise voice suitable for an established travel website.
 - Keep the site-wide under-production banner visible until the owner explicitly asks to remove it. The banner may be polished, but not deleted or hidden.
 - Do not expose internal workflows or content status to customers. Avoid phrases such as “unverified,” “being checked,” “on record,” “research queue,” “not published yet,” or explanations that the owner has not completed something.
