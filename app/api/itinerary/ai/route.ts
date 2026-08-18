@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchSite } from "@/lib/site-search";
 import { citedSources, stripFalseAttribution, type AssistantSource } from "@/lib/assistant-disclosure";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
+import { vacationDestinations } from "@/data/vacation-destinations";
+import { bulkDestinations } from "@/data/destinations-bulk";
+import { cityGuides } from "@/data/destinations-detailed";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -44,19 +47,80 @@ const clean = (v: string, max: number) => v.replace(/\s+/g, " ").trim().slice(0,
  * with their real paths. That is also what makes a citation checkable: the
  * paths offered here are the only ones the answer can be credited with.
  */
+/**
+ * The site's own pages for a question, found by the PLACE in it.
+ *
+ * WHAT THIS WAS DOING. It handed the whole sentence to searchSite, which is
+ * built for what somebody types into a search box — a name, a word or two —
+ * and not for "Where can we eat kosher in Rome, and what should we see?".
+ * Every meaningful token has to land for a multi-word query, no page carries
+ * all of those words, and the fallbacks then matched on whatever was left.
+ * Measured, not guessed:
+ *
+ *   "What is there to do in Rome for a kosher family?"
+ *     → Murano, Grindelwald, Barcelona, Schönbrunn, Miniatur Wunderland
+ *   "Where can we eat kosher in Rome, and what should we see?"
+ *     → Milan, Arosa, Engelberg, Canazei, Paris
+ *   "Rome"
+ *     → /destinations/rome
+ *
+ * So the assistant was handed five wrong cities when asked about Rome, and —
+ * following its instructions correctly — told the traveler "there is no
+ * published page for Rome on this site yet". The rule was right. The retrieval
+ * lied to it. A page that exists being denied to a visitor is worse than no
+ * answer, and it is the same failure as the copy that used to say a town had
+ * nothing on it while its bais hachaim sat one table away.
+ *
+ * SO THE PLACE IS PULLED OUT FIRST. Every destination, town and guide this
+ * site holds is a known name; a question mentioning one is a question about
+ * it. Those searches run on the name alone — which is what searchSite is good
+ * at — and their results lead. The whole sentence is still searched afterwards
+ * and merged in behind them, so a question with no place in it ("what is a
+ * hechsher?") works exactly as it did.
+ */
+const PLACE_NAMES: ReadonlyArray<{ needle: string; term: string }> = (() => {
+  const out = new Map<string, string>();
+  const add = (name: string) => {
+    const n = name.trim().toLowerCase();
+    // Two letters is not a place name, it is a coincidence waiting to happen.
+    if (n.length >= 4 && !out.has(n)) out.set(n, name);
+  };
+  for (const d of vacationDestinations) add(d.name);
+  for (const d of bulkDestinations) add(d.city);
+  for (const g of cityGuides) add(g.city);
+  return [...out.entries()].map(([needle, term]) => ({ needle, term }));
+})();
+
+/** The places this question names, longest first so "New York" beats "York". */
+function placesIn(question: string): string[] {
+  const q = ` ${question.toLowerCase().replace(/[^a-z0-9]+/g, " ")} `;
+  return PLACE_NAMES.filter(({ needle }) => q.includes(` ${needle.replace(/[^a-z0-9]+/g, " ")} `))
+    .map(({ term }) => term)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 3);
+}
+
 async function publishedContext(question: string): Promise<{ block: string; sources: AssistantSource[] }> {
   if (!question) return { block: "", sources: [] };
   try {
-    const found = await searchSite(question, 8);
-    const sources = (found.results || [])
-      .filter((hit) => hit.href?.startsWith("/"))
-      .slice(0, 8)
-      .map((hit) => ({ title: hit.title, href: hit.href }));
-    if (!sources.length) return { block: "", sources: [] };
-    const lines = (found.results || []).slice(0, 8).map((hit) => `- ${hit.title} (${hit.kind}) — ${hit.href}${hit.subtitle ? ` — ${hit.subtitle}` : ""}`);
+    const queries = [...placesIn(question), question];
+    const seen = new Set<string>();
+    const hits: Array<{ title: string; href: string; kind: string; subtitle?: string }> = [];
+    for (const query of queries) {
+      const found = await searchSite(query, 8);
+      for (const hit of found.results || []) {
+        if (!hit.href?.startsWith("/") || seen.has(hit.href)) continue;
+        seen.add(hit.href);
+        hits.push({ title: hit.title, href: hit.href, kind: hit.kind, subtitle: hit.subtitle });
+        if (hits.length >= 8) break;
+      }
+      if (hits.length >= 8) break;
+    }
+    if (!hits.length) return { block: "", sources: [] };
+    const lines = hits.map((hit) => `- ${hit.title} (${hit.kind}) — ${hit.href}${hit.subtitle ? ` — ${hit.subtitle}` : ""}`);
     return {
       block: ["PUBLISHED WHITE GLOVE PAGES (prefer these; cite the path when you use one):", ...lines].join("\n"),
-      sources,
+      sources: hits.map((hit) => ({ title: hit.title, href: hit.href })),
     };
   } catch {
     // Search being unavailable is not a reason to refuse an answer; it only
