@@ -6,6 +6,12 @@
 // decided that anyone who can read the board belongs inside. That is worth a
 // page on its own.
 //
+// CORRECTED AT BATCH 30. This file first said the sources could not settle
+// whether the ohel's Reb Amram Billitzer and the kehilla's first rov were one
+// man or two. A source found later gives both Billitzers with dates — the
+// father 1834–1889, the son 1860–1913 — so they are one man and his son, and
+// the entries below now say so.
+//
 // Brno: printed opening hours, seven days short of a Shabbos, and the tram
 // that stops in front of the gate. Not one other listing on this site has
 // opening hours, because almost nowhere in this part of the world still has a
@@ -41,16 +47,18 @@ export const bulkCemeteries27: Cemetery[] = [
     ],
     burials: [
       {
-        name: "Rabbi Amram Billitzer",
-        yiddishName: "רבי עמרם ביליצער",
-        knownAs: "In the ohel on Árpád hill",
-        note: "The ohel holds him and his son. He is recorded in Hungarian spelling as Arman Billiczer; the kehilla's first rov, of the same family, is given as Jisáj Ámrám and founded a yeshiva in Szerencs from 1864. Whether those are one man or two is not clear from the sources and this listing does not decide it.",
+        name: "Rabbi Amram Yishai HaLevi Billitzer",
+        yiddishName: "רבי עמרם ישי הלוי ביליצער",
+        knownAs: "First rov of Szerencs — in the ohel on Árpád hill",
+        yahrzeit: "5649 / 1889",
+        note: "1834–1889. Rov of the kehilla from 1864, and the founder of its yeshiva. Recorded in Hungarian spellings as Ámrám Jisáj and as Arman Billiczer, which is why an earlier version of this listing could not tell whether he and the kehilla's first rov were one man; a later source giving both with dates settled it. He is.",
       },
       {
-        name: "Rabbi Pinchas Billitzer",
-        yiddishName: "רבי פנחס ביליצער",
-        knownAs: "His son, in the same ohel",
-        note: "Named in the Hungarian spelling Pinkász. The second of the two the ohel stands over.",
+        name: "Rabbi Pinchas HaLevi Billitzer",
+        yiddishName: "רבי פנחס הלוי ביליצער",
+        knownAs: "His son — rov of Szerencs after him, in the same ohel",
+        yahrzeit: "5673 / 1913",
+        note: "1860–1913. Followed his father as rov of Szerencs. The second of the two the ohel on Árpád hill stands over. Recorded in the Hungarian spelling Pinkász.",
       },
     ],
     sourceUrl: "https://zemplenizsidosag.hu/szerencs-en/",
