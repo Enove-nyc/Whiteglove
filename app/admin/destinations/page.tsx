@@ -1,3 +1,4 @@
+import Link from "next/link";
 import CompletenessQueue from "@/components/CompletenessQueue";
 import DbSetupButton from "@/components/DbSetupButton";
 import DestinationEditor from "@/components/DestinationEditor";
@@ -51,9 +52,25 @@ export default async function AdminDestinationsPage({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Towns</h1>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
+              Heritage towns
+            </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Edit the phone numbers, names, addresses, hours, and contacts shown on each destination page. Changes go live within a minute — no code, no redeploy.
+              The 123 towns with kevarim in them — Lizhensk, Kerestir, Uman. Shomrim numbers, cemetery access, minyanim,
+              food and lodging: the practical details somebody needs to get to a kever. Changes go live within a minute.
+            </p>
+            {/* SAYING WHICH SCREEN IS WHICH, because "Towns" and
+                "Destinations" did not. They are two lists that share exactly
+                one place (Prague) and answer different questions. */}
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+              Rome, Venice, the Dolomites — where somebody goes on holiday — are on{" "}
+              <Link
+                href="/admin/vacation-destinations"
+                className="font-semibold underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              >
+                Vacation destinations
+              </Link>
+              .
             </p>
           </div>
         </div>
