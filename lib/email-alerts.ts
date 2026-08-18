@@ -35,7 +35,7 @@ export const ALERT_TOPIC_LABELS: Record<AlertTopic, string> = {
 /** Short line under the topic on a form — why this is worth ticking. */
 export const ALERT_TOPIC_BLURBS: Record<AlertTopic, string> = {
   new_destinations: "When we publish a new place with kosher and Shabbos practicalities.",
-  new_listings: "When a hotel, restaurant or practical listing is checked and published.",
+  new_listings: "When a hotel, restaurant or practical listing is added.",
   hotel_deals: "Partner offers worth knowing about — never invented discounts.",
   pesach_sukkos: "Seasonal programmes once we have something concrete to share.",
   seasonal: "Summer and school-holiday opportunities that fit kosher travel.",

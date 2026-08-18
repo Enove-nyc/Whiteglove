@@ -1,10 +1,12 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import StructuredData from "@/components/StructuredData";
 import SubBrandBanner from "@/components/SubBrand";
 import TzaddikimDirectory, { type TzaddikCard } from "@/components/TzaddikimDirectory";
 import { extraSpellings } from "@/lib/place-search";
 import { haystack, sortedTzaddikim } from "@/lib/tzaddikim";
 import { pageMetadata } from "@/lib/seo";
+import { breadcrumbs, collectionPage } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
   title: "Kevarim of Tzaddikim — Who is Buried Where | White Glove",
@@ -38,6 +40,25 @@ export default function TzaddikimPage() {
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
+      {/* The one directory on the site that carried none. /cemeteries, /stops,
+          /heritage and /destinations all describe themselves as a collection;
+          this page lists more entries than any of them and said nothing. Same
+          two shapes, same helper, so there is one description of a directory
+          and not a second dialect. Nothing on the page changes. */}
+      <StructuredData
+        data={[
+          collectionPage({
+            name: "Kevarim of tzaddikim",
+            description: "Every tzadik on the site, by the name he is known by, with where he is buried.",
+            path: "/tzaddikim",
+            count: people.length,
+          }),
+          breadcrumbs([
+            { name: "Home", path: "/" },
+            { name: "Kevarim", path: "/tzaddikim" },
+          ]),
+        ]}
+      />
       <Navbar />
       <SubBrandBanner />
 

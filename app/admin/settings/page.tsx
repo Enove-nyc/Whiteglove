@@ -73,7 +73,7 @@ export default async function AdminSettingsPage() {
           />
           <Card
             href="/admin/settings/plans"
-            title="Pro and Business"
+            title="Gold and Business"
             detail="Whether they are offered, and how."
             state={stats.configured ? undefined : "Needs the private store"}
           />

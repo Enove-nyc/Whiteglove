@@ -73,6 +73,11 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       { label: "Family", href: "/destinations?kind=family" },
       { label: "Couples", href: "/destinations?kind=couples" },
       { label: "Short Trips", href: "/destinations?kind=short-break" },
+      // Heritage as a TRIP TYPE, beside Beach and Cities — not as a fifth
+      // category in the bar. Rule 2 above stands: kevarim and batei hachaim
+      // are reached as places, through Destinations, and this is how somebody
+      // says that is the kind of trip they want.
+      { label: "Heritage", href: "/destinations?kind=heritage" },
       { label: "Seasonal", href: "/destinations?view=seasonal" },
     ],
     groups: [
@@ -92,6 +97,7 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
           { label: "Family", href: "/destinations?kind=family" },
           { label: "Couples", href: "/destinations?kind=couples" },
           { label: "Short Trips", href: "/destinations?kind=short-break" },
+          { label: "Heritage", href: "/destinations?kind=heritage" },
           { label: "Seasonal", href: "/destinations?view=seasonal" },
         ],
       },

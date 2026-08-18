@@ -112,13 +112,50 @@ const cityGuideRecords: DestinationRecord[] = guidedDestinations().map(({ guide 
 // in cityGuides — it had a bespoke page at /lizensk instead. It is an ordinary
 // city guide now, so cityGuideRecords builds it like every other town and this
 // special case would only shadow it with a worse copy.
+/**
+ * The batei hachaim this site already holds for a town, joined to it.
+ *
+ * WHY THIS WAS EMPTY, AND WHAT IT COST. `cemeteries: []` — a hundred and nine
+ * town pages rendering nothing, while data/cemeteries.ts held the kevarim for
+ * a third of them the whole time. /heritage/towns/warsaw said it had no
+ * information; /cemeteries/warsaw-okopowa had the address, the arrival notes
+ * and who is buried there. The two were never introduced.
+ *
+ * MATCHED ON THE SLUG, NOT ON THE WORDS. A cemetery is named for the town and
+ * then for whoever is in it — warsaw-okopowa, lublin-chozeh, ger-gora-kalwaria
+ * — so an exact slug, a `town-` prefix or a `-town` suffix is the town, and
+ * nothing else is. Matching on the city NAME instead looked more generous and
+ * was wrong: "Tomaszów Mazowiecki" and "Grodzisk Mazowiecki" share a word, and
+ * that word is a region, so it put the Imrei Elimelech in the wrong town. On
+ * kevarim a false match is worse than an empty page — somebody drives to it.
+ * Thirty-six towns match; the rest stay empty until their bais hachaim is
+ * written, and their pages stay unindexed until then (lib/site-map.ts).
+ */
+const cemeteriesForTown = (slug: string) =>
+  cemeteries.filter(
+    (cemetery) => cemetery.slug === slug || cemetery.slug.startsWith(`${slug}-`) || cemetery.slug.endsWith(`-${slug}`),
+  );
+
 const bulkRecords: DestinationRecord[] = unguidedDestinations().map((destination) => ({
   id: destination.slug,
   city: destination.city,
   yiddishCity: destination.yiddishCity,
   country: destination.country,
   aliases: destination.aliases,
-  cemeteries: [],
+  cemeteries: cemeteriesForTown(destination.slug).map((cemetery) => ({
+    id: cemetery.slug,
+    yiddishName: cemetery.yiddishName,
+    name: cemetery.name,
+    address: cemetery.address,
+    coordinates: cemetery.coordinates,
+    arrivalNotes: cemetery.arrivalNotes,
+    // No shomer contact is invented here. The guided towns carry one because
+    // somebody rang it; these carry what the cemetery record actually holds.
+    shomerContacts: [],
+    burials: cemetery.burials.map((burial) => ({ ...burial, source: cemetery.sourceUrl, status: "verified" as const })),
+    status: cemetery.burials.length > 0 ? ("verified" as const) : ("needs-verification" as const),
+    sourceUrl: cemetery.sourceUrl,
+  })),
   ...standardEssentials(),
   notes: destination.summary ? [destination.summary] : [],
 }));

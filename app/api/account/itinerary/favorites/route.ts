@@ -21,7 +21,7 @@ async function access(request: NextRequest) {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
   if (!shareId) return { error: NextResponse.json({ error: "Name the trip." }, { status: 400 }) };
   if (!favoritesStoreAvailable()) {
-    return { error: NextResponse.json({ error: "Shared favorites are not connected yet." }, { status: 503 }) };
+    return { error: NextResponse.json({ error: "Shared favorites are unavailable at the moment." }, { status: 503 }) };
   }
 
   const jar = await cookies();

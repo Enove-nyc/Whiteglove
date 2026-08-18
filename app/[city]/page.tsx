@@ -233,7 +233,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
               </div>
             </div> : <div className="wg-card mt-8 border border-dashed border-[var(--gold-light)] p-5 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Shomer & access contact</p>
-              <p className="mt-2 text-sm leading-6 text-stone-600">A current public shomer or cemetery-access number has not yet been verified for this kever. The guide includes the exact map pin; do not rely on an old number from a travel list without confirming it first.</p>
+              <p className="mt-2 text-sm leading-6 text-stone-600">There is no public shomer or cemetery-access number for this kever. The guide has the exact map pin — if you find a number on a travel list, confirm it before you rely on it.</p>
             </div>}
           </div>
         </div>

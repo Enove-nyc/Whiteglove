@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   const account = readSessionEmail(cookieStore.get(accountCookieName())?.value);
   if (!account) return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
   if (!planStoreAvailable()) {
-    return NextResponse.json({ error: "This is not connected yet. Please try again later." }, { status: 503 });
+    return NextResponse.json({ error: "Plans are unavailable at the moment. Please try again shortly." }, { status: 503 });
   }
 
   const body = (await request.json().catch(() => null)) as

@@ -174,7 +174,7 @@ export default async function AdminHome() {
     alerts.push({ text: messageNews, href: "/admin/messages", label: "Read them" });
   }
 
-  // Somebody asked about Pro or Business and is waiting on a person. This used
+  // Somebody asked about Gold or Business and is waiting on a person. This used
   // to arrive in complete silence: written to the store, shown on
   // /admin/accounts, and announced nowhere — while the person who asked was
   // told "we have it, and we will be in touch".

@@ -33,7 +33,7 @@ export type AccountRecord = {
   salt: string;
   createdAt: string;
   /**
-   * Traveler, Pro or Business. Absent on every account made before plans
+   * Traveler, Gold or Business. Absent on every account made before plans
    * existed, which reads as Traveler — exactly what it was before.
    *
    * Set only from the admin (app/admin/accounts/actions.ts). Nothing reads it
@@ -260,7 +260,7 @@ export type AdminAccountSummary = {
   routeCount: number;
   favoriteCount: number;
   hasItinerary: boolean;
-  /** Traveler, Pro or Business. See lib/account-plans.ts — nothing is behind one yet. */
+  /** Traveler, Gold or Business. See lib/account-plans.ts — nothing is behind one yet. */
   plan: AccountPlan;
 };
 

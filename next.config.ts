@@ -1,6 +1,48 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The site advertised its framework and version on every response, for no
+  // reason a visitor benefits from.
+  poweredByHeader: false,
+
+  /**
+   * The response headers a browser needs to be told, since it assumes the
+   * unsafe answer for every one of them by default. The site sent none.
+   *
+   * DELIBERATELY NOT A CONTENT-SECURITY-POLICY. That is the valuable one and
+   * it is the one that breaks things: the booking pages load partner scripts
+   * (Travelpayouts, Stay22, Localrent, Aviasales) and the map loads Google and
+   * OpenStreetMap, and a policy written without testing every one of those
+   * hand-offs takes the booking flow down quietly. CSP is its own piece of
+   * work, with its own testing pass. Deferred, not dropped.
+   *
+   * SAMEORIGIN RATHER THAN DENY, and this matters: /book shows the partner
+   * search forms by iframing our own /embed, /embed/cars and /embed/flights
+   * (components/PartnerSearchWidget). DENY would blank those three panels and
+   * the failure would look like a broken partner rather than a header.
+   *
+   * The permissions list names only what nothing on this site uses — there is
+   * no navigator.geolocation, getUserMedia or camera call anywhere. `payment`
+   * is deliberately absent from the list: Duffel's card component handles card
+   * entry, and switching that capability off is not a guess worth making.
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Cross-origin requests still carry the origin, so partner
+          // attribution that reads a referrer keeps working; the path a
+          // visitor was reading does not leave the site.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       // /planning and /services were two pages about done-for-you trip
@@ -88,6 +130,16 @@ const nextConfig: NextConfig = {
       // the links that had it. See app/book/page.tsx.
       { source: "/cars", destination: "/book?type=cars", permanent: true },
       { source: "/attractions", destination: "/things-to-do", permanent: true },
+      // /flight-booking-assistance was the done-for-you flight offer — "Ask a
+      // person", "Send what you have and a person picks it up". That offer was
+      // removed from the site outright, and this was the last page still
+      // making it; it was also the resolved fallback for every Flights /
+      // Hotels / Cars link whenever the search was locked, so it could become
+      // the whole booking journey without anybody choosing that. The fallback
+      // now goes to Contact (lib/booking-access.ts) and the address goes to
+      // the search that does the work, so an old link lands somewhere that can
+      // still book a flight.
+      { source: "/flight-booking-assistance", destination: "/book?type=flights", permanent: true },
       // Lizhensk was a hand-built page at /lizensk while every other guided
       // town rendered from the shared route at /uman, /belz, /sanz. It is an
       // ordinary town guide now, at the spelling the cemetery listing, the

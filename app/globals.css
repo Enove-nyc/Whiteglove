@@ -2,36 +2,24 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --navy: #172d52;
-  --navy-deep: #0d1f3b;
-  --gold: #aa8b52;
-  /**
-   * The same gold, dark enough to be read.
+  /* ---- Type and layers. The PALETTE is not here ------------------------
    *
-   * MEASURED, NOT GUESSED. `npm run audit:ui` computes the contrast of every
-   * rendered line against whatever is actually behind it, and --gold on the
-   * site's own backgrounds comes out at 2.6:1 to 3.2:1. That is fine for a
-   * rule or a border, which need 3:1, and it fails 1.4.3 for text, which needs
-   * 4.5:1 — and --gold was the colour of every small-caps eyebrow on the site,
-   * eleven or twelve pixels tall, in exactly the size where it matters most.
+   * It used to be, and that was the bug: nine colour tokens were declared in
+   * this block and then declared again, with DIFFERENT values, in the :root
+   * further down this file. The later block wins, so every colour written
+   * here was dead — including a --gold-ink chosen against measured contrast
+   * ratios that the site was not actually using. Two palettes, one of them
+   * invisible, and no way to tell from the code which one you were reading.
    *
-   * So the accent splits in two. --gold stays for borders, rules, dividers and
-   * the ornament, where it is not text and the lighter tone is the brand.
-   * --gold-ink is for words, and it clears 4.5:1 on all four of the light
-   * backgrounds the site uses, the darkest included:
+   * The colours now live in exactly one place: the :root below, beside the
+   * body background that uses them. This block keeps only what is declared
+   * once — the type stack and the stacking order — so nothing here is
+   * overridden by anything.
    *
-   *   cream #f7f3eb 5.36:1 · #fcfaf6 5.70:1 · surface #fffdf9 5.84:1
-   *   cream-deep #eee6d7 4.79:1 · white 5.94:1
-   *
-   * On the navy sections the text accent is --gold-light, which is what it
-   * always was; this one would be unreadable there and the audit says so.
+   * Deleting this block wholesale, which is the obvious reading of "duplicate
+   * palette", would have taken --font-display, --font-sans and all six
+   * --wg-z-* tokens with it. They are defined nowhere else.
    */
-  --gold-ink: #7a602c;
-  --gold-light: #d9c7a3;
-  --cream: #f7f3eb;
-  --cream-deep: #eee6d7;
-  --ink: #2d2c2a;
-  --surface: #fffdf9;
   --font-sans: Arial, Helvetica, sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
 
@@ -481,6 +469,29 @@ nav :where(svg, .glove-mark),
   --navy: #15324b;
   --navy-deep: #0b2437;
   --gold: #b78a4a;
+  /**
+   * THE ACCENT SPLITS IN TWO, and this is the half that may be used for words.
+   *
+   * MEASURED AGAINST THESE VALUES, not inherited from an older pair. --gold is
+   * the brand tone and it is not a text colour: on the site's own backgrounds
+   * it comes out at 2.55:1 to 3.11:1, which is fine for a rule, a border or
+   * the ornament (3:1) and fails 1.4.3 for text (4.5:1) — and --gold was the
+   * colour of every small-caps eyebrow on the site, at eleven or twelve
+   * pixels, exactly where it matters most.
+   *
+   * --gold-ink is for words, and clears 4.5:1 on every light background here:
+   *
+   *   surface #ffffff 6.93:1 · card #fcfaf6 6.65:1
+   *   cream #f7f5f0 6.36:1 · cream-deep #ece8df 5.67:1
+   *
+   * On the navy sections the text accent is --gold-light; this one would be
+   * unreadable there.
+   *
+   * These numbers describe THE COLOURS IN THIS BLOCK. There used to be a
+   * second :root above with a different navy and a different gold, and the
+   * contrast note lived up there describing colours the site had stopped
+   * using — the arithmetic was real and it was about the wrong palette.
+   */
   --gold-ink: #765321;
   --gold-light: #e5d2b3;
   --cream: #f7f5f0;

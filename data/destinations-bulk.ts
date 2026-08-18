@@ -4,7 +4,8 @@ export type BulkDestination = {
   yiddishCity: string;
   country: string;
   aliases: string[];
-  summary: string;
+  /** Only when somebody has written one about this town. See below. */
+  summary?: string;
 };
 
 type DestinationRow = [string, string, string, string, string[]?];
@@ -135,7 +136,13 @@ export const bulkDestinations: BulkDestination[] = rows.map(([slug, city, yiddis
   yiddishCity,
   country,
   aliases,
-  summary: "A Jewish heritage destination now in the White Glove directory. Exact kevarim, access, accommodations, food, minyanim, mikvaos, and local contacts are being verified before publication.",
+  // NO SUMMARY, deliberately. There used to be one sentence here, and because
+  // it is written once and mapped over every row it was the same sentence on a
+  // hundred and nine pages: "…are being verified before publication." A
+  // hundred and nine identical paragraphs, each one an announcement that the
+  // page had nothing on it, all of them in the sitemap. A town gets a summary
+  // when somebody writes one about that town.
+  summary: undefined,
 }));
 
 export function getBulkDestination(slug: string) {

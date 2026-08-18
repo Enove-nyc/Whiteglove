@@ -210,7 +210,7 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
 }
 
 /**
- * Somebody has asked about a Pro or Business account.
+ * Somebody has asked about a Gold or Business account.
  *
  * THE REQUEST USED TO ARRIVE IN SILENCE. It was written to the store and shown
  * on /admin/accounts, and nothing anywhere told the owner it had happened — so
@@ -227,7 +227,7 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
 export type PlanRequestNotification = {
   /** What they sign in with — an email address or a phone number. */
   account: string;
-  /** "Pro" or "Business", already spelled for a person. */
+  /** "Gold" or "Business", already spelled for a person. */
   wanted: string;
   currentPlan: string;
   businessName?: string;
@@ -398,7 +398,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
 export type SubscriptionNotification = {
   /** What they sign in with. */
   account: string;
-  /** "Pro" or "Business", already spelled for a person. */
+  /** "Gold" or "Business", already spelled for a person. */
   plan: string;
   event: "started" | "ended";
 };

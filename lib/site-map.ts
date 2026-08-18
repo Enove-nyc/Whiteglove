@@ -25,6 +25,7 @@
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
+import { getDestinationRecord } from "@/data/destination-database";
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { heritageTownHref, vacationDestinationHref } from "@/lib/route-migration";
 import { allTzaddikim } from "@/lib/tzaddikim";
@@ -96,7 +97,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
   { path: "/sample-itinerary", priority: 0.7, changeFrequency: "yearly" },
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/flight-booking-assistance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/transfers", priority: 0.5, changeFrequency: "monthly" },
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
@@ -136,7 +136,18 @@ export function publicPaths(): SitemapEntry[] {
   for (const guide of cityGuides) {
     entries.push({ path: `/${guide.slug}`, priority: 0.8, changeFrequency: "monthly" });
   }
+  // ONLY THE TOWNS THAT HAVE SOMETHING ON THEM. All hundred and nine of these
+  // were listed here, and not one of them rendered a kever, a listing or a
+  // sentence — the records exist, the content has not been written yet. A
+  // sitemap is a claim that a page is worth fetching, and a hundred and nine
+  // near-identical empty pages under one domain is the claim a search engine
+  // punishes the whole site for. They stay reachable and stay linked from
+  // /heritage and /stops; they are simply not advertised until they say
+  // something. The page itself noindexes on the same condition, so the two
+  // signals can never disagree.
   for (const place of bulkDestinations) {
+    const hasContent = Boolean(getDestinationRecord(place.slug)?.cemeteries.length) || Boolean(place.summary);
+    if (!hasContent) continue;
     entries.push({ path: heritageTownHref(place.slug), priority: 0.6, changeFrequency: "monthly" });
   }
   for (const cemetery of cemeteries) {

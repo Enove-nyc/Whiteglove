@@ -41,9 +41,15 @@ export type AccountPlan = (typeof ACCOUNT_PLANS)[number];
 /** The one an account has when nobody has said otherwise. */
 export const DEFAULT_PLAN: AccountPlan = "traveler";
 
+/**
+ * The names a person reads. The KEYS are not names: "pro" is what is stored on
+ * an account, sent to Stripe and written back by the webhook, so it stays as
+ * it is for ever — renaming the tier is a label change and nothing else, or
+ * every existing account and every subscription stops matching itself.
+ */
 export const PLAN_LABELS: Record<AccountPlan, string> = {
   traveler: "Traveler",
-  pro: "Pro",
+  pro: "Gold",
   business: "Business",
 };
 

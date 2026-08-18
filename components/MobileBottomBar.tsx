@@ -30,7 +30,10 @@ export default function MobileBottomBar({ signedIn }: { signedIn: boolean }) {
     {
       key: "account",
       icon: "account" as IconName,
-      label: "Account",
+      // The label follows the signed-in state, exactly as the desktop icon row
+      // does. It said "Account" in both states, so the bar offered somebody
+      // with no account a door to one they did not have.
+      label: signedIn ? "Account" : "Sign in",
       href: signedIn ? "/account" : signInHref(),
       // Signed out, the bar opens the sign-in dialog instead of navigating, so
       // somebody reading a destination page stays on it. See useOpenSignIn.

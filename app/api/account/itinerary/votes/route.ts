@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 async function access(request: NextRequest) {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
   if (!shareId) return { error: NextResponse.json({ error: "Name the trip." }, { status: 400 }) };
-  if (!voteStoreAvailable()) return { error: NextResponse.json({ error: "Voting is not connected yet." }, { status: 503 }) };
+  if (!voteStoreAvailable()) return { error: NextResponse.json({ error: "Voting is unavailable at the moment." }, { status: 503 }) };
 
   const jar = await cookies();
   const asker = readSessionEmail(jar.get(accountCookieName())?.value);

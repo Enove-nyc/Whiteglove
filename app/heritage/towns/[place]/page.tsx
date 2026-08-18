@@ -37,12 +37,20 @@ export async function generateMetadata({ params }: { params: Promise<{ place: st
   const { place: slug } = await params;
   const destination = getBulkDestination(slug);
   if (!destination) return pageMetadata({ title: "Destination not found | White Glove Kosher Travel", description: "This destination could not be found.", path: `/heritage/towns/${slug}`, noIndex: true });
+  // NOINDEX WHILE THERE IS NOTHING ON IT. Every one of these hundred and nine
+  // towns renders no kevarim, no listings and no summary — the record exists,
+  // the content has not been written — and all of them were in the sitemap,
+  // asking Google to index a hundred and nine near-identical empty pages under
+  // our name. The URL keeps working, the record is untouched, and the day a
+  // town gains a cemetery or a listing it indexes itself again.
+  const hasContent = Boolean(getDestinationRecord(slug)?.cemeteries.length) || Boolean(destination.summary);
   return pageMetadata({
     title: `${destination.city}, ${destination.country} — Jewish Heritage Guide | White Glove`,
     description: destination.summary
-      ? `${destination.summary} Practical details for ${destination.city} are published here once they have been checked.`
-      : `${destination.city}, ${destination.country}: kevarim, addresses and travel details, published as each one is checked.`,
+      ? destination.summary
+      : `${destination.city}, ${destination.country}: kevarim, addresses and travel details for Jewish heritage travel.`,
     path: `/heritage/towns/${destination.slug}`,
+    noIndex: !hasContent,
   });
 }
 
@@ -80,7 +88,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Destination directory · {destination.country}</p>
           <h1 dir="rtl" lang="yi" className="mt-5 font-[family-name:var(--font-display)] text-[clamp(2.75rem,8vw,5rem)] leading-tight text-[var(--navy)]">{destination.yiddishCity}</h1>
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{destination.city}</p>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>
+          {destination.summary && <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>}
           <DestinationActions place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, coordinates: record?.cemeteries[0]?.coordinates, href: `/destinations/${destination.slug}` }} airports={airportsFor(destination.country, `${destination.city}, ${destination.country}`, record?.cemeteries[0]?.coordinates)} />
           <SuggestEditPanel targetType="location" targetId={destination.slug} title={destination.city} />
           <ReviewSection placeKind="destination" placeRef={`heritage-${destination.slug}`} placeLabel={destination.city} sacred />
@@ -116,13 +124,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
               </article>
             ))}
           </div>
-        ) : (
-          <div className="wg-card mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Cemetery information</p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Information is not available yet.</h2>
-            <p className="mt-3 max-w-2xl leading-7 text-stone-600">Names of the kevarim, arrival notes, and a shomer contact will appear here only after they are checked for this exact beis hachaim.</p>
-          </div>
-        )}
+        ) : null}
 
         <PhotoGallery photos={dbContent?.photos ?? []} />
         {record && <PracticalInformation record={record} places={dbContent?.places ?? []} />}

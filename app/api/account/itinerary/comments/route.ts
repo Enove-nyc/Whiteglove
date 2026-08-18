@@ -24,7 +24,7 @@ type Ok = { owner: string; asker: string; canComment: boolean };
 async function whoAndWhat(request: NextRequest): Promise<Ok | { error: NextResponse }> {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
   if (!shareId) return { error: NextResponse.json({ error: "Name the trip." }, { status: 400 }) };
-  if (!commentStoreAvailable()) return { error: NextResponse.json({ error: "Notes are not connected yet." }, { status: 503 }) };
+  if (!commentStoreAvailable()) return { error: NextResponse.json({ error: "Notes are unavailable at the moment." }, { status: 503 }) };
 
   const jar = await cookies();
   const asker = readSessionEmail(jar.get(accountCookieName())?.value);

@@ -44,7 +44,7 @@ export const BOOKING_SEARCH_PATH = "/book";
  * holding note. Chosen over `/contact` because it is specifically about
  * flights and hotels, which is what the visitor pressed.
  */
-export const BOOKING_HELP_PATH = "/flight-booking-assistance";
+export const BOOKING_HELP_PATH = "/contact?reason=question";
 
 export type BookingLink = {
   href: string;
@@ -78,10 +78,25 @@ const PUBLIC_SEARCH: BookingLink = {
   searchIsPublic: true,
 };
 
+/**
+ * WHERE A LOCKED SEARCH SENDS SOMEBODY NOW.
+ *
+ * This used to point at /flight-booking-assistance and read "Tell us the route
+ * and dates, and we will look into the flights and the hotels for you." That
+ * is the done-for-you offer, removed from this site outright — and because
+ * this is the resolved fallback for every Flights/Hotels/Cars link on the
+ * site, locking the search turned the whole booking journey into it.
+ *
+ * It goes to the contact page instead. The rule this module exists for is
+ * unchanged and is the reason it is not simply pointed at /book: a public link
+ * must never end at an access-code box, and /book is the page that is locked.
+ * Contact is open, is a real page about a real thing, and promises nothing
+ * that does not exist.
+ */
 const ASK_INSTEAD: BookingLink = {
   href: BOOKING_HELP_PATH,
-  label: "Flights & hotels",
-  description: "Tell us the route and dates, and we will look into the flights and the hotels for you.",
+  label: "Get in touch",
+  description: "Partner search is closed at the moment. Write to us and we will point you in the right direction.",
   searchIsPublic: false,
 };
 

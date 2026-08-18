@@ -32,7 +32,7 @@ export default async function AlertsUnsubscribedPage({
             ? "Nobody has been unsubscribed. In a real update this link takes the reader off the list straight away, without asking them anything else."
             : ok
               ? "You will not receive further alert emails from this list. You can sign up again at any time from the travel updates page."
-              : params.error || "That unsubscribe link is not valid or alerts are not connected yet."}
+              : params.error || "This unsubscribe link has expired or is not valid."}
         </p>
         {!ok && !wasTest && (
           // A person whose link has genuinely failed is somebody who wants to

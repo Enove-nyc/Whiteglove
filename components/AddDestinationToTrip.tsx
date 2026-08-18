@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRequireSignIn } from "@/components/SignInGate";
 
 /**
- * "Add Rome to a trip", as an action rather than a signpost.
+ * "Add Rome to itinerary", as an action rather than a signpost.
+ *
+ * IT SAYS ITINERARY BECAUSE THAT IS WHERE IT WRITES. It used to say "Add Rome
+ * to a trip", beside an icon button on the same page reading "Add to
+ * itinerary" — two names, two buttons, one destination, and a visitor left to
+ * guess whether a trip and an itinerary were different things. Route is the
+ * other concept and keeps its own words.
  *
  * IT USED TO BE A LINK TO /plan. A visitor pressed a button that said it
  * would add this destination to a trip and arrived at the recommendations
@@ -77,17 +83,17 @@ export default function AddDestinationToTrip({
   return (
     <button
       type="button"
-      onClick={() => requireSignIn(add, "Sign in to add this to your trip")}
+      onClick={() => requireSignIn(add, "Sign in to add to your itinerary")}
       className={className}
       disabled={state === "saving"}
     >
       {state === "added"
-        ? `${name} is on your trip`
+        ? `${name} is on your itinerary`
         : state === "failed"
           ? "Try that again"
           : state === "saving"
             ? "Adding…"
-            : `Add ${name} to a trip`}
+            : `Add ${name} to itinerary`}
     </button>
   );
 }

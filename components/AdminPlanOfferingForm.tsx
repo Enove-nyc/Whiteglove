@@ -48,7 +48,7 @@ export default function AdminPlanOfferingForm({
             className="mt-1.5"
           />
           <span>
-            <span className="font-semibold text-[var(--navy)]">Offer Pro and Business</span>
+            <span className="font-semibold text-[var(--navy)]">Offer Gold and Business</span>
             <span className="block text-stone-500">
               Off means the account page says nothing about either, and nothing on the site can charge anybody. This is
               the switch — everything below is what happens when it is on.

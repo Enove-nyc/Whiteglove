@@ -9,11 +9,23 @@ const NAVBAR = readFileSync("components/Navbar.tsx", "utf8");
 const BAR_CODE = BAR.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
 describe("the mobile bottom bar", () => {
-  it("is Search, Route, Itinerary and Account — no Favorites", () => {
-    for (const label of ["Search", "Route", "Itinerary", "Account"]) {
+  it("is Search, Route, Itinerary and the account — no Favorites", () => {
+    for (const label of ["Search", "Route", "Itinerary"]) {
       assert.match(BAR, new RegExp(`label: "${label}"`), `${label} missing`);
     }
     assert.doesNotMatch(BAR_CODE, /Favorite/i, "Favorites belongs inside Account, not the bottom bar");
+  });
+
+  it("SAYS SIGN IN TO SOMEBODY SIGNED OUT, and Account to somebody signed in", () => {
+    // The fourth item used to be labelled "Account" in every state, so a
+    // visitor with no account was invited to open one that did not exist and
+    // met a sign-in box. The desktop icon row has always got this right
+    // (Navbar: label={signedIn ? "Account" : "Sign in"}); this is the same
+    // expression, reading the same prop, going to the same two places.
+    assert.match(BAR_CODE, /label:\s*signedIn\s*\?\s*"Account"\s*:\s*"Sign in"/, "the account label ignores the signed-in state");
+    assert.match(BAR_CODE, /href:\s*signedIn\s*\?\s*"\/account"\s*:\s*signInHref\(\)/, "the account destination changed");
+    // One source of truth for that state: the bar is told, it does not ask.
+    assert.match(BAR_CODE, /\{\s*signedIn\s*\}\s*:\s*\{\s*signedIn:\s*boolean\s*\}/, "the bar should take signedIn as a prop, not re-derive it");
   });
 
   it("only appears below the breakpoint where the header icons hide", () => {

@@ -109,8 +109,16 @@ export default function MyRouteDashboard({
 
       {activeRoute.length === 0 ? (
         <div className="wg-card mt-12 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-          <p className="leading-7 text-stone-600">No stops</p>
-          <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Add</Link>
+          {/* "No stops" over a button marked "Add" told somebody who had just
+              arrived neither what a route is nor what it is for. Two lines and
+              the same one button. */}
+          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Your route is empty.</p>
+          <p className="mt-2 max-w-xl leading-7 text-stone-600">
+            A route is the order you drive them in — add the towns, kevarim and places you want to reach and it works
+            out the driving between them. Use <span className="font-semibold text-[var(--navy)]">Add to Route</span> on
+            any of them.
+          </p>
+          <Link href="/stops" className="mt-6 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">Browse towns and kevarim</Link>
         </div>
       ) : (
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_.6fr]">

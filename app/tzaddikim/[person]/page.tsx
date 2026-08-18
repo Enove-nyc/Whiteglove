@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import KeverCoordinates from "@/components/KeverCoordinates";
 import MixedText from "@/components/MixedText";
+import DetailActionRow from "@/components/DetailActionRow";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import Navbar from "@/components/Navbar";
@@ -98,6 +99,24 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
                 with Suggest edit below.
               </p>
             )}
+            {/* THE ONE PAGE ON THE SITE WITH NO ACTIONS ON IT. A town, a bais
+                hachaim and a destination all carry this row; a kever — the
+                thing a heritage traveller is actually going to — carried
+                none, so there was no way to put one on a route or an
+                itinerary from the page about it. Same component, same icons,
+                same order, same sign-in rules as everywhere else; no separate
+                kever action system. The address and coordinates come from the
+                bais hachaim he is in, which is what directions need. */}
+            <DetailActionRow
+              place={{
+                id: `kever-${entry.slug}`,
+                name: burial.knownAs || burial.name,
+                yiddishName: burial.yiddishName,
+                address: cemetery.address ?? `${cemetery.city}, ${cemetery.country}`,
+                coordinates: cemetery.coordinates,
+                href: `/tzaddikim/${entry.slug}`,
+              }}
+            />
             <SuggestEditPanel targetType="location" targetId={entry.slug} title={burial.knownAs || burial.name} />
             <ReviewSection placeKind="kever" placeRef={entry.slug} placeLabel={burial.knownAs || burial.name} sacred />
 
