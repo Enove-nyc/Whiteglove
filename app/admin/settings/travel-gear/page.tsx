@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
 import TravelGearForm from "@/components/TravelGearForm";
 import { gearStoreAvailable, readGearFresh } from "@/lib/travel-gear-store";
 
@@ -36,7 +37,7 @@ export default async function TravelGearSettings() {
         </p>
         <p className="mt-3">
           <a
-            href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/travel-gear`}
+            href={`${siteOrigin()?.origin || CANONICAL_ORIGIN}/travel-gear`}
             className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
           >
             View the public page

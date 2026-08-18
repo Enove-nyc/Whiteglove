@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
+
 /**
  * Page metadata, in one place.
  *
@@ -12,37 +14,7 @@ import type { Metadata } from "next";
 
 export const SITE_NAME = "White Glove Kosher Travel";
 
-/**
- * THE ONE ADDRESS THIS SITE IS SERVED ON — and it has a "www." on it.
- *
- * Cloudflare answers the bare domain with a permanent redirect to the www
- * host, so www is where every visitor, every crawler and every share link
- * actually ends up. The site was telling the world the opposite. Measured, not
- * guessed:
- *
- *   canonical on /destinations   https://whitegloveitineraries.com/destinations
- *   that address                 301 → https://www.whitegloveitineraries.com/…
- *   every <loc> in the sitemap   the bare domain, so a few thousand redirects
- *   robots.txt Sitemap:          the bare domain
- *
- * A canonical tag naming an address that redirects away from itself is the one
- * instruction a search engine cannot follow: it is told "this page lives here",
- * goes there, and is sent somewhere else. The two hosts then compete for the
- * same pages instead of consolidating, which is the whole thing canonical tags
- * exist to prevent.
- *
- * WWW RATHER THAN THE BARE DOMAIN, DELIBERATELY. Either would work if the site
- * said the same thing consistently, and www is the one already in force: it is
- * where the redirect points today, where anything indexed has been landing,
- * and where the sign-in cookie is set. Turning the redirect around instead
- * would invert all of that for a cosmetic preference. Long run www is also the
- * more flexible host — it can be a CNAME, and a cookie set on it does not leak
- * to every subdomain.
- *
- * If the redirect is ever turned around, change this and change Cloudflare in
- * the same breath. They are one decision, not two.
- */
-export const CANONICAL_ORIGIN = "https://www.whitegloveitineraries.com";
+export { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
 const CANONICAL_HOST = new URL(CANONICAL_ORIGIN).hostname;
 const CANONICAL_APEX = CANONICAL_HOST.replace(/^www\./, "");
 

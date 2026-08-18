@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import AdminSearch from "@/components/AdminSearch";
@@ -138,7 +139,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
           <AdminSearch areas={areas} pathname={pathname} />
 
           <a
-            href={process.env.NEXT_PUBLIC_SITE_URL || "/"}
+            href={CANONICAL_ORIGIN}
             className="hidden text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4 sm:inline"
           >
             View site
