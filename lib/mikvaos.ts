@@ -8,6 +8,7 @@
  */
 
 import { cemeteries } from "@/data/cemeteries";
+import { notableMikvaos } from "@/data/notable-mikvaos";
 import { practicalContent } from "@/data/practical-content";
 import { destinations as heritageDestinations, destinationHref as heritageDestinationHref } from "@/data/destinations";
 import { getBulkDestination } from "@/data/destinations-bulk";
@@ -154,6 +155,35 @@ function dedupeByNameCity(listings: MikvahListing[]): MikvahListing[] {
   return out;
 }
 
+/**
+ * The mikvaos of the established kehillos, as directory listings.
+ *
+ * A flat, source-backed list (data/notable-mikvaos.ts) — the parallel to the
+ * worldwide shuls, but deliberately thinner: no address, no hours, no
+ * coordinate. Each points at the live worldwide mikvah directory's page for
+ * its city, where the current, exact details are kept and given by
+ * appointment. Because no coordinate is stored, none of these becomes a pin
+ * on the map — which is the right default for a mikvah.
+ */
+export function notableMikvahListings(): MikvahListing[] {
+  return notableMikvaos.map((mikvah) => ({
+    id: `notable-${mikvah.slug}`,
+    name: mikvah.name,
+    address: null,
+    phone: null,
+    hours: null,
+    notes: mikvah.note,
+    website: mikvah.directoryUrl,
+    sourceUrl: mikvah.directoryUrl,
+    coordinates: null,
+    city: mikvah.city,
+    country: mikvah.country,
+    destinationSlug: mikvah.slug,
+    href: mikvah.directoryUrl,
+    fromDatabase: false,
+  }));
+}
+
 type DbMikvahRow = {
   id: string;
   name: string;
@@ -196,7 +226,13 @@ async function listPublishedMikvaosUncached(): Promise<MikvahListing[]> {
   // destination page the owner's own list says exists.
   const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
   const known = await getVacationDestinations();
-  if (!process.env.DATABASE_URL) return staticMikvahListings(known);
+  const notable = notableMikvahListings();
+  // The notable mikvaos are a separate source from the seeded ones, so they are
+  // added to whichever base list resolves — DB or static — and the whole is
+  // deduped by name and city, keeping the base entry where the two meet.
+  const withNotable = (base: MikvahListing[]) =>
+    dedupeByNameCity([...base, ...notable]).sort(byCountryCityName);
+  if (!process.env.DATABASE_URL) return withNotable(staticMikvahListings(known));
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.practicalPlace.findMany({
@@ -219,11 +255,11 @@ async function listPublishedMikvaosUncached(): Promise<MikvahListing[]> {
     // Wrapped rather than passed by name: .map hands the callback an index as
     // its second argument, which is not a destination list.
     const published = rows.map((row) => mikvahListingFromDbRow(row, known)).filter((row): row is MikvahListing => Boolean(row));
-    if (published.length > 0) return published;
+    if (published.length > 0) return withNotable(published);
   } catch (error) {
     console.error("[mikvaos] DB read failed — using static catalog", error);
   }
-  return staticMikvahListings(known);
+  return withNotable(staticMikvahListings(known));
 }
 
 /**
