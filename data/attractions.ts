@@ -3784,6 +3784,137 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Nagyerd%C5%91",
   },
+  {
+    slug: "krakow-st-marys-basilica",
+    name: "St. Mary's Basilica",
+    city: "Kraków",
+    country: "Poland",
+    kind: "Landmark",
+    summary:
+      "The brick-Gothic church on the Main Square, with the great carved wooden altarpiece by Veit Stoss and the trumpet call sounded from its tower every hour.",
+    address: "plac Mariacki 5, 31-042 Kraków",
+    coordinates: "50.0617, 19.9392",
+    notes: [
+      "A working church; the tourist entrance and the altarpiece are ticketed, and the tower can be climbed in season.",
+      "The hourly hejnał trumpet call breaks off mid-note, for a trumpeter said to have been shot mid-warning in a medieval raid.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/St._Mary%27s_Basilica,_Krak%C3%B3w",
+  },
+  {
+    slug: "krakow-planty",
+    name: "The Planty",
+    city: "Kraków",
+    country: "Poland",
+    kind: "Nature",
+    summary:
+      "The green ring around the old town, laid out on the line of the demolished city walls — a continuous park you can walk right around the centre.",
+    address: "Planty Park, 31-000 Kraków",
+    coordinates: "50.0619, 19.9375",
+    notes: [
+      "Free and open; it circles the whole old town, so it is the shaded way between sights.",
+      "A short stretch of the old wall and the Barbican survive at the northern end.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Planty_Park",
+  },
+  {
+    slug: "krakow-kosciuszko-mound",
+    name: "Kościuszko Mound",
+    city: "Kraków",
+    country: "Poland",
+    kind: "Viewpoint",
+    summary:
+      "A man-made hill of 1823 raised in memory of Tadeusz Kościuszko, ringed by a fort, with a spiral path to the top and the view over Kraków and the Vistula.",
+    address: "aleja Waszyngtona 1, 30-204 Kraków",
+    coordinates: "50.0547, 19.8908",
+    notes: [
+      "Ticketed to climb the mound itself; the surrounding fort holds a small exhibition.",
+      "West of the centre, a bus or a longer walk — go for the panorama on a clear day.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ko%C5%9Bciuszko_Mound",
+  },
+  {
+    slug: "warsaw-nozyk-synagogue",
+    name: "Nożyk Synagogue",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Jewish heritage",
+    summary:
+      "The only pre-war shul in Warsaw left standing — a Romanesque-revival building of 1902, restored, and the active Orthodox synagogue of the city again.",
+    address: "Twarda 6, 00-105 Warszawa",
+    coordinates: "52.2361, 21.0011",
+    notes: [
+      "A working kehilla, and the seat of the Warsaw community; visited by arrangement, with a security check, not by walking in.",
+      "It survived the war used by the Germans as a store, when everything Jewish around it was destroyed.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/No%C5%BCyk_Synagogue",
+  },
+  {
+    slug: "warsaw-uprising-museum",
+    name: "Warsaw Uprising Museum",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Museum",
+    summary:
+      "The museum of the 1944 rising against the German occupation, in a former tram power station — one of the most affecting museums in the city.",
+    address: "Grzybowska 79, 00-844 Warszawa",
+    coordinates: "52.2322, 20.9808",
+    website: "https://www.1944.pl/en",
+    notes: [
+      "Ticketed and immersive — a full-size bomber, a walk-through replica sewer, and the names of the fallen on a memorial wall.",
+      "The 1943 ghetto uprising is a different event, told at the POLIN museum already on this site; this is the citywide rising of 1944.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Warsaw_Uprising_Museum",
+  },
+  {
+    slug: "warsaw-royal-castle",
+    name: "The Royal Castle",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Museum",
+    summary:
+      "The kings' castle on the old town square, blown up by the Germans in 1944 and rebuilt from the rubble — now a museum of state rooms and paintings.",
+    address: "plac Zamkowy 4, 00-277 Warszawa",
+    coordinates: "52.2478, 21.0139",
+    website: "https://www.zamek-krolewski.pl/en",
+    notes: [
+      "The state apartments are ticketed; the courtyard and the square are free.",
+      "The whole old town around it, itself rebuilt after the war, is a UNESCO site for exactly that.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Royal_Castle,_Warsaw",
+  },
+  {
+    slug: "warsaw-lazienki-park",
+    name: "Łazienki Park",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Nature",
+    summary:
+      "The great royal park of Warsaw, 76 hectares along the Royal Route — a palace on an island in the lake, gardens, and the Chopin monument.",
+    address: "Agrykola 1, 00-460 Warszawa",
+    coordinates: "52.2128, 21.0328",
+    notes: [
+      "Free and open; the Palace on the Isle is ticketed, the park and its peacocks are not.",
+      "Free Chopin concerts by the monument on summer Sunday afternoons.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/%C5%81azienki_Park",
+  },
+  {
+    slug: "warsaw-copernicus-centre",
+    name: "Copernicus Science Centre",
+    city: "Warsaw",
+    country: "Poland",
+    kind: "Family",
+    summary:
+      "A big hands-on science centre on the Vistula bank, with hundreds of things to touch and a planetarium — the best day in Warsaw for children.",
+    address: "Wybrzeże Kościuszkowskie 20, 00-390 Warszawa",
+    coordinates: "52.2419, 21.0286",
+    website: "https://www.kopernik.org.pl/en",
+    notes: [
+      "Ticketed, and it sells out at weekends and in the holidays — book ahead.",
+      "The rooftop garden over the river is free to walk up to.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Copernicus_Science_Centre",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
