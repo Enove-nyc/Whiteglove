@@ -16,6 +16,7 @@ function fakePrisma(rows: {
   stays?: unknown[];
   areas?: unknown[];
   pages?: unknown[];
+  providers?: unknown[];
 }) {
   const asked: Record<string, unknown> = {};
   const table = (key: string, data: unknown[]) => ({
@@ -31,6 +32,7 @@ function fakePrisma(rows: {
     kosherStay: table("kosherStay", rows.stays ?? []),
     kosherArea: table("kosherArea", rows.areas ?? []),
     page: table("page", rows.pages ?? []),
+    directoryProvider: table("directoryProvider", rows.providers ?? []),
   };
   return { client: client as unknown as PrismaClient, asked };
 }
@@ -192,5 +194,93 @@ describe("the directory listings are backed up at last", () => {
     const flow = readFileSync(".github/workflows/content-snapshot.yml", "utf8");
     assert.match(flow, /UPSTASH_REDIS_REST_URL: \$\{\{ secrets\.UPSTASH_REDIS_REST_URL \}\}/);
     assert.match(flow, /UPSTASH_REDIS_REST_TOKEN: \$\{\{ secrets\.UPSTASH_REDIS_REST_TOKEN \}\}/);
+  });
+});
+
+describe("BOTH PLACES A LISTING CAN LIVE", () => {
+  /**
+   * The first version of this backup covered the Redis store only, and the
+   * owner's listings were not in it — they were in the DirectoryProvider
+   * table, and the store was empty. The file came back saying nought and
+   * looked correct. Covering one of two stores is covering none.
+   */
+  const ROW = {
+    id: "db-1",
+    slug: "heimishe-driver",
+    name: "Heimishe Driver",
+    category: "GUIDE_DRIVER",
+    tagline: "Airport runs",
+    description: null,
+    phone: "+1 718 555 0100",
+    whatsapp: null,
+    email: null,
+    website: null,
+    basedIn: "Brooklyn",
+    regions: ["United States", "Canada"],
+    languages: ["Yiddish", "English"],
+    specialties: [],
+    featured: false,
+    contactConsent: true,
+    source: null,
+    createdAt: new Date("2026-08-01T00:00:00Z"),
+  };
+
+  it("backs up the table the listings are actually in", async () => {
+    const { client } = fakePrisma({ cemeteries: [CEMETERY], providers: [ROW] });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    const found = snapshot.directory.find((p) => p.name === "Heimishe Driver");
+    assert.equal(found?.source, "database");
+    assert.equal(found?.slug, "heimishe-driver");
+    assert.equal(snapshot.counts.directoryInDatabase, 1);
+  });
+
+  it("SAYS WHICH STORE EVERY ROW CAME OUT OF", () => {
+    // A restore has to put each row back where it belongs, and the two are
+    // written to by different code. Without this the file is unrestorable.
+    const snap = readFileSync("lib/content-snapshot.ts", "utf8");
+    assert.match(snap, /source: "store" \| "database"/);
+    assert.match(snap, /source: "store" as const/);
+    assert.match(snap, /source: "database" as const/);
+  });
+
+  it("asks the database for published listings only", async () => {
+    const { client, asked } = fakePrisma({ cemeteries: [CEMETERY], providers: [ROW] });
+    await buildContentSnapshot(client, TAKEN);
+    const args = asked.directoryProvider as { where?: { status?: string }; select?: Record<string, boolean> };
+    assert.equal(args.where?.status, "PUBLISHED");
+    // Named columns, so a schema that has grown a column this database has not
+    // does not take the nightly run down with it.
+    assert.ok(args.select && Object.keys(args.select).length > 0, "asked for every column");
+    // The owner's own record stays out of a public file.
+    for (const ownerOnly of ["featuredReason", "contactConsentNote", "verifiedAt"]) {
+      assert.ok(!args.select?.[ownerOnly], `${ownerOnly} is the owner's own record and is in the public file`);
+    }
+  });
+
+  it("WITHHOLDS A NUMBER NOBODY GAVE PERMISSION FOR, IN THE DATABASE HALF TOO", async () => {
+    // The consent rule is the page's, not a second one written for backups.
+    const { client } = fakePrisma({
+      cemeteries: [CEMETERY],
+      providers: [{ ...ROW, contactConsent: false, source: null }],
+    });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    assert.equal(snapshot.directory[0].phone, null);
+  });
+
+  it("keeps a number the business publishes itself", async () => {
+    const { client } = fakePrisma({
+      cemeteries: [CEMETERY],
+      providers: [{ ...ROW, contactConsent: false, source: "https://example.com/contact" }],
+    });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    assert.equal(snapshot.directory[0].phone, "+1 718 555 0100");
+  });
+
+  it("writes the array columns the way the store writes the same field", async () => {
+    const { client } = fakePrisma({ cemeteries: [CEMETERY], providers: [ROW] });
+    const snapshot = await buildContentSnapshot(client, TAKEN);
+    assert.equal(snapshot.directory[0].regions, "United States, Canada");
+    // Nothing to say is null, not an empty string pretending to be an answer.
+    assert.equal(snapshot.directory[0].specialties, null);
   });
 });
