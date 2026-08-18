@@ -315,6 +315,45 @@ export function isTemplateFillerCandidate(name: string | null | undefined): bool
   return TEMPLATE_FILLER_PHRASES.some((phrase) => n === phrase || n.endsWith(" " + phrase));
 }
 
+/**
+ * The generator's own summaries.
+ *
+ * The bulk research batches were machine-drafted: a real-ish name, a
+ * placeholder address that is the name typed again, no coordinate, and one of
+ * a handful of boilerplate summaries repeated thousands of times. The name can
+ * look plausible ("Casa de Pilatos gardens framing"), but the SUMMARY is the
+ * generator talking, and it is the same closed set of sentences every time.
+ * Matching on those sentences clears the drafts from the review queue without
+ * touching a single genuinely-researched candidate — the curated batches carry
+ * none of these strings. A draft cleared here is not published; it is simply
+ * not a real listing waiting to be verified.
+ *
+ * This is deliberately a summary match, not a name match: the names vary too
+ * much to enumerate, while the summaries do not.
+ */
+const GENERATOR_DRAFT_SUMMARY_MARKERS: readonly string[] = [
+  "suitable for family sightseeing and daytime touring. confirm current hours",
+  "practical jewish-travel infrastructure to verify before publishing",
+  "confirm walking distances to a shul and food options for your dates",
+  "confirm minyan times, security entry rules and visitor seating",
+  "prefer this when planning a orthodox / torah-observant-friendly day",
+  "confirm access, opening hours and any shomer contact before visiting kevarim",
+  "appointments, separate hours and access rules change",
+  "use it to confirm current shul, mikvah and visitor contacts",
+] as const;
+
+/**
+ * A machine-generated draft, told by its boilerplate summary.
+ *
+ * True only for the research-batch drafts that were never a real listing.
+ * Curated, source-backed candidates carry a real summary and are never caught.
+ */
+export function isGeneratedDraftCandidate(summary: string | null | undefined): boolean {
+  const s = (summary ?? "").toLowerCase();
+  if (!s) return false;
+  return GENERATOR_DRAFT_SUMMARY_MARKERS.some((marker) => s.includes(marker));
+}
+
 export function prepareBulkContentCandidate(input: BulkContentCandidateInput): PreparedBulkContentCandidate {
   const name = input.name.trim();
   const city = input.city.trim();
