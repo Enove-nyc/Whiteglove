@@ -1,12 +1,15 @@
 // Bulk kevarim — batch 19. The last four directory towns expected to hold real
 // material, researched.
 //
-// One of these is the largest find of the whole exercise: the Ruzhiner is
-// buried in Sadhora, and Sadhora is now a district of Chernivtsi. Somebody
-// searching the site for the Ruzhiner would have found nothing, because the
-// town he lies in is filed under the city that absorbed it.
+// The Ruzhiner is NOT in this file, and the reason is worth recording. He is
+// buried in Sadhora, which is now a district of Chernivtsi, and I wrote a
+// Chernivtsi listing for him — which duplicated `sadhora-ruzhiner`, a listing
+// that has been in cemeteries-bulk-3.ts all along and which my own check had
+// already reported as present. The duplicate is gone; what was actually
+// missing was the PAIRING, so the Chernivtsi page could find it. That is in
+// data/destination-database.ts with the others.
 //
-// Two of the four name nobody. Brest and Iași lost their old grounds
+// Two of these three name nobody. Brest and Iași lost their old grounds
 // completely, and what those pages have to say is what happened and what
 // stands there now — which for Brest is a sports stadium.
 //
@@ -16,44 +19,6 @@
 import type { Cemetery } from "@/data/cemeteries";
 
 export const bulkCemeteries19: Cemetery[] = [
-  {
-    slug: "chernivtsi-sadhora-ruzhiner",
-    city: "Chernivtsi (Sadhora)",
-    yiddishCity: "סאדיגורא",
-    name: "Sadhora — ohel of the Ruzhiner",
-    yiddishName: "סאדיגורא — אוהל הרוזשינער",
-    country: "Ukraine",
-    address: "Old Jewish cemetery, Sadhora district, Chernivtsi, Chernivtsi Oblast, Ukraine",
-    airportRef: "48.330, 25.950",
-    arrivalNotes: [
-      "SADHORA IS NOT A SEPARATE TOWN ANY MORE. Sadigura, where the Ruzhiner held court and where he is buried, is today a district of Chernivtsi on the far side of the Prut — search for Chernivtsi and then for Sadhora within it.",
-      "The ohel stands in the old Sadhora cemetery, which was working from the early eighteen hundreds until the end of the nineteen thirties.",
-      "The original matzevos over the Ruzhiner and his sons were destroyed in the First World War and replaced by a single large white concrete slab, so do not look for old stones. The ohel itself was renovated by Ohaley Tzaddikim in the twenty-tens.",
-    ],
-    burials: [
-      {
-        name: "Rabbi Yisrael Friedman of Ruzhin",
-        yiddishName: "רבי ישראל פרידמאן מרוזשין",
-        knownAs: "The Ruzhiner",
-        yahrzeit: "ג׳ חשון · 5611 / 1850",
-        note: "1796–1850. He fled the Tsar's persecution to Sadigura, then in Austria, and built his court there; six chassidic dynasties descend from his sons — Sadigura, Chortkov, Husiatyn, Boyan, Shtefanesht and Leova. He is buried here, not in Ruzhin.",
-      },
-      {
-        name: "Rabbi Avrohom Yaakov Friedman",
-        yiddishName: "רבי אברהם יעקב פרידמאן",
-        knownAs: "The first Sadigura Rebbe",
-        yahrzeit: "5643 / 1883",
-        note: "1820–1883, son of the Ruzhiner and first rebbe of Sadigura, buried beside his father. Later Sadigura rebbes carry the same name and lie elsewhere.",
-      },
-      {
-        name: "Rabbi Dov Ber Friedman of Leova",
-        yiddishName: "רבי דוב בער פרידמאן מליאווא",
-        knownAs: "Son of the Ruzhiner",
-        note: "A son of the Ruzhiner, buried in the same ohel.",
-      },
-    ],
-    sourceUrl: "https://www.esjf-cemeteries.org/survey/chernivtsi-sadhora-jewish-cemetery/",
-  },
   {
     slug: "miskolc-avas",
     city: "Miskolc",
@@ -108,6 +73,7 @@ export const bulkCemeteries19: Cemetery[] = [
       "THERE IS NO CEMETERY TO VISIT. This was one of the oldest and largest Jewish burial grounds in Belarus. The Germans demolished it in 1941–42, and in 1959 the Soviet authorities cleared the site and built the Lokomotiv stadium and its playing fields on top of it. The sports ground is still there and still in use.",
       "The matzevos went into the city itself. Jewish gravestones have been found in Brest's road surfaces, its pavements, its gardens and the foundations of its houses — fifteen hundred recovered by 2014, four hundred and fifty of them dug up during the building of a supermarket.",
       "A memorial is being made from the rescued stones: a broken circle of wall and walkway around some six hundred re-erected matzevos, on land that was part of the cemetery. Ask what stands before you travel — this is a site whose state changes.",
+      "One name people search for here: the Beis HaLevi, Reb Yosef Dov Soloveitchik, was niftar in Brisk in 1892. Sources disagree about where he was buried — some say here, some say the Warsaw cemetery on Okopowa — and this site is not going to choose for you. If Brisk, there is nothing left to stand at.",
     ],
     burials: [],
     sourceUrl: "https://www.thetogetherplan.com/jewish-graves-in-brest/",

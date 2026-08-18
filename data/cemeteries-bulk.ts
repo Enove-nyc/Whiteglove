@@ -397,6 +397,8 @@ export const bulkCemeteries: Cemetery[] = [
       "Nagykálló ('Kaliv') is ~15 km SE of Nyíregyháza in NE Hungary. The old Jewish cemetery holding the Kaliver Rebbe's ohel is on Nagybalkányi út.",
       "The tent-like ohel is the focal point; a continuous Hasidic pilgrimage site for ~200 years, heaviest around the 7 Adar yahrzeit. An Orthodox pilgrimage house (opened 2021, EMIH) stands next to the cemetery.",
       "Nearest airport is Debrecen (~40 km); Budapest is the main international gateway.",
+      "The street number is Nagybalkányi utca 13, and there are two Jewish cemeteries in the town — the ohel is in the old one.",
+      "The stone carries an epitaph the Rebbe wrote for himself: here lies Rebbe Eizik, rov of the holy kehilla of Nagykálló.",
     ],
     accessNote: "The cemetery is kept closed; visits (and opening the ohel) should be arranged in advance with the local caretaker. Please confirm before traveling.",
     accessContacts: [

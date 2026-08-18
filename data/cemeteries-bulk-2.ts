@@ -25,6 +25,7 @@ export const bulkCemeteries2: Cemetery[] = [
       { name: "Rabbi Eliyahu ben Shlomo Zalman", yiddishName: "רבי אליהו בן שלמה זלמן", knownAs: "The Vilna Gaon · the Gra", seforim: "אדרת אליהו · ביאור הגר״א · שנות אליהו", yahrzeit: "י״ט תשרי · 5558 / 1797", note: "The Gaon of Vilna; reinterred in the ohel at the Sudervės cemetery after the old cemetery was destroyed." },
           { name: "Avraham ben Avraham", yiddishName: "אברהם בן אברהם", knownAs: "The Ger Tzedek of Vilna — Count Valentin Potocki", note: "Burned al kiddush Hashem in 1749. Moved together with the Gaon in 1950 when the old Šnipiškės cemetery was cleared, and memorialised in the same ohel." },
       { name: "Rabbi Avraham Danzig", yiddishName: "רבי אברהם דאנציג", knownAs: "The Chayei Adam", seforim: "חיי אדם · חכמת אדם", note: "1748–1820. Dayan in Vilna. Chayei Adam is the sefer a great many baalei batim learnt their halacha from." },
+      { name: "Rabbi Chaim Ozer Grodzenski", yiddishName: "רבי חיים עוזר גרודזענסקי", knownAs: "Reb Chaim Ozer", seforim: "אחיעזר", yahrzeit: "5700 / 1940", note: "The rov of Vilna and the address for the questions of a generation, until his petirah in 1940. His kever, and those of his rebbetzin, his daughter and his brother, were moved to this cemetery when the old ground was cleared — the same move that brought the Gaon here." },
     ],
     sourceUrl: "https://www.jewish-heritage-lithuania.org/cemetery/the-mausoleum-of-vilna-gaon-and-his-family/",
   },

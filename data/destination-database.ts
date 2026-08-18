@@ -158,6 +158,10 @@ const SAME_TOWN_OTHER_NAME: Record<string, string> = {
   // listing is filed under the burial ground, which is where somebody has to
   // drive; the directory entry is the town people search for.
   stropkov: "tisinec-stropkov",
+  // Sadhora — Sadigura — is a district of Chernivtsi today, not a town of its
+  // own. The Ruzhiner's ohel is there, and the listing is filed under the
+  // district while the directory entry is the city that absorbed it.
+  chernivtsi: "sadhora-ruzhiner",
 };
 
 const cemeteriesForTown = (slug: string) => {

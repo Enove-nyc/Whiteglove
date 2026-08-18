@@ -135,11 +135,15 @@ export const bulkCemeteries6: Cemetery[] = [
     address: "Jewish cemetery, Sighetu Marmației, Maramureș County, Romania — confirm exact location locally",
     airportRef: "47.929, 23.886",
     arrivalNotes: [
-      "Resting place of Rabbi Yekusiel Yehuda Teitelbaum, the Yetev Lev, av beis din of Sighet and grandfather of the Satmar Rav.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "THREE GENERATIONS LIE IN ONE OHEL HERE, not one kever. It was built over the Yetev Lev immediately after his petirah, and his son and grandson were buried in it after him.",
+      "This is the Satmar Rov's own family ground: the Kedushas Yom Tov was his father and the Yetev Lev his grandfather. Reb Yoel himself is not here — he lies in Kiryas Joel.",
+      "The ohel was restored after its roof was damaged by fire, when candles lit at the kever caught the kvittlach pushed into the cracks. Do not add to that.",
+      "Confirm the cemetery and exact ohel location locally.",
     ],
     burials: [
       { name: "Rabbi Yekusiel Yehuda Teitelbaum", yiddishName: "רבי יקותיאל יהודה טייטלבוים", knownAs: "The Yetev Lev of Sighet", seforim: "ייטב לב · ייטב פנים", yahrzeit: "ו׳ אלול · 5643 / 1883", note: "Founder of the Sighet chassidus; a grandson of the Yismach Moshe and grandfather of the Satmar Rav." },
+      { name: "Rabbi Chananya Yom Tov Lipa Teitelbaum", yiddishName: "רבי חנניה יום טוב ליפא טייטלבוים", knownAs: "The Kedushas Yom Tov", seforim: "קדושת יום טוב", yahrzeit: "5664 / 1904", note: "1836–1904. Son of the Yetev Lev, rebbe of Sighet after him, and father of the Satmar Rov. He is buried in his father's ohel, with his rebbetzin Chana." },
+      { name: "Rabbi Chaim Tzvi Teitelbaum", yiddishName: "רבי חיים צבי טייטלבוים", knownAs: "The Atzei Chaim of Sighet", seforim: "עצי חיים", note: "Son of the Kedushas Yom Tov and rebbe of Sighet after him, buried in the same ohel — the third generation in it." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Yekusiel_Yehuda_Teitelbaum_(I)",
   },
