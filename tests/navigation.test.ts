@@ -149,21 +149,22 @@ describe("the header renders the list rather than its own copy", () => {
     assert.match(menu, /aria-label="Account"/);
   });
 
-  it("a press opens the menu; hover and focus never do", () => {
-    // THE RULE THAT REPLACED "opens on hover, click and focus". Opening on
-    // hover meant the click that followed the hover read the menu as already
-    // open and shut it again, so the buttons looked dead — reported from the
-    // live site as all four dropdowns failing to open. Hover now only slides
-    // between menus once one is open, and nothing opens the first one but a
-    // press.
-    assert.match(NAVBAR, /onMouseEnter=\{\(\) => switchOnHover\(key\)\}/);
+  it("hover opens the menu, and the click that follows cannot close it", () => {
+    // Hover-open is back at the owner's request. It broke the buttons once —
+    // hover opened, then the click read the menu as open and shut it, so the
+    // panel flickered and looked dead. It is safe now because hover sets only
+    // `open` and click toggles on `pressed`: after hover opens a menu, pressed
+    // is still null, so the first click commits the press and leaves it open.
+    assert.match(NAVBAR, /onMouseEnter=\{\(\) => openOnHover\(key\)\}/);
     assert.match(NAVBAR, /onClick=\{\(\) => toggleOnClick\(key\)\}/);
-    // Hover only moves an already-open menu; it never opens the first one.
-    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // Hover opens (or slides to) a menu and never touches `pressed`.
+    assert.match(NAVBAR, /function openOnHover/);
+    assert.match(NAVBAR, /current\.open === key \? current : \{ \.\.\.current, open: key \}/);
     // Every decision is made from live state through the functional updater —
-    // that staleness is what let hover and click disagree.
+    // that staleness is what let hover and click disagree in the first place.
     assert.match(NAVBAR, /setMenu\(\(current\) =>/);
-    // Neither opening on focus nor the pointer-down bookkeeping it needed.
+    // Focus still does not open, and none of the old pointer-down bookkeeping
+    // came back with hover.
     assert.doesNotMatch(NAVBAR, /onFocus=\{\(\) => openOnFocus/);
     assert.doesNotMatch(NAVBAR, /openBeforePress/);
     // Focus leaving a category closes its panel.
@@ -178,8 +179,8 @@ describe("the header renders the list rather than its own copy", () => {
     // press opened; hover moves `open` and never touches it.
     assert.match(NAVBAR, /open: string \| null; pressed: string \| null/);
     assert.match(NAVBAR, /current\.pressed === key \? \{ open: null, pressed: null \} : \{ open: key, pressed: key \}/);
-    // Hover leaves `pressed` alone.
-    assert.match(NAVBAR, /current\.open === null \? current : \{ \.\.\.current, open: key \}/);
+    // Hover leaves `pressed` alone — it only ever writes `open`.
+    assert.match(NAVBAR, /current\.open === key \? current : \{ \.\.\.current, open: key \}/);
     // One piece of state, so the two halves cannot go stale against each other.
     assert.doesNotMatch(NAVBAR, /setOpenKey\(/);
   });
