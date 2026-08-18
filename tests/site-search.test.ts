@@ -378,6 +378,19 @@ describe("public tools and pages are findable", () => {
     assert.ok(flights.some((h) => h.href === "/book"));
   });
 
+  test("the word 'heritage' reaches the heritage landing page first", async () => {
+    // It did not. "heritage" set no heritage intent, so the /heritage page took
+    // the +3 demotion meant to keep heritage content below hotels for a CITY
+    // query, and lost its own name to a things-to-do anchor that merely
+    // mentions the word. The literal word is a heritage cue now.
+    const heritage = await searchEverything("heritage", 10);
+    assert.equal(heritage[0]?.href, "/heritage", "heritage should open the heritage page");
+    // The fix must not have reached across to the booking terms it sits near in
+    // the index — the case an earlier attempt at this broke.
+    const cars = await searchEverything("cars", 10);
+    assert.equal(cars[0]?.href, "/book", "cars still opens search booking partners");
+  });
+
   test("about, contact, rate, map, directory, zmanim and mikvaos are indexed", async () => {
     assert.ok((await searchEverything("about", 10)).some((h) => h.href === "/about"));
     assert.ok((await searchEverything("contact", 10)).some((h) => h.href === "/contact"));

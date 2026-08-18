@@ -6,7 +6,7 @@ import { isValidAccessToken } from "@/lib/secure-access";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Site status — White Glove Kosher Travel",
+  title: "Site status | White Glove Kosher Travel",
   robots: { index: false, follow: false },
 };
 
