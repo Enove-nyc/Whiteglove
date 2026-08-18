@@ -10,12 +10,14 @@ import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
+import SaveTripItemButton from "@/components/SaveTripItemButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
 import { Icon } from "@/components/icons/Icon";
+import { placeDirectionsUrl } from "@/data/route-utils";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
 import { getVacationDestination } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
@@ -435,7 +437,7 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
     <>
       <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {facts.attractions.map((attraction) => (
-          <li key={attraction.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+          <li key={attraction.slug} className="wg-card flex flex-col border border-[var(--gold-light)] bg-[var(--surface)] p-5">
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
               {attraction.kind} · {attraction.city}
             </p>
@@ -443,6 +445,76 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
               {attraction.name}
             </h3>
             <p className="mt-2 text-sm leading-6 text-stone-600">{attraction.summary}</p>
+
+            {/* THE CARD USED TO END HERE, at a name and a sentence.
+                Somebody reading about the Roman Forum on the Rome page had no
+                way to see where it is, open its own site, or put it on their
+                trip — the three things this site exists to do — and the only
+                way on was a link at the bottom of the section to browse
+                everything on /things-to-do and find it again there. The same
+                actions the directory card has always carried are here now. */}
+            {attraction.address ? (
+              <p className="mt-3 text-xs leading-5 text-stone-500">{attraction.address}</p>
+            ) : null}
+
+            {attraction.notes?.length ? (
+              <ul className="mt-3 space-y-1.5 text-xs leading-5 text-stone-600">
+                {attraction.notes.slice(0, 2).map((note, index) => (
+                  <li key={index} className="border-l-2 border-[var(--gold-light)] pl-2.5">
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+              {attraction.coordinates ? (
+                <a
+                  href={placeDirectionsUrl(attraction.address, attraction.coordinates)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 text-xs font-semibold text-[var(--navy)]"
+                >
+                  Navigate →
+                </a>
+              ) : null}
+              {attraction.website ? (
+                <a
+                  href={attraction.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 text-xs font-semibold text-[var(--navy)]"
+                >
+                  Hours &amp; tickets ↗
+                </a>
+              ) : null}
+              {attraction.internalHref ? (
+                <Link
+                  href={attraction.internalHref}
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] px-3 text-xs font-semibold text-[var(--navy)]"
+                >
+                  Full guide
+                </Link>
+              ) : null}
+            </div>
+
+            {/* Pushed to the bottom so the button sits on one line across a
+                row of cards of different heights. */}
+            <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--gold-light)] pt-3 text-sm">
+              <SaveTripItemButton
+                item={{
+                  id: `attraction-${attraction.slug}`,
+                  // A valley or a lake shore is a coordinate and nothing else,
+                  // so the town is the fallback rather than a blank line in
+                  // somebody's route.
+                  name: attraction.name,
+                  address: attraction.address || `${attraction.city}, ${attraction.country}`,
+                  coordinates: attraction.coordinates,
+                  href: `/things-to-do#${attraction.slug}`,
+                }}
+                label="Add to my route"
+              />
+            </div>
           </li>
         ))}
       </ul>

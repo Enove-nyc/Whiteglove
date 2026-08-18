@@ -42,6 +42,19 @@ import { vacationDestinationHref } from "@/lib/route-migration";
 // and the owner-augmented lists from lib/attractions-view.ts fit without a
 // cast, and so a test can hand in three objects.
 
+/**
+ * What a destination page is allowed to know about an attraction.
+ *
+ * IT WAS TOO NARROW, and the narrowing was invisible: `getAttractionList()`
+ * has always returned the whole record, so the address, the official site and
+ * the practical notes were arriving at the page and being dropped by the type
+ * alone. The Rome page could show a name and a sentence and nothing else —
+ * no way to see where a place is, open its own site for hours and tickets, or
+ * put it on a trip, which are the three things this site is for.
+ *
+ * `shabbos` went with the field itself; see the note at the top of
+ * data/attractions.ts.
+ */
 export type AttractionLike = {
   slug: string;
   name: string;
@@ -49,7 +62,14 @@ export type AttractionLike = {
   country: string;
   kind: string;
   summary: string;
-  shabbos?: string;
+  /** A street address where there is one. A valley has coordinates instead. */
+  address?: string;
+  /** The place's own site — where hours and tickets actually live. */
+  website?: string;
+  /** This site's own fuller page, when there is one. */
+  internalHref?: string;
+  /** Practical notes, kosher-travel first. */
+  notes?: string[];
   /**
    * "lat, lng" — a real, navigable position for a public landmark.
    *
