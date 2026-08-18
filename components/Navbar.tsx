@@ -271,7 +271,7 @@ export default function Navbar() {
                       role="menu"
                       onMouseEnter={stayOpen}
                       onMouseLeave={closeOnHoverOut}
-                      className={`absolute left-0 top-full z-[1] mt-1 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
+                      className={`absolute left-0 top-full z-20 mt-1 rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
                         category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"
                       }`}
                     >
@@ -367,7 +367,15 @@ export default function Navbar() {
         </div>
 
         {searchOpen && (
-          <div className="border-t border-[var(--gold-light)] bg-[#fcfaf6]">
+          // BELOW THE DROPDOWNS, SAID OUT LOUD. This bar renders after the nav
+          // row and paints its own solid background across the full width —
+          // exactly where an open menu hangs down. With neither given a
+          // position in the stack it came down to paint order, and the bar won:
+          // opening the search hid whichever menu was open behind it. The
+          // header is one stacking context, so two explicit numbers settle it
+          // for good rather than leaving it to the order things happen to be
+          // written in.
+          <div className="relative z-0 border-t border-[var(--gold-light)] bg-[#fcfaf6]">
             <div className="mx-auto flex max-w-7xl items-center gap-2 px-5 py-3 sm:px-8">
               <div className="min-w-0 flex-1">
                 <DestinationSearch compact autoFocus id="header-search" />
@@ -385,7 +393,7 @@ export default function Navbar() {
         )}
 
         {mobileOpen && (
-          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-[1] max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] lg:hidden">
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-20 max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_18px_40px_rgba(23,45,82,.15)] lg:hidden">
             <ul className="divide-y divide-[var(--gold-light)]/60 px-5 sm:px-8">
               {categories.map((category) => {
                 const key = category.label;
