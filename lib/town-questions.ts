@@ -16,7 +16,7 @@
 // panel above.
 
 import type { CityGuide } from "@/data/destinations-detailed";
-import type { Cemetery } from "@/data/cemeteries";
+import type { Burial, Cemetery } from "@/data/cemeteries";
 import type { NearbyAirport } from "@/components/DestinationActions";
 
 export type TownQuestion = { question: string; answer: string };
@@ -104,6 +104,85 @@ function sentence(parts: Array<string | null | undefined>): string {
 }
 
 /**
+ * The questions a DIRECTORY town can answer.
+ *
+ * The hundred and nine towns in the directory have no researched guide behind
+ * them — no named tzaddik, no yahrzeit, no overview — only a beis hachaim
+ * listing with the kevarim in it. That is still enough to answer the two
+ * questions people type most: where the kevarim are, and who is buried there.
+ *
+ * Deliberately not the same questions as a guided town. Asking "when is the
+ * yahrzeit of X" needs a tzaddik the page has singled out, and a directory
+ * town has not singled out anybody — several of these grounds hold four or
+ * five kevarim of equal standing.
+ */
+export function directoryTownQuestions(input: {
+  city: string;
+  country: string;
+  aliases?: string[];
+  cemeteries: Array<{ name: string; address?: string; burials: Burial[] }>;
+  airports: NearbyAirport[];
+}): TownQuestion[] {
+  const questions: TownQuestion[] = [];
+  const aliases = (input.aliases ?? []).filter((alias) => /^[\x20-\x7eÀ-ɏ]+$/.test(alias));
+  const withAddress = input.cemeteries.filter((cemetery) => cemetery.address);
+
+  if (withAddress.length) {
+    questions.push({
+      question:
+        withAddress.length === 1
+          ? `Where is the beis hachaim in ${input.city}?`
+          : `Where are the batei hachaim in ${input.city}?`,
+      answer: sentence([
+        withAddress.map((cemetery) => `${cemetery.name} — ${cemetery.address}`).join(". ") + ".",
+        aliases.length ? `${input.city} is also searched as ${aliases.join(", ")}.` : null,
+      ]),
+    });
+  }
+
+  const burials = input.cemeteries
+    .flatMap((cemetery) => cemetery.burials)
+    .filter((burial, index, all) => all.findIndex((other) => other.name === burial.name) === index);
+  if (burials.length) {
+    const names = [...new Set(burials.map((burial) => burial.name))];
+    questions.push({
+      question: `Who is buried in ${input.city}?`,
+      answer: `The listing for this beis hachaim records ${names.slice(0, 6).join(", ")}${names.length > 6 ? ` and ${names.length - 6} more` : ""}.`,
+    });
+  }
+
+  questions.push(...airportQuestion(input.city, input.airports));
+  return questions;
+}
+
+/**
+ * The closest-airport question, shared by both kinds of town page.
+ *
+ * ONLY WHEN THE DISTANCES ARE REAL. airportsFor() falls back to a country's
+ * main airports when a town has no coordinates, and those come back with no
+ * `km`. That fallback is right under a heading that says so; it is a false
+ * statement under the word "closest" — Kraków is not the nearest airport to
+ * Lelov because nothing measured it.
+ */
+function airportQuestion(city: string, airports: NearbyAirport[]): TownQuestion[] {
+  const measured = airports.filter((airport) => airport.km);
+  if (measured.length !== airports.length || measured.length === 0) return [];
+  const [closest] = measured;
+  return [
+    {
+      question: `Which airport is closest to ${city}?`,
+      answer: sentence([
+        `${closest.name} (${closest.code}), about ${closest.km} away in a straight line.`,
+        measured.length > 1
+          ? `The other airports within reach are ${measured.slice(1).map((airport) => `${airport.name} (${airport.code})`).join(" and ")}.`
+          : null,
+        "There is no direct flight to the town itself, so the last leg is by road whichever airport you use.",
+      ]),
+    },
+  ];
+}
+
+/**
  * The questions this town can answer truthfully, in the order they are asked.
  *
  * A question is included only when the field behind it exists. Nothing here
@@ -145,27 +224,7 @@ export function townQuestions(
     });
   }
 
-  // ONLY WHEN THE DISTANCES ARE REAL.
-  //
-  // airportsFor() falls back to the country's main airports when a town has no
-  // coordinates, and those come back with no `km`. That fallback is right for
-  // a panel headed "airports for Poland"; it is a false statement under the
-  // word "closest" — Kraków is not the nearest airport to Lelov because
-  // nothing measured it. So the question is asked only when something did.
-  const measured = airports.filter((airport) => airport.km);
-  if (measured.length === airports.length && measured.length > 0) {
-    const [closest] = measured;
-    questions.push({
-      question: `Which airport is closest to ${guide.city}?`,
-      answer: sentence([
-        `${closest.name} (${closest.code}), about ${closest.km} away in a straight line.`,
-        measured.length > 1
-          ? `The other airports within reach are ${measured.slice(1).map((airport) => `${airport.name} (${airport.code})`).join(" and ")}.`
-          : null,
-        "There is no direct flight to the town itself, so the last leg is by road whichever airport you use.",
-      ]),
-    });
-  }
+  questions.push(...airportQuestion(guide.city, airports));
 
   const alsoBuried = otherBurials(guide, cemetery);
   if (alsoBuried.length) {

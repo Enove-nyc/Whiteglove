@@ -9,6 +9,7 @@ import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import { getCemetery } from "@/data/cemeteries";
 import SectionHeading from "@/components/SectionHeading";
+import { GettingThere, NearbyKevarim, TownQuestions, WhoIsBuried } from "@/components/TownSections";
 import PhotoGallery from "@/components/PhotoGallery";
 import PracticalInformation from "@/components/PracticalInformation";
 import { cityGuides, getCityGuide } from "@/data/destinations-detailed";
@@ -239,66 +240,13 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
         </div>
       </section>
 
-      {airports.length > 0 && (
-        <section id="getting-there" className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
-          <div className="mx-auto max-w-7xl">
-            {/* Two different claims, because two different things are known.
-                With coordinates these ARE the nearest airports and the
-                distance is measured; without them the list is the country's
-                main airports and calling any of them closest would be a guess
-                dressed as a fact. See airportsFor() in lib/destination-actions. */}
-            <SectionHeading
-              eyebrow="Getting there"
-              title={measuredAirports ? "The nearest airports, and the drive at the end of each." : `Airports for ${guide.country}.`}
-              description={
-                measuredAirports
-                  ? "Distances are straight-line, so the road is always longer. There is no flight to the town itself — however you arrive, the last leg is by car or driver."
-                  : `The main airports of ${guide.country}. There is no flight to the town itself — however you arrive, the last leg is by car or driver.`
-              }
-            />
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {airports.map((airport) => (
-                <article key={airport.code} className="flex flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-7">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">{airport.code}</p>
-                  <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{airport.name}</h3>
-                  {airport.km && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{airport.km} away, straight line</p>}
-                  <div className="mt-auto pt-6">
-                    <a href={airport.directionsUrl} target="_blank" rel="noreferrer" className="block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold-ink)]">Driving route from {airport.code} →</a>
-                    <Link href={`/book?type=flights&to=${airport.code}`} className="mt-3 block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 transition hover:text-[var(--gold-ink)]">Search flights to {airport.code} →</Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-wrap gap-6">
-              <Link href="/book?type=cars" className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Search car hire →</Link>
-              <Link href={`/book?type=hotels&destination=${stayDestination}`} className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Search places to stay →</Link>
-            </div>
-            <p className="mt-6 text-sm leading-7 text-stone-500">Searches open with a booking partner, who takes the booking and the payment. Nothing is booked on this site.</p>
-          </div>
-        </section>
-      )}
+      <GettingThere airports={airports} country={guide.country} measured={measuredAirports} stayDestination={stayDestination} />
 
-      {alsoBuried.length > 0 && (
-        <section id="buried-here" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-          <SectionHeading
-            eyebrow="At the kever"
-            title="Who else is buried here."
-            description="Everybody a source places in this ground, beside the tzaddik the town is known for."
-          />
-          <div className="mt-12 grid gap-x-10 gap-y-6 md:grid-cols-2">
-            {alsoBuried.map((burial) => (
-              <article key={burial.name} className="border-t border-[var(--gold-light)] pt-5">
-                <p dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{burial.yiddishName}</p>
-                <p className="mt-1 font-semibold text-[var(--navy)]">{burial.name}</p>
-                {burial.knownAs && <p className="mt-1 text-sm text-stone-500">{burial.knownAs}</p>}
-                {burial.seforim && <p dir="rtl" lang="yi" className="mt-2 text-sm text-stone-600">{burial.seforim}</p>}
-                {burial.yahrzeit && <p dir="rtl" lang="yi" className="mt-1 text-sm text-stone-600">{burial.yahrzeit}</p>}
-                {burial.note && <p className="mt-2 text-sm leading-6 text-stone-600">{burial.note}</p>}
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      <WhoIsBuried
+        burials={alsoBuried}
+        title="Who else is buried here."
+        description="Everybody a source places in this ground, beside the tzaddik the town is known for."
+      />
 
       <section id="practical" className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
@@ -309,24 +257,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
         </div>
       </section>
 
-      {nearby.length > 0 && (
-        <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-          <SectionHeading
-            eyebrow="Nearby"
-            title="What else is within reach."
-            description="Few people travel this far for one kever. Distances are straight-line from this one, so allow more for the road."
-          />
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {nearby.map((place) => (
-              <Link key={place.slug} href={`/cemeteries/${place.slug}`} className="block border border-[var(--gold-light)] bg-[#fcfaf6] p-7 transition hover:border-[var(--gold)]">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">{place.km} km · {place.country}</p>
-                <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{place.name}</h3>
-              </Link>
-            ))}
-          </div>
-          <Link href="/stops" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Browse every kever on the site →</Link>
-        </section>
-      )}
+      <NearbyKevarim nearby={nearby} />
 
       {usefulLinks.length > 0 && (
         <section className="border-t border-[var(--gold-light)] px-5 py-20 sm:px-8">
@@ -357,21 +288,7 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
         </section>
       )}
 
-      {questions.length > 0 && (
-        <section className="border-t border-[var(--gold-light)] px-5 py-20 sm:px-8">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading eyebrow="Questions" title="What people ask before they go." />
-            <div className="mt-12 max-w-4xl divide-y divide-[var(--gold-light)]">
-              {questions.map((entry) => (
-                <div key={entry.question} className="py-7 first:pt-0">
-                  <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{entry.question}</h3>
-                  <p className="mt-3 leading-8 text-stone-600">{entry.answer}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <TownQuestions questions={questions} />
       <Footer />
     </main>
   );

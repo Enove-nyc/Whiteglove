@@ -8,12 +8,16 @@ import { airportsFor } from "@/lib/destination-actions";
 import PhotoGallery from "@/components/PhotoGallery";
 import PracticalInformation from "@/components/PracticalInformation";
 import { bulkDestinations, getBulkDestination } from "@/data/destinations-bulk";
+import { getCemetery } from "@/data/cemeteries";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { getDestinationRecord } from "@/data/destination-database";
 import { getPublishedDestinationContent } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
+import { GettingThere, NearbyKevarim, TownQuestions, WhoIsBuried } from "@/components/TownSections";
+import { nearbyKevarim } from "@/lib/nearby-kevarim";
+import { directoryTownQuestions } from "@/lib/town-questions";
 import { pageMetadata } from "@/lib/seo";
-import { breadcrumbs, touristAttraction } from "@/lib/structured-data";
+import { breadcrumbs, faqPage, touristAttraction } from "@/lib/structured-data";
 
 export function generateStaticParams() {
   return bulkDestinations.map(({ slug }) => ({ place: slug }));
@@ -62,6 +66,52 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
   const record = getDestinationRecord(destination.slug);
   const dbContent = await getPublishedDestinationContent(destination.slug);
 
+  // THE SAME SECTIONS THE RESEARCHED TOWNS GET, from this town's own listing.
+  //
+  // These hundred and nine pages showed a cemetery card and stopped —
+  // the name of the beis hachaim, its address, and the first of its arrival
+  // notes. They did not say WHO IS BURIED THERE, though the listing behind the
+  // page holds every name, the seforim and the yahrzeiten. Somebody searching
+  // for a kever in Przysucha reached a page that would not tell them whose it
+  // was.
+  //
+  // Nothing below is written per town and nothing is invented: it is the
+  // listing this page already had, rendered. A town whose listing is empty
+  // gets none of it, which is why this can be switched on for all of them at
+  // once rather than town by town.
+  const cemeteries = record?.cemeteries ?? [];
+  // Where to measure from.
+  //
+  // The grave coordinate when the listing has one, otherwise its `airportRef`
+  // — a town-level pin that data/cemeteries.ts states is explicitly NOT a
+  // grave location and must never be navigated to. Ranking airports and
+  // measuring what else is within reach is exactly what it is for, and most of
+  // these listings carry it where they carry no grave pin: without it only
+  // five of the hundred and nine towns could name their nearest airport.
+  // Navigation is untouched — each cemetery card below still uses its own
+  // address.
+  const rankingPoint = cemeteries
+    .map((cemetery) => {
+      const listing = getCemetery(cemetery.id);
+      return cemetery.coordinates ?? listing?.coordinates ?? listing?.airportRef;
+    })
+    .find(Boolean);
+  const airports = airportsFor(destination.country, `${destination.city}, ${destination.country}`, rankingPoint);
+  const measuredAirports = airports.length > 0 && airports.every((airport) => airport.km);
+  // Every kever in this town, across all its batei hachaim, named once.
+  const burials = cemeteries
+    .flatMap((cemetery) => cemetery.burials)
+    .filter((burial, index, all) => all.findIndex((other) => other.name === burial.name) === index);
+  const nearby = cemeteries.length ? nearbyKevarim(cemeteries[0].id, { from: rankingPoint }) : [];
+  const questions = directoryTownQuestions({
+    city: destination.city,
+    country: destination.country,
+    aliases: destination.aliases,
+    cemeteries: cemeteries.map((cemetery) => ({ name: cemetery.name, address: cemetery.address, burials: cemetery.burials })),
+    airports,
+  });
+  const stayDestination = encodeURIComponent(`${destination.city}, ${destination.country}`);
+
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <StructuredData
@@ -74,6 +124,7 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
             country: destination.country,
             alternateNames: [destination.yiddishCity, ...(destination.aliases ?? [])],
           }),
+          ...(questions.length ? [faqPage(questions)] : []),
           breadcrumbs([
             { name: "Home", path: "/" },
             { name: "Destinations", path: "/destinations" },
@@ -129,6 +180,15 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
         <PhotoGallery photos={dbContent?.photos ?? []} />
         {record && <PracticalInformation record={record} places={dbContent?.places ?? []} />}
       </section>
+
+      <WhoIsBuried
+        burials={burials}
+        title="Who is buried here."
+        description="Every kever this town's batei hachaim listings record, with the seforim and yahrzeiten where they are known."
+      />
+      <GettingThere airports={airports} country={destination.country} measured={measuredAirports} stayDestination={stayDestination} />
+      <NearbyKevarim nearby={nearby} />
+      <TownQuestions questions={questions} />
 
       <Footer />
     </main>
