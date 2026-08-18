@@ -3622,6 +3622,168 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Cathedral_of_Saints_Peter_and_Paul,_Brno",
   },
+  {
+    slug: "budapest-buda-castle",
+    name: "Buda Castle",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Museum",
+    summary:
+      "The royal palace on the hill over the Danube, a UNESCO site, holding the Hungarian National Gallery and the city history museum.",
+    address: "Szent György tér 2, 1014 Budapest",
+    coordinates: "47.4962, 19.0397",
+    website: "https://www.budacastlebudapest.com/",
+    notes: [
+      "The courtyards, the ramparts and the river views are free; the galleries inside are ticketed.",
+      "The castle quarter around it, with Matthias Church and the Fisherman's Bastion, is one walk.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Buda_Castle",
+  },
+  {
+    slug: "budapest-matthias-church",
+    name: "Matthias Church",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Landmark",
+    summary:
+      "The tiled-roof Gothic church in the castle quarter where Hungarian kings were crowned, beside the Fisherman's Bastion.",
+    address: "Szentháromság tér 2, 1014 Budapest",
+    coordinates: "47.5019, 19.0344",
+    notes: [
+      "A working church, ticketed for visitors; its coloured Zsolnay-tiled roof is the mark of the hill.",
+      "The Fisherman's Bastion, already on this site, wraps around it and gives the view over the river.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Matthias_Church",
+  },
+  {
+    slug: "budapest-chain-bridge",
+    name: "The Chain Bridge",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Landmark",
+    summary:
+      "The first permanent bridge over the Danube in Budapest, opened in 1849 — the stone lions at each end, and the link between Buda and Pest.",
+    address: "Széchenyi Lánchíd, 1051 Budapest",
+    coordinates: "47.4986, 19.0439",
+    notes: [
+      "Free, walked and crossed; the view of the Parliament and the castle from the middle is the reason.",
+      "A funicular climbs to the castle from the Buda end.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Sz%C3%A9chenyi_Chain_Bridge",
+  },
+  {
+    slug: "budapest-heroes-square",
+    name: "Heroes' Square and the City Park",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Landmark",
+    summary:
+      "The monumental square of the Magyar chieftains at the head of Andrássy Avenue, opening into the City Park with the fairytale Vajdahunyad Castle.",
+    address: "Hősök tere, 1146 Budapest",
+    coordinates: "47.5150, 19.0777",
+    notes: [
+      "The square and the park are free; Vajdahunyad Castle's courtyards are open, and it holds an agriculture museum.",
+      "The park has a boating lake in summer that becomes an ice rink in winter.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Heroes%27_Square,_Budapest",
+  },
+  {
+    slug: "budapest-gellert-hill",
+    name: "Gellért Hill and the Citadella",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Viewpoint",
+    summary:
+      "The rock hill over the Danube, topped by the Liberty Statue and the old Habsburg citadel — the best single view over the whole of Budapest.",
+    address: "Citadella sétány, 1118 Budapest",
+    coordinates: "47.4869, 19.0464",
+    notes: [
+      "Free; a climb on foot through the paths, and the panorama from the top takes in both banks.",
+      "The statue and the fortress are floodlit at night.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Gell%C3%A9rt_Hill",
+  },
+  {
+    slug: "budapest-great-market-hall",
+    name: "The Great Market Hall",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Landmark",
+    summary:
+      "Budapest's largest indoor market, an 1897 iron-and-glass hall with a Zsolnay-tiled roof, at the Pest end of the Liberty Bridge.",
+    address: "Vámház körút 1-3, 1093 Budapest",
+    coordinates: "47.4867, 19.0592",
+    notes: [
+      "Free to walk through; a market to see rather than a kosher food stop, and closed on Sundays.",
+      "At the end of the Váci utca shopping street.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Great_Market_Hall_(Budapest)",
+  },
+  {
+    slug: "budapest-house-of-terror",
+    name: "House of Terror",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Museum",
+    summary:
+      "The museum in the former headquarters of the Arrow Cross and then the communist secret police, on Andrássy Avenue — a memorial to the victims of both.",
+    address: "Andrássy út 60, 1062 Budapest",
+    coordinates: "47.5069, 19.0650",
+    website: "https://www.terrorhaza.hu/en",
+    notes: [
+      "Ticketed; the cells in the basement, where prisoners were held and tortured, are part of the visit.",
+      "The Arrow Cross ran the terror against Budapest's Jews from this building in 1944.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/House_of_Terror",
+  },
+  {
+    slug: "debrecen-great-reformed-church",
+    name: "The Great Reformed Church",
+    city: "Debrecen",
+    country: "Hungary",
+    kind: "Landmark",
+    summary:
+      "The largest Protestant church in Hungary, a neoclassical building of 1824 on the main square — the symbol of Debrecen, the 'Calvinist Rome'.",
+    address: "Piac utca 4-6, 4026 Debrecen",
+    coordinates: "47.5316, 21.6256",
+    notes: [
+      "A working church; the nave and the tower climb are ticketed.",
+      "On Kossuth Square at the head of the old main street.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Reformed_Great_Church_of_Debrecen",
+  },
+  {
+    slug: "debrecen-pasti-synagogue",
+    name: "Pásti Street Orthodox Synagogue",
+    city: "Debrecen",
+    country: "Hungary",
+    kind: "Jewish heritage",
+    summary:
+      "The active Orthodox shul of Debrecen, built in 1894, restored with a visitor centre on the community's history and a Holocaust memorial in its yard.",
+    address: "Pásti utca 4, 4026 Debrecen",
+    coordinates: "47.5310, 21.6300",
+    notes: [
+      "A working kehilla; the visitor centre and the shul are open to see, and the memorial wall in the yard carries the names of 6,000 local Jews murdered in the Shoah.",
+      "A few minutes from the main square.",
+    ],
+    sourceUrl: "https://www.dzsh.hu/content/hu/a_pasti_utcai_orthodox_zsinagoga",
+  },
+  {
+    slug: "debrecen-nagyerdo",
+    name: "Nagyerdő — the Great Forest Park",
+    city: "Debrecen",
+    country: "Hungary",
+    kind: "Nature",
+    summary:
+      "The old oak forest turned city park north of the centre — lakes, paths and the zoo, reached by the tram down the main avenue.",
+    address: "Nagyerdei park, 4032 Debrecen",
+    coordinates: "47.5556, 21.6236",
+    notes: [
+      "Free and open; the boating lake and the zoo make it the afternoon with children.",
+      "The tram from the main square runs straight up to it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Nagyerd%C5%91",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
