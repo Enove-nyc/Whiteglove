@@ -5,6 +5,7 @@ import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type M
 import Navbar from "@/components/Navbar";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
+import { heritageCemeteries } from "@/data/heritage-cemeteries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
 import { listPublishedShuls } from "@/lib/shuls";
 import { pointFrom } from "@/lib/map-markers";
@@ -25,13 +26,25 @@ export default async function MapPage() {
   const [attractionList, stayList, shulList] = await Promise.all([getAttractionList(), getStayList(), listPublishedShuls()]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
-  const kevarim: MapKever[] = plottableCemeteries.map((c) => ({
-    slug: c.slug,
-    name: c.name,
-    city: c.city,
-    country: c.country,
-    coordinates: c.coordinates as string,
-  }));
+  const kevarim: MapKever[] = [
+    ...plottableCemeteries.map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      city: c.city,
+      country: c.country,
+      coordinates: c.coordinates as string,
+    })),
+    // The Nesiya Tova locator set — batei hachaim with a coordinate but no rich
+    // page of their own, so the marker links out to Nesiya Tova for details.
+    ...heritageCemeteries.map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      city: c.city,
+      country: c.country,
+      coordinates: c.coordinates,
+      href: c.sourceUrl,
+    })),
+  ];
 
   const attractions: MapAttraction[] = attractionList
     .filter((a) => pointFrom(a.coordinates))
