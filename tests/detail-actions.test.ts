@@ -73,3 +73,39 @@ describe("Suggest edit — the pencil, everywhere, contextual", () => {
     }
   });
 });
+
+describe("adding a stop reads the trip from the account, never from the browser", () => {
+  /**
+   * This was a quiet way to lose a trip. Both action components built the new
+   * itinerary from a localStorage copy and POSTed the result to the account.
+   * That was correct while the planner kept a browser copy in step; it stopped
+   * being correct when the planner moved to the account alone. Nothing threw —
+   * the browser copy simply went stale, so one click on the suitcase could put
+   * an old itinerary, often an empty one, over a trip somebody had built.
+   *
+   * The rule now: read the account, append, write back. If the read fails,
+   * write nothing.
+   */
+  const ADD = readFileSync("components/AddToItineraryButton.tsx", "utf8");
+
+  it("no component builds an itinerary out of browser storage", () => {
+    for (const [name, source] of [["DetailActionRow", ROW], ["DestinationActions", ACTIONS], ["AddToItineraryButton", ADD]] as const) {
+      assert.doesNotMatch(source, /whiteGloveItinerary/, `${name} still reads the old browser key`);
+    }
+  });
+
+  it("reads /api/account/itinerary before it writes to it", () => {
+    for (const [name, source] of [["DetailActionRow", ROW], ["DestinationActions", ACTIONS], ["AddToItineraryButton", ADD]] as const) {
+      const read = source.indexOf('fetch("/api/account/itinerary")');
+      const write = source.indexOf('fetch("/api/account/itinerary", {');
+      assert.ok(read !== -1, `${name} never reads the trip`);
+      assert.ok(write !== -1, `${name} never saves the trip`);
+      assert.ok(read < write, `${name} writes before it has read`);
+    }
+  });
+
+  it("the attraction cards on a destination page carry the button", () => {
+    const page = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
+    assert.match(page, /<AddToItineraryButton[\s>]/);
+  });
+});

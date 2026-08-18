@@ -28,7 +28,6 @@ import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itiner
 
 const ROUTE_KEY = "whiteGloveMyRoute";
 const FAVORITES_KEY = "whiteGloveFavorites";
-const ITINERARY_KEY = "whiteGloveItinerary";
 
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
@@ -86,37 +85,42 @@ export default function DetailActionRow({
     syncPlaces("favorites");
   };
 
-  const addToItinerary = () => {
-    let itin: Itinerary = emptyItinerary();
+  const addToItinerary = async () => {
+    // READ THE TRIP FROM THE ACCOUNT, NOT FROM THE BROWSER. This built the new
+    // itinerary from localStorage and posted the result to the account. That
+    // was right while the planner also kept a browser copy; it stopped being
+    // right when the planner moved to the account alone, and nothing failed
+    // loudly — the browser copy simply went stale, so adding one stop posted an
+    // old itinerary, often an empty one, over the trip somebody had built.
+    //
+    // If the account cannot be read, nothing is written. Writing over a trip we
+    // could not see is the failure this is here to prevent.
     try {
-      const saved = localStorage.getItem(ITINERARY_KEY);
-      if (saved) itin = { ...emptyItinerary(), ...JSON.parse(saved) };
+      const read = await fetch("/api/account/itinerary");
+      if (!read.ok) return;
+      const data = (await read.json()) as { itinerary?: Itinerary | null };
+      const itin: Itinerary = { ...emptyItinerary(), ...(data.itinerary ?? {}) };
+      const activity: ItinActivity = {
+        id: uid(),
+        name: place.name,
+        yiddishName: place.yiddishName,
+        address: place.address,
+        coordinates: place.coordinates,
+        // Empty means unscheduled: the planner places it. Guessing a date here
+        // would put a stop on a day nobody chose.
+        date: "",
+        bookedOnSite: false,
+      };
+      const next: Itinerary = { ...itin, activities: [...(itin.activities ?? []), activity] };
+      const saved = await fetch("/api/account/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itinerary: next }),
+      });
+      if (saved.ok) setOnTrip(true);
     } catch {
-      /* start fresh */
+      /* Left as it was: a stop not added is better than a trip overwritten. */
     }
-    const activity: ItinActivity = {
-      id: uid(),
-      name: place.name,
-      yiddishName: place.yiddishName,
-      address: place.address,
-      coordinates: place.coordinates,
-      // Empty means unscheduled: the planner places it. Guessing a date here
-      // would put a stop on a day nobody chose.
-      date: "",
-      bookedOnSite: false,
-    };
-    const next: Itinerary = { ...itin, activities: [...(itin.activities ?? []), activity] };
-    try {
-      localStorage.setItem(ITINERARY_KEY, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-    void fetch("/api/account/itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itinerary: next }),
-    }).catch(() => undefined);
-    setOnTrip(true);
   };
 
   const share = async () => {

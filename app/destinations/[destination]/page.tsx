@@ -10,6 +10,7 @@ import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
@@ -513,6 +514,17 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
                   href: `/things-to-do#${attraction.slug}`,
                 }}
                 label="Add to my route"
+              />
+              {/* The route is the driving order; the itinerary is the trip.
+                  Somebody reading about the Forum wants one or the other and
+                  the card offered only the first. */}
+              <AddToItineraryButton
+                place={{
+                  id: `attraction-${attraction.slug}`,
+                  name: attraction.name,
+                  address: attraction.address || `${attraction.city}, ${attraction.country}`,
+                  coordinates: attraction.coordinates,
+                }}
               />
             </div>
           </li>
