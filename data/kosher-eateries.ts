@@ -682,6 +682,285 @@ export const kosherEateries: KosherEatery[] = [
     ],
     sourceUrl: "https://www.kosherorlando.org/kosher-food-2/",
   },
+
+  // ---- Worldwide community quarters -----------------------------------
+  // Listed as quarters, not single businesses, for the reason the Marais and
+  // Antwerp entries above are: the shops change hands, the street does not. The
+  // hechsher is left unverified because a quarter has many supervisions at once
+  // and no single one covers it — the teudah in each window is the live answer.
+  {
+    slug: "jerusalem-geula-eating",
+    name: "Geula and Mea Shearim — eating in Jerusalem",
+    city: "Jerusalem",
+    country: "Israel",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The old chareidi shopping streets north of the centre — bakeries, takeaways, groceries and restaurants, the length of Malchei Yisrael and around.",
+    address: "Malchei Yisrael and Geula, Jerusalem",
+    coordinates: "31.7896, 35.2197",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — badatz supervisions differ shop by shop and are displayed in the window",
+    },
+    notes: [
+      "The question here is never whether something is kosher but under which badatz, and the teudah is in every window.",
+      "Everything shuts early on Erev Shabbos and the streets empty. Do not plan a late Friday afternoon here.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Geula",
+  },
+  {
+    slug: "borough-park-eating",
+    name: "Borough Park — eating in Brooklyn",
+    city: "New York",
+    country: "United States",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "One of the densest kosher shopping districts anywhere, along 13th Avenue and the streets around it in Brooklyn.",
+    address: "13th Avenue, Borough Park, Brooklyn, NY",
+    coordinates: "40.6335, -73.9950",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — supervisions differ shop by shop and the teudah is in the window",
+    },
+    notes: [
+      "Bakeries, groceries, butchers and takeaways for blocks. A car is a burden here — the district is walkable and parking is not.",
+      "Flatbush and Williamsburg are the other two great kosher districts of Brooklyn, each with its own supervisions.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Borough_Park,_Brooklyn",
+  },
+  {
+    slug: "pico-robertson-eating",
+    name: "Pico-Robertson — eating in Los Angeles",
+    city: "Los Angeles",
+    country: "United States",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The kosher heart of Los Angeles, restaurants and bakeries along Pico Boulevard and Robertson in the city's Jewish quarter.",
+    address: "Pico Boulevard and Robertson, Los Angeles, CA",
+    coordinates: "34.0546, -118.3855",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — supervisions differ shop by shop and the teudah is in the window",
+    },
+    notes: [
+      "The widest choice of kosher restaurants on the West Coast, from delis to fine dining, in a few walkable blocks.",
+      "Los Angeles is spread out; this quarter is where a frum visitor without a car can base themselves.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Pico-Robertson",
+  },
+  {
+    slug: "toronto-bathurst-eating",
+    name: "The Bathurst corridor — eating in Toronto",
+    city: "Toronto",
+    country: "Canada",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Toronto's kosher food runs up Bathurst Street through North York to Thornhill — bakeries, groceries and restaurants the length of it.",
+    address: "Bathurst Street, North York, Toronto",
+    coordinates: "43.7350, -79.4290",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — most are under COR (Kashruth Council of Canada); the teudah is in the window",
+    },
+    notes: [
+      "The community stretches north along Bathurst; the food follows it, thickening toward Thornhill at the top.",
+      "COR, the Kashruth Council of Canada, certifies much of it — but confirm each place rather than assuming.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/History_of_the_Jews_in_Toronto",
+  },
+  {
+    slug: "montreal-snowdon-eating",
+    name: "Côte-des-Neiges and Snowdon — eating in Montreal",
+    city: "Montreal",
+    country: "Canada",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Montreal's kosher shopping, through Snowdon and Côte-des-Neiges and out to Hampstead and Côte-Saint-Luc.",
+    address: "Snowdon / Côte-des-Neiges, Montreal, QC",
+    coordinates: "45.4890, -73.6320",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under the MK (Council of Orthodox Rabbis of Montreal); the teudah is in the window",
+    },
+    notes: [
+      "One of the oldest and most established kosher communities in North America, with deep everyday provision.",
+      "The MK certifies much of the city's kosher food; confirm each place before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/History_of_the_Jews_in_Montreal",
+  },
+  {
+    slug: "buenos-aires-once-eating",
+    name: "Once — eating in Buenos Aires",
+    city: "Buenos Aires",
+    country: "Argentina",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The kosher heart of one of the world's largest Jewish communities, in the Once quarter around Calle Tucumán.",
+    address: "Once (Balvanera), Buenos Aires",
+    coordinates: "-34.6093, -58.4053",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — supervisions differ shop by shop and the teudah is in the window",
+    },
+    notes: [
+      "Restaurants, bakeries and groceries through the streets of Once; the smarter Belgrano neighbourhood to the north has more as well.",
+      "Buenos Aires keeps a full kosher provision — meat, dairy and parve — rare on this scale outside Israel and New York.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/History_of_the_Jews_in_Argentina",
+  },
+  {
+    slug: "sydney-bondi-eating",
+    name: "Bondi and the eastern suburbs — eating in Sydney",
+    city: "Sydney",
+    country: "Australia",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Sydney's kosher food gathers in the eastern suburbs around Bondi — bakeries, butchers and takeaways along Hall Street and beyond.",
+    address: "Bondi and the eastern suburbs, Sydney NSW",
+    coordinates: "-33.8900, 151.2650",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under the NSW Kashrut Authority; the teudah is in the window",
+    },
+    notes: [
+      "The community sits in the eastern suburbs, and the food with it — walkable from the beach and the shuls.",
+      "The Kashrut Authority (KA) certifies much of Sydney's kosher food; confirm each place before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Bondi,_New_South_Wales",
+  },
+  {
+    slug: "melbourne-caulfield-eating",
+    name: "Caulfield and Ripponlea — eating in Melbourne",
+    city: "Melbourne",
+    country: "Australia",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Melbourne's large frum community and its kosher food, around Caulfield, Ripponlea and Carlisle Street in Balaclava.",
+    address: "Caulfield / Ripponlea, Melbourne VIC",
+    coordinates: "-37.8770, 145.0230",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under Kosher Australia (Melbourne); the teudah is in the window",
+    },
+    notes: [
+      "The deepest kosher provision in the southern hemisphere, everyday rather than special-occasion.",
+      "Kosher Australia certifies much of it; confirm each place before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Caulfield,_Victoria",
+  },
+  {
+    slug: "cape-town-sea-point-eating",
+    name: "Sea Point — eating in Cape Town",
+    city: "Cape Town",
+    country: "South Africa",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Cape Town's kosher food along Regent Road and Main Road in Sea Point, below the community on the Atlantic seaboard.",
+    address: "Regent Road, Sea Point, Cape Town",
+    coordinates: "-33.9150, 18.3840",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under the Cape Beth Din; the teudah is in the window",
+    },
+    notes: [
+      "Restaurants, bakeries and a kosher supermarket, walkable along the seafront suburb.",
+      "The Cape Beth Din certifies much of the city's kosher food; confirm each place before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Sea_Point",
+  },
+  {
+    slug: "johannesburg-glenhazel-eating",
+    name: "Glenhazel — eating in Johannesburg",
+    city: "Johannesburg",
+    country: "South Africa",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "The kosher centre of Johannesburg's large frum community, through Glenhazel and the northern suburbs around it.",
+    address: "Glenhazel, Johannesburg",
+    coordinates: "-26.1300, 28.0950",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under the Johannesburg Beth Din (UOS); the teudah is in the window",
+    },
+    notes: [
+      "Full everyday provision — restaurants, bakeries, butchers and supermarkets — in a compact, walkable suburb.",
+      "The Beth Din (Union of Orthodox Synagogues) certifies much of it; confirm each place before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Glenhazel",
+  },
+  {
+    slug: "mexico-city-polanco-eating",
+    name: "Polanco and Tecamachalco — eating in Mexico City",
+    city: "Mexico City",
+    country: "Mexico",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Mexico City's kosher food, in the smart Polanco district and out toward the community in Tecamachalco.",
+    address: "Polanco / Tecamachalco, Mexico City",
+    coordinates: "19.4330, -99.1900",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — supervisions differ shop by shop and the teudah is in the window",
+    },
+    notes: [
+      "Mexico City holds a large, well-organised Jewish community with restaurants, bakeries and groceries.",
+      "Provision runs from Polanco out to Tecamachalco and Bosques; a car helps between them.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/History_of_the_Jews_in_Mexico",
+  },
+  {
+    slug: "amsterdam-buitenveldert-eating",
+    name: "Buitenveldert and Amstelveen — eating in Amsterdam",
+    city: "Amsterdam",
+    country: "Netherlands",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Amsterdam's kosher food, in the southern district of Buitenveldert and out toward Amstelveen where the community now lives.",
+    address: "Buitenveldert / Amstelveen, Amsterdam",
+    coordinates: "52.3300, 4.8700",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — much is under the NIK (Dutch Ashkenazi rabbinate); the teudah is in the window",
+    },
+    notes: [
+      "The historic Jewish quarter by the Portuguese Synagogue is a heritage site; the living community and its food moved south to Buitenveldert.",
+      "A kosher supermarket, a butcher and a bakery serve the district; confirm each before relying on it.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/History_of_the_Jews_in_Amsterdam",
+  },
+  {
+    slug: "zurich-wiedikon-eating",
+    name: "Wiedikon — eating in Zurich",
+    city: "Zurich",
+    country: "Switzerland",
+    kind: "Grocery",
+    diet: "Mixed premises",
+    summary:
+      "Zurich's kosher food in Wiedikon, the district around the shuls where the frum community lives.",
+    address: "Wiedikon, Zurich",
+    coordinates: "47.3670, 8.5170",
+    hechsher: {
+      state: "unverified",
+      note: "A quarter rather than one business — supervisions differ shop by shop and the teudah is in the window",
+    },
+    notes: [
+      "Restaurants, a bakery and a kosher supermarket, walkable around the Löwenstrasse and Erikastrasse shuls.",
+      "Zurich has Switzerland's largest kosher provision; Geneva and Basel have smaller communities of their own.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Wiedikon",
+  },
 ];
 
 /** Everything in one country, for the country filters. */
