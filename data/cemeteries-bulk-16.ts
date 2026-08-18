@@ -109,3 +109,134 @@ export const bulkCemeteries16: Cemetery[] = [
     sourceUrl: "https://footstepsofwonderrabbis.com/en/tourism/mad-and-its-region",
   },
 ];
+
+/**
+ * Batch 16b — four more directory towns.
+ *
+ * Slugs are prefixed with the directory town's own slug, so the existing
+ * matching rule in data/destination-database.ts links them with no hand-written
+ * pairing. That rule is `slug`, `slug-…` or `…-slug` and nothing looser, for
+ * the reason written above it.
+ *
+ * CIECHANÓW IS NOT A PILGRIMAGE PAGE and must not read like one. The ohel
+ * there was destroyed and the ground built over; a page implying somebody can
+ * daven at a standing ohel would send them to a meadow. What the page says is
+ * what is true.
+ */
+export const bulkCemeteries16b: Cemetery[] = [
+  {
+    slug: "kolin-old-cemetery",
+    city: "Kolín",
+    yiddishCity: "קאלין",
+    name: "Kolín — the old Jewish cemetery",
+    yiddishName: "קאלין — בית החיים הישן",
+    country: "Czech Republic",
+    address: "Old Jewish cemetery, Slunečná, 280 02 Kolín, Central Bohemia, Czech Republic",
+    airportRef: "50.028, 15.200",
+    arrivalNotes: [
+      "Enter from Slunečná. The old main gate on Kmochova is closed, and navigating to it is the way people arrive at a locked wall.",
+      "THE KEY IS HELD BY THE REGIONAL MUSEUM in Kolín, not at the cemetery. Arrange it before you travel rather than on the day.",
+      "More than 2,600 matzevos stand here and the oldest are dated to 1492 — after Prague, this is the most significant old beis hachaim in Bohemia. Finding one stone among them takes time.",
+    ],
+    burials: [
+      {
+        name: "Rabbi Bezalel ben Yehuda Loew",
+        yiddishName: "רבי בצלאל בן יהודה ליווא",
+        knownAs: "Son of the Maharal of Prague",
+        yahrzeit: "5359 / 1599",
+        note: "A son of Rabbi Yehuda Loew, the Maharal of Prague. His father is buried in the old cemetery in Prague; this is the son, in Kolín.",
+      },
+      {
+        name: "Rabbi Elazar Kalir",
+        yiddishName: "רבי אלעזר קליר",
+        knownAs: "Av beis din of Kolín",
+        seforim: "אור חדש",
+        note: "Rov of Kolín in the seventeen hundreds. Not the paytan Elazar HaKalir of the piyutim, who lived more than a thousand years earlier — the names are identical and the two are constantly confused.",
+      },
+    ],
+    sourceUrl: "https://english.radio.cz/old-jewish-cemetery-kolin-8700541",
+  },
+  {
+    slug: "boskovice-machatzis-hashekel",
+    city: "Boskovice",
+    yiddishCity: "באסקאוויץ",
+    name: "Boskovice — kever of the Machatzis HaShekel",
+    yiddishName: "באסקאוויץ — ציון בעל מחצית השקל",
+    country: "Czech Republic",
+    address: "Jewish cemetery, Boskovice, Blansko District, South Moravia, Czech Republic",
+    airportRef: "49.488, 16.660",
+    arrivalNotes: [
+      "The cemetery is above the old Jewish quarter, which is itself worth the walk — Boskovice keeps one of the most complete Jewish quarters in Moravia.",
+      "About 2,500 matzevos across some fourteen and a half thousand square metres, the oldest from 1670. It is one of the largest in the country, so know which kever you have come for.",
+      "The Brno Jewish community pays a caretaker who maintains the ground; Boskovice is about thirty kilometres north of Brno, and arrangements are made through Brno.",
+    ],
+    burials: [
+      {
+        name: "Rabbi Shmuel HaLevi Kolin",
+        yiddishName: "רבי שמואל הלוי קאלין",
+        knownAs: "The Machatzis HaShekel",
+        seforim: "מחצית השקל",
+        yahrzeit: "5566 / 1806",
+        note: "Author of the Machatzis HaShekel on Orach Chaim, printed alongside the Magen Avraham in most editions of Shulchan Aruch. His kever here is a place people come to daven.",
+      },
+      {
+        name: "Rabbi Avraham Placzek",
+        yiddishName: "רבי אברהם פלאצ׳ק",
+        knownAs: "Landesrabbiner of Moravia",
+        note: "Rov of Boskovice and acting chief rabbi of Moravia in the eighteen hundreds.",
+      },
+    ],
+    sourceUrl: "https://jguideeurope.org/en/region/czech-republic/moravia/boskovice/",
+  },
+  {
+    slug: "abaujszanto-shemen-rokeach",
+    city: "Abaújszántó",
+    yiddishCity: "אבאוי סאנטא",
+    name: "Abaújszántó — kever of the Shemen Rokeach",
+    yiddishName: "אבאוי סאנטא — ציון בעל שמן רוקח",
+    country: "Hungary",
+    address: "Jewish cemetery, Abaújszántó, Borsod-Abaúj-Zemplén, Hungary",
+    airportRef: "48.267, 21.200",
+    arrivalNotes: [
+      "Abaújszántó is one of the ten stops on the Tokaj-Hegyalja route through the kevarim of the region, so almost nobody comes only here — Liska, Kerestir and Ijhel are on the same road and already have their own pages on this site.",
+      "The community here dates from 1765, when Jews came from Austria, Bohemia and Moravia under the protection of Prince Bretzenheim.",
+    ],
+    burials: [
+      {
+        name: "Rabbi Elazar Löw",
+        yiddishName: "רבי אלעזר לעװ",
+        knownAs: "The Shemen Rokeach",
+        seforim: "שמן רוקח",
+        yahrzeit: "5597 / 1837",
+        note: "1758–1837. Rov of Abaújszántó and one of the leading Hungarian poskim of his generation; he is known by the name of his sefer, as is usual.",
+      },
+    ],
+    sourceUrl: "https://footstepsofwonderrabbis.com/en/tourism/item/the-abaujszanto-jewish-cemetery-61659",
+  },
+  {
+    slug: "ciechanow-landau",
+    city: "Ciechanów",
+    yiddishCity: "ציעחאנוב",
+    name: "Ciechanów — the Jewish cemetery",
+    yiddishName: "ציעחאנוב — בית החיים",
+    country: "Poland",
+    address: "Jewish cemetery, Sienkiewicza, Ciechanów, Masovian Voivodeship, Poland",
+    airportRef: "52.881, 20.610",
+    arrivalNotes: [
+      "THERE IS NO OHEL STANDING HERE. Come knowing that. The cemetery was destroyed during and after the war, and the ohel over the Ciechanover Rov was deliberately taken down — his remains were moved to the newer cemetery first, and then the ohel was demolished so that no trace was left.",
+      "The newer ground was itself cleared and turned into a recreational area. It is a meadow with a few trees today, surrounded by blocks of flats, with no matzevos standing.",
+      "The oldest burial ground, from about the seventeenth century, was near the corner of 17 Stycznia and Jesionowa. There is nothing marked to find there either.",
+      "The Foundation for the Preservation of Jewish Heritage in Poland and Friends of Jewish Heritage in Poland have been raising money to put a monument back on the site. Ask them what stands there before you make the journey.",
+    ],
+    burials: [
+      {
+        name: "Rabbi Avraham Landau",
+        yiddishName: "רבי אברהם לאנדא",
+        knownAs: "The Ciechanover Rov",
+        yahrzeit: "5635 / 1875",
+        note: "Rov of Ciechanów from 1829 and one of the leading Polish rabbonim of his time. His kever was a place people travelled to before the war; his remains were reburied in the newer cemetery when the ohel was destroyed, and that ground is now open grass. Nothing marks the spot.",
+      },
+    ],
+    sourceUrl: "https://www.jewishheritagepoland.org/ourlocations/ciechanow",
+  },
+];
