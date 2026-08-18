@@ -3473,6 +3473,155 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Jewish_Museum_of_Belgium",
   },
+  {
+    slug: "prague-josefov",
+    name: "Josefov — the Jewish Quarter and the Jewish Museum",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Jewish heritage",
+    summary:
+      "The old Jewish town of Prague, one of the most important in Europe — the Old Jewish Cemetery where the Maharal is buried, and five synagogues kept as the Jewish Museum.",
+    address: "Maiselova 15, 110 00 Praha 1",
+    coordinates: "50.0900, 14.4190",
+    website: "https://www.jewishmuseum.cz/en/",
+    notes: [
+      "One Jewish Museum ticket covers the Old Jewish Cemetery, the Pinkas Synagogue — a Shoah memorial with the names of 80,000 Czech and Moravian victims on its walls — and the Maisel, Klaus and Spanish synagogues.",
+      "The Old Jewish Cemetery holds the kever of the Maharal, Rabbi Yehuda Loew; its thousands of stones are stacked many layers deep.",
+      "The Altneuschul, the oldest working shul in Europe, stands in the middle of this and is run by the community on its own ticket, apart from the museum.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Jewish_Museum_in_Prague",
+  },
+  {
+    slug: "prague-petrin",
+    name: "Petřín Hill",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Viewpoint",
+    summary:
+      "The wooded hill over the Malá Strana, with gardens, a funicular up, and a lookout tower of 1891 built to look like a small Eiffel Tower.",
+    address: "Petřín, 118 00 Praha 1",
+    coordinates: "50.0836, 14.3953",
+    notes: [
+      "The gardens and paths are free; the funicular takes a normal transit ticket, and the tower climb is its own charge.",
+      "The rose gardens and the orchards make it the green escape from the crowds over the river.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Pet%C5%99%C3%ADn",
+  },
+  {
+    slug: "prague-wenceslas-square",
+    name: "Wenceslas Square",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "The long boulevard-square of the new town, under the National Museum — the stage of Czech history, from 1918 to the Velvet Revolution of 1989.",
+    address: "Václavské náměstí, 110 00 Praha 1",
+    coordinates: "50.0814, 14.4281",
+    notes: [
+      "Open and free; more a wide avenue of shops and hotels than a square to linger in.",
+      "The National Museum stands at the top, and the Old Town is a few minutes down and across.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Wenceslas_Square",
+  },
+  {
+    slug: "prague-vysehrad",
+    name: "Vyšehrad",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "The old hill fort above the Vltava south of the centre — ramparts, the twin-spired church of Ss Peter and Paul, and the cemetery of the Czech national figures.",
+    address: "V Pevnosti 159/5b, 128 00 Praha 2",
+    coordinates: "50.0641, 14.4186",
+    notes: [
+      "The grounds, the walls and the river views are free; the casemates and the round Romanesque rotunda are ticketed.",
+      "Far quieter than the castle, and the walk along the ramparts is the draw.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Vy%C5%A1ehrad",
+  },
+  {
+    slug: "prague-strahov-monastery",
+    name: "Strahov Monastery",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "A hilltop monastery of 1143 above the castle, famous for two baroque library halls of painted ceilings and old globes.",
+    address: "Strahovské nádvoří 1/132, 118 00 Praha 1",
+    coordinates: "50.0855, 14.3889",
+    website: "https://www.strahovskyklaster.cz/en",
+    notes: [
+      "A working monastery; the library halls and the gallery are ticketed, and the halls are viewed from the doorways, not walked into.",
+      "The terrace outside has one of the best views over the whole city.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Strahov_Monastery",
+  },
+  {
+    slug: "prague-dancing-house",
+    name: "The Dancing House",
+    city: "Prague",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "Frank Gehry's curving 1996 office building on the riverfront — two towers that look like a dancing couple, nicknamed Fred and Ginger.",
+    address: "Jiráskovo náměstí 1981/6, 120 00 Praha 2",
+    coordinates: "50.0755, 14.4142",
+    notes: [
+      "Free to see from the street and the embankment; there is a rooftop terrace and café with a charge.",
+      "On the river a short walk south of the National Theatre.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Dancing_House",
+  },
+  {
+    slug: "brno-spilberk",
+    name: "Špilberk Castle",
+    city: "Brno",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "The hilltop fortress over Brno, once one of the harshest prisons of the Habsburg empire, now the city museum with the casemates below.",
+    address: "Špilberk 210/1, 662 24 Brno",
+    coordinates: "49.1947, 16.5992",
+    website: "https://www.spilberk.cz/en/",
+    notes: [
+      "The park and the ramparts are free; the museum and the prison casemates are ticketed.",
+      "The walk up gives the view over the old town.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/%C5%A0pilberk_Castle",
+  },
+  {
+    slug: "brno-villa-tugendhat",
+    name: "Villa Tugendhat",
+    city: "Brno",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "Mies van der Rohe's 1930 modernist villa, a landmark of functionalist architecture and a UNESCO site, built for a Jewish industrialist family.",
+    address: "Černopolní 45, 613 00 Brno",
+    coordinates: "49.2072, 16.6158",
+    website: "https://www.tugendhat.eu/en/",
+    notes: [
+      "Seen only on a booked guided tour, and slots go weeks ahead — reserve before you plan the day around it.",
+      "The Tugendhats, a Jewish family, fled in 1938; the house passed through Gestapo and Soviet hands before it was restored.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Villa_Tugendhat",
+  },
+  {
+    slug: "brno-cathedral",
+    name: "Cathedral of Saints Peter and Paul",
+    city: "Brno",
+    country: "Czech Republic",
+    kind: "Landmark",
+    summary:
+      "The neo-Gothic cathedral on the Petrov hill, its twin spires the mark of the Brno skyline.",
+    address: "Petrov 269/9, 602 00 Brno",
+    coordinates: "49.1911, 16.6072",
+    notes: [
+      "A working cathedral; the nave is free, the tower climb and treasury ticketed.",
+      "Its bells ring noon at eleven — a local tradition tied to the 1645 siege.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Cathedral_of_Saints_Peter_and_Paul,_Brno",
+  },
 
   // ---- Greece ---------------------------------------------------------
   {
