@@ -509,7 +509,7 @@ const guideCemeteries: Cemetery[] = cityGuides
     sourceUrl: guide.sourceUrl,
   }));
 
-export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9, ...bulkCemeteries10, ...bulkCemeteries11, ...bulkCemeteries12, ...bulkCemeteries13, ...bulkCemeteries14, ...bulkCemeteries15, ...bulkCemeteries16, ...bulkCemeteries16b, ...bulkCemeteries17];
+export const cemeteries: Cemetery[] = [...featuredCemeteries, ...guideCemeteries, ...bulkCemeteries, ...bulkCemeteries2, ...bulkCemeteries3, ...bulkCemeteries4, ...bulkCemeteries5, ...bulkCemeteries6, ...bulkCemeteries7, ...bulkCemeteries8, ...bulkCemeteries9, ...bulkCemeteries10, ...bulkCemeteries11, ...bulkCemeteries12, ...bulkCemeteries13, ...bulkCemeteries14, ...bulkCemeteries15, ...bulkCemeteries16, ...bulkCemeteries16b, ...bulkCemeteries17, ...bulkCemeteries18];
 
 export function getCemetery(slug: string) {
   return cemeteries.find((cemetery) => cemetery.slug === slug);
@@ -532,4 +532,5 @@ import { bulkCemeteries14 } from "@/data/cemeteries-bulk-14";
 import { bulkCemeteries15 } from "@/data/cemeteries-bulk-15";
 import { bulkCemeteries16, bulkCemeteries16b } from "@/data/cemeteries-bulk-16";
 import { bulkCemeteries17 } from "@/data/cemeteries-bulk-17";
+import { bulkCemeteries18 } from "@/data/cemeteries-bulk-18";
 import type { ContentPlace } from "@/data/practical-content";
