@@ -159,3 +159,29 @@ describe("how far away things are", () => {
     assert.doesNotMatch(page, /placeDirectionsUrl\([^)]*rankingPoint/);
   });
 });
+
+describe("a town filed under its other name", () => {
+  it("finds Mikulov's beis hachaim, which is filed as Nikolsburg", () => {
+    // One town, two names in ordinary use — the Czech and the Yiddish. The
+    // listing existed the whole time and the page showed nothing.
+    const mikulov = town("mikulov");
+    assert.equal(mikulov.cemeteries.length, 1);
+    assert.ok(mikulov.burials.some((b) => /Shmelke/.test(b.name)), mikulov.burials.map((b) => b.name).join(", "));
+  });
+
+  it("does NOT loosen the slug rule that keeps kevarim in the right town", () => {
+    // Name-matching was tried and put the Imrei Elimelech in the wrong town,
+    // because "Tomaszów Mazowiecki" and "Grodzisk Mazowiecki" share a region
+    // word. Each pairing is written out by hand instead. If this ever becomes
+    // a fuzzy match again, somebody drives to the wrong grave.
+    const source = readFileSync("data/destination-database.ts", "utf8");
+    assert.match(source, /SAME_TOWN_OTHER_NAME/);
+    assert.doesNotMatch(source, /cemetery\.city.*includes|includes.*cemetery\.city/);
+  });
+
+  it("keeps those two towns apart", () => {
+    const tomaszow = town("tomaszow").burials.map((b) => b.name);
+    const grodzisk = town("grodzisk").burials.map((b) => b.name);
+    for (const name of tomaszow) assert.ok(!grodzisk.includes(name), `${name} is in both towns`);
+  });
+});

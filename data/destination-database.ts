@@ -131,10 +131,29 @@ const cityGuideRecords: DestinationRecord[] = guidedDestinations().map(({ guide 
  * Thirty-six towns match; the rest stay empty until their bais hachaim is
  * written, and their pages stay unindexed until then (lib/site-map.ts).
  */
-const cemeteriesForTown = (slug: string) =>
-  cemeteries.filter(
-    (cemetery) => cemetery.slug === slug || cemetery.slug.startsWith(`${slug}-`) || cemetery.slug.endsWith(`-${slug}`),
-  );
+/**
+ * Towns whose beis hachaim is filed under the OTHER name for the same place.
+ *
+ * The slug rule above is deliberately strict and stays that way. This is not a
+ * loosening of it: each pair here is one town with two names in ordinary use,
+ * checked by hand, written out. Mikulov is the Czech name and Nikolsburg the
+ * German and Yiddish one — the town of Reb Shmelke — and the listing was filed
+ * under the second while the directory entry uses the first, so the page
+ * showed nothing while the record sat one lookup away.
+ *
+ * Add to this only where you are certain the two names are the same ground.
+ * The cost of being wrong here is somebody driving to it.
+ */
+const SAME_TOWN_OTHER_NAME: Record<string, string> = {
+  mikulov: "nikolsburg",
+};
+
+const cemeteriesForTown = (slug: string) => {
+  const also = SAME_TOWN_OTHER_NAME[slug];
+  const matches = (cemetery: { slug: string }, key: string) =>
+    cemetery.slug === key || cemetery.slug.startsWith(`${key}-`) || cemetery.slug.endsWith(`-${key}`);
+  return cemeteries.filter((cemetery) => matches(cemetery, slug) || (also ? matches(cemetery, also) : false));
+};
 
 const bulkRecords: DestinationRecord[] = unguidedDestinations().map((destination) => ({
   id: destination.slug,
