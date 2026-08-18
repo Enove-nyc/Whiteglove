@@ -9,6 +9,7 @@
  */
 
 import { cemeteries } from "@/data/cemeteries";
+import { notableShuls } from "@/data/notable-shuls";
 import { practicalContent } from "@/data/practical-content";
 import { destinations as heritageDestinations, destinationHref as heritageDestinationHref } from "@/data/destinations";
 import { getBulkDestination } from "@/data/destinations-bulk";
@@ -137,6 +138,38 @@ export function staticShulListings(known: readonly VacationDestination[] = vacat
   return dedupeByNameCity(out).sort(byCountryCityName);
 }
 
+/**
+ * The landmark working shuls of the world, as directory listings.
+ *
+ * A flat, source-backed list (data/notable-shuls.ts), the parallel to the
+ * worldwide attractions. These carry their own link — the shul's own site or
+ * the write-up it already has here — rather than a destination slug, because
+ * most sit in cities that are not kever-town destinations.
+ */
+export function notableShulListings(): ShulListing[] {
+  const out: ShulListing[] = [];
+  for (const shul of notableShuls) {
+    if (!isAllowedSource(shul.sourceUrl)) continue;
+    out.push({
+      id: `notable-${shul.slug}`,
+      name: shul.name,
+      address: shul.address ?? null,
+      phone: null,
+      hours: null,
+      notes: shul.notes?.join(" ") ?? null,
+      website: shul.website ?? null,
+      sourceUrl: shul.sourceUrl,
+      coordinates: shul.coordinates,
+      city: shul.city,
+      country: shul.country,
+      destinationSlug: shul.slug,
+      href: shul.href,
+      fromDatabase: false,
+    });
+  }
+  return out;
+}
+
 type DbShulRow = {
   id: string;
   name: string;
@@ -178,7 +211,13 @@ async function listPublishedShulsUncached(): Promise<ShulListing[]> {
   // destination page the owner's own list says exists.
   const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
   const known = await getVacationDestinations();
-  if (!process.env.DATABASE_URL) return staticShulListings(known);
+  const notable = notableShulListings();
+  // The notable shuls are a separate source from the seeded minyanim, so they
+  // are added to whichever base list we resolve — DB or static — and the whole
+  // is deduped by name and city, keeping the base entry where the two meet.
+  const withNotable = (base: ShulListing[]) =>
+    dedupeByNameCity([...base, ...notable]).sort(byCountryCityName);
+  if (!process.env.DATABASE_URL) return withNotable(staticShulListings(known));
   try {
     const { prisma } = await import("@/lib/prisma");
     const rows = await prisma.practicalPlace.findMany({
@@ -201,11 +240,11 @@ async function listPublishedShulsUncached(): Promise<ShulListing[]> {
     // Wrapped rather than passed by name: .map hands the callback an index as
     // its second argument, which is not a destination list.
     const published = rows.map((row) => shulListingFromDbRow(row, known)).filter((row): row is ShulListing => Boolean(row));
-    if (published.length > 0) return published;
+    if (published.length > 0) return withNotable(published);
   } catch (error) {
     console.error("[shuls] DB read failed — using static catalog", error);
   }
-  return staticShulListings(known);
+  return withNotable(staticShulListings(known));
 }
 
 /** Public shuls: published DB rows when available, otherwise the static catalog. */
