@@ -99,7 +99,7 @@ export type EateryLike = {
   city: string;
   country: string;
   kind: string;
-  diet: string;
+  diet?: string;
   summary: string;
   hechsher: { state: "certified" | "reported" | "none" | "unverified" };
 };

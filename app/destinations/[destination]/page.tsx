@@ -569,7 +569,7 @@ async function KosherFood({ destination }: { destination: VacationDestination })
             return (
               <li key={eatery.slug} className="wg-card border border-[var(--gold-light)] bg-[var(--surface)] p-5">
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                  {eatery.kind} · {eatery.diet}
+                  {[eatery.kind, eatery.diet].filter(Boolean).join(" · ")}
                 </p>
                 <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
                   {eatery.name}
