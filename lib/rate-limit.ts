@@ -11,6 +11,8 @@
  * hundreds of texts, which costs real money and is somebody else's phone.
  */
 
+import { createHash } from "node:crypto";
+
 type Config = { limit: number; windowSeconds: number };
 
 export type RateLimitResult = {
@@ -19,6 +21,19 @@ export type RateLimitResult = {
   remaining: number;
   /** Seconds until they can try again. 0 when they still may. */
   retryAfter: number;
+  /**
+   * WHICH COUNTER ANSWERED — and this is the field that matters in production.
+   *
+   * "upstash" means the shared store counted the attempt and the limit holds
+   * across every serverless instance. "memory" means it did not, and the count
+   * lives in one process that the next request may never land on: the limit is
+   * then advisory at best. The two are indistinguishable from the outside
+   * otherwise, which is how a guard on a paid API key sat inert long enough to
+   * be found only by firing sixteen requests at it and reading the status
+   * codes. A caller that cares can now say so in a response header instead of
+   * hoping somebody finds a log line.
+   */
+  store: "upstash" | "memory";
 };
 
 function redisConfig() {
@@ -47,12 +62,12 @@ function localLimit(key: string, config: Config): RateLimitResult {
     if (local.size > 5000) {
       for (const [k, v] of local) if (v.resetAt <= now) local.delete(k);
     }
-    return { ok: true, remaining: config.limit - 1, retryAfter: 0 };
+    return { ok: true, remaining: config.limit - 1, retryAfter: 0, store: "memory" };
   }
   entry.count += 1;
   const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
-  if (entry.count > config.limit) return { ok: false, remaining: 0, retryAfter };
-  return { ok: true, remaining: config.limit - entry.count, retryAfter: 0 };
+  if (entry.count > config.limit) return { ok: false, remaining: 0, retryAfter, store: "memory" };
+  return { ok: true, remaining: config.limit - entry.count, retryAfter: 0, store: "memory" };
 }
 
 /**
@@ -113,9 +128,9 @@ export async function rateLimit(key: string, config: Config): Promise<RateLimitR
         .then((r) => (r.ok ? r.json() : null))
         .then((d: { result?: number } | null) => (typeof d?.result === "number" && d.result > 0 ? d.result : config.windowSeconds))
         .catch(() => config.windowSeconds);
-      return { ok: false, remaining: 0, retryAfter: ttl };
+      return { ok: false, remaining: 0, retryAfter: ttl, store: "upstash" };
     }
-    return { ok: true, remaining: config.limit - count, retryAfter: 0 };
+    return { ok: true, remaining: config.limit - count, retryAfter: 0, store: "upstash" };
   } catch (error) {
     console.warn("[rate-limit] upstash unreachable — falling back to the in-process counter", error);
     return localResult;
@@ -134,6 +149,21 @@ export function requesterKey(headers: Headers): string {
   const forwarded = headers.get("x-forwarded-for");
   const first = forwarded?.split(",")[0]?.trim();
   return first || headers.get("x-real-ip")?.trim() || "unknown";
+}
+
+/**
+ * A short, one-way tag for a limit key, safe to put in a response header.
+ *
+ * The limit is keyed on the caller's address, and the address is not something
+ * to echo back. The tag is: the same caller gets the same eight characters
+ * every time, a different caller gets different ones, and nothing about the
+ * address can be read back out of them. That is enough to answer the only
+ * question a header needs to answer — am I being counted as one visitor, or as
+ * a new one on every request? — which is exactly the question that could not be
+ * answered when the limiter appeared not to fire behind a rotating proxy.
+ */
+export function bucketTag(key: string): string {
+  return createHash("sha256").update(`white-glove:rl:${key}`).digest("hex").slice(0, 8);
 }
 
 /** The message somebody sees. Says how long, because "try again later" does not. */

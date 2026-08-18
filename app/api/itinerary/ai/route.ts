@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchSite } from "@/lib/site-search";
 import { citedSources, stripFalseAttribution, type AssistantSource } from "@/lib/assistant-disclosure";
-import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
+import { bucketTag, rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { cityGuides } from "@/data/destinations-detailed";
@@ -250,9 +250,41 @@ const ASSISTANT_LIMIT = { limit: 12, windowSeconds: 60 };
 
 export async function POST(request: NextRequest) {
   const who = requesterKey(request.headers);
-  const flood = await rateLimit(`assistant:${who}`, ASSISTANT_LIMIT);
+  const bucket = `assistant:${who}`;
+  const flood = await rateLimit(bucket, ASSISTANT_LIMIT);
+
+  /**
+   * THE LIMITER SAYS WHAT IT DID, ON EVERY ANSWER.
+   *
+   * Sixteen rapid calls to production all came back 200, and forcing an
+   * identical X-Forwarded-For changed nothing — which has three possible
+   * causes that look identical from outside: the shared store is unreachable
+   * and each instance is counting alone; the caller is arriving under a
+   * different address every time, so nothing accumulates; or the code is not
+   * the code that is deployed. The server log was supposed to separate them
+   * and could not be found.
+   *
+   * These four headers separate them without a log. `store` is upstash or
+   * memory — that is the first cause, answered. `bucket` is a one-way tag of
+   * the key: hold it still across a burst and the caller is one visitor, watch
+   * it change and that is the second cause. `remaining` counting down proves
+   * the code is live and counting. Nothing here identifies anybody, and the
+   * first three are what a rate-limited API is expected to send anyway.
+   */
+  const limitHeaders: Record<string, string> = {
+    "x-ratelimit-limit": String(ASSISTANT_LIMIT.limit),
+    "x-ratelimit-remaining": String(Math.max(0, flood.remaining)),
+    "x-ratelimit-store": flood.store,
+    "x-ratelimit-bucket": bucketTag(bucket),
+  };
+  const reply = (payload: unknown, status = 200) =>
+    NextResponse.json(payload, { status, headers: limitHeaders });
+
   if (!flood.ok) {
-    return NextResponse.json({ available: false, reason: tooManyMessage(flood.retryAfter) }, { status: 429 });
+    return NextResponse.json(
+      { available: false, reason: tooManyMessage(flood.retryAfter) },
+      { status: 429, headers: { ...limitHeaders, "retry-after": String(Math.max(1, flood.retryAfter)) } },
+    );
   }
 
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
@@ -265,20 +297,20 @@ export async function POST(request: NextRequest) {
     // traveler would be reading the site's own setup instructions. The cause
     // goes to the server log instead.
     console.warn("[assistant] no AI provider key configured (GEMINI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY)");
-    return NextResponse.json({ available: false, reason: "The assistant is unavailable right now." });
+    return reply({ available: false, reason: "The assistant is unavailable right now." });
   }
 
   const body = (await request.json().catch(() => null)) as
     | { question?: string; location?: string; date?: string; freeHours?: number; alreadyPlanned?: string[] }
     | null;
   const baseMessage = buildUserMessage(body);
-  if (!baseMessage) return NextResponse.json({ available: false, reason: "Type a travel question first." });
+  if (!baseMessage) return reply({ available: false, reason: "Type a travel question first." });
 
   // Refused here, for nothing, instead of by the model for the price of a call.
   // The traveller reads exactly what the model would have said.
   const askedQuestion = clean(body?.question || "", 500);
   if (askedQuestion && !looksLikeTravel(askedQuestion, Boolean(clean(body?.location || "", 160)))) {
-    return NextResponse.json({ available: true, text: OFF_TOPIC, sources: [] });
+    return reply({ available: true, text: OFF_TOPIC, sources: [] });
   }
   const { block, sources } = await publishedContext(clean(body?.question || "", 500));
   const userMessage = block ? `${baseMessage}\n\n${block}` : baseMessage;
@@ -292,7 +324,7 @@ export async function POST(request: NextRequest) {
    */
   const answered = (raw: string) => {
     const { text } = stripFalseAttribution(raw);
-    return NextResponse.json({ available: true, text, sources: citedSources(text, sources) });
+    return reply({ available: true, text, sources: citedSources(text, sources) });
   };
 
   /**
@@ -425,10 +457,10 @@ export async function POST(request: NextRequest) {
      */
     const text = (await askGemini()) ?? (await askAnthropic()) ?? (await askOpenAI());
     if (!text) {
-      return NextResponse.json({ available: false, reason: "The assistant could not answer that just now. Please try again." });
+      return reply({ available: false, reason: "The assistant could not answer that just now. Please try again." });
     }
     return answered(text);
   } catch {
-    return NextResponse.json({ available: false, reason: "Could not reach the AI service." });
+    return reply({ available: false, reason: "Could not reach the AI service." });
   }
 }
