@@ -130,24 +130,47 @@ export type PageMetadata = {
  * through. Relative paths are resolved against `metadataBase`, set once in the
  * root layout.
  */
+/**
+ * The one way a page title ends, so a tab and a search result read as one site.
+ *
+ * The pages were hand-writing three different endings — "| White Glove Kosher
+ * Travel", "— White Glove Kosher Travel" and the short "| White Glove" — so a
+ * row of the site's own results in Google looked like three sites. This folds
+ * whichever was written down to the one the brand actually is (SITE_NAME), and
+ * adds it to a title that carried none. A page whose whole title IS the brand —
+ * the home page — is left alone rather than made "White Glove … | White Glove".
+ */
+const SITE_TITLE_SUFFIX = ` | ${SITE_NAME}`;
+
+export function withSiteName(title: string): string {
+  const trimmed = title.trim();
+  if (trimmed === SITE_NAME || trimmed.length === 0) return trimmed || SITE_NAME;
+  // Strip any trailing "<separator> White Glove[ Kosher Travel]" — pipe, dash
+  // or em-dash — so all three hand-written variants collapse to one. Only at
+  // the very end, so an internal "White Glove" in a real title is untouched.
+  const base = trimmed.replace(/\s*[|–—-]\s*White\s?Glove(?:\s+Kosher\s+Travel)?\s*$/i, "").trim();
+  return `${base || SITE_NAME}${SITE_TITLE_SUFFIX}`;
+}
+
 export function pageMetadata({ title, description, path, image, noIndex }: PageMetadata): Metadata {
   const canonical = path.startsWith("/") ? path : `/${path}`;
   const images = [image ?? SOCIAL_IMAGE];
+  const fullTitle = withSiteName(title);
   return {
-    title,
+    title: fullTitle,
     description,
     alternates: { canonical },
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
-      title,
+      title: fullTitle,
       description,
       url: canonical,
       images,
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: fullTitle,
       description,
       images: images.map((item) => item.url),
     },

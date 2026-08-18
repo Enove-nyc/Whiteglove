@@ -21,7 +21,7 @@ import Navbar from "@/components/Navbar";
  * never be canonical or indexed for the address that missed.
  */
 export const metadata = {
-  title: "Page not found — White Glove Kosher Travel",
+  title: "Page not found | White Glove Kosher Travel",
   robots: { index: false, follow: false },
 };
 
