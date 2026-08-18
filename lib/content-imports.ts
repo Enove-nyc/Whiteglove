@@ -25,6 +25,7 @@ import {
   type BulkContentKind,
   type KnownContentRecord,
   type PreparedBulkContentCandidate,
+  isTemplateFillerCandidate,
 } from "@/lib/bulk-content";
 import { bustTag } from "@/lib/cache-tags";
 import { createAttraction, createKosherStay, isDbEnabled } from "@/lib/content-admin";
@@ -120,7 +121,17 @@ async function db() {
 
 function packageCandidates(sourcePackage: BuiltInContentImportPackage): PreparedBulkContentCandidate[] {
   if (isDisallowedImportSource(sourcePackage.batch)) return [];
-  return sourcePackage.candidates.map(prepareBulkContentCandidate).filter((candidate) => candidate.canStage);
+  return sourcePackage.candidates
+    // Template placeholders that name no real place never enter the queue —
+    // see isTemplateFillerCandidate in lib/bulk-content.ts for what and why.
+    .filter((candidate) => !isTemplateFillerCandidate(candidate.name))
+    .map(prepareBulkContentCandidate)
+    .filter((candidate) => candidate.canStage);
+}
+
+/** A batch's real candidate count, with the template filler taken out. */
+function realCandidateCount(sourcePackage: BuiltInContentImportPackage): number {
+  return sourcePackage.candidates.filter((candidate) => !isTemplateFillerCandidate(candidate.name)).length;
 }
 
 function packageBatch(sourcePackage: BuiltInContentImportPackage): ContentImportBatchView {
@@ -132,7 +143,7 @@ function packageBatch(sourcePackage: BuiltInContentImportPackage): ContentImport
     attribution: sourcePackage.batch.attribution,
     license: sourcePackage.batch.license,
     generatedAt: sourcePackage.generatedAt,
-    packageCandidates: sourcePackage.candidates.length,
+    packageCandidates: realCandidateCount(sourcePackage),
     stagedCandidates: 0,
   };
 }
