@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import type { PrismaClient } from "@prisma/client";
 import { buildContentSnapshot, snapshotProblem, SNAPSHOT_SCHEMA_VERSION } from "@/lib/content-snapshot";
@@ -140,5 +141,56 @@ describe("refusing to overwrite a good copy with a bad one", () => {
     const { client } = fakePrisma({ cemeteries: [CEMETERY] });
     const snapshot = await buildContentSnapshot(client, TAKEN);
     assert.match(snapshotProblem({ ...snapshot, schemaVersion: 99 }) ?? "", /schema version/i);
+  });
+});
+
+describe("the directory listings are backed up at last", () => {
+  /**
+   * They lived in one Redis key with no backup anywhere: the private export
+   * held only data/directory.ts, and this snapshot did not cover providers at
+   * all. The owner lost his to a bug in that store and there was nothing to
+   * restore from.
+   */
+  const SNAP = readFileSync("lib/content-snapshot.ts", "utf8");
+  const EXPORT = readFileSync("lib/content-export.ts", "utf8");
+
+  it("KNOWS THE DIFFERENCE BETWEEN NONE AND COULD-NOT-LOOK", () => {
+    // A backup that cannot tell those apart is one that will be restored from
+    // confidently and wrongly.
+    assert.match(SNAP, /directorySource: "store" \| "not-configured"/);
+    assert.match(SNAP, /return \{ directory: \[\], directorySource: "not-configured" \}/);
+  });
+
+  it("PUTS NOTHING IN THE PUBLIC FILE THAT IS NOT ALREADY PUBLIC", () => {
+    // This file is committed to a public repository.
+    const fn = SNAP.slice(SNAP.indexOf("async function snapshotDirectory"), SNAP.indexOf("export async function buildContentSnapshot"));
+    assert.match(fn, /p\.published !== false/, "unpublished listings are not filtered out");
+    assert.match(fn, /publishableContact/, "phone numbers bypass the consent rule");
+    for (const ownerOnly of ["notes", "featuredReason", "contactConsentNote"]) {
+      assert.ok(!fn.includes(`p.${ownerOnly}`), `${ownerOnly} is the owner's own record and is in the public file`);
+    }
+  });
+
+  it("the private export carries all three sources, in full", () => {
+    // The built-in file, the database table, and the Redis store — the last of
+    // which is the only one with no other copy anywhere.
+    assert.match(EXPORT, /directoryDatabase: unknown\[\]/);
+    assert.match(EXPORT, /directoryListings: unknown\[\]/);
+    assert.match(EXPORT, /out\.directoryListings = await listStoredProviders\(\)/);
+    assert.match(EXPORT, /prisma\.directoryProvider\.findMany/);
+  });
+
+  it("reads the store even with no database", () => {
+    // The listings do not live in the database, so a deployment without
+    // DATABASE_URL still has them and an export there must still capture them.
+    const before = EXPORT.indexOf("out.directoryListings = await listStoredProviders()");
+    const dbBlock = EXPORT.indexOf('if (process.env.DATABASE_URL)');
+    assert.ok(before < dbBlock, "the store read is inside the database block");
+  });
+
+  it("the scheduled run is given the credentials to reach it", () => {
+    const flow = readFileSync(".github/workflows/content-snapshot.yml", "utf8");
+    assert.match(flow, /UPSTASH_REDIS_REST_URL: \$\{\{ secrets\.UPSTASH_REDIS_REST_URL \}\}/);
+    assert.match(flow, /UPSTASH_REDIS_REST_TOKEN: \$\{\{ secrets\.UPSTASH_REDIS_REST_TOKEN \}\}/);
   });
 });

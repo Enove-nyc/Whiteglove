@@ -41,7 +41,7 @@ import { directoryProviders } from "@/data/directory";
  * Bumped when the SHAPE of the export changes, so a future importer can tell
  * what it is looking at. Not the site's version — the file format's.
  */
-export const EXPORT_SCHEMA_VERSION = 1;
+export const EXPORT_SCHEMA_VERSION = 2;
 
 export type ContentExport = {
   schemaVersion: number;
@@ -54,7 +54,21 @@ export type ContentExport = {
   stays: unknown[];
   areas: unknown[];
   destinations: unknown[];
+  /** The built-in providers from data/directory.ts. */
   directory: unknown[];
+  /**
+   * The providers in the Postgres table, and the listings the owner typed into
+   * the admin — which live in Redis, not the database.
+   *
+   * BOTH WERE MISSING FROM THIS FILE, and the second one had no backup of any
+   * kind. The owner lost his typed-in listings to a bug in that store and
+   * there was nothing anywhere to restore them from: this export held only the
+   * built-in file, and the public snapshot does not cover providers at all. A
+   * "complete content export" that omits the one collection with no other copy
+   * is the worst shape a backup can have, because it is trusted.
+   */
+  directoryDatabase: unknown[];
+  directoryListings: unknown[];
   pages: unknown[];
   /** True when the database could not be reached — built-in content only. */
   builtInOnly: boolean;
@@ -86,9 +100,21 @@ export async function buildContentExport(now: Date): Promise<ContentExport> {
     areas: [...staticAreas],
     destinations: [...destinations],
     directory: [...directoryProviders],
+    directoryDatabase: [],
+    directoryListings: [],
     pages: [],
     builtInOnly: true,
   };
+
+  // Read before and outside the database block, because these do not live in
+  // the database — and a deployment with no DATABASE_URL still has them.
+  try {
+    const { listStoredProviders } = await import("@/lib/directory-store");
+    out.directoryListings = await listStoredProviders();
+  } catch {
+    // Left empty. The count in the file says how many were captured, so an
+    // export that missed them does not look like an owner who had none.
+  }
 
   if (process.env.DATABASE_URL) {
     try {
@@ -142,6 +168,7 @@ export async function buildContentExport(now: Date): Promise<ContentExport> {
         ...tag(dbAreas.filter((a) => !staticAreaSlugs.has(a.slug))),
       ];
       out.pages = tag(dbPages);
+      out.directoryDatabase = tag(await prisma.directoryProvider.findMany({ orderBy: { name: "asc" } }));
       out.builtInOnly = false;
     } catch {
       // Leave the built-in content in place and leave builtInOnly true. The UI
@@ -157,6 +184,8 @@ export async function buildContentExport(now: Date): Promise<ContentExport> {
     areas: out.areas.length,
     destinations: out.destinations.length,
     directory: out.directory.length,
+    directoryDatabase: out.directoryDatabase.length,
+    directoryListings: out.directoryListings.length,
     pages: out.pages.length,
   };
   return out;

@@ -54,6 +54,13 @@ jobs:
       - name: Read the database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # The directory listings the owner types into the admin live in Redis,
+          # not the database, and had no backup of any kind until now. With
+          # these two secrets absent the snapshot still runs and simply records
+          # directorySource: "not-configured" — an empty list and "I could not
+          # look" must never read the same in a backup.
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: npx tsx scripts/write-snapshot.ts
 
       # Nothing to say when nothing changed: the script leaves the file alone,
