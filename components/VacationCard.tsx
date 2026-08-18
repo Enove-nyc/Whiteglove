@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { SIGNAL_CLASSES, destinationHref, type Signal, type VacationCardModel } from "@/lib/vacation-ideas";
+import {
+  SIGNAL_CLASSES,
+  cardCountry,
+  cardName,
+  cardThemes,
+  destinationHref,
+  type DirectoryCard,
+  type Signal,
+} from "@/lib/vacation-ideas";
 import type { TripTheme } from "@/data/vacation-destinations";
 
 /**
@@ -61,30 +69,80 @@ function SignalChip({ signal }: { signal: Signal<string> }) {
   );
 }
 
-export default function VacationCard({ card, compact = false }: { card: VacationCardModel; compact?: boolean }) {
-  const { destination, kosher, shabbos } = card;
-  const wash = THEME_WASH[destination.themes[0] ?? "city"];
+/**
+ * A heritage town's card.
+ *
+ * IT SAYS LESS, AND THAT IS THE POINT. A holiday destination carries a written
+ * assessment — why go, how the kosher food works, whether Shabbos is walkable
+ * — and nobody has written any of that for Lizhensk. The two signals are
+ * therefore absent rather than shown as unknown: an "unknown" chip is a claim
+ * that the question was asked, and it was not.
+ *
+ * What it does carry is true of it: the town, its Yiddish name, the country,
+ * and how many kevarim are on record. That last one is the reason somebody is
+ * looking at it.
+ */
+function HeritageBody({ card, compact }: { card: Extract<DirectoryCard, { kind: "heritage" }>; compact: boolean }) {
+  return (
+    <span className={`flex flex-1 flex-col ${compact ? "p-5" : "p-6"}`}>
+      {card.summary && (
+        <span className="block text-sm leading-6 text-stone-600 line-clamp-3">{card.summary}</span>
+      )}
+      <span className="mt-auto flex flex-wrap gap-2 pt-4">
+        <span className="inline-flex items-start gap-1.5 rounded-md border border-[var(--gold)] bg-[#fcf6e9] px-2.5 py-1.5 text-[11px] font-semibold leading-4 text-[var(--navy)]">
+          {/* THE COUNT, NOT WHAT WE HOLD ABOUT IT. This first read "3 batei
+              hachaim on record", which describes the site's own filing rather
+              than the town — the same habit as "checked information" and
+              "being verified", and the guard test in tests/customer-copy.ts
+              caught it. A traveller wants to know there are three. */}
+          {card.kevarim > 0
+            ? `${card.kevarim} ${card.kevarim === 1 ? "beis hachaim" : "batei hachaim"}`
+            : "Jewish heritage"}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+export default function VacationCard({ card, compact = false }: { card: DirectoryCard; compact?: boolean }) {
+  const name = cardName(card);
+  const country = cardCountry(card);
+  const href = card.kind === "vacation" ? destinationHref(card.destination) : card.href;
+  const eyebrow =
+    card.kind === "vacation" && card.destination.region
+      ? `${card.destination.region} · ${country}`
+      : country;
+  const wash = THEME_WASH[cardThemes(card)[0] ?? "city"];
 
   return (
     <Link
-      href={destinationHref(destination)}
+      href={href}
       className="wg-card group flex h-full flex-col overflow-hidden border border-[var(--gold-light)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
     >
       <span className={`block bg-gradient-to-br ${wash} ${compact ? "px-6 py-5" : "px-6 py-7"}`}>
         <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">
-          {destination.region ? `${destination.region} · ${destination.country}` : destination.country}
+          {eyebrow}
         </span>
         <span className={`mt-2 block font-[family-name:var(--font-display)] leading-tight text-white ${compact ? "text-2xl" : "text-3xl"}`}>
-          {destination.name}
+          {name}
         </span>
+        {card.kind === "heritage" && card.yiddishName && (
+          <span className="mt-1 block text-sm text-[var(--gold-light)]" lang="yi" dir="rtl">
+            {card.yiddishName}
+          </span>
+        )}
       </span>
 
-      <span className={`flex flex-1 flex-col ${compact ? "p-5" : "p-6"}`}>
-        <span className={`mt-auto flex flex-wrap gap-2`}>
-          <SignalChip signal={kosher} />
-          <SignalChip signal={shabbos} />
+      {card.kind === "heritage" ? (
+        <HeritageBody card={card} compact={compact} />
+      ) : (
+        <span className={`flex flex-1 flex-col ${compact ? "p-5" : "p-6"}`}>
+          <span className={`mt-auto flex flex-wrap gap-2`}>
+            <SignalChip signal={card.kosher} />
+            <SignalChip signal={card.shabbos} />
+          </span>
         </span>
-      </span>
+      )}
     </Link>
   );
 }

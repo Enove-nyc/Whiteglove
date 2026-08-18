@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { vacationDestinations } from "@/data/vacation-destinations";
+import { TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
 import { ADMIN_HOST_SEGMENTS } from "@/lib/admin-host";
 import { areaForPath } from "@/lib/admin-permissions";
 import { PHOTO_OWNER_KINDS, pathsToRefresh } from "@/lib/photos";
@@ -198,5 +198,27 @@ describe("the new table can reach a database that already exists", () => {
     assert.match(SETUP, /const deferred: string\[\] = \[\];/);
     assert.match(SETUP, /for \(const statement of deferred\) await run\(statement, true\);/);
     assert.match(INIT, /ADD CONSTRAINT "Photo_vacationDestinationId_fkey"/);
+  });
+});
+
+describe("the themes the owner can actually save", () => {
+  it("ACCEPTS EVERY THEME THE EDITOR OFFERS, INCLUDING HERITAGE", () => {
+    // The editor's checkboxes come from TRIP_THEMES and the read layer used to
+    // filter against a hand-copied list of six that left "heritage" out. So
+    // ticking Heritage, pressing save and being told it saved left the
+    // destination missing from the Heritage filter, with nothing to say why.
+    // The two lists are one list now; this fails if they are ever split again.
+    const view = readFileSync("lib/vacation-destinations-view.ts", "utf8");
+    assert.match(view, /const THEMES: readonly string\[\] = TRIP_THEMES\.map/);
+    assert.match(view, /const SEASONS: readonly string\[\] = SEASON_OPTIONS\.map/);
+    assert.doesNotMatch(
+      view,
+      /const THEMES: readonly string\[\] = \[/,
+      "the theme list must not be written out a second time",
+    );
+    assert.ok(
+      TRIP_THEMES.some((theme) => theme.value === "heritage"),
+      "heritage is a trip type and the filter depends on it",
+    );
   });
 });

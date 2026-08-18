@@ -17,7 +17,8 @@ import {
   type FilterOption,
   type KosherLevel,
   type ShabbosLevel,
-  type VacationCardModel,
+  cardSlug,
+  type DirectoryCard,
   type VacationFilters,
 } from "@/lib/vacation-ideas";
 
@@ -111,7 +112,7 @@ export default function VacationIdeasHub({
   initialTheme = "",
   initialSeason = "",
 }: {
-  cards: VacationCardModel[];
+  cards: DirectoryCard[];
   /** Set when the visitor arrived from a category on the front page. */
   initialTheme?: TripTheme | "";
   /** Set when the visitor arrived from a time of year on the front page. */
@@ -225,7 +226,7 @@ export default function VacationIdeasHub({
       {results.length > 0 ? (
         <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {results.map((card) => (
-            <VacationCard key={card.destination.slug} card={card} />
+            <VacationCard key={`${card.kind}-${cardSlug(card)}`} card={card} />
           ))}
         </div>
       ) : (
