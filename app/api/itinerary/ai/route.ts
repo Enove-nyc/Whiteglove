@@ -248,6 +248,34 @@ function buildUserMessage(body: { question?: string; location?: string; date?: s
  */
 const ASSISTANT_LIMIT = { limit: 12, windowSeconds: 60 };
 
+/**
+ * A CEILING ON THE WHOLE ASSISTANT, NOT ON ONE VISITOR.
+ *
+ * The per-visitor limit above is keyed on the caller's address, and that is
+ * worth exactly as much as the caller's address is hard to change. Measured,
+ * not guessed: fourteen requests fired at production from one machine landed
+ * in SEVEN different buckets, because the outbound proxy in front of them
+ * rotated its egress address. Nothing was attacking anything — it was a test —
+ * and it walked straight through a limit of twelve without ever reaching it.
+ * Anybody who wanted to could do that deliberately, and the thing on the other
+ * side of it is a metered API key with the owner's card behind it.
+ *
+ * So there is a second limit that no amount of address-changing gets around,
+ * because it does not ask who is calling: this many calls a minute and this
+ * many a day, across everybody. It is set far above what this site's traffic
+ * looks like — a visitor will never meet it — and its whole job is that the
+ * worst case is a number the owner has agreed to rather than whatever a script
+ * can manage overnight.
+ *
+ * Refusing here reads as "busy", not "you have done something wrong", because
+ * from the visitor's side that is what it is.
+ */
+const ASSISTANT_CEILING = [
+  { key: "assistant:all:minute", limit: 90, windowSeconds: 60 },
+  { key: "assistant:all:day", limit: 2000, windowSeconds: 86_400 },
+];
+const BUSY = "The assistant is busy right now. Please try again in a few minutes.";
+
 export async function POST(request: NextRequest) {
   const who = requesterKey(request.headers);
   const bucket = `assistant:${who}`;
@@ -285,6 +313,26 @@ export async function POST(request: NextRequest) {
       { available: false, reason: tooManyMessage(flood.retryAfter) },
       { status: 429, headers: { ...limitHeaders, "retry-after": String(Math.max(1, flood.retryAfter)) } },
     );
+  }
+
+  // The ceiling, checked after the per-visitor limit so a single script is
+  // stopped by its own bucket before it can spend anybody else's headroom.
+  for (const ceiling of ASSISTANT_CEILING) {
+    const room = await rateLimit(ceiling.key, ceiling);
+    if (!room.ok) {
+      console.warn("[assistant] site-wide ceiling reached", ceiling.key, `retry in ${room.retryAfter}s`);
+      return NextResponse.json(
+        { available: false, reason: BUSY },
+        {
+          status: 429,
+          headers: {
+            ...limitHeaders,
+            "x-ratelimit-scope": "site",
+            "retry-after": String(Math.max(1, room.retryAfter)),
+          },
+        },
+      );
+    }
   }
 
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
