@@ -71,7 +71,10 @@ export async function rateLimit(key: string, config: Config): Promise<RateLimitR
   if (!localResult.ok) return localResult;
 
   const redis = redisConfig();
-  if (!redis) return localResult;
+  if (!redis) {
+    console.warn("[rate-limit] no UPSTASH_REDIS_REST_URL/TOKEN — the limit is per-process only, which does not hold on serverless");
+    return localResult;
+  }
 
   const full = `white-glove:rl:${key}`;
   try {
@@ -79,7 +82,16 @@ export async function rateLimit(key: string, config: Config): Promise<RateLimitR
       headers: { Authorization: `Bearer ${redis.token}` },
       cache: "no-store",
     });
-    if (!response.ok) return localResult;
+    if (!response.ok) {
+      // SAY SO. This used to fall back to the in-process counter without a
+      // word, and on serverless that counter is worthless — each request can
+      // land on a different instance, so nothing ever accumulates. The limiter
+      // then looks present in the code and does nothing in production, which
+      // is how a guard on a paid API key was found to be inert only by firing
+      // sixteen requests at it. Fail open, as before; fail open LOUDLY.
+      console.warn("[rate-limit] upstash refused", response.status, "— falling back to the in-process counter");
+      return localResult;
+    }
     const { result } = (await response.json()) as { result?: number };
     const count = typeof result === "number" ? result : 1;
 
@@ -104,7 +116,8 @@ export async function rateLimit(key: string, config: Config): Promise<RateLimitR
       return { ok: false, remaining: 0, retryAfter: ttl };
     }
     return { ok: true, remaining: config.limit - count, retryAfter: 0 };
-  } catch {
+  } catch (error) {
+    console.warn("[rate-limit] upstash unreachable — falling back to the in-process counter", error);
     return localResult;
   }
 }
