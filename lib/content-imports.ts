@@ -374,10 +374,16 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
     ];
     const readyToStage = BUILT_IN_CONTENT_IMPORT_PACKAGES
       .filter((sourcePackage) => !importedBySlug.has(sourcePackage.batch.slug))
-      .reduce((total, sourcePackage) => total + sourcePackage.candidates.length, 0);
+      .reduce((total, sourcePackage) => total + realCandidateCount(sourcePackage), 0);
     const candidateViews = (rows as unknown as StorageCandidate[])
       .map(viewFromStored)
-      .filter((candidate) => !isDisallowedImportSource(candidate));
+      .filter((candidate) => !isDisallowedImportSource(candidate))
+      // Template placeholders that name no real place, taken out of the staged
+      // rows exactly as they are from the packs — otherwise a database that was
+      // staged before the purge keeps counting all 25,808. See
+      // isTemplateFillerCandidate. The rows stay in the table; they just stop
+      // being counted or shown, which is what the queue number is meant to mean.
+      .filter((candidate) => !isTemplateFillerCandidate(candidate.name));
     return {
       configured: true,
       databaseReady: true,
