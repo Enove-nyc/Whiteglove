@@ -1,0 +1,140 @@
+/**
+ * The Content-Security-Policy, in one place, sent Report-Only for now.
+ *
+ * WHAT A REPORT-ONLY POLICY IS FOR. Every directive below is the policy this
+ * site would enforce — but sent as Content-Security-Policy-Report-Only, it
+ * blocks nothing. It only asks the browser to report anything the enforcing
+ * version WOULD have stopped. So a wrong line here cannot take a page down; it
+ * can only teach us that the line is wrong, which is the entire reason to run
+ * this phase before switching the header to the enforcing name.
+ *
+ * WHAT IS ALLOWED, AND WHY EACH IS HERE. The list was built by reading every
+ * script, iframe, image source and browser fetch in the app (not the citation
+ * links or the server-side API calls, which a browser policy does not govern):
+ *
+ *   - 'self' everywhere: the site's own code, styles, photos (/api/media) and
+ *     every /api call.
+ *   - 'unsafe-inline' on script and style: Next's App Router ships an inline
+ *     bootstrap script on every page, and inline style attributes are
+ *     everywhere in the markup and injected by Google Maps and Leaflet.
+ *     Tightening this to nonces is a later, separate pass — it needs the
+ *     middleware to stamp a nonce per request and is not free to get wrong.
+ *   - emrldco.com: the Travelpayouts verification snippet in the root layout.
+ *   - tp.media: the Travelpayouts search-form script injected on /embed/*.
+ *   - maps.googleapis.com + the Google static hosts: the map script and the
+ *     tiles, imagery and fonts it pulls at runtime.
+ *   - *.tile.openstreetmap.org: the Leaflet area map's tiles.
+ *   - photon.komoot.io: the address box's autocomplete, called from the browser.
+ *   - the Duffel / Stripe / Evervault / Mapbox hosts: the admin card-entry
+ *     form (/admin/duffel/review) tokenises a card through them. This is the
+ *     hand-off the old next.config note warned a careless policy would break,
+ *     and the single strongest reason to learn from Report-Only first.
+ *
+ * 'unsafe-eval' IS DELIBERATELY ABSENT. Google Maps has historically wanted it
+ * and may still; leaving it out is not an oversight but the question this phase
+ * exists to answer — if the reports show script-src blocking eval on a map
+ * page, it goes in before enforcing, and if they do not, it never does.
+ *
+ * The two unknowns — the exact hosts the Travelpayouts widget and the Duffel
+ * form open once running — carry best guesses here. A report naming a host not
+ * in this list is the signal; that is what we are here to collect.
+ */
+
+const GOOGLE_STATIC = [
+  "https://maps.gstatic.com",
+  "https://*.gstatic.com",
+  "https://*.googleapis.com",
+  "https://*.google.com",
+  "https://*.ggpht.com",
+  "https://khms0.googleapis.com",
+  "https://khms1.googleapis.com",
+  "https://streetviewpixels-pa.googleapis.com",
+];
+
+const TRAVELPAYOUTS = [
+  "https://tp.media",
+  "https://*.travelpayouts.com",
+  "https://*.aviasales.com",
+  "https://*.aviasales.ru",
+  "https://*.localrent.com",
+];
+
+const DUFFEL_CARD = [
+  "https://api.duffel.com",
+  "https://api.duffel.cards",
+  "https://assets.duffel.com",
+  "https://js.stripe.com",
+  "https://api.stripe.com",
+  "https://js.evervault.com",
+  "https://api.evervault.com",
+  "https://*.evervault.com",
+  "https://api.mapbox.com",
+];
+
+const dedupe = (values: string[]) => [...new Set(values)];
+
+/**
+ * Build the policy string. `reportPath` is where violations are posted.
+ *
+ * report-uri is the widely supported one; report-to names a group that the
+ * Reporting-Endpoints header (set beside this one) defines, for the newer
+ * browsers that have dropped report-uri. Both point at the same endpoint.
+ */
+export function contentSecurityPolicy(reportPath: string): string {
+  const directives: Record<string, string[]> = {
+    "default-src": ["'self'"],
+    "base-uri": ["'self'"],
+    "object-src": ["'none'"],
+    "frame-ancestors": ["'self'"],
+    "form-action": ["'self'", ...TRAVELPAYOUTS, ...DUFFEL_CARD],
+    "script-src": dedupe([
+      "'self'",
+      "'unsafe-inline'",
+      "https://emrldco.com",
+      "https://tp.media",
+      "https://maps.googleapis.com",
+      ...GOOGLE_STATIC,
+      ...DUFFEL_CARD,
+    ]),
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": dedupe([
+      "'self'",
+      "data:",
+      "blob:",
+      "https://*.tile.openstreetmap.org",
+      "https://maps.googleapis.com",
+      ...GOOGLE_STATIC,
+      ...TRAVELPAYOUTS,
+      "https://api.mapbox.com",
+    ]),
+    "font-src": ["'self'", "data:"],
+    "connect-src": dedupe([
+      "'self'",
+      "https://photon.komoot.io",
+      "https://maps.googleapis.com",
+      ...GOOGLE_STATIC,
+      ...TRAVELPAYOUTS,
+      ...DUFFEL_CARD,
+    ]),
+    "frame-src": dedupe([
+      "'self'",
+      ...TRAVELPAYOUTS,
+      "https://js.stripe.com",
+      "https://*.evervault.com",
+      "https://api.duffel.cards",
+    ]),
+    "worker-src": ["'self'", "blob:"],
+    "manifest-src": ["'self'"],
+  };
+
+  const body = Object.entries(directives)
+    .map(([name, values]) => `${name} ${values.join(" ")}`)
+    .join("; ");
+
+  return `${body}; report-uri ${reportPath}; report-to csp`;
+}
+
+/** The report group named by the policy's report-to, declared in its own header. */
+export function reportingEndpointsHeader(reportPath: string): string {
+  return `csp="${reportPath}"`;
+}

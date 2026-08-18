@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { contentSecurityPolicy, reportingEndpointsHeader } from "./lib/csp-policy";
 
 const nextConfig: NextConfig = {
   // The site advertised its framework and version on every response, for no
@@ -25,8 +26,20 @@ const nextConfig: NextConfig = {
    * no navigator.geolocation, getUserMedia or camera call anywhere. `payment`
    * is deliberately absent from the list: Duffel's card component handles card
    * entry, and switching that capability off is not a guess worth making.
+   *
+   * THE CSP IS HERE NOW, AND IT IS REPORT-ONLY. The note above used to say a
+   * Content-Security-Policy was deferred because it is the header that breaks
+   * the booking and card flows if written blind. It is written now — see
+   * lib/csp-policy.ts — but sent as Content-Security-Policy-Report-Only, which
+   * blocks nothing and only reports what the enforcing version would have
+   * stopped. The reports land at /api/csp-report and are read on the admin
+   * Security screen. Nothing here enforces until those reports are silent on
+   * the two hand-offs the policy cannot fully see from source; only then does
+   * the header name lose "-Report-Only". Reporting-Endpoints declares the
+   * group the policy's report-to names, for browsers that dropped report-uri.
    */
   async headers() {
+    const CSP_REPORT_PATH = "/api/csp-report";
     return [
       {
         source: "/:path*",
@@ -38,6 +51,8 @@ const nextConfig: NextConfig = {
           // visitor was reading does not leave the site.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Reporting-Endpoints", value: reportingEndpointsHeader(CSP_REPORT_PATH) },
+          { key: "Content-Security-Policy-Report-Only", value: contentSecurityPolicy(CSP_REPORT_PATH) },
         ],
       },
     ];

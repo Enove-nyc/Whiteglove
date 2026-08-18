@@ -1,0 +1,114 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { contentSecurityPolicy, reportingEndpointsHeader } from "@/lib/csp-policy";
+import { blockedOrigin, parseViolations } from "@/lib/csp-reports";
+
+/**
+ * The Content-Security-Policy, and the endpoint that learns what it gets wrong.
+ *
+ * It ships Report-Only first because getting the host list wrong takes the
+ * booking form or the card entry down silently. These tests hold the two
+ * things that make that phase safe: the policy names every host read out of the
+ * source, and the report sink understands whatever the browser sends it.
+ */
+
+const CSP = contentSecurityPolicy("/api/csp-report");
+
+describe("the policy names what the site actually loads", () => {
+  it("carries the hosts found by reading the app", () => {
+    // Each of these is in the code: the map script, the OSM tiles, the address
+    // autocomplete, the Travelpayouts snippet and widget, and the Duffel /
+    // Stripe / Evervault card hosts. A host dropped from here is a page that
+    // would break the day the policy enforces.
+    for (const host of [
+      "https://maps.googleapis.com",
+      "https://*.tile.openstreetmap.org",
+      "https://photon.komoot.io",
+      "https://emrldco.com",
+      "https://tp.media",
+      "https://js.stripe.com",
+      "https://js.evervault.com",
+      "https://api.duffel.com",
+    ]) {
+      assert.ok(CSP.includes(host), `${host} is missing from the policy`);
+    }
+  });
+
+  it("keeps the safe floor: no plugins, no framing us, self is the base", () => {
+    assert.match(CSP, /object-src 'none'/);
+    assert.match(CSP, /frame-ancestors 'self'/);
+    assert.match(CSP, /base-uri 'self'/);
+    assert.match(CSP, /default-src 'self'/);
+  });
+
+  it("LEAVES unsafe-eval OUT, so Report-Only can answer whether it is needed", () => {
+    // Google Maps has historically wanted it. Whether it still does is the
+    // question this phase exists to answer, so it must not be pre-granted —
+    // that would hide the very report that settles it.
+    assert.doesNotMatch(CSP, /'unsafe-eval'/);
+  });
+
+  it("points reports at the endpoint, both the old way and the new", () => {
+    assert.match(CSP, /report-uri \/api\/csp-report/);
+    assert.match(CSP, /report-to csp/);
+    assert.equal(reportingEndpointsHeader("/api/csp-report"), 'csp="/api/csp-report"');
+  });
+});
+
+describe("the report sink understands the browser", () => {
+  it("reads the old csp-report shape", () => {
+    const v = parseViolations(
+      { "csp-report": { "violated-directive": "connect-src", "blocked-uri": "https://x.example.com/a?b=1", "document-uri": "https://site/book?q=secret" } },
+      "",
+    );
+    assert.equal(v.length, 1);
+    assert.equal(v[0].directive, "connect-src");
+    assert.equal(v[0].blocked, "https://x.example.com");
+    assert.equal(v[0].documentPath, "/book", "the query string must be dropped");
+  });
+
+  it("reads the newer Reporting API array", () => {
+    const v = parseViolations(
+      [{ type: "csp-violation", body: { effectiveDirective: "frame-src", blockedURL: "https://widget.aviasales.com/f", documentURL: "https://site/book" } }],
+      "",
+    );
+    assert.equal(v.length, 1);
+    assert.equal(v[0].directive, "frame-src");
+    assert.equal(v[0].blocked, "https://widget.aviasales.com");
+  });
+
+  it("reduces a blocked URL to what a policy is written in", () => {
+    assert.equal(blockedOrigin("https://tp.media/content?marker=1&x=2"), "https://tp.media");
+    assert.equal(blockedOrigin("inline"), "inline");
+    assert.equal(blockedOrigin("eval"), "eval");
+    assert.equal(blockedOrigin(""), "unknown");
+  });
+
+  it("drops a shape it does not recognise rather than guessing", () => {
+    assert.deepEqual(parseViolations({ nonsense: true }, ""), []);
+    assert.deepEqual(parseViolations("a string", ""), []);
+    assert.deepEqual(parseViolations(null, ""), []);
+  });
+
+  it("falls back to the referer for the page when the report omits it", () => {
+    const v = parseViolations(
+      [{ type: "csp-violation", body: { effectiveDirective: "img-src", blockedURL: "https://t.example/x" } }],
+      "https://site/destinations/rome?utm=1",
+    );
+    assert.equal(v[0].documentPath, "/destinations/rome");
+  });
+});
+
+describe("the report-only header is wired in", () => {
+  it("is served as Report-Only, never as the enforcing name yet", async () => {
+    const { readFileSync } = await import("node:fs");
+    const config = readFileSync("next.config.ts", "utf8");
+    assert.match(config, /Content-Security-Policy-Report-Only/);
+    assert.doesNotMatch(
+      config,
+      /key: "Content-Security-Policy"/,
+      "the enforcing header must not ship until the reports are silent",
+    );
+    assert.match(config, /Reporting-Endpoints/);
+  });
+});

@@ -171,6 +171,12 @@ export default async function AdminSettingsPage() {
             state={passwordStorageAvailable() ? undefined : "Set in the host for now"}
           />
           <Card
+            href="/admin/settings/security"
+            title="Security policy"
+            detail="The rule that says which outside services a page may load — maps, the booking search, the card form. Watching only for now; nothing is blocked."
+            state="Watching"
+          />
+          <Card
             href="/admin/settings/trello"
             title="Trello"
             detail="Pictures, listings and reports."
