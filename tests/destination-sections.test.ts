@@ -102,8 +102,16 @@ describe("what the completeness tracker counts", () => {
   it("still refuses to round a thin record up", () => {
     // The whole point of the number. Adding sections made it smaller, which
     // is the honest direction.
+    //
+    // The ceiling was 20 and the average crossed it at batch 24 of the beis
+    // hachaim listings, reaching 20.3%. That rise is real — seventy-one of the
+    // directory towns now carry a researched cemetery listing where none of
+    // them did — so the ceiling moved rather than the number being explained
+    // away. It is still far below anything that could be called a full record,
+    // which is what this guard is for. Raise it again only against content you
+    // can point at.
     const average = destinationDatabase.reduce((sum, r) => sum + completeness(r).score, 0) / destinationDatabase.length;
-    assert.ok(average < 20, `average completeness is ${average.toFixed(1)}% — if this ever passes, check it is real`);
+    assert.ok(average < 25, `average completeness is ${average.toFixed(1)}% — if this ever passes, check it is real`);
   });
 });
 
