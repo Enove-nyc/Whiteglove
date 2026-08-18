@@ -41,6 +41,27 @@ describe("the policy names what the site actually loads", () => {
     assert.match(CSP, /default-src 'self'/);
   });
 
+  it("allows what the Report-Only pass caught the widget and card form doing", () => {
+    // Not in the source, only seen once running: the Emerald snippet phoning
+    // home (connect), the Aviasales widget's Sentry and Google ad hosts, and a
+    // Google Fonts stylesheet a third-party component loads. Allowed so
+    // enforcing does not break the booking search or the card form.
+    for (const host of [
+      "https://emrldco.com",
+      "https://sentry.avs.io",
+      "https://*.doubleclick.net",
+      "https://*.googlesyndication.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+    ]) {
+      assert.ok(CSP.includes(host), `${host} was reported and must be allowed before enforcing`);
+    }
+    // emrldco must reach connect-src, not only script-src — it makes a
+    // background request, which is what the report showed.
+    const connect = CSP.split(";").find((d) => d.trim().startsWith("connect-src")) ?? "";
+    assert.ok(connect.includes("https://emrldco.com"), "emrldco must be in connect-src");
+  });
+
   it("LEAVES unsafe-eval OUT, so Report-Only can answer whether it is needed", () => {
     // Google Maps has historically wanted it. Whether it still does is the
     // question this phase exists to answer, so it must not be pre-granted —
