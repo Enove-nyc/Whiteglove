@@ -17,11 +17,13 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Vienna — Kever of the first Boyaner Rebbe",
     yiddishName: "ציון הבויאנער רבי",
     country: "Austria",
-    address: "Jewish section, Vienna Central Cemetery (Zentralfriedhof), Simmering, Vienna, Austria — confirm exact location locally",
+    address: "Jewish section, Vienna Central Cemetery (Zentralfriedhof), Simmeringer Hauptstraße, Simmering, Vienna, Austria — the cemetery has two Jewish sections; see the notes",
     airportRef: "48.150, 16.441",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Friedman, the first Boyaner Rebbe, a grandson of the Ruzhiner, in the Jewish section of Vienna's Central Cemetery.",
-      "The Zentralfriedhof is very large; confirm the Jewish section (Tor / gate) and the exact grave location locally.",
+      "THERE ARE TWO JEWISH SECTIONS AND THEY ARE AT DIFFERENT GATES. The old one is at Tor 1, opened in 1879, with some eighty thousand kevorim in it. The new one is at Tor 4. Arriving at the wrong gate means a long walk in a cemetery of nearly two and a half square kilometres.",
+      "WHICH GATE FOR THE BOYANER REBBE IS NOT SETTLED HERE. He was niftar on the eleventh of March 1917. The new cemetery at Tor 4 is recorded as opening on the fourth of April 1917 — three weeks later — but the same sources also say burials had been moving there from 1916 because Tor 1 was full. That points to Tor 1 without proving it. Ask at the gate office rather than trusting either date.",
+      "The Ruzhiner's descendants are scattered across several countries and several cemeteries. If you are looking for a particular one of them, confirm the man before the gate.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Friedman of Boyan", yiddishName: "רבי יצחק פרידמן מבויאן", knownAs: "The Pachad Yitzchak · first Boyaner Rebbe", yahrzeit: "ט״ז אדר · 5677 / 1917", note: "Founder of the Boyan chassidus and a grandson of Rabbi Yisrael of Ruzhin." },

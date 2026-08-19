@@ -19,11 +19,14 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Chernobyl — Ohel of the Me'or Einayim",
     yiddishName: "אוהל המאור עינים",
     country: "Ukraine",
-    address: "Jewish cemetery, Chernobyl, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, at the edge of the town, Chernobyl, Kyiv Oblast, Ukraine — inside the exclusion zone",
     airportRef: "51.276, 30.222",
     arrivalNotes: [
       "Resting place of Rabbi Menachem Nachum Twersky, the Me'or Einayim, founder of the Chernobyl chassidic dynasty.",
-      "IMPORTANT: Chernobyl lies inside the restricted exclusion zone. Access is tightly controlled and arranged only through authorized escorts — do not travel without confirming current permissions and safety. Exact grave location to be confirmed locally.",
+      "IMPORTANT: Chernobyl lies inside the restricted exclusion zone. Access is tightly controlled and arranged only through authorized escorts — do not travel without confirming current permissions and safety.",
+      "THE OHEL IS AT THE EDGE OF THE TOWN, a small structure over the kever, and it is kept locked. The key has been held at the zone administration's own office in Chernobyl — Chernobylinterinform — so getting in has meant collecting it there rather than arranging anything in Kyiv.",
+      "YOU CANNOT DRIVE HERE AND YOU CANNOT COME ALONE. Entry to the zone is on an approved, escorted visit with a permit; even people who were evacuated from Chernobyl are let back to their own town on one appointed day a year.",
+      "CHECK BEFORE YOU PLAN ANYTHING. Zone visits were suspended after the invasion of 2022, when Russian forces held the site, and sources disagree about what is permitted now — one says tours remain suspended, another that visits are possible in 2026 under the conditions the Ukrainian authorities set. Nothing on this page should be treated as the current position; ask the zone administration.",
     ],
     accessNote: "Inside the Chernobyl exclusion zone — access is restricted and must be arranged with authorized escorts. Confirm current permissions and the exact grave location before traveling.",
     burials: [
