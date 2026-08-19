@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   connectionBetween,
+  connectionInfo,
   flightItineraryFromInput,
   flightItineraryProblem,
   landsNextDay,
@@ -140,6 +141,55 @@ describe("outbound and return", () => {
       input({ title: "Cohen", legs: [{ ...leg({ from: "JFK", to: "TLV", departDate: "2026-09-01" }) }] }),
     );
     assert.equal(itinerary.legs[0].direction, "outbound");
+  });
+});
+
+describe("how a connection is booked", () => {
+  it("takes an airline stopover at the owner's word and shows the wait", () => {
+    const a = leg({ to: "LHR", arriveDate: "2026-09-01", arriveTime: "10:00" });
+    const b = leg({ from: "LHR", departDate: "2026-09-01", departTime: "12:30", connectionType: "airline" });
+    assert.deepEqual(connectionInfo(a, b), { airport: "LHR", layover: "2h 30m", kind: "airline" });
+  });
+
+  it("marks a separate booking as a self-transfer", () => {
+    const a = leg({ to: "LHR", arriveDate: "2026-09-01", arriveTime: "10:00" });
+    const b = leg({ from: "LHR", departDate: "2026-09-01", departTime: "14:00", connectionType: "separate" });
+    assert.deepEqual(connectionInfo(a, b), { airport: "LHR", layover: "4h", kind: "separate" });
+  });
+
+  it("honours an explicit type even when the airport strings do not match", () => {
+    const a = leg({ to: "London Heathrow", arriveDate: "2026-09-01", arriveTime: "10:00" });
+    const b = leg({ from: "LHR", departDate: "2026-09-01", departTime: "13:00", connectionType: "airline" });
+    // connectionBetween would see no connection; connectionInfo trusts the mark.
+    assert.equal(connectionBetween(a, b), null);
+    assert.equal(connectionInfo(a, b)?.kind, "airline");
+  });
+
+  it("shows a long airline stopover in days and hours", () => {
+    const a = leg({ to: "IST", arriveDate: "2026-09-01", arriveTime: "10:00" });
+    const b = leg({ from: "IST", departDate: "2026-09-02", departTime: "14:00", connectionType: "airline" });
+    assert.equal(connectionInfo(a, b)?.layover, "1d 4h");
+  });
+
+  it("falls back to auto-detection when nothing is marked", () => {
+    const a = leg({ to: "LHR", arriveDate: "2026-09-01", arriveTime: "10:00" });
+    const b = leg({ from: "LHR", departDate: "2026-09-01", departTime: "12:15" });
+    assert.equal(connectionInfo(a, b)?.kind, "auto");
+  });
+
+  it("keeps the connection type through a saved itinerary", () => {
+    const itinerary = flightItineraryFromInput(
+      input({
+        title: "Cohen",
+        legs: [
+          { ...leg({ from: "JFK", to: "LHR", departDate: "2026-09-01" }) },
+          { ...leg({ from: "LHR", to: "TLV", departDate: "2026-09-01" }), connectionType: "separate" },
+        ],
+      }),
+    );
+    assert.equal(itinerary.legs[1].connectionType, "separate");
+    // A leg with no type stored stays undefined, not "".
+    assert.equal(itinerary.legs[0].connectionType, undefined);
   });
 });
 

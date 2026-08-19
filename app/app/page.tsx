@@ -1,0 +1,153 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import CompanionApp from "@/components/companion/CompanionApp";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { accountCookieName, getCurrentAccountSummary, getTripItinerary, readSessionEmail } from "@/lib/account-store";
+import { getPlan } from "@/lib/account-plan-store";
+import { mayUseCompanionApp } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
+import { buildDays, emptyItinerary } from "@/data/itinerary";
+import { coordinatesToPoint } from "@/data/route-utils";
+import { itineraryToCompanionTrip } from "@/lib/companion-trip";
+import { allCrossings } from "@/lib/border-store";
+import { borderCostForLegs } from "@/lib/border-legs";
+import { readAssumptions } from "@/lib/planner-settings-store";
+import { readBrand } from "@/lib/business-brand-store";
+import { zmanimRequestFor } from "@/lib/trip-zmanim";
+import { zmanimForDay } from "@/lib/zmanim-day-calculate";
+import { curatedKosherPlacesNear } from "@/lib/curated-kosher";
+import { hechsherLabel } from "@/data/hechsherim";
+import { pageMetadata } from "@/lib/seo";
+
+// One person's trip, on one person's phone. Nothing here belongs in a search
+// result, and the gate below means most visitors never see it at all.
+export const metadata = pageMetadata({
+  title: "The White Glove app",
+  description: "The trip in your pocket — a day at a time, the kosher side of each day, and the Shabbos that stops early.",
+  path: "/app",
+  noIndex: true,
+});
+
+// The plan and the trip are read fresh each time.
+export const dynamic = "force-dynamic";
+
+/**
+ * The White Glove app — a trip in your pocket.
+ *
+ * BUSINESS-ONLY, on purpose and in one place. The gate is mayUseCompanionApp in
+ * lib/account-limits.ts, the same file that holds every other plan entitlement;
+ * this page is the only door that reads it, and the account page says what
+ * Business gets in the same breath. A signed-out visitor is sent to sign in; a
+ * signed-in traveller who is not on Business is told what this is and where to
+ * ask for it, rather than being shown a wall.
+ */
+export default async function AppPage() {
+  const cookie = (await cookies()).get(accountCookieName())?.value;
+  const account = await getCurrentAccountSummary(cookie);
+  const sessionEmail = readSessionEmail(cookie);
+  const who = account?.email || sessionEmail || "";
+  if (!who) redirect("/login?next=%2Fapp");
+
+  const plan = await getPlan(who);
+  if (mayUseCompanionApp(plan)) {
+    // Their own open trip, built the same way the printed copy and the shared
+    // link build it — the same buildDays(), reading the same border costs and
+    // planning figures — so the trip on the phone is the trip on paper. When
+    // there is no real trip yet, the demo Rome week stands in so the app is
+    // never a blank screen.
+    const trip = await getTripItinerary(who).catch(() => null);
+    let companionTrip = undefined;
+    if (trip?.itinerary?.startDate && trip.itinerary.endDate) {
+      const itin = { ...emptyItinerary(), ...trip.itinerary };
+      const [crossings, assume, brand] = await Promise.all([
+        allCrossings().catch(() => []),
+        readAssumptions(),
+        readBrand(who).catch(() => null),
+      ]);
+      const today = new Date().toISOString().slice(0, 10);
+      const borderCost = borderCostForLegs(crossings, today, assume.borderAllowanceMins);
+      const days = buildDays(itin, borderCost, assume);
+      if (days.length > 0) {
+        // The kosher-and-Shabbos layer, both from the site's own records and
+        // worked out offline: candle-lighting and when Shabbos ends per day
+        // (astronomy + the timezone under the coordinates), and the kosher
+        // places we already publish near where the trip is.
+        const zmanimByDate: Record<string, ReturnType<typeof zmanimForDay>> = {};
+        for (const request of zmanimRequestFor(days)) {
+          zmanimByDate[request.date] = zmanimForDay(request);
+        }
+        const centerCoords =
+          itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
+          itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
+        const center = coordinatesToPoint(centerCoords);
+        const kosher = center
+          ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
+              name: k.name,
+              city: k.city,
+              kind: k.category,
+              diet: k.diet,
+              hechsher: hechsherLabel(k.hechsher),
+              km: k.km,
+            }))
+          : [];
+
+        companionTrip = itineraryToCompanionTrip(itin, days, {
+          today,
+          advisorName: brand?.enabled ? brand.name : undefined,
+          tripName: trip.tripName,
+          client: trip.client,
+          layer: { zmanimByDate, kosher },
+        });
+      }
+    }
+
+    // The app fills the screen — its own header, tabs and chrome, no site
+    // furniture around it. On a phone it is the whole window; installed to the
+    // home screen it is the whole app.
+    return (
+      <main>
+        <CompanionApp trip={companionTrip} />
+      </main>
+    );
+  }
+
+  // Signed in, but not on Business. Say what it is and where it is, once.
+  return (
+    <main className="min-h-screen bg-[var(--cream)]">
+      <Navbar />
+      <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
+        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+          The trip in your pocket.
+        </h1>
+        <p className="text-base leading-7 text-stone-600">
+          A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
+          wallet kept on the phone for when there is no signal. It is the itinerary you build in
+          here, handed to your traveller on their phone rather than on paper.
+        </p>
+        <p className="text-base leading-7 text-stone-600">
+          The app is part of {PLAN_LABELS.business} — the plan for an agency or an office planning
+          trips for other people. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business}{" "}
+          from your account, and we will be in touch.
+        </p>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Link
+            href="/account"
+            className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Ask about {PLAN_LABELS.business}
+          </Link>
+          <Link
+            href="/itinerary"
+            className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white"
+          >
+            Build a trip yourself
+          </Link>
+        </div>
+      </section>
+      <Footer />
+    </main>
+  );
+}
