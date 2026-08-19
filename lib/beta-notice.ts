@@ -55,6 +55,20 @@ export const DEFAULT_NOTICE: BetaNotice = {
 export const DISMISS_KEY = "whiteGloveBetaNotice";
 
 /**
+ * Where "this wording has been shown once" is remembered, per version.
+ *
+ * WHY A SECOND KEY. The dismissal above is written only when the visitor
+ * closes the notice. Without this, a visitor who read it but navigated away
+ * without pressing Close met it again on the next fresh page load, and again
+ * on the one after — "it pops up more than once", in the owner's words. This
+ * marks the wording as seen the first time it is revealed, so it appears once
+ * and does not return. Bumping the version clears both, because a new wording
+ * has not been seen. Kept separate from DISMISS_KEY so recording "seen" cannot
+ * be mistaken for the visitor having answered it.
+ */
+export const SHOWN_KEY = "whiteGloveBetaNoticeShown";
+
+/**
  * Should this visitor see it?
  *
  * Four noes, and each is a place a notice would be wrong rather than merely

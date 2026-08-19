@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { headers } from "next/headers";
+import { requireSignedIn } from "@/lib/require-signed-in";
 import Footer from "@/components/Footer";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
@@ -25,6 +26,8 @@ export const metadata = pageMetadata({
 // this page. It has its own page now — app/assistant — and this one is the
 // planner again, so there is no question to read out of the address.
 export default async function ItineraryPage() {
+  // The planner is signed-in only, at the owner's word.
+  await requireSignedIn("/itinerary");
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);

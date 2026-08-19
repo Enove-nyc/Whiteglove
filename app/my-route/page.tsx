@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import MyRouteDashboard from "@/components/MyRouteDashboard";
 import Navbar from "@/components/Navbar";
 import { allCrossings } from "@/lib/border-store";
+import { requireSignedIn } from "@/lib/require-signed-in";
 
 import { pageMetadata } from "@/lib/seo";
 
@@ -20,6 +21,8 @@ export const metadata = pageMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function MyRoutePage() {
+  // Somebody's own saved route — signed-in only, at the owner's word.
+  await requireSignedIn("/my-route");
   const crossings = await allCrossings();
   return (
     <main className="min-h-screen bg-[var(--cream)]">

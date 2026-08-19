@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
+import HeritageCemeteryLocator from "@/components/HeritageCemeteryLocator";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import { getPublicCemeteryList } from "@/lib/cemeteries-view";
@@ -50,12 +51,12 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
             <p className="mt-4 max-w-2xl leading-7 text-stone-600">
               Looking for a town&rsquo;s cemetery rather than a kever?{" "}
               <Link
-                href="/cemeteries/heritage"
+                href="#heritage"
                 className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
-                Open the heritage cemetery locator
+                Jump to the heritage cemetery locator
               </Link>{" "}
-              — nearly two thousand batei hachaim worldwide, from Nesiya Tova.
+              — nearly two thousand batei hachaim worldwide, from Nesiya Tova, further down this page.
             </p>
           </div>
           <SubBrandCrest className="hidden shrink-0 sm:block" />
@@ -65,9 +66,8 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <CemeteryDirectory cemeteries={cemeteries} initialCountry={initialCountry} />
 
-        <div className="mt-10">
-          
-        </div>
+        {/* The Nesiya Tova locator set, folded into this one page. */}
+        <HeritageCemeteryLocator />
       </section>
 
       <Footer />

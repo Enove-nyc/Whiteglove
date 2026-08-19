@@ -22,8 +22,9 @@
  *   /plan       — three short STEPS, not three questions. Step two holds four
  *                 fields, and app/plan/page.tsx already refuses to call the
  *                 whole thing three questions for exactly that reason.
- *   /itinerary  — free, and usable without an account. An account is what puts
- *                 the trip on another device.
+ *   /itinerary  — free, but signed-in only now, at the owner's word (as are
+ *                 /plan and /my-route). Signing in is what starts it and what
+ *                 puts the trip on another device.
  *   /book       — the search hands off to a partner. Nothing is booked here,
  *                 and the partner takes the payment.
  */

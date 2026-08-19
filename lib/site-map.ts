@@ -35,7 +35,9 @@ import { allTzaddikim } from "@/lib/tzaddikim";
  *
  * Three kinds, and they are here for three different reasons:
  *  - **somebody's own** (`/account`, `/itinerary`, `/my-route`, `/i/`) — private
- *    by nature, and the pages already say noindex;
+ *    by nature, and the pages already say noindex. `/plan` joins them: the
+ *    planning tools are signed-in only now, at the owner's word, so a crawler
+ *    would only ever meet the sign-in door there;
  *  - **the way in** (`/admin`, `/login`, `/access`) — no value in a search
  *    result, and an admin door in an index is an invitation;
  *  - **machinery** (`/api`, `/version`, `/embed`) — not pages a person should
@@ -49,6 +51,7 @@ export const PRIVATE_PATHS = [
   "/login",
   "/access",
   "/embed",
+  "/plan",
   "/itinerary",
   "/my-route",
   "/command-center",
@@ -71,7 +74,6 @@ export function isPrivatePath(path: string): boolean {
  */
 const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFrequency: ChangeFrequency }> = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
-  { path: "/plan", priority: 0.9, changeFrequency: "monthly" },
   { path: "/kosher-travel", priority: 0.8, changeFrequency: "monthly" },
   // The reference page for the words the site uses — moved off the hub.
   { path: "/kosher-travel/glossary", priority: 0.3, changeFrequency: "yearly" },

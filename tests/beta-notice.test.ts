@@ -81,8 +81,17 @@ describe("how the dialog behaves", () => {
     assert.match(COMPONENT, /addEventListener\("scroll", onScroll, \{ passive: true \}\)/);
     assert.match(COMPONENT, /setTimeout\(reveal, NOTICE_DELAY_MS\)/);
     // The gate is a second condition on top of eligibility, not a replacement
-    // for it: due && revealed.
-    assert.match(COMPONENT, /due && revealed/);
+    // for it: it stays open once revealed, while it is still eligible here.
+    assert.match(COMPONENT, /open = revealed && eligibleHere/);
+  });
+
+  it("SHOWS ONCE PER WORDING, NOT ONCE PER PAGE", () => {
+    // The fix for "it pops up more than once": it is marked seen the moment it
+    // reveals — not only when Close is pressed — so a visitor who read it and
+    // moved on does not meet it again on the next page. A bumped version, being
+    // a wording nobody has seen, still shows once more.
+    assert.match(COMPONENT, /setItem\(SHOWN_KEY, notice\.version\)/);
+    assert.match(COMPONENT, /shownVersion !== notice\.version/);
   });
 
   it("offers the two actions and nothing else", () => {

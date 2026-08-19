@@ -34,15 +34,15 @@ export default async function MapPage() {
       country: c.country,
       coordinates: c.coordinates as string,
     })),
-    // The Nesiya Tova locator set — batei hachaim with a coordinate but no rich
-    // page of their own, so the marker links out to Nesiya Tova for details.
+    // The Nesiya Tova locator set — batei hachaim with a page of their own now,
+    // carrying our trip buttons and forwarding to Nesiya Tova for the details.
     ...heritageCemeteries.map((c) => ({
       slug: c.slug,
       name: c.name,
       city: c.city,
       country: c.country,
       coordinates: c.coordinates,
-      href: c.sourceUrl,
+      href: `/cemeteries/heritage/${c.slug}`,
     })),
   ];
 
