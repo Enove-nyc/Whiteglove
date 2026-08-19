@@ -108,6 +108,7 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       { label: "Zmanim", href: "/zmanim" },
       { label: "Kevarim", href: "/tzaddikim" },
       { label: "Cemeteries", href: "/cemeteries" },
+      { label: "Batei hachaim worldwide", href: "/cemeteries/heritage" },
     ],
   },
   {
