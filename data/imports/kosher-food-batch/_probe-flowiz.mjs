@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW = path.join(__dirname, "_raw");
-const UA = "Mozilla/5.0 (compatible; WhiteGloveKosherResearch/1.0; +https://whitegloveitineraries.com)";
+const UA = "Mozilla/5.0 (compatible; WhiteGloveKosherResearch/1.0; +https://whiteglovekoshertravel.com)";
 
 const urls = [
   "https://chabadhungary.com/wp-json/wp/v2/types",

@@ -32,7 +32,7 @@ const offline = process.argv.includes("--offline");
 
 async function fetchSymbolsPage() {
   const res = await fetch(SOURCE_URL, {
-    headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveItineraries/1.0)" },
+    headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveKosherTravel/1.0)" },
     signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) throw new Error(`kosherquest.org returned ${res.status}`);
@@ -256,7 +256,7 @@ async function downloadLogo(url, id) {
   }
   try {
     const res = await fetch(url, {
-      headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveItineraries/1.0)" },
+      headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveKosherTravel/1.0)" },
       signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return { ok: false, why: `HTTP ${res.status}` };
@@ -292,7 +292,7 @@ async function websiteAnswers(url) {
       const res = await fetch(url, {
         method,
         redirect: "follow",
-        headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveItineraries/1.0)" },
+        headers: { "user-agent": "Mozilla/5.0 (compatible; WhiteGloveKosherTravel/1.0)" },
         signal: AbortSignal.timeout(12000),
       });
       if (res.status === 404 || res.status === 410) return false;

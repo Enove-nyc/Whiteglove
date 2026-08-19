@@ -17,11 +17,13 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Vienna — Kever of the first Boyaner Rebbe",
     yiddishName: "ציון הבויאנער רבי",
     country: "Austria",
-    address: "Jewish section, Vienna Central Cemetery (Zentralfriedhof), Simmering, Vienna, Austria — confirm exact location locally",
+    address: "Jewish section, Vienna Central Cemetery (Zentralfriedhof), Simmeringer Hauptstraße, Simmering, Vienna, Austria — the cemetery has two Jewish sections; see the notes",
     airportRef: "48.150, 16.441",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Friedman, the first Boyaner Rebbe, a grandson of the Ruzhiner, in the Jewish section of Vienna's Central Cemetery.",
-      "The Zentralfriedhof is very large; confirm the Jewish section (Tor / gate) and the exact grave location locally.",
+      "THERE ARE TWO JEWISH SECTIONS AND THEY ARE AT DIFFERENT GATES. The old one is at Tor 1, opened in 1879, with some eighty thousand kevorim in it. The new one is at Tor 4. Arriving at the wrong gate means a long walk in a cemetery of nearly two and a half square kilometres.",
+      "WHICH GATE FOR THE BOYANER REBBE IS NOT SETTLED HERE. He was niftar on the eleventh of March 1917. The new cemetery at Tor 4 is recorded as opening on the fourth of April 1917 — three weeks later — but the same sources also say burials had been moving there from 1916 because Tor 1 was full. That points to Tor 1 without proving it. Ask at the gate office rather than trusting either date.",
+      "The Ruzhiner's descendants are scattered across several countries and several cemeteries. If you are looking for a particular one of them, confirm the man before the gate.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Friedman of Boyan", yiddishName: "רבי יצחק פרידמן מבויאן", knownAs: "The Pachad Yitzchak · first Boyaner Rebbe", yahrzeit: "ט״ז אדר · 5677 / 1917", note: "Founder of the Boyan chassidus and a grandson of Rabbi Yisrael of Ruzhin." },
@@ -36,10 +38,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון רבי מרדכי מנאדווארנא",
     country: "Ukraine",
     address: "Jewish cemetery, Nadvirna, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.63652, 24.57667",
     airportRef: "48.634, 24.570",
     arrivalNotes: [
       "Resting place of Rabbi Mordechai Leifer of Nadvorna, founder of the far-reaching Nadvorna chassidic line.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Mordechai Leifer of Nadvorna", yiddishName: "רבי מרדכי לייפער מנאדווארנא", knownAs: "The Nadvorna Rebbe", yahrzeit: "כ״ה סיון · 5654 / 1894", note: "Founder of the Nadvorna dynasty, forebear of many chassidic courts (Nadvorna, Bania, Pittsburgh and others)." },
@@ -90,10 +94,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון האמרי אלימלך",
     country: "Poland",
     address: "Jewish cemetery, Grodzisk Mazowiecki, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.112251, 20.6228185",
     airportRef: "52.107, 20.634",
     arrivalNotes: [
       "Resting place of Rabbi Elimelech Shapiro of Grodzisk, the Imrei Elimelech, a great-grandson of the Maggid of Kozhnitz.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Elimelech Shapiro of Grodzisk", yiddishName: "רבי אלימלך שפירא מגראדזיסק", knownAs: "The Imrei Elimelech", seforim: "אמרי אלימלך · דברי אלימלך", yahrzeit: "כ״ז כסלו · 5653 / 1892", note: "A leading Polish rebbe descended from the Kozhnitzer Maggid." },
@@ -108,10 +114,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון הסבא קדישא מראדושיץ",
     country: "Poland",
     address: "Jewish cemetery, Radoszyce, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.084399, 20.2325892",
     airportRef: "51.073, 20.264",
     arrivalNotes: [
       "Resting place of Rabbi Yissachar Ber of Radoshitz, the 'Saba Kadisha,' famed as a wonder-worker and healer.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yissachar Ber of Radoshitz", yiddishName: "רבי יששכר בער מראדושיץ", knownAs: "The Saba Kadisha (Holy Grandfather)", yahrzeit: "י״ז ניסן · 5603 / 1843", note: "A disciple of the Chozeh of Lublin and the Yid HaKadosh, sought by many for yeshuos." },
@@ -162,10 +170,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון רבי נחום ממאקאראוו",
     country: "Ukraine",
     address: "Jewish cemetery, Makariv, Kyiv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.46266, 29.80567",
     airportRef: "50.462, 29.813",
     arrivalNotes: [
       "Resting place of Rabbi Nachum Twersky of Makarov, a son of the Chernobyl dynasty.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Nachum Twersky of Makarov", yiddishName: "רבי נחום טווערסקי ממאקאראוו", knownAs: "The Makarover Rebbe", yahrzeit: "י׳ אייר · 5612 / 1852", note: "A son of Rabbi Mordechai of Chernobyl and founder of the Makarov chassidus." },
@@ -180,10 +190,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון השרף ממאגלניצא",
     country: "Poland",
     address: "Jewish cemetery, Mogielnica, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.7000126, 20.7280254",
     airportRef: "51.688, 20.717",
     arrivalNotes: [
       "Resting place of Rabbi Chaim Meir Yechiel Shapiro of Mogielnica, the 'Saraf,' a grandson of the Kozhnitzer Maggid.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Chaim Meir Yechiel Shapiro of Mogielnica", yiddishName: "רבי חיים מאיר יחיאל שפירא ממאגלניצא", knownAs: "The Saraf of Mogielnica", yahrzeit: "כ״ט תשרי · 5610 / 1849", note: "A grandson of the Maggid of Kozhnitz, known for his fiery avodah." },
@@ -220,6 +232,7 @@ export const bulkCemeteries5: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Meir Horowitz of Dzikov, the Imrei Noam, a leading Galician rebbe of the Ropshitz line.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.57361, 21.67463 and the newer one at 50.57207, 21.68719, about 0.9 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Meir Horowitz of Dzikov", yiddishName: "רבי מאיר הורוביץ מדזשיקאוו", knownAs: "The Imrei Noam", seforim: "אמרי נועם", yahrzeit: "כ״ט אייר · 5637 / 1877", note: "Founder of the Dzikov chassidus, a grandson of the Ropshitzer Rav." },
@@ -238,6 +251,7 @@ export const bulkCemeteries5: Cemetery[] = [
     arrivalNotes: [
       "Rabbi Pinchas Shapiro of Koretz, a close disciple of the Baal Shem Tov, passed away in Shepetivka on his way to Eretz Yisrael and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.17347, 27.06079 and the newer one at 50.16361, 27.06888, about 1.2 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Pinchas Shapiro of Koretz", yiddishName: "רבי פנחס שפירא מקאריץ", knownAs: "Reb Pinchas Koritzer", seforim: "מדרש פנחס · אמרי פנחס", yahrzeit: "י׳ אלול · 5550 / 1790", note: "A foremost disciple of the Baal Shem Tov, celebrated for his teachings on truth and humility." },

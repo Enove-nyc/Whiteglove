@@ -29,7 +29,7 @@ must never be used here — anyone opening the page source would have it.
 
 To set it up: in the Google Cloud console enable the **Maps JavaScript API**,
 create a **second** key, and restrict it to that one API and to your own
-hostnames (`whitegloveitineraries.com`, `*.whitegloveitineraries.com`, and your
+hostnames (`whiteglovekoshertravel.com`, `*.whiteglovekoshertravel.com`, and your
 Vercel preview domain). Then set the variable and redeploy —
 `NEXT_PUBLIC_` variables are read at build time, so a redeploy is required.
 
@@ -54,10 +54,10 @@ per leg, so re-planning the same trip does not re-bill it.
 | `SITE_ACCESS_PASSWORD` | The **full** code on the whole site: type it once and stay in. Both site codes can also be changed from **Settings → Passwords**, which takes priority over these variables **in production**. On `next dev`, the env value is still accepted even when Redis has a stored override, so localhost can use `.env.local` while sharing Upstash with production. Restart `next dev` after changing `.env.local`. |
 | `SITE_PREVIEW_PASSWORD` | The **five-minute** code — for handing to somebody who needs to look at one thing. Access stops five minutes after they use it. The expiry is signed into the cookie and checked on every request, so it cannot be kept by copying the cookie or editing its lifetime. Must be a different word from `SITE_ACCESS_PASSWORD`. Same production-vs-local rule as the full code. |
 | `SITE_LOCK_ENABLED` | Whether the lock is on at all. |
-| `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `preview.whitegloveitineraries.com`. Lets one hostname stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
+| `SITE_OPEN_HOSTS` | Comma-separated hostnames that skip the password entirely, e.g. `preview.whiteglovekoshertravel.com`. Lets one hostname stay open for reviewers while the main domain stays private. Case, port and a `www.` prefix are ignored. |
 | `SITE_PREVIEW_TOKEN` | At least 12 characters. Anyone opening `?preview=<token>` gets in for 30 days without being told the password, and the token is stripped from the URL straight away. Change it to revoke every outstanding link at once. Never works on `/admin`. |
 | `ADMIN_PASSWORD` | The admin dashboard password. |
-| `ADMIN_HOST` | Optional. A hostname that serves the admin area on its own, e.g. `admin.whitegloveitineraries.com`. On that hostname every path is an admin path — `/` is the dashboard, `/shomrim` is the shomer screen — and the `/admin/…` paths keep working there too, so no saved link breaks. The hostname is never indexed. Unset by default, and with it unset nothing changes. **Add the domain in Vercel and point the DNS first**; the variable does nothing until the hostname actually reaches the site. |
+| `ADMIN_HOST` | Optional. A hostname that serves the admin area on its own, e.g. `admin.whiteglovekoshertravel.com`. On that hostname every path is an admin path — `/` is the dashboard, `/shomrim` is the shomer screen — and the `/admin/…` paths keep working there too, so no saved link breaks. The hostname is never indexed. Unset by default, and with it unset nothing changes. **Add the domain in Vercel and point the DNS first**; the variable does nothing until the hostname actually reaches the site. |
 | `ADMIN_HOST_ONLY` | Optional, `1` to turn on. Sends `/admin/…` on the main domain to `ADMIN_HOST`, so there is one place to sign in. Leave it off until you have opened the admin hostname and signed in there successfully — switching it on before DNS resolves leaves no way into the admin area at all. |
 | `WHITE_GLOVE_SESSION_SECRET` | Signs the access and admin cookies. Changing it signs everybody out. |
 
@@ -83,9 +83,9 @@ recorded, and the screen says so rather than showing an empty list.
 | Variable | What it does |
 | --- | --- |
 | `RESEND_API_KEY` | Required for any mail to send at all. |
-| `RESEND_FROM_EMAIL` | The sender. **Until this is a verified domain sender, Resend's sandbox will only deliver to the address that owns the Resend account** — which is the usual reason mail to `contact@` never arrives. Verify the domain in Resend, then set this to e.g. `White Glove <no-reply@whitegloveitineraries.com>`. |
-| `OWNER_NOTIFICATION_EMAIL` | Where edit suggestions go. Defaults to `edits@whitegloveitineraries.com`. |
-| `CONTACT_NOTIFICATION_EMAIL` | Where contact-form messages go. Defaults to `contact@whitegloveitineraries.com`. |
+| `RESEND_FROM_EMAIL` | The sender. **Until this is a verified domain sender, Resend's sandbox will only deliver to the address that owns the Resend account** — which is the usual reason mail to `contact@` never arrives. Verify the domain in Resend, then set this to e.g. `White Glove <no-reply@whiteglovekoshertravel.com>`. |
+| `OWNER_NOTIFICATION_EMAIL` | Where edit suggestions go. Defaults to `edits@whiteglovekoshertravel.com`. |
+| `CONTACT_NOTIFICATION_EMAIL` | Where contact-form messages go. Defaults to `contact@whiteglovekoshertravel.com`. |
 
 The admin dashboard has a diagnostic panel that sends a test message to either
 inbox and reports exactly what Resend said, including the sandbox restriction.

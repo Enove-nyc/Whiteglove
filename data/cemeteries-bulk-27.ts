@@ -6,6 +6,12 @@
 // decided that anyone who can read the board belongs inside. That is worth a
 // page on its own.
 //
+// CORRECTED AT BATCH 30. This file first said the sources could not settle
+// whether the ohel's Reb Amram Billitzer and the kehilla's first rov were one
+// man or two. A source found later gives both Billitzers with dates — the
+// father 1834–1889, the son 1860–1913 — so they are one man and his son, and
+// the entries below now say so.
+//
 // Brno: printed opening hours, seven days short of a Shabbos, and the tram
 // that stops in front of the gate. Not one other listing on this site has
 // opening hours, because almost nowhere in this part of the world still has a
@@ -41,16 +47,18 @@ export const bulkCemeteries27: Cemetery[] = [
     ],
     burials: [
       {
-        name: "Rabbi Amram Billitzer",
-        yiddishName: "רבי עמרם ביליצער",
-        knownAs: "In the ohel on Árpád hill",
-        note: "The ohel holds him and his son. He is recorded in Hungarian spelling as Arman Billiczer; the kehilla's first rov, of the same family, is given as Jisáj Ámrám and founded a yeshiva in Szerencs from 1864. Whether those are one man or two is not clear from the sources and this listing does not decide it.",
+        name: "Rabbi Amram Yishai HaLevi Billitzer",
+        yiddishName: "רבי עמרם ישי הלוי ביליצער",
+        knownAs: "First rov of Szerencs — in the ohel on Árpád hill",
+        yahrzeit: "5649 / 1889",
+        note: "1834–1889. Rov of the kehilla from 1864, and the founder of its yeshiva. Recorded in Hungarian spellings as Ámrám Jisáj and as Arman Billiczer, which is why an earlier version of this listing could not tell whether he and the kehilla's first rov were one man; a later source giving both with dates settled it. He is.",
       },
       {
-        name: "Rabbi Pinchas Billitzer",
-        yiddishName: "רבי פנחס ביליצער",
-        knownAs: "His son, in the same ohel",
-        note: "Named in the Hungarian spelling Pinkász. The second of the two the ohel stands over.",
+        name: "Rabbi Pinchas HaLevi Billitzer",
+        yiddishName: "רבי פנחס הלוי ביליצער",
+        knownAs: "His son — rov of Szerencs after him, in the same ohel",
+        yahrzeit: "5673 / 1913",
+        note: "1860–1913. Followed his father as rov of Szerencs. The second of the two the ohel on Árpád hill stands over. Recorded in the Hungarian spelling Pinkász.",
       },
     ],
     sourceUrl: "https://zemplenizsidosag.hu/szerencs-en/",
@@ -113,12 +121,14 @@ export const bulkCemeteries27: Cemetery[] = [
     yiddishName: "סאמבאר — בתי החיים",
     country: "Ukraine",
     address: "Jewish cemeteries, Sambir, Lviv Oblast, Ukraine",
+    coordinates: "49.51222, 23.19446",
     airportRef: "49.518, 23.199",
     arrivalNotes: [
       "BOTH GROUNDS ARE GONE AS CEMETERIES. The old one was in use as far back as the sixteen hundreds and was demolished and built over in the Soviet period. The newer one appears on a nineteenth-century map and was used until the war, then destroyed after it.",
       "THE NEWER GROUND STILL EXISTS AS LAND, and it is hemmed in — the fences of the private houses around it now form its boundary. It is heavily overgrown and needs clearing before anyone could walk it.",
       "Do not confuse Sambir with Staryy Sambir. They are two towns about thirty kilometres apart and each has its own Jewish cemetery; navigation apps and surveys both mix them up.",
       "This is a page about what is there, not about a kever to stand at. If you are going, go knowing that.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/sambir-new-jewish-cemetery/",

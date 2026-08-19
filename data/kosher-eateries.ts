@@ -31,6 +31,7 @@
 // published addresses, like the attractions and unlike the kevarim.
 
 import type { HechsherStatus } from "@/data/hechsherim";
+import { directoryEateries } from "@/data/kosher-eateries-directory";
 
 export type EateryKind =
   | "Restaurant"
@@ -49,7 +50,13 @@ export type KosherEatery = {
   city: string;
   country: string;
   kind: EateryKind;
-  diet: EateryDiet;
+  /**
+   * Meat, dairy or parve — where it is known. Optional because the certifier
+   * directories the bulk set is drawn from list a place as kosher without
+   * saying which, and guessing a diet is exactly the kind of invention this
+   * file exists to prevent. Absent means "not stated by the source".
+   */
+  diet?: EateryDiet;
   /** One line: what it is and who it suits. */
   summary: string;
   address?: string;
@@ -70,7 +77,7 @@ export type KosherEatery = {
   sourceUrl: string;
 };
 
-export const kosherEateries: KosherEatery[] = [
+const curatedEateries: KosherEatery[] = [
   // ---- Italy ----------------------------------------------------------
   {
     slug: "rome-ba-ghetto",
@@ -962,6 +969,17 @@ export const kosherEateries: KosherEatery[] = [
     sourceUrl: "https://en.wikipedia.org/wiki/Wiedikon",
   },
 ];
+
+/**
+ * The curated highlights, plus the certifier-directory set.
+ *
+ * The curated entries above carry the detail — diet, the quarter they sit in,
+ * what the dish is. The directory set (data/kosher-eateries-directory.ts) is
+ * the breadth: every place a recognised hechsher or community lists, with the
+ * source and the same "confirm supervision" caution, and nothing invented on
+ * top of what the source says.
+ */
+export const kosherEateries: KosherEatery[] = [...curatedEateries, ...directoryEateries];
 
 /** Everything in one country, for the country filters. */
 export function eateriesIn(country: string) {

@@ -38,6 +38,7 @@ export const bulkCemeteries8: Cemetery[] = [
       "The Žaliakalnis ground is neglected and overgrown, and has been for years. The city signed an agreement with Maceva, the group that documents Lithuania's Jewish cemeteries, to look after and restore it, and students have worked on clearing it — but do not expect a tended cemetery with signed paths.",
       "There is a mass grave of kedoshim here with its own memorial. Take care where you walk.",
       "We are not publishing an opening time or a gate contact, because we could not stand behind either. Ask the Lithuanian Jewish Community in Vilnius or a local guide before you set out, especially if you want somebody to help you find the kever among the fallen stones.",
+      "KOVNO HAS FOUR SURVEYED JEWISH CEMETERIES AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the city ground at 54.907826, 23.945537, Slabodka at 54.911157, 23.872192, Aleksotas at 54.88629, 23.90616 and Panemune at 54.85819, 23.94874. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {
@@ -59,11 +60,13 @@ export const bulkCemeteries8: Cemetery[] = [
     country: "Lithuania",
     address:
       "Jewish cemetery, Telšiai, Telšiai County, Lithuania — no street address is published here; confirm the entrance locally",
+    coordinates: "55.98854, 22.24875",
     airportRef: "55.983, 22.250",
     arrivalNotes: [
       "Read this before you book. The bais hachaim covered about 2.17 hectares; most of it was destroyed in 1987. Roughly 0.43 hectares survives — under a fifth of the original ground — and that fragment was fenced and put on the Lithuanian Cultural Heritage List in 1995.",
       "Reb Yosef Yehuda Leib Bloch's kever is among the stones that survive, and can still be found. Many others cannot: if you are coming for a particular family matzeivah, the odds are against it still standing, and it is worth asking Maceva or the Lithuanian Jewish Community what is documented before you travel.",
       "The town is a long way from anywhere — roughly two hours by road from Klaipėda and the best part of four from Vilnius. Plan the day around the drive, not around the visit.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {
@@ -112,11 +115,13 @@ export const bulkCemeteries8: Cemetery[] = [
     country: "Slovakia",
     address:
       "Old Jewish cemetery, Dunajská Streda, Trnava Region, Slovakia — no street address is published here; confirm the gate locally",
+    coordinates: "48.00449, 17.61225",
     airportRef: "47.993, 17.612",
     arrivalNotes: [
       "The cemetery is walled with a locking gate reached straight off a public road, and there is a caretaker. That means access depends on somebody being there to open it — arrange the visit in advance rather than turning up. We are not printing a name or a number, because we have not confirmed one that still reaches anybody; ask the Bratislava kehilla or the Slovak Jewish Heritage people.",
       "It is a large old ground — the earliest matzeivos read 1755, and hundreds survive in place. Give yourself more than a few minutes if you are looking for a particular stone.",
       "Bratislava is about an hour west by road, so this is comfortably done together with the Chasam Sofer's kever there.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {
@@ -143,6 +148,7 @@ export const bulkCemeteries8: Cemetery[] = [
       "The Nitra Rov is buried here, not in Nitra — he was born in this town and was brought back to it. Almost everything written about him says Nitra, so people go to the wrong place. Piešťany is about 35 km north of Nitra.",
       "The cemetery is on a hillside above the town, on a partly terraced slope towards the eastern edge near the railway. The oldest stone is from 1880 and the last burial was in 1955. It is owned by the municipality and has been restored through a local civic effort.",
       "The cemetery chapel was rebuilt by the German army at the end of the war into a pillbox, and that structure is still there — it is not a building to daven in, and it will not look like an ohel.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.60722, 17.82797 and the newer one at 48.58749, 17.81628, about 2.4 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       {

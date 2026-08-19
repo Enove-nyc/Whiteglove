@@ -172,7 +172,7 @@ function Fields({
             <input
               value={block.href}
               onChange={(e) => onChange({ ...block, href: e.target.value })}
-              placeholder="https://www.whitegloveitineraries.com/destinations/vienna"
+              placeholder="https://www.whiteglovekoshertravel.com/destinations/vienna"
               className={inputClass}
             />
           </label>
@@ -197,7 +197,7 @@ function Fields({
             <input
               value={block.href}
               onChange={(e) => onChange({ ...block, href: e.target.value })}
-              placeholder="https://www.whitegloveitineraries.com/…"
+              placeholder="https://www.whiteglovekoshertravel.com/…"
               className={inputClass}
             />
           </label>

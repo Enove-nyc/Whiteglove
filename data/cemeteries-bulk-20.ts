@@ -53,6 +53,7 @@ export const bulkCemeteries20: Cemetery[] = [
       "A path divides it: the northern half is the men's, the southern the women's, and only family tombs cross the line. Knowing that halves the search.",
       "A small ohel stands in the middle of the ground. THE ROV IN IT IS NOT THE STROPKOVER ROV whose ohel is at Tisinec — that is Reb Chaim Yosef Gottlieb, who was niftar in 1867, and this cemetery did not open until 1890. Two men, similar names, different grounds.",
       "The Orthodox synagogue of 1897–98 in the town can be visited, and the Bárkány collection of Judaica is kept upstairs there.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed Prešov's Jewish cemeteries as the central ground at 49.001171, 21.248285, the Tehelná one at 49.009211, 21.218033 and the Solivar sector at 48.973793, 21.266856. None of the three is filed as the Orthodox cemetery, which is the ground this page is about, so no single map point is published. Take all three and ask in the town.",
     ],
     burials: [
       {
@@ -78,6 +79,7 @@ export const bulkCemeteries20: Cemetery[] = [
       "THE STONES NO LONGER MARK THE GRAVES. The Germans destroyed two thousand matzevos here. About a thousand were recovered and set back up in the nineteen-eighties, with money given by Asher Scharf of New York, but they stand where they were replaced rather than over the people they name.",
       "Two ohels stand on the ground: the Scharf family's, and one over Szymon Kluger, the last Jew of Oświęcim.",
       "This is the town's own Jewish cemetery, four centuries of a kehilla that lived here before the camp took the town's name. It is a different place from the camp memorial and is reached separately.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the old cemetery at 50.03844, 19.21956 and the newer one at 50.03905, 19.23389, about a kilometre apart. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {

@@ -180,10 +180,12 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון האהבת שלום מקאסוב",
     country: "Ukraine",
     address: "Jewish cemetery, Kosiv, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.32186, 25.09168",
     airportRef: "48.310, 25.096",
     arrivalNotes: [
       "Resting place of Rabbi Menachem Mendel Hager of Kosov, the Ahavas Shalom, founder of the Kosov-Vizhnitz line.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Menachem Mendel Hager of Kosov", yiddishName: "רבי מנחם מענדל האגער מקאסוב", knownAs: "The Ahavas Shalom", seforim: "אהבת שלום", yahrzeit: "ב׳ אייר · 5586 / 1826", note: "Founder of the Kosov chassidus, forerunner of the Vizhnitz dynasty." },
@@ -198,10 +200,12 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון השינאווער רב",
     country: "Poland",
     address: "Jewish cemetery, Sieniawa, Subcarpathian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.18365, 22.60504",
     airportRef: "50.175, 22.610",
     arrivalNotes: [
       "Resting place of Rabbi Yechezkel Shraga Halberstam, the Shinover Rav, eldest son of the Divrei Chaim of Sanz.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yechezkel Shraga Halberstam", yiddishName: "רבי יחזקאל שרגא האלברשטאם", knownAs: "The Shinover Rav · Divrei Yechezkel", seforim: "דברי יחזקאל", yahrzeit: "י״א אב · 5659 / 1899", note: "Eldest son of the Divrei Chaim of Sanz; a leading Galician rebbe." },
@@ -216,10 +220,12 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון היכל הברכה מקאמארנא",
     country: "Ukraine",
     address: "Jewish cemetery, Komarno, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.63236, 23.69854",
     airportRef: "49.628, 23.699",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Isaac Yehuda Yechiel Safrin of Komarno, the great kabbalist and author of the Heichal HaBracha.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES, AND A NAME THAT POINTS AT TWO COUNTRIES. There is a Komarno in Lviv oblast and a Komárno in Slovakia, two hundred kilometres apart, and both have a surveyed Jewish cemetery. This listing is the Ukrainian one; the map point is its ground, measured by the ESJF survey.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Isaac Yehuda Yechiel Safrin", yiddishName: "רבי יצחק אייזיק יהודה יחיאל ספרין", knownAs: "The Komarno Rebbe · Heichal HaBracha", seforim: "היכל הברכה · נתיב מצוותיך · זהר חי", yahrzeit: "י׳ אייר · 5634 / 1874", note: "Founder of the Komarno chassidus and a major kabbalistic author." },
@@ -238,6 +244,7 @@ export const bulkCemeteries4: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Twersky of Skver, founder of the Skver chassidus (today centered in New Square, NY).",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.73920, 29.65927 and the newer one at 49.743373, 29.676298, about 1.3 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Twersky of Skver", yiddishName: "רבי יצחק טווערסקי מסקווירא", knownAs: "The first Skverer Rebbe", yahrzeit: "כ״ז אייר · 5645 / 1885", note: "Founder of the Skver chassidus, a branch of the Chernobyl dynasty." },
@@ -270,10 +277,12 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון הסאווראנער רבי",
     country: "Ukraine",
     address: "Jewish cemetery, Savran, Odesa Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.13624, 30.07427",
     airportRef: "48.130, 30.078",
     arrivalNotes: [
       "Resting place of Rabbi Moshe Tzvi Giterman of Savran, a leading Ukrainian rebbe of his day.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Moshe Tzvi Giterman of Savran", yiddishName: "רבי משה צבי גיטערמאן מסאווראן", knownAs: "The Savraner Rebbe", yahrzeit: "ז׳ טבת · 5598 / 1838", note: "A prominent chassidic leader in the Ukraine of his generation." },
@@ -288,10 +297,15 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון האדמו״ר הראשון מראחמיסטריווקא",
     country: "Ukraine",
     address: "Jewish cemetery, Rotmistrivka, Cherkasy Oblast, Ukraine — confirm exact location locally",
-    airportRef: "49.250, 31.400",
+    coordinates: "49.1383, 31.71218",
+    // Was 49.250, 31.400 — twenty-six kilometres off the village, caught when the
+    // surveyed cemetery coordinate was added and the two disagreed. The town pin
+    // only ranks airports, so nothing navigated to it, but it was still wrong.
+    airportRef: "49.114, 31.712",
     arrivalNotes: [
       "Resting place of Rabbi Yochanan Twersky, founder of the Rachmastrivka chassidus, a branch of the Chernobyl dynasty.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yochanan Twersky of Rachmastrivka", yiddishName: "רבי יוחנן טווערסקי מראחמיסטריווקא", knownAs: "The first Rachmastrivka Rebbe", yahrzeit: "ג׳ אדר · 5656 / 1895", note: "Founder of the Rachmastrivka chassidus, a son of the Chernobyl line." },

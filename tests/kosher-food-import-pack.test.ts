@@ -8,15 +8,28 @@ import { validatePack } from "@/data/imports/kosher-food-batch/validate";
 import { prepareBulkContentCandidate } from "@/lib/bulk-content";
 
 describe("kosher food finder review pack", () => {
-  it("is a source-complete NEEDS_REVIEW pack of named kosher establishments", () => {
+  it("has been published to the finder, leaving only a small unmatched tail", () => {
+    // The pack was drafted as ~1,600 named establishments and has since been
+    // published to the public kosher food finder (data/kosher-eateries-
+    // directory.ts). The pack's own dedupe now recognises them as on the
+    // finder and drops them, so what remains here is only the handful that did
+    // not make it onto the finder — the queue has cleared, by design.
     const report = validatePack();
-    assert.ok(report.candidateCount >= 20);
     assert.equal(report.dropped, kosherFoodDedupeReport.dropped);
+    assert.ok(
+      (kosherFoodDedupeReport.byReason["public-finder"] ?? 0) >= 1000,
+      "expected the bulk of the pack to be recognised on the public finder",
+    );
   });
 
   it("drops same-door doubles and never ships kosher-style stand-ins", () => {
     assert.ok(kosherFoodDedupeReport.drafted > kosherFoodDedupeReport.kept);
-    assert.ok((kosherFoodDedupeReport.byReason["same-address"] ?? 0) >= 1);
+    // Same-address doubles are collapsed — now chiefly against the public
+    // finder the pack was published into, rather than within the raw draft.
+    const addressDrops =
+      (kosherFoodDedupeReport.byReason["public-finder-address"] ?? 0) +
+      (kosherFoodDedupeReport.byReason["same-address"] ?? 0);
+    assert.ok(addressDrops >= 1);
     assert.equal(kosherFoodBatchCandidates.some((row) => /marrakesh/i.test(row.name)), false);
     assert.equal(kosherFoodBatchCandidates.some((row) => /uptown kosher bakery/i.test(row.name)), false);
     for (const row of kosherFoodBatchCandidates) {

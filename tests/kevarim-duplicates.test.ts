@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { cemeteries } from "@/data/cemeteries";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { getDestinationRecord } from "@/data/destination-database";
+import { coordinatesToPoint } from "@/data/route-utils";
 
 /**
  * One man, one kever, one listing.
@@ -117,5 +118,97 @@ describe("every directory town has a slug its page can be reached at", () => {
     // not.
     const bad = bulkDestinations.map((d) => d.slug).filter((slug) => !/^[a-z0-9-]+$/.test(slug));
     assert.deepEqual(bad, [], `these slugs cannot be served as URLs: ${bad.join(", ")}`);
+  });
+});
+
+describe("a surveyed coordinate belongs to the town it is filed under", () => {
+  it("keeps every listing's map point near its own town pin", () => {
+    // WHY. Coordinates were backfilled onto forty-eight listings from the ESJF
+    // survey database by matching town names to survey slugs. A name match can
+    // land on the wrong town, and a wrong coordinate is worse than none — it
+    // sends somebody confidently to a field that is not the cemetery. This
+    // compares each listing's map point against the town pin it already had
+    // and fails if they disagree by more than fifteen kilometres.
+    //
+    // It has already earned its place: it caught Rotmistrivka, whose town pin
+    // had been twenty-six kilometres off the village since long before the
+    // backfill.
+    // Parsed THROUGH coordinatesToPoint, not with a split on the comma. Three
+    // entries on this site are written in degrees-minutes-seconds and are
+    // perfectly good; a first draft of this suite reimplemented parsing and
+    // failed them — the same mistake tests/kevarim-safety.test.ts already
+    // records having made once.
+    const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+      const rad = (deg: number) => (deg * Math.PI) / 180;
+      const dLat = rad(b.lat - a.lat);
+      const dLng = rad(b.lng - a.lng);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.sqrt(h));
+    };
+    const far = cemeteries
+      .filter((cemetery) => cemetery.coordinates && cemetery.airportRef)
+      .map((cemetery) => ({
+        slug: cemetery.slug,
+        here: coordinatesToPoint(cemetery.coordinates),
+        town: coordinatesToPoint(cemetery.airportRef),
+      }))
+      .filter((entry) => entry.here && entry.town)
+      .map((entry) => ({ slug: entry.slug, d: km(entry.here!, entry.town!) }))
+      .filter((entry) => entry.d > 15)
+      .map((entry) => `${entry.slug} is ${entry.d.toFixed(0)}km from its own town pin`);
+    assert.deepEqual(far, []);
+  });
+
+});
+
+describe("a listing's notes belong to the listing they are on", () => {
+  it("never carries another listing's street inside a note", () => {
+    // WHY THIS EXISTS, and it is the worst mistake of the whole run.
+    //
+    // Sadhora and Peremyshlyany sit in the same file and both carried the
+    // identical line "Confirm the cemetery and exact grave location locally."
+    // Two edit scripts each replaced "the first occurrence" of that line, and
+    // the second shifted the first one's target: four notes written for the
+    // Ruzhiner's ohel at Sadhora — its street, its keyholder, its history —
+    // were published on the page for the Zidichover's kever at Zhydachiv, a
+    // different tzaddik in a different town. It went live before it was
+    // caught, and it was caught by reading the page rather than by trusting
+    // the script that wrote it.
+    //
+    // The check is deliberately narrow, because cross-references between towns
+    // are normal and wanted on this site — "he is not here, he is in
+    // Berditchev", "Tarcal is four kilometres from Tokaj". What is never right
+    // is a note carrying a STREET that belongs to a different listing's
+    // address. That is the signature of text landing on the wrong record.
+    const streetsOf = (address: string) =>
+      address
+        .split(",")
+        .map((part) => part.trim())
+        // Only parts that actually say "street" in some language. An earlier
+        // draft also accepted any capitalised two-word fragment and matched
+        // "Jewish cemetery" as a street name in half the data.
+        .filter((part) => /\b(street|streets|str\.|ulica|ul\.|utca|strada|trieda|hauptstra|gasse)\b/i.test(part))
+        .filter((part) => !/jewish|cemetery|beis|section|site of/i.test(part))
+        .map((part) => part.replace(/^\d+[a-zA-Z]?\s+/, "").trim())
+        .filter((part) => part.length > 8);
+
+    const owners = new Map<string, string>();
+    for (const cemetery of cemeteries) {
+      for (const street of streetsOf(cemetery.address ?? "")) {
+        if (!owners.has(street.toLowerCase())) owners.set(street.toLowerCase(), cemetery.slug);
+      }
+    }
+    const offenders: string[] = [];
+    for (const cemetery of cemeteries) {
+      const mine = new Set(streetsOf(cemetery.address ?? "").map((s) => s.toLowerCase()));
+      for (const note of cemetery.arrivalNotes) {
+        const lower = note.toLowerCase();
+        for (const [street, owner] of owners) {
+          if (owner === cemetery.slug || mine.has(street)) continue;
+          if (lower.includes(street)) offenders.push(`${cemetery.slug} names "${street}", which is ${owner}'s street`);
+        }
+      }
+    }
+    assert.deepEqual(offenders, []);
   });
 });

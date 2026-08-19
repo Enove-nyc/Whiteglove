@@ -18,10 +18,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "אוהל המגיד מקאזשניץ",
     country: "Poland",
     address: "Jewish cemetery, Kozienice, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.5775763, 21.5470648",
     airportRef: "51.585, 21.545",
     arrivalNotes: [
       "Resting place of Rabbi Yisrael Hopstein, the Maggid of Kozhnitz, one of the founding fathers of Polish chassidus.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yisrael Hopstein", yiddishName: "רבי ישראל האפשטיין", knownAs: "The Maggid of Kozhnitz", seforim: "עבודת ישראל", yahrzeit: "י״ד תשרי · 5575 / 1814", note: "A disciple of the Maggid of Mezritch and Reb Elimelech of Lizhensk; a founder of chassidus in Poland." },
@@ -36,10 +38,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "אוהל החוזה מלובלין",
     country: "Poland",
     address: "Old Jewish cemetery, Lublin, Lublin Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.25228, 22.57943",
     airportRef: "51.246, 22.568",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Yitzchak Horowitz, the Chozeh (Seer) of Lublin, whose court raised a generation of Polish rebbes.",
       "In the old Jewish cemetery of Lublin; confirm the exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Yitzchak Horowitz", yiddishName: "רבי יעקב יצחק הורוביץ", knownAs: "The Chozeh (Seer) of Lublin", seforim: "זאת זכרון · זכרון זאת · דברי אמת", yahrzeit: "ט׳ אב · 5575 / 1815", note: "Teacher of the Yid HaKadosh, the Kozhnitzer Maggid's circle, and many of the great Polish rebbes." },
@@ -65,6 +69,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Moshe Leib of Sasov, famed for his boundless love of every Jew and his care for the suffering.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.87461, 24.94531 and the newer one at 49.86158, 24.93725, about 1.6 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Moshe Leib of Sasov", yiddishName: "רבי משה לייב מסאסוב", knownAs: "Reb Moshe Leib Sassover", seforim: "ליקוטי רמ״ל · תורת רמ״ל", yahrzeit: "ד׳ שבט · 5567 / 1807", note: "A disciple of Reb Shmelke of Nikolsburg; celebrated for ahavas Yisrael and acts of chesed." },
@@ -83,6 +88,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Zeev Wolf of Zhitomir, the Ohr HaMeir, a close disciple of the Maggid of Mezritch.",
       "Confirm the cemetery and exact grave location locally.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the oldest at 50.25925, 28.65045, the old at 50.24696, 28.63358 and the new at 50.24167, 28.69303. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Zeev Wolf of Zhitomir", yiddishName: "רבי זאב וואלף מזשיטאמיר", knownAs: "The Ohr HaMeir", seforim: "אור המאיר", yahrzeit: "כ׳ אדר · c. 5558 / 1798", note: "A leading disciple of the Maggid of Mezritch; his Ohr HaMeir is a classic of chassidic thought." },
@@ -119,6 +125,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Raphael of Bershad, the foremost disciple of Rabbi Pinchas of Koretz, renowned for his devotion to truth.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.35682, 29.53289 and the newer one at 48.35882, 29.54476, about 0.9 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Raphael of Bershad", yiddishName: "רבי רפאל מבערשאד", knownAs: "Reb Raphael Bershader", yahrzeit: "י״ז אייר · c. 5587 / 1827", note: "The leading disciple of Rabbi Pinchas of Koretz; a byword for absolute truthfulness." },
@@ -132,13 +139,14 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Sighet — Kever of the Yetev Lev",
     yiddishName: "ציון היטב לב מסיגעט",
     country: "Romania",
-    address: "Jewish cemetery, Sighetu Marmației, Maramureș County, Romania — confirm exact location locally",
+    address: "Jewish cemetery, Strada Szilágyi István, Sighetu Marmației, Maramureș County, Romania",
     airportRef: "47.929, 23.886",
     arrivalNotes: [
       "THREE GENERATIONS LIE IN ONE OHEL HERE, not one kever. It was built over the Yetev Lev immediately after his petirah, and his son and grandson were buried in it after him.",
       "This is the Satmar Rov's own family ground: the Kedushas Yom Tov was his father and the Yetev Lev his grandfather. Reb Yoel himself is not here — he lies in Kiryas Joel.",
       "The ohel was restored after its roof was damaged by fire, when candles lit at the kever caught the kvittlach pushed into the cracks. Do not add to that.",
-      "Confirm the cemetery and exact ohel location locally.",
+      "IT IS ON STRADA SZILÁGYI ISTVÁN. This page used to say only to confirm the cemetery locally, which for a ground this heavily visited was not good enough. Two independent guides give that street; one of them records the number as 26. Navigate to the street and expect to ask at the gate for the ohel.",
+      "The ground is about three hundred years old and most of its early matzevos are gone — the stone they were cut from has not stood up to the weather. Four generations of Teitelbaums are the reason people come.",
     ],
     burials: [
       { name: "Rabbi Yekusiel Yehuda Teitelbaum", yiddishName: "רבי יקותיאל יהודה טייטלבוים", knownAs: "The Yetev Lev of Sighet", seforim: "ייטב לב · ייטב פנים", yahrzeit: "ו׳ אלול · 5643 / 1883", note: "Founder of the Sighet chassidus; a grandson of the Yismach Moshe and grandfather of the Satmar Rav." },
@@ -158,7 +166,9 @@ export const bulkCemeteries6: Cemetery[] = [
     airportRef: "47.970, 23.700",
     arrivalNotes: [
       "Resting place of Rabbi Yosef Meir Weiss, the Imrei Yosef, founder of the Spinka chassidus.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "DO NOT LET A SEARCH SEND YOU TO THE MERRY CEMETERY. Săpânța is famous worldwide for the Cimitirul Vesel, its painted wooden crosses, and that is the village's Christian cemetery and a coach-tour attraction. It is not this ground and the two are separate places. Ask for the Jewish cemetery by name.",
+      "Săpânța is about fifteen kilometres west-north-west of Sighet, on the Tisza at the Ukrainian border, so it is done on the same day as the Sighet ohel rather than on its own.",
+      "No source found gives the cemetery a street, a gate arrangement or a keyholder. That is the state of the record, not an omission from this page — ask in the village.",
     ],
     burials: [
       { name: "Rabbi Yosef Meir Weiss", yiddishName: "רבי יוסף מאיר ווייס", knownAs: "The Imrei Yosef of Spinka", seforim: "אמרי יוסף", yahrzeit: "כ״ב אלול · 5669 / 1909", note: "Founder of the Spinka chassidus, known for fiery avodah and simcha." },
@@ -173,10 +183,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האסטראווצער רבי",
     country: "Poland",
     address: "Jewish cemetery, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.942465, 21.384083",
     airportRef: "50.929, 21.385",
     arrivalNotes: [
       "Resting place of Rabbi Meir Yechiel Halevi Halstock, the Ostrovtzer Rebbe, famed as a gaon and for his decades of fasting.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Meir Yechiel Halevi Halstock", yiddishName: "רבי מאיר יחיאל הלוי האלשטאק", knownAs: "The Ostrovtzer Rebbe", seforim: "מאיר עיני חכמים", yahrzeit: "י״ט אדר · 5688 / 1928", note: "Renowned Polish gaon and rebbe, known for his gematria-Torah and lifelong fasting." },
@@ -191,10 +203,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האדמו״ר הראשון מאמשינאוו",
     country: "Poland",
     address: "Jewish cemetery, Mszczonów, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.9805982, 20.5110991",
     airportRef: "51.975, 20.517",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Dovid Kalish, founder of the Amshinov chassidus, a son of the Vorker Rebbe.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Dovid Kalish of Amshinov", yiddishName: "רבי יעקב דוד קאליש מאמשינאוו", knownAs: "The first Amshinover Rebbe", yahrzeit: "5638 / 1878", note: "Founder of the Amshinov chassidus and a son of Rabbi Yitzchak of Vorki." },
@@ -209,10 +223,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האבני נזר",
     country: "Poland",
     address: "Jewish cemetery, Sochaczew, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.2235408, 20.2344561",
     airportRef: "52.229, 20.238",
     arrivalNotes: [
       "Resting place of Rabbi Avrohom Bornsztain, the Avnei Nezer, founder of the Sochatchov chassidus and one of the great poskim of his age.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Avrohom Bornsztain", yiddishName: "רבי אברהם בורנשטיין", knownAs: "The Avnei Nezer of Sochatchov", seforim: "אבני נזר · אגלי טל", yahrzeit: "י״א אדר · 5670 / 1910", note: "A son-in-law of the Kotzker Rebbe; a towering posek and founder of the Sochatchov chassidus." },
@@ -227,10 +243,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון רבי יעקב אריה מראדזימין",
     country: "Poland",
     address: "Jewish cemetery, Radzymin, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.4113333, 21.1871123",
     airportRef: "52.418, 21.191",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Aryeh Guterman, founder of the Radzymin chassidus, a disciple of the Chidushei HaRim and Rabbi Menachem Mendel of Kotzk.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Aryeh Guterman of Radzymin", yiddishName: "רבי יעקב אריה גוטרמן מראדזימין", knownAs: "The Radziminer Rebbe", yahrzeit: "כ״ג ניסן · 5634 / 1874", note: "Founder of the Radzymin chassidus, beloved for his warmth and blessings." },

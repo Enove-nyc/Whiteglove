@@ -10,7 +10,7 @@
  *
  * THE CREDIT LINE STAYS, AND THAT IS A DECISION, NOT AN OVERSIGHT. The cover,
  * the page headers and the "prepared by" line become theirs. The footer keeps
- * one quiet line saying the itinerary was planned with whitegloveitineraries.com.
+ * one quiet line saying the itinerary was planned with whiteglovekoshertravel.com.
  * This is how white-label planners normally work, it is what the owner chose,
  * and it is the only thing on the document that is not the business's own. The
  * enforcement lives in components/PrintableItinerary.tsx, not here — this

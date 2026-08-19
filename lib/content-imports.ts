@@ -264,9 +264,65 @@ function coordKey(value: string | null | undefined): string | null {
   return `${Number(m[1]).toFixed(3)},${Number(m[2]).toFixed(3)}`;
 }
 
-function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
-  views: readonly T[],
-): T[] {
+/**
+ * The common words in a place name that do not identify WHICH place it is.
+ *
+ * A "Museum" or a "Cathedral" or a "Park" is in every city; matching a lead to
+ * a published listing on one of these would clear a different place with the
+ * same generic word. Only a distinctive token — a proper name like Prado,
+ * Picasso, Alcázar — is allowed to make a name match.
+ */
+const GENERIC_NAME_TOKENS = new Set(
+  ("the of and de la el les del du des or an museo museum gallery galleria cathedral catedral basilica " +
+    "church iglesia palace palacio tower torre castle castillo park parque parc garden gardens jardin jardi " +
+    "market mercat mercado square plaza placa praca house casa maison old town city ciutat cite quarter barri " +
+    "barrio national nacional royal real reial great grand jewish synagogue sinagoga bridge pont gate porta " +
+    "puerta street carrer calle rue monument memorial center centre centro hall fountain font fuente beach " +
+    "playa platja bay mount monte saint san santa sant valley lake lago river rio sea mar arts sciences").split(/\s+/),
+);
+
+function nameTokens(value: string): string[] {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** The distinctive tokens of a name — long enough, not generic, not the town. */
+function distinctiveNameTokens(name: string, city: string): string[] {
+  const cityTokens = new Set(nameTokens(city));
+  return nameTokens(name).filter((token) => token.length >= 4 && !GENERIC_NAME_TOKENS.has(token) && !cityTokens.has(token));
+}
+
+function cityCountryKey(city: string, country: string): string {
+  return `${nameTokens(city).join("")}|${nameTokens(country).join("")}`;
+}
+
+/**
+ * A test for "is this candidate already published on the site?".
+ *
+ * Built once from the site's own content and reused across every candidate.
+ * Exported so the review queue (lib/import-review-queue.ts) reconciles by the
+ * SAME rules the content dashboard does — otherwise the two count the queue
+ * differently and the admin sees two different "needs review" numbers.
+ *
+ * A candidate matches when it shares the site's exact location key, its source
+ * URL, a coordinate (rounded to ~100 m), or — for attractions — sits in the
+ * same city and country as a published attraction that shares a distinctive
+ * place-name token. That last rule closes the honest half of the gap between a
+ * lead's raw name ("Prado Museum") and a curated one ("Museo del Prado")
+ * without ever clearing a place that is not actually on the site.
+ */
+export function createOnSiteMatcher(): (candidate: {
+  name: string;
+  city: string;
+  country: string;
+  sourceUrl?: string | null;
+  coordinates?: string | null;
+}) => boolean {
   const owned = staticOwnedContent();
   const keys = new Set(owned.map((o) => locationKey(o.name, o.city, o.country)));
   const sources = new Set(owned.map((o) => normalizeSourceUrl(o.sourceUrl ?? "")).filter(Boolean));
@@ -275,16 +331,31 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
       .map((item) => coordKey((item as { coordinates?: string | null }).coordinates ?? null))
       .filter((k): k is string => Boolean(k)),
   );
+  const attractionTokens = new Map<string, Set<string>>();
+  for (const item of attractions) {
+    const key = cityCountryKey(item.city, item.country);
+    const set = attractionTokens.get(key) ?? new Set<string>();
+    for (const token of distinctiveNameTokens(item.name, item.city)) set.add(token);
+    attractionTokens.set(key, set);
+  }
+  return (candidate) => {
+    if (keys.has(locationKey(candidate.name, candidate.city, candidate.country))) return true;
+    if (candidate.sourceUrl && sources.has(normalizeSourceUrl(candidate.sourceUrl))) return true;
+    const c = coordKey(candidate.coordinates ?? null);
+    if (c && coords.has(c)) return true;
+    const set = attractionTokens.get(cityCountryKey(candidate.city, candidate.country));
+    if (set && distinctiveNameTokens(candidate.name, candidate.city).some((token) => set.has(token))) return true;
+    return false;
+  };
+}
+
+function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
+  views: readonly T[],
+): T[] {
+  const onSite = createOnSiteMatcher();
   return views.map((view) => {
     if (view.status !== "NEEDS_REVIEW") return view;
-    const onSite =
-      keys.has(locationKey(view.name, view.city, view.country)) ||
-      (view.sourceUrl ? sources.has(normalizeSourceUrl(view.sourceUrl)) : false) ||
-      (() => {
-        const c = coordKey(view.coordinates);
-        return c ? coords.has(c) : false;
-      })();
-    return onSite ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
+    return onSite(view) ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
   });
 }
 

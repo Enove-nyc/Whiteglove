@@ -23,4 +23,4 @@
  * the host without pulling lib/seo, and its build-time warning, into the
  * browser bundle. Nothing here has a side effect.
  */
-export const CANONICAL_ORIGIN = "https://www.whitegloveitineraries.com";
+export const CANONICAL_ORIGIN = "https://www.whiteglovekoshertravel.com";

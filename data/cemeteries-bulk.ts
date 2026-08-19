@@ -173,11 +173,13 @@ export const bulkCemeteries: Cemetery[] = [
     yiddishName: "אוהל רבי לוי יצחק מבארדיטשוב",
     country: "Ukraine",
     address: "Old Jewish Cemetery, Berdychiv 13300, Zhytomyr Oblast, Ukraine",
+    coordinates: "49.8956, 28.58204",
     arrivalNotes: [
       "The old Jewish cemetery sits just before the railway crossing; the ohel is reached by a long curving road from the entrance and stands out with white masonry and fencing.",
       "Roughly 100,000 pilgrims visit each year (per Chabad of Berdichev).",
       "Ukraine wartime travel advisories apply — confirm conditions and access before traveling.",
           "Read this before you go, and before you tell anybody else where to stand. Work around the ohel uncovered the original matzeivos of the Kedushas Levi and his three sons — in a different place from the matzeivah people have been davening at since after the churban. The ohel was put up in 1991 over a spot chosen in Soviet times, and it is reported not to be the grave. Nobody who davened there did anything wrong and the tefillos are not worth less. But if you are going specifically to stand at the kever, ask whoever is looking after the site now where the uncovered matzeivos are, rather than walking to the ohel and assuming.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     accessNote: "The ohel was built in 1991. In 2020 the original grave (with his three sons) was rediscovered a few meters away. Maintained by Chabad of Berdichev — contact them for current access.",
     accessContacts: [
@@ -393,12 +395,14 @@ export const bulkCemeteries: Cemetery[] = [
     yiddishName: "בית החיים קאליב",
     country: "Hungary",
     address: "Nagybalkányi út, 4320 Nagykálló, Szabolcs-Szatmár-Bereg, Hungary",
+    coordinates: "47.87062, 21.84737",
     arrivalNotes: [
       "Nagykálló ('Kaliv') is ~15 km SE of Nyíregyháza in NE Hungary. The old Jewish cemetery holding the Kaliver Rebbe's ohel is on Nagybalkányi út.",
       "The tent-like ohel is the focal point; a continuous Hasidic pilgrimage site for ~200 years, heaviest around the 7 Adar yahrzeit. An Orthodox pilgrimage house (opened 2021, EMIH) stands next to the cemetery.",
       "Nearest airport is Debrecen (~40 km); Budapest is the main international gateway.",
       "The street number is Nagybalkányi utca 13, and there are two Jewish cemeteries in the town — the ohel is in the old one.",
       "The stone carries an epitaph the Rebbe wrote for himself: here lies Rebbe Eizik, rov of the holy kehilla of Nagykálló.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     accessNote: "The cemetery is kept closed; visits (and opening the ohel) should be arranged in advance with the local caretaker. Please confirm before traveling.",
     accessContacts: [

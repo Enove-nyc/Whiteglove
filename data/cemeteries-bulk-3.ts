@@ -19,11 +19,14 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Chernobyl — Ohel of the Me'or Einayim",
     yiddishName: "אוהל המאור עינים",
     country: "Ukraine",
-    address: "Jewish cemetery, Chernobyl, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, at the edge of the town, Chernobyl, Kyiv Oblast, Ukraine — inside the exclusion zone",
     airportRef: "51.276, 30.222",
     arrivalNotes: [
       "Resting place of Rabbi Menachem Nachum Twersky, the Me'or Einayim, founder of the Chernobyl chassidic dynasty.",
-      "IMPORTANT: Chernobyl lies inside the restricted exclusion zone. Access is tightly controlled and arranged only through authorized escorts — do not travel without confirming current permissions and safety. Exact grave location to be confirmed locally.",
+      "IMPORTANT: Chernobyl lies inside the restricted exclusion zone. Access is tightly controlled and arranged only through authorized escorts — do not travel without confirming current permissions and safety.",
+      "THE OHEL IS AT THE EDGE OF THE TOWN, a small structure over the kever, and it is kept locked. The key has been held at the zone administration's own office in Chernobyl — Chernobylinterinform — so getting in has meant collecting it there rather than arranging anything in Kyiv.",
+      "YOU CANNOT DRIVE HERE AND YOU CANNOT COME ALONE. Entry to the zone is on an approved, escorted visit with a permit; even people who were evacuated from Chernobyl are let back to their own town on one appointed day a year.",
+      "CHECK BEFORE YOU PLAN ANYTHING. Zone visits were suspended after the invasion of 2022, when Russian forces held the site, and sources disagree about what is permitted now — one says tours remain suspended, another that visits are possible in 2026 under the conditions the Ukrainian authorities set. Nothing on this page should be treated as the current position; ask the zone administration.",
     ],
     accessNote: "Inside the Chernobyl exclusion zone — access is restricted and must be arranged with authorized escorts. Confirm current permissions and the exact grave location before traveling.",
     burials: [
@@ -59,10 +62,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי צבי הירש מזידיטשוב",
     country: "Ukraine",
     address: "Jewish cemetery, Zhydachiv, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.39429, 24.13417",
     airportRef: "49.383, 24.145",
     arrivalNotes: [
       "Resting place of Rabbi Tzvi Hirsch Eichenstein of Zidichov, a foundational master of the Zidichov-Komarno kabbalistic chassidic line.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Tzvi Hirsch Eichenstein", yiddishName: "רבי צבי הירש אייכנשטיין", knownAs: "The Zidichover", seforim: "עטרת צבי · סור מרע ועשה טוב", yahrzeit: "י״א תמוז · 5591 / 1831", note: "Founder of the Zidichov chassidic dynasty, known for deep engagement with kabbalah and the writings of the Arizal." },
@@ -76,11 +81,14 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Peremyshlyany — Kever of Rabbi Meir of Premishlan",
     yiddishName: "קבר רבי מאיר מפרעמישלאן",
     country: "Ukraine",
-    address: "Jewish cemetery, Peremyshlyany, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemeteries, Peremyshlyany, Lviv Oblast, Ukraine — the old ground is at 15 Shevchenko Street; see the notes",
     airportRef: "49.663, 24.560",
     arrivalNotes: [
       "Resting place of Rabbi Meir of Premishlan, beloved for his simplicity, wit, and wonder-working.",
-      "Confirm the cemetery and exact grave location locally.",
+      "TWO REB MEIRS OF PREMISHLAN, AND THE SIGN IN THE OLD CEMETERY IS NOT THIS ONE. The memorial marker on the old ground at 15 Shevchenko Street records the burial place of Reb Meir the Great of Peremyshlyany, who was niftar in 1773. This page is about Reb Meir'l, niftar 1850 — his descendant, and the one people travel for. Somebody who reads that sign and stops has found the wrong man.",
+      "THE OLD GROUND IS BUILT OVER. Private houses stand on it. Twenty-six matzevos survive, with further fragments turning up at the edge of the town, and the memorial marker is the only thing on the site that says what it was.",
+      "Where Reb Meir'l himself lies is not settled by anything found. The town's newer cemetery is the other candidate and its coordinate is below; ask in Peremyshlyany rather than assuming the marked ground is his.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.66672, 24.55668 and the newer one at 49.67008, 24.55120, about 0.5 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Meir of Premishlan", yiddishName: "רבי מאיר מפרעמישלאן", knownAs: "Reb Meir'l Premishlaner", yahrzeit: "כ״ט אייר · 5610 / 1850", note: "A celebrated chassidic tzaddik known for spontaneous Torah, humility, and the many stories of his help to the poor." },
@@ -100,6 +108,7 @@ export const bulkCemeteries3: Cemetery[] = [
       "Resting place of Rabbi Yaakov Yosef HaKohen of Polonne, the foremost disciple and recorder of the Baal Shem Tov's teachings.",
       "He and the Mochiach of Polonne lie together in one stone ohel in the cemetery.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.1269, 27.51373 and the newer one at 50.10921, 27.51505, about 2.0 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Yaakov Yosef HaKohen of Polonne", yiddishName: "רבי יעקב יוסף הכהן מפולנאה", knownAs: "The Toldos", seforim: "תולדות יעקב יוסף · בן פורת יוסף · צפנת פענח", yahrzeit: "24 Tishrei · c. 5543 / 1783", note: "His Toldos Yaakov Yosef was the first published work of chassidic thought, preserving teachings of the Baal Shem Tov." },
@@ -115,12 +124,14 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר המהרש״א",
     country: "Ukraine",
     address: "Old Jewish cemetery, Ostroh, Rivne Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.333009, 26.522958",
     airportRef: "50.329, 26.515",
     arrivalNotes: [
       "Ostroh was a great center of Torah; Rabbi Shmuel Eidels, the Maharsha, served and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
           "The ohel here was built in 2016 over what the people who built it describe as the APPROXIMATE location of the Maharsha's kever — the ground was wrecked and the stones scattered, and the exact spot was not recoverable. Daven there; do not repeat to others that the place is certain.",
       "Ostroh was one of the great Torah towns of Volhyn, and several names associated with it are NOT buried here. The Maharshal was rosh yeshiva in Ostroh but died in Lublin in 1573 and lies there. The Shelah davened in the Ostroh shul but is buried in Teverya. Both are on this site, under those towns.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shmuel Eliezer Eidels", yiddishName: "רבי שמואל אליעזר איידלס", knownAs: "The Maharsha", seforim: "חידושי הלכות ואגדות (מהרש״א)", yahrzeit: "ה׳ כסלו · 5392 / 1631", note: "His commentary on the Talmud (Chidushei Halachos v'Aggados) is printed in standard editions of the Gemara." },
@@ -135,10 +146,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל תפארת שלמה",
     country: "Poland",
     address: "Jewish cemetery, Radomsko, Łódź Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.0795462, 19.4735026",
     airportRef: "51.067, 19.445",
     arrivalNotes: [
       "Resting place of Rabbi Shlomo HaKohen Rabinowicz, the Tiferes Shlomo, founder of the Radomsk chassidic dynasty.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shlomo HaKohen Rabinowicz", yiddishName: "רבי שלמה הכהן ראבינאוויטש", knownAs: "The Tiferes Shlomo", seforim: "תפארת שלמה", yahrzeit: "כ״ט אדר · 5626 / 1866", note: "Founder of the Radomsk dynasty; his Tiferes Shlomo is a classic of chassidic Torah on the parsha and festivals." },
@@ -153,10 +166,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל רבי יצחק מווארקא",
     country: "Poland",
     address: "Jewish cemetery, Warka, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.7780304, 21.1774564",
     airportRef: "51.783, 21.193",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Kalish of Vorki, known for his boundless love of every Jew.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Kalish of Vorki", yiddishName: "רבי יצחק קאליש מווארקא", knownAs: "The Vorker Rebbe", yahrzeit: "כ״ב ניסן · 5608 / 1848", note: "Founder of the Vorki (Warka) chassidus, remembered for extraordinary ahavas Yisrael and his advocacy for the community." },
@@ -175,6 +190,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Vyzhnytsia is the cradle of the Vizhnitz chassidus; Rabbi Menachem Mendel Hager, the Tzemach Tzadik, is its founder.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.24451, 25.18667 and the newer one at 48.25114, 25.20645, about 1.6 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Menachem Mendel Hager", yiddishName: "רבי מנחם מענדל האגער", knownAs: "The Tzemach Tzadik of Vizhnitz", seforim: "צמח צדיק", yahrzeit: "כ״ה אייר · 5645 / 1885", note: "Founder of the Vizhnitz chassidic dynasty, one of the largest chassidic groups today." },
@@ -189,10 +205,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל האדמו״ר הראשון מבאבוב",
     country: "Poland",
     address: "Jewish cemetery, Bobowa, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "49.69987, 20.93908",
     airportRef: "49.717, 20.950",
     arrivalNotes: [
       "Bobowa is the cradle of the Bobov chassidus; Rabbi Shlomo Halberstam, its founder, is associated with the town.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shlomo Halberstam of Bobov", yiddishName: "רבי שלמה האלברשטאם מבאבוב", knownAs: "The first Bobover Rebbe", yahrzeit: "1 Av · 5665 / 1905", note: "Founder of the Bobov chassidic dynasty and a grandson of the Divrei Chaim of Sanz." },
@@ -211,6 +229,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Dovid Moshe Friedman, founder of the Chortkov chassidus and a son of the Ruzhiner Rebbe.",
       "Confirm the cemetery and exact grave location locally.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the old cemetery at 49.01677, 25.79165 and two newer ones — on Pulyuya street at 49.01768, 25.78225 and on Stepana Bandery at 49.00789, 25.80117. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Dovid Moshe Friedman", yiddishName: "רבי דוד משה פרידמן", knownAs: "The Chortkover Rebbe", yahrzeit: "ט״ו מרחשון · 5664 / 1903", note: "Founder of the Chortkov dynasty, one of the sons of Rabbi Yisrael of Ruzhin." },
@@ -224,11 +243,15 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Sadhora — Kever of the Ruzhiner Rebbe",
     yiddishName: "קבר הרוז׳ינער רבי",
     country: "Ukraine",
-    address: "Jewish cemetery, Sadhora district of Chernivtsi, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, at the corner of Yana Nalepki and Horishnya streets, Sadhora district, Chernivtsi, Ukraine",
+    coordinates: "48.35320, 25.95966",
     airportRef: "48.325, 25.950",
     arrivalNotes: [
       "Rabbi Yisrael Friedman of Ruzhin settled in Sadigura after leaving the Russian Empire, and is buried there; his court shaped many chassidic dynasties.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS AT THE CORNER OF YANA NALEPKI AND HORISHNYA. This page used to say only to confirm the location locally, which for the Ruzhiner's ohel was not good enough. The ground is fenced and protected, and it is well kept — unusual for this part of Ukraine.",
+      "THE KEY IS AT THE KEEPER'S HOUSE BY THE MAIN GATE. You are not expected to arrange anything in advance; knock there. Accounts describe an elderly man who comes out and unlocks when visitors arrive.",
+      "About two hundred matzevos survive, from the eighteen-thirties to the nineteen-thirties, on a ground opened in the early eighteen-hundreds. The last burials were in the nineteen-thirties.",
+      "Sadhora was a pilgrimage town before it was a district of Chernivtsi — four fifths of its people were Jews in 1880, and five thousand still lived here in 1914. By 1941 there were six hundred and fifty-four, and they were deported to Transnistria that autumn.",
           "The matzeivos of the Ruzhiner and his sons were destroyed in the First World War; what stands now is a rebuilt ohel, renovated again in the 2010s. The ground is theirs — the stone over it is not the one they were buried under.",
     ],
     burials: [
@@ -250,6 +273,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Dovid Twersky of Talne, a son of the Chernobyler dynasty who led a large chassidic court.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.8863, 30.70576 and the newer one at 48.90478, 30.70763, about 2.1 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Dovid Twersky of Talne", yiddishName: "רבי דוד טווערסקי מטאלנא", knownAs: "The Talner Rebbe", yahrzeit: "ט׳ אייר · 5642 / 1882", note: "Founder of the Talne chassidus and a son of Rabbi Mordechai of Chernobyl." },

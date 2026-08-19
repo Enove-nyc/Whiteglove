@@ -45,7 +45,7 @@ export function tripArrangementOpen(): boolean {
  * pages are prerendered and would then say whatever the build environment
  * happened to be, including a Vercel preview URL.
  */
-export const SITE_DOMAIN = "whitegloveitineraries.com";
+export const SITE_DOMAIN = "whiteglovekoshertravel.com";
 export const SITE_NAME = "White Glove Kosher Travel";
 
 /**
