@@ -3,7 +3,7 @@ import CopyLinkButton from "@/components/CopyLinkButton";
 import FlightItineraryBuilder from "@/components/FlightItineraryBuilder";
 import FlightItineraryRemoveButton from "@/components/FlightItineraryRemoveButton";
 import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
-import { flightItineraryLabel, formatFlightDate } from "@/lib/flight-itinerary";
+import { flightItineraryLabel, formatFlightDate, splitByDirection } from "@/lib/flight-itinerary";
 import { flightItineraryStoreAvailable, listFlightItineraries } from "@/lib/flight-itinerary-store";
 
 export const dynamic = "force-dynamic";
@@ -42,8 +42,9 @@ export default async function AdminFlightItinerariesPage() {
           <ul className="mt-5 grid gap-4">
             {itineraries.map((itinerary) => {
               const url = `${CANONICAL_ORIGIN}/f/${itinerary.shareId}`;
-              const first = itinerary.legs[0];
-              const last = itinerary.legs[itinerary.legs.length - 1];
+              const { outbound, returning } = splitByDirection(itinerary.legs);
+              const first = outbound[0] ?? itinerary.legs[0];
+              const destination = outbound[outbound.length - 1] ?? first;
               return (
                 <li
                   key={itinerary.id}
@@ -56,10 +57,11 @@ export default async function AdminFlightItinerariesPage() {
                       </p>
                       <p className="mt-1 text-sm text-stone-600">
                         {itinerary.legs.length} {itinerary.legs.length === 1 ? "flight" : "flights"}
+                        {returning.length ? " · round trip" : null}
                         {first ? (
                           <>
                             {" · "}
-                            {first.from} → {last.to}
+                            {first.from} → {destination.to}
                           </>
                         ) : null}
                         {first?.departDate ? <> · {formatFlightDate(first.departDate)}</> : null}
