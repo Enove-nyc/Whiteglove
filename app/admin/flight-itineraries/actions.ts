@@ -5,6 +5,7 @@ import { mayUse } from "@/lib/admin-permissions";
 import {
   flightItineraryFromInput,
   flightItineraryProblem,
+  type FlightDirection,
   type FlightItineraryInput,
   type FlightLeg,
 } from "@/lib/flight-itinerary";
@@ -35,14 +36,19 @@ function str(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/** The legs arrive as a single JSON field so the form can hold as many as it likes. */
-function parseLegs(formData: FormData): Array<Omit<FlightLeg, "id">> {
-  const raw = formData.get("legs");
+/**
+ * One direction's legs, which arrive as a single JSON field so the form can
+ * hold as many as it likes. Each leg is stamped with the direction it came
+ * from — the client cannot be trusted to have set it.
+ */
+function parseLegs(formData: FormData, key: string, direction: FlightDirection): Array<Omit<FlightLeg, "id">> {
+  const raw = formData.get(key);
   if (typeof raw !== "string" || !raw.trim()) return [];
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.map((leg) => ({
+      direction,
       airline: typeof leg?.airline === "string" ? leg.airline : "",
       flightNumber: typeof leg?.flightNumber === "string" ? leg.flightNumber : "",
       from: typeof leg?.from === "string" ? leg.from : "",
@@ -72,7 +78,11 @@ export async function addFlightItineraryAction(
     passengers: str(formData, "passengers"),
     reference: str(formData, "reference"),
     notes: str(formData, "notes"),
-    legs: parseLegs(formData),
+    // Outbound first, then the return — the order the customer reads them in.
+    legs: [
+      ...parseLegs(formData, "legsOutbound", "outbound"),
+      ...parseLegs(formData, "legsReturn", "return"),
+    ],
   };
 
   const problem = flightItineraryProblem(input);
