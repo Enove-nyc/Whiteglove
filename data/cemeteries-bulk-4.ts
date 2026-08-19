@@ -160,11 +160,14 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Slonim — Kever of the Yesod HaAvodah",
     yiddishName: "ציון יסוד העבודה מסלאנים",
     country: "Belarus",
-    address: "Jewish cemetery, Slonim, Hrodna (Grodno) region, Belarus — confirm exact location locally",
+    address: "Site of the Jewish cemetery, at the edge of the town, Slonim, Hrodna (Grodno) region, Belarus",
     airportRef: "53.089, 25.319",
     arrivalNotes: [
       "Resting place of Rabbi Avraham Weinberg, the Yesod HaAvodah, founder of the Slonim chassidus.",
-      "Confirm the cemetery and exact grave location locally. Belarus entry rules change — check current requirements.",
+      "COME KNOWING THERE MAY BE NOTHING TO STAND AT. Slonim's first Jewish cemetery goes back to the fifteenth century. A surveyor who went looking recorded that he saw and knew of no Jewish cemetery in Slonim surviving from before the war, and a second account describes only a monument at the edge of the town, on the site of the former cemetery, to the thirty-five thousand Jews of the city who were murdered.",
+      "NO SOURCE FOUND RECORDS AN OHEL OR A MARKED KEVER for the Yesod HaAvodah. That is not the same as saying there is none — Belarus is the least documented country on this site — but nothing here should be read as a promise that his kever can be found.",
+      "THE GROUND IS A PLACE OF KEDOSHIM. The site of the cemetery is where the murder of the city's Jews is commemorated. Behave in it accordingly, whatever else is or is not standing.",
+      "Belarus entry rules change; check current requirements before travelling.",
     ],
     burials: [
       { name: "Rabbi Avraham Weinberg of Slonim", yiddishName: "רבי אברהם ווינברג מסלאנים", knownAs: "The Yesod HaAvodah", seforim: "יסוד העבודה · באר אברהם", yahrzeit: "י״א חשון · 5644 / 1883", note: "Founder of the Slonim chassidic dynasty." },
@@ -239,11 +242,13 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Skvyra — Kever of the first Skverer Rebbe",
     yiddishName: "ציון האדמו״ר הראשון מסקווירא",
     country: "Ukraine",
-    address: "Jewish cemetery, Skvyra, Kyiv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, on the hill by the river Skvyra; the ohel is at the foot of the hill — Skvyra, Kyiv Oblast, Ukraine",
     airportRef: "49.731, 29.664",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Twersky of Skver, founder of the Skver chassidus (today centered in New Square, NY).",
-      "Confirm the cemetery and exact grave location locally.",
+      "THE OHEL IS AT THE FOOT OF THE HILL, NOT ON IT. The burial ground is on the hill beside the river Skvyra; the ohel stands below it, next to a water pipeline belonging to the brickyard next door — and that brickyard owns the land the cemetery is on. Those are the landmarks to navigate by, because there are no others.",
+      "APART FROM THE OHEL THE SITE IS UNMARKED and its boundaries are not drawn anywhere. There is a broken fence and a gate that locks; entry is open with permission rather than simply walking in.",
+      "THE CEMETERY WAS DESTROYED TWICE OVER. A brick factory was built on it in the nineteen-thirties, and after the war houses and other buildings went up on the ground as well. The ohel is what survived that, not the cemetery around it.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.73920, 29.65927 and the newer one at 49.743373, 29.676298, about 1.3 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [

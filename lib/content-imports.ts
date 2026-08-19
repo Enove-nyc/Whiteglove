@@ -47,6 +47,21 @@ import { PRACTICAL_PLACES_PUBLIC_TAG } from "@/lib/mikvaos";
 
 const DB_OFF_MESSAGE = "Connect the private content database before staging source candidates.";
 
+/**
+ * Import packs the owner retired. Their source files are gone, but a database
+ * that was staged from them before the purge still holds their rows, and those
+ * rows would keep inflating the Needs review and Possible duplicates tiles even
+ * though the pack no longer exists. Rows from these batches stay in the table;
+ * they just stop being counted or shown — the same treatment template-filler
+ * and machine-generated rows already get below. Keep this in step with the
+ * packs removed from BUILT_IN_CONTENT_IMPORT_PACKAGES.
+ */
+export const RETIRED_IMPORT_BATCH_SLUGS: ReadonlySet<string> = new Set([
+  "white-glove-europe-batch",
+  "white-glove-global-batch",
+  "white-glove-fill-batch",
+]);
+
 export type ContentImportStatus = "NEEDS_REVIEW" | "DUPLICATE" | "REJECTED" | "PUBLISHED";
 
 export type ContentImportCandidateView = {
@@ -507,7 +522,9 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
           ? { ...imported, packageCandidates: sourcePackage.candidates.length }
           : packageBatch(sourcePackage);
       }),
-      ...importedBatches.filter((item) => !builtInSlugs.has(item.slug)),
+      ...importedBatches.filter(
+        (item) => !builtInSlugs.has(item.slug) && !RETIRED_IMPORT_BATCH_SLUGS.has(item.slug),
+      ),
     ];
     const readyToStage = BUILT_IN_CONTENT_IMPORT_PACKAGES
       .filter((sourcePackage) => !importedBySlug.has(sourcePackage.batch.slug))
@@ -515,6 +532,10 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
     const candidateViews = (rows as unknown as StorageCandidate[])
       .map(viewFromStored)
       .filter((candidate) => !isDisallowedImportSource(candidate))
+      // Rows staged from a pack the owner has since retired stop counting, the
+      // same as the ones below — their pack is gone, so the number should not
+      // keep them. See RETIRED_IMPORT_BATCH_SLUGS.
+      .filter((candidate) => !RETIRED_IMPORT_BATCH_SLUGS.has(candidate.batchSlug))
       // Template placeholders that name no real place, taken out of the staged
       // rows exactly as they are from the packs — otherwise a database that was
       // staged before the purge keeps counting all 25,808. See
