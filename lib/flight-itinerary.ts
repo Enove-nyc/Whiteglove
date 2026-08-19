@@ -150,6 +150,69 @@ export function landsNextDay(leg: FlightLeg): boolean {
   return leg.arriveDate > leg.departDate;
 }
 
+/** An airport string reduced to something two legs can be compared on. */
+function normalizeAirport(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/** ms since epoch for an ISO date and an HH:MM time, or null if either is unusable. */
+function parseWhen(date: string, time: string): number | null {
+  const day = date.trim();
+  const clock = time.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !/^\d{1,2}:\d{2}$/.test(clock)) return null;
+  const value = new Date(`${day}T${clock.padStart(5, "0")}:00`);
+  const ms = value.getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
+
+/** A gap in minutes as "2h 15m", "45m" or "3h". */
+function formatDuration(minutes: number): string {
+  const whole = Math.round(minutes);
+  const hours = Math.floor(whole / 60);
+  const mins = whole % 60;
+  if (hours && mins) return `${hours}h ${mins}m`;
+  if (hours) return `${hours}h`;
+  return `${mins}m`;
+}
+
+export type Connection = {
+  /** The airport the traveller changes at, as the arriving leg wrote it. */
+  airport: string;
+  /** How long the layover is, when both times are known; otherwise null. */
+  layover: string | null;
+};
+
+/**
+ * Whether one leg connects to the next, and the layover if so.
+ *
+ * Two legs connect when the first lands where the second leaves from and the
+ * gap between them is short. The short-gap test is what tells a connection
+ * apart from a return flight weeks later out of the same airport: same airport,
+ * but days between, so not a connection. Both times are in the connecting
+ * airport's own local clock, so the gap is a true wait — no timezone maths.
+ *
+ * When the times are not both filled in, it falls back to "same airport, same
+ * day" and reports the connection without a duration.
+ */
+export function connectionBetween(prev: FlightLeg, next: FlightLeg): Connection | null {
+  const airport = normalizeAirport(prev.to);
+  if (!airport || airport !== normalizeAirport(next.from)) return null;
+
+  const arrive = parseWhen(prev.arriveDate, prev.arriveTime);
+  const depart = parseWhen(next.departDate, next.departTime);
+  if (arrive !== null && depart !== null) {
+    const minutes = (depart - arrive) / 60000;
+    // A negative gap is a mistyped time; more than a day is a separate journey.
+    if (minutes < 0 || minutes > 24 * 60) return null;
+    return { airport: prev.to.trim(), layover: formatDuration(minutes) };
+  }
+
+  if (prev.arriveDate.trim() && prev.arriveDate.trim() === next.departDate.trim()) {
+    return { airport: prev.to.trim(), layover: null };
+  }
+  return null;
+}
+
 /** A short label for a saved itinerary in a list. */
 export function flightItineraryLabel(itinerary: FlightItinerary): string {
   return itinerary.title || itinerary.passengers || "Untitled flight itinerary";

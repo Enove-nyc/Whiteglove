@@ -131,9 +131,15 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
       </div>
 
       <div className="grid gap-5">
-        <div className="flex items-baseline justify-between">
-          <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Flights</h3>
-          <span className="text-xs text-stone-500">{legs.length} {legs.length === 1 ? "flight" : "flights"}</span>
+        <div>
+          <div className="flex items-baseline justify-between">
+            <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Flights</h3>
+            <span className="text-xs text-stone-500">{legs.length} {legs.length === 1 ? "flight" : "flights"}</span>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            One flight per leg, in order. For a connection, add the next flight — when it leaves from where the last one
+            landed, the customer&rsquo;s page shows it as a connection with the layover.
+          </p>
         </div>
 
         {legs.map((leg, index) => (
