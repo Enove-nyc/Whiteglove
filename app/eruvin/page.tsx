@@ -2,7 +2,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
-import { listEruvin, WORLDWIDE_ERUV_DIRECTORY } from "@/lib/eruvin";
+import { listAllEruvin, WORLDWIDE_ERUV_DIRECTORY } from "@/lib/eruvin";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
@@ -20,8 +20,8 @@ export const metadata = pageMetadata({
  * every week, so the listing is a route to the community's live status rather
  * than a claim about it.
  */
-export default function EruvinPage() {
-  const listings = listEruvin();
+export default async function EruvinPage() {
+  const listings = await listAllEruvin();
   const byCountry = new Map<string, typeof listings>();
   for (const listing of listings) {
     const list = byCountry.get(listing.country) ?? [];

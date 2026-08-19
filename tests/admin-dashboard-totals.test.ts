@@ -15,12 +15,13 @@ import { allAdminDestinations } from "@/lib/admin-nav";
 const DASHBOARD = readFileSync("app/admin/page.tsx", "utf8");
 const COUNTRIES_PAGE = readFileSync("app/admin/countries/page.tsx", "utf8");
 
-// The public directories the flat, curated sets live in — shuls, eruvin and
-// the heritage-cemetery locator have no admin editor, so their tiles open the
-// page that shows them rather than a management screen that does not exist.
-// The heritage locator is folded into /cemeteries now, under a #heritage
-// anchor, so its tile opens there rather than the old separate index.
-const PUBLIC_DIRECTORY_HREFS = new Set(["/shuls", "/eruvin", "/cemeteries#heritage"]);
+// The public directories the flat, curated sets live in — shuls and the
+// heritage-cemetery locator have no admin editor, so their tiles open the page
+// that shows them rather than a management screen that does not exist. The
+// heritage locator is folded into /cemeteries now, under a #heritage anchor,
+// so its tile opens there. Eruvin used to be here too; it has an editor now at
+// /admin/eruvin.
+const PUBLIC_DIRECTORY_HREFS = new Set(["/shuls", "/cemeteries#heritage"]);
 
 describe("dashboard total cards are pressable", () => {
   it("maps every tile to an href and a label", () => {
@@ -42,7 +43,7 @@ describe("dashboard total cards are pressable", () => {
     assert.equal(byLabel["Kosher food"], "/admin/directory/food");
     assert.equal(byLabel["Shuls"], "/shuls");
     assert.equal(byLabel["Mikvaos"], "/admin/mikvaos");
-    assert.equal(byLabel["Eruvin"], "/eruvin");
+    assert.equal(byLabel["Eruvin"], "/admin/eruvin");
     assert.equal(byLabel["Batei hachaim"], "/admin/kevarim");
     assert.equal(byLabel["Kevarim listed"], "/admin/kevarim");
     assert.equal(byLabel["Heritage cemeteries"], "/cemeteries#heritage");
