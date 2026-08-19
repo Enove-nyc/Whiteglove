@@ -58,6 +58,10 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   // is allowed to see them. Filed with the money because setting a provider
   // live is a commercial decision, and gated by the same area as Duffel.
   ["/admin/travel", "money"],
+  // The flights the owner sells privately, written up as one page to send a
+  // customer. Filed with the money because it is about a sale, alongside Duffel
+  // and the travel providers, and gated by the same area.
+  ["/admin/flight-itineraries", "money"],
   ["/admin/advertisements", "advertisements"],
   ["/admin/pages", "content"],
   ["/admin/photos", "content"],
