@@ -280,12 +280,15 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Savran — Kever of the Savraner Rebbe",
     yiddishName: "ציון הסאווראנער רבי",
     country: "Ukraine",
-    address: "Jewish cemetery, Savran, Odesa Oblast, Ukraine",
+    address: "Jewish cemetery, by the bridge over the Southern Bug, Savran, Odesa Oblast, Ukraine",
     coordinates: "48.13624, 30.07427",
     airportRef: "48.130, 30.078",
     arrivalNotes: [
       "Resting place of Rabbi Moshe Tzvi Giterman of Savran, a leading Ukrainian rebbe of his day.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS BY THE BRIDGE OVER THE SOUTHERN BUG, on the edge of the town, and you turn straight off the public road into it. The wall is broken, the gate does not lock and there is no marker — access is open to anyone at any hour.",
+      "THE STONES YOU WILL SEE ARE NOT HIS GENERATION'S. The survey dates the matzevos on this ground from 1950 onward, and the Savraner was niftar in 1838. There is no ohel recorded here and no source found marks his kever. What is certain is the town; what is standing is a century too late to be him.",
+      "Between five hundred and five thousand stones, most where they were set and a quarter to a half of them down. Some carry traces of paint, some have ironwork or railings. Two rabbonim are named in the survey — Reb Shlema Iriss and Reb Gershl — and the last Talner burial here was in 1994.",
+      "There are marked mass graves on the ground. Nobody maintains it beyond individuals clearing it now and then; overgrowth and standing water are the seasonal problems, and the survey lists uncontrolled access, pollution and vandalism as ongoing threats.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
