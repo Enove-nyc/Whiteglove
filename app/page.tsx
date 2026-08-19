@@ -19,9 +19,9 @@ import { headers } from "next/headers";
 import Link from "next/link";
 
 export const metadata = pageMetadata({
-  title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Kosher Travel",
+  title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
   description:
-    "Kosher travel: destinations, kosher food, Shabbos, shuls and mikvahs — plan and book your own trip.",
+    "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvahs — plan your own itinerary or search booking partners.",
   path: "/",
 });
 
@@ -114,12 +114,12 @@ export default async function Home() {
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#24405f] to-[#3a5462]" />
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,25,45,.78),rgba(13,25,45,.30)_45%,transparent_80%)]" />
         <div className="relative mx-auto max-w-7xl">
-          {/* The whole opening, at the owner's word: a question and the
-              search that answers it. No eyebrow, no pitch paragraph, no
-              browse links — the navigation is one line up. */}
-          <h1 className="max-w-4xl font-[family-name:var(--font-display)] text-[2.5rem] uppercase tracking-[0.06em] leading-[1.04] sm:text-[clamp(3rem,7vw,4.5rem)]">
-            Where to?
-          </h1>
+          {/* The whole opening is the search, at the owner's word: no visible
+              headline, no eyebrow, no pitch paragraph, no browse links — the
+              navigation is one line up. The page still needs one <h1> for
+              search engines and screen readers, so it is carried here,
+              sr-only: present in the document, absent from the picture. */}
+          <h1 className="sr-only">Jewish travel guide — kosher destinations and trip planning</h1>
 
           <DestinationSearch id="home-hero-search" placeholder="Search destinations" />
 
