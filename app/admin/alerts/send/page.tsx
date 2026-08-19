@@ -55,7 +55,7 @@ export default async function SendUpdatesPage() {
   const deliveryWarning = !status.apiKeySet
     ? "Resend is not connected on this deployment (RESEND_API_KEY is missing), so nothing can be sent to anybody."
     : status.usingTestSender
-      ? `Mail is going out from ${status.from}, which is Resend's shared test sender — it can only deliver to your own Resend inbox. Until whitegloveitineraries.com is verified in Resend and RESEND_FROM_EMAIL is set, a send here would report success and arrive nowhere.`
+      ? `Mail is going out from ${status.from}, which is Resend's shared test sender — it can only deliver to your own Resend inbox. Until whiteglovekoshertravel.com is verified in Resend and RESEND_FROM_EMAIL is set, a send here would report success and arrive nowhere.`
       : null;
 
   return (

@@ -27,7 +27,7 @@ function absolute(path: string): string {
  *
  * Give it the crumbs in order, last one being the page itself. Search results
  * show this instead of a bare URL, which is the difference between
- * "whitegloveitineraries.com › cemeteries › lizhensk" and a naked link.
+ * "whiteglovekoshertravel.com › cemeteries › lizhensk" and a naked link.
  */
 export function breadcrumbs(trail: Array<{ name: string; path: string }>): Json {
   return {

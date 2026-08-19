@@ -378,7 +378,7 @@ export function sendProblem(input: {
   if (!input.settings.open) return "Sending is switched off. Turn it on above when you want this to go out.";
   if (!input.deliveryReady.apiKeySet) return "Resend is not connected on this deployment, so nothing can be sent.";
   if (input.deliveryReady.usingTestSender) {
-    return "Mail is still going out from the shared test sender, which only reaches your own inbox. Verify whitegloveitineraries.com in Resend and set RESEND_FROM_EMAIL first — otherwise this would look sent and arrive nowhere.";
+    return "Mail is still going out from the shared test sender, which only reaches your own inbox. Verify whiteglovekoshertravel.com in Resend and set RESEND_FROM_EMAIL first — otherwise this would look sent and arrive nowhere.";
   }
   const problem = blastProblem(input.blast) ?? blocksProblem(blocksOf(input.blast));
   if (problem) return problem;
@@ -407,7 +407,7 @@ export type BodySegment = { text: string; url?: string };
 /**
  * `http://` and `https://` only.
  *
- * NOT bare "whitegloveitineraries.com" — the text of an email is full of things
+ * NOT bare "whiteglovekoshertravel.com" — the text of an email is full of things
  * that look like hostnames ("Pesach 5787.Booking opens") and turning those into
  * links produces a message that looks broken. And NOT other schemes: `mailto:`
  * is harmless but `javascript:` and `data:` are not, and a rule that admits one

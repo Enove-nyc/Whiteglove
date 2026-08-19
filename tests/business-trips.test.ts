@@ -95,7 +95,7 @@ describe("what the client's email says", () => {
   });
 
   it("keeps the credit line, like the document does", () => {
-    assert.match(fn, /whitegloveitineraries\.com/);
+    assert.match(fn, /whiteglovekoshertravel\.com/);
   });
 
   it("escapes everything the agent typed", () => {

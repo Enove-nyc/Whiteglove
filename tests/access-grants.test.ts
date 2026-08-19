@@ -17,7 +17,7 @@ describe("the edge and node account sessions agree", () => {
   });
 
   const emails = [
-    "owner@whitegloveitineraries.com",
+    "owner@whiteglovekoshertravel.com",
     "Someone.With.Dots@gmail.com",
     "UPPER@EXAMPLE.ORG",
     "plus+tag@example.co.uk",
@@ -62,22 +62,22 @@ describe("the edge and node account sessions agree", () => {
 
 describe("the owner can never be locked out", () => {
   it("the owner holds both grants without any stored record", async () => {
-    process.env.OWNER_EMAIL = "owner@whitegloveitineraries.com";
+    process.env.OWNER_EMAIL = "owner@whiteglovekoshertravel.com";
     // Import after the variable is set — the module reads it per call, but this
     // keeps the intent obvious.
     const { isAdminAccount, hasSiteAccess, ownerEmail } = await import("@/lib/admin-roles");
-    assert.equal(ownerEmail(), "owner@whitegloveitineraries.com");
-    assert.equal(await isAdminAccount("Owner@WhiteGloveItineraries.com"), true);
-    assert.equal(await hasSiteAccess("owner@whitegloveitineraries.com"), true);
+    assert.equal(ownerEmail(), "owner@whiteglovekoshertravel.com");
+    assert.equal(await isAdminAccount("Owner@WhiteGloveKosherTravel.com"), true);
+    assert.equal(await hasSiteAccess("owner@whiteglovekoshertravel.com"), true);
     delete process.env.OWNER_EMAIL;
   });
 
   it("refuses to remove the owner", async () => {
-    process.env.OWNER_EMAIL = "owner@whitegloveitineraries.com";
+    process.env.OWNER_EMAIL = "owner@whiteglovekoshertravel.com";
     const { removeTeamMember, saveTeamMember } = await import("@/lib/admin-roles");
-    const removed = await removeTeamMember("OWNER@whitegloveitineraries.com");
+    const removed = await removeTeamMember("OWNER@whiteglovekoshertravel.com");
     assert.equal(removed.ok, false);
-    const saved = await saveTeamMember({ email: "owner@whitegloveitineraries.com", admin: false, siteAccess: false });
+    const saved = await saveTeamMember({ email: "owner@whiteglovekoshertravel.com", admin: false, siteAccess: false });
     assert.equal(saved.ok, false, "the owner's own grants must not be editable here");
     delete process.env.OWNER_EMAIL;
   });

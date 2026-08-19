@@ -100,9 +100,9 @@ describe("whether anything is sent", () => {
 
 describe("WHAT A CARD DOES NOT CARRY", () => {
   it("carries a name, a line and a link — and nothing else", () => {
-    const card = cardFor({ kind: "photo", about: "Lizhensk", siteUrl: "https://whitegloveitineraries.com" });
+    const card = cardFor({ kind: "photo", about: "Lizhensk", siteUrl: "https://whiteglovekoshertravel.com" });
     assert.match(card.name, /Lizhensk/);
-    assert.match(card.desc, /https:\/\/whitegloveitineraries\.com\/admin\/photos/);
+    assert.match(card.desc, /https:\/\/whiteglovekoshertravel\.com\/admin\/photos/);
   });
 
   it("says on the card that Trello is not where it gets handled", () => {

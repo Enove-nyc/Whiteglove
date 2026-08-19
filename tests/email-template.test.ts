@@ -15,7 +15,7 @@ import { absoluteUrl, renderBlastHtml, renderBlastText, safeHref } from "@/lib/e
  * javascript: href in a message the reader trusts, and a missing unsubscribe.
  */
 
-const ORIGIN = "https://www.whitegloveitineraries.com";
+const ORIGIN = "https://www.whiteglovekoshertravel.com";
 
 function render(blocks: BlastBlock[]) {
   return renderBlastHtml({

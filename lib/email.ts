@@ -6,7 +6,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 
 // Resend's shared sandbox sender. It can ONLY deliver to the email address that
 // owns the Resend account — anything else is rejected. A real domain sender
-// (e.g. no-reply@whitegloveitineraries.com, once the domain is verified in
+// (e.g. no-reply@whiteglovekoshertravel.com, once the domain is verified in
 // Resend) is required for mail to reach the edits@/contact@ inboxes.
 const TEST_SENDER = "White Glove Kosher Travel <onboarding@resend.dev>";
 
@@ -27,8 +27,8 @@ function resendConfig() {
 //   contact-form messages                                  → contact@
 //
 // OWNER_NOTIFICATION_EMAIL and CONTACT_NOTIFICATION_EMAIL override each side.
-const DEFAULT_EDITS_INBOX = "edits@whitegloveitineraries.com";
-const DEFAULT_CONTACT_INBOX = "contact@whitegloveitineraries.com";
+const DEFAULT_EDITS_INBOX = "edits@whiteglovekoshertravel.com";
+const DEFAULT_CONTACT_INBOX = "contact@whiteglovekoshertravel.com";
 
 function editsInbox() {
   return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_EDITS_INBOX;

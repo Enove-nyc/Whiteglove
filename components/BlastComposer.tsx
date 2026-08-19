@@ -158,7 +158,7 @@ export default function BlastComposer({
               <input
                 name="fromEmail"
                 defaultValue={fromEmail}
-                placeholder={defaultFrom || "info@whitegloveitineraries.com"}
+                placeholder={defaultFrom || "info@whiteglovekoshertravel.com"}
                 className={input}
               />
             </label>
@@ -171,7 +171,7 @@ export default function BlastComposer({
             </button>
           </form>
           <p className="mt-2 text-xs leading-5 text-stone-500">
-            It has to be an address at whitegloveitineraries.com — that is the domain verified with Resend, and mail
+            It has to be an address at whiteglovekoshertravel.com — that is the domain verified with Resend, and mail
             sent as anything else is refused or lands in spam. Leave it blank to use{" "}
             <code>{defaultFrom || "the site's usual sender"}</code>.
           </p>

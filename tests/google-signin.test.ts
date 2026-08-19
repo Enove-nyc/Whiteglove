@@ -57,8 +57,8 @@ describe("where Google is asked to send people back", () => {
   it("is one exact address, with no trailing slash", () => {
     // Has to match the console entry character for character, or Google
     // refuses with an error the visitor can do nothing about.
-    assert.equal(callbackUrl("https://whitegloveitineraries.com"), "https://whitegloveitineraries.com/api/account/google/callback");
-    assert.equal(callbackUrl("https://whitegloveitineraries.com/"), "https://whitegloveitineraries.com/api/account/google/callback");
+    assert.equal(callbackUrl("https://whiteglovekoshertravel.com"), "https://whiteglovekoshertravel.com/api/account/google/callback");
+    assert.equal(callbackUrl("https://whiteglovekoshertravel.com/"), "https://whiteglovekoshertravel.com/api/account/google/callback");
   });
 });
 
