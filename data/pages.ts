@@ -213,6 +213,64 @@ export const editablePages: PageDef[] = [
     { id: "submit-hero", kind: "hero", eyebrow: "Help us get it right", heading: "Send in a kever, cemetery, or provider.", intro: "If you know a place we are missing, or something on the site is wrong, tell us. Every submission is read before anything changes." },
     ],
   },
+  {
+    // The legal pages are editable too, but they keep a live default rather
+    // than a static one: the built-in page pulls the contact email and the
+    // affiliate disclosure from the site words, and renders that until the
+    // owner publishes an edit here. So these blocks are the editor's starting
+    // point and the fallback — a faithful snapshot of the page as it reads
+    // today — while the un-edited page stays wired to the site words. See
+    // app/terms/page.tsx and app/privacy/page.tsx.
+    slug: "terms",
+    href: "/terms",
+    label: "Terms of Use",
+    seoTitle: "Terms of Use — White Glove Kosher Travel",
+    seoDescription: "The terms that govern your use of White Glove Kosher Travel.",
+    blocks: [
+      { id: "terms-hero", kind: "hero", eyebrow: "White Glove Kosher Travel", heading: "Terms of Use", intro: "Last updated: August 10, 2026\n\nThese Terms of Use govern your access to and use of White Glove Kosher Travel at whiteglovekoshertravel.com (the “Service”). By using the Service, you agree to these terms. If you do not agree, please do not use the Service." },
+      { id: "terms-service", kind: "text", heading: "The Service", body: "White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use." },
+      { id: "terms-account", kind: "text", heading: "Your account", body: "Some features require an account. You agree to provide accurate information, to keep your password confidential, and to be responsible for activity that happens under your account. Notify us promptly if you believe your account has been used without your permission." },
+      { id: "terms-use", kind: "text", heading: "Acceptable use", body: "You agree not to misuse the Service. In particular, you will not:\n\n- use the Service for any unlawful purpose or in violation of these terms;\n- attempt to access accounts, data, or systems that are not yours;\n- scrape, copy, or redistribute our content in bulk without permission;\n- interfere with or disrupt the Service or the networks it relies on." },
+      { id: "terms-verify", kind: "text", heading: "Travel information — please verify", body: "Our guides gather details such as addresses, contacts, minyan and mikvah times, access notes, and safety notices to help your planning. This information can change, and access and travel conditions vary. Please confirm anything critical — access arrangements, hours, and current safety conditions — directly with the relevant contact or authority before you rely on it. White Glove is not responsible for outdated details or for the acts of third parties such as hotels, drivers, or cemetery custodians." },
+      { id: "terms-bookings", kind: "text", heading: "Bookings and third-party services", body: "Flight and hotel searches and any bookings are provided through third-party travel partners and are subject to those partners’ own terms, pricing, and cancellation policies. White Glove is not the seller of those travel services and is not a party to your booking.\n\nHow this site is paid. White Glove may earn a commission if you book through a partner link, at no additional cost to you." },
+      { id: "terms-ip", kind: "text", heading: "Intellectual property", body: "The Service, including its guides, text, design, and logo, is owned by White Glove Kosher Travel and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved." },
+      { id: "terms-disclaimer", kind: "text", heading: "Disclaimer", body: "The Service is provided “as is” and “as available,” without warranties of any kind, whether express or implied, including accuracy, fitness for a particular purpose, or uninterrupted availability. Your use of the Service and reliance on its information is at your own discretion and risk." },
+      { id: "terms-liability", kind: "text", heading: "Limitation of liability", body: "To the fullest extent permitted by law, White Glove Kosher Travel will not be liable for any indirect, incidental, or consequential damages, or for any loss arising from your use of the Service, third-party travel services, or reliance on information provided through the Service." },
+      { id: "terms-changes", kind: "text", heading: "Changes", body: "We may update the Service and these terms from time to time. When we change these terms, we will revise the “Last updated” date above. Continued use of the Service after changes means you accept the updated terms." },
+      { id: "terms-law", kind: "text", heading: "Governing law", body: "These terms are governed by the laws of the State of New York, without regard to its conflict-of-laws rules." },
+      { id: "terms-contact", kind: "text", heading: "Contact us", body: "Questions about these terms? Email contact@whiteglovekoshertravel.com." },
+    ],
+  },
+  {
+    slug: "privacy",
+    href: "/privacy",
+    label: "Privacy Policy",
+    seoTitle: "Privacy Policy — White Glove Kosher Travel",
+    seoDescription: "What White Glove Kosher Travel collects, how it is used, and your choices.",
+    blocks: [
+      { id: "privacy-hero", kind: "hero", eyebrow: "White Glove Kosher Travel", heading: "Privacy Policy", intro: "Last updated: August 10, 2026\n\nWhite Glove Kosher Travel provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys at whiteglovekoshertravel.com. This policy explains what information we collect, how we use it, and your choices." },
+      { id: "privacy-collect", kind: "text", heading: "Information we collect", body: "Account details — your email address and a password. Passwords are stored only in a hashed form; we never store or see your plain password.\n\n- Content you save — the destinations, routes, and favorites you add to your account.\n- Searches and trip details — the cities, flights, and hotels you search for, so we can show relevant results and tools.\n- Usage analytics — aggregate counts such as page visits and popular search terms. These are totals and are not linked to your identity.\n- Cookies — a sign-in cookie that keeps you logged in, and, where enabled, a site-access cookie. We do not use advertising cookies." },
+      { id: "privacy-use", kind: "text", heading: "How we use your information", body: "- To create and secure your account and keep you signed in.\n- To send account emails — verification codes and password-reset codes.\n- To provide planning features such as saved routes, favorites, and flight and hotel search.\n- To understand which guides and searches are most useful, so we can improve the site." },
+      { id: "privacy-share", kind: "text", heading: "Service providers we share with", body: "- Email delivery — to send verification and password-reset messages.\n- Flight and hotel search — a travel-technology partner processes your travel searches and any booking you choose to make.\n- Hosting and data storage — our website host and database provider store the data described above securely on our behalf." },
+      { id: "privacy-keep", kind: "text", heading: "How long we keep it", body: "We keep your account information for as long as your account is active. Verification and reset codes are short-lived and expire automatically. You can ask us to delete your account and its data at any time using the contact details below." },
+      { id: "privacy-security", kind: "text", heading: "Security", body: "We protect your information with industry-standard measures: passwords are salted and hashed, sign-in sessions and account codes are cryptographically signed and time-limited, and traffic is served over encrypted connections. No online service can be perfectly secure, but we work to keep your information safe." },
+      { id: "privacy-choices", kind: "text", heading: "Your choices", body: "You can review and update your saved content from your account at any time. To access, correct, export, or delete your personal information, email us and we will help. You can also unsubscribe from non-essential emails; account and security emails are required to use the service." },
+      { id: "privacy-children", kind: "text", heading: "Children", body: "White Glove is intended for adults planning travel and is not directed to children. We do not knowingly collect information from children." },
+      { id: "privacy-changes", kind: "text", heading: "Changes to this policy", body: "We may update this policy from time to time. When we do, we will revise the “Last updated” date above. Significant changes will be noted on this page." },
+      { id: "privacy-contact", kind: "text", heading: "Contact us", body: "Questions about this policy or your information? Email contact@whiteglovekoshertravel.com." },
+    ],
+  },
+  {
+    slug: "kosher-travel-glossary",
+    href: "/kosher-travel/glossary",
+    label: "Kosher travel glossary",
+    seoTitle: "Kosher travel glossary | White Glove Kosher Travel",
+    seoDescription: "What hechsher, eruv, minyan, mikvah, kever and shomer mean on this site.",
+    blocks: [
+      { id: "glossary-hero", kind: "hero", eyebrow: "Kosher travel", heading: "Glossary", intro: "" },
+      { id: "glossary-terms", kind: "text", body: "## Hechsher\n\nThe certification that food is kosher, and the body that gives it. A listing names the body when White Glove has a recorded status.\n\n## Eruv\n\nA boundary around a neighbourhood that allows carrying on Shabbos within it. Where a quarter has one, it changes what a Shabbos there looks like with children.\n\n## Minyan\n\nA quorum for communal prayer. “Walking distance to a minyan” is the single most common request on a trip like this.\n\n## Mikvah\n\nA ritual bath. Availability and hours vary a great deal outside large communities, which is why we say to confirm before travelling.\n\n## Kever / kevarim\n\nA grave, and graves — usually of a tzaddik, a righteous person whose resting place people travel to.\n\n## Shomer\n\nThe person who holds the key to a cemetery or looks after it. Whether you can get in often depends on reaching them." },
+    ],
+  },
 ];
 
 export function getPageDef(slug: string): PageDef | undefined {

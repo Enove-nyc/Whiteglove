@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
+import { resolvePage } from "@/lib/pages";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
@@ -44,7 +46,17 @@ const TERMS: Array<[string, string]> = [
   ],
 ];
 
-export default function KosherTravelGlossaryPage() {
+export default async function KosherTravelGlossaryPage() {
+  const page = await resolvePage("kosher-travel-glossary");
+  if (page?.edited) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
+        <Navbar />
+        <PageBlocks blocks={page.blocks} />
+        <Footer />
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData

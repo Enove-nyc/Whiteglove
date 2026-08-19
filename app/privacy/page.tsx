@@ -3,6 +3,8 @@ import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "Privacy Policy — White Glove Kosher Travel",
@@ -22,6 +24,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function PrivacyPolicyPage() {
+  // The owner's published blocks once he has edited this page; the built-in
+  // version — still wired to the site words for the contact email — until then.
+  const page = await resolvePage("privacy");
+  if (page?.edited) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <PageBlocks blocks={page.blocks} />
+        <Footer />
+      </main>
+    );
+  }
   const { contactEmail } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
