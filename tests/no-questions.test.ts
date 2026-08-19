@@ -77,10 +77,11 @@ const NOT_THE_VISITORS: Array<[RegExp, string]> = [
  */
 const THE_VISITORS_OWN: Array<[string, string]> = [
   ["app/destinations/[destination]/page.tsx", "Ready to book {destination.name}?"],
-  // The homepage now opens with the visitor's own question — the audit's
-  // exact wording — and the heritage hero link went with the rest of the
-  // hero copy (heritage is reached through Destinations like anywhere else).
-  ["app/page.tsx", "Where to?"],
+  // The homepage headline was later hidden so the page opens on the search
+  // box itself, with a single sr-only <h1> for search and accessibility
+  // (see app/page.tsx). It no longer poses the "Where to?" question, so it
+  // is not one of the questions this test guards — the destination page's
+  // "Ready to book …?" still is.
 ];
 
 function walk(dir: string): string[] {

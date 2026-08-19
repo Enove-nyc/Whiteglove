@@ -43,12 +43,13 @@ function at(marker: string): number {
 }
 
 describe("the first five seconds", () => {
-  it("OPENS WITH THE QUESTION, NOT A PITCH — Where to?, then the search", () => {
-    // The owner's wording, exactly: no eyebrow, no proposition paragraph, no
-    // browse links. The opening is a question and the box that answers it.
-    const heading = at("Where to?");
+  it("OPENS WITH THE SEARCH, NOT A PITCH — an sr-only h1, then the search", () => {
+    // No eyebrow, no proposition paragraph, no browse links. The visible
+    // headline was hidden so the page opens on the box itself; a single
+    // sr-only <h1> stays for search and accessibility (see app/page.tsx).
+    const heading = at('<h1 className="sr-only">Jewish travel guide');
     const search = at("<DestinationSearch");
-    assert.ok(heading < search, "the search comes before the question it answers");
+    assert.ok(heading < search, "the sr-only h1 comes before the search it labels");
     assert.match(HOME, /placeholder="Search destinations"/);
   });
 
