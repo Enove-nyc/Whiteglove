@@ -486,6 +486,7 @@ export const vacationDestinations: readonly VacationDestination[] = [
       "The Dohány Street Synagogue, the largest in Europe, and the Kazinczy Street shul in the middle of the quarter.",
       "Shoes on the Danube Bank, and the Parliament along the same stretch of river.",
       "Margaret Island and the Fisherman's Bastion, which are the days children remember.",
+      "The Zugliget chairlift — the Libegő — up to János Hill, the highest point in the city, with the Elizabeth Lookout and the view over the whole of Budapest at the top.",
       "It is markedly cheaper than Vienna or Prague for the same kind of trip.",
     ],
     bestTime: "Spring and early autumn. Summer is hot but the river and the island take the edge off it.",

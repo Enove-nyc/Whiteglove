@@ -5629,6 +5629,24 @@ export const attractions: Attraction[] = [
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Hospital_in_the_Rock",
   },
+  {
+    slug: "budapest-zugliget-chairlift",
+    name: "The Zugliget Chairlift (Libegő)",
+    city: "Budapest",
+    country: "Hungary",
+    kind: "Family",
+    summary:
+      "An open chairlift up over the woods of the Buda hills to János Hill, the highest point in the city, with the Elizabeth Lookout and the view across the whole of Budapest at the top.",
+    address: "Zugligeti út 97, 1121 Budapest",
+    coordinates: "47.5163, 18.9668",
+    notes: [
+      "It runs from the Buda hills, out on the far side of the city from the 7th-district Jewish quarter — reckon on a tram-and-bus ride each way, so this is a half-day of its own rather than a stop between others.",
+      "A two-seat chair over the treetops, and for many children the ride is the day as much as the summit.",
+      "The Elizabeth Lookout at the top is free to climb, and on a clear day the view reaches well past the city.",
+      "It closes for maintenance and does not run in strong wind, so check it is open the day you mean to make the trip out.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Zugliget_Chairlift",
+  },
 
   // ---- Poland ---------------------------------------------------------
   //
