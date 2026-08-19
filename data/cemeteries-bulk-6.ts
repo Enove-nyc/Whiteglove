@@ -191,12 +191,16 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Ostrowiec — Kever of the Ostrovtzer Rebbe",
     yiddishName: "ציון האסטראווצער רבי",
     country: "Poland",
-    address: "Jewish cemetery, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland",
+    address: "Jewish cemetery, between Sienkiewicza, Mickiewicza and Hiecka streets, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland",
     coordinates: "50.942465, 21.384083",
     airportRef: "50.929, 21.385",
     arrivalNotes: [
       "Resting place of Rabbi Meir Yechiel Halevi Halstock, the Ostrovtzer Rebbe, famed as a gaon and for his decades of fasting.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "IT IS THE BLOCK BETWEEN SIENKIEWICZA, MICKIEWICZA AND HIECKA — about a hectare in the middle of an industrial town, and the survey confirms he was buried here in 1928.",
+      "THERE IS NO WALL AND NO GATE, AND THE SURVEY STILL SAYS ACCESS IS CLOSED from the public road. Those two things sit oddly together and this page will not resolve them for you: expect to have to find a way in and to ask, rather than to walk up to an entrance.",
+      "The town owns the ground and cleans it occasionally, and an unpaid caretaker keeps an eye on it. Between one and five hundred matzevos remain, half to three quarters of them down, inscribed in Hebrew, Yiddish and Polish, some carved in relief with traces of paint still on them. The stones that were taken went into the municipal streets.",
+      "THERE IS AN UNMARKED MASS GRAVE INSIDE THE CEMETERY. Nothing shows where it is. Walk the ground knowing that.",
+      "The kehilla goes back to the sixteen-hundreds and the ground was opened around 1657; the last burial was in 1943. The survey lists weather, vandalism, poor security and building work planned nearby as the standing threats.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [

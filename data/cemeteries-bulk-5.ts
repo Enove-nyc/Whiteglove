@@ -202,12 +202,16 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Mogielnica — Kever of Rabbi Chaim Meir Yechiel",
     yiddishName: "ציון השרף ממאגלניצא",
     country: "Poland",
-    address: "Jewish cemetery, Mogielnica, Masovian Voivodeship, Poland",
+    address: "Jewish cemetery, in the woods on the left of ulica Grójecka about 1 km from the market, Mogielnica, Masovian Voivodeship, Poland",
     coordinates: "51.7000126, 20.7280254",
     airportRef: "51.688, 20.717",
     arrivalNotes: [
       "Resting place of Rabbi Chaim Meir Yechiel Shapiro of Mogielnica, the 'Saraf,' a grandson of the Kozhnitzer Maggid.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "TWO ELECTRIC POLES ARE THE LANDMARK. The cemetery is about a kilometre from the market square, in woods on the left of ulica Grójecka, and the way in is a forest path that starts at two electric poles. There is no wall and no gate; the ground is open to anyone and is privately owned.",
+      "TWO OHELS STAND AND NEITHER IS FINISHED. One of them is the Saraf's — he made Mogielnica a chassidishe centre in 1828. The other commemorates a second tzaddik of the town. Both are incomplete structures rather than kept buildings.",
+      "WALK IT CAREFULLY AND KNOW WHY. Dozens of matzevos remain, most of them no longer legible, under grown-up pine forest — and the survey records bone exposed in places on the ground. Anybody, and kohanim above all, should understand that before setting foot in it.",
+      "The ground was opened at the end of the seventeen hundreds, fenced in 1848, enlarged in 1860 and used until 1941. It was wrecked in the war and the walls have been covered in graffiti since.",
+      "His son Reb Yaakov Yitzchak is not here — he is buried in Warsaw.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
