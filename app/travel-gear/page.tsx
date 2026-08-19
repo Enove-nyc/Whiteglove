@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
+import { resolvePage } from "@/lib/pages";
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbs } from "@/lib/structured-data";
 import { pageMetadata } from "@/lib/seo";
@@ -39,6 +41,7 @@ const ALSO_BEFORE_YOU_GO = [
 export default async function TravelGearPage() {
   const shown = gearShownToVisitors(await readGear());
   const amazon = needsAmazonDisclosure(shown.map((item) => ({ id: item.id, name: item.name, blurb: item.description, url: item.url })));
+  const page = await resolvePage("travel-gear");
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -50,18 +53,22 @@ export default async function TravelGearPage() {
       />
       <Navbar />
 
-      <section className="border-b border-[var(--gold-light)] bg-white px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Before you go</p>
-          <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)] sm:text-5xl">Travel gear</h1>
-          <p className="mt-4 text-base leading-7 text-stone-600">
-            {shown.length > 0
-              ? "The things worth packing or picking up before a trip — the same shelf we point to when someone asks what to bring."
-              : "Packing, data abroad, transfers and insurance — the practical things to sort before you go."}
-          </p>
-          {amazon && <p className="mt-4 text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>}
-        </div>
-      </section>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="border-b border-[var(--gold-light)] bg-white px-5 py-14 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Before you go</p>
+            <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)] sm:text-5xl">Travel gear</h1>
+            <p className="mt-4 text-base leading-7 text-stone-600">
+              {shown.length > 0
+                ? "The things worth packing or picking up before a trip — the same shelf we point to when someone asks what to bring."
+                : "Packing, data abroad, transfers and insurance — the practical things to sort before you go."}
+            </p>
+            {amazon && <p className="mt-4 text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>}
+          </div>
+        </section>
+      )}
 
       {shown.length > 0 && (
         <section className="px-5 py-14 sm:px-8 sm:py-16">

@@ -2,10 +2,12 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import GloveMark, { GloveList } from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import { SAMPLE_ITINERARY, SAMPLE_NOTICE, WHAT_IS_IN_IT } from "@/data/sample-itinerary";
+import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
@@ -43,7 +45,9 @@ export const metadata = pageMetadata({
  * this page does not invent one. What it offers instead is the strongest proof
  * available, which is the work itself.
  */
-export default function SampleItineraryPage() {
+export default async function SampleItineraryPage() {
+  const page = await resolvePage("sample-itinerary");
+
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData
@@ -55,21 +59,25 @@ export default function SampleItineraryPage() {
       />
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">What you receive</p>
-          <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            A week in Rome, as it arrives.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            A family of five, seven nights, and a Shabbos in the middle of it. This is the document you are handed at
-            the end: a day per page, the walking and driving worked out, and the kosher side answered for each day.
-          </p>
-          <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcf6e9] px-5 py-3 leading-7 text-stone-700">
-            <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
-          </p>
-        </div>
-      </section>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-7xl">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">What you receive</p>
+            <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
+              A week in Rome, as it arrives.
+            </h1>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
+              A family of five, seven nights, and a Shabbos in the middle of it. This is the document you are handed at
+              the end: a day per page, the walking and driving worked out, and the kosher side answered for each day.
+            </p>
+            <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcf6e9] px-5 py-3 leading-7 text-stone-700">
+              <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
+            </p>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeading

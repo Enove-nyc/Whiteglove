@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import TransferBooking from "@/components/TransferBooking";
 import { pageMetadata } from "@/lib/seo";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "Airport transfers for a kosher trip | White Glove Kosher Travel",
@@ -55,21 +57,26 @@ const WHEN_TRANSFER: Array<[string, string]> = [
 ];
 
 export default async function TransfersPage() {
+  const page = await resolvePage("transfers");
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Getting there</p>
-          <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
-            Airport transfers
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            Booked in advance, waiting at arrivals. Often the better answer around Shabbos.
-          </p>
-        </div>
-      </section>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-7xl">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Getting there</p>
+            <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
+              Airport transfers
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
+              Booked in advance, waiting at arrivals. Often the better answer around Shabbos.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* The hand-off, as a panel rather than a card in a row — on this page it
           is the point rather than an add-on. A tracked link, not a form: this

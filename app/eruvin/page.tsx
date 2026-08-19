@@ -1,8 +1,10 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
 import { listAllEruvin, WORLDWIDE_ERUV_DIRECTORY } from "@/lib/eruvin";
+import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
@@ -22,6 +24,7 @@ export const metadata = pageMetadata({
  */
 export default async function EruvinPage() {
   const listings = await listAllEruvin();
+  const page = await resolvePage("eruvin");
   const byCountry = new Map<string, typeof listings>();
   for (const listing of listings) {
     const list = byCountry.get(listing.country) ?? [];
@@ -40,6 +43,9 @@ export default async function EruvinPage() {
       />
       <Navbar />
 
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kosher travel</p>
@@ -53,6 +59,7 @@ export default async function EruvinPage() {
           </p>
         </div>
       </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeading eyebrow="Community eruvin" title="By country" />

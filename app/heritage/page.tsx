@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PageBlocks from "@/components/PageBlocks";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import DestinationSearch from "@/components/DestinationSearch";
@@ -11,6 +12,7 @@ import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
 import { TRUST_LEVELS } from "@/lib/trust-status";
+import { resolvePage } from "@/lib/pages";
 
 // NOT force-dynamic any more, and this needed a real fix rather than deleting
 // the line. A plain `revalidate` window was tried on pages like this before
@@ -57,6 +59,7 @@ export const metadata = pageMetadata({
  */
 export default async function HeritagePage() {
   const [cemeteries, guides] = await Promise.all([getPublicCemeteryList(), Promise.resolve(guidedDestinations())]);
+  const page = await resolvePage("heritage");
   // Countries, by how much we hold for each. Built from the records rather
   // than typed out, so a country cannot appear here with nothing behind it.
   const byCountry = new Map<string, number>();
@@ -81,25 +84,29 @@ export default async function HeritagePage() {
       />
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-14 gap-y-8">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
-              <span lang="he" dir="rtl">
-                {SUB_BRAND_HEBREW}
-              </span>{" "}
-              by White Glove
-            </p>
-            <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-              Kevarim, batei hachaim, and the towns they are in.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-              Who is buried where, how to reach the kever, who holds the key, and what is around it.
-            </p>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-14 gap-y-8">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">
+                <span lang="he" dir="rtl">
+                  {SUB_BRAND_HEBREW}
+                </span>{" "}
+                by White Glove
+              </p>
+              <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
+                Kevarim, batei hachaim, and the towns they are in.
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
+                Who is buried where, how to reach the kever, who holds the key, and what is around it.
+              </p>
+            </div>
+            <SubBrandCrest className="hidden shrink-0 lg:block" />
           </div>
-          <SubBrandCrest className="hidden shrink-0 lg:block" />
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="border-b border-[var(--gold-light)] bg-[var(--surface)] px-5 py-10 sm:px-8">
         <div className="mx-auto max-w-4xl">

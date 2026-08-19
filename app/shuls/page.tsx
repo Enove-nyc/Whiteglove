@@ -1,11 +1,13 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import StructuredData from "@/components/StructuredData";
 import { IconLink } from "@/components/icons/IconAction";
 import { listPublishedShuls } from "@/lib/shuls";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
+import { resolvePage } from "@/lib/pages";
 import { placeMapUrl } from "@/data/route-utils";
 
 export const metadata = pageMetadata({
@@ -22,6 +24,7 @@ export default async function ShulsPage() {
     list.push(listing);
     byCountry.set(listing.country, list);
   }
+  const page = await resolvePage("shuls");
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -34,12 +37,16 @@ export default async function ShulsPage() {
       />
       <Navbar />
 
-      <section className="border-b border-[var(--gold-light)] px-5 py-10 sm:px-8">
-        <div className="mx-auto max-w-7xl">
-          <Breadcrumbs trail={[{ name: "Kosher", href: "/kosher-travel" }, { name: "Shuls" }]} />
-          <h1 className="mt-4 font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Shuls</h1>
-        </div>
-      </section>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="border-b border-[var(--gold-light)] px-5 py-10 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <Breadcrumbs trail={[{ name: "Kosher", href: "/kosher-travel" }, { name: "Shuls" }]} />
+            <h1 className="mt-4 font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Shuls</h1>
+          </div>
+        </section>
+      )}
 
       {listings.length === 0 ? (
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">

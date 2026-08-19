@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import SectionHeading from "@/components/SectionHeading";
 import { destinations } from "@/data/destinations";
@@ -10,6 +11,7 @@ import DestinationDirectory from "@/components/DestinationDirectory";
 import { buildDirectoryIndex } from "@/lib/directory-browse";
 import { publishedCategoriesBySlug } from "@/lib/content";
 import StructuredData from "@/components/StructuredData";
+import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
 
@@ -40,6 +42,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
   const [matchingAttractions, matchingStays, matchingAreas, matchingEateries] = query
     ? await Promise.all([searchAttractions(query, 24), searchStays(query, 24), searchAreas(query, 12), searchEateries(query, 12)])
     : [[], [], [], []];
+  const page = await resolvePage("stops");
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -59,6 +62,9 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
       />
       <Navbar />
       <SubBrandBanner />
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
           <div className="min-w-0 flex-1">
@@ -71,6 +77,7 @@ export default async function SacredStopsPage({ searchParams }: { searchParams: 
           <SubBrandCrest className="hidden shrink-0 sm:block" />
         </div>
       </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <SectionHeading

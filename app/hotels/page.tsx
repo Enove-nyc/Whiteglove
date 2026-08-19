@@ -3,11 +3,13 @@ import Footer from "@/components/Footer";
 import KosherStayDirectory from "@/components/KosherStayDirectory";
 import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import PartnerSearchForm from "@/components/PartnerSearchForm";
 import StaySearchForm from "@/components/StaySearchForm";
 import SearchMemory from "@/components/SearchMemory";
 import StayQuarters from "@/components/StayQuarters";
 import { getAreaList, getStayList } from "@/lib/attractions-view";
+import { resolvePage } from "@/lib/pages";
 import { citiesFor, inDestination, isSearch, nights, readStaySearch } from "@/lib/stay-search";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 
@@ -84,6 +86,8 @@ export default async function KosherStaysPage({
     .filter(Boolean)
     .join(" · ");
 
+  const page = await resolvePage("hotels");
+
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       {/* Writes this search down when there is one, then fills the empty
@@ -92,30 +96,34 @@ export default async function KosherStaysPage({
       <SearchMemory remember={searching ? search : undefined} />
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to stay</p>
-          <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
-            {searching ? `Where to stay in ${heading}` : "Where to stay"}
-          </h1>
-          <ListingAudienceNote />
-          {searching && (
-            <p className="mt-4 text-sm font-semibold text-[var(--navy)]">
-              {stayNights ? `${stayNights} night${stayNights === 1 ? "" : "s"}` : "Dates not set"} · {party}
-            </p>
-          )}
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-7xl">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Where to stay</p>
+            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
+              {searching ? `Where to stay in ${heading}` : "Where to stay"}
+            </h1>
+            <ListingAudienceNote />
+            {searching && (
+              <p className="mt-4 text-sm font-semibold text-[var(--navy)]">
+                {stayNights ? `${stayNights} night${stayNights === 1 ? "" : "s"}` : "Dates not set"} · {party}
+              </p>
+            )}
 
-          {/* Editable in place. A search that cannot be corrected without going
-              back to the front page is a search somebody abandons. */}
-          <div className="mt-8 max-w-5xl">
-            <StaySearchForm
-              id="stay-search"
-              search={search}
-              submitLabel={searching ? "Update search" : "Find somewhere to stay"}
-            />
+            {/* Editable in place. A search that cannot be corrected without going
+                back to the front page is a search somebody abandons. */}
+            <div className="mt-8 max-w-5xl">
+              <StaySearchForm
+                id="stay-search"
+                search={search}
+                submitLabel={searching ? "Update search" : "Find somewhere to stay"}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         {searching && kosherAreas.length === 0 && kosherStays.length === 0 ? (
