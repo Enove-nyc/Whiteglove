@@ -76,10 +76,10 @@ export type AdminTotalCard = {
   label: string;
   /**
    * Where the tile opens. An admin editor where one exists; otherwise the
-   * public directory the content lives in — the shul and heritage-cemetery
-   * sets are still curated flat files with no admin editor, so the honest
-   * place to send the owner is the page that shows them. Eruvin has an editor
-   * now at /admin/eruvin (add on top of the built-in list).
+   * public directory the content lives in. Eruvin and shuls have editors now
+   * (/admin/eruvin, /admin/shuls — add on top of the built-in lists); the
+   * heritage-cemetery locator is still a curated flat file with no editor, so
+   * its tile opens the page that shows it.
    */
   href: string;
 };
@@ -89,7 +89,7 @@ export const ADMIN_TOTAL_CARDS: readonly AdminTotalCard[] = [
   { key: "guides", label: "Full guides", href: "/admin/destinations" },
   { key: "attractions", label: "Things to do", href: "/admin/directory/attractions" },
   { key: "kosherFood", label: "Kosher food", href: "/admin/directory/food" },
-  { key: "shuls", label: "Shuls", href: "/shuls" },
+  { key: "shuls", label: "Shuls", href: "/admin/shuls" },
   { key: "mikvaos", label: "Mikvaos", href: "/admin/mikvaos" },
   { key: "eruvin", label: "Eruvin", href: "/admin/eruvin" },
   { key: "cemeteries", label: "Batei hachaim", href: "/admin/kevarim" },
