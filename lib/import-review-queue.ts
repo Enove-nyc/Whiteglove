@@ -469,20 +469,25 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
       }
     }
 
-    // Reconcile the pack rows against what is actually published, by the same
-    // rules the content dashboard uses (createOnSiteMatcher). A lead whose place
-    // is already on the site becomes a duplicate rather than something still
-    // awaiting verification — so this screen's "needs review" and "possible
-    // duplicates" match the numbers reported everywhere else, instead of
-    // counting every real lead as outstanding.
+    // Reconcile every row — staged database candidate and source-pack lead
+    // alike — against what is actually published, by the same rules the content
+    // dashboard uses (createOnSiteMatcher). A lead whose place is already on the
+    // site becomes a duplicate rather than something still awaiting
+    // verification, so this screen's "needs review" and "possible duplicates"
+    // match the numbers reported everywhere else instead of counting a
+    // published place as still outstanding. Only rows that are genuinely still
+    // open are flipped: a candidate an editor has already published, rejected
+    // or marked a duplicate keeps the status it was given by hand.
     const onSite = createOnSiteMatcher();
-    const reconciledPackItems = packItems.map((item) =>
-      onSite({ name: item.name, city: item.city, country: item.country, sourceUrl: item.sourceUrl, coordinates: item.coordinates })
+    const reconcile = (item: ReviewQueueItem): ReviewQueueItem => {
+      const stillOpen = item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION";
+      if (!stillOpen) return item;
+      return onSite({ name: item.name, city: item.city, country: item.country, sourceUrl: item.sourceUrl, coordinates: item.coordinates })
         ? { ...item, status: "DUPLICATE" as const, statusLabel: reviewQueueStatusLabel("DUPLICATE") }
-        : item,
-    );
+        : item;
+    };
 
-    const items = [...dbItems, ...reconciledPackItems].sort((a, b) =>
+    const items = [...dbItems.map(reconcile), ...packItems.map(reconcile)].sort((a, b) =>
       a.name.localeCompare(b.name, "en") || a.batchName.localeCompare(b.batchName, "en") || a.id.localeCompare(b.id, "en"),
     );
 
