@@ -39,6 +39,42 @@ import type { AssistantTurn } from "@/lib/assistant-conversation";
 
 type Thread = { turns: AssistantTurn[]; signedIn: boolean; kept: boolean };
 
+/** "rgb(a)(…)" → its parts, or null for a value we cannot read. */
+function parseRgb(value: string): { r: number; g: number; b: number; a: number } | null {
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return null;
+  const parts = match[1].split(",").map((piece) => parseFloat(piece.trim()));
+  if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
+  const [r, g, b, a = 1] = parts;
+  return { r, g, b, a };
+}
+
+/**
+ * Is the section under the launcher a dark one?
+ *
+ * The button is fixed in the corner and floats over navy bands and cream ones
+ * as the page scrolls, so it reads the colour behind it and flips: cream on
+ * navy, navy on cream. It samples the real pixel stack at its own centre —
+ * skipping itself and its panel — and walks up for the first element that
+ * actually paints a background, then decides by luminance. Nothing has to be
+ * tagged; a new section is handled the moment it exists.
+ */
+function darkBehind(launcher: HTMLElement): boolean {
+  const rect = launcher.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  if (y < 0 || y > window.innerHeight || x < 0 || x > window.innerWidth) return false;
+  const behind = document.elementsFromPoint(x, y).find((el) => !el.closest("[data-assistant]"));
+  for (let el: Element | null = behind ?? null; el; el = el.parentElement) {
+    const rgb = parseRgb(getComputedStyle(el).backgroundColor);
+    if (rgb && rgb.a > 0.15) {
+      const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+      return luminance < 0.5;
+    }
+  }
+  return false;
+}
+
 export default function SiteAssistant() {
   const [open, setOpen] = useState(false);
   const [thread, setThread] = useState<Thread>({ turns: [], signedIn: false, kept: false });
@@ -46,7 +82,32 @@ export default function SiteAssistant() {
   const [busy, setBusy] = useState(false);
   const panelRef = useFocusTrap<HTMLDivElement>(open, () => setOpen(false));
   const endRef = useRef<HTMLDivElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
   const loaded = useRef(false);
+  // Cream on a navy band, navy on a cream one. Starts navy (the commonest
+  // ground) so first paint matches, then corrects itself after mount.
+  const [onDark, setOnDark] = useState(false);
+
+  useEffect(() => {
+    const launcher = launcherRef.current;
+    if (!launcher) return;
+    let frame = 0;
+    const sample = () => {
+      frame = 0;
+      setOnDark(darkBehind(launcher));
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(sample);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
 
   // The stored conversation is fetched the first time the panel is opened,
   // never on page load: this is on every page, and a request on every page
@@ -122,13 +183,21 @@ export default function SiteAssistant() {
   return (
     <>
       <button
+        ref={launcherRef}
         type="button"
+        data-assistant="launcher"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="site-assistant-panel"
         aria-label={SITE_ASSISTANT_LABEL}
         // Above the mobile bottom bar on a phone, on the edge everywhere else.
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-[var(--wg-z-popover)] inline-flex h-12 min-h-11 items-center gap-2 rounded-full border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-white shadow-[0_10px_30px_rgba(23,45,82,.28)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] sm:bottom-5"
+        // The colour flips with the band behind it — cream over navy, navy over
+        // cream — and both go to gold on hover.
+        className={`fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-[var(--wg-z-popover)] inline-flex h-12 min-h-11 items-center gap-2 rounded-full border px-4 text-xs font-bold uppercase tracking-[0.1em] shadow-[0_10px_30px_rgba(23,45,82,.28)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] hover:text-white sm:bottom-5 ${
+          onDark
+            ? "border-[var(--cream)] bg-[var(--cream)] text-[var(--navy)]"
+            : "border-[var(--navy)] bg-[var(--navy)] text-white"
+        }`}
       >
         <Icon name="sparkle" className="h-4 w-4" />
         <span className="hidden sm:inline">Ask</span>
@@ -138,6 +207,7 @@ export default function SiteAssistant() {
         <div
           id="site-assistant-panel"
           ref={panelRef}
+          data-assistant="panel"
           tabIndex={-1}
           role="dialog"
           aria-modal="false"
