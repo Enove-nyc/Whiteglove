@@ -99,6 +99,15 @@ export type SavedTrip = {
    * planning their own trip is not a client of anybody.
    */
   client?: string;
+  /**
+   * The advisor a Business account has put on this trip — the person in their
+   * office the client is dealing with.
+   *
+   * Shown to the client as their point of contact in the app; it is the name
+   * the trip carries, not the account's. Empty for everybody else, and empty is
+   * the normal case — a traveller planning their own trip has no advisor.
+   */
+  advisor?: string;
   itinerary: Itinerary;
   route: SavedPlace[];
   /** Public read-only token, when this particular trip is shared. */
@@ -598,6 +607,8 @@ export type TripSummary = {
   name: string;
   /** Who it is for, when somebody is planning on another person's behalf. */
   client: string;
+  /** The advisor on the trip — the agent the client is dealing with. */
+  advisor: string;
   active: boolean;
   /** Stops in the itinerary itself. */
   stops: number;
@@ -608,6 +619,8 @@ export type TripSummary = {
   startDate: string;
   endDate: string;
   shared: boolean;
+  /** The public token when shared, so a screen can build the link to it. */
+  shareId?: string;
   updatedAt: string;
 };
 
@@ -624,6 +637,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     id: t.id,
     name: t.name,
     client: t.client?.trim() ?? "",
+    advisor: t.advisor?.trim() ?? "",
     active: t.id === activeId,
     stops: t.itinerary?.activities?.length ?? 0,
     places: t.route?.length ?? 0,
@@ -631,6 +645,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     startDate: t.itinerary?.startDate ?? "",
     endDate: t.itinerary?.endDate ?? "",
     shared: Boolean(t.shareId),
+    shareId: t.shareId,
     updatedAt: t.updatedAt,
   }));
 }
@@ -647,12 +662,21 @@ export async function getTripItinerary(email: string, id?: string) {
   const { trips, activeId } = withTrips(data);
   const trip = trips.find((t) => t.id === (id || activeId)) ?? trips[0];
   return trip
-    ? { itinerary: trip.itinerary, tripId: trip.id, tripName: trip.name, client: trip.client?.trim() ?? "" }
+    ? {
+        itinerary: trip.itinerary,
+        tripId: trip.id,
+        tripName: trip.name,
+        client: trip.client?.trim() ?? "",
+        advisor: trip.advisor?.trim() ?? "",
+        shareId: trip.shareId,
+      }
     : null;
 }
 
 /** How long a client's name may be. It goes on a cover, not in a database. */
 export const MAX_TRIP_CLIENT = 60;
+/** And an advisor's — the same, it is a name on a screen. */
+export const MAX_TRIP_ADVISOR = 60;
 
 /**
  * Say who a trip is for, or clear it.
@@ -670,6 +694,25 @@ export async function setTripClient(email: string, id: string, client: string) {
   if (!trip) return { ok: false as const, error: "That trip is gone." };
   const clean = client.trim().slice(0, MAX_TRIP_CLIENT);
   const next = trips.map((t) => (t.id === id ? { ...t, client: clean || undefined, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Put an advisor on a trip, or clear it — the agent the client is dealing with.
+ *
+ * Same shape and same reasoning as setTripClient: not gated here (the route is
+ * the door), and it is a name the trip carries, shown to the client in the app.
+ */
+export async function setTripAdvisor(email: string, id: string, advisor: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const clean = advisor.trim().slice(0, MAX_TRIP_ADVISOR);
+  const next = trips.map((t) => (t.id === id ? { ...t, advisor: clean || undefined, updatedAt: new Date().toISOString() } : t));
   const saved = await writeTrips(email, next, activeId);
   if (!saved) return { ok: false as const, error: "Could not save that." };
   return { ok: true as const, trips: saved, activeId };
@@ -981,22 +1024,85 @@ export async function getShareOwnerEmail(shareId: string): Promise<string | null
   return rec?.ownerEmail ?? null;
 }
 
-/** Read a shared trip by its public token (read-only view). */
+/**
+ * Read a shared trip by its public token (read-only view).
+ *
+ * PER TRIP, not per account. The link resolves to the ONE trip that carries
+ * this token — so a client sent their own link sees their own itinerary and
+ * never another of the agency's trips, whichever trip happens to be open in the
+ * planner. A token from before trips had their own share links has no trip that
+ * matches, and falls back to the open trip, which is exactly the one it was.
+ */
 export async function getSharedItineraryByShareId(shareId: string) {
   const ownerEmail = await getShareOwnerEmail(shareId);
   if (!ownerEmail) return null;
   const [data, record] = await Promise.all([getAccountData(ownerEmail), getAccountRecord(ownerEmail)]);
-  if (!data.itinerary) return null;
-  // Who the trip was planned for, from the trip this link actually belongs to.
-  // Only used on a branded document, where it is the line the client reads to
-  // know the itinerary is theirs.
-  const client = withTrips(data).trips.find((t) => t.shareId === shareId)?.client?.trim() ?? "";
+  const trip = withTrips(data).trips.find((t) => t.shareId === shareId);
+  const itinerary = trip?.itinerary ?? data.itinerary; // legacy: the account-level share is the open trip
+  if (!itinerary) return null;
+  // Who the trip was planned for, and by whom — the two names the client reads
+  // to know the itinerary is theirs.
+  const client = trip?.client?.trim() ?? "";
+  const advisor = trip?.advisor?.trim() ?? "";
   // Boarding passes and tickets do not leave the account they were uploaded
   // to. Serving one already checks the owner, so the reference alone would
   // fetch nothing — but stripping it here means the person holding the link is
   // not even told a pass exists. Two answers to the same question, because
   // this is the one that costs somebody their flight if it is wrong.
-  return { itinerary: withoutAttachments(data.itinerary), ownerName: record?.name, ownerEmail, client };
+  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor };
+}
+
+/* ---- per-trip sharing: one link, locked to one itinerary ---------------- */
+
+/** The share token on a specific trip, if it has one. */
+export async function getTripShareState(email: string, tripId: string): Promise<{ shareId: string | null }> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return { shareId: trip?.shareId ?? null };
+}
+
+/**
+ * Ensure a public token on ONE trip (not the open one), and return it.
+ *
+ * The token is written onto the trip itself and into the reverse lookup that
+ * maps it back to this owner. Reusing an existing token self-heals the lookup,
+ * the same way the account-level share does.
+ */
+export async function ensureTripShare(email: string, tripId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  if (trip.shareId) {
+    await writeJson(shareKey(trip.shareId), { ownerEmail: normalized, createdAt: new Date().toISOString() });
+    return trip.shareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(shareKey(token), { ownerEmail: normalized, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, shareId: token, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(normalized, next, activeId);
+  return saved ? token : null;
+}
+
+/** Stop sharing ONE trip: drop its token and everyone it was shared with. */
+export async function stopTripShare(email: string, tripId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  if (trip.shareId) await deleteKey(shareKey(trip.shareId));
+  for (const collaborator of readCollaborators(trip.collaborators)) {
+    await removeFromSharedWith(collaborator.person, normalized);
+  }
+  const next = trips.map((t) =>
+    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], updatedAt: new Date().toISOString() } : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
 }
 
 async function upsertSharedWith(collaboratorEmail: string, entry: SharedTrip) {

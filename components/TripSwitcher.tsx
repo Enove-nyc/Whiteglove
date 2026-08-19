@@ -19,6 +19,8 @@ type Trip = {
   name: string;
   /** Who the trip is for. Business accounts only; "" for everybody else. */
   client: string;
+  /** The advisor on the trip — the agent the client is dealing with. */
+  advisor: string;
   active: boolean;
   stops: number;
   places: number;
@@ -26,6 +28,8 @@ type Trip = {
   startDate: string;
   endDate: string;
   shared: boolean;
+  /** The public token when shared, so the client's app link can be built. */
+  shareId?: string;
   updatedAt: string;
 };
 
@@ -45,6 +49,14 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   const [mayNameClient, setMayNameClient] = useState(false);
   const [clientFor, setClientFor] = useState<string | null>(null);
   const [draftClient, setDraftClient] = useState("");
+  // The agent on the trip, edited the same way as the client name.
+  const [advisorFor, setAdvisorFor] = useState<string | null>(null);
+  const [draftAdvisor, setDraftAdvisor] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
+  // This site's own origin, so the client link is absolute and copyable. This
+  // panel only ever renders after its trips have loaded on the client, so
+  // window is always here by the time the link is drawn — no effect needed.
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
   // The traveler's own date, so a trip that starts tomorrow says so on the
   // list rather than only once it is opened.
   const { today } = useDeviceClock();
@@ -72,7 +84,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   }, []);
 
   const act = useCallback(
-    async (action: string, payload: { id?: string; name?: string; client?: string } = {}, reload = false) => {
+    async (action: string, payload: { id?: string; name?: string; client?: string; advisor?: string } = {}, reload = false) => {
       setBusy(true);
       setError("");
       try {
@@ -89,6 +101,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
         setTrips(data.trips);
         setRenaming(null);
         setClientFor(null);
+        setAdvisorFor(null);
         if (reload) onSwitched?.();
       } catch {
         setError("Could not reach the server.");
@@ -172,6 +185,30 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     Cancel
                   </button>
                 </form>
+              ) : advisorFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void act("advisor", { id: trip.id, advisor: draftAdvisor });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={draftAdvisor}
+                    onChange={(e) => setDraftAdvisor(e.target.value)}
+                    aria-label="The advisor on this trip"
+                    placeholder="Sarah Klein"
+                    maxLength={60}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setAdvisorFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
               ) : (
                 <>
                   <p className="font-semibold text-[var(--navy)]">
@@ -182,6 +219,9 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                   </p>
                   {trip.client && (
                     <p className="text-xs font-semibold text-[var(--gold-ink)]">For {trip.client}</p>
+                  )}
+                  {trip.advisor && (
+                    <p className="text-xs text-stone-500">Advisor: {trip.advisor}</p>
                   )}
                   <p className="text-xs text-stone-500">
                     {[
@@ -198,7 +238,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               )}
             </div>
 
-            {renaming !== trip.id && clientFor !== trip.id && (
+            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
               <div className="flex flex-wrap gap-2">
                 {!trip.active && (
                   <button type="button" disabled={busy} onClick={() => void act("switch", { id: trip.id }, true)} className={smallButton}>
@@ -229,6 +269,19 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     {trip.client ? "Change who it is for" : "Who it is for"}
                   </button>
                 )}
+                {mayNameClient && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setAdvisorFor(trip.id);
+                      setDraftAdvisor(trip.advisor);
+                    }}
+                    className={smallButton}
+                  >
+                    {trip.advisor ? "Change advisor" : "Advisor"}
+                  </button>
+                )}
                 <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
                   Make a copy
                 </button>
@@ -244,6 +297,44 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
                   >
                     Delete
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* The client's app link — Business only, one link per trip. It
+                opens THIS trip as the app on the client's phone; no account
+                needed. Other trips are never reachable from it. */}
+            {mayNameClient && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+              <div className="mt-1 w-full">
+                {trip.shareId ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Client app link</span>
+                    <input
+                      readOnly
+                      value={`${origin}/i/${trip.shareId}/app`}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs text-[var(--navy)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(`${origin}/i/${trip.shareId}/app`).then(() => {
+                          setCopied(trip.id);
+                          setTimeout(() => setCopied((c) => (c === trip.id ? null : c)), 1500);
+                        }).catch(() => undefined);
+                      }}
+                      className={smallButton}
+                    >
+                      {copied === trip.id ? "Copied!" : "Copy"}
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => void act("unshare", { id: trip.id })} className={smallButton}>
+                      Stop link
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" disabled={busy} onClick={() => void act("share", { id: trip.id })} className={smallButton}>
+                    Create a client app link
                   </button>
                 )}
               </div>

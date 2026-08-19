@@ -103,6 +103,14 @@ describe("a planner trip, wired into the app", () => {
     assert.equal(withLayer.concierge, false);
   });
 
+  it("shows the advisor as the client's contact, and never invents one", () => {
+    const withAdvisor = itineraryToCompanionTrip(itin, days, { today: itin.startDate, advisorName: "Sarah Klein" });
+    assert.equal(withAdvisor.contactName, "Sarah Klein");
+    assert.equal(withAdvisor.concierge, false);
+    // No advisor named → no contact card, not a default one.
+    assert.equal(trip.contactName, undefined);
+  });
+
   it("falls back to a weekday Shabbos note when no zmanim are handed in", () => {
     // No layer at all — the guide is empty and the note is the weekday one.
     assert.equal(trip.guideSections.length, 0);
