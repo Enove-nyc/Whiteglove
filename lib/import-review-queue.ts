@@ -24,7 +24,7 @@ import {
   isTemplateFillerCandidate,
   type BulkContentKind,
 } from "@/lib/bulk-content";
-import { getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
+import { createOnSiteMatcher, getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
 import {
   isOpenReviewStatus,
   reviewQueueKindLabel,
@@ -383,7 +383,9 @@ function tally(items: readonly ReviewQueueItem[]): ImportReviewQueueCounts {
     marketMap.set(market, (marketMap.get(market) ?? 0) + 1);
   }
 
-  const open = items.filter((item) => item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION" || item.status === "DUPLICATE");
+  // Duplicates are NOT awaiting verification — a place already on the site is
+  // done, not outstanding. It is counted under `duplicates`, not here.
+  const open = items.filter((item) => item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION");
   return {
     awaitingVerification: open.length,
     needsReview: items.filter((item) => item.status === "NEEDS_REVIEW").length,
@@ -467,7 +469,20 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
       }
     }
 
-    const items = [...dbItems, ...packItems].sort((a, b) =>
+    // Reconcile the pack rows against what is actually published, by the same
+    // rules the content dashboard uses (createOnSiteMatcher). A lead whose place
+    // is already on the site becomes a duplicate rather than something still
+    // awaiting verification — so this screen's "needs review" and "possible
+    // duplicates" match the numbers reported everywhere else, instead of
+    // counting every real lead as outstanding.
+    const onSite = createOnSiteMatcher();
+    const reconciledPackItems = packItems.map((item) =>
+      onSite({ name: item.name, city: item.city, country: item.country, sourceUrl: item.sourceUrl, coordinates: item.coordinates })
+        ? { ...item, status: "DUPLICATE" as const, statusLabel: reviewQueueStatusLabel("DUPLICATE") }
+        : item,
+    );
+
+    const items = [...dbItems, ...reconciledPackItems].sort((a, b) =>
       a.name.localeCompare(b.name, "en") || a.batchName.localeCompare(b.batchName, "en") || a.id.localeCompare(b.id, "en"),
     );
 
