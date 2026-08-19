@@ -4,6 +4,12 @@ import assert from "node:assert/strict";
 import { buildDays, emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { itineraryToCompanionTrip } from "@/lib/companion-trip";
 import { SAMPLE_ITINERARY } from "@/data/sample-itinerary";
+import { zmanimRequestFor } from "@/lib/trip-zmanim";
+import { zmanimForDay } from "@/lib/zmanim-day-calculate";
+import { curatedKosherPlacesNear } from "@/lib/curated-kosher";
+import { hechsherLabel } from "@/data/hechsherim";
+import { coordinatesToPoint } from "@/data/route-utils";
+import type { ZmanimDay } from "@/lib/zmanim-day";
 
 /**
  * The one place a planner trip becomes an app trip. These hold the wiring
@@ -53,6 +59,55 @@ describe("a planner trip, wired into the app", () => {
     assert.match(trip.tripDates, /2026/);
     assert.match(trip.homeKicker, /day 1 of/);
     assert.ok(trip.family.length > 0);
+  });
+
+  it("carries the kosher and Shabbos layer when it is handed one", () => {
+    const zmanimByDate: Record<string, ZmanimDay> = {};
+    for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
+    const cc =
+      itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
+      itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
+    const center = coordinatesToPoint(cc);
+    const kosher = center
+      ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
+          name: k.name,
+          city: k.city,
+          kind: k.category,
+          diet: k.diet,
+          hechsher: hechsherLabel(k.hechsher),
+          km: k.km,
+        }))
+      : [];
+
+    const withLayer = itineraryToCompanionTrip(itin, days, {
+      today: itin.startDate,
+      layer: { zmanimByDate, kosher },
+    });
+
+    // Erev Shabbos carries a real candle-lighting time, not a weekday guess.
+    const friday = withLayer.days.find((d) => d.dow === "Fri");
+    assert.ok(friday, "the week has a Friday");
+    assert.match(friday!.shabbosLabel ?? "", /Candle-lighting \d{1,2}:\d{2}/);
+
+    // Shabbos knows when it ends.
+    const shabbos = withLayer.days.find((d) => d.dow === "Sat");
+    assert.match(shabbos!.shabbosNote ?? "", /Shabbos ends about \d{1,2}:\d{2}/);
+
+    // The guide fills with the site's own records.
+    const names = withLayer.guideSections.map((s) => s.name);
+    assert.ok(names.includes("Shabbos here"), "a Shabbos section");
+    assert.ok(names.includes("Kosher, near you"), "a kosher section");
+    assert.ok(withLayer.kosherTitle, "an Eating today line on the home screen");
+
+    // And still never invents the advisor side.
+    assert.equal(withLayer.concierge, false);
+  });
+
+  it("falls back to a weekday Shabbos note when no zmanim are handed in", () => {
+    // No layer at all — the guide is empty and the note is the weekday one.
+    assert.equal(trip.guideSections.length, 0);
+    const friday = trip.days.find((d) => d.dow === "Fri");
+    assert.equal(friday?.shabbosLabel, "Erev Shabbos");
   });
 
   it("stands up an empty trip without throwing", () => {

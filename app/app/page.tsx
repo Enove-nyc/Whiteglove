@@ -9,11 +9,16 @@ import { getPlan } from "@/lib/account-plan-store";
 import { mayUseCompanionApp } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { buildDays, emptyItinerary } from "@/data/itinerary";
+import { coordinatesToPoint } from "@/data/route-utils";
 import { itineraryToCompanionTrip } from "@/lib/companion-trip";
 import { allCrossings } from "@/lib/border-store";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { readAssumptions } from "@/lib/planner-settings-store";
 import { readBrand } from "@/lib/business-brand-store";
+import { zmanimRequestFor } from "@/lib/trip-zmanim";
+import { zmanimForDay } from "@/lib/zmanim-day-calculate";
+import { curatedKosherPlacesNear } from "@/lib/curated-kosher";
+import { hechsherLabel } from "@/data/hechsherim";
 import { pageMetadata } from "@/lib/seo";
 
 // One person's trip, on one person's phone. Nothing here belongs in a search
@@ -65,11 +70,35 @@ export default async function AppPage() {
       const borderCost = borderCostForLegs(crossings, today, assume.borderAllowanceMins);
       const days = buildDays(itin, borderCost, assume);
       if (days.length > 0) {
+        // The kosher-and-Shabbos layer, both from the site's own records and
+        // worked out offline: candle-lighting and when Shabbos ends per day
+        // (astronomy + the timezone under the coordinates), and the kosher
+        // places we already publish near where the trip is.
+        const zmanimByDate: Record<string, ReturnType<typeof zmanimForDay>> = {};
+        for (const request of zmanimRequestFor(days)) {
+          zmanimByDate[request.date] = zmanimForDay(request);
+        }
+        const centerCoords =
+          itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
+          itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
+        const center = coordinatesToPoint(centerCoords);
+        const kosher = center
+          ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
+              name: k.name,
+              city: k.city,
+              kind: k.category,
+              diet: k.diet,
+              hechsher: hechsherLabel(k.hechsher),
+              km: k.km,
+            }))
+          : [];
+
         companionTrip = itineraryToCompanionTrip(itin, days, {
           today,
           advisorName: brand?.enabled ? brand.name : undefined,
           tripName: trip.tripName,
           client: trip.client,
+          layer: { zmanimByDate, kosher },
         });
       }
     }
