@@ -141,6 +141,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/borders", label: "Borders", blurb: "Crossings, hours and notes." },
       { href: "/admin/hechsherim", label: "Hechsherim", blurb: "Who certifies each kosher place." },
       { href: "/admin/mikvaos", label: "Mikvaos", blurb: "Mikvah listings across towns." },
+      { href: "/admin/eruvin", label: "Eruvin", blurb: "Add community eruvin to the public page." },
       { href: "/admin/directory/businesses", label: "Businesses", blurb: "Operators, planners, guides." },
       { href: "/admin/directory-listings", label: "Listings", blurb: "Drivers and agencies in the store." },
       { href: "/admin/recycle", label: "Deleted", blurb: "Put something back." },

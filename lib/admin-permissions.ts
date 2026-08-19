@@ -83,6 +83,7 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/countries", "directory"],
   ["/admin/hechsherim", "directory"],
   ["/admin/mikvaos", "directory"],
+  ["/admin/eruvin", "directory"],
   ["/admin/add", "directory"],
   ["/admin/imports", "directory"],
 ];

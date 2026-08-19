@@ -37,6 +37,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "history",
   "imports",
   "inventory",
+  "eruvin",
   "kevarim",
   "login",
   "messages",
