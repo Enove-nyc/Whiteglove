@@ -66,7 +66,10 @@ export const bulkCemeteries3: Cemetery[] = [
     airportRef: "49.383, 24.145",
     arrivalNotes: [
       "Resting place of Rabbi Tzvi Hirsch Eichenstein of Zidichov, a foundational master of the Zidichov-Komarno kabbalistic chassidic line.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS AT THE CORNER OF YANA NALEPKI AND HORISHNYA. This page used to say only to confirm the location locally, which for the Ruzhiner's ohel was not good enough. The ground is fenced and protected, and it is well kept — unusual for this part of Ukraine.",
+      "THE KEY IS AT THE KEEPER'S HOUSE BY THE MAIN GATE. You are not expected to arrange anything in advance; knock there. Accounts describe an elderly man who comes out and unlocks when visitors arrive.",
+      "About two hundred matzevos survive, from the eighteen-thirties to the nineteen-thirties, on a ground opened in the early eighteen-hundreds. The last burials were in the nineteen-thirties.",
+      "Sadhora was a pilgrimage town before it was a district of Chernivtsi — four fifths of its people were Jews in 1880, and five thousand still lived here in 1914. By 1941 there were six hundred and fifty-four, and they were deported to Transnistria that autumn.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
@@ -81,11 +84,13 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Peremyshlyany — Kever of Rabbi Meir of Premishlan",
     yiddishName: "קבר רבי מאיר מפרעמישלאן",
     country: "Ukraine",
-    address: "Jewish cemetery, Peremyshlyany, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemeteries, Peremyshlyany, Lviv Oblast, Ukraine — the old ground is at 15 Shevchenko Street; see the notes",
     airportRef: "49.663, 24.560",
     arrivalNotes: [
       "Resting place of Rabbi Meir of Premishlan, beloved for his simplicity, wit, and wonder-working.",
-      "Confirm the cemetery and exact grave location locally.",
+      "TWO REB MEIRS OF PREMISHLAN, AND THE SIGN IN THE OLD CEMETERY IS NOT THIS ONE. The memorial marker on the old ground at 15 Shevchenko Street records the burial place of Reb Meir the Great of Peremyshlyany, who was niftar in 1773. This page is about Reb Meir'l, niftar 1850 — his descendant, and the one people travel for. Somebody who reads that sign and stops has found the wrong man.",
+      "THE OLD GROUND IS BUILT OVER. Private houses stand on it. Twenty-six matzevos survive, with further fragments turning up at the edge of the town, and the memorial marker is the only thing on the site that says what it was.",
+      "Where Reb Meir'l himself lies is not settled by anything found. The town's newer cemetery is the other candidate and its coordinate is below; ask in Peremyshlyany rather than assuming the marked ground is his.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.66672, 24.55668 and the newer one at 49.67008, 24.55120, about 0.5 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
@@ -241,7 +246,8 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Sadhora — Kever of the Ruzhiner Rebbe",
     yiddishName: "קבר הרוז׳ינער רבי",
     country: "Ukraine",
-    address: "Jewish cemetery, Sadhora district of Chernivtsi, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, at the corner of Yana Nalepki and Horishnya streets, Sadhora district, Chernivtsi, Ukraine",
+    coordinates: "48.35320, 25.95966",
     airportRef: "48.325, 25.950",
     arrivalNotes: [
       "Rabbi Yisrael Friedman of Ruzhin settled in Sadigura after leaving the Russian Empire, and is buried there; his court shaped many chassidic dynasties.",
