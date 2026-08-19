@@ -68,7 +68,7 @@ export default function PrintableItinerary({
    * else's crest on the cover is one they cannot hand over.
    *
    * WHAT IT DOES NOT REPLACE, EVER: the credit line. Every page still says the
-   * itinerary was planned with whitegloveitineraries.com, quietly, at 8.5px in
+   * itinerary was planned with whiteglovekoshertravel.com, quietly, at 8.5px in
    * the footer. That is the owner's decision and this component is where it is
    * enforced, so a caller cannot pass a flag that removes it — there is no such
    * flag to pass. The line is small and it is not an advertisement; it is the
@@ -195,7 +195,7 @@ export default function PrintableItinerary({
 
         <p className="wg-cover-foot">
           {brand ? brand.name : "Thoughtfully arranged · meaningfully traveled"}
-          <span className="wg-cover-site">{brand ? "Planned with whitegloveitineraries.com" : "whitegloveitineraries.com"}</span>
+          <span className="wg-cover-site">{brand ? "Planned with whiteglovekoshertravel.com" : "whiteglovekoshertravel.com"}</span>
         </p>
       </section>
 
@@ -254,7 +254,7 @@ export default function PrintableItinerary({
             <footer className="wg-foot">
               {/* The credit line. On a branded document this is the only thing
                   on the page that is not the business's own, and it stays. */}
-              <span>{brand ? `${brand.name} · planned with whitegloveitineraries.com` : "White Glove Kosher Travel · whitegloveitineraries.com"}</span>
+              <span>{brand ? `${brand.name} · planned with whiteglovekoshertravel.com` : "White Glove Kosher Travel · whiteglovekoshertravel.com"}</span>
               <span>{footerRight}</span>
             </footer>
           </section>

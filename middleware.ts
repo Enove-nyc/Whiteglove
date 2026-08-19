@@ -18,7 +18,7 @@ import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
- * (e.g. "preview.whitegloveitineraries.com"). Lets one hostname stay public for
+ * (e.g. "preview.whiteglovekoshertravel.com"). Lets one hostname stay public for
  * reviewers while the
  * main domain stays private. Matching ignores case, port and a "www." prefix.
  */
@@ -32,7 +32,7 @@ function hostIsOpen(request: NextRequest): boolean {
 }
 
 /**
- * The admin area on its own hostname, e.g. `admin.whitegloveitineraries.com`.
+ * The admin area on its own hostname, e.g. `admin.whiteglovekoshertravel.com`.
  *
  * Set `ADMIN_HOST` to that hostname and every path on it is an admin path:
  * `admin.…/shomrim` serves the shomer screen, `/` serves the dashboard. The

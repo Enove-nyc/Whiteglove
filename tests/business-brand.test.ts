@@ -9,7 +9,7 @@ import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } fr
  * TWO THINGS THIS HAS TO GET RIGHT, and they pull in opposite directions. The
  * document an agent hands their client must be the agent's — that is the whole
  * feature. And the one credit line saying the itinerary was planned with
- * whitegloveitineraries.com must survive everything, because that was the
+ * whiteglovekoshertravel.com must survive everything, because that was the
  * owner's decision and it is the only thing on the page that is not theirs.
  * (The line itself lives in components/PrintableItinerary.tsx and there is no
  * flag anywhere that removes it — which is the point.)

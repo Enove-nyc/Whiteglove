@@ -103,7 +103,7 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your name on the itinerary</h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
         Plan the trip here and hand your client a document with your logo on the cover and your name in the header of
-        every page. One line at the bottom says the itinerary was planned with whitegloveitineraries.com; everything
+        every page. One line at the bottom says the itinerary was planned with whiteglovekoshertravel.com; everything
         else on it is yours.
       </p>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
@@ -226,7 +226,7 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
             <p className="mt-4 font-[family-name:var(--font-display)] text-base text-[var(--navy)]">Your client&rsquo;s trip</p>
           </div>
           <p className="mt-3 text-[10px] leading-5 text-stone-500">
-            {enabled && name.trim() ? "Planned with whitegloveitineraries.com" : "whitegloveitineraries.com"}
+            {enabled && name.trim() ? "Planned with whiteglovekoshertravel.com" : "whiteglovekoshertravel.com"}
           </p>
           {/* The one case where the preview is right and looks wrong: the
               switch is off and there is something to show. Said here rather

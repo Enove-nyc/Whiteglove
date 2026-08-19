@@ -6,7 +6,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 
 // Resend's shared sandbox sender. It can ONLY deliver to the email address that
 // owns the Resend account — anything else is rejected. A real domain sender
-// (e.g. no-reply@whitegloveitineraries.com, once the domain is verified in
+// (e.g. no-reply@whiteglovekoshertravel.com, once the domain is verified in
 // Resend) is required for mail to reach the edits@/contact@ inboxes.
 const TEST_SENDER = "White Glove Kosher Travel <onboarding@resend.dev>";
 
@@ -27,8 +27,8 @@ function resendConfig() {
 //   contact-form messages                                  → contact@
 //
 // OWNER_NOTIFICATION_EMAIL and CONTACT_NOTIFICATION_EMAIL override each side.
-const DEFAULT_EDITS_INBOX = "edits@whitegloveitineraries.com";
-const DEFAULT_CONTACT_INBOX = "contact@whitegloveitineraries.com";
+const DEFAULT_EDITS_INBOX = "edits@whiteglovekoshertravel.com";
+const DEFAULT_CONTACT_INBOX = "contact@whiteglovekoshertravel.com";
 
 function editsInbox() {
   return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_EDITS_INBOX;
@@ -564,12 +564,12 @@ export async function sendItineraryToClient(input: {
         `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open your itinerary →</a></p>` +
         `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin-top:24px;">` +
         `Sent by ${business}. Reply to this email to reach them.<br>` +
-        `Planned with whitegloveitineraries.com.</p></div>`,
+        `Planned with whiteglovekoshertravel.com.</p></div>`,
       text:
         `Your itinerary from ${input.from}\n\n` +
         (note ? `${note}\n\n` : "") +
         `${input.tripTitle || "Your trip"} is ready. Open it to see every day, and print it or save it as a PDF:\n${input.url}\n\n` +
-        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whitegloveitineraries.com.`,
+        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whiteglovekoshertravel.com.`,
     },
     input.to,
     "itinerary to client",
