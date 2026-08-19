@@ -15,7 +15,11 @@ describe("content import review regressions", () => {
 
     assert.match(editor, /name="sourceEvidence"/);
     assert.match(action, /sourceEvidence: sourceEvidence\(formData\)/);
-    assert.match(storage, /sourceEvidence: rawSourceEvidence\(prepared\.sourceEvidence\)/);
+    // The edit form merges the newly-entered evidence with what was already on
+    // the candidate (keep-both) rather than overwriting it, then stores the raw
+    // merged evidence — so source evidence is preserved through the review form.
+    assert.match(storage, /const evidence = mergeKeepBothEvidence\(existing\.sourceEvidence, prepared\.sourceEvidence\)/);
+    assert.match(storage, /sourceEvidence: rawSourceEvidence\(evidence\)/);
   });
 
   it("uses stable source IDs for candidate links while retaining ID lookup compatibility", () => {

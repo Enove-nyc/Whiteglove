@@ -107,7 +107,8 @@ describe("candidate Trello payloads", () => {
       "Source reviewed",
       "Destination/location checked",
       "Customer-ready summary completed",
-      "Kosher/practical claim checked where applicable",
+      "Attraction/lodging suits Orthodox / Torah-observant travelers",
+      "Kosher claim checked only where this is a food/kashrus listing",
       "Approved for public publishing",
     ]) {
       assert.match(card.desc, new RegExp(`\\[ \\] ${item}`));
@@ -220,7 +221,7 @@ describe("current private candidate sources", () => {
     assert.equal(sourceSet.sourceLabel, "Worldwide editorial review pack");
     assert.equal(sourceSet.sourceAvailable, true);
     assert.equal(sourceSet.withheldForMissingProvenance, 0);
-    assert.equal(sourceSet.candidates.length, 152);
+    assert.equal(sourceSet.candidates.length, 151);
     for (const item of sourceSet.candidates) {
       assert.equal(item.status, "NEEDS_REVIEW");
       assert.ok(item.sourceUrl);
