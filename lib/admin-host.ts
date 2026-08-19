@@ -32,6 +32,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "directory-listings",
   "duffel",
   "finances",
+  "flight-itineraries",
   "growth",
   "hechsherim",
   "heritage-cemeteries",
