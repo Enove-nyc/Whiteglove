@@ -301,9 +301,28 @@ function cityCountryKey(city: string, country: string): string {
   return `${nameTokens(city).join("")}|${nameTokens(country).join("")}`;
 }
 
-function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
-  views: readonly T[],
-): T[] {
+/**
+ * A test for "is this candidate already published on the site?".
+ *
+ * Built once from the site's own content and reused across every candidate.
+ * Exported so the review queue (lib/import-review-queue.ts) reconciles by the
+ * SAME rules the content dashboard does — otherwise the two count the queue
+ * differently and the admin sees two different "needs review" numbers.
+ *
+ * A candidate matches when it shares the site's exact location key, its source
+ * URL, a coordinate (rounded to ~100 m), or — for attractions — sits in the
+ * same city and country as a published attraction that shares a distinctive
+ * place-name token. That last rule closes the honest half of the gap between a
+ * lead's raw name ("Prado Museum") and a curated one ("Museo del Prado")
+ * without ever clearing a place that is not actually on the site.
+ */
+export function createOnSiteMatcher(): (candidate: {
+  name: string;
+  city: string;
+  country: string;
+  sourceUrl?: string | null;
+  coordinates?: string | null;
+}) => boolean {
   const owned = staticOwnedContent();
   const keys = new Set(owned.map((o) => locationKey(o.name, o.city, o.country)));
   const sources = new Set(owned.map((o) => normalizeSourceUrl(o.sourceUrl ?? "")).filter(Boolean));
@@ -312,12 +331,6 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
       .map((item) => coordKey((item as { coordinates?: string | null }).coordinates ?? null))
       .filter((k): k is string => Boolean(k)),
   );
-  // A lead reconciles by name only when a published attraction sits in the SAME
-  // city and country and shares a distinctive place-name token — so "Prado
-  // Museum" clears against "Museo del Prado" in Madrid, while a second museum in
-  // Madrid the site has not written up stays in the queue. Curated names rarely
-  // match a lead's name exactly, and this closes the honest half of that gap
-  // without ever clearing a place that is not actually on the site.
   const attractionTokens = new Map<string, Set<string>>();
   for (const item of attractions) {
     const key = cityCountryKey(item.city, item.country);
@@ -325,21 +338,24 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
     for (const token of distinctiveNameTokens(item.name, item.city)) set.add(token);
     attractionTokens.set(key, set);
   }
+  return (candidate) => {
+    if (keys.has(locationKey(candidate.name, candidate.city, candidate.country))) return true;
+    if (candidate.sourceUrl && sources.has(normalizeSourceUrl(candidate.sourceUrl))) return true;
+    const c = coordKey(candidate.coordinates ?? null);
+    if (c && coords.has(c)) return true;
+    const set = attractionTokens.get(cityCountryKey(candidate.city, candidate.country));
+    if (set && distinctiveNameTokens(candidate.name, candidate.city).some((token) => set.has(token))) return true;
+    return false;
+  };
+}
+
+function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
+  views: readonly T[],
+): T[] {
+  const onSite = createOnSiteMatcher();
   return views.map((view) => {
     if (view.status !== "NEEDS_REVIEW") return view;
-    const onSite =
-      keys.has(locationKey(view.name, view.city, view.country)) ||
-      (view.sourceUrl ? sources.has(normalizeSourceUrl(view.sourceUrl)) : false) ||
-      (() => {
-        const c = coordKey(view.coordinates);
-        return c ? coords.has(c) : false;
-      })() ||
-      (() => {
-        const set = attractionTokens.get(cityCountryKey(view.city, view.country));
-        if (!set) return false;
-        return distinctiveNameTokens(view.name, view.city).some((token) => set.has(token));
-      })();
-    return onSite ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
+    return onSite(view) ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
   });
 }
 
