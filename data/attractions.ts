@@ -9888,6 +9888,83 @@ export const attractions: Attraction[] = [
     sourceUrl: "https://en.wikipedia.org/wiki/Chefchaouen",
   },
 
+  // ---- Egypt ----------------------------------------------------------
+  {
+    slug: "giza-pyramids",
+    name: "The Pyramids of Giza and the Sphinx",
+    city: "Cairo",
+    country: "Egypt",
+    kind: "Landmark",
+    summary: "The last of the seven wonders of the ancient world — the three great pyramids and the Sphinx on the desert edge of Cairo.",
+    address: "Al Haram, Giza Governorate",
+    coordinates: "29.9792, 31.1342",
+    notes: [
+      "Go early for the cool and the light; a ticket covers the plateau, with more to go inside a pyramid. Expect heat, sand and persistent sellers.",
+      "On the western edge of greater Cairo. No kosher food nearby — carry it; Cairo's provision is limited and best arranged through Chabad ahead.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Giza_pyramid_complex",
+  },
+  {
+    slug: "cairo-egyptian-museum",
+    name: "The Egyptian Museum",
+    city: "Cairo",
+    country: "Egypt",
+    kind: "Museum",
+    summary: "The great collection of pharaonic antiquities on Tahrir Square, holding tens of thousands of objects from ancient Egypt.",
+    address: "Tahrir Square, Cairo",
+    coordinates: "30.0478, 31.2336",
+    notes: [
+      "Vast and old-fashioned; pick a few halls rather than trying to see it all. A paid ticket is needed.",
+      "Central, by Tahrir Square. Some of the royal collection has moved to the new Grand Egyptian Museum out by the pyramids — check which holds what before you go.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Egyptian_Museum",
+  },
+  {
+    slug: "cairo-ben-ezra-synagogue",
+    name: "The Ben Ezra Synagogue and Old Cairo",
+    city: "Cairo",
+    country: "Egypt",
+    kind: "Jewish heritage",
+    summary: "The medieval shul in Old Cairo whose storeroom held the Cairo Geniza — the greatest single find of Jewish documents — in the quarter where the Rambam lived.",
+    address: "Fustat, Old Cairo, Cairo",
+    coordinates: "30.0056, 31.2311",
+    notes: [
+      "The restored synagogue is the reason to come; the geniza it held is now dispersed among libraries around the world. The Rambam served as physician and dayan in Fustat, and the Maimonides Synagogue nearby carries his name.",
+      "In the walled lanes of Coptic Cairo, reached by the Mar Girgis metro.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ben_Ezra_Synagogue",
+  },
+  {
+    slug: "cairo-khan-el-khalili",
+    name: "Khan el-Khalili",
+    city: "Cairo",
+    country: "Egypt",
+    kind: "Landmark",
+    summary: "The great medieval bazaar of Islamic Cairo, a warren of lanes of metalwork, lamps, spice and craft since the fourteenth century.",
+    address: "El-Gamaleya, Cairo",
+    coordinates: "30.0477, 31.2622",
+    notes: [
+      "Free to wander; bargaining is expected, and it is crowded and easy to lose your way — note a landmark to head back to.",
+      "In the historic heart of Islamic Cairo, among the old mosques and gates.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Khan_el-Khalili",
+  },
+  {
+    slug: "cairo-citadel",
+    name: "The Citadel of Saladin",
+    city: "Cairo",
+    country: "Egypt",
+    kind: "Landmark",
+    summary: "The medieval hilltop fortress that guarded Cairo for centuries, with museums inside and a wide view over the city.",
+    address: "Salah Salem St, Cairo",
+    coordinates: "30.0296, 31.2618",
+    notes: [
+      "The walls, the courtyards and the view over Cairo are the draw; a paid ticket is needed and it takes a couple of hours.",
+      "On a rise east of the old city, a short drive from Khan el-Khalili.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Citadel_of_Cairo",
+  },
+
   // ---- South Africa ---------------------------------------------------
   {
     slug: "cape-town-table-mountain",
