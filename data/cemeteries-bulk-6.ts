@@ -139,13 +139,14 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Sighet — Kever of the Yetev Lev",
     yiddishName: "ציון היטב לב מסיגעט",
     country: "Romania",
-    address: "Jewish cemetery, Sighetu Marmației, Maramureș County, Romania — confirm exact location locally",
+    address: "Jewish cemetery, Strada Szilágyi István, Sighetu Marmației, Maramureș County, Romania",
     airportRef: "47.929, 23.886",
     arrivalNotes: [
       "THREE GENERATIONS LIE IN ONE OHEL HERE, not one kever. It was built over the Yetev Lev immediately after his petirah, and his son and grandson were buried in it after him.",
       "This is the Satmar Rov's own family ground: the Kedushas Yom Tov was his father and the Yetev Lev his grandfather. Reb Yoel himself is not here — he lies in Kiryas Joel.",
       "The ohel was restored after its roof was damaged by fire, when candles lit at the kever caught the kvittlach pushed into the cracks. Do not add to that.",
-      "Confirm the cemetery and exact ohel location locally.",
+      "IT IS ON STRADA SZILÁGYI ISTVÁN. This page used to say only to confirm the cemetery locally, which for a ground this heavily visited was not good enough. Two independent guides give that street; one of them records the number as 26. Navigate to the street and expect to ask at the gate for the ohel.",
+      "The ground is about three hundred years old and most of its early matzevos are gone — the stone they were cut from has not stood up to the weather. Four generations of Teitelbaums are the reason people come.",
     ],
     burials: [
       { name: "Rabbi Yekusiel Yehuda Teitelbaum", yiddishName: "רבי יקותיאל יהודה טייטלבוים", knownAs: "The Yetev Lev of Sighet", seforim: "ייטב לב · ייטב פנים", yahrzeit: "ו׳ אלול · 5643 / 1883", note: "Founder of the Sighet chassidus; a grandson of the Yismach Moshe and grandfather of the Satmar Rav." },
@@ -165,7 +166,9 @@ export const bulkCemeteries6: Cemetery[] = [
     airportRef: "47.970, 23.700",
     arrivalNotes: [
       "Resting place of Rabbi Yosef Meir Weiss, the Imrei Yosef, founder of the Spinka chassidus.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "DO NOT LET A SEARCH SEND YOU TO THE MERRY CEMETERY. Săpânța is famous worldwide for the Cimitirul Vesel, its painted wooden crosses, and that is the village's Christian cemetery and a coach-tour attraction. It is not this ground and the two are separate places. Ask for the Jewish cemetery by name.",
+      "Săpânța is about fifteen kilometres west-north-west of Sighet, on the Tisza at the Ukrainian border, so it is done on the same day as the Sighet ohel rather than on its own.",
+      "No source found gives the cemetery a street, a gate arrangement or a keyholder. That is the state of the record, not an omission from this page — ask in the village.",
     ],
     burials: [
       { name: "Rabbi Yosef Meir Weiss", yiddishName: "רבי יוסף מאיר ווייס", knownAs: "The Imrei Yosef of Spinka", seforim: "אמרי יוסף", yahrzeit: "כ״ב אלול · 5669 / 1909", note: "Founder of the Spinka chassidus, known for fiery avodah and simcha." },
