@@ -1183,7 +1183,26 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       {nearby && (
         <div className="mt-3 text-sm text-stone-600">
           {nearby.length === 0 ? <p className="text-stone-400">No listed sites found within range.</p> : (
-            <ul className="space-y-1">{nearby.map((n) => <li key={n.href}><Link href={n.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">{n.name}</Link> <span className="text-stone-400">· {formatKm(n.km)}</span></li>)}</ul>
+            <ul className="space-y-1">{nearby.map((n) => (
+              <li key={n.href} className="flex flex-wrap items-center gap-2">
+                <Link href={n.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">{n.name}</Link>
+                <span className="text-stone-400">· {formatKm(n.km)}</span>
+                {/* One click drops the listed place onto this day as a stop.
+                    No coordinates come back with the suggestion, so it lands
+                    without a travel-time until an address is added — which the
+                    edit form does. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddStop({ id: uid(), name: n.name, href: n.href, date: day.date });
+                    setNearby((cur) => (cur ? cur.filter((x) => x.href !== n.href) : cur));
+                  }}
+                  className="ml-auto border border-[var(--gold-light)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+                >
+                  Add to this day
+                </button>
+              </li>
+            ))}</ul>
           )}
         </div>
       )}
