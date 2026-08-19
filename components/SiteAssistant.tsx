@@ -146,8 +146,8 @@ export default function SiteAssistant() {
         >
           <div className="flex items-start justify-between gap-3 border-b border-[var(--gold-light)] px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-[var(--navy)]">{SITE_ASSISTANT_LABEL}</p>
-              <p className="mt-1 text-[11px] leading-4 text-stone-600">{SITE_ASSISTANT_SUPPORT}</p>
+              <p className="text-lg font-semibold leading-tight text-[var(--navy)]">{SITE_ASSISTANT_LABEL}</p>
+              <p className="mt-1 text-[10px] leading-[1.3] text-stone-500">{SITE_ASSISTANT_SUPPORT}</p>
             </div>
             <button
               type="button"
