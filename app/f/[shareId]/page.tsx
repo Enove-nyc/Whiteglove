@@ -6,6 +6,7 @@ import {
   flightItineraryLabel,
   formatFlightDate,
   landsNextDay,
+  splitByDirection,
   type FlightLeg,
 } from "@/lib/flight-itinerary";
 import { getFlightItineraryByShareId } from "@/lib/flight-itinerary-store";
@@ -40,6 +41,38 @@ function Detail({ label, value }: { label: string; value: string }) {
       <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{label}</dt>
       <dd className="mt-0.5 text-sm text-[var(--navy)]">{value}</dd>
     </div>
+  );
+}
+
+/** One journey's legs, with a connection line drawn between legs that link up. */
+function LegGroup({ legs }: { legs: FlightLeg[] }) {
+  return (
+    <div className="grid gap-4">
+      {legs.map((leg, index) => {
+        const prev = index > 0 ? legs[index - 1] : null;
+        const connection = prev ? connectionBetween(prev, leg) : null;
+        return (
+          <div key={leg.id} className="wg-leg grid gap-4">
+            {connection ? (
+              <p className="flex flex-wrap items-center gap-x-2 px-1 text-sm text-stone-600">
+                <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
+                <span className="font-semibold text-[var(--navy)]">Connect at {connection.airport}</span>
+                {connection.layover ? <span>· {connection.layover} layover</span> : null}
+              </p>
+            ) : null}
+            <FlightCard leg={leg} index={index} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GroupHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-3 mt-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)] first:mt-0">
+      {children}
+    </h2>
   );
 }
 
@@ -110,6 +143,9 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
     );
   }
 
+  const { outbound, returning } = splitByDirection(itinerary.legs);
+  const hasReturn = returning.length > 0;
+
   const details: Array<{ label: string; value: string }> = [
     itinerary.passengers ? { label: "Passenger(s)", value: itinerary.passengers } : null,
     itinerary.reference ? { label: "Booking reference", value: itinerary.reference } : null,
@@ -149,23 +185,19 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
           </dl>
         </header>
 
-        <section className="mt-8 grid gap-4">
-          {itinerary.legs.map((leg, index) => {
-            const prev = index > 0 ? itinerary.legs[index - 1] : null;
-            const connection = prev ? connectionBetween(prev, leg) : null;
-            return (
-              <div key={leg.id} className="wg-leg grid gap-4">
-                {connection ? (
-                  <p className="wg-connection flex flex-wrap items-center gap-x-2 px-1 text-sm text-stone-600">
-                    <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
-                    <span className="font-semibold text-[var(--navy)]">Connect at {connection.airport}</span>
-                    {connection.layover ? <span>· {connection.layover} layover</span> : null}
-                  </p>
-                ) : null}
-                <FlightCard leg={leg} index={index} />
+        <section className="mt-8">
+          {hasReturn ? (
+            <>
+              <GroupHeading>Outbound</GroupHeading>
+              <LegGroup legs={outbound} />
+              <div className="mt-6">
+                <GroupHeading>Return</GroupHeading>
+                <LegGroup legs={returning} />
               </div>
-            );
-          })}
+            </>
+          ) : (
+            <LegGroup legs={outbound} />
+          )}
         </section>
 
         {itinerary.notes ? (

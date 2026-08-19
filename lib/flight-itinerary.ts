@@ -16,8 +16,16 @@
 
 import { randomBytes } from "crypto";
 
+/** Which half of a round trip a flight belongs to. */
+export type FlightDirection = "outbound" | "return";
+
 export type FlightLeg = {
   id: string;
+  /**
+   * Outbound or return. Optional so an itinerary saved before this existed
+   * still reads — a leg with no direction is treated as outbound everywhere.
+   */
+  direction?: FlightDirection;
   /** "El Al", "United" — the carrier the customer boards. */
   airline: string;
   /** "LY 315" — carrier code and number as it reads on the ticket. */
@@ -100,6 +108,7 @@ export function flightItineraryFromInput(input: FlightItineraryInput): FlightIti
     .filter(legIsUsable)
     .map((leg) => ({
       id: newId(6),
+      direction: leg.direction === "return" ? "return" : "outbound",
       airline: trimField(leg.airline),
       flightNumber: trimField(leg.flightNumber),
       from: trimField(leg.from),
@@ -216,4 +225,19 @@ export function connectionBetween(prev: FlightLeg, next: FlightLeg): Connection 
 /** A short label for a saved itinerary in a list. */
 export function flightItineraryLabel(itinerary: FlightItinerary): string {
   return itinerary.title || itinerary.passengers || "Untitled flight itinerary";
+}
+
+/**
+ * The legs split into the outbound journey and the return journey, each kept
+ * in the order they were saved. A leg with no direction counts as outbound, so
+ * an itinerary saved before return flights existed comes out unchanged.
+ */
+export function splitByDirection(legs: FlightLeg[]): { outbound: FlightLeg[]; returning: FlightLeg[] } {
+  const outbound: FlightLeg[] = [];
+  const returning: FlightLeg[] = [];
+  for (const leg of legs) {
+    if (leg.direction === "return") returning.push(leg);
+    else outbound.push(leg);
+  }
+  return { outbound, returning };
 }
