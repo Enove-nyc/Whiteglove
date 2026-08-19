@@ -27,6 +27,7 @@ export const bulkCemeteries26: Cemetery[] = [
     yiddishName: "הומענע — בית החיים החרדי",
     country: "Slovakia",
     address: "Orthodox Jewish cemetery, Židovská hora, outside Humenné, Prešov Region, Slovakia",
+    coordinates: "48.943066, 21.933866",
     airportRef: "48.936, 21.916",
     arrivalNotes: [
       "IT IS ON A HILL OUTSIDE THE TOWN CALLED ŽIDOVSKÁ HORA — the Jewish hill — and you turn off the public road straight into it. Part of the ground is behind wire fencing and the gate is locked.",
@@ -35,6 +36,7 @@ export const bulkCemeteries26: Cemetery[] = [
       "About nine hundred matzevos in all, in marble, granite and limestone, inscribed in Hebrew, Slovak and German.",
       "THE OLD PART IS TO YOUR LEFT AS YOU COME IN and is barely walkable — it was left to itself for many years and has not been cleared the way the rest has.",
       "The survey dates the ground to the fifteenth century. That would make it one of the oldest in the region and it is worth confirming on the spot rather than repeating; the stones that have been read are very much later.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://cdp.jewishgen.org/eastern-europe/slovakia/humenne",

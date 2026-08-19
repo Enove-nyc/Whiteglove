@@ -41,11 +41,13 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "קעלץ — אוהל הרבי מחענטשין",
     country: "Poland",
     address: "Jewish cemetery, ul. Pakosz, Pakosz district, Kielce, Świętokrzyskie Voivodeship, Poland — no house number is published here; confirm the entrance locally",
+    coordinates: "50.8564596, 20.6082058",
     airportRef: "50.874, 20.633",
     arrivalNotes: [
       "Come expecting a badly damaged site. The Germans carried out executions here and buried murdered children from the Jasna Street labour camp, and most of the ohalim that once stood are gone; Reb Chaim Shmuel's is one of the few that survive.",
       "It sits in the south-western part of the city, in the Pakosz district off ul. Pakosz. We are not publishing a house number for the way in, because we could not confirm one — ask locally or go with someone who has been.",
       "Three other tzaddikim lie here — Motele Twerski of the Chernobyl line, Ozer Avraham Rabinowicz and Elimelech Yaakov Rabinowicz — so confirm with someone local which kever is which before you daven.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Chaim Shmuel Horowitz-Sternfeld of Chęciny", yiddishName: "רבי חיים שמואל הורוויץ-שטערנפעלד מחענטשין", knownAs: "Chentchiner Rebbe — the rebbe himself, not the Chentshiner Rebbetzin", note: "Rebbe and rav of Chęciny and a great-grandson of the Chozeh of Lublin, whose surname is written Horowitz-Sternfeld or Szterenfeld; he is the man, not his wife Sarah Horowitz-Sternfeld, the Chentshiner Rebbetzin, who is a separate and equally well-known figure and is often what a search for that title turns up." },
@@ -60,11 +62,13 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "טשענסטאָכאָוו — אוהל בעל שפתי צדיק",
     country: "Poland",
     address: "Jewish cemetery, ul. Złota, Częstochowa, Silesian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.7990457, 19.1695118",
     airportRef: "50.800, 19.117",
     arrivalNotes: [
       "This is a large, remote and unstaffed site — roughly 8 hectares with thousands of matzeivos — with a history of vandalism and access problems. Do not go alone and do not go late in the day.",
       "The cemetery lies south-east of the city centre off ul. Złota, near the former Warta steelworks. We are not publishing turn-by-turn directions or a house number, because we could not confirm any; go with someone who has been, or arrange a local guide.",
       "The ohel holds two matzeivos, the Siftei Tzaddik's and his son Reb Yitzchak Meir's. Confirm the exact kever on the ground when you arrive.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Pinchas Menachem Elazar Justman", yiddishName: "רבי פנחס מנחם אלעזר יוסטמאן", knownAs: "Siftei Tzaddik of Piltz", seforim: "שפתי צדיק", yahrzeit: "י׳ כסלו · 5681 / 1920", note: "The first Piltzer Rebbe, born 1848, a grandson of the Chiddushei HaRim of Ger through his mother Tzina Pesa and raised in the Ger court alongside the Sfas Emes; his name is also written Pinchas Menachem Eliezer and the surname appears as Yustman or Jusztman." },
@@ -117,11 +121,13 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "סטריקאָוו — ציון ר׳ אפרים פישל שפירא",
     country: "Poland",
     address: "Site of the destroyed Jewish cemetery, Stryków, Zgierz County, Łódź Voivodeship, Poland — there is no marked address; the location must be confirmed locally",
+    coordinates: "51.9077035, 19.5977211",
     airportRef: "51.901, 19.611",
     arrivalNotes: [
       "There is no standing ohel here and no matzeivah — the Stryków cemetery was destroyed, the ohel was pulled down after the war and the site was lost for decades; what marks the place today is the uncovered foundation of the old ohel and nothing more, so come expecting bare ground.",
       "The Ohr HaGanuz institute relocated the spot working from wartime aerial photographs, old maps, descendants' testimony and local non-Jewish memory of the grave of 'Fishl the Kabbalist,' together with Rabbi Simcha Keller of the Łódź Jewish community; rebuilding has been spoken of but do not assume you will find a finished structure.",
       "Stryków is roughly 20km north-east of Łódź. The cemetery ground is reported to be off ul. Batorego, but since nothing is marked, treat that as an area and not an address — go with someone who has been before rather than trusting a map pin.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Efraim Fishel Shapiro of Stryków", yiddishName: "רבי אפרים פישל שפירא מסטריקוב", knownAs: "The first Strikover Rebbe — not the later rebbes of Stryków", note: "Founder of the Strikover chassidic line and one of the early chassidishe rebbes, a talmid of the Maggid of Mezritch and of Reb Elimelech of Lizhensk; the later Strikover Rebbe Elimelech Menachem Mendel Landau (d. 1936) is buried in the Okopowa Street cemetery in Warsaw and other Strikover rebbes are buried in Eretz Yisroel and America, so make sure you are looking for this one." },
@@ -156,12 +162,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "גאסטינין — מקום מנוחת ה'תהילים איד'",
     country: "Poland",
     address: "Site of the Jewish cemetery, north side of ul. Gościnna (former Rataje), Gostynin, Gostynin County, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.41652, 19.45573",
     airportRef: "52.417, 19.467",
     arrivalNotes: [
       "There is no grave here to stand at. The ohel over Reb Yechiel Meir's kever was destroyed by the Germans, the matzevot were carted off to pave sidewalks, and whatever was still standing was cleared in the 1970s when a housing estate went up on part of the ground.",
       "What you will find on ul. Gościnna, about a kilometre south-west of the market square, is the surveyed and marked cemetery plot — roughly 0.83 hectares. It was fenced and commemorated in September 2018, on the 130th anniversary of his petirah, and matzeva fragments recovered from a forest track in 2010 were brought back to the site.",
       "The Gostynin Yizkor book describes the ohel standing at the front of the cemetery, visible from the Kutno road, with an unbroken procession of chassidim walking out to it every 21 Shevat and the grave covered over in kvitlach. That is the ground you are standing on, but the individual kever is not marked.",
       "Sources disagree about whether any ohel was ever rebuilt here, so come expecting an open memorial site rather than a standing structure, and confirm the exact spot with the Gostynin town office or a local guide before you travel.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yechiel Meir Lipschitz of Gostynin", yiddishName: "רבי יחיאל מאיר ליפשיץ מגאסטינין", knownAs: "The Tehillim Yid", yahrzeit: "כ״א שבט · 5648 / 1888", note: "Born in Opoczno to Reb Yaakov Tzvi, he was a leading talmid of the Kotzker Rebbe — who counted him among the lamed-vav tzaddikim — and also of the Chiddushei HaRim of Ger and Reb Avraham Landau of Ciechanów; he led in Gostynin until his petirah in 1888 and told everyone who came to him to say Tehillim, which is how he got his name. A Find a Grave memorial (#120339501) placing him in the old cemetery in Tzfas is an error — he died and was buried in Gostynin." },
@@ -176,12 +184,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "זיכלין — קבר רבי שמואל אבא מזיכלין",
     country: "Poland",
     address: "Jewish cemetery, ul. Waleriana Łukasińskiego 53, Żychlin, Kutno County, Łódź Voivodeship, Poland",
+    coordinates: "52.2450927, 19.6351433",
     airportRef: "52.245, 19.624",
     arrivalNotes: [
       "The matzeva you will stand at is not the original one. The cemetery was wrecked in the war and again afterwards, and Reb Yisroel Meir Gabbai's Agudat Ohalei Tzadikim put up a new monument over the Rebbe's grave, built on top of what was left of the damaged original.",
       "The cemetery is at ul. Waleriana Łukasińskiego 53, on the edge of town. Alongside the surviving and re-set matzevot there are two monuments built out of concrete and matzeva fragments, designed by a descendant, Moshe Zyslander, after Poland came out from under communism.",
       "Volunteers from the Association of Descendants of Jewish Central Poland (ADJCP) and the American Matzevah Foundation have been clearing and restoring this cemetery since 2019, with work weeks most summers. Between them the ground can be badly overgrown, so wear proper shoes.",
       "Contact ADJCP or ask in Żychlin before you set out, and confirm on the ground exactly which marker is the Rebbe's when you arrive.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shmuel Abba Zychlinski", yiddishName: "רבי שמואל אבא זיכלינסקי", knownAs: "First Rebbe of Zychlin", yahrzeit: "כ״ו אלול · 5639 / 1879", note: "Son of Reb Zelig and raised in Łowicz, he learned by Reb Aryeh Leib Tzintz and Reb Moshe Yehuda Leib Zilberberg and was a leading disciple of Reb Simcha Bunim of Peshischa — Zychlin is a Peshischa branch, and he founded the court. He is Zychlinski; do not confuse him with Reb Shmuel Abba Twersky of the Chernobyl line, a different man entirely. His only son, Reb Moshe Nesanel, succeeded him." },
@@ -196,12 +206,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "פשעדבורזש — קבר רבי ישעיה וועלטפרייד",
     country: "Poland",
     address: "Jewish cemetery, far end of ul. Ogrodowa above the Pilica river, Przedbórz, Radomsko County, Łódź Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.086259, 19.8691177",
     airportRef: "51.083, 19.883",
     arrivalNotes: [
       "The mausoleum described in the Przedbórz Yizkor book is gone. The Germans destroyed the cemetery, the matzevot were used to pave streets in Przedbórz and Widoma and as fortifications at the end of the war, and only a few dozen broken stones survive — the exact position of the Rebbe's kever is not certain.",
       "The cemetery lies at the end of ul. Ogrodowa, on high ground above the Pilica, about 1.5 hectares. In 2016 an ohel was built at the site and the whole ground was enclosed — brick wall on three sides, mesh on the marshy river side.",
       "Just inside the entrance you will see a cluster of matzevot recovered during building work from the yard of a local school and brought back; the oldest surviving stone here dates from 1794.",
       "That 2016 ohel is a modern construction, and I could not find a source that states it stands over his grave specifically — ask the Przedbórz gmina office or a local guide to confirm what it marks before you rely on it.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yeshaya Weltfreid of Przedbórz", yiddishName: "רבי ישעיה וועלטפרייד מפשעדבורזש", knownAs: "First Pshedborzer Rebbe", note: "Born in Łask, son of Reb Meir son of Reb Elyakim Getz of Łask — he and his father Reb Meir were both talmidim of the Chozeh of Lublin; he was rav in Przedbórz from 1788 and took up the leadership of a Przedbórz chassidus in 1815 after the Chozeh's petirah, and chose the surname Weltfreid when the government required family names. He is the founder of the dynasty, not his son and successor Reb Immanuel (Emanuel) Weltfreid, who died in Warsaw in 1865 and is buried there." },
@@ -296,12 +308,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "גארליץ — אוהל רבי ברוך הלברשטאם",
     country: "Poland",
     address: "Jewish cemetery, ul. Stróżowska, north-west of the market square, Gorlice, Lesser Poland Voivodeship (Małopolskie), Poland — confirm exact location locally",
+    coordinates: "49.66255, 21.14807",
     airportRef: "49.656, 21.160",
     arrivalNotes: [
       "The ohel you will daven in is not the original. The wartime ohel was lost, and the structure standing over the graves today was newly built in the 2014-16 restoration of the cemetery, so what you see is a modern reconstruction over the burial place rather than the pre-war building.",
       "The cemetery sits on ul. Stróżowska, north-west of the Gorlice market square. About 250 matzevos survive, along with a mass grave holding Jews murdered in the Gorlice region and reburied here after the war.",
       "Reb Boruch's ohel also holds his son Reb Tzvi Hirsh of Rudnik, who was niftar in 1918. Do not confuse the man buried here with the later Sanz-Gorlitz rebbes of the same family name — they are buried in Eretz Yisroel and America, not in Gorlice.",
       "The cemetery is fenced and is not staffed. Ask locally in Gorlice about access and the gate, and confirm the exact position of the ohel before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Boruch Halberstam of Gorlice", yiddishName: "רבי ברוך הלברשטאם", knownAs: "First Gorlitzer Rebbe, fifth son of the Divrei Chaim of Sanz", seforim: "דברי ברוך — ברוך שאמר · עטרת ברוך", yahrzeit: "א׳ אדר · 5666 / 1906", note: "Fifth son of Reb Chaim Halberstam of Sanz, the Divrei Chaim; av beis din of Rudnik and then of Gorlice, and the founder of the Gorlitz chassidus. He is the 1829-1906 man — not any of the later Sanz-Gorlitz rebbes who carry the Halberstam name and lie in Eretz Yisroel or America. His years as rav in Rudnik are why family trees call him 'of Rudnik'; that is the same man, and not the separate Reb Elimelech of Rudnik whose ohel is in Sokołów Małopolski." },
@@ -317,12 +331,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "לינסק — אוהל רבי מנחם מנדל רובין",
     country: "Poland",
     address: "Jewish cemetery, on the hill beside the old synagogue, Lesko, Subcarpathian Voivodeship (Podkarpackie), Poland — confirm exact location locally",
+    coordinates: "49.47035, 22.33388",
     airportRef: "49.469, 22.330",
     arrivalNotes: [
       "Before you go, know who is here. The tzaddik in this ohel is Reb Menachem Mendel RUBIN of Linsk, niftar 1803, the father of the Ropshitzer Rebbe. He is widely mislabelled 'Menachem Mendel Horowitz of Rozwadów', which is wrong on both counts: Rozwadów is a different town about 140 km away with its own Horowitz rebbes, and Reb Menachem Mendel Horowitz of Linsk (1805-1868) is a different and later man.",
       "The cemetery is one of the oldest in Poland — roughly three hectares on a wooded hillside beside the old synagogue, with some two thousand matzevos, the earliest from 1548. The oldest stones are in the northern part near the entrance gate.",
       "It is a real climb over uneven, root-broken ground, and the ohel is not signposted from the road. Give yourself time and wear proper shoes; after rain the slope is slippery.",
       "Confirm the exact position of the ohel locally before you set out — the town museum and the synagogue building at the foot of the hill can point you to it.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Menachem Mendel Rubin of Linsk", yiddishName: "רבי מנחם מנדל רובין", knownAs: "The Linsker, father of the Ropshitzer Rebbe", yahrzeit: "כ״ג תשרי · 5564 / 1803", note: "Born about 1740, son of Reb Yaakov, rav of Linsk, and himself rav of Linsk; father of Reb Naftali Tzvi Horowitz of Ropshitz. He is NOT Reb Menachem Mendel Horowitz of Linsk (1805-1868), son of Avrohom Chaim Horowitz and founder of the Linsk dynasty, who is a later and different man, and he has no connection to the Horowitz rebbes of Rozwadów." },
@@ -359,12 +375,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "באכניא — ציון רבי אשר מאיר הלברשטאם",
     country: "Poland",
     address: "Jewish cemetery, ul. Krzęczków 5, Bochnia, Lesser Poland Voivodeship (Małopolskie), Poland",
+    coordinates: "49.9714839, 20.4380894",
     airportRef: "49.969, 20.430",
     arrivalNotes: [
       "You will be davening at an open matzevah, not inside a building. No ohel over this grave is documented, and the cemetery was damaged in the war and is only partly preserved — do not expect an enclosed structure, and confirm the state of the ground locally before you go.",
       "His matzevah survives and is easy to find: the sources place it right by the main entrance to the cemetery.",
       "Bochnia has more than one Jewish burial ground. The one you want is the cemetery at 5 Krzęczków Street.",
       "The cemetery is fenced and the gate is not always open. Arrange access in town beforehand and confirm the exact spot locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Asher Meir Halberstam", yiddishName: "רבי אשר מאיר הלברשטאם", knownAs: "Bochnia Rav", yahrzeit: "ח׳ אדר א׳ · 5692 / 1932", note: "Born about 1858, a descendant of Reb Chaim Halberstam of Sanz, the Divrei Chaim; he served as rav and av beis din of Bochnia until his petirah on 15 February 1932. He was the rav of the town from the Halberstam family, not a rebbe of the Sanz or Bobov courts — do not confuse him with the Sanz or Bobov rebbes who share the surname." },
@@ -465,12 +483,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל ר׳ אריה לייבוש הלברשטאם — טארנא",
     country: "Poland",
     address: "Jewish cemetery, ul. Szpitalna, Tarnów, Tarnów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.01915, 20.99547",
     airportRef: "50.013, 20.989",
     arrivalNotes: [
       "The cemetery was devastated under the German occupation and what you walk through today is the result of a long restoration; it is one of the oldest and largest Jewish cemeteries in southern Poland, so finding one ohel among the stones takes time and patience.",
       "Be clear who is buried here: this is Reb Aryeh Leibush Halberstam, a Sanz-Shinov rebbe who lived and led in Tarnów — he is not the Tarnower Rav, R' Meir Aryeh Leibush Horowitz of the Divrei Meir, who was the town's official rav and is a different man with a different grave in this same town.",
       "The ohel stands on the east side of the grounds, walled in concrete; the cemetery is walled along ul. Szpitalna.",
       "Ask at the gate or with someone local to be shown the right ohel before you daven — the Halberstam given names repeat across this family and more than one Aryeh Leibush Halberstam is honoured elsewhere.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Aryeh Leibush Halberstam", yiddishName: "ר׳ אריה לייבוש הלברשטאם", knownAs: "Tarnower Rebbe — Reb Aryeh Leibush of Tarnów, son of the Shinover", note: "Son of Rebbe Yechezkel Shraga Halberstam of Shinov (Sieniawa), the Divrei Yechezkel, and grandson of the Divrei Chaim of Sanz; he lived and led in Tarnów. He must not be confused with Ben Zion Aryeh Leibish Halberstam the Bobover Rebbe, murdered near Lwów in 1941, nor with the Rabbi Aryeh Leibish Halberstam who died in 2015 aged 94." },
@@ -485,12 +505,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל ר׳ נפתלי רובין — נײַ וויסניטש",
     country: "Poland",
     address: "Jewish cemetery, Nowy Wiśnicz, Bochnia County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "49.91185, 20.45958",
     airportRef: "49.917, 20.450",
     arrivalNotes: [
       "The ohel here is not the original: the cemetery was wrecked in the war and the ohel over Reb Naftali Rubin's grave was rebuilt in the early 1980s, so what stands over him is a reconstruction.",
       "Do not let the name mislead you — \"Wisnitzer\" in Yiddish sends people to Vizhnitz (Vyzhnytsia) in Ukraine, a completely unrelated dynasty hundreds of kilometres from here; this is Wiśnicz in Lesser Poland, an hour east of Kraków.",
       "Reb Eleazar Rubin, son of Reb Chaim Baruch, killed by the Germans in September 1940, lies under the same ohel, and the matzevah of R' Asher Meir Halberstam stands near the entrance.",
       "Confirm which matzevah and which ohel you are standing at with someone local before you daven.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Naftali Rubin", yiddishName: "ר׳ נפתלי רובין", knownAs: "Rav of Nowy Wiśnicz", note: "Son of R' Shmuel Rubin and a son-in-law in the Shinov house of Rebbe Yechezkel Shraga Halberstam of Sieniawa; the cemetery documentation records his burial here in 1939 and the ohel raised over him." },
@@ -507,12 +529,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל ר׳ שמחה יששכר בער הלברשטאם — ציעשאנוב",
     country: "Poland",
     address: "Jewish cemetery, Cieszanów, Lubaczów County, Podkarpackie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.2474, 23.12873",
     airportRef: "50.267, 23.133",
     arrivalNotes: [
       "Not one matzevah survives here — the cemetery's gravestones were taken away under the German occupation, and the ohel you will find is a modern reconstruction, so the grave beneath it is marked rather than original.",
       "What is left is a fenced, largely empty field with the single ohel standing in it — come expecting that and you will not be thrown.",
       "Hasidim come to daven here on his yahrzeit; on any ordinary day you will likely be the only ones on the ground.",
       "Confirm the exact spot with someone local before you daven, and be sure which son of the Shinover you are at — his brothers led Tarnów and other towns nearby and the Halberstam names repeat.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Simcha Yissachar Ber Halberstam", yiddishName: "ר׳ שמחה יששכר בער הלברשטאם", knownAs: "Cieszanower Rebbe", yahrzeit: "1914", note: "Son of Rebbe Yechezkel Shraga Halberstam of Shinov (Sieniawa) and grandson of the Divrei Chaim of Sanz; he served as rabbi of Cieszanów and died there, and Hasidim visit his grave on his yahrzeit." },
@@ -547,12 +571,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל אדמו\"רי אונגר — זשאבנא",
     country: "Poland",
     address: "Jewish cemetery, Żabno, Tarnów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.1407157, 20.8905244",
     airportRef: "50.133, 20.885",
     arrivalNotes: [
       "The cemetery was destroyed under the German occupation and the ohel over the Unger graves is a modern rebuild, so what stands over them today is a reconstruction rather than the original.",
       "This cemetery is the only surviving trace of Jewish Żabno; a number of old matzevos with their Hebrew inscriptions survive across the grounds.",
       "The ohel is a Hasidic pilgrimage site, but nobody is stationed on the ground and no hours or keyholder are published.",
       "Keep the Ungers of Żabno separate from the Ungers of Dombrov (Dąbrowa Tarnowska), who are buried in their own town — and confirm the exact kever with someone local before you daven.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yisrael Elimelech Unger", yiddishName: "ר׳ ישראל אלימלך אונגר", knownAs: "Zabner Rebbe — Reb Yisrael Elimelech of Żabno", note: "The first of the Żabno tzaddikim, whose burial here the cemetery documentation places in 1867; not to be confused with the later Unger rebbes of Dombrov such as R' Moshe Eliakim Unger, who lie in Dąbrowa Tarnowska." },
@@ -569,12 +595,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "ציון ר׳ אברהם אהרן טייטלבוים — קאלבאסוב",
     country: "Poland",
     address: "Jewish cemetery, Kolbuszowa, Kolbuszowa County, Podkarpackie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.23409, 21.75325",
     airportRef: "50.250, 21.767",
     arrivalNotes: [
       "Be clear what you are standing at: the brick ohel on this ground is Reb Yechiel Rubin's and his son Reb Asher's, and Reb Avraham Aharon Teitelbaum lies beside it under a separate tsiun with a wooden matzevah — he is not inside the ohel, so a sign or a guide that says \"the ohel of the Kolbuszower Rebbe\" is pointing you slightly wrong.",
       "Both structures are modern, completed in 2010 by Agudas Ohaley Tzaddikim, so what you see over the graves is recent work rather than original.",
       "A number of matzevos survive across the grounds, so this is a working cemetery to walk rather than an empty field — but no hours, keyholder or contact number is published anywhere.",
       "The Teitelbaum name will pull you toward Sighet, Satmar and their kevarim in Hungary, Romania and New York — this is the son of the Yitav Lev who led Kolbuszowa; confirm which structure is which with someone local before you daven.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Avraham Aharon Teitelbaum", yiddishName: "ר׳ אברהם אהרן טייטלבוים", knownAs: "Kolbuszower Rebbe — Reb Avraham Aharon of Kolbasov, son of the Yitav Lev", yahrzeit: "1910", note: "Born 1834, son of Rebbe Yekusiel Yehuda Teitelbaum of Sighet, the Yitav Lev, and son-in-law and successor of Rebbe Yechiel Rubin of Kolbuszowa as rebbe and rav of the town; his wooden matzevah records him as \"the local rabbi Abraham Aron, son of Jekutiel Yehuda of Sygut\"." },
@@ -591,12 +619,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "זאלקווא — אוהל רבי אלכסנדר סענדר שור, בעל תבואות שור",
     country: "Ukraine",
     address: "Former Jewish cemetery, on the block bounded by Shevchenka, Kruta and Ivana Bohuna streets, Zhovkva, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.05914, 23.96788",
     airportRef: "50.055, 23.977",
     arrivalNotes: [
       "The cemetery itself is gone. A marketplace was built over the burial ground, and the ESJF and IAJGS surveys record market structures standing inside the cemetery boundary, cattle grazing on the site on market days, and no maintenance of any kind. What survives is the ohel of Alexander Sender Shor and a memorial plaque installed by the Protecting Memory project.",
       "Come expecting a single ohel in the middle of a working market, not a cemetery. The ESJF survey lists uncontrolled access, vandalism, weather erosion and proposed nearby development as live threats to the site, so its condition can change between visits.",
       "Zhovkva is about 30 km north of Lviv and is easy to reach, but the ohel is not signposted from the road and local help is worth arranging in advance.",
       "Ask someone in Zhovkva — the town museum or the Lviv Jewish community are the usual contacts — to point you to the ohel before you travel, and confirm the exact spot on the ground.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Alexander Sender Shor", yiddishName: "רבי אלכסנדר סענדר שור", knownAs: "The Tevuos Shor of Zolkiew", seforim: "שמלה חדשה · תבואות שור · בכור שור", note: "Son of Rabbi Ephraim Zalman Shor, Maggid of Lvov. He resigned the rabbinate in 1704, settled in Zolkiew (today Zhovkva) and lived there for the rest of his life — he is sometimes called the younger Tevuos Shor, and he is NOT the earlier Rabbi Ephraim Zalman Shor (c. 1550-1633), who also wrote a Tevu'ot Shor and is buried in Lviv, not here." },
@@ -651,12 +681,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "בוטשאַטש — אוהל רבי אברהם דוד ווארמאן, בעל אשל אברהם",
     country: "Ukraine",
     address: "Jewish cemetery, Torhova Street, Buchach, Ternopil Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.06226, 25.40158",
     airportRef: "49.083, 25.400",
     arrivalNotes: [
       "This is one of the better sites in Galicia. The ESJF surveyed the cemetery and fenced it in November 2018 — a metal fence on a concrete foundation along the Torhova Street side and mesh fencing on the north and east — and the survey records the ohel and tziyun of Reb Avraham David Wahrman standing on the site.",
       "It is a big place: roughly three hectares running down toward the Strypa, with around two thousand gravestones, the oldest from the 1590s. Finding one ohel among them without help takes time.",
       "The cemetery also holds the tziyunim of Reb Yisrael Aryeh Leib and of Rebbetzin Eydil Sarah Rachel, and Buchach itself is the town of S.Y. Agnon and of Simon Wiesenthal's family, so groups often build a longer stop here.",
       "Arrange a local guide or ask the Buchach museum to walk you to the ohel, and confirm the exact spot on the ground.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Avraham David Wahrman of Buchach", yiddishName: "רבי אברהם דוד ווארמאן מבוטשאַטש", knownAs: "The Eshel Avraham of Buchach, the Daas Kedoshim", seforim: "אשל אברהם · דעת קדושים", yahrzeit: "כ״ט תשרי · 5601 / 1840", note: "Born 6 Adar 5531 (1771) in Nadvorna to Rabbi Asher Anshel Wahrman; a talmid of Reb Moshe Leib of Sassov and of Reb Levi Yitzchak of Berditchev, he married the daughter of Reb Tzvi Hirsch Kro of Buchach, was rav of Yazlovets by the age of twenty, and succeeded his father-in-law as rav of Buchach until his petirah." },
@@ -691,12 +723,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "בערזשאַן — ציון המהרש\"ם, רבי שלום מרדכי הכהן שוואדרון",
     country: "Ukraine",
     address: "Jewish cemetery, Mykoly Bezdilnoho Street, Berezhany, Ternopil Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.44318, 24.93060",
     airportRef: "49.446, 24.936",
     arrivalNotes: [
       "No source we could check records the Maharsham's matzevah as standing and identified today. The cemetery was torn up in the First World War, when the front line ran through Berezhany and trenches were dug among the graves and headstones shattered by artillery; it was patched up between the wars and then almost completely demolished in the Second. The ESJF survey of the site names only one ohel, that of Meshulam Shraga Faybush Halperin, and does not mention the Maharsham at all.",
       "Be clear which Reb Sholom Schwadron you are visiting. This is the Maharsham, Gaon of Berezhany, 1835-1911 — not his great-grandson and namesake Reb Sholom Schwadron the Maggid of Yerushalayim, 1912-1997, who is buried on Har HaZeisim.",
       "What is there: a fenced site of about 200 gravestones and roughly 50 fragments, somewhat overgrown with brush, with a Holocaust memorial on the ground. The oldest burials go back to the 1640s and the latest surviving stone is from 1937.",
       "Ask the Berezhany municipality or the Ternopil Jewish community to check the site and point out the grave before you bring a group, and confirm the exact spot on the ground.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shalom Mordechai HaKohen Schwadron", yiddishName: "רבי שלום מרדכי הכהן שוואדרון", knownAs: "The Maharsham, Gaon of Berezhany (1835-1911)", seforim: "שו\"ת מהרש\"ם · דעת תורה · משפט שלום · תכלת מרדכי", yahrzeit: "ט\"ז שבט · 5671 / 1911", note: "Born in 5595 (1835) in Galicia to Rabbi Moshe HaKohen Schwadron; rav of Potik and Yazlovets before coming to Berezhany, where he served more than thirty years and was reckoned one of the leading poskim of his generation — he is the great-grandfather of, and not the same man as, Reb Sholom Schwadron the Maggid of Yerushalayim (1912-1997), who is buried on Har HaZeisim." },
@@ -812,12 +846,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל אדמו״רי האגער מזאבלאטוב",
     country: "Ukraine",
     address: "Jewish cemetery, southern end, Zabolotiv, Kolomyia district, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.46901, 25.28817",
     airportRef: "48.469, 25.283",
     arrivalNotes: [
       "The ohel here is not the original: an open-frame ohel was put up over the Hager graves at the southern end of the cemetery in the 1990s and was reconstructed in 2018. ESJF fenced the cemetery in September 2017, so there is now a boundary where for decades there was none.",
       "The Center for Jewish Art documents the ohel as covering R' David Hager of Zablotov, who died in 1848, together with his son R' Yaakov and Rabbanit Frida, R' Menachem Mendel Hager of Zablotov, who died in 1891, and his wife Pesil-Leah and daughter Gitl.",
       "Keep the line straight: these are the Zablotover Hagers. R' Menachem Mendel Hager of Vizhnitz, the Tzemach Tzaddik who died in 1885, is a different man of a far better known branch and is buried in Vyzhnytsia, not here.",
       "Zabolotiv is in the Kolomyia area of Ivano-Frankivsk Oblast. Confirm the cemetery and the exact ohel locally before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi David Hager of Zablotov", yiddishName: "רבי דוד האגער מזאבלאטוב", knownAs: "Hager Rebbe of Zablotov", note: "Son of R' Menachem Mendel of Kosov; he died in 1848, and the Center for Jewish Art documents the Zabolotiv ohel as his and his family's." },
@@ -834,12 +870,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "ציון רבי נתן מברסלב",
     country: "Ukraine",
     address: "Jewish cemetery, near the entrance, Bratslav, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.8266, 28.95095",
     airportRef: "48.815, 28.945",
     arrivalNotes: [
       "Reb Noson, Rebbe Nachman's chief talmid, is buried in the Jewish cemetery of Bratslav. The International Jewish Cemetery Project records that he was buried near the entrance to the cemetery in accordance with his will, and that he remains there today.",
       "Do not confuse the two towns. Reb Noson is in Bratslav; Rebbe Nachman is in Uman. They are separate places and travellers mix them up constantly — if your driver has Uman in his head, correct him before you leave.",
       "Bratslav is in Vinnytsia Oblast. Ukraine wartime travel advisories apply and should be checked before you plan the drive.",
       "Confirm the cemetery and the exact kever locally before you go.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Nosson Sternhartz of Breslov", yiddishName: "רבי נתן שטערנהארץ מברסלב", knownAs: "Reb Noson, chief disciple of Rebbe Nachman", seforim: "ליקוטי הלכות · ליקוטי תפילות · ליקוטי עצות · חיי מוהר״ן · שבחי הר״ן · שיחות הר״ן · ימי מוהרנ״ת · עלים לתרופה", yahrzeit: "י׳ טבת · 5605 / 1844", note: "Rebbe Nachman's closest talmid and his scribe — without him Likutei Moharan and most of the Breslover seforim would not have reached us. He lived 1780-1844, passing on 10 Teves 5605 (20 December 1844), and is buried in Bratslav; Rebbe Nachman himself is buried in Uman, a different town." },
@@ -854,12 +892,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל רבי שלמה מקארלין בלודמיר",
     country: "Ukraine",
     address: "Ohel in Gagarin Park, on the site of the old Jewish cemetery, Volodymyr (formerly Volodymyr-Volynskyi), Volyn Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.85084, 24.31742",
     airportRef: "50.848, 24.322",
     arrivalNotes: [
       "Know before you arrive that the old Jewish cemetery is gone. The Shtetl Routes guidebook records that the site is now occupied by Gagarin Park, so the ohel stands in a city park rather than in a functioning cemetery — there is no cemetery gate to look for and no caretaker on site.",
       "Under the ohel are two matzevot, R' Shlomo HaLevi of Karlin and R' Yehuda (Yudl) son of R' Moshe of Kovel, both restored in 2000; the Center for Jewish Art documents the ohel by name.",
       "Reb Shlomo moved to Ludmir and was shot by a Russian (Cossack) soldier while he stood in prayer in the shul, 22 Tammuz 5552, which we publish as 12 July 1792 — sources vary between 10 and 12 July for the civil date, though the Hebrew date is consistent and converts to 12 July.",
       "Volodymyr, formerly Volodymyr-Volynskyi, is in Volyn Oblast. Confirm the exact location of the ohel within the park locally before you go.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shlomo HaLevi of Karlin", yiddishName: "רבי שלמה הלוי מקארלין", knownAs: "Reb Shlomo of Karlin (1738-1792)", yahrzeit: "כ״ב תמוז · 5552 / 1792", note: "A talmid of R' Aharon HaGadol of Karlin and of the Maggid of Mezritch, and R' Aharon's successor in Karlin; he later moved to Ludmir, where a Russian (Cossack) soldier shot him as he stood in prayer in the shul in July 1792. Keep the HaLevi and the 1792 date in view — later Karliner rebbes such as R' Shlomo Chaim Perlow of Koidanov share parts of the name and are buried elsewhere." },
@@ -896,12 +936,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "פראהביטש — ציון רבי שלום שכנא",
     country: "Ukraine",
     address: "Pohrebyshche, Vinnytsia Oblast, Ukraine — the sources used do not identify which cemetery or where in it; confirm locally before travelling",
+    coordinates: "49.48227, 29.27912",
     airportRef: "49.483, 29.267",
     arrivalNotes: [
       "We could not confirm what physically marks the grave today — whether an ohel, a matzevah, or nothing at all. The cemetery survey for Pohrebyshche was unreachable, so go expecting an unmarked kever until you see otherwise.",
       "He served as maggid in the town and was niftar here on 10 October 1802. The sources place his kever in Pohrebyshche but do not say which cemetery or where within it, so treat the location as unfixed until someone on the ground shows you.",
       "This is not Rabbi Shalom Shachna of Lublin, the rebbe of the Rema, who died in 1558 and is buried in Lublin — a search on the bare name pulls him up first.",
       "Ask in the town or through a local shomer before you go out, and confirm the exact grave on the ground.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Sholom Shachne of Prohobisht", yiddishName: "רבי שלום שכנא מפראהביטש", knownAs: "Maggid in Prohobisht, son of the Malach", note: "Son of Rabbi Avraham HaMalach, grandson of the Maggid of Mezritch, and father of Rabbi Yisrael Friedman of Ruzhin; he is not Rabbi Shalom Shachna of Lublin (d. 1558), a different man buried in Lublin." },
@@ -916,12 +958,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "ווילעדניק — אוהל שארית ישראל",
     country: "Ukraine",
     address: "Jewish cemetery, Novi Velidnyky, Korosten Raion, Zhytomyr Oblast, Ukraine — confirm exact location locally",
+    coordinates: "51.31812, 28.45779",
     airportRef: "51.318, 28.460",
     arrivalNotes: [
       "Type Novi Velidnyky into your map, not Velednyky and not Vilednik. The village sits in Korosten Raion, Zhytomyr Oblast, and the older forms of the name will not bring you there.",
       "The ohel stands and the place is a live pilgrimage site; the Rebbe's promise to those who daven at his kever is why people keep coming.",
       "Do not confuse him with Rabbi Yisroel Dov Ber Odesser, the Breslover Saba (d. 1994), who is buried in Yerushalayim and dominates searches on this name.",
       "Confirm the exact grave with someone local when you arrive.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yisrael Dov Ber of Vilednik", yiddishName: "רבי ישראל דוב בער מווילעדניק", knownAs: "The Sheiris Yisrael", seforim: "שארית ישראל", yahrzeit: "כ״א טבת · 5610 / 1850", note: "The Viledniker Rebbe, author of Sheiris Yisrael; not to be confused with Rabbi Yisroel Dov Ber Odesser of Breslov, who is buried in Yerushalayim." },

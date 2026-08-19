@@ -65,11 +65,13 @@ export const bulkCemeteries11: Cemetery[] = [
     yiddishName: "קעלם — בית החיים",
     country: "Lithuania",
     address: "Jewish cemetery, Kelmė, Šiauliai County, Lithuania — no street address is published here; ask in the town",
+    coordinates: "55.62417, 22.94717",
     arrivalNotes: [
       "READ THIS BEFORE YOU GO. Kelm's bais hachaim survives and has been surveyed, and the Alter of Kelm is named among the town's famous Jews in that survey. But no source we found places his kever inside it, and none identifies which stone is his. We are not going to tell you it is here when nobody has told us that.",
       "What is documented is that he was born in Kelm in 1824, founded and ran the Talmud Torah here, and was niftar here on Erev Tisha B'Av 1898 — in the middle of saying Ezras avoseinu, having just finished Shema.",
       "So: come for the town and for the bais hachaim, ask locally about the kever, and do not assume a stone. If somebody there can show you, that is worth more than anything printed in advance.",
       "Kelmė is about 60 km south-west of Šiauliai and roughly three hours from Vilnius. There is no organised reception and nothing kosher; carry the day's food.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     accessNote:
       "Open rural site with no facilities and no caretaker we can vouch for. The Jewish community of Lithuania in Vilnius is the right place to ask before travelling out.",

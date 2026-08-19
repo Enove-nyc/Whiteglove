@@ -59,10 +59,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר רבי צבי הירש מזידיטשוב",
     country: "Ukraine",
     address: "Jewish cemetery, Zhydachiv, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.39429, 24.13417",
     airportRef: "49.383, 24.145",
     arrivalNotes: [
       "Resting place of Rabbi Tzvi Hirsch Eichenstein of Zidichov, a foundational master of the Zidichov-Komarno kabbalistic chassidic line.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Tzvi Hirsch Eichenstein", yiddishName: "רבי צבי הירש אייכנשטיין", knownAs: "The Zidichover", seforim: "עטרת צבי · סור מרע ועשה טוב", yahrzeit: "י״א תמוז · 5591 / 1831", note: "Founder of the Zidichov chassidic dynasty, known for deep engagement with kabbalah and the writings of the Arizal." },
@@ -115,12 +117,14 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "קבר המהרש״א",
     country: "Ukraine",
     address: "Old Jewish cemetery, Ostroh, Rivne Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.333009, 26.522958",
     airportRef: "50.329, 26.515",
     arrivalNotes: [
       "Ostroh was a great center of Torah; Rabbi Shmuel Eidels, the Maharsha, served and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
           "The ohel here was built in 2016 over what the people who built it describe as the APPROXIMATE location of the Maharsha's kever — the ground was wrecked and the stones scattered, and the exact spot was not recoverable. Daven there; do not repeat to others that the place is certain.",
       "Ostroh was one of the great Torah towns of Volhyn, and several names associated with it are NOT buried here. The Maharshal was rosh yeshiva in Ostroh but died in Lublin in 1573 and lies there. The Shelah davened in the Ostroh shul but is buried in Teverya. Both are on this site, under those towns.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shmuel Eliezer Eidels", yiddishName: "רבי שמואל אליעזר איידלס", knownAs: "The Maharsha", seforim: "חידושי הלכות ואגדות (מהרש״א)", yahrzeit: "ה׳ כסלו · 5392 / 1631", note: "His commentary on the Talmud (Chidushei Halachos v'Aggados) is printed in standard editions of the Gemara." },
@@ -135,10 +139,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל תפארת שלמה",
     country: "Poland",
     address: "Jewish cemetery, Radomsko, Łódź Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.0795462, 19.4735026",
     airportRef: "51.067, 19.445",
     arrivalNotes: [
       "Resting place of Rabbi Shlomo HaKohen Rabinowicz, the Tiferes Shlomo, founder of the Radomsk chassidic dynasty.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shlomo HaKohen Rabinowicz", yiddishName: "רבי שלמה הכהן ראבינאוויטש", knownAs: "The Tiferes Shlomo", seforim: "תפארת שלמה", yahrzeit: "כ״ט אדר · 5626 / 1866", note: "Founder of the Radomsk dynasty; his Tiferes Shlomo is a classic of chassidic Torah on the parsha and festivals." },
@@ -153,10 +159,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל רבי יצחק מווארקא",
     country: "Poland",
     address: "Jewish cemetery, Warka, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.7780304, 21.1774564",
     airportRef: "51.783, 21.193",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Kalish of Vorki, known for his boundless love of every Jew.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Kalish of Vorki", yiddishName: "רבי יצחק קאליש מווארקא", knownAs: "The Vorker Rebbe", yahrzeit: "כ״ב ניסן · 5608 / 1848", note: "Founder of the Vorki (Warka) chassidus, remembered for extraordinary ahavas Yisrael and his advocacy for the community." },
@@ -189,10 +197,12 @@ export const bulkCemeteries3: Cemetery[] = [
     yiddishName: "אוהל האדמו״ר הראשון מבאבוב",
     country: "Poland",
     address: "Jewish cemetery, Bobowa, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "49.69987, 20.93908",
     airportRef: "49.717, 20.950",
     arrivalNotes: [
       "Bobowa is the cradle of the Bobov chassidus; Rabbi Shlomo Halberstam, its founder, is associated with the town.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shlomo Halberstam of Bobov", yiddishName: "רבי שלמה האלברשטאם מבאבוב", knownAs: "The first Bobover Rebbe", yahrzeit: "1 Av · 5665 / 1905", note: "Founder of the Bobov chassidic dynasty and a grandson of the Divrei Chaim of Sanz." },

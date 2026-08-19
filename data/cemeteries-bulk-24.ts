@@ -94,12 +94,14 @@ export const bulkCemeteries24: Cemetery[] = [
     yiddishName: "טומאשוב — בית החיים",
     country: "Poland",
     address: "Jewish cemetery, ulica Smutna 19, Tomaszów Mazowiecki, Łódź Voivodeship, Poland",
+    coordinates: "51.54053, 20.0186241",
     airportRef: "51.532, 20.008",
     arrivalNotes: [
       "The address is Smutna 19, but THE GATE IS ROUND THE OTHER SIDE, on gen. Stefana Roweckiego \"Grota\". Navigating to the postal address alone puts you at a wall.",
       "This is one of the fuller cemeteries left in central Poland — nearly three hectares with about two thousand matzevos still standing, the oldest of them from 1843. It was opened in 1831.",
       "THE OHEL IS A RUIN. The tzaddik it stood over is recorded as Reb Yaakov Eliyahu, son of Reb Avraham Kohen, niftar 1888; the structure was pulled down and only its remains are on the ground. Sources give his name in two different Polonised spellings, so do not expect the site to be labelled the way you have it written.",
       "Tomaszów is between Łódź and Kielce and is usually reached from Łódź, which is where the kosher food and the minyan are.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {

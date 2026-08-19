@@ -29,11 +29,13 @@ export const bulkCemeteries22: Cemetery[] = [
     yiddishName: "נירעדהאז — בית החיים",
     country: "Hungary",
     address: "Jewish cemetery, Kótaji utca, between Gém utca and Stadion utca, Nyíregyháza, Szabolcs-Szatmár-Bereg, Hungary",
+    coordinates: "47.97059, 21.70901",
     airportRef: "47.956, 21.717",
     arrivalNotes: [
       "The ground is on Kótaji utca, in the stretch between Gém utca and Stadion utca — that is the way to find it, since the street is long.",
       "TWO OHELS STAND HERE, with a beis tahara and the caretaker's house, which was built in 1865. A Holocaust memorial is on the ground as well.",
       "Nyíregyháza is one of five towns in eastern Hungary whose sites have had work done specifically to make visits by chassidishe travellers easier, so it is in better order than most.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://cja.huji.ac.il/browser.php?mode=set&id=41902",

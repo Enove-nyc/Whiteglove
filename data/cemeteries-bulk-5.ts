@@ -36,10 +36,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון רבי מרדכי מנאדווארנא",
     country: "Ukraine",
     address: "Jewish cemetery, Nadvirna, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.63652, 24.57667",
     airportRef: "48.634, 24.570",
     arrivalNotes: [
       "Resting place of Rabbi Mordechai Leifer of Nadvorna, founder of the far-reaching Nadvorna chassidic line.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Mordechai Leifer of Nadvorna", yiddishName: "רבי מרדכי לייפער מנאדווארנא", knownAs: "The Nadvorna Rebbe", yahrzeit: "כ״ה סיון · 5654 / 1894", note: "Founder of the Nadvorna dynasty, forebear of many chassidic courts (Nadvorna, Bania, Pittsburgh and others)." },
@@ -90,10 +92,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון האמרי אלימלך",
     country: "Poland",
     address: "Jewish cemetery, Grodzisk Mazowiecki, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.112251, 20.6228185",
     airportRef: "52.107, 20.634",
     arrivalNotes: [
       "Resting place of Rabbi Elimelech Shapiro of Grodzisk, the Imrei Elimelech, a great-grandson of the Maggid of Kozhnitz.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Elimelech Shapiro of Grodzisk", yiddishName: "רבי אלימלך שפירא מגראדזיסק", knownAs: "The Imrei Elimelech", seforim: "אמרי אלימלך · דברי אלימלך", yahrzeit: "כ״ז כסלו · 5653 / 1892", note: "A leading Polish rebbe descended from the Kozhnitzer Maggid." },
@@ -108,10 +112,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון הסבא קדישא מראדושיץ",
     country: "Poland",
     address: "Jewish cemetery, Radoszyce, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.084399, 20.2325892",
     airportRef: "51.073, 20.264",
     arrivalNotes: [
       "Resting place of Rabbi Yissachar Ber of Radoshitz, the 'Saba Kadisha,' famed as a wonder-worker and healer.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yissachar Ber of Radoshitz", yiddishName: "רבי יששכר בער מראדושיץ", knownAs: "The Saba Kadisha (Holy Grandfather)", yahrzeit: "י״ז ניסן · 5603 / 1843", note: "A disciple of the Chozeh of Lublin and the Yid HaKadosh, sought by many for yeshuos." },
@@ -162,10 +168,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון רבי נחום ממאקאראוו",
     country: "Ukraine",
     address: "Jewish cemetery, Makariv, Kyiv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.46266, 29.80567",
     airportRef: "50.462, 29.813",
     arrivalNotes: [
       "Resting place of Rabbi Nachum Twersky of Makarov, a son of the Chernobyl dynasty.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Nachum Twersky of Makarov", yiddishName: "רבי נחום טווערסקי ממאקאראוו", knownAs: "The Makarover Rebbe", yahrzeit: "י׳ אייר · 5612 / 1852", note: "A son of Rabbi Mordechai of Chernobyl and founder of the Makarov chassidus." },
@@ -180,10 +188,12 @@ export const bulkCemeteries5: Cemetery[] = [
     yiddishName: "ציון השרף ממאגלניצא",
     country: "Poland",
     address: "Jewish cemetery, Mogielnica, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.7000126, 20.7280254",
     airportRef: "51.688, 20.717",
     arrivalNotes: [
       "Resting place of Rabbi Chaim Meir Yechiel Shapiro of Mogielnica, the 'Saraf,' a grandson of the Kozhnitzer Maggid.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Chaim Meir Yechiel Shapiro of Mogielnica", yiddishName: "רבי חיים מאיר יחיאל שפירא ממאגלניצא", knownAs: "The Saraf of Mogielnica", yahrzeit: "כ״ט תשרי · 5610 / 1849", note: "A grandson of the Maggid of Kozhnitz, known for his fiery avodah." },

@@ -18,10 +18,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "אוהל המגיד מקאזשניץ",
     country: "Poland",
     address: "Jewish cemetery, Kozienice, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.5775763, 21.5470648",
     airportRef: "51.585, 21.545",
     arrivalNotes: [
       "Resting place of Rabbi Yisrael Hopstein, the Maggid of Kozhnitz, one of the founding fathers of Polish chassidus.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yisrael Hopstein", yiddishName: "רבי ישראל האפשטיין", knownAs: "The Maggid of Kozhnitz", seforim: "עבודת ישראל", yahrzeit: "י״ד תשרי · 5575 / 1814", note: "A disciple of the Maggid of Mezritch and Reb Elimelech of Lizhensk; a founder of chassidus in Poland." },
@@ -173,10 +175,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האסטראווצער רבי",
     country: "Poland",
     address: "Jewish cemetery, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.942465, 21.384083",
     airportRef: "50.929, 21.385",
     arrivalNotes: [
       "Resting place of Rabbi Meir Yechiel Halevi Halstock, the Ostrovtzer Rebbe, famed as a gaon and for his decades of fasting.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Meir Yechiel Halevi Halstock", yiddishName: "רבי מאיר יחיאל הלוי האלשטאק", knownAs: "The Ostrovtzer Rebbe", seforim: "מאיר עיני חכמים", yahrzeit: "י״ט אדר · 5688 / 1928", note: "Renowned Polish gaon and rebbe, known for his gematria-Torah and lifelong fasting." },
@@ -191,10 +195,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האדמו״ר הראשון מאמשינאוו",
     country: "Poland",
     address: "Jewish cemetery, Mszczonów, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.9805982, 20.5110991",
     airportRef: "51.975, 20.517",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Dovid Kalish, founder of the Amshinov chassidus, a son of the Vorker Rebbe.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Dovid Kalish of Amshinov", yiddishName: "רבי יעקב דוד קאליש מאמשינאוו", knownAs: "The first Amshinover Rebbe", yahrzeit: "5638 / 1878", note: "Founder of the Amshinov chassidus and a son of Rabbi Yitzchak of Vorki." },
@@ -209,10 +215,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון האבני נזר",
     country: "Poland",
     address: "Jewish cemetery, Sochaczew, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.2235408, 20.2344561",
     airportRef: "52.229, 20.238",
     arrivalNotes: [
       "Resting place of Rabbi Avrohom Bornsztain, the Avnei Nezer, founder of the Sochatchov chassidus and one of the great poskim of his age.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Avrohom Bornsztain", yiddishName: "רבי אברהם בורנשטיין", knownAs: "The Avnei Nezer of Sochatchov", seforim: "אבני נזר · אגלי טל", yahrzeit: "י״א אדר · 5670 / 1910", note: "A son-in-law of the Kotzker Rebbe; a towering posek and founder of the Sochatchov chassidus." },
@@ -227,10 +235,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "ציון רבי יעקב אריה מראדזימין",
     country: "Poland",
     address: "Jewish cemetery, Radzymin, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.4113333, 21.1871123",
     airportRef: "52.418, 21.191",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Aryeh Guterman, founder of the Radzymin chassidus, a disciple of the Chidushei HaRim and Rabbi Menachem Mendel of Kotzk.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Aryeh Guterman of Radzymin", yiddishName: "רבי יעקב אריה גוטרמן מראדזימין", knownAs: "The Radziminer Rebbe", yahrzeit: "כ״ג ניסן · 5634 / 1874", note: "Founder of the Radzymin chassidus, beloved for his warmth and blessings." },

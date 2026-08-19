@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { cemeteries } from "@/data/cemeteries";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { getDestinationRecord } from "@/data/destination-database";
+import { coordinatesToPoint } from "@/data/route-utils";
 
 /**
  * One man, one kever, one listing.
@@ -118,4 +119,44 @@ describe("every directory town has a slug its page can be reached at", () => {
     const bad = bulkDestinations.map((d) => d.slug).filter((slug) => !/^[a-z0-9-]+$/.test(slug));
     assert.deepEqual(bad, [], `these slugs cannot be served as URLs: ${bad.join(", ")}`);
   });
+});
+
+describe("a surveyed coordinate belongs to the town it is filed under", () => {
+  it("keeps every listing's map point near its own town pin", () => {
+    // WHY. Coordinates were backfilled onto forty-eight listings from the ESJF
+    // survey database by matching town names to survey slugs. A name match can
+    // land on the wrong town, and a wrong coordinate is worse than none — it
+    // sends somebody confidently to a field that is not the cemetery. This
+    // compares each listing's map point against the town pin it already had
+    // and fails if they disagree by more than fifteen kilometres.
+    //
+    // It has already earned its place: it caught Rotmistrivka, whose town pin
+    // had been twenty-six kilometres off the village since long before the
+    // backfill.
+    // Parsed THROUGH coordinatesToPoint, not with a split on the comma. Three
+    // entries on this site are written in degrees-minutes-seconds and are
+    // perfectly good; a first draft of this suite reimplemented parsing and
+    // failed them — the same mistake tests/kevarim-safety.test.ts already
+    // records having made once.
+    const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+      const rad = (deg: number) => (deg * Math.PI) / 180;
+      const dLat = rad(b.lat - a.lat);
+      const dLng = rad(b.lng - a.lng);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.sqrt(h));
+    };
+    const far = cemeteries
+      .filter((cemetery) => cemetery.coordinates && cemetery.airportRef)
+      .map((cemetery) => ({
+        slug: cemetery.slug,
+        here: coordinatesToPoint(cemetery.coordinates),
+        town: coordinatesToPoint(cemetery.airportRef),
+      }))
+      .filter((entry) => entry.here && entry.town)
+      .map((entry) => ({ slug: entry.slug, d: km(entry.here!, entry.town!) }))
+      .filter((entry) => entry.d > 15)
+      .map((entry) => `${entry.slug} is ${entry.d.toFixed(0)}km from its own town pin`);
+    assert.deepEqual(far, []);
+  });
+
 });
