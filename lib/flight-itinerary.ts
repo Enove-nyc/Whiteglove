@@ -19,6 +19,17 @@ import { randomBytes } from "crypto";
 /** Which half of a round trip a flight belongs to. */
 export type FlightDirection = "outbound" | "return";
 
+/**
+ * How this flight follows the one before it, when the two make a connection:
+ *  - "airline"  — one ticket, the airline protects the connection and checks
+ *                 bags through (what a traveller calls a stopover on one fare);
+ *  - "separate" — two separately-booked tickets, a self-transfer, where the
+ *                 risk of a missed connection is the traveller's.
+ * Absent means "say it is a connection, claim nothing about who booked it" —
+ * the way the page behaved before this choice existed.
+ */
+export type FlightConnectionType = "airline" | "separate";
+
 export type FlightLeg = {
   id: string;
   /**
@@ -26,6 +37,11 @@ export type FlightLeg = {
    * still reads — a leg with no direction is treated as outbound everywhere.
    */
   direction?: FlightDirection;
+  /**
+   * For a flight that connects from the one before it, how that connection is
+   * booked. Optional and only meaningful when the two legs actually connect.
+   */
+  connectionType?: FlightConnectionType;
   /** "El Al", "United" — the carrier the customer boards. */
   airline: string;
   /** "LY 315" — carrier code and number as it reads on the ticket. */
@@ -109,6 +125,8 @@ export function flightItineraryFromInput(input: FlightItineraryInput): FlightIti
     .map((leg) => ({
       id: newId(6),
       direction: leg.direction === "return" ? "return" : "outbound",
+      connectionType:
+        leg.connectionType === "airline" || leg.connectionType === "separate" ? leg.connectionType : undefined,
       airline: trimField(leg.airline),
       flightNumber: trimField(leg.flightNumber),
       from: trimField(leg.from),
@@ -174,14 +192,29 @@ function parseWhen(date: string, time: string): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
-/** A gap in minutes as "2h 15m", "45m" or "3h". */
+/** A gap in minutes as "2h 15m", "45m", "3h", or "1d 4h" once it runs to days. */
 function formatDuration(minutes: number): string {
   const whole = Math.round(minutes);
+  if (whole >= 24 * 60) {
+    const days = Math.floor(whole / (24 * 60));
+    const hours = Math.floor((whole % (24 * 60)) / 60);
+    return hours ? `${days}d ${hours}h` : `${days}d`;
+  }
   const hours = Math.floor(whole / 60);
   const mins = whole % 60;
   if (hours && mins) return `${hours}h ${mins}m`;
   if (hours) return `${hours}h`;
   return `${mins}m`;
+}
+
+/** The wait between two legs as text, when both times are known; else null. */
+function layoverText(prev: FlightLeg, next: FlightLeg): string | null {
+  const arrive = parseWhen(prev.arriveDate, prev.arriveTime);
+  const depart = parseWhen(next.departDate, next.departTime);
+  if (arrive === null || depart === null) return null;
+  const minutes = (depart - arrive) / 60000;
+  if (minutes < 0) return null; // a mistyped time, not a real wait
+  return formatDuration(minutes);
 }
 
 export type Connection = {
@@ -220,6 +253,39 @@ export function connectionBetween(prev: FlightLeg, next: FlightLeg): Connection 
     return { airport: prev.to.trim(), layover: null };
   }
   return null;
+}
+
+export type ConnectionInfo = {
+  /** The airport the traveller changes at. */
+  airport: string;
+  /** The wait, when both times are known; otherwise null. */
+  layover: string | null;
+  /**
+   * How the connection is booked:
+   *  - "airline"  — one ticket, protected, bags through;
+   *  - "separate" — two tickets, a self-transfer, the traveller's risk;
+   *  - "auto"     — detected from matching airports, no booking claim.
+   */
+  kind: FlightConnectionType | "auto";
+};
+
+/**
+ * The connection between one leg and the next, ready for the page to show.
+ *
+ * When the owner has marked how a flight is booked ("airline" or "separate"),
+ * that is taken at his word — the connecting airport is where the last leg
+ * landed, and the wait is shown when the times allow it, however long. When he
+ * has marked nothing, it falls back to connectionBetween(), which only calls it
+ * a connection when the airports match and the gap is short. Either way, no
+ * mark and no match means no connection line at all.
+ */
+export function connectionInfo(prev: FlightLeg, next: FlightLeg): ConnectionInfo | null {
+  if (next.connectionType === "airline" || next.connectionType === "separate") {
+    const airport = prev.to.trim() || next.from.trim();
+    return { airport, layover: layoverText(prev, next), kind: next.connectionType };
+  }
+  const auto = connectionBetween(prev, next);
+  return auto ? { airport: auto.airport, layover: auto.layover, kind: "auto" } : null;
 }
 
 /** A short label for a saved itinerary in a list. */

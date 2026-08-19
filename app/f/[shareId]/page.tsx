@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import {
-  connectionBetween,
+  connectionInfo,
   flightItineraryLabel,
   formatFlightDate,
   landsNextDay,
   splitByDirection,
+  type ConnectionInfo,
   type FlightLeg,
 } from "@/lib/flight-itinerary";
 import { getFlightItineraryByShareId } from "@/lib/flight-itinerary-store";
@@ -44,22 +45,59 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** The line (or note) that sits above a flight that connects from the one before it. */
+function ConnectionNote({ connection }: { connection: ConnectionInfo }) {
+  const wait = connection.layover;
+
+  if (connection.kind === "separate") {
+    return (
+      <div className="rounded-lg border border-[var(--gold-light)] border-l-4 border-l-amber-500 bg-[#fcfaf6] px-4 py-3 text-sm">
+        <p className="font-semibold text-[var(--navy)]">
+          Change at {connection.airport}
+          {wait ? <span className="font-normal text-stone-600"> · {wait} between flights</span> : null}
+        </p>
+        <p className="mt-1 leading-6 text-stone-700">
+          Separate tickets — collect your bags and check in again for the next flight, and leave enough time. A missed
+          connection here is not covered by the airline.
+        </p>
+      </div>
+    );
+  }
+
+  if (connection.kind === "airline") {
+    return (
+      <div className="px-1 text-sm">
+        <p className="flex flex-wrap items-center gap-x-2 text-stone-600">
+          <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
+          <span className="font-semibold text-[var(--navy)]">Stopover in {connection.airport}</span>
+          {wait ? <span>· {wait}</span> : null}
+        </p>
+        <p className="mt-0.5 pl-6 text-stone-500">
+          One ticket — the airline checks your bags through and protects the connection.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 px-1 text-sm text-stone-600">
+      <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
+      <span className="font-semibold text-[var(--navy)]">Connect at {connection.airport}</span>
+      {wait ? <span>· {wait} layover</span> : null}
+    </p>
+  );
+}
+
 /** One journey's legs, with a connection line drawn between legs that link up. */
 function LegGroup({ legs }: { legs: FlightLeg[] }) {
   return (
     <div className="grid gap-4">
       {legs.map((leg, index) => {
         const prev = index > 0 ? legs[index - 1] : null;
-        const connection = prev ? connectionBetween(prev, leg) : null;
+        const connection = prev ? connectionInfo(prev, leg) : null;
         return (
           <div key={leg.id} className="wg-leg grid gap-4">
-            {connection ? (
-              <p className="flex flex-wrap items-center gap-x-2 px-1 text-sm text-stone-600">
-                <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
-                <span className="font-semibold text-[var(--navy)]">Connect at {connection.airport}</span>
-                {connection.layover ? <span>· {connection.layover} layover</span> : null}
-              </p>
-            ) : null}
+            {connection ? <ConnectionNote connection={connection} /> : null}
             <FlightCard leg={leg} index={index} />
           </div>
         );
