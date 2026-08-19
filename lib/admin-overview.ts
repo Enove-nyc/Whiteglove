@@ -93,7 +93,7 @@ export const ADMIN_TOTAL_CARDS: readonly AdminTotalCard[] = [
   { key: "eruvin", label: "Eruvin", href: "/eruvin" },
   { key: "cemeteries", label: "Batei hachaim", href: "/admin/kevarim" },
   { key: "tzaddikim", label: "Kevarim listed", href: "/admin/kevarim" },
-  { key: "heritageCemeteries", label: "Heritage cemeteries", href: "/cemeteries/heritage" },
+  { key: "heritageCemeteries", label: "Heritage cemeteries", href: "/cemeteries#heritage" },
   { key: "countries", label: "Countries", href: "/admin/countries" },
   { key: "empty", label: "Nothing yet", href: "/admin/destinations" },
 ] as const;

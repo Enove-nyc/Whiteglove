@@ -29,6 +29,16 @@ import { describe, it } from "node:test";
  * Nothing was allowing any. Thirty seconds is the top of their range, because
  * the cost of being generous is a slower release and the cost of being mean is
  * a killed process halfway through answering somebody.
+ *
+ * AND THE SETTING STILL DID NOTHING, because of a type. Railway's config
+ * schema takes the two teardown fields — overlapSeconds and drainingSeconds —
+ * as quoted strings ("30"), not bare numbers (30); every other numeric deploy
+ * field takes a number. A number here fails the schema, the whole deploy block
+ * is dropped, and the container is killed on the old cadence — so the crash
+ * email kept arriving from a file that read as though it had been fixed. The
+ * old test read the value and never checked its type, so it stayed green
+ * through the entire time the fix was inert. Hence the string checks below:
+ * the type is the fix, not the number.
  */
 const config = JSON.parse(readFileSync("railway.json", "utf8")) as {
   deploy?: Record<string, unknown>;
@@ -43,11 +53,20 @@ describe("the deploy configuration", () => {
     assert.ok(draining >= 10, `drainingSeconds is ${draining}; Next's guide asks for at least ten`);
   });
 
+  it("writes the teardown seconds as STRINGS, which is the setting Railway reads", () => {
+    // The whole bug. Railway's schema takes overlapSeconds and drainingSeconds
+    // as quoted strings; a bare number fails validation and the teardown never
+    // changes, so the crash email keeps coming. Checking the value without the
+    // type is what let this stay broken while looking fixed.
+    assert.equal(typeof config.deploy?.drainingSeconds, "string", "drainingSeconds must be a string, e.g. \"30\"");
+    assert.equal(typeof config.deploy?.overlapSeconds, "string", "overlapSeconds must be a string, e.g. \"0\"");
+  });
+
   it("does not overlap containers, because this service has a volume", () => {
     // A volume mounts to one container at a time. This did not stop the crash
     // notices — see the note above — but it is still the right setting for a
     // service that cannot run two copies of itself.
-    assert.equal(config.deploy?.overlapSeconds, 0);
+    assert.equal(Number(config.deploy?.overlapSeconds), 0);
   });
 
   it("still health-checks a route that answers while the site is locked", () => {

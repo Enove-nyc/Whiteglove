@@ -18,7 +18,9 @@ const COUNTRIES_PAGE = readFileSync("app/admin/countries/page.tsx", "utf8");
 // The public directories the flat, curated sets live in — shuls, eruvin and
 // the heritage-cemetery locator have no admin editor, so their tiles open the
 // page that shows them rather than a management screen that does not exist.
-const PUBLIC_DIRECTORY_HREFS = new Set(["/shuls", "/eruvin", "/cemeteries/heritage"]);
+// The heritage locator is folded into /cemeteries now, under a #heritage
+// anchor, so its tile opens there rather than the old separate index.
+const PUBLIC_DIRECTORY_HREFS = new Set(["/shuls", "/eruvin", "/cemeteries#heritage"]);
 
 describe("dashboard total cards are pressable", () => {
   it("maps every tile to an href and a label", () => {
@@ -43,7 +45,7 @@ describe("dashboard total cards are pressable", () => {
     assert.equal(byLabel["Eruvin"], "/eruvin");
     assert.equal(byLabel["Batei hachaim"], "/admin/kevarim");
     assert.equal(byLabel["Kevarim listed"], "/admin/kevarim");
-    assert.equal(byLabel["Heritage cemeteries"], "/cemeteries/heritage");
+    assert.equal(byLabel["Heritage cemeteries"], "/cemeteries#heritage");
     assert.equal(byLabel["Countries"], "/admin/countries");
     assert.equal(byLabel["Nothing yet"], "/admin/destinations");
   });
