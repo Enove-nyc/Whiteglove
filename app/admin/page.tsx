@@ -5,7 +5,7 @@ import { currentAdmin } from "@/lib/admin-current";
 import { getEditableInventory } from "@/lib/admin-inventory";
 import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { canOpen, describeAreas } from "@/lib/admin-permissions";
-import { ADMIN_TOTAL_CARDS } from "@/lib/admin-overview";
+import { ADMIN_TOTAL_CARDS, contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { countPendingSubmissions } from "@/lib/content-admin";
@@ -129,6 +129,9 @@ export default async function AdminHome() {
     listReportedPlaceReviews(),
   ]);
 
+  // Counted from the built-in content, so the tiles survive the database being
+  // away — the same rule the completeness queue follows.
+  const totals = contentTotals();
   const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
   const unfinished = inventory.items.filter((item) => item.status !== "complete");
   const unpublishedPages = pages.filter((p) => p.status !== "PUBLISHED");
@@ -281,6 +284,7 @@ export default async function AdminHome() {
             <TotalCard
               key={card.key}
               label={card.label}
+              value={totals[card.key]}
               href={may(card.href) ? card.href : null}
             />
           ))}

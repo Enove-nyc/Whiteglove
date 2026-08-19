@@ -15,11 +15,19 @@ import { allAdminDestinations } from "@/lib/admin-nav";
 const DASHBOARD = readFileSync("app/admin/page.tsx", "utf8");
 const COUNTRIES_PAGE = readFileSync("app/admin/countries/page.tsx", "utf8");
 
+// The public directories the flat, curated sets live in — shuls, eruvin and
+// the heritage-cemetery locator have no admin editor, so their tiles open the
+// page that shows them rather than a management screen that does not exist.
+const PUBLIC_DIRECTORY_HREFS = new Set(["/shuls", "/eruvin", "/cemeteries/heritage"]);
+
 describe("dashboard total cards are pressable", () => {
-  it("maps every tile to an href", () => {
-    assert.equal(ADMIN_TOTAL_CARDS.length, 6);
+  it("maps every tile to an href and a label", () => {
+    assert.equal(ADMIN_TOTAL_CARDS.length, 12);
     for (const card of ADMIN_TOTAL_CARDS) {
-      assert.ok(card.href.startsWith("/admin/"), `${card.label} has no admin href`);
+      assert.ok(
+        card.href.startsWith("/admin/") || PUBLIC_DIRECTORY_HREFS.has(card.href),
+        `${card.label} has no admin editor and no known public home`,
+      );
       assert.ok(card.label.trim(), `${card.key} is missing its label`);
     }
   });
@@ -28,15 +36,23 @@ describe("dashboard total cards are pressable", () => {
     const byLabel = Object.fromEntries(ADMIN_TOTAL_CARDS.map((card) => [card.label, card.href]));
     assert.equal(byLabel["Destinations"], "/admin/destinations");
     assert.equal(byLabel["Full guides"], "/admin/destinations");
+    assert.equal(byLabel["Things to do"], "/admin/directory/attractions");
+    assert.equal(byLabel["Kosher food"], "/admin/directory/food");
+    assert.equal(byLabel["Shuls"], "/shuls");
+    assert.equal(byLabel["Mikvaos"], "/admin/mikvaos");
+    assert.equal(byLabel["Eruvin"], "/eruvin");
     assert.equal(byLabel["Batei hachaim"], "/admin/kevarim");
     assert.equal(byLabel["Kevarim listed"], "/admin/kevarim");
+    assert.equal(byLabel["Heritage cemeteries"], "/cemeteries/heritage");
     assert.equal(byLabel["Countries"], "/admin/countries");
     assert.equal(byLabel["Nothing yet"], "/admin/destinations");
   });
 
-  it("renders the tiles from ADMIN_TOTAL_CARDS as links on the dashboard", () => {
+  it("renders the tiles from ADMIN_TOTAL_CARDS as links, each with its count", () => {
     assert.match(DASHBOARD, /ADMIN_TOTAL_CARDS/);
     assert.match(DASHBOARD, /function TotalCard/);
+    assert.match(DASHBOARD, /const totals = contentTotals\(\)/);
+    assert.match(DASHBOARD, /value=\{totals\[card\.key\]\}/);
     assert.match(DASHBOARD, /href=\{may\(card\.href\) \? card\.href : null\}/);
     assert.match(DASHBOARD, /aria-label=\{`\$\{label\}: \$\{value\}\. Open \$\{label\.toLowerCase\(\)\}\.`\}/);
     // flex-col opts out of the admin bordered-link inline-flex rule so the
@@ -44,9 +60,10 @@ describe("dashboard total cards are pressable", () => {
     assert.match(DASHBOARD, /flex w-full min-w-0 flex-col/);
   });
 
-  it("lists every linked screen in the admin nav destinations", () => {
+  it("lists every admin-editor tile in the admin nav destinations", () => {
     const known = new Set(allAdminDestinations().map((item) => item.href));
     for (const card of ADMIN_TOTAL_CARDS) {
+      if (PUBLIC_DIRECTORY_HREFS.has(card.href)) continue;
       assert.ok(known.has(card.href), `${card.href} is missing from admin nav`);
     }
   });
