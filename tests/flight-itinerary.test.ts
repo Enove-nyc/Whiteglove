@@ -5,6 +5,7 @@ import {
   flightItineraryFromInput,
   flightItineraryProblem,
   landsNextDay,
+  splitByDirection,
   type FlightItineraryInput,
   type FlightLeg,
 } from "@/lib/flight-itinerary";
@@ -107,6 +108,38 @@ describe("connections between legs", () => {
     const a = leg({ to: "LHR", arriveDate: "2026-09-01", arriveTime: "12:00" });
     const b = leg({ from: "LHR", departDate: "2026-09-01", departTime: "10:00" });
     assert.equal(connectionBetween(a, b), null);
+  });
+});
+
+describe("outbound and return", () => {
+  it("keeps the direction each leg was given", () => {
+    const itinerary = flightItineraryFromInput(
+      input({
+        title: "Cohen",
+        legs: [
+          { ...leg({ from: "JFK", to: "TLV", departDate: "2026-09-01" }), direction: "outbound" },
+          { ...leg({ from: "TLV", to: "JFK", departDate: "2026-09-14" }), direction: "return" },
+        ],
+      }),
+    );
+    const { outbound, returning } = splitByDirection(itinerary.legs);
+    assert.equal(outbound.length, 1);
+    assert.equal(returning.length, 1);
+    assert.equal(outbound[0].to, "TLV");
+    assert.equal(returning[0].from, "TLV");
+  });
+
+  it("treats a leg with no direction as outbound, so old itineraries still read", () => {
+    const { outbound, returning } = splitByDirection([leg({ from: "JFK", to: "TLV" })]);
+    assert.equal(outbound.length, 1);
+    assert.equal(returning.length, 0);
+  });
+
+  it("defaults a built leg to outbound when none was given", () => {
+    const itinerary = flightItineraryFromInput(
+      input({ title: "Cohen", legs: [{ ...leg({ from: "JFK", to: "TLV", departDate: "2026-09-01" }) }] }),
+    );
+    assert.equal(itinerary.legs[0].direction, "outbound");
   });
 });
 
