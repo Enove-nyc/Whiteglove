@@ -47,15 +47,16 @@ export type PlanLimits = {
  * exact drift this file exists to prevent, where nobody can answer "what does
  * Pro actually get you" without grepping.
  *
- * THERE IS ONLY ONE, AND THAT IS THE POINT. Pro is not a feature list — it is
- * the same site without the two limits above, because that is what was asked
- * for: somebody planning more than one trip at a time. Business is the one that
- * genuinely does something different, because it is used by a person planning
- * on somebody else's behalf, and the itinerary they hand their client should
- * carry their name rather than ours.
+ * PRO IS STILL NOT A FEATURE LIST. It is the same site without the two limits
+ * above, because that is what was asked for: somebody planning more than one
+ * trip at a time. Business is the plan that genuinely does something different,
+ * because it is used by a person planning on somebody else's behalf — so the
+ * two entitlements that are true are both Business's: the itinerary carries the
+ * agency's name rather than ours, and it reaches the traveller as an app on
+ * their phone (the White Glove app, at /app) rather than only on paper.
  *
- * NOTHING ELSE IS INVENTED HERE. When a second entitlement is real, it goes in
- * this table and the account page changes in the same commit.
+ * NOTHING ELSE IS INVENTED HERE. Each entitlement in this table was asked for,
+ * and the account page changed in the same commit that added it.
  */
 export type PlanFeatures = {
   /**
@@ -75,12 +76,24 @@ export type PlanFeatures = {
    * the keeping and never on the asking.
    */
   assistantHistory: boolean;
+  /**
+   * The White Glove app — a trip in your pocket, at /app.
+   *
+   * Business-only, and asked for as such: a day at a time, the kosher side of
+   * each day, the Shabbos that stops early, the travel wallet kept on the phone
+   * with no signal, and an advisor thread. It is the itinerary an agency
+   * already builds in here, handed to the client on their phone rather than on
+   * paper — which is what Business is for. The gate lives here, once; the
+   * account page says "the app for your travellers" in the same breath, and
+   * app/app/page.tsx is the only door that reads this.
+   */
+  companionApp: boolean;
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
-  traveler: { ownBranding: false, assistantHistory: false },
-  pro: { ownBranding: false, assistantHistory: true },
-  business: { ownBranding: true, assistantHistory: true },
+  traveler: { ownBranding: false, assistantHistory: false, companionApp: false },
+  pro: { ownBranding: false, assistantHistory: true, companionApp: false },
+  business: { ownBranding: true, assistantHistory: true, companionApp: true },
 };
 
 export function featuresFor(plan: AccountPlan): PlanFeatures {
@@ -95,6 +108,11 @@ export function keepsAssistantHistory(plan: AccountPlan): boolean {
 /** Whether this plan may brand its own itineraries. The one gate, named once. */
 export function mayBrandOwnItinerary(plan: AccountPlan): boolean {
   return featuresFor(plan).ownBranding;
+}
+
+/** Whether this plan reaches the White Glove app at /app. Named once. */
+export function mayUseCompanionApp(plan: AccountPlan): boolean {
+  return featuresFor(plan).companionApp;
 }
 
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
