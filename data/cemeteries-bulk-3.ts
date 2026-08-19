@@ -102,12 +102,16 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Polonne — Kever of the Toldos Yaakov Yosef",
     yiddishName: "קבר בעל תולדות יעקב יוסף",
     country: "Ukraine",
-    address: "Jewish cemetery, Polonne, Khmelnytskyi Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, centrally in the town and visible from the road, Polonne, Khmelnytskyi Oblast, Ukraine",
     airportRef: "50.130, 27.515",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Yosef HaKohen of Polonne, the foremost disciple and recorder of the Baal Shem Tov's teachings.",
       "He and the Mochiach of Polonne lie together in one stone ohel in the cemetery.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS IN THE MIDDLE OF THE TOWN AND YOU CAN SEE IT FROM THE ROAD, which is unusual for this region — most of these grounds are out among fields with nothing to mark them. A masonry wall goes all the way round and the gate locks.",
+      "THE KEY IS WITH A NON-JEWISH CARETAKER and there is a small building at the gate. He is paid by what visitors give him rather than by anyone else, so bring something. Members of the kehilla come out to cut back the growth from time to time.",
+      "The wall is low enough to climb, and the survey says so plainly. That is not permission — knock and wait for the caretaker.",
+      "Between one and five hundred matzevos, most still where they were set, under a quarter of them badly damaged. Granite, limestone and sandstone, inscribed in Hebrew, Yiddish and Russian; some carry traces of paint, some portraits, some have iron railings round them.",
+      "THERE ARE STILL JEWS IN POLONNE — about a hundred and fifty — and the ground is still theirs and still in use.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.1269, 27.51373 and the newer one at 50.10921, 27.51505, about 2.0 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
