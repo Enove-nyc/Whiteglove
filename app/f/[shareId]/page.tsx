@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import {
+  connectionBetween,
   flightItineraryLabel,
   formatFlightDate,
   landsNextDay,
@@ -122,7 +123,7 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
       <style>{`
         @media print {
           .wg-flight-doc { background: #fff !important; }
-          .wg-flight { break-inside: avoid; }
+          .wg-flight, .wg-leg { break-inside: avoid; }
           @page { margin: 16mm; }
         }
       `}</style>
@@ -149,9 +150,22 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
         </header>
 
         <section className="mt-8 grid gap-4">
-          {itinerary.legs.map((leg, index) => (
-            <FlightCard key={leg.id} leg={leg} index={index} />
-          ))}
+          {itinerary.legs.map((leg, index) => {
+            const prev = index > 0 ? itinerary.legs[index - 1] : null;
+            const connection = prev ? connectionBetween(prev, leg) : null;
+            return (
+              <div key={leg.id} className="wg-leg grid gap-4">
+                {connection ? (
+                  <p className="wg-connection flex flex-wrap items-center gap-x-2 px-1 text-sm text-stone-600">
+                    <span aria-hidden="true" className="text-[var(--gold-ink)]">↳</span>
+                    <span className="font-semibold text-[var(--navy)]">Connect at {connection.airport}</span>
+                    {connection.layover ? <span>· {connection.layover} layover</span> : null}
+                  </p>
+                ) : null}
+                <FlightCard leg={leg} index={index} />
+              </div>
+            );
+          })}
         </section>
 
         {itinerary.notes ? (
