@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "Travel information | White Glove Kosher Travel",
@@ -56,7 +58,17 @@ const CHECK_BEFORE_YOU_GO: Array<[string, string]> = [
   ],
 ];
 
-export default function VerificationPage() {
+export default async function VerificationPage() {
+  const page = await resolvePage("verification");
+  if (page?.edited) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <PageBlocks blocks={page.blocks} />
+        <Footer />
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />

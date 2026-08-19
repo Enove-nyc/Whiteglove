@@ -217,8 +217,37 @@ export async function readProviders(): Promise<ProviderReading> {
  * uncached call there, which is the right answer for a test anyway.
  */
 export async function getPublicProviders(): Promise<PublicProvider[]> {
-  const reading = await cachedRead(readProviders, ["directory-public-reading"], [DIRECTORY_PUBLIC_TAG]);
-  return reading.providers;
+  try {
+    const reading = await cachedRead(succeedOrThrow, ["directory-public-reading"], [DIRECTORY_PUBLIC_TAG]);
+    return reading.providers;
+  } catch {
+    // Uncached on purpose. The next visit tries the database again instead of
+    // being handed this same failure for as long as the cache lives.
+    return (await readProviders()).providers;
+  }
+}
+
+/**
+ * A FAILED READ IS NOT CONTENT, AND MUST NOT BE CACHED AS IF IT WERE.
+ *
+ * readProviders answers a database it cannot reach with the thirty built-in
+ * businesses, which is the right thing to put on a page — nobody should meet
+ * an error because Postgres blinked. It is the wrong thing to keep. Cached,
+ * that fallback stands until somebody saves a listing, because a save is the
+ * only thing that busts the tag; and a database going away is not a save.
+ *
+ * That is not hypothetical. The owner's database was replaced, a deploy built
+ * the page while the old one was refusing connections, and the site served
+ * "here are thirty businesses you did not add" for hours with nothing in the
+ * system able to notice or recover. Throwing instead means the failure is
+ * never written to the cache, so the next visit simply asks again.
+ */
+async function succeedOrThrow(): Promise<ProviderReading> {
+  const reading = await readProviders();
+  if (reading.source === "database-failed") {
+    throw new Error("directory: the database could not be read — not caching this");
+  }
+  return reading;
 }
 
 /**

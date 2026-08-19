@@ -2,8 +2,10 @@ import Link from "next/link";
 import EsimOffers from "@/components/EsimOffers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "eSIMs and data abroad for a kosher trip | White Glove Kosher Travel",
@@ -53,21 +55,14 @@ const BEFORE_YOU_BUY: Array<[string, string]> = [
 ];
 
 export default async function EsimPage() {
+  // The heading and intro are editable in /admin/pages; the offers and the
+  // "before you buy" cards below are a live component and stay in code.
+  const page = (await resolvePage("esim"))!;
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Before you travel</p>
-          <h1 className="mt-5 max-w-3xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.5rem)] leading-[1.08] text-[var(--navy)]">
-            eSIMs and data abroad
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            A data plan on your phone before you fly, instead of roaming.
-          </p>
-        </div>
-      </section>
+      <PageBlocks blocks={page.blocks} />
 
       {/* The providers, side by side. Renders nothing until one is configured. */}
       <EsimOffers />

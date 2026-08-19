@@ -261,6 +261,55 @@ export const editablePages: PageDef[] = [
     ],
   },
   {
+    slug: "verification",
+    href: "/verification",
+    label: "Travel information",
+    seoTitle: "Travel information | White Glove Kosher Travel",
+    seoDescription: "A practical guide to checking the travel details that can change before your vacation.",
+    blocks: [
+      { id: "verification-hero", kind: "hero", eyebrow: "Travel information", heading: "A few details are always worth checking twice.", intro: "Confirm hours, certification and Shabbos arrangements directly before you travel." },
+      {
+        id: "verification-checks",
+        kind: "cards",
+        heading: "Five things to confirm yourself.",
+        intro: "None of these takes long, and each one is the sort of thing that changes between a page being written and a family arriving.",
+        items: [
+          { title: "Kosher certification", body: "Check the current teudah or the certifying agency directly, especially if a restaurant has recently changed hands." },
+          { title: "Hours and reservations", body: "Confirm opening hours, whether you need to book, and yom tov schedules with the business before making the journey." },
+          { title: "Shabbos arrangements", body: "Ask the local shul or your host about minyan times, the eruv, mikvah access and anything that needs arranging for your stay." },
+          { title: "Entry requirements", body: "Use the official government site for your passport and your destination. Visa and passport rules change." },
+          { title: "Routes and transportation", body: "Recheck driving times, public transport and road closures close to your travel date." },
+        ],
+      },
+      { id: "verification-verified", kind: "text", heading: "What “Verified” means here.", body: "A detail marked Verified has been confirmed against the place itself — a call, an email, or the establishment’s own published page — and the date it was confirmed is printed beside it. Whether somewhere is kosher is the certifying body’s statement rather than ours, so every kashrus detail names its source.\n\nAdvertising never touches it. A business cannot buy the label, buy a ranking, or change what a page says about its kashrus." },
+      { id: "verification-cta", kind: "buttons", items: [{ label: "Tell us if something here is out of date", href: "/contact?reason=correction" }] },
+    ],
+  },
+  {
+    // Hero editable, the tool and cards below it stay in code — the /kosher
+    // pattern, for a page that is part prose and part a live component.
+    slug: "esim",
+    href: "/esim",
+    label: "eSIMs and data abroad",
+    seoTitle: "eSIMs and data abroad for a kosher trip | White Glove Kosher Travel",
+    seoDescription: "What an eSIM is, what to check before you buy one, and where to get a data plan for the country you are going to.",
+    blocks: [
+      { id: "esim-hero", kind: "hero", eyebrow: "Before you travel", heading: "eSIMs and data abroad", intro: "A data plan on your phone before you fly, instead of roaming." },
+    ],
+  },
+  {
+    // Hero editable; the tools-and-doors grid and the gear shelf below stay in
+    // code, the same way /kosher keeps its finder.
+    slug: "kosher-travel",
+    href: "/kosher-travel",
+    label: "Kosher travel",
+    seoTitle: "Kosher travel — food, Shabbos, minyanim and mikvaos | White Glove Kosher Travel",
+    seoDescription: "Kosher food, places to stay, shuls, mikvaos, zmanim and kevarim — the practical side of travelling kosher, in one place.",
+    blocks: [
+      { id: "kosher-travel-hero", kind: "hero", eyebrow: "Kosher travel", heading: "Practical kosher travel.", intro: "" },
+    ],
+  },
+  {
     slug: "kosher-travel-glossary",
     href: "/kosher-travel/glossary",
     label: "Kosher travel glossary",

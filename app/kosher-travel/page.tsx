@@ -1,10 +1,12 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import TravelExtras from "@/components/TravelExtras";
 import { readExtras } from "@/lib/travel-extras-store";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
+import { resolvePage } from "@/lib/pages";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
@@ -39,7 +41,9 @@ const questions: Array<{ title: string; href: string }> = [
 ];
 
 export default async function KosherTravelPage() {
-  const extras = await readExtras();
+  // The heading at the top is editable in /admin/pages; the doors and the gear
+  // shelf below stay in code, the way /kosher keeps its finder.
+  const [extras, page] = await Promise.all([readExtras(), resolvePage("kosher-travel")]);
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -51,14 +55,7 @@ export default async function KosherTravelPage() {
       />
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kosher travel</p>
-          <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            Practical kosher travel.
-          </h1>
-        </div>
-      </section>
+      <PageBlocks blocks={page!.blocks} />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
         <nav aria-label="Kosher travel tools">
