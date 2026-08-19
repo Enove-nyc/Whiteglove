@@ -20,6 +20,23 @@ import { getPublicProviders } from "@/lib/directory";
 // (DIRECTORY_PUBLIC_TAG). That gives the same instant freshness without
 // paying for a fresh render on every hit — the page can go back to being an
 // ordinary cached render.
+// AND RENDERED PER REQUEST, WHICH THE COMMENT ABOVE ARGUED AGAINST.
+//
+// The argument was sound when it was written and its premise has since gone.
+// force-dynamic was removed because it "ran a real database read for every
+// visit"; that stopped being true when getPublicProviders became a tagged
+// cached read, so what a dynamic render costs now is the render, not the
+// query.
+//
+// What a build-time render costs turned out to be worse. This page is baked
+// when the site is built, so it holds whatever the database said at that
+// moment — and when a deploy built it against a database that had just been
+// replaced, the site served the thirty built-in businesses instead of the
+// owner's for hours. Nothing could recover it: the tag is busted by a save,
+// and no save was coming. A page whose content changes without a deploy has
+// no business being decided at deploy time.
+export const dynamic = "force-dynamic";
+
 export const metadata = pageMetadata({
   title: "Directory — White Glove Kosher Travel",
   description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
