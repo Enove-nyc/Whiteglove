@@ -259,3 +259,47 @@ describe("a listing does not tell people to find what it already published", () 
     assert.deepEqual(offenders, []);
   });
 });
+
+describe("a listing's source is about the people on it", () => {
+  it("keeps every Wikipedia source on-subject, or allowlists why not", () => {
+    // WHY. Two listings placed a tzaddik in the wrong town and both were found
+    // the same way: their cited Wikipedia article was about somebody else.
+    //
+    //   Bershad cited the article on Reb Pinchas of Koretz. Reb Raphael of
+    //   Bershad lived in Bershad but is buried at Tarashcha, two hundred and
+    //   twenty kilometres off, and the page said "Resting place of".
+    //   Stolin cited the article on the Karlin dynasty. Reb Asher I died in
+    //   Karlin and no source gives his burial town, yet the page was titled
+    //   "Kever of Rabbi Asher of Stolin".
+    //
+    // An off-subject source does not prove an error, but in both cases it was
+    // the visible symptom of one. This flags the mismatch so somebody reads
+    // the listing against its source; the allowlist below is for the honest
+    // cases — a cemetery-level article, or a transliteration the check cannot
+    // fold together.
+    const ALLOWED = new Set([
+      "ostroh-maharsha", // "Samuel Edels" is the Maharsha, spelled the English way
+      "amuka-yonasan-ben-uziel", // "Jonathan ben Uzziel", same
+      "har-hamenuchos-jerusalem", // an article about the cemetery, which holds many
+      "essaouira-mogador-chaim-pinto",
+      "marrakech-miaara",
+      "worms-heiliger-sand",
+      "yavne-rabban-gamliel", // the article is the building, venerated under two names — the page explains this
+    ]);
+    const fold = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
+    const offenders: string[] = [];
+    for (const cemetery of cemeteries) {
+      if (!cemetery.burials.length || ALLOWED.has(cemetery.slug)) continue;
+      const match = (cemetery.sourceUrl ?? "").match(/wikipedia\.org\/wiki\/(.+)$/);
+      if (!match) continue;
+      const subject = decodeURIComponent(match[1]).replace(/_/g, " ").replace(/\(.*\)/, "").trim();
+      if (!/^[A-Z]/.test(subject)) continue;
+      const words = subject.split(/\s+/).filter((word) => word.length > 3).map(fold);
+      const haystack = fold([cemetery.name, ...cemetery.burials.map((b) => `${b.name} ${b.knownAs ?? ""}`)].join(" "));
+      if (!words.some((word) => haystack.includes(word))) {
+        offenders.push(`${cemetery.slug} cites "${subject}", who is not named on the page`);
+      }
+    }
+    assert.deepEqual(offenders, []);
+  });
+});

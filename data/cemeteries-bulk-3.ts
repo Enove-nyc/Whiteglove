@@ -42,11 +42,15 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Karlin (Pinsk) — Kever of Rabbi Aharon HaGadol",
     yiddishName: "קבר רבי אהרן הגדול מקארלין",
     country: "Belarus",
-    address: "Jewish cemetery, Karlin quarter of Pinsk, Belarus — confirm exact location locally",
+    address: "Jewish burial ground, Karlin quarter of Pinsk, Brest Region, Belarus — the cemetery around the kever is gone; see the notes",
     airportRef: "52.115, 26.100",
     arrivalNotes: [
       "Karlin, now a district of Pinsk, is the cradle of the Karlin-Stolin chassidus; Rabbi Aharon HaGadol (Aharon the Great) of Karlin is associated with the town.",
-      "Confirm the cemetery and exact grave location locally. Belarus entry rules change — check current travel requirements.",
+      "THE KEVER IS VISITED AND THE CEMETERY IS NOT THERE. Two sources say different-sounding things and both are right. The survey of Pinsk records the Karlin burial ground as no longer extant; separately, Karliner-Stoliner chassidim gather at Reb Aharon HaGadol's kever for his yahrzeit — a hundred and fifty came from Israel, America and the former Soviet Union for the two hundred and twenty-first. What survives is the kever and its ohel, not the ground that was round them.",
+      "THE OHEL HAS BEEN REPORTED IN POOR CONDITION, and its upkeep has been an open question within the Karlin-Stolin kehilla. Do not expect a kept site.",
+      "PINSK'S OWN CEMETERIES ARE A SEPARATE MATTER AND BOTH ARE OFF THE MAP. The old one was on Zavalnaya street, last used in 1920 and built over since. The newer one stood on the land once called Leshchinskaya, now Yermakovskaya street.",
+      "A memorial in Pinsk marks where the last Jews of the small ghetto were murdered on the twenty-third of December 1942.",
+      "Arrange the visit through the Karlin-Stolin kehilla rather than turning up. Belarus entry rules change — check current travel requirements.",
     ],
     accessNote: "Historic Karlin-Stolin center in Pinsk. Confirm the cemetery, exact grave, and access locally before traveling.",
     burials: [
