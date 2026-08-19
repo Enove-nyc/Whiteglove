@@ -146,8 +146,8 @@ export default function SampleItineraryPage() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Free, either way</p>
             </div>
             <p className="mt-4 leading-7 text-stone-600">
-              Build the same document yourself, for your own dates, without an account — or answer three short steps
-              for destination ideas first.
+              Build the same document yourself, for your own dates — or answer three short steps for destination
+              ideas first. Sign in to start; it&apos;s free.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link

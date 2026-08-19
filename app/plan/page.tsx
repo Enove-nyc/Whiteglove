@@ -5,12 +5,16 @@ import StartingPoints from "@/components/StartingPoints";
 import TripStartFlow from "@/components/TripStartFlow";
 import { getVacationDestinationBySlug } from "@/lib/vacation-destinations-view";
 import { pageMetadata } from "@/lib/seo";
+import { requireSignedIn } from "@/lib/require-signed-in";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
 
 export const metadata = pageMetadata({
   title: "Plan a kosher trip — start here | White Glove Kosher Travel",
   description: "Start a trip: the kind of holiday, where and when, and who is coming.",
   path: "/plan",
+  // Signed-in only now, so it is kept out of search results and the sitemap —
+  // see PRIVATE_PATHS in lib/site-map.ts.
+  noIndex: true,
 });
 
 /**
@@ -34,6 +38,13 @@ export default async function PlanPage({
   searchParams: Promise<{ destination?: string; kind?: string }>;
 }) {
   const { destination: slug, kind } = await searchParams;
+  // Signed-in only, at the owner's word — but carry the destination/kind
+  // through the sign-in so an "add Rome to a trip" link is not lost on the way.
+  const query = new URLSearchParams();
+  if (slug) query.set("destination", slug);
+  if (kind) query.set("kind", kind);
+  const qs = query.toString();
+  await requireSignedIn(qs ? `/plan?${qs}` : "/plan");
   // "Add Rome to a trip" from a destination card. The slug is looked up rather
   // than printed, so a made-up query string cannot put arbitrary text into the
   // field as though the visitor had typed it.
