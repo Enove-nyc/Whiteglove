@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState, useSyncExternalStore } from "react";
-import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow } from "@/lib/beta-notice";
+import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow, SHOWN_KEY } from "@/lib/beta-notice";
 import { useFocusTrap } from "@/components/useFocusTrap";
 
 /**
  * The site notice: one line, and two actions — Verification and Close.
  *
  * The wording lives in lib/beta-notice.ts, with the reasoning. This file owns
- * how it appears: a real dialog (focus trap, Escape, aria-modal), dismissed
- * once per wording.
+ * how it appears: a real dialog (focus trap, Escape, aria-modal), shown once
+ * per wording. Once for real — it is marked seen the moment it reveals, not
+ * only when Close is pressed, so a visitor who read it and moved on does not
+ * meet it again on the next page. A new wording (a bumped version) shows once
+ * more; see SHOWN_KEY in lib/beta-notice.ts.
  *
  * IT DOES NOT OPEN ON ARRIVAL. It waits for the same settling-in signal
  * SitePromotions uses: a while on the page, or the first real scroll —
@@ -29,13 +32,29 @@ function subscribeDismissal(onChange: () => void) {
   return () => window.removeEventListener("storage", onChange);
 }
 
+// Both remembered facts in one snapshot string: whether this wording was
+// dismissed, and whether it has already been shown once. JSON keeps the two
+// values apart safely, whatever the owner types as a version.
 function dismissalNow(): string {
   try {
-    return `known:${localStorage.getItem(DISMISS_KEY) ?? ""}`;
+    return `known:${JSON.stringify([
+      localStorage.getItem(DISMISS_KEY) ?? "",
+      localStorage.getItem(SHOWN_KEY) ?? "",
+    ])}`;
   } catch {
-    // Private browsing with storage blocked. Showing it every visit is the
-    // safe end of that, and better than never showing it at all.
-    return "known:";
+    // Private browsing with storage blocked. Showing it once here is the safe
+    // end of that, and better than never showing it at all.
+    return `known:${JSON.stringify(["", ""])}`;
+  }
+}
+
+/** The [dismissed, shown] versions read back out of a snapshot string. */
+function readSnapshot(snapshot: string): { dismissedVersion: string | null; shownVersion: string | null } {
+  try {
+    const [dismissed, shown] = JSON.parse(snapshot.slice("known:".length)) as [string, string];
+    return { dismissedVersion: readDismissed(dismissed), shownVersion: readDismissed(shown) };
+  } catch {
+    return { dismissedVersion: null, shownVersion: null };
   }
 }
 
@@ -53,20 +72,38 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
   // cannot see it at all — so its answer is UNKNOWN, a real third state.
   // Without it the dialog would flash on for everybody who had already
   // dismissed it, then vanish on hydration.
-  const dismissed = useSyncExternalStore(subscribeDismissal, dismissalNow, () => UNKNOWN);
-  const due =
-    dismissed !== UNKNOWN &&
-    !answered &&
-    shouldShow(notice, { dismissedVersion: readDismissed(dismissed.slice("known:".length)), path });
-  const open = due && revealed;
+  const snapshot = useSyncExternalStore(subscribeDismissal, dismissalNow, () => UNKNOWN);
+  const known = snapshot !== UNKNOWN;
+  const { dismissedVersion, shownVersion } = known
+    ? readSnapshot(snapshot)
+    : { dismissedVersion: null, shownVersion: null };
+  // Would it arm on this page? Off once this wording has been dismissed OR
+  // already shown once — the second is what stops it returning on the next
+  // page load when the visitor read it but did not press Close.
+  const eligibleHere = known && !answered && shouldShow(notice, { dismissedVersion, path });
+  // Off once this wording has already been shown once — the marker that stops
+  // it returning on the next page load when the visitor read it but did not
+  // press Close.
+  const canArm = eligibleHere && shownVersion !== notice.version;
+  // Once it has revealed this visit it stays open until answered, even though
+  // marking it shown flips canArm to false — otherwise recording "seen" would
+  // snap the dialog shut in the same instant it opened. It still respects the
+  // off switch and the owner's own screens through eligibleHere.
+  const open = revealed && eligibleHere;
 
   // Nothing is shown until the visitor has settled in — NOTICE_DELAY_MS on
-  // the page, or the first scroll past NOTICE_SCROLL_PX.
+  // the page, or the first scroll past NOTICE_SCROLL_PX. It is marked shown at
+  // that moment, so it appears once and does not come back.
   useEffect(() => {
-    if (!due || revealed) return;
+    if (!canArm || revealed) return;
     function reveal() {
       window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
+      try {
+        localStorage.setItem(SHOWN_KEY, notice.version);
+      } catch {
+        /* storage blocked — it will show once more next visit, which is fine */
+      }
       setRevealed(true);
     }
     function onScroll() {
@@ -78,7 +115,7 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
       window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [due, revealed]);
+  }, [canArm, revealed, notice.version]);
 
   const close = useCallback(() => {
     setAnswered(true);
