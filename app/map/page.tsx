@@ -5,7 +5,7 @@ import MapExplorer, { type MapAirport, type MapAttraction, type MapKever, type M
 import Navbar from "@/components/Navbar";
 import { AIRPORTS } from "@/data/airports";
 import { cemeteries } from "@/data/cemeteries";
-import { heritageCemeteries } from "@/data/heritage-cemeteries";
+import { listAllHeritageCemeteries } from "@/lib/heritage-cemeteries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
 import { listPublishedShuls } from "@/lib/shuls";
 import { pointFrom } from "@/lib/map-markers";
@@ -23,7 +23,12 @@ export const metadata = pageMetadata({
 export default async function MapPage() {
   // Read through the view so anything the owner adds appears here without a
   // redeploy, the same as on the directories.
-  const [attractionList, stayList, shulList] = await Promise.all([getAttractionList(), getStayList(), listPublishedShuls()]);
+  const [attractionList, stayList, shulList, heritageCemeteries] = await Promise.all([
+    getAttractionList(),
+    getStayList(),
+    listPublishedShuls(),
+    listAllHeritageCemeteries(),
+  ]);
 
   const plottableCemeteries = cemeteries.filter((c) => pointFrom(c.coordinates));
   const kevarim: MapKever[] = [
