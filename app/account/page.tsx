@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
 import BusinessBrandPanel from "@/components/BusinessBrandPanel";
+import CompanionShare from "@/components/companion/CompanionShare";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -140,16 +141,16 @@ export default async function AccountPage() {
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
           {canUseApp && (
-            <Link
-              href="/app"
-              className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--gold)]/30 bg-white p-6 transition hover:border-[var(--gold)]/60"
-            >
-              <span className="flex flex-col gap-1">
-                <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
-                <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, the kosher side of each day, and the travel wallet kept for when there is no signal. Add it to your home screen.</span>
-              </span>
-              <span className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white">Open</span>
-            </Link>
+            <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
+                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, the kosher side of each day, and the travel wallet kept for when there is no signal. Add it to your home screen.</span>
+                </div>
+                <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
+              </div>
+              <CompanionShare />
+            </div>
           )}
         </section>
 
