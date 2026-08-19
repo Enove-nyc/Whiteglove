@@ -66,10 +66,7 @@ export const bulkCemeteries3: Cemetery[] = [
     airportRef: "49.383, 24.145",
     arrivalNotes: [
       "Resting place of Rabbi Tzvi Hirsch Eichenstein of Zidichov, a foundational master of the Zidichov-Komarno kabbalistic chassidic line.",
-      "IT IS AT THE CORNER OF YANA NALEPKI AND HORISHNYA. This page used to say only to confirm the location locally, which for the Ruzhiner's ohel was not good enough. The ground is fenced and protected, and it is well kept — unusual for this part of Ukraine.",
-      "THE KEY IS AT THE KEEPER'S HOUSE BY THE MAIN GATE. You are not expected to arrange anything in advance; knock there. Accounts describe an elderly man who comes out and unlocks when visitors arrive.",
-      "About two hundred matzevos survive, from the eighteen-thirties to the nineteen-thirties, on a ground opened in the early eighteen-hundreds. The last burials were in the nineteen-thirties.",
-      "Sadhora was a pilgrimage town before it was a district of Chernivtsi — four fifths of its people were Jews in 1880, and five thousand still lived here in 1914. By 1941 there were six hundred and fifty-four, and they were deported to Transnistria that autumn.",
+      "Confirm the cemetery and exact grave location locally.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
@@ -251,7 +248,10 @@ export const bulkCemeteries3: Cemetery[] = [
     airportRef: "48.325, 25.950",
     arrivalNotes: [
       "Rabbi Yisrael Friedman of Ruzhin settled in Sadigura after leaving the Russian Empire, and is buried there; his court shaped many chassidic dynasties.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS AT THE CORNER OF YANA NALEPKI AND HORISHNYA. This page used to say only to confirm the location locally, which for the Ruzhiner's ohel was not good enough. The ground is fenced and protected, and it is well kept — unusual for this part of Ukraine.",
+      "THE KEY IS AT THE KEEPER'S HOUSE BY THE MAIN GATE. You are not expected to arrange anything in advance; knock there. Accounts describe an elderly man who comes out and unlocks when visitors arrive.",
+      "About two hundred matzevos survive, from the eighteen-thirties to the nineteen-thirties, on a ground opened in the early eighteen-hundreds. The last burials were in the nineteen-thirties.",
+      "Sadhora was a pilgrimage town before it was a district of Chernivtsi — four fifths of its people were Jews in 1880, and five thousand still lived here in 1914. By 1941 there were six hundred and fifty-four, and they were deported to Transnistria that autumn.",
           "The matzeivos of the Ruzhiner and his sons were destroyed in the First World War; what stands now is a rebuilt ohel, renovated again in the 2010s. The ground is theirs — the stone over it is not the one they were buried under.",
     ],
     burials: [

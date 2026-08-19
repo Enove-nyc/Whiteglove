@@ -160,3 +160,55 @@ describe("a surveyed coordinate belongs to the town it is filed under", () => {
   });
 
 });
+
+describe("a listing's notes belong to the listing they are on", () => {
+  it("never carries another listing's street inside a note", () => {
+    // WHY THIS EXISTS, and it is the worst mistake of the whole run.
+    //
+    // Sadhora and Peremyshlyany sit in the same file and both carried the
+    // identical line "Confirm the cemetery and exact grave location locally."
+    // Two edit scripts each replaced "the first occurrence" of that line, and
+    // the second shifted the first one's target: four notes written for the
+    // Ruzhiner's ohel at Sadhora — its street, its keyholder, its history —
+    // were published on the page for the Zidichover's kever at Zhydachiv, a
+    // different tzaddik in a different town. It went live before it was
+    // caught, and it was caught by reading the page rather than by trusting
+    // the script that wrote it.
+    //
+    // The check is deliberately narrow, because cross-references between towns
+    // are normal and wanted on this site — "he is not here, he is in
+    // Berditchev", "Tarcal is four kilometres from Tokaj". What is never right
+    // is a note carrying a STREET that belongs to a different listing's
+    // address. That is the signature of text landing on the wrong record.
+    const streetsOf = (address: string) =>
+      address
+        .split(",")
+        .map((part) => part.trim())
+        // Only parts that actually say "street" in some language. An earlier
+        // draft also accepted any capitalised two-word fragment and matched
+        // "Jewish cemetery" as a street name in half the data.
+        .filter((part) => /\b(street|streets|str\.|ulica|ul\.|utca|strada|trieda|hauptstra|gasse)\b/i.test(part))
+        .filter((part) => !/jewish|cemetery|beis|section|site of/i.test(part))
+        .map((part) => part.replace(/^\d+[a-zA-Z]?\s+/, "").trim())
+        .filter((part) => part.length > 8);
+
+    const owners = new Map<string, string>();
+    for (const cemetery of cemeteries) {
+      for (const street of streetsOf(cemetery.address ?? "")) {
+        if (!owners.has(street.toLowerCase())) owners.set(street.toLowerCase(), cemetery.slug);
+      }
+    }
+    const offenders: string[] = [];
+    for (const cemetery of cemeteries) {
+      const mine = new Set(streetsOf(cemetery.address ?? "").map((s) => s.toLowerCase()));
+      for (const note of cemetery.arrivalNotes) {
+        const lower = note.toLowerCase();
+        for (const [street, owner] of owners) {
+          if (owner === cemetery.slug || mine.has(street)) continue;
+          if (lower.includes(street)) offenders.push(`${cemetery.slug} names "${street}", which is ${owner}'s street`);
+        }
+      }
+    }
+    assert.deepEqual(offenders, []);
+  });
+});
