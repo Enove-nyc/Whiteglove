@@ -18,17 +18,17 @@ describe("import needs-review queue", () => {
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-2"));
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-4"));
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-5"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-fill-batch"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-europe-batch"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "white-glove-global-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch"));
       assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch" && item.kind === "food"));
       assert.ok(queue.items.some((item) => item.batchSlug === "nesiyatova-heritage-batch"));
       assert.ok(queue.packs.every((pack) => pack.path.startsWith("data/imports/")));
-      const europePack = queue.packs.find((pack) => pack.slug === "white-glove-europe-batch");
-      const globalPack = queue.packs.find((pack) => pack.slug === "white-glove-global-batch");
-      assert.ok((europePack?.candidateCount ?? 0) >= 650);
-      assert.ok((globalPack?.candidateCount ?? 0) >= 600);
+      // The White Glove europe / global / fill research packs were retired at the
+      // owner's decision — bare place-names with no coordinates, address or
+      // summary. They must no longer appear in the queue at all.
+      for (const retired of ["white-glove-europe-batch", "white-glove-global-batch", "white-glove-fill-batch"]) {
+        assert.ok(!queue.packs.some((pack) => pack.slug === retired), `${retired} should be retired`);
+        assert.ok(!queue.items.some((item) => item.batchSlug === retired), `${retired} should have no items`);
+      }
       assert.ok(!queue.items.some((item) => /openstreetmap|overpass|photon/i.test(`${item.name} ${item.batchName}`)));
     } finally {
       if (original === undefined) delete process.env.DATABASE_URL;

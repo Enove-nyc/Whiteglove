@@ -21,9 +21,6 @@ function loadPriorKeys(): { keys: Set<string>; ids: Set<string> } {
     "worldwide-batch-2",
     "worldwide-batch-3",
     "worldwide-batch-4",
-    "white-glove-europe-batch",
-    "white-glove-global-batch",
-    "white-glove-fill-batch",
   ];
   const importsRoot = join(process.cwd(), "data/imports");
   for (const slug of roots) {

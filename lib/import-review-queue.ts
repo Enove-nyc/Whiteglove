@@ -8,9 +8,6 @@
 
 import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { whiteGloveEuropeCandidates } from "@/data/imports/white-glove-europe-batch/candidates";
-import { whiteGloveFillCandidates } from "@/data/imports/white-glove-fill-batch/candidates";
-import { whiteGloveGlobalCandidates } from "@/data/imports/white-glove-global-batch/candidates";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
 import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
 import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
@@ -232,72 +229,13 @@ const KNOWN_PACKS: readonly KnownPack[] = [
         attribution: candidate.sourceAttribution,
       })),
   },
-  {
-    slug: "white-glove-fill-batch",
-    name: "White Glove complementary fill pack",
-    path: "data/imports/white-glove-fill-batch",
-    href: "/admin/imports",
-    note: "Private source pack — open Bulk imports to stage and review.",
-    loadCandidates: () =>
-      whiteGloveFillCandidates.map((candidate) => ({
-        sourceId: candidate.sourceId,
-        name: candidate.name,
-        kind: kindFromImportKind(candidate.importKind),
-        market: candidate.market,
-        destination: candidate.destination || candidate.locality,
-        city: candidate.locality,
-        country: candidate.country,
-        // The pack's own schema admits one readiness and it is NEEDS_REVIEW,
-        // so there is nothing here to ask about.
-        status: "NEEDS_REVIEW",
-        sourceUrl: candidate.sourceUrl,
-        sourceName: candidate.sourceName,
-        attribution: candidate.sourceAttribution,
-      })),
-  },
-  {
-    slug: "white-glove-europe-batch",
-    name: "White Glove Europe research pack",
-    path: "data/imports/white-glove-europe-batch",
-    href: "/admin/imports",
-    note: "Private source pack — open Bulk imports to stage and review.",
-    loadCandidates: () =>
-      whiteGloveEuropeCandidates.map((candidate) => ({
-        sourceId: candidate.sourceId,
-        name: candidate.name,
-        kind: kindFromImportKind(candidate.kind),
-        market: candidate.market,
-        destination: candidate.destination || candidate.city,
-        city: candidate.city,
-        country: candidate.country,
-        status: "NEEDS_REVIEW",
-        sourceUrl: candidate.sourceUrl,
-        sourceName: candidate.sourceName,
-        attribution: candidate.sourceAttribution,
-      })),
-  },
-  {
-    slug: "white-glove-global-batch",
-    name: "White Glove global research pack",
-    path: "data/imports/white-glove-global-batch",
-    href: "/admin/imports",
-    note: "Private source pack — open Bulk imports to stage and review.",
-    loadCandidates: () =>
-      whiteGloveGlobalCandidates.map((candidate) => ({
-        sourceId: candidate.sourceId,
-        name: candidate.name,
-        kind: kindFromImportKind(candidate.importKind),
-        market: candidate.market,
-        destination: candidate.destination || candidate.locality,
-        city: candidate.locality,
-        country: candidate.country,
-        // Same as the fill pack: NEEDS_REVIEW is the only readiness it has.
-        status: "NEEDS_REVIEW",
-        sourceUrl: candidate.sourceUrl,
-        sourceName: candidate.sourceName,
-        attribution: candidate.sourceAttribution,
-      })),
-  },
+  // The three "White Glove research / fill" packs (europe, global, fill) were
+  // retired at the owner's decision. They held ~1,500 bare place-names — a name,
+  // a city and a source link, with no coordinates, address or description — a
+  // research to-do list, not reviewable listings. They kept the Needs review
+  // count high while offering nothing that could be published without authoring
+  // the whole entry by hand. Their directories under data/imports/ were removed
+  // with them so they cannot reappear as unregistered pack folders.
 ];
 
 function allowedPackCandidate(candidate: PackCandidate): boolean {
