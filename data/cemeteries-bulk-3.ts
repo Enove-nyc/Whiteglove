@@ -268,11 +268,12 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Talne — Kever of Rabbi Dovid Twersky",
     yiddishName: "קבר רבי דוד מטאלנא",
     country: "Ukraine",
-    address: "Jewish cemetery, Talne, Cherkasy Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery on the outskirts of the town; the ohel is recorded near the town centre — Talne, Cherkasy Oblast, Ukraine",
     airportRef: "48.887, 30.696",
     arrivalNotes: [
       "Resting place of Rabbi Dovid Twersky of Talne, a son of the Chernobyler dynasty who led a large chassidic court.",
-      "Confirm the cemetery and exact grave location locally.",
+      "THE OHEL MAY NOT BE IN THE CEMETERY YOU DRIVE TO. The survey of Talne records the town's Jewish burial ground on the outskirts, reached by turning off a public road through farmland — and in the same entry places the ohel holding Reb Dovid close to the CENTRE of the town. Read plainly, those are two different places. Ask in Talne for the ohel by name rather than navigating to the cemetery and expecting to find it there.",
+      "THE CEMETERY ITSELF HAS NO SIGN, NO FENCE AND NO GATE. It runs to many hectares and only five matzevos are still standing where they were set; the rest of the graves are under earth and grass. Inscriptions are in Yiddish with Russian or Ukrainian beside them. Nobody maintains it — families tend the newer parts and the vegetation there is the worst of it.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.8863, 30.70576 and the newer one at 48.90478, 30.70763, about 2.1 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
