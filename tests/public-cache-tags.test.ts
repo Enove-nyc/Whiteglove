@@ -129,8 +129,20 @@ describe("/directory — DIRECTORY_PUBLIC_TAG", () => {
     assert.match(QUICK_ADD_ROUTE.slice(deleteStart), /bustTag\(DIRECTORY_PUBLIC_TAG\)/, "DELETE must bust the tag");
   });
 
-  it("/directory is no longer force-dynamic", () => {
-    assert.doesNotMatch(PAGE, /export const dynamic = "force-dynamic"/);
+  it("IS FORCE-DYNAMIC AGAIN, AND THIS TEST USED TO SAY THE OPPOSITE", () => {
+    // It asserted /directory was "no longer force-dynamic", because the render
+    // had been costing a database read on every visit and the tagged cache
+    // above removed the need. That reasoning was right and is now spent: with
+    // getPublicProviders cached, a dynamic render costs the render only.
+    //
+    // What replaced it was worse. A static page is decided when the site is
+    // built, and a deploy that built this one against a database it could not
+    // reach baked in the thirty built-in businesses — served for hours, with
+    // nothing able to recover, because the tag is busted by a save and no save
+    // was coming. Content that changes without a deploy cannot be decided at
+    // deploy time. The cache above still does its job: it keeps the dynamic
+    // render off the database.
+    assert.match(PAGE, /export const dynamic = "force-dynamic"/);
   });
 });
 
