@@ -176,6 +176,7 @@ const featuredCemeteries: Cemetery[] = [
       "Dolyna is a town in Ivano-Frankivsk Oblast in western Ukraine's historic Galicia — the shtetl known in Yiddish/Polish sources as Dolina. It became a notable Hasidic center in the 19th century.",
       "Nearest city with an organized Jewish community and kosher infrastructure is Ivano-Frankivsk (~1 hour's drive): the Chabad-run community at Strachenykh St. 7 (Rabbi Moshe Leib Kolesnik) has a synagogue, mikvah, kosher restaurant and guest rooms — the practical base for a visit.",
       "Nearest airports are Ivano-Frankivsk and Lviv; Ukrainian civil airspace has been closed since 2022, so travelers typically enter overland via Poland.",
+      "THERE ARE TWO DOLYNAS AND THIS IS THE GALICIAN ONE. ESJF surveyed a Jewish cemetery under this name in Ivano-Frankivsk oblast and another in Ternopil oblast, a hundred and thirty kilometres away. The survey of the Ivano-Frankivsk ground puts it within about thirty-five metres of the map point this listing already carried, which is as close to a confirmation as the two sources can give each other.",
     ],
     accessNote: "The cemetery's present physical condition and gate status could not be confirmed from a public source; treat access as unverified. Ukraine remains under wartime martial law — confirm safety, entry and site access with the Ivano-Frankivsk Jewish community before travel.",
     burials: [

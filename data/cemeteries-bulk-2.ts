@@ -74,11 +74,14 @@ export const bulkCemeteries2: Cemetery[] = [
     name: "Hadiach — Ohel of the Baal HaTanya (Alter Rebbe)",
     yiddishName: "אוהל בעל התניא",
     country: "Ukraine",
-    address: "Ohel of Rabbi Schneur Zalman, Hadiach (Gadyach), Poltava Oblast, Ukraine",
+    address: "Jewish cemetery, 21 Krasna Hirka Street, Hadiach, Poltava Oblast, Ukraine",
+    coordinates: "50.35496, 34.01145",
     airportRef: "50.373, 33.998",
     arrivalNotes: [
       "The ohel of the Alter Rebbe, founder of Chabad, stands in Hadiach in east-central Ukraine; a Chabad pilgrimage site, busiest around the yahrzeit (24 Tevet). A 'kohanim bridge' lets kohanim visit without passing over other graves.",
-      "Exact grave GPS is not confirmed from a reliable public source here — arrange the visit and current access through Chabad of Hadiach. Ukraine sites are wartime-sensitive; check travel advisories.",
+      "IT IS AT 21 KRASNA HIRKA STREET. This page used to say the exact location could not be confirmed from a public source. It can: the ground was surveyed and fenced in December 2021, and the ohel of the Alter Rebbe stands on it. There is a visitor centre and a shul beside the cemetery.",
+      "The ground is well kept and still in use for burials. About five hundred matzevos stand, the oldest from 1812, and there are unmarked graves besides.",
+      "Arrange current access through Chabad of Hadiach. Ukraine sites are wartime-sensitive; check travel advisories before setting out.",
     ],
     accessNote: "Chabad-maintained ohel with a kohanim bridge. Confirm exact location, current access and safety through Chabad of Hadiach, especially given the war.",
     burials: [

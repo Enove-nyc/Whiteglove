@@ -212,3 +212,30 @@ describe("a listing's notes belong to the listing they are on", () => {
     assert.deepEqual(offenders, []);
   });
 });
+
+describe("no listing carries the same field twice", () => {
+  it("never repeats a key inside one record", async () => {
+    // WHY. An edit script inserted a coordinates line into a record that
+    // already had one. The object then had two `coordinates:` keys, the
+    // second silently won, and nothing complained — not the type checker, not
+    // the build, not any test. The value that survived happened to be the
+    // right one, which is luck rather than safety.
+    const { readdir, readFile } = await import("node:fs/promises");
+    const files = (await readdir("data")).filter((name) => /^cemeteries.*\.ts$/.test(name));
+    const offenders: string[] = [];
+    for (const file of files) {
+      const source = await readFile(`data/${file}`, "utf8");
+      // Split on record boundaries: every listing starts with a slug line.
+      const records = source.split(/\n\s*slug: "/).slice(1);
+      for (const record of records) {
+        const slug = record.slice(0, record.indexOf('"'));
+        const body = record.split("sourceUrl:")[0];
+        for (const key of ["coordinates", "address", "airportRef", "city", "country"]) {
+          const count = body.match(new RegExp(`\\n\\s{4}${key}:`, "g"))?.length ?? 0;
+          if (count > 1) offenders.push(`${file}: ${slug} has ${count} ${key} lines`);
+        }
+      }
+    }
+    assert.deepEqual(offenders, []);
+  });
+});
