@@ -35,6 +35,7 @@ export const bulkCemeteries23: Cemetery[] = [
     yiddishName: "נייטרא — בית החיים",
     country: "Slovakia",
     address: "Jewish cemetery, Hviezdoslavova trieda, on the hill by the Klokočina district, Nitra, Nitra Region, Slovakia",
+    coordinates: "48.30715, 18.06947",
     airportRef: "48.306, 18.087",
     arrivalNotes: [
       "THE NITRER ROV IS NOT BURIED HERE. Reb Shmuel Dovid Ungar, rosh yeshiva of Nitra, was niftar in hiding in February 1945; after the war his son brought him to Piešťany, his birthplace, and buried him next to his father. Piešťany is about seventy kilometres west and is a separate journey.",
@@ -42,6 +43,7 @@ export const bulkCemeteries23: Cemetery[] = [
       "IT IS WALLED AND THE GATE LOCKS, and the sexton holds the key — the survey gives him as Viliam Glück, at an address in Hlohovec rather than in Nitra itself, so arrange the visit before travelling instead of turning up at the wall.",
       "It is one of the best-kept Jewish cemeteries in Slovakia — around five thousand graves, most of the stones still standing where they were set, and restoration work has been done on them. There is an ohel on the ground, a chapel, and the sexton's house.",
       "The ground is divided into an Orthodox part and a Neolog part, with a separate section for women who were niftar in childbirth. Knowing which part you want halves the walking.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://cdp.jewishgen.org/eastern-europe/slovakia/nitra-mestsky-urad",

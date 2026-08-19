@@ -26,6 +26,7 @@ export const bulkCemeteries24: Cemetery[] = [
     yiddishName: "זעליחוב — בית החיים",
     country: "Poland",
     address: "Jewish cemetery, in the woods between Reymonta, Brzóski, Bema and Chłopickiego, Żelechów, Masovian Voivodeship, Poland",
+    coordinates: "51.80535, 21.88957",
     airportRef: "51.813, 21.897",
     arrivalNotes: [
       "IT IS IN THE TREES, in the south-western corner of the town, on about two hectares bounded by Reymonta, Brzóski, Bema and Chłopickiego. There is a mesh fence two metres high and a gate; the fence has damaged sections, but the gate is the way in.",
@@ -33,6 +34,7 @@ export const bulkCemeteries24: Cemetery[] = [
       "Around seventy whole matzevos are left, plus fragments. The oldest readable is from 1847 and the last from the nineteen-thirties, so the cemetery's first forty years are gone from the stones entirely.",
       "The ground was used for killings and for burying the dead of the ghetto during the war, and then left until 2014, when it was fenced and the ohels were built. Expect long grass.",
       "Reb Levi Yitzchok was the rov of Żelechów before Berditchev, and people ask. He is not buried here — his kever is in Berditchev, in Ukraine.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {
@@ -57,6 +59,7 @@ export const bulkCemeteries24: Cemetery[] = [
     yiddishName: "ראהאטין — בתי החיים",
     country: "Ukraine",
     address: "Old Jewish cemetery, on the hill off S. Bandera Street, Rohatyn, Ivano-Frankivsk Oblast, Ukraine",
+    coordinates: "49.40770, 24.61701",
     airportRef: "49.409, 24.610",
     arrivalNotes: [
       "TWO GROUNDS. The old one is on a hilltop off S. Bandera Street, with houses grown up around it; the newer one is at the northern edge of the town and was opened when the old ground filled before the war.",
@@ -64,6 +67,7 @@ export const bulkCemeteries24: Cemetery[] = [
       "AN OHEL WAS REBUILT HERE for three of the Stratyner rabbonim of Rohatyn. The people who rebuilt it do not say in public which three, so this listing does not name them.",
       "THE STONES CAME BACK FROM THE TOWN'S PAVEMENTS. Over five hundred matzevos and fragments have been recovered since 2011 — including a large pile taken out of the courtyard of the former Gestapo headquarters, where they had been laid end to end as paving for vehicles. On the ruling of the rov of Ivano-Frankivsk they were all returned to the old cemetery, and a memorial is being built to display them.",
       "The ground is cleared of undergrowth once a year. Between clearings it grows over, so what you find underfoot depends on the season.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://rohatynjewishheritage.org/en/projects/old-jewish-cemetery/",

@@ -65,11 +65,13 @@ export const bulkCemeteries22: Cemetery[] = [
     yiddishName: "שארהאראד — בתי החיים",
     country: "Ukraine",
     address: "Jewish cemetery, Sharhorod, Vinnytsia Oblast, Ukraine",
+    coordinates: "48.74257, 28.08816",
     airportRef: "48.750, 28.083",
     arrivalNotes: [
       "TWO GROUNDS, AND THE ONE IN THE CENTRE IS NOT THE ONE TO WALK. The oldest cemetery sits in the middle of the town today and only about twenty matzevos are still visible in it, dating from the seventeen and early eighteen hundreds. The newer ground is on the hill above the town and is the one that survives as a cemetery.",
       "Sources put the oldest ground's founding anywhere from the mid-fifteen hundreds to the first half of the sixteen hundreds; the stones that can still be read are much later than either.",
       "The reason most people come to Sharhorod is standing: the Great Synagogue of 1589, one of the oldest in Ukraine, built as a fortress with walls one to two metres thick. The Turks held the town from 1674 to 1699 and used it as a mosque. It was restored in 2012.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/sharhorod-old-jewish-cemetery/",

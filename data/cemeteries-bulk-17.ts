@@ -103,11 +103,13 @@ export const bulkCemeteries17: Cemetery[] = [
     yiddishName: "זאמושץ — ציון המגיד מדובנא",
     country: "Poland",
     address: "Jewish cemetery, Prosta, Zamość, Lublin Voivodeship, Poland",
+    coordinates: "50.714181, 23.265108",
     airportRef: "50.717, 23.252",
     arrivalNotes: [
       "LITTLE IS LEFT STANDING. The old cemetery, on the hill about 250 metres north of the market square, was used as a market garden during the war; two free-standing matzevos and several dozen broken fragments are all that survive of it. At the site on Prosta there is a monument built from matzevo fragments.",
       "Sources place the Maggid of Dubno in one of the town's two Jewish cemeteries but do not agree which. Ask locally before you go, rather than assuming — this is the one detail worth settling in advance.",
       "An ohel was put up in 1995 over the kever of Reb Yosef Mordechai Leiner, on the initiative of Rabbi Edgar Gluck.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {

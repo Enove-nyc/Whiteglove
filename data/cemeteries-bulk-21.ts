@@ -23,11 +23,13 @@ export const bulkCemeteries21: Cemetery[] = [
     yiddishName: "קאשוי — בית החיים החרדי",
     country: "Slovakia",
     address: "Orthodox Jewish cemetery, Košice, Košice Region, Slovakia",
+    coordinates: "48.692791, 21.255768",
     airportRef: "48.716, 21.261",
     arrivalNotes: [
       "There is more than one Jewish cemetery in the city — the Orthodox ground and the Neolog one lie beside each other and beside the municipal cemetery. Ask for the Orthodox one by name.",
       "SOURCES DISAGREE ABOUT WHICH STREET to navigate by: one survey says Rastislavova, another names Žižkova. One of them also places the cemeteries above the Danube, which is Bratislava and not Košice at all, so treat street names from these surveys with care and confirm on the ground.",
       "A searchable database of the burials in the city's Jewish cemeteries exists, so a specific kever can be located before travelling rather than hunted for on the day.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {

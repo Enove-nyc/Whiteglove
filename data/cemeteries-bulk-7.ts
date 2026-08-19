@@ -102,11 +102,13 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "סקערנעוויץ — אוהל ר׳ שמעון קאליש",
     country: "Poland",
     address: "Old Jewish cemetery, ul. Strobowska, Skierniewice, Łódź Voivodeship, Poland — sources give the number as both 32 and 36, so none is published here",
+    coordinates: "51.944582, 20.150291",
     airportRef: "51.953, 20.142",
     arrivalNotes: [
       "The old cemetery itself was destroyed and the matzeivos are gone — what you are coming for is the ohel, which came through, with the Association of Cadyks' Ohels having later placed a concrete sarcophagus and a new epitaph inside. Come expecting an ohel on bare ground, not a standing cemetery.",
       "Go to the OLD cemetery on ul. Strobowska, not the other Jewish cemetery in town — Skierniewice has two, they are on opposite sides of town, and travellers regularly go to the wrong one.",
       "Sources give the address as both Strobowska 32 and Strobowska 36, so confirm the gate and the exact kever locally when you arrive.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Shimon Kalish of Skierniewice", yiddishName: "רבי שמעון קאליש מסקערנעוויץ", knownAs: "Skierniewicer Rebbe — not Reb Shimon Sholom Kalish of Amshinov", note: "Born in Warka in 1857, son of the tzaddik Reb Mordechai Menachem Mendel Kalish of Skierniewice, of the Vorka line; he founded the Skernievitz chassidus and led it from 1886 until his petirah on 28 September 1926. He is not Reb Shimon Sholom Kalish, the Amshinover Rebbe of Otwock (1882-1954, of the Mir Yeshiva's wartime escape), who is buried in Teveria." },
@@ -142,12 +144,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "ראַדזין — אוהל בעל התכלת",
     country: "Poland",
     address: "Jewish cemetery, Radzyń Podlaski, Lublin Voivodeship, Poland — the street is disputed in the sources, so none is published here; confirm locally",
+    coordinates: "51.778140, 22.616505",
     airportRef: "51.783, 22.624",
     arrivalNotes: [
       "The ohel you will stand at is a postwar reconstruction, not the original — the Germans destroyed the Radzyń cemetery, and the ohel was rebuilt afterwards and is maintained by chassidim, with kvitlach on the stone.",
       "Make sure you are going to RADZYŃ PODLASKI in Lublin Voivodeship, not Radzymin near Warsaw — the two are often confused, Radzymin is a chassidic centre in its own right, and it is roughly 150km away in the wrong direction.",
       "Sources differ on which of the town's grounds holds the ohel: Virtual Shtetl and the International Jewish Cemetery Project place the surviving cemetery on ul. Lubelska, on the road out toward Parczew, while a local Radzyń history gives ul. Sienkiewicza. The old cemetery, between ul. Zabielska, Cicha and Chomiczewskiego, is built over with houses. Ask in town and confirm the exact ohel before you daven.",
       "His gabbai Reb Yisroel Kotzker was later buried beside him.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Gershon Chanoch Henoch Leiner of Radzyń", yiddishName: "רבי גרשון חנוך העניך ליינער מראַדזין", knownAs: "Baal HaTecheiles — the first Radziner Rebbe", seforim: "סדרי טהרות · אורחות חיים · ספוני טמוני חול · פתיל תכלת · עין התכלת · סוד ישרים", yahrzeit: "ד׳ טבת · 5651 / 1890", note: "Son of Reb Yaakov Leiner, the Beis Yaakov, and grandson of Reb Mordechai Yosef Leiner of Izhbitz, the Mei HaShiloach, he founded the Radzyn court and is known worldwide for his work to recover techeiles; his grandson bore the same name and is a different man, and the last Radziner Rebbe, Reb Shmuel Shlomo Leiner, was murdered in 1942 and is not buried here." },
@@ -268,12 +272,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "קאליש — אוהל רבי יחזקאל ליבשיץ בבית החיים החדש",
     country: "Poland",
     address: "New Jewish cemetery, ul. Podmiejska 21, Kalisz, Greater Poland Voivodeship (Wielkopolskie), Poland",
+    coordinates: "51.75083, 18.0625",
     airportRef: "51.758, 18.080",
     arrivalNotes: [
       "This is one of the few sites in this region where the ohel actually came through the war standing. It is still there, and Yidden who come to Kalisz daven at it and leave kvitlach.",
       "Go to the NEW cemetery, ul. Podmiejska 21, on the plot the kehillah bought in 1920 between today's Widok and Podmiejska streets. Kalisz also has an older Jewish cemetery elsewhere in the city — the Rav's ohel is not there.",
       "He asked in his will to be buried on this plot, and his levaya in March 1932 is what opened the new cemetery for use; by 1939 about 3,000 people had been buried here.",
       "Some listings give the address as Podmiejska 23 rather than 21, and the gate is not always open — check the number and arrange access locally before you travel.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yechezkel Lipszyc (Libshitz)", yiddishName: "רבי יחזקאל ליבשיץ", knownAs: "Rav of Kalisz, the HaMidrash VeHaMaaseh", seforim: "המדרש והמעשה", yahrzeit: "י״ג אדר ב׳ · 5692 / 1932", note: "Born in Raseiniai in Lithuania to Reb Hillel Lipszyc, he was rav in Jurbarkas and then in Bauska in Courland — where Rav Avraham Yitzchak HaKohen Kook succeeded him — and rav of Kalisz from 1906/07 until his petirah in 1932, as well as president of the Rabbinical Association of Poland. He is not Reb Shlomo Zalman Lipszyc, the Chemdas Shlomo and first rav of Warsaw, who is buried in Warsaw." },
@@ -355,12 +361,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "פרישטיק — ציון אסתר עטל בת רבי אלימלך",
     country: "Poland",
     address: "Old Jewish cemetery, ul. Parkowa, south of the town square, Frysztak, Subcarpathian Voivodeship (Podkarpackie), Poland — confirm exact location locally",
+    coordinates: "49.83367, 21.60939",
     airportRef: "49.833, 21.617",
     arrivalNotes: [
       "Only part of this cemetery survives. It was destroyed in the war, and roughly thirty matzevos and fragments of the old cemetery wall are all that remain of a burial ground that probably dates to the 17th century.",
       "Her kever is the one thing that stands out: a small tomb at the centre of the ground, enclosed by an iron railing, and it has long been a place chassidim come to daven.",
       "The cemetery is on ul. Parkowa, just south of the town square, on the site of the old town fortifications. It is a short walk from the middle of Frysztak.",
       "There is no caretaker and no gate attendant. Confirm the exact location and access locally before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Esther Etel bas Reb Elimelech", yiddishName: "אסתר עטל בת רבי אלימלך", knownAs: "Daughter of the Rebbe Reb Elimelech of Lizhensk", yahrzeit: "י״ד טבת · 5561 / 1800", note: "Daughter of Reb Elimelech of Lizhensk, the Noam Elimelech. The matzevah names her only as Esther Etel, daughter of 'the holy light, our teacher and rabbi Elimelech' — it gives no surname. Her father is buried in Leżajsk; this is her own kever in Frysztak." },
@@ -438,12 +446,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "בריגל — אוהל רבני ליפשיץ",
     country: "Poland",
     address: "Jewish cemetery, north of the town centre, Brzesko, Lesser Poland Voivodeship (Małopolskie), Poland — Brzesko has two Jewish cemeteries; confirm which one holds the ohel, and its exact location, locally before you set out",
+    coordinates: "49.97416, 20.60668",
     airportRef: "49.969, 20.606",
     arrivalNotes: [
       "The ohel standing over these graves is a 1960s rebuild. The original was destroyed in the war, and the present, larger structure was put up in its place with money given by Elimelech Glantz of New York — so the building is modern, even though the kevorim beneath it are the original ones.",
       "Brzesko had two Jewish cemeteries, an older one and a newer one north of the centre. The ohel is reported to be in the newer cemetery, but no source consulted here pins down the street — check in town before you drive out rather than relying on a map pin.",
       "Three Lipschitz rabbonim and their wives are buried inside it. Yidden have been coming here for generations to daven at the graves, and the local heritage association that cares for the cemetery documents the site.",
       "There is no permanent caretaker at the gate. Arrange access through the town or the local heritage association, and confirm the exact position of the ohel locally before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Aryeh Leibush Lipschitz", yiddishName: "רבי אריה ליבוש ליפשיץ", knownAs: "Aryeh d'Bei Ilai", seforim: "שו״ת אריה דבי עילאי", yahrzeit: "י״ז טבת · 5606 / 1846", note: "1767-1846. He served in Krzeszów, Biłgoraj, Sieniawa and Wiśnicz before becoming rav of Brzesko, where he was niftar and is buried, and chassidim still come to his kever on his yahrzeit, 17 Teves. He is the 1767-1846 man — not Reb Izak Lipschütz associated with Czarny Dunajec, and not his own grandson Reb Tuvia." },
@@ -551,12 +561,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל בית הלברשטאם — כרזאנוב",
     country: "Poland",
     address: "New Jewish cemetery, ul. Borowcowa, Chrzanów, Chrzanów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.1350219, 19.4026494",
     airportRef: "50.133, 19.400",
     arrivalNotes: [
       "Chrzanów has an old and a new Jewish cemetery, and the Halberstam ohel is in the NEW one on ul. Borowcowa — directions that say only \"the Jewish cemetery\" will send you to the wrong place.",
       "The ohel stands at the southern end of the grounds and is well maintained; it is a family ohel of the Chrzanów Halberstam line, so others of the family rest there alongside Reb Dovid.",
       "Unlike many cemeteries on this route a substantial number of matzevos survive here, so the grounds read as a real cemetery rather than an empty field.",
       "Make sure you are at the right Reb Dovid Halberstam — this is the son of the Divrei Chaim of Sanz who died in 1894, not the later Sanz-Zhmigrod Reb Dovid buried in the United States — and confirm the ohel with someone local before you daven.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Dovid Halberstam", yiddishName: "ר׳ דוד הלברשטאם", knownAs: "Chrzanower Rav — Reb Dovid of Chrzanów, son of the Divrei Chaim of Sanz", yahrzeit: "1894", note: "Second son of Rebbe Chaim Halberstam of Sanz, the Divrei Chaim; he served as rav and rebbe of Chrzanów and founded the Chrzanów line of the Sanz family, and he is a different man from the Reb Dovid Halberstam of the later Sanz-Zmigrod line who is buried in America." },
@@ -805,12 +817,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אנדרטה בבית העלמין הישן בדראהאביטש — ר׳ אשר השני מסטולין",
     country: "Ukraine",
     address: "Old Jewish cemetery site, Drohobych, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.356778, 23.510685",
     airportRef: "49.350, 23.506",
     arrivalNotes: [
       "Read this before you plan a stop here: the old Jewish cemetery of Drohobych was demolished during and after the war, and the ground is now largely built over by an apartment complex. There is a memorial at the site. There is no visitable kever and no standing ohel. Do not bring a group expecting one.",
       "The memorial reads, in the ESJF survey's rendering, 'Among others, here are buried: Rabbi Asher the Second of Karlin, Rabbi Eliezer Drohobitch, a disciple of The Seer of Lublin' — so the memorial names a second tzaddik as well, though we could not independently pin down which R' Eliezer of Drohobych is meant.",
       "The activist Meylakh Sheykhet has tentatively identified a possible ohel location in a garden patch on the site, but that identification is not settled and nothing marks it for a visitor arriving alone.",
       "If you still want to daven here, arrange a local guide in advance and confirm on the ground what is actually standing before you commit the day to it.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Asher Perlow of Stolin II", yiddishName: "רבי אשר השני מקארלין־סטולין", knownAs: "Reb Asher II of Karlin-Stolin", note: "Asher II Perlow (1827-1873), son of R' Aharon of Karlin II, the Beis Aharon; he is the Karlin-Stolin rebbe styled both 'of Karlin' and 'of Stolin'. He is not Reb Asher I of Stolin (1760-1826), son of Reb Aharon HaGadol, who is not buried in Drohobych, and not his own son R' Yisrael the Yenuka of Stolin, who died in 1921 and is buried in Frankfurt." },
@@ -1024,12 +1038,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "נעמיראוו — ציון הקדוש מנעמיראוו",
     country: "Ukraine",
     address: "Nemyriv Old Jewish Cemetery, Nemyriv, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.97661, 28.83595",
     airportRef: "48.979, 28.844",
     arrivalNotes: [
       "His kever is not pinpointed. He was killed and buried in this cemetery in 1648, but no source ties the ohel that survives here to him, so do not go expecting a marked grave.",
       "The ESJF survey of the old cemetery records roughly 700 gravestones and one roofless ohel inside a small fence; that ohel is unattributed.",
       "This is Rabbi Yechiel Michel ben Eliezer HaKohen, rav of Nemirov, killed in the massacre of 1648 and remembered with the martyrs of Nemirov on the twentieth of Sivan — he is not Rabbi Yechiel Michel, the Maggid of Zlotchov, who lived more than a century later and is buried in Yampil.",
       "Daven within the cemetery grounds and ask locally about the ohel before assuming whose it is.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yechiel Michel ben Eliezer HaKohen", yiddishName: "רבי יחיאל מיכל בן אליעזר הכהן", knownAs: "The Martyr of Nemirov, 1648", note: "Rav of Nemirov, son of Eliezer of Zlatschov, found by a Ukrainian shoemaker and clubbed to death in the Jewish cemetery in June 1648; a seventeenth-century martyr, not Rabbi Yechiel Michel the Maggid of Zlotchov, who died in the 1780s and is buried in Yampil." },
@@ -1044,12 +1060,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "סלאוויטא — ציון רבי משה שפירא",
     country: "Ukraine",
     address: "Old Jewish cemetery, Slavuta, Khmelnytskyi Oblast, Ukraine — confirm exact location locally",
+    coordinates: "50.29377, 26.84868",
     airportRef: "50.303, 26.868",
     arrivalNotes: [
       "The old cemetery was destroyed. The matzevot were uprooted and the ground was built over and used as a children's playground and picnic area. The tziyun over his kever was put up only in recent years and marks an approximated location — it is not a surviving original stone.",
       "He was rav of Slavuta and founded the Slavuta printing house, and it is the old cemetery you want, not a later one.",
       "Three related kevarim are elsewhere and should not be looked for here: his father Reb Pinchas of Korets is buried in Shepetivka, and his sons Reb Shmuel Avraham Abba and Reb Pinchas of Slavuta have their own separate burial sites.",
       "Because the ground was levelled, confirm the exact spot with someone local before you go out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Moshe Shapira of Slavuta", yiddishName: "רבי משה שפירא מסלאוויטא", knownAs: "The Slavuta printer", note: "Rav of Slavuta and founder of the Slavuta printing house (1762-1838/39), son of Rabbi Pinchas of Korets; he is not Rav Moshe Shapira of Yerushalayim (1935-2017) and not Moses Wilhelm Shapira." },

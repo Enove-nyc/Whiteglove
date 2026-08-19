@@ -38,10 +38,12 @@ export const bulkCemeteries6: Cemetery[] = [
     yiddishName: "אוהל החוזה מלובלין",
     country: "Poland",
     address: "Old Jewish cemetery, Lublin, Lublin Voivodeship, Poland — confirm exact location locally",
+    coordinates: "51.25228, 22.57943",
     airportRef: "51.246, 22.568",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Yitzchak Horowitz, the Chozeh (Seer) of Lublin, whose court raised a generation of Polish rebbes.",
       "In the old Jewish cemetery of Lublin; confirm the exact grave/ohel location locally.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yaakov Yitzchak Horowitz", yiddishName: "רבי יעקב יצחק הורוביץ", knownAs: "The Chozeh (Seer) of Lublin", seforim: "זאת זכרון · זכרון זאת · דברי אמת", yahrzeit: "ט׳ אב · 5575 / 1815", note: "Teacher of the Yid HaKadosh, the Kozhnitzer Maggid's circle, and many of the great Polish rebbes." },
