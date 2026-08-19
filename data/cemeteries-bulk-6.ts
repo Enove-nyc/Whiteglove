@@ -64,11 +64,14 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Sasiv — Kever of Rabbi Moshe Leib of Sasov",
     yiddishName: "ציון רבי משה לייב מסאסוב",
     country: "Ukraine",
-    address: "Jewish cemetery, Sasiv, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, south of the middle of the village, Sasiv, Lviv Oblast, Ukraine — about 8 km from Zolochiv",
     airportRef: "49.850, 24.950",
     arrivalNotes: [
       "Resting place of Rabbi Moshe Leib of Sasov, famed for his boundless love of every Jew and his care for the suffering.",
-      "Confirm the cemetery and exact grave location locally.",
+      "TWO OHELS STAND HERE AND THE SURVEY NAMES NEITHER. They were rebuilt around 1996 by Jewish groups after the war-time destruction. Which of them is Reb Moshe Leib's is not something any source found will say, so this page does not say it either.",
+      "THERE ARE NO VISIBLE MATZEVOS AT ALL. The stones were taken between 1941 and 1943 and put into roads and buildings. What stands on the ground is the two ohels and nothing else — a burial ground of 1637, in use until 1939, with its markers gone.",
+      "The fence has a gate and the gate has no lock, so entry is open. What stops people is the grass: the survey calls high vegetation the most serious threat to the site and says it prevents access. Go outside the growing season.",
+      "Nobody is stationed here. Individuals clean it now and then, and organised tours and private visitors come. It is a third of a hectare, south of the middle of the village, about eight kilometres from Zolochiv.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.87461, 24.94531 and the newer one at 49.86158, 24.93725, about 1.6 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [

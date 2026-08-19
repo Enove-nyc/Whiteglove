@@ -258,11 +258,15 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Turiysk — Kever of the Magen Avraham of Trisk",
     yiddishName: "ציון המגן אברהם מטריסק",
     country: "Ukraine",
-    address: "Jewish cemetery, Turiysk, Volyn Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Torhova street, Turiysk, Volyn Oblast, Ukraine",
     airportRef: "51.081, 24.531",
     arrivalNotes: [
       "Resting place of Rabbi Avraham Twersky of Trisk, the Magen Avraham, a son of the Chernobyl dynasty who led a large court.",
-      "Confirm the cemetery and exact grave location locally.",
+      "IT IS ON TORHOVA STREET, on flat ground at the edge of the town, and there is nothing on the road to tell you what it is — no sign and no marker.",
+      "THERE IS ALMOST NOTHING LEFT STANDING. The survey counts between one and twenty matzevos, more than three quarters of them toppled or broken, and NOT ONE of them still where it was set. A pre-burial house stands on the ground.",
+      "The boundary is hedges and trees and there is no gate, so it is open to anyone at any hour — which the survey itself calls a very serious threat rather than a convenience. It was vandalised during the war and has been again in recent years, and nobody maintains it.",
+      "GO OUT OF SEASON. Vegetation closes the ground over in the growing months; late autumn to early spring is when it can be walked.",
+      "The survey dates its stones from before 1500 into the sixteenth century. That would be extraordinary for Volhynia and this page repeats it as the survey's claim rather than as a fact — with three quarters of the stones down and none in place, it is not something a visitor can check.",
     ],
     burials: [
       { name: "Rabbi Avraham Twersky of Trisk", yiddishName: "רבי אברהם טווערסקי מטריסק", knownAs: "The Magen Avraham of Trisk", seforim: "מגן אברהם", yahrzeit: "כ׳ טבת · 5649 / 1889", note: "A son of Rabbi Mordechai of Chernobyl; founder of the Trisk chassidus." },
