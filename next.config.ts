@@ -81,6 +81,13 @@ const nextConfig: NextConfig = {
       // the visitor does the planning. Nothing here restores a service.
       { source: "/planning", destination: "/plan", permanent: true },
       { source: "/services", destination: "/plan", permanent: true },
+      // /cemeteries/heritage was a separate index for the Nesiya Tova locator
+      // set. It is folded into /cemeteries now — one cemetery page holding the
+      // curated grounds and the heritage locator together — so the old index
+      // address redirects there. The per-cemetery pages at
+      // /cemeteries/heritage/<slug> are unaffected: this matches the index path
+      // alone, not its children.
+      { source: "/cemeteries/heritage", destination: "/cemeteries", permanent: true },
       // The same story, for the same reason. /book and /booking were two
       // travel-booking pages: different headings ("Book with cash, or with
       // miles" and "Flights & hotels"), different search components, two

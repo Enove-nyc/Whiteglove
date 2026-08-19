@@ -29,7 +29,7 @@ import { breadcrumbs } from "@/lib/structured-data";
  *
  * NOINDEXED. A locator entry that forwards for its details is thin by design,
  * and two thousand thin pages are a doorway problem in a search index. The
- * indexed home for these is the locator at /cemeteries/heritage; each page here
+ * indexed home for these is the locator inside /cemeteries; each page here
  * exists to be used, not found through Google.
  */
 export const dynamicParams = true;
@@ -73,7 +73,6 @@ export default async function HeritageCemeteryPage({ params }: { params: Promise
         data={breadcrumbs([
           { name: "Home", path: "/" },
           { name: "Cemeteries", path: "/cemeteries" },
-          { name: "Heritage locator", path: "/cemeteries/heritage" },
           { name: cem.name, path: `/cemeteries/heritage/${cem.slug}` },
         ])}
       />
@@ -128,7 +127,7 @@ export default async function HeritageCemeteryPage({ params }: { params: Promise
 
         <p className="mt-8 text-sm">
           <Link
-            href="/cemeteries/heritage"
+            href="/cemeteries#heritage"
             className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
           >
             ← All heritage cemeteries
