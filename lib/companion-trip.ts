@@ -404,9 +404,11 @@ export function itineraryToCompanionTrip(
   // in the same careful voice as the guide.
   const nearest = kosher[0];
 
+  const contact = opts.advisorName?.trim();
   return {
     concierge: false,
-    advisorName: opts.advisorName?.trim() || "White Glove",
+    advisorName: contact || "White Glove",
+    ...(contact ? { contactName: contact } : {}),
     homeTitle: title,
     homeKicker,
     tripTitle: who ? `${itin.title || title} — ${who}` : itin.title || title,
