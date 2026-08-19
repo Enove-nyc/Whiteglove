@@ -63,8 +63,12 @@ export default async function ShulsPage() {
                         {listing.phone && <IconLink icon="phone" label="Call" href={`tel:${listing.phone.replace(/[^+\d]/g, "")}`} />}
                         {listing.website && <IconLink icon="website" label="Website" href={listing.website} />}
                         {listing.address && <IconLink icon="map-pin" label="Directions" href={placeMapUrl(listing.address, listing.coordinates)} />}
-                        <a href={listing.href} className="ml-2 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-                          Destination
+                        <a
+                          href={listing.href}
+                          {...(listing.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
+                          className="ml-2 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                        >
+                          {listing.href.startsWith("http") ? "Visit" : "Destination"}
                         </a>
                       </div>
                     </li>

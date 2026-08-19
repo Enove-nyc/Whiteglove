@@ -6,7 +6,7 @@ import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
 import StructuredData from "@/components/StructuredData";
 import { airportsFor } from "@/lib/destination-actions";
-import { heritageCemeteries } from "@/data/heritage-cemeteries";
+import { heritageCemeteryBySlug } from "@/lib/heritage-cemeteries";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
@@ -37,13 +37,9 @@ export function generateStaticParams() {
   return [];
 }
 
-function find(slug: string) {
-  return heritageCemeteries.find((c) => c.slug === slug);
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const cem = find(slug);
+  const cem = await heritageCemeteryBySlug(slug);
   if (!cem) {
     return pageMetadata({
       title: "Bais hachaim not found | White Glove Kosher Travel",
@@ -62,7 +58,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function HeritageCemeteryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const cem = find(slug);
+  const cem = await heritageCemeteryBySlug(slug);
   if (!cem) notFound();
 
   const mapUrl = placeDirectionsUrl(cem.address, cem.coordinates);

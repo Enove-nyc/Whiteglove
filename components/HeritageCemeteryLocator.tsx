@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { heritageCemeteries } from "@/data/heritage-cemeteries";
+import { listAllHeritageCemeteries, type HeritageCemeteryListing } from "@/lib/heritage-cemeteries";
 import { placeMapUrl } from "@/data/route-utils";
 
 /**
@@ -14,8 +14,9 @@ import { placeMapUrl } from "@/data/route-utils";
  * Deliberately not rich pages — these are locations with a source, nothing
  * invented. Many grounds are locked; the note says to confirm access first.
  */
-export default function HeritageCemeteryLocator() {
-  const byCountry = new Map<string, typeof heritageCemeteries>();
+export default async function HeritageCemeteryLocator() {
+  const heritageCemeteries = await listAllHeritageCemeteries();
+  const byCountry = new Map<string, HeritageCemeteryListing[]>();
   for (const cem of heritageCemeteries) {
     const list = byCountry.get(cem.country) ?? [];
     list.push(cem);

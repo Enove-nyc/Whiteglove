@@ -35,7 +35,72 @@ export type ShulListing = {
   destinationSlug: string;
   href: string;
   fromDatabase: boolean;
+  /** True for a shul the owner added from /admin/shuls — the only removable kind. */
+  added?: boolean;
 };
+
+/** What the owner types when adding a shul, before it becomes a listing. */
+export type ShulInput = {
+  name: string;
+  city: string;
+  country: string;
+  address?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  notes?: string | null;
+  coordinates?: string | null;
+  sourceUrl: string;
+};
+
+/** Why this shul cannot be saved, or null. Checked in the admin action. */
+export function shulProblem(input: ShulInput): string | null {
+  if (!input.name.trim()) return "Give the shul a name.";
+  if (!input.city.trim()) return "Say which city it is in.";
+  if (!input.country.trim()) return "Say which country it is in.";
+  if (!/^https?:\/\//i.test((input.sourceUrl ?? "").trim())) return "The source link must be a full web address (https://…).";
+  if (!isAllowedSource(input.sourceUrl)) return "That source is not one the site lists from. Use the shul's own site or a source already trusted here.";
+  const coords = input.coordinates?.trim();
+  if (coords && !/^-?\d{1,3}(\.\d+)?\s*,\s*-?\d{1,3}(\.\d+)?$/.test(coords)) {
+    return "Coordinates must look like 51.5144, -0.0792 — or leave them blank.";
+  }
+  return null;
+}
+
+/** A stable id for an owner-added shul, from its city and name. */
+export function shulId(input: ShulInput): string {
+  const slug = `${input.city} ${input.name}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `shul-added-${slug || "shul"}`;
+}
+
+/** Turn validated input into the listing shape the directory and map render. */
+export function shulFromInput(input: ShulInput): ShulListing {
+  const website = input.website?.trim() || null;
+  const sourceUrl = input.sourceUrl.trim();
+  return {
+    id: shulId(input),
+    name: input.name.trim(),
+    address: input.address?.trim() || null,
+    phone: input.phone?.trim() || null,
+    hours: null,
+    notes: input.notes?.trim() || null,
+    website,
+    sourceUrl,
+    coordinates: input.coordinates?.trim() || null,
+    city: input.city.trim(),
+    country: input.country.trim(),
+    destinationSlug: "",
+    // No White Glove town for a hand-added shul, so the card links out to the
+    // shul's own site, or to the source it was listed from.
+    href: website || sourceUrl,
+    fromDatabase: false,
+    added: true,
+  };
+}
 
 function isAllowedSource(sourceUrl: string | null | undefined): boolean {
   if (!sourceUrl?.trim()) return false;
@@ -212,11 +277,22 @@ async function listPublishedShulsUncached(): Promise<ShulListing[]> {
   const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
   const known = await getVacationDestinations();
   const notable = notableShulListings();
-  // The notable shuls are a separate source from the seeded minyanim, so they
-  // are added to whichever base list we resolve — DB or static — and the whole
-  // is deduped by name and city, keeping the base entry where the two meet.
+  // Shuls the owner added by hand, from the private store. First in the dedupe
+  // so an owner-added shul wins over a built-in one of the same name and city —
+  // adding one is how he corrects the list. Fails open: if the store cannot be
+  // read, the directory is the built-in one, exactly as before an editor.
+  let added: ShulListing[] = [];
+  try {
+    const { getStoredShuls } = await import("@/lib/shuls-store");
+    added = await getStoredShuls();
+  } catch {
+    /* store unavailable — the directory is the built-in list */
+  }
+  // The notable shuls and the owner-added ones are separate sources from the
+  // seeded minyanim, so they are added to whichever base list we resolve — DB
+  // or static — and the whole is deduped by name and city.
   const withNotable = (base: ShulListing[]) =>
-    dedupeByNameCity([...base, ...notable]).sort(byCountryCityName);
+    dedupeByNameCity([...added, ...base, ...notable]).sort(byCountryCityName);
   if (!process.env.DATABASE_URL) return withNotable(staticShulListings(known));
   try {
     const { prisma } = await import("@/lib/prisma");

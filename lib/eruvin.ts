@@ -93,8 +93,15 @@ export function eruvFromInput(input: EruvInput): EruvListing {
  * sources read as one list.
  */
 export async function listAllEruvin(): Promise<EruvListing[]> {
-  const { getStoredEruvin } = await import("@/lib/eruvin-store");
-  const [stored, built] = await Promise.all([getStoredEruvin(), Promise.resolve(listEruvin())]);
+  // Fails open: if the store cannot be read, the page is the built-in list.
+  let stored: EruvListing[] = [];
+  try {
+    const { getStoredEruvin } = await import("@/lib/eruvin-store");
+    stored = await getStoredEruvin();
+  } catch {
+    /* store unavailable — the page is the built-in list */
+  }
+  const built = listEruvin();
   const byUrl = new Map<string, EruvListing>();
   for (const eruv of built) byUrl.set(eruv.statusUrl, eruv);
   for (const eruv of stored) byUrl.set(eruv.statusUrl, eruv);
