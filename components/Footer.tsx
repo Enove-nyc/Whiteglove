@@ -8,7 +8,7 @@ import Link from "next/link";
  * used to be reachable only through the four-column footer this replaces now
  * has a real home in the header's five dropdowns (lib/navigation.ts) or a
  * direct link from the page it's most relevant to — see the destinations hub
- * for heritage, /kosher-travel for hechsherim and the provider directory,
+ * for heritage, /kosher-travel for the provider directory,
  * /contact for About, /itinerary for the sample itinerary, and
  * /command-center for rating a finished trip. None of it depended on being
  * in the footer specifically; the footer was just where it had always lived.

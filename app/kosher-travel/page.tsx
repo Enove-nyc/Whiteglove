@@ -10,7 +10,7 @@ import { breadcrumbs } from "@/lib/structured-data";
 export const metadata = pageMetadata({
   title: "Kosher travel — food, Shabbos, minyanim and mikvaos | White Glove Kosher Travel",
   description:
-    "Kosher food, places to stay, shuls, mikvaos, zmanim, kevarim and hechsherim — the practical side of travelling kosher, in one place.",
+    "Kosher food, places to stay, shuls, mikvaos, zmanim and kevarim — the practical side of travelling kosher, in one place.",
   path: "/kosher-travel",
 });
 
@@ -33,10 +33,8 @@ const questions: Array<{ title: string; href: string }> = [
   { title: "Zmanim", href: "/zmanim" },
   { title: "Kevarim", href: "/tzaddikim" },
   { title: "Cemeteries", href: "/cemeteries" },
-  { title: "Hechsherim", href: "/hechsherim" },
   { title: "Shabbos away from home", href: "/destinations" },
   { title: "Drivers, guides and contacts", href: "/directory" },
-  { title: "Documents and borders", href: "/travel-guide" },
 ];
 
 export default async function KosherTravelPage() {

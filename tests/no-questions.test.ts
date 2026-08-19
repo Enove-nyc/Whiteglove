@@ -136,16 +136,16 @@ describe("which questions the site may ask", () => {
   });
 
   it("KEEPS THE INFORMATION where the wondering came out", () => {
-    // The six kosher-travel cards: the questions went, the subjects stayed,
-    // and each still leads somewhere that answers it.
+    // The kosher-travel cards: the questions went, the subjects stayed, and
+    // each still leads somewhere that answers it. Documents-and-borders and
+    // hechsherim came off at the owner's word — the first is not kosher travel,
+    // the second is a verification page rather than a travel one.
     const page = prose("app/kosher-travel/page.tsx");
     for (const subject of [
       "Kosher food",
       "Where to stay",
       "Shabbos away from home",
       "Drivers, guides and contacts",
-      "Documents and borders",
-      "Hechsherim",
     ]) {
       assert.ok(page.includes(subject), `the card for "${subject}" lost its subject`);
     }
