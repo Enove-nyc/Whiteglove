@@ -20,7 +20,7 @@
  * And that an address which is not a destination is a 404 rather than a page.
  *
  * Usage:  npm run build && npm run start &   then   npm run audit:destinations
- *         BASE=https://whitegloveitineraries.com npm run audit:destinations
+ *         BASE=https://whiteglovekoshertravel.com npm run audit:destinations
  */
 
 import { spawnSync } from "node:child_process";

@@ -45,7 +45,7 @@ function endpoint(): string {
  * refuses traffic that does not carry one. NOMINATIM_URL exists so the tests
  * can aim this at a stub instead of spending somebody else's quota.
  */
-const USER_AGENT = "WhiteGloveItineraries/1.0 (+https://whitegloveitineraries.com; whitegloveitineraries@gmail.com)";
+const USER_AGENT = "WhiteGloveKosherTravel/1.0 (+https://whiteglovekoshertravel.com; whitegloveitineraries@gmail.com)";
 
 /** Enough to tell the Brooklyn one from the Vilnius one; more is a directory. */
 const MOST_RESULTS = 6;

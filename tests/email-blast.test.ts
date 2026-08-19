@@ -327,7 +327,7 @@ describe("links in the words", () => {
       "javascript:alert(1)",
       "data:text/html,<script>alert(1)</script>",
       "mailto:someone@example.com",
-      "whitegloveitineraries.com/vienna",
+      "whiteglovekoshertravel.com/vienna",
       "Pesach 5787.Booking opens soon",
     ]) {
       assert.deepEqual(splitLinks(body), [{ text: body }], `${body} was turned into a link`);
@@ -361,30 +361,30 @@ describe("who an update comes from", () => {
    * person opens.
    */
   it("allows blank, which means the site's usual sender", () => {
-    assert.equal(senderProblem("", "whitegloveitineraries.com"), null);
-    assert.equal(senderProblem("   ", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("", "whiteglovekoshertravel.com"), null);
+    assert.equal(senderProblem("   ", "whiteglovekoshertravel.com"), null);
   });
 
   it("allows an address on the verified domain, named or bare", () => {
-    assert.equal(senderProblem("info@whitegloveitineraries.com", "whitegloveitineraries.com"), null);
-    assert.equal(senderProblem("White Glove <info@whitegloveitineraries.com>", "whitegloveitineraries.com"), null);
-    assert.equal(senderProblem("info@mail.whitegloveitineraries.com", "whitegloveitineraries.com"), null);
+    assert.equal(senderProblem("info@whiteglovekoshertravel.com", "whiteglovekoshertravel.com"), null);
+    assert.equal(senderProblem("White Glove <info@whiteglovekoshertravel.com>", "whiteglovekoshertravel.com"), null);
+    assert.equal(senderProblem("info@mail.whiteglovekoshertravel.com", "whiteglovekoshertravel.com"), null);
   });
 
   it("REFUSES A DOMAIN RESEND HAS NOT BEEN SHOWN CONTROL OF", () => {
     // Sending as an unverified domain is refused at the API in the good case
     // and, in the bad one, accepted and then binned by the receiving server for
     // failing DKIM — which from this end looks exactly like a successful send.
-    const problem = senderProblem("info@gmail.com", "whitegloveitineraries.com");
-    assert.match(problem ?? "", /whitegloveitineraries\.com/);
-    assert.match(senderProblem("info@notourdomain.com", "whitegloveitineraries.com") ?? "", /spam|refused/i);
+    const problem = senderProblem("info@gmail.com", "whiteglovekoshertravel.com");
+    assert.match(problem ?? "", /whiteglovekoshertravel\.com/);
+    assert.match(senderProblem("info@notourdomain.com", "whiteglovekoshertravel.com") ?? "", /spam|refused/i);
     // And not a lookalike that merely ends with the right letters.
-    assert.ok(senderProblem("info@evilwhitegloveitineraries.com", "whitegloveitineraries.com"));
+    assert.ok(senderProblem("info@evilwhiteglovekoshertravel.com", "whiteglovekoshertravel.com"));
   });
 
   it("refuses something that is not an address at all", () => {
-    assert.match(senderProblem("info", "whitegloveitineraries.com") ?? "", /not an email address/i);
-    assert.match(senderProblem("White Glove <not-an-address>", "whitegloveitineraries.com") ?? "", /not an email address/i);
+    assert.match(senderProblem("info", "whiteglovekoshertravel.com") ?? "", /not an email address/i);
+    assert.match(senderProblem("White Glove <not-an-address>", "whiteglovekoshertravel.com") ?? "", /not an email address/i);
   });
 
   it("sends as that address and takes replies there", () => {

@@ -57,7 +57,7 @@ export default function MapKeyStatus() {
   const EXPLAINED: Record<string, { what: string; fix: string }> = {
     RefererNotAllowedMapError: {
       what: "Google refused the address this page is being served from.",
-      fix: "Open Google Cloud Console → APIs & Services → Credentials → the browser map key → Application restrictions → Websites, and add these exact entries: https://whitegloveitineraries.com/* , https://www.whitegloveitineraries.com/* , https://*.vercel.app/* , and your admin hostname if you have one. Wait a few minutes, then reload this page — no redeploy needed for a restriction change.",
+      fix: "Open Google Cloud Console → APIs & Services → Credentials → the browser map key → Application restrictions → Websites, and add these exact entries: https://whiteglovekoshertravel.com/* , https://www.whiteglovekoshertravel.com/* , https://*.vercel.app/* , and your admin hostname if you have one. Wait a few minutes, then reload this page — no redeploy needed for a restriction change.",
     },
     RefererDeniedMapError: {
       what: "Google refused the address this page is being served from.",
@@ -175,8 +175,8 @@ export default function MapKeyStatus() {
           </p>
           <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-6 text-stone-600">
             <li>
-              <em>Website restrictions</em> include <code className="rounded bg-white px-1">https://whitegloveitineraries.com/*</code>{" "}
-              and <code className="rounded bg-white px-1">https://www.whitegloveitineraries.com/*</code> (and{" "}
+              <em>Website restrictions</em> include <code className="rounded bg-white px-1">https://whiteglovekoshertravel.com/*</code>{" "}
+              and <code className="rounded bg-white px-1">https://www.whiteglovekoshertravel.com/*</code> (and{" "}
               <code className="rounded bg-white px-1">https://*.vercel.app/*</code> for previews).
             </li>
             <li>

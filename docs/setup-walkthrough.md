@@ -71,8 +71,8 @@ have your driving-times quota too.
 4. Give it a name you will recognise later — *Map — browser* — and set:
    - **Application restrictions** → **Websites** → **Add**, one entry at a
      time:
-     - `https://whitegloveitineraries.com/*`
-     - `https://www.whitegloveitineraries.com/*`
+     - `https://whiteglovekoshertravel.com/*`
+     - `https://www.whiteglovekoshertravel.com/*`
      - `https://*.vercel.app/*`  ← so preview deploys work too
      - your admin hostname, if you have set one
    - **API restrictions** → **Restrict key** → tick **Maps JavaScript API**,
@@ -216,7 +216,7 @@ everything to `contact@` and `edits@` is rejected outright.
 
 1. Vercel → **Settings → Environment Variables → Add**.
    - Key: `RESEND_FROM_EMAIL`
-   - Value: `White Glove Itineraries <no-reply@whitegloveitineraries.com>`
+   - Value: `White Glove Kosher Travel <no-reply@whiteglovekoshertravel.com>`
    - Environments: **Production** (tick Preview too if you want it there).
 2. **Deployments → ⋯ → Redeploy.**
 3. Admin → **Settings → Connections** → **Test the contact inbox** and **Test
@@ -324,8 +324,8 @@ the password.
 2. **APIs & Services → OAuth consent screen**. If it has never been set up:
    - *User type*: **External**. *Create*.
    - *App name*: **White Glove Itineraries**. *User support email*: yours.
-   - *App domain → Application home page*: `https://whitegloveitineraries.com`
-   - *Authorised domains*: add `whitegloveitineraries.com`
+   - *App domain → Application home page*: `https://whiteglovekoshertravel.com`
+   - *Authorised domains*: add `whiteglovekoshertravel.com`
    - *Developer contact*: your email. **Save and continue**.
    - *Scopes*: leave them. The site only asks for the email address and the
      name, and both come as standard. **Save and continue**.
@@ -334,11 +334,11 @@ the password.
 3. **APIs & Services → Credentials → Create credentials → OAuth client ID**.
    - *Application type*: **Web application**.
    - *Name*: anything — "White Glove website" will do.
-   - *Authorised JavaScript origins*: `https://whitegloveitineraries.com`
+   - *Authorised JavaScript origins*: `https://whiteglovekoshertravel.com`
    - *Authorised redirect URIs*: this one, **exactly**, with no trailing slash:
 
      ```
-     https://whitegloveitineraries.com/api/account/google/callback
+     https://whiteglovekoshertravel.com/api/account/google/callback
      ```
 
      If this does not match character for character, Google refuses the sign-in

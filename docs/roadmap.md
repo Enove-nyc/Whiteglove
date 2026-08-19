@@ -287,11 +287,11 @@ so that this stays reviewable.
 - ~~**`NEXT_PUBLIC_SITE_URL` is unset.**~~ — **set by the owner.** Because it
   is resolved at BUILD time for prerendered pages, the next deploy has to be
   without the build cache for canonicals and share images to pick it up.
-- ~~**Two domains serve the same site.**~~ — **settled.** There is one domain:
-  `whitegloveitineraries.com`. The second was a different business's and has
-  been given up entirely, so there is no redirect left to get right. The terms
-  and privacy pages name this site from a single constant, and a test holds
-  that so it cannot drift back.
+- ~~**Two domains serve the same site.**~~ — **settled.** The site now lives on
+  `whiteglovekoshertravel.com`; the former `whitegloveitineraries.com` redirects
+  to it, and the older enove domain (a different business's) was given up
+  entirely. The terms and privacy pages name this site from a single constant,
+  and a test holds that so it cannot drift back.
 - ~~**What "Featured" means in the provider directory.**~~ — **decided.** Two
   reasons, recorded per listing in the admin: service found consistently good,
   or sponsored placement. The badge is the same for both and a visitor is not

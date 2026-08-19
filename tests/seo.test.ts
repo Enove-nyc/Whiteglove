@@ -106,10 +106,10 @@ describe("the canonical host", () => {
     // canonical naming an address that redirects away from itself is the one
     // instruction a search engine cannot follow.
     for (const configured of [
-      "https://whitegloveitineraries.com",
-      "http://whitegloveitineraries.com",
-      "whitegloveitineraries.com",
-      "https://WhiteGloveItineraries.com/",
+      "https://whiteglovekoshertravel.com",
+      "http://whiteglovekoshertravel.com",
+      "whiteglovekoshertravel.com",
+      "https://WhiteGloveKosherTravel.com/",
     ]) {
       process.env.NEXT_PUBLIC_SITE_URL = configured;
       try {
@@ -150,7 +150,7 @@ describe("the canonical host", () => {
     const sendPage = readFileSync("app/admin/alerts/send/page.tsx", "utf8");
     const sendAction = readFileSync("app/admin/alerts/send/actions.ts", "utf8");
     for (const [name, source] of [["the composer", sendPage], ["the send action", sendAction]] as const) {
-      assert.doesNotMatch(source, /"https:\/\/(www\.)?whitegloveitineraries\.com"/, `${name} still hardcodes a host of its own`);
+      assert.doesNotMatch(source, /"https:\/\/(www\.)?whiteglovekoshertravel\.com"/, `${name} still hardcodes a host of its own`);
       assert.match(source, /CANONICAL_ORIGIN/, `${name} should fall back to the one named host`);
     }
   });

@@ -82,7 +82,7 @@ export const BUILT_IN_WORDS: SiteWords = {
   // No longer "a city, tzaddik, kever" — the same search still finds all three,
   // and the box no longer announces the heritage database on every page.
   searchPlaceholder: "Destinations, stays, kosher food, kevarim…",
-  contactEmail: "contact@whitegloveitineraries.com",
+  contactEmail: "contact@whiteglovekoshertravel.com",
   replyPromise: "We’ll be in touch soon.",
   // Rewritten with the booking page. It used to open on flights and on how you
   // were paying; the page is now about the trip the travel is for, and hotels
