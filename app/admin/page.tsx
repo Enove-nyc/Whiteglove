@@ -256,6 +256,13 @@ export default async function AdminHome() {
                 href="/admin/imports/needs-review"
               />
             )}
+            {may("/admin/imports/needs-review") && (
+              <TotalCard
+                label="Possible duplicates"
+                value={importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates}
+                href="/admin/imports/needs-review"
+              />
+            )}
             {may("/admin/content") && (
               <TotalCard label="Reported updates" value={pendingSuggestions.length} href="/admin/content" />
             )}

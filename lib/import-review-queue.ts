@@ -269,6 +269,7 @@ function fromDatabase(candidate: ContentImportCandidateView): ReviewQueueItem {
     batchName: candidate.batchName,
     origin: "database",
     href: contentImportCandidatePath(candidate.sourceId, candidate.id),
+    duplicateOf: candidate.duplicateOf,
     publishBlockers: candidate.publishBlockers.length,
     aliases: candidate.aliases,
     address: candidate.address ?? "",
@@ -296,6 +297,7 @@ function fromPack(pack: KnownPack, candidate: PackCandidate): ReviewQueueItem {
     batchName: pack.name,
     origin: "source_pack",
     href: pack.href,
+    duplicateOf: null,
     publishBlockers: 0,
     aliases: [],
     address: "",
@@ -416,22 +418,25 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
     // published place as still outstanding. Only rows that are genuinely still
     // open are flipped: a candidate an editor has already published, rejected
     // or marked a duplicate keeps the status it was given by hand.
+    // A lead whose place is already on the site is auto-matched to it and marked
+    // a duplicate "on-site" — that is not review work and there is nothing to do
+    // with it, so it is dropped. A candidate flagged against another entry by an
+    // editor or the staging check (duplicateOf is a real record id) is a genuine
+    // possible duplicate and stays, so a mistaken re-entry still surfaces.
     const onSite = createOnSiteMatcher();
     const reconcile = (item: ReviewQueueItem): ReviewQueueItem => {
       const stillOpen = item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION";
       if (!stillOpen) return item;
       return onSite({ name: item.name, city: item.city, country: item.country, sourceUrl: item.sourceUrl, coordinates: item.coordinates })
-        ? { ...item, status: "DUPLICATE" as const, statusLabel: reviewQueueStatusLabel("DUPLICATE") }
+        ? { ...item, status: "DUPLICATE" as const, statusLabel: reviewQueueStatusLabel("DUPLICATE"), duplicateOf: "on-site" }
         : item;
     };
+    const isAutoOnSiteDuplicate = (item: ReviewQueueItem) =>
+      item.status === "DUPLICATE" && (item.duplicateOf === null || item.duplicateOf === "on-site");
 
-    // A lead whose place is already on the site is done, not outstanding work,
-    // and there is nothing for a reviewer to do with it — so it is dropped from
-    // the queue entirely rather than shown as a "possible duplicate" the owner
-    // has to look through. The reconcile pass above is what identifies them;
-    // here they simply leave, along with anything already published or rejected.
     const items = [...dbItems.map(reconcile), ...packItems.map(reconcile)]
-      .filter((item) => item.status !== "DUPLICATE" && item.status !== "PUBLISHED" && item.status !== "REJECTED")
+      .filter((item) => item.status !== "PUBLISHED" && item.status !== "REJECTED")
+      .filter((item) => !isAutoOnSiteDuplicate(item))
       .sort((a, b) =>
         a.name.localeCompare(b.name, "en") || a.batchName.localeCompare(b.batchName, "en") || a.id.localeCompare(b.id, "en"),
       );
