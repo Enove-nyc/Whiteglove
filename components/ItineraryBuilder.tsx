@@ -734,7 +734,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [editingLodging, setEditingLodging] = useState(false);
   const [nearby, setNearby] = useState<Array<{ name: string; href: string; km: number }> | null>(null);
-  const [ai, setAi] = useState<{ text?: string; reason?: string } | null>(null);
+  const [ai, setAi] = useState<{ text?: string; reason?: string; suggestions?: Array<{ name: string; note?: string }> } | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(defaultOpen ?? day.index === 0);
@@ -775,7 +775,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       body: JSON.stringify({ location, date: day.label, freeHours: day.freeHours, alreadyPlanned: day.activities.map((a) => a.name) }),
     });
     const data = await res.json().catch(() => ({ available: false, reason: "Failed." }));
-    setAi(data.available ? { text: data.text } : { reason: data.reason });
+    setAi(data.available ? { text: data.text, suggestions: data.suggestions } : { reason: data.reason });
     setLoadingAi(false);
   }
 
@@ -1210,7 +1210,29 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         <div className="mt-3 border border-[var(--gold-light)] bg-white text-sm text-stone-700">
           {/* Scrolls rather than clipping when the assistant gives several ideas. */}
           <div className="max-h-72 overflow-y-auto overscroll-contain p-3">
-            {ai.text ? <AssistantAnswer answer={ai.text} /> : <p className="text-stone-500">{ai.reason}</p>}
+            {ai.suggestions?.length ? (
+              <>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">AI ideas — check the details before you rely on them</p>
+                <ul className="space-y-2">
+                  {ai.suggestions.map((s) => (
+                    <li key={s.name} className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-[var(--navy)]">{s.name}</span>
+                      {s.note ? <span className="text-stone-500">· {s.note}</span> : null}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onAddStop({ id: uid(), name: s.name, notes: s.note, date: day.date });
+                          setAi((cur) => (cur ? { ...cur, suggestions: cur.suggestions?.filter((x) => x.name !== s.name) } : cur));
+                        }}
+                        className="ml-auto border border-[var(--gold-light)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+                      >
+                        Add to this day
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : ai.text ? <AssistantAnswer answer={ai.text} /> : <p className="text-stone-500">{ai.reason}</p>}
           </div>
         </div>
       )}
