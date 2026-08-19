@@ -33,6 +33,14 @@ export type ReviewQueueItem = {
   batchName: string;
   origin: "database" | "source_pack";
   href: string;
+  /**
+   * What this candidate duplicates, when it is a duplicate. "on-site" means it
+   * was auto-matched to a place already published — not real review work, so it
+   * is dropped from the queue. A real record id means an editor or the staging
+   * check flagged it against another entry — that is a genuine possible
+   * duplicate and stays in the queue. null when it is not a duplicate.
+   */
+  duplicateOf: string | null;
   publishBlockers: number;
   aliases: string[];
   address: string;
