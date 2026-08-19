@@ -62,7 +62,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Częstochowa — Ohel of the Siftei Tzaddik",
     yiddishName: "טשענסטאָכאָוו — אוהל בעל שפתי צדיק",
     country: "Poland",
-    address: "Jewish cemetery, ul. Złota, Częstochowa, Silesian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, ul. Złota, Częstochowa, Silesian Voivodeship, Poland",
     coordinates: "50.7990457, 19.1695118",
     airportRef: "50.800, 19.117",
     arrivalNotes: [
@@ -168,7 +168,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Gostynin — Resting Place of the Tehillim Yid",
     yiddishName: "גאסטינין — מקום מנוחת ה'תהילים איד'",
     country: "Poland",
-    address: "Site of the Jewish cemetery, north side of ul. Gościnna (former Rataje), Gostynin, Gostynin County, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Site of the Jewish cemetery, north side of ul. Gościnna (former Rataje), Gostynin, Gostynin County, Masovian Voivodeship, Poland",
     coordinates: "52.41652, 19.45573",
     airportRef: "52.417, 19.467",
     arrivalNotes: [
@@ -212,7 +212,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Przedbórz — Kever of Reb Yeshaya Weltfreid, the first Pshedborzer Rebbe",
     yiddishName: "פשעדבורזש — קבר רבי ישעיה וועלטפרייד",
     country: "Poland",
-    address: "Jewish cemetery, far end of ul. Ogrodowa above the Pilica river, Przedbórz, Radomsko County, Łódź Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, far end of ul. Ogrodowa above the Pilica river, Przedbórz, Radomsko County, Łódź Voivodeship, Poland",
     coordinates: "51.086259, 19.8691177",
     airportRef: "51.083, 19.883",
     arrivalNotes: [
@@ -254,7 +254,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Karczew — Ohel of Reb Avraham Yehoshua Heshel Twersky of Loyev and Chudnov",
     yiddishName: "קארטשעוו — אוהל רבי אברהם יהושע העשיל טווערסקי מלויעב וטשודנוב",
     country: "Poland",
-    address: "Jewish cemetery, ul. Otwocka, Karczew, Otwock County, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, ul. Otwocka, Karczew, Otwock County, Masovian Voivodeship, Poland",
     coordinates: "52.0805742, 21.2471938",
     airportRef: "52.083, 21.250",
     arrivalNotes: [
@@ -298,7 +298,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Opatów — Cenotaph for Reb Meir HaLevi of Apta, the Ohr LaShamayim",
     yiddishName: "אפטא — מצבת זכרון לרבי מאיר הלוי מאפטא בעל 'אור לשמים'",
     country: "Poland",
-    address: "Site of the Jewish cemetery, ul. Kopernika, Opatów, Opatów County, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    address: "Site of the Jewish cemetery, ul. Kopernika, Opatów, Opatów County, Świętokrzyskie Voivodeship, Poland",
     coordinates: "50.796972, 21.427444",
     airportRef: "50.805, 21.425",
     arrivalNotes: [
@@ -320,7 +320,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Gorlice — Ohel of Reb Boruch Halberstam",
     yiddishName: "גארליץ — אוהל רבי ברוך הלברשטאם",
     country: "Poland",
-    address: "Jewish cemetery, ul. Stróżowska, north-west of the market square, Gorlice, Lesser Poland Voivodeship (Małopolskie), Poland — confirm exact location locally",
+    address: "Jewish cemetery, ul. Stróżowska, north-west of the market square, Gorlice, Lesser Poland Voivodeship (Małopolskie), Poland",
     coordinates: "49.66255, 21.14807",
     airportRef: "49.656, 21.160",
     arrivalNotes: [
@@ -343,7 +343,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Lesko (Linsk) — Ohel of Reb Menachem Mendel Rubin",
     yiddishName: "לינסק — אוהל רבי מנחם מנדל רובין",
     country: "Poland",
-    address: "Jewish cemetery, on the hill beside the old synagogue, Lesko, Subcarpathian Voivodeship (Podkarpackie), Poland — confirm exact location locally",
+    address: "Jewish cemetery, on the hill beside the old synagogue, Lesko, Subcarpathian Voivodeship (Podkarpackie), Poland",
     coordinates: "49.47035, 22.33388",
     airportRef: "49.469, 22.330",
     arrivalNotes: [
@@ -367,7 +367,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Frysztak — Kever of Esther Etel, Daughter of the Rebbe Reb Elimelech",
     yiddishName: "פרישטיק — ציון אסתר עטל בת רבי אלימלך",
     country: "Poland",
-    address: "Old Jewish cemetery, ul. Parkowa, south of the town square, Frysztak, Subcarpathian Voivodeship (Podkarpackie), Poland — confirm exact location locally",
+    address: "Old Jewish cemetery, ul. Parkowa, south of the town square, Frysztak, Subcarpathian Voivodeship (Podkarpackie), Poland",
     coordinates: "49.83367, 21.60939",
     airportRef: "49.833, 21.617",
     arrivalNotes: [
@@ -502,7 +502,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Tarnów — Ohel of Reb Aryeh Leibush Halberstam",
     yiddishName: "אוהל ר׳ אריה לייבוש הלברשטאם — טארנא",
     country: "Poland",
-    address: "Jewish cemetery, ul. Szpitalna, Tarnów, Tarnów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, ul. Szpitalna, Tarnów, Tarnów County, Lesser Poland Voivodeship, Poland",
     coordinates: "50.01915, 20.99547",
     airportRef: "50.013, 20.989",
     arrivalNotes: [
@@ -524,7 +524,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Nowy Wiśnicz — Ohel of Reb Naftali Rubin",
     yiddishName: "אוהל ר׳ נפתלי רובין — נײַ וויסניטש",
     country: "Poland",
-    address: "Jewish cemetery, Nowy Wiśnicz, Bochnia County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Nowy Wiśnicz, Bochnia County, Lesser Poland Voivodeship, Poland",
     coordinates: "49.91185, 20.45958",
     airportRef: "49.917, 20.450",
     arrivalNotes: [
@@ -548,7 +548,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Cieszanów — Ohel of Reb Simcha Yissachar Ber Halberstam",
     yiddishName: "אוהל ר׳ שמחה יששכר בער הלברשטאם — ציעשאנוב",
     country: "Poland",
-    address: "Jewish cemetery, Cieszanów, Lubaczów County, Podkarpackie Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Cieszanów, Lubaczów County, Podkarpackie Voivodeship, Poland",
     coordinates: "50.2474, 23.12873",
     airportRef: "50.267, 23.133",
     arrivalNotes: [
@@ -570,7 +570,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Chrzanów — Halberstam Ohel in the New Jewish Cemetery",
     yiddishName: "אוהל בית הלברשטאם — כרזאנוב",
     country: "Poland",
-    address: "New Jewish cemetery, ul. Borowcowa, Chrzanów, Chrzanów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    address: "New Jewish cemetery, ul. Borowcowa, Chrzanów, Chrzanów County, Lesser Poland Voivodeship, Poland",
     coordinates: "50.1350219, 19.4026494",
     airportRef: "50.133, 19.400",
     arrivalNotes: [
@@ -592,7 +592,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Żabno — Ohel of the Unger Rebbes",
     yiddishName: "אוהל אדמו\"רי אונגר — זשאבנא",
     country: "Poland",
-    address: "Jewish cemetery, Żabno, Tarnów County, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Żabno, Tarnów County, Lesser Poland Voivodeship, Poland",
     coordinates: "50.1407157, 20.8905244",
     airportRef: "50.133, 20.885",
     arrivalNotes: [
@@ -616,7 +616,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Kolbuszowa — Kever of Reb Avraham Aharon Teitelbaum",
     yiddishName: "ציון ר׳ אברהם אהרן טייטלבוים — קאלבאסוב",
     country: "Poland",
-    address: "Jewish cemetery, Kolbuszowa, Kolbuszowa County, Podkarpackie Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Kolbuszowa, Kolbuszowa County, Podkarpackie Voivodeship, Poland",
     coordinates: "50.23409, 21.75325",
     airportRef: "50.250, 21.767",
     arrivalNotes: [
@@ -640,7 +640,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Zhovkva — Ohel of Reb Alexander Sender Shor, the Tevuos Shor",
     yiddishName: "זאלקווא — אוהל רבי אלכסנדר סענדר שור, בעל תבואות שור",
     country: "Ukraine",
-    address: "Former Jewish cemetery, on the block bounded by Shevchenka, Kruta and Ivana Bohuna streets, Zhovkva, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Former Jewish cemetery, on the block bounded by Shevchenka, Kruta and Ivana Bohuna streets, Zhovkva, Lviv Oblast, Ukraine",
     coordinates: "50.05914, 23.96788",
     airportRef: "50.055, 23.977",
     arrivalNotes: [
@@ -705,7 +705,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Buchach — Ohel of Reb Avraham David Wahrman, the Eshel Avraham",
     yiddishName: "בוטשאַטש — אוהל רבי אברהם דוד ווארמאן, בעל אשל אברהם",
     country: "Ukraine",
-    address: "Jewish cemetery, Torhova Street, Buchach, Ternopil Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Torhova Street, Buchach, Ternopil Oblast, Ukraine",
     coordinates: "49.06226, 25.40158",
     airportRef: "49.083, 25.400",
     arrivalNotes: [
@@ -748,7 +748,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Berezhany — Kever of the Maharsham, Reb Shalom Mordechai Schwadron",
     yiddishName: "בערזשאַן — ציון המהרש\"ם, רבי שלום מרדכי הכהן שוואדרון",
     country: "Ukraine",
-    address: "Jewish cemetery, Mykoly Bezdilnoho Street, Berezhany, Ternopil Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Mykoly Bezdilnoho Street, Berezhany, Ternopil Oblast, Ukraine",
     coordinates: "49.44318, 24.93060",
     airportRef: "49.446, 24.936",
     arrivalNotes: [
@@ -833,7 +833,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Drohobych — Memorial at the Old Jewish Cemetery, Reb Asher II of Stolin",
     yiddishName: "אנדרטה בבית העלמין הישן בדראהאביטש — ר׳ אשר השני מסטולין",
     country: "Ukraine",
-    address: "Old Jewish cemetery site, Drohobych, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Old Jewish cemetery site, Drohobych, Lviv Oblast, Ukraine",
     coordinates: "49.356778, 23.510685",
     airportRef: "49.350, 23.506",
     arrivalNotes: [
@@ -855,7 +855,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Kuty — Ohel of Reb Moshe of Kitov",
     yiddishName: "אוהל רבי משה מקיטוב",
     country: "Ukraine",
-    address: "Jewish cemetery, Kuty, Kosiv district, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Kuty, Kosiv district, Ivano-Frankivsk Oblast, Ukraine",
     coordinates: "48.25910, 25.17301",
     airportRef: "48.257, 25.167",
     arrivalNotes: [
@@ -878,7 +878,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Zabolotiv — Ohel of the Hager Rebbes of Zablotov",
     yiddishName: "אוהל אדמו״רי האגער מזאבלאטוב",
     country: "Ukraine",
-    address: "Jewish cemetery, southern end, Zabolotiv, Kolomyia district, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, southern end, Zabolotiv, Kolomyia district, Ivano-Frankivsk Oblast, Ukraine",
     coordinates: "48.46901, 25.28817",
     airportRef: "48.469, 25.283",
     arrivalNotes: [
@@ -902,7 +902,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Bratslav — Kever of Reb Noson",
     yiddishName: "ציון רבי נתן מברסלב",
     country: "Ukraine",
-    address: "Jewish cemetery, near the entrance, Bratslav, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, near the entrance, Bratslav, Vinnytsia Oblast, Ukraine",
     coordinates: "48.8266, 28.95095",
     airportRef: "48.815, 28.945",
     arrivalNotes: [
@@ -924,7 +924,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Volodymyr (Ludmir) — Ohel of Reb Shlomo of Karlin",
     yiddishName: "אוהל רבי שלמה מקארלין בלודמיר",
     country: "Ukraine",
-    address: "Ohel in Gagarin Park, on the site of the old Jewish cemetery, Volodymyr (formerly Volodymyr-Volynskyi), Volyn Oblast, Ukraine — confirm exact location locally",
+    address: "Ohel in Gagarin Park, on the site of the old Jewish cemetery, Volodymyr (formerly Volodymyr-Volynskyi), Volyn Oblast, Ukraine",
     coordinates: "50.85084, 24.31742",
     airportRef: "50.848, 24.322",
     arrivalNotes: [
@@ -947,7 +947,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Yampil — Ohel of the Maggid of Zlotchov",
     yiddishName: "יאמפאל — אוהל המגיד מזלאטשוב",
     country: "Ukraine",
-    address: "Old Jewish cemetery, Yampil, Shepetivka Raion, Khmelnytskyi Oblast (historic Volhynia), Ukraine — confirm exact location locally",
+    address: "Old Jewish cemetery, Yampil, Shepetivka Raion, Khmelnytskyi Oblast (historic Volhynia), Ukraine",
     coordinates: "49.95819, 26.24191",
     airportRef: "49.958, 26.230",
     arrivalNotes: [
@@ -992,7 +992,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Novi Velidnyky — Ohel of the Sheiris Yisrael",
     yiddishName: "ווילעדניק — אוהל שארית ישראל",
     country: "Ukraine",
-    address: "Jewish cemetery, Novi Velidnyky, Korosten Raion, Zhytomyr Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Novi Velidnyky, Korosten Raion, Zhytomyr Oblast, Ukraine",
     coordinates: "51.31812, 28.45779",
     airportRef: "51.318, 28.460",
     arrivalNotes: [
@@ -1014,7 +1014,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Yaltushkiv — Ohel of Reb Leib Sarah's",
     yiddishName: "יאלטושקאוו — אוהל רבי לייב שרה'ס",
     country: "Ukraine",
-    address: "Yaltushkiv Old Jewish Cemetery, Yaltushkiv, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    address: "Yaltushkiv Old Jewish Cemetery, Yaltushkiv, Vinnytsia Oblast, Ukraine",
     coordinates: "48.99021, 27.51248",
     airportRef: "48.990, 27.509",
     arrivalNotes: [
@@ -1036,7 +1036,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Zinkiv — Ohel of the Zinkover Rebbes",
     yiddishName: "זינקאוו — אוהל אדמו\"רי זינקאוו",
     country: "Ukraine",
-    address: "Jewish cemetery, Zinkiv, Zinkiv rural hromada, Khmelnytskyi Oblast (historic Podolia), Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Zinkiv, Zinkiv rural hromada, Khmelnytskyi Oblast (historic Podolia), Ukraine",
     coordinates: "49.09579, 27.0697",
     airportRef: "49.094, 27.075",
     arrivalNotes: [
@@ -1062,7 +1062,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Nemyriv — Kever of the Martyr of Nemirov",
     yiddishName: "נעמיראוו — ציון הקדוש מנעמיראוו",
     country: "Ukraine",
-    address: "Nemyriv Old Jewish Cemetery, Nemyriv, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    address: "Nemyriv Old Jewish Cemetery, Nemyriv, Vinnytsia Oblast, Ukraine",
     coordinates: "48.97661, 28.83595",
     airportRef: "48.979, 28.844",
     arrivalNotes: [
@@ -1084,7 +1084,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Slavuta — Kever of Reb Moshe Shapira",
     yiddishName: "סלאוויטא — ציון רבי משה שפירא",
     country: "Ukraine",
-    address: "Old Jewish cemetery, Slavuta, Khmelnytskyi Oblast, Ukraine — confirm exact location locally",
+    address: "Old Jewish cemetery, Slavuta, Khmelnytskyi Oblast, Ukraine",
     coordinates: "50.29377, 26.84868",
     airportRef: "50.303, 26.868",
     arrivalNotes: [

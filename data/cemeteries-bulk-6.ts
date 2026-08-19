@@ -17,7 +17,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Kozienice — Ohel of the Maggid of Kozhnitz",
     yiddishName: "אוהל המגיד מקאזשניץ",
     country: "Poland",
-    address: "Jewish cemetery, Kozienice, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Kozienice, Masovian Voivodeship, Poland",
     coordinates: "51.5775763, 21.5470648",
     airportRef: "51.585, 21.545",
     arrivalNotes: [
@@ -37,7 +37,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Lublin — Ohel of the Chozeh of Lublin",
     yiddishName: "אוהל החוזה מלובלין",
     country: "Poland",
-    address: "Old Jewish cemetery, Lublin, Lublin Voivodeship, Poland — confirm exact location locally",
+    address: "Old Jewish cemetery, Lublin, Lublin Voivodeship, Poland",
     coordinates: "51.25228, 22.57943",
     airportRef: "51.246, 22.568",
     arrivalNotes: [
@@ -182,7 +182,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Ostrowiec — Kever of the Ostrovtzer Rebbe",
     yiddishName: "ציון האסטראווצער רבי",
     country: "Poland",
-    address: "Jewish cemetery, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Ostrowiec Świętokrzyski, Świętokrzyskie Voivodeship, Poland",
     coordinates: "50.942465, 21.384083",
     airportRef: "50.929, 21.385",
     arrivalNotes: [
@@ -202,7 +202,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Mszczonów — Kever of the first Amshinover Rebbe",
     yiddishName: "ציון האדמו״ר הראשון מאמשינאוו",
     country: "Poland",
-    address: "Jewish cemetery, Mszczonów, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Mszczonów, Masovian Voivodeship, Poland",
     coordinates: "51.9805982, 20.5110991",
     airportRef: "51.975, 20.517",
     arrivalNotes: [
@@ -222,7 +222,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Sochaczew — Kever of the Avnei Nezer",
     yiddishName: "ציון האבני נזר",
     country: "Poland",
-    address: "Jewish cemetery, Sochaczew, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Sochaczew, Masovian Voivodeship, Poland",
     coordinates: "52.2235408, 20.2344561",
     airportRef: "52.229, 20.238",
     arrivalNotes: [
@@ -242,7 +242,7 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Radzymin — Kever of Rabbi Yaakov Aryeh of Radzymin",
     yiddishName: "ציון רבי יעקב אריה מראדזימין",
     country: "Poland",
-    address: "Jewish cemetery, Radzymin, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Radzymin, Masovian Voivodeship, Poland",
     coordinates: "52.4113333, 21.1871123",
     airportRef: "52.418, 21.191",
     arrivalNotes: [

@@ -239,3 +239,23 @@ describe("no listing carries the same field twice", () => {
     assert.deepEqual(offenders, []);
   });
 });
+
+describe("a listing does not tell people to find what it already published", () => {
+  it("drops the bare 'confirm exact location locally' once a coordinate exists", () => {
+    // WHY. Forty-nine listings gained a surveyed coordinate during the mapping
+    // work and kept an address ending "— confirm exact location locally". That
+    // sentence was written when the site genuinely could not say where the
+    // ground was. Once a measured point is on the page it is no longer true,
+    // and it reads as though the coordinate should not be trusted.
+    //
+    // Hedges that carry real information are fine and several remain: "no
+    // street number is documented", "both of the town's cemeteries were
+    // destroyed and we could not establish which one holds him". What this
+    // refuses is the bare formula with nothing behind it.
+    const offenders = cemeteries
+      .filter((cemetery) => cemetery.coordinates)
+      .filter((cemetery) => /—\s*confirm exact location locally\s*$/i.test(cemetery.address ?? ""))
+      .map((cemetery) => cemetery.slug);
+    assert.deepEqual(offenders, []);
+  });
+});
