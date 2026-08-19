@@ -51,6 +51,8 @@ export type CompanionSwap = {
 
 export type CompanionMessage = { from: "them" | "me"; text: string };
 
+export type CompanionHandledStep = { what: string; when: string };
+
 export type CompanionGuideItem = { title: string; note: string; tint: string };
 export type CompanionGuideSection = { name: string; items: CompanionGuideItem[] };
 
@@ -75,25 +77,45 @@ export type CompanionAdvisorTrip = {
 };
 
 export type CompanionTrip = {
+  /**
+   * Whether a live advisor is attached — the concierge side of the app.
+   *
+   * TRUE only for the scripted demo, which is the one place the advisor chat,
+   * the held-for-you swap, the "handled for you" log and the advisor's own
+   * trip list are real. A trip wired from the planner sets it FALSE: it is the
+   * real itinerary in the traveller's pocket, with the guide and the wallet,
+   * and nothing is put in an advisor's mouth that no advisor said. When the
+   * concierge backend exists, a real trip can carry it too.
+   */
+  concierge: boolean;
   advisorName: string;
   /** What the home screen's header reads — the family and the place. */
   homeTitle: string;
+  /** The small line above it — "27 October · day 3 of 8". */
+  homeKicker: string;
   tripTitle: string;
   tripDates: string;
   /** Which day is "today" — the index the app opens on. */
   todayIndex: number;
   /** The one line under "Eating today" on the home screen. */
-  kosherTitle: string;
-  kosherNote: string;
+  /** The one "Eating today" line on the home screen. Hidden when absent. */
+  kosherTitle?: string;
+  kosherNote?: string;
   family: string;
   familyMeta: string;
   days: CompanionDay[];
-  swaps: { a: CompanionSwap; b: CompanionSwap };
-  messages: CompanionMessage[];
-  guideSections: CompanionGuideSection[];
   walletGroups: CompanionWalletGroup[];
   prefs: CompanionPref[];
-  advisorTrips: CompanionAdvisorTrip[];
+  guideSections: CompanionGuideSection[];
+  /* ---- concierge-only, present when `concierge` is true ---------------- */
+  /** The held-for-you weather swap. */
+  swaps?: { a: CompanionSwap; b: CompanionSwap };
+  /** The advisor thread. Empty on a wired trip. */
+  messages?: CompanionMessage[];
+  /** The "handled for you" log of changes the advisor absorbed. */
+  handledSteps?: CompanionHandledStep[];
+  /** The advisor's own list of the trips they are holding. */
+  advisorTrips?: CompanionAdvisorTrip[];
 };
 
 /** The palette the design carries with it — kept here so the app has one source. */
@@ -109,8 +131,10 @@ export const COMPANION_KIND: Record<
 };
 
 export const COMPANION_DEMO_TRIP: CompanionTrip = {
+  concierge: true,
   advisorName: "Miriam Feldman",
   homeTitle: "The Cohens · Rome",
+  homeKicker: "27 October · day 3 of 8",
   tripTitle: "Rome — a week, family of five",
   tripDates: "25 October – 1 November 2026",
   todayIndex: 2,
@@ -242,6 +266,12 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
     { from: "them", text: "Morning — your Colosseum entry is 09:30, and I have someone meeting you at the gate rather than in the queue." },
     { from: "me", text: "Perfect. Is the lunch place the one you sent last week?" },
     { from: "them", text: "It is, and I called them Sunday to confirm the hechsher for your dates. Table held from one." },
+  ],
+  handledSteps: [
+    { what: "Airline moved FCO → JFK to 13:05", when: "Sunday 23:41" },
+    { what: "Seats for five re-held together", when: "Monday 07:04" },
+    { what: "Airport transfer moved to 09:40", when: "Monday 07:16" },
+    { what: "Kosher meals reconfirmed on the new flight", when: "Monday 07:20" },
   ],
   guideSections: [
     {

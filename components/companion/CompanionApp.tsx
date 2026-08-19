@@ -73,9 +73,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
     draft: "",
     typing: false,
     tstyle: "rail",
-    tmode: "concierge",
+    tmode: trip.concierge ? "concierge" : "guide",
     role: "traveler",
-    messages: trip.messages,
+    messages: trip.messages ?? [],
   });
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -85,11 +85,16 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
 
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
+  // The place, for the guide card — "The Cohens · Rome" → "Rome".
+  const placeName = trip.homeTitle.includes("·")
+    ? trip.homeTitle.split("·").pop()!.trim()
+    : trip.homeTitle;
 
   // The days, with the today swap applied to its swappable item.
   const days = trip.days.map((d, i) => {
-    if (i !== trip.todayIndex || !st.swap) return d;
-    return { ...d, items: d.items.map((it) => (it.swappable ? trip.swaps[st.swap!].item : it)) };
+    if (i !== trip.todayIndex || !st.swap || !trip.swaps) return d;
+    const swapped = trip.swaps[st.swap].item;
+    return { ...d, items: d.items.map((it) => (it.swappable ? swapped : it)) };
   });
 
   function go(screen: Screen) {
@@ -121,12 +126,17 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
     return { ...it, dot: k.dot, tint: k.tint, kindLabel: k.label, kindFg: k.fg };
   }
 
-  const isConcierge = st.tmode === "concierge";
-  const isGuideMode = st.tmode === "guide";
+  const hasConcierge = trip.concierge;
+  const isConcierge = hasConcierge && st.tmode === "concierge";
+  const isGuideMode = !isConcierge;
   const sel = days[st.selDay];
   const items = sel.items.map(decorate);
-  const open = !st.swap; // an open alert waiting on a decision
-  const advisorHome = st.role === "advisor" && st.screen === "home";
+  const hasSwap = Boolean(trip.swaps);
+  const open = hasSwap && !st.swap; // an open weather alert waiting on a decision
+  const settled = hasSwap && Boolean(st.swap); // one was picked
+  const handledSteps = trip.handledSteps ?? [];
+  const advisorTrips = trip.advisorTrips ?? [];
+  const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
 
   const titles: Record<Screen, string> = {
     home: trip.homeTitle,
@@ -138,13 +148,13 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
     profile: "You",
   };
   const kickers: Record<Screen, string> = {
-    home: `${days[trip.todayIndex].dom} October · day ${trip.todayIndex + 1} of ${trip.days.length}`,
+    home: trip.homeKicker,
     day: `Day ${st.selDay + 1} of ${trip.days.length}`,
     activity: sel.name,
-    chat: "Your advisor",
-    alerts: open ? "One needs you" : "All settled",
+    chat: hasConcierge ? "Your advisor" : "On your own",
+    alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
-    profile: "The trip is in your name",
+    profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
   };
 
   const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
@@ -189,8 +199,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
   );
 
   const confirmSwap = () => {
-    if (!st.pick) return;
+    if (!st.pick || !trip.swaps) return;
     const p = st.pick;
+    const reply = trip.swaps[p].reply;
     setSt((s) => ({
       ...s,
       swap: p,
@@ -200,7 +211,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       messages: [
         ...s.messages,
         { from: "me", text: p === "a" ? "Thursday morning works for us." : "Let's do Palazzo Massimo." },
-        { from: "them", text: trip.swaps[p].reply },
+        { from: "them", text: reply },
       ],
     }));
   };
@@ -221,20 +232,13 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       : ["Can we move the Vatican?", "Where do we eat tonight?", "Is the guide confirmed?"]
   );
 
-  const handledSteps = [
-    { what: "Airline moved FCO → JFK to 13:05", when: "Sunday 23:41" },
-    { what: "Seats for five re-held together", when: "Monday 07:04" },
-    { what: "Airport transfer moved to 09:40", when: "Monday 07:16" },
-    { what: "Kosher meals reconfirmed on the new flight", when: "Monday 07:20" },
-  ];
-
+  // The activity detail rows, read off the stop itself rather than invented.
   const actRows = [
-    { label: "When", value: act.time ? `${act.time} – 12:00` : "No times today" },
-    { label: "Entry", value: "Timed, booked. Your reference sits here." },
-    { label: "With", value: "Private guide, meeting you at the gate" },
-    { label: "After", value: "Arch of Titus, 4 min on foot" },
-    { label: "Then", value: "Lunch in the Ghetto, 20 min on foot" },
-  ];
+    act.time ? { label: "When", value: act.time } : null,
+    act.place ? { label: "Where", value: act.place } : null,
+    act.walk ? { label: "On foot", value: act.walk } : null,
+    { label: "Kind", value: actKind.label },
+  ].filter(Boolean) as { label: string; value: string }[];
 
   // ── shared bits of style ────────────────────────────────────────────────
   const serif = "Georgia,'Times New Roman',serif";
@@ -273,7 +277,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <button onClick={() => go("alerts")} className="wg-press" style={{ alignSelf: "flex-start", border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "12px 20px", borderRadius: 14 }}>See the two options</button>
         </div>
       )}
-      {!open && (
+      {settled && trip.swaps && (
         <div style={{ margin: "18px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#e7edf1", border: "1px solid rgba(21,50,75,.3)", display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={kicker("#1f3f5c")}>Settled</span>
           <div style={{ fontSize: 14, lineHeight: 1.5, color: "#0b2437" }}>{trip.swaps[st.swap!].reply}</div>
@@ -313,11 +317,13 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
         ))}
       </div>
 
-      <div style={{ margin: "14px 14px 0", padding: 18, borderRadius: 20, background: "#e7edf1", display: "flex", flexDirection: "column", gap: 7 }}>
-        <span style={kicker("#1f3f5c")}>Eating today</span>
-        <div style={{ font: `400 17px/1.2 ${serif}`, color: "#0b2437" }}>{trip.kosherTitle}</div>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "#0b2437", textWrap: "pretty" }}>{trip.kosherNote}</p>
-      </div>
+      {trip.kosherTitle && (
+        <div style={{ margin: "14px 14px 0", padding: 18, borderRadius: 20, background: "#e7edf1", display: "flex", flexDirection: "column", gap: 7 }}>
+          <span style={kicker("#1f3f5c")}>Eating today</span>
+          <div style={{ font: `400 17px/1.2 ${serif}`, color: "#0b2437" }}>{trip.kosherTitle}</div>
+          {trip.kosherNote && <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "#0b2437", textWrap: "pretty" }}>{trip.kosherNote}</p>}
+        </div>
+      )}
 
       {isConcierge && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
@@ -331,9 +337,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       )}
       {isGuideMode && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
-          <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#1f3f5c" }}>R</div>
+          <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#1f3f5c" }}>{placeName.charAt(0).toUpperCase()}</div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 14.5, fontWeight: 600 }}>Rome, on your own</span>
+            <span style={{ fontSize: 14.5, fontWeight: 600 }}>{placeName}, on your own</span>
             <span style={{ fontSize: 12, color: "#57534e" }}>Kosher, Shabbos and the sights nearby</span>
           </div>
           <button onClick={() => go("chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Open guide</button>
@@ -350,7 +356,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
         <div style={{ font: `400 26px/1.1 ${serif}` }}>Three trips in the air</div>
         <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#57534e" }}>One needs you now. Two are running to plan.</p>
       </div>
-      {trip.advisorTrips.map((t, i) => (
+      {advisorTrips.map((t, i) => (
         <div key={i} style={{ padding: 18, borderRadius: 20, background: t.bg, border: `1px solid ${t.border}`, display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <span style={{ font: `400 19px/1.1 ${serif}` }}>{t.family}</span>
@@ -430,10 +436,12 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
 
   const dayScreen = (
     <div style={{ padding: "16px 18px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#ece8df", color: "#57534e", padding: "8px 12px", borderRadius: 14 }}>{sel.weather}</span>
-        <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#ece8df", color: "#57534e", padding: "8px 12px", borderRadius: 14 }}>{sel.walk}</span>
-      </div>
+      {(sel.weather || sel.walk) && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {sel.weather && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#ece8df", color: "#57534e", padding: "8px 12px", borderRadius: 14 }}>{sel.weather}</span>}
+          {sel.walk && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#ece8df", color: "#57534e", padding: "8px 12px", borderRadius: 14 }}>{sel.walk}</span>}
+        </div>
+      )}
       {sel.shabbosNote && (
         <div style={{ padding: "17px 18px", borderRadius: 20, background: "#e7edf1", border: "1px solid rgba(21,50,75,.32)", display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={kicker("#1f3f5c")}>{sel.shabbosLabel}</span>
@@ -460,7 +468,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <h2 style={{ margin: 0, font: `400 27px/1.08 ${serif}`, letterSpacing: "-.02em" }}>{act.title}</h2>
           <span style={{ fontSize: 13.5, color: "#57534e" }}>{act.place}</span>
         </div>
-        <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#26323a", textWrap: "pretty" }}>{act.note}</p>
+        {act.note && <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#26323a", textWrap: "pretty" }}>{act.note}</p>}
         <div style={{ display: "flex", flexDirection: "column", gap: 1, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(38,50,58,.09)" }}>
           {actRows.map((r, i) => (
             <div key={i} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 14, padding: "14px 16px", background: "#ffffff" }}>
@@ -491,7 +499,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <div style={{ font: `400 22px/1.1 ${serif}`, color: "#4a3016" }}>Rain from three o&apos;clock</div>
           <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#5c4322", textWrap: "pretty" }}>Both options are held until five. Pick one and I will move the rest of the day round it.</p>
           {(["a", "b"] as SwapId[]).map((id) => {
-            const o = trip.swaps[id];
+            const o = trip.swaps![id];
             const on = st.pick === id;
             return (
               <button key={id} onClick={() => setSt((s) => ({ ...s, pick: id }))} style={{ textAlign: "left", cursor: "pointer", border: `1.5px solid ${on ? GOLD : "rgba(38,50,58,.12)"}`, background: on ? "#f0e0c2" : "#ffffff", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -509,7 +517,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           </button>
         </div>
       )}
-      {!open && (
+      {settled && trip.swaps && (
         <div style={{ padding: "20px 18px", borderRadius: 20, background: "#e7edf1", border: "1px solid rgba(21,50,75,.3)", display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={kicker("#1f3f5c")}>Settled · just now</span>
           <div style={{ font: `400 21px/1.12 ${serif}`, color: "#0b2437" }}>{trip.swaps[st.swap!].item.title}</div>
@@ -517,6 +525,14 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <button onClick={() => go("day")} className="wg-navy" style={{ alignSelf: "flex-start", border: "1px solid rgba(21,50,75,.4)", background: "none", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "11px 17px", borderRadius: 14, color: "#0b2437" }}>See the new day</button>
         </div>
       )}
+      {!open && !settled && handledSteps.length === 0 && (
+        <div style={{ padding: "22px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 6 }}>
+          <span style={kicker("#78716c")}>Changes</span>
+          <div style={{ font: `400 20px/1.15 ${serif}` }}>Nothing needs a decision</div>
+          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>When something on the trip moves, it shows up here — with what changed and what, if anything, it asks of you.</p>
+        </div>
+      )}
+      {handledSteps.length > 0 && (
       <div style={{ padding: "20px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 12 }}>
         <span style={kicker("#78716c")}>Handled for you · Monday 07:20</span>
         <div style={{ font: `400 21px/1.12 ${serif}` }}>Sunday&apos;s flight home moved to 13:05</div>
@@ -536,6 +552,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 
@@ -569,7 +586,11 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
 
   const guideChat = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 18, animation: "wgIn .28s ease both" }}>
-      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>Built the same way as your itinerary — everything below is a record this site already publishes, kept here so it works with no signal.</p>
+      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>
+        {trip.guideSections.length > 0
+          ? "Built the same way as your itinerary — everything below is a record this site already publishes, kept here so it works with no signal."
+          : "The kosher food, the Shabbos times and the sights near this trip land here, kept on the phone for when there is no signal."}
+      </p>
       {trip.guideSections.map((g, gi) => (
         <div key={gi} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>{g.name}</div>
@@ -589,6 +610,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#1f3f5c", background: "#e7edf1", padding: "10px 14px", borderRadius: 14, alignSelf: "flex-start" }}>
         <span style={{ width: 7, height: 7, borderRadius: 14, background: "#15324b" }} />Kept on the phone — works with no signal
       </div>
+      {trip.walletGroups.length === 0 && (
+        <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Flights, where you are staying and anything held for you appear here as they are added to the trip.</p>
+      )}
       {trip.walletGroups.map((g, gi) => (
         <div key={gi} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>{g.name}</div>
@@ -615,33 +639,40 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <span style={{ fontSize: 13, color: "#57534e" }}>{trip.familyMeta}</span>
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>From your planning answers</div>
-        {trip.prefs.map((p, i) => (
-          <div key={i} style={{ padding: "15px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 14 }}>
-            <span style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "#78716c" }}>{p.label}</span>
-            <span style={{ textAlign: "right", fontSize: 13.5, lineHeight: 1.4 }}>{p.value}</span>
-          </div>
-        ))}
-      </div>
-      {/* Trip kind — Concierge or Guide — lives here on the phone, where the
-          desktop showcase has it as a toolbar above the frame. */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>How you are reading this trip</div>
-        <div style={{ display: "flex", gap: 6, padding: 5, background: "#ece8df", borderRadius: 14, alignSelf: "flex-start" }}>
-          {tmodeOpts.map((o) => (
-            <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
+      {trip.prefs.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+          <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>From your planning answers</div>
+          {trip.prefs.map((p, i) => (
+            <div key={i} style={{ padding: "15px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 14 }}>
+              <span style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "#78716c" }}>{p.label}</span>
+              <span style={{ textAlign: "right", fontSize: 13.5, lineHeight: 1.4 }}>{p.value}</span>
+            </div>
           ))}
         </div>
-      </div>
+      )}
+      {/* Trip kind — Concierge or Guide — lives here on the phone, where the
+          desktop showcase has it as a toolbar above the frame. Only when a
+          live advisor is attached; a wired trip is read one way. */}
+      {hasConcierge && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+          <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>How you are reading this trip</div>
+          <div style={{ display: "flex", gap: 6, padding: 5, background: "#ece8df", borderRadius: 14, alignSelf: "flex-start" }}>
+            {tmodeOpts.map((o) => (
+              <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
+            ))}
+          </div>
+        </div>
+      )}
       <div style={{ padding: 20, borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.25)", display: "flex", flexDirection: "column", gap: 11 }}>
         <span style={kicker("#765321")}>Signed in as</span>
         <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#5c4322", textWrap: "pretty" }}>{st.role === "advisor" ? "The advisor side: the trips you are holding today, and the one that needs a decision from you." : "The trip is in your name. Two others can look at it; nobody but you can change it."}</p>
-        <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
-          {roleOpts.map((r) => (
-            <button key={r.id} onClick={r.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: r.bg, color: r.fg }}>{r.label}</button>
-          ))}
-        </div>
+        {hasConcierge && (
+          <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
+            {roleOpts.map((r) => (
+              <button key={r.id} onClick={r.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: r.bg, color: r.fg }}>{r.label}</button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -696,7 +727,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <div className="wg-chrome-intro">
             <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#c8a76a" }}>White Glove · app</div>
             <h1 style={{ font: `400 40px/1.06 ${serif}`, letterSpacing: "-.015em", margin: 0, color: "#f7f5f0" }}>The trip in your pocket</h1>
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#c9d3da", textWrap: "pretty" }}>Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice.</p>
+            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#c9d3da", textWrap: "pretty" }}>{hasConcierge ? "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice." : "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and a travel wallet kept for when there is no signal."}</p>
           </div>
           <div className="wg-toolbar-group">
             <div className="wg-toolbar-label">Day timeline</div>
@@ -706,14 +737,16 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
               ))}
             </div>
           </div>
-          <div className="wg-toolbar-group">
-            <div className="wg-toolbar-label">Trip kind</div>
-            <div className="wg-toolbar">
-              {tmodeOpts.map((o) => (
-                <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "9px 15px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
-              ))}
+          {hasConcierge && (
+            <div className="wg-toolbar-group">
+              <div className="wg-toolbar-label">Trip kind</div>
+              <div className="wg-toolbar">
+                {tmodeOpts.map((o) => (
+                  <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "9px 15px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -721,7 +754,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
         <div className="wg-frame">{phone}</div>
       </div>
 
-      <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#57534e" }}>You</strong>.</p>
+      {hasConcierge && (
+        <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#e7d3ad" }}>You</strong>.</p>
+      )}
     </div>
   );
 }

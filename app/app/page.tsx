@@ -4,10 +4,16 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, getTripItinerary, readSessionEmail } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayUseCompanionApp } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
+import { buildDays, emptyItinerary } from "@/data/itinerary";
+import { itineraryToCompanionTrip } from "@/lib/companion-trip";
+import { allCrossings } from "@/lib/border-store";
+import { borderCostForLegs } from "@/lib/border-legs";
+import { readAssumptions } from "@/lib/planner-settings-store";
+import { readBrand } from "@/lib/business-brand-store";
 import { pageMetadata } from "@/lib/seo";
 
 // One person's trip, on one person's phone. Nothing here belongs in a search
@@ -41,12 +47,39 @@ export default async function AppPage() {
 
   const plan = await getPlan(who);
   if (mayUseCompanionApp(plan)) {
+    // Their own open trip, built the same way the printed copy and the shared
+    // link build it — the same buildDays(), reading the same border costs and
+    // planning figures — so the trip on the phone is the trip on paper. When
+    // there is no real trip yet, the demo Rome week stands in so the app is
+    // never a blank screen.
+    const trip = await getTripItinerary(who).catch(() => null);
+    let companionTrip = undefined;
+    if (trip?.itinerary?.startDate && trip.itinerary.endDate) {
+      const itin = { ...emptyItinerary(), ...trip.itinerary };
+      const [crossings, assume, brand] = await Promise.all([
+        allCrossings().catch(() => []),
+        readAssumptions(),
+        readBrand(who).catch(() => null),
+      ]);
+      const today = new Date().toISOString().slice(0, 10);
+      const borderCost = borderCostForLegs(crossings, today, assume.borderAllowanceMins);
+      const days = buildDays(itin, borderCost, assume);
+      if (days.length > 0) {
+        companionTrip = itineraryToCompanionTrip(itin, days, {
+          today,
+          advisorName: brand?.enabled ? brand.name : undefined,
+          tripName: trip.tripName,
+          client: trip.client,
+        });
+      }
+    }
+
     // The app fills the screen — its own header, tabs and chrome, no site
     // furniture around it. On a phone it is the whole window; installed to the
     // home screen it is the whole app.
     return (
       <main>
-        <CompanionApp />
+        <CompanionApp trip={companionTrip} />
       </main>
     );
   }
