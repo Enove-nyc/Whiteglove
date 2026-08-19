@@ -53,6 +53,7 @@ export const bulkCemeteries20: Cemetery[] = [
       "A path divides it: the northern half is the men's, the southern the women's, and only family tombs cross the line. Knowing that halves the search.",
       "A small ohel stands in the middle of the ground. THE ROV IN IT IS NOT THE STROPKOVER ROV whose ohel is at Tisinec — that is Reb Chaim Yosef Gottlieb, who was niftar in 1867, and this cemetery did not open until 1890. Two men, similar names, different grounds.",
       "The Orthodox synagogue of 1897–98 in the town can be visited, and the Bárkány collection of Judaica is kept upstairs there.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed Prešov's Jewish cemeteries as the central ground at 49.001171, 21.248285, the Tehelná one at 49.009211, 21.218033 and the Solivar sector at 48.973793, 21.266856. None of the three is filed as the Orthodox cemetery, which is the ground this page is about, so no single map point is published. Take all three and ask in the town.",
     ],
     burials: [
       {

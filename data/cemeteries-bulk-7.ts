@@ -255,12 +255,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "קארטשעוו — אוהל רבי אברהם יהושע העשיל טווערסקי מלויעב וטשודנוב",
     country: "Poland",
     address: "Jewish cemetery, ul. Otwocka, Karczew, Otwock County, Masovian Voivodeship, Poland — confirm exact location locally",
+    coordinates: "52.0805742, 21.2471938",
     airportRef: "52.083, 21.250",
     arrivalNotes: [
       "For decades nobody knew where this kever was. The cemetery was badly damaged in the war and afterwards, the Rebbe's grave was lost, and it was only located and restored in 5777 (2017) by Chernobyler chassidim — so what you are visiting is a recovered site, not an unbroken one.",
       "The cemetery is on ul. Otwocka in Karczew, on a broad sandy rise. Beside the ohel there is a board commemorating the murder of Karczew's Jews; mass shootings were carried out on this ground during the war and the victims are buried where they fell. An inventory in 2010 counted 108 matzevot.",
       "Karczew is not Otwock. This cemetery served the Otwock kehillah, but the Otwock and Anielin cemeteries are separate sites a few kilometres away — do not let a map send you to the wrong one.",
       "The Committee for the Remembrance of the Jews of Otwock and Karczew has cared for this site since 2002; contact them or ask in Karczew to confirm the exact position of the ohel before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Avraham Yehoshua Heshel Twersky", yiddishName: "רבי אברהם יהושע העשיל טווערסקי", knownAs: "Rebbe of Loyev and Chudnov", yahrzeit: "י״ח תמוז · 5674 / 1914", note: "Born 10 Teves 5620 (1860), son of Reb Mordechai of Loyev in the Chernobyl-Twersky line, he led as Rebbe in Loyev and in Chudnov (Chudniv, Ukraine); in 1914 he fell ill, travelled to the health resort of Otwock, died there on 18 Tammuz and was buried in nearby Karczew, where an ohel was raised over him. He was never the 'Otwocker Rebbe' — Otwock is only where he died — and he is not Rabbi Abraham J. Twerski (1930-2021), the American author, who is buried in Eretz Yisroel." },
