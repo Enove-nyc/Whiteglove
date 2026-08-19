@@ -41,6 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-10 lg:col-start-2 lg:row-start-1">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Sign in or create an account</p>
           <h1 id="login-title" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Your personal travel book.</h1>
+          <p className="mt-2 text-sm text-stone-600">Creating an account is free — it is what keeps your trip on every device.</p>
           <LoginForm
             phoneSignupAvailable={smsConfigured()}
             next={back}
