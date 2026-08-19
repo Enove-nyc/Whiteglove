@@ -30,6 +30,7 @@ const questions: Array<{ title: string; href: string }> = [
   { title: "Where to stay", href: "/hotels" },
   { title: "Shuls", href: "/shuls" },
   { title: "Mikvaos", href: "/mikvaos" },
+  { title: "Eruvin", href: "/eruvin" },
   { title: "Zmanim", href: "/zmanim" },
   { title: "Kevarim", href: "/tzaddikim" },
   { title: "Cemeteries", href: "/cemeteries" },
