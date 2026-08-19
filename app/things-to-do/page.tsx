@@ -2,10 +2,12 @@ import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
 import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
 import { heritageAsAttractions } from "@/lib/heritage-attractions";
+import { resolvePage } from "@/lib/pages";
 
 // Not force-dynamic. getAttractionList (lib/attractions-view.ts) is a tagged
 // unstable_cache now, busted the moment an attraction is actually written,
@@ -24,18 +26,23 @@ export default async function AttractionsPage() {
   // that already existed for the 35 hand-picked entries in data/attractions.ts
   // — rather than a separate section elsewhere. See lib/heritage-attractions.ts.
   const attractions = [...(await getAttractionList()), ...heritageAsAttractions()];
+  const page = await resolvePage("things-to-do");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">For the days in between</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">Things to do</h1>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">For the days in between</p>
+              <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">Things to do</h1>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <AttractionDirectory attractions={attractions} />

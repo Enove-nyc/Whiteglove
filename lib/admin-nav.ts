@@ -161,7 +161,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: "Settings",
     blurb: "Access, money and connections.",
     icon: "⚙",
-    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox security csp content policy report only block allow load rule",
+    keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays flight itinerary itineraries sell private customer send pdf amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox security csp content policy report only block allow load rule",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
       { href: "/admin/settings/words", label: "Words", blurb: "Headline, contact line and footer." },
@@ -201,6 +201,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
       { href: "/admin/duffel", label: "Duffel", blurb: "Book flights here. Not public." },
+      { href: "/admin/flight-itineraries", label: "Flight itineraries", blurb: "Write up flights you sell to send a customer." },
     ],
   },
 ];

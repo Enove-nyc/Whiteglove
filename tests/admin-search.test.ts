@@ -38,6 +38,6 @@ describe("admin chrome search", () => {
     const rows = listSourcePackSearchRows();
     assert.ok(rows.length > 0, "expected NEEDS_REVIEW pack rows");
     assert.ok(rows.every((row) => row.href.startsWith("/admin/imports")));
-    assert.ok(rows.some((row) => row.batchSlug === "white-glove-europe-batch"));
+    assert.ok(rows.some((row) => row.batchSlug === "worldwide-batch-2"));
   });
 });

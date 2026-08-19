@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PageBlocks from "@/components/PageBlocks";
 import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
 import HeritageCemeteryLocator from "@/components/HeritageCemeteryLocator";
@@ -8,6 +9,7 @@ import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "Kivrei Tzadikim and Jewish Cemeteries Directory | White Glove",
@@ -21,6 +23,7 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
   // Only a country we actually hold records for. A made-up one would silently
   // filter the list down to nothing and read as a broken page.
   const initialCountry = cemeteries.some((entry) => entry.country === country) ? (country as string) : "";
+  const page = await resolvePage("cemeteries");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <StructuredData
@@ -40,28 +43,32 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
       <Navbar />
       <SubBrandBanner />
 
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cemetery directory</p>
-            <h1 lang="he" dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Known kevarim, navigation and arrival notes for each beis hachaim.
-            </p>
-            <p className="mt-4 max-w-2xl leading-7 text-stone-600">
-              Looking for a town&rsquo;s cemetery rather than a kever?{" "}
-              <Link
-                href="#heritage"
-                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Jump to the heritage cemetery locator
-              </Link>{" "}
-              — nearly two thousand batei hachaim worldwide, from Nesiya Tova, further down this page.
-            </p>
+      {page?.edited ? (
+        <PageBlocks blocks={page.blocks} />
+      ) : (
+        <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-12 gap-y-8">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Cemetery directory</p>
+              <h1 lang="he" dir="rtl" className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">בתי החיים</h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
+                Known kevarim, navigation and arrival notes for each beis hachaim.
+              </p>
+              <p className="mt-4 max-w-2xl leading-7 text-stone-600">
+                Looking for a town&rsquo;s cemetery rather than a kever?{" "}
+                <Link
+                  href="#heritage"
+                  className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                >
+                  Jump to the heritage cemetery locator
+                </Link>{" "}
+                — nearly two thousand batei hachaim worldwide, from Nesiya Tova, further down this page.
+              </p>
+            </div>
+            <SubBrandCrest className="hidden shrink-0 sm:block" />
           </div>
-          <SubBrandCrest className="hidden shrink-0 sm:block" />
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <CemeteryDirectory cemeteries={cemeteries} initialCountry={initialCountry} />

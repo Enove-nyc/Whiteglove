@@ -211,6 +211,11 @@ export default async function AdminSettingsPage() {
             title="Duffel"
             detail="Search and book flights in the admin. Not on the public site."
           />
+          <Card
+            href="/admin/flight-itineraries"
+            title="Flight itineraries"
+            detail="Write up flights you sell privately as one page to send a customer."
+          />
         </div>
       </section>
     </>

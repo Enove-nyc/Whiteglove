@@ -5,9 +5,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { whiteGloveEuropeCandidates } from "../data/imports/white-glove-europe-batch/candidates";
-import { whiteGloveGlobalCandidates } from "../data/imports/white-glove-global-batch/candidates";
-import { whiteGloveFillCandidates } from "../data/imports/white-glove-fill-batch/candidates";
 import { worldwideBatch2Candidates } from "../data/imports/worldwide-batch-2/candidates";
 import { worldwideBatch3Candidates } from "../data/imports/worldwide-batch-3/candidates";
 import { worldwideBatch4Candidates } from "../data/imports/worldwide-batch-4/candidates";
@@ -44,9 +41,6 @@ function slim(pack: string, row: Record<string, unknown>) {
 }
 
 const packs: Array<{ slug: string; rows: readonly Record<string, unknown>[] }> = [
-  { slug: "white-glove-europe-batch", rows: whiteGloveEuropeCandidates as unknown as Record<string, unknown>[] },
-  { slug: "white-glove-global-batch", rows: whiteGloveGlobalCandidates as unknown as Record<string, unknown>[] },
-  { slug: "white-glove-fill-batch", rows: whiteGloveFillCandidates as unknown as Record<string, unknown>[] },
   { slug: "worldwide-batch-2", rows: worldwideBatch2Candidates as unknown as Record<string, unknown>[] },
   { slug: "worldwide-batch-3", rows: worldwideBatch3Candidates as unknown as Record<string, unknown>[] },
   { slug: "worldwide-batch-4", rows: worldwideBatch4Candidates as unknown as Record<string, unknown>[] },
