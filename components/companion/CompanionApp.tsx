@@ -694,9 +694,9 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       <div className="wg-chrome">
         <div className="wg-chrome-head">
           <div className="wg-chrome-intro">
-            <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#78716c" }}>White Glove · app</div>
-            <h1 style={{ font: `400 40px/1.06 ${serif}`, letterSpacing: "-.015em", margin: 0, color: "#26323a" }}>The trip in your pocket</h1>
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice.</p>
+            <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#c8a76a" }}>White Glove · app</div>
+            <h1 style={{ font: `400 40px/1.06 ${serif}`, letterSpacing: "-.015em", margin: 0, color: "#f7f5f0" }}>The trip in your pocket</h1>
+            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#c9d3da", textWrap: "pretty" }}>Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice.</p>
           </div>
           <div className="wg-toolbar-group">
             <div className="wg-toolbar-label">Day timeline</div>
@@ -755,7 +755,7 @@ const CSS = `
   .wg-chrome-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
   .wg-chrome-intro { max-width: 520px; display: flex; flex-direction: column; gap: 8px; }
   .wg-toolbar-group { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-  .wg-toolbar-label { font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #78716c; }
+  .wg-toolbar-label { font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #9fb0bd; }
   .wg-toolbar { display: flex; gap: 6px; padding: 5px; background: #ece8df; border-radius: 14px; }
   .wg-frame { width: 402px; height: 812px; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.28), 0 0 0 10px #0c1c2b, 0 0 0 11px rgba(255,255,255,.06); }
   .wg-phone { height: 812px; }
