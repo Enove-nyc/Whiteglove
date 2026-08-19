@@ -82,25 +82,20 @@ export default function HeritageCemeteriesPage() {
                   .sort((a, b) => a.city.localeCompare(b.city))
                   .map((cem) => (
                     <li key={cem.slug} className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="text-[var(--navy)]">{cem.city}</span>
-                      <span className="flex shrink-0 gap-3">
-                        <a
-                          href={placeMapUrl(cem.address, cem.coordinates)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-stone-500 underline decoration-stone-300 underline-offset-4"
-                        >
-                          Map
-                        </a>
-                        <a
-                          href={cem.sourceUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
-                        >
-                          Details
-                        </a>
-                      </span>
+                      <Link
+                        href={`/cemeteries/heritage/${cem.slug}`}
+                        className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+                      >
+                        {cem.city}
+                      </Link>
+                      <a
+                        href={placeMapUrl(cem.address, cem.coordinates)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="shrink-0 text-stone-500 underline decoration-stone-300 underline-offset-4"
+                      >
+                        Map
+                      </a>
                     </li>
                   ))}
               </ul>
