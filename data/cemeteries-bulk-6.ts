@@ -69,6 +69,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Moshe Leib of Sasov, famed for his boundless love of every Jew and his care for the suffering.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.87461, 24.94531 and the newer one at 49.86158, 24.93725, about 1.6 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Moshe Leib of Sasov", yiddishName: "רבי משה לייב מסאסוב", knownAs: "Reb Moshe Leib Sassover", seforim: "ליקוטי רמ״ל · תורת רמ״ל", yahrzeit: "ד׳ שבט · 5567 / 1807", note: "A disciple of Reb Shmelke of Nikolsburg; celebrated for ahavas Yisrael and acts of chesed." },
@@ -123,6 +124,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Raphael of Bershad, the foremost disciple of Rabbi Pinchas of Koretz, renowned for his devotion to truth.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.35682, 29.53289 and the newer one at 48.35882, 29.54476, about 0.9 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Raphael of Bershad", yiddishName: "רבי רפאל מבערשאד", knownAs: "Reb Raphael Bershader", yahrzeit: "י״ז אייר · c. 5587 / 1827", note: "The leading disciple of Rabbi Pinchas of Koretz; a byword for absolute truthfulness." },

@@ -83,6 +83,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Meir of Premishlan, beloved for his simplicity, wit, and wonder-working.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.66672, 24.55668 and the newer one at 49.67008, 24.55120, about 0.5 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Meir of Premishlan", yiddishName: "רבי מאיר מפרעמישלאן", knownAs: "Reb Meir'l Premishlaner", yahrzeit: "כ״ט אייר · 5610 / 1850", note: "A celebrated chassidic tzaddik known for spontaneous Torah, humility, and the many stories of his help to the poor." },
@@ -102,6 +103,7 @@ export const bulkCemeteries3: Cemetery[] = [
       "Resting place of Rabbi Yaakov Yosef HaKohen of Polonne, the foremost disciple and recorder of the Baal Shem Tov's teachings.",
       "He and the Mochiach of Polonne lie together in one stone ohel in the cemetery.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.1269, 27.51373 and the newer one at 50.10921, 27.51505, about 2.0 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Yaakov Yosef HaKohen of Polonne", yiddishName: "רבי יעקב יוסף הכהן מפולנאה", knownAs: "The Toldos", seforim: "תולדות יעקב יוסף · בן פורת יוסף · צפנת פענח", yahrzeit: "24 Tishrei · c. 5543 / 1783", note: "His Toldos Yaakov Yosef was the first published work of chassidic thought, preserving teachings of the Baal Shem Tov." },
@@ -183,6 +185,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Vyzhnytsia is the cradle of the Vizhnitz chassidus; Rabbi Menachem Mendel Hager, the Tzemach Tzadik, is its founder.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.24451, 25.18667 and the newer one at 48.25114, 25.20645, about 1.6 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Menachem Mendel Hager", yiddishName: "רבי מנחם מענדל האגער", knownAs: "The Tzemach Tzadik of Vizhnitz", seforim: "צמח צדיק", yahrzeit: "כ״ה אייר · 5645 / 1885", note: "Founder of the Vizhnitz chassidic dynasty, one of the largest chassidic groups today." },
@@ -260,6 +263,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Dovid Twersky of Talne, a son of the Chernobyler dynasty who led a large chassidic court.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.8863, 30.70576 and the newer one at 48.90478, 30.70763, about 2.1 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Dovid Twersky of Talne", yiddishName: "רבי דוד טווערסקי מטאלנא", knownAs: "The Talner Rebbe", yahrzeit: "ט׳ אייר · 5642 / 1882", note: "Founder of the Talne chassidus and a son of Rabbi Mordechai of Chernobyl." },

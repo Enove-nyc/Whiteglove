@@ -27,6 +27,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "The ohel stands and the cemetery around it survives — laid out in 1791-92 on ul. Spacerowa, it is a large surviving Jewish cemetery with matzeivos still readable in Hebrew, Polish, German and Russian.",
       "The gate is normally kept locked and the key is held by a caretaker family living on the grounds, so getting in depends on someone being there — arrange the visit in advance rather than turning up and hoping. We are not publishing visiting hours, because we could not stand behind any set of hours; do not plan the day around a posted time.",
       "Three other tzaddikim have ohalim here — Meir Menachem Finkler of Radoszyce, Yissachar Dov Ber HaKohen Tornheim of Wolbórz and Menachem Moshe Waltfried of Ropsza-Przedbórz — so confirm on the ground which ohel you are standing at before you daven.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 51.40962, 19.70222 and the newer one at 51.4194561, 19.6990442, about 1.1 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Chaim Dovid Bernhard of Piotrków", yiddishName: "רבי חיים דוד ברנהרד מפּיעטרקוב", knownAs: "The doctor who became a chassidishe rebbe", yahrzeit: "כ׳ שבט · 5618 / 1858", note: "A physician who was brought back to Yiddishkeit by Reb Dovid Biderman of Lelov, was taken by him to the Chozeh of Lublin and later became a talmid of the Radoshitzer, and who went on to lead as a rebbe in Piotrków; Polish sources write him Chaim Dawid Bernard or Bernhardt." },
@@ -661,6 +662,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "Go to the NEW Jewish cemetery, not the old one. The old cemetery was closed in the 1830s by Austrian decree and has since been demolished and built over, with no tombstones left. He died in 1869, so the new ground is where he would have been buried — but understand that this is an inference from the dates, not a sourced record of where his grave is.",
       "The new cemetery is fenced and is one of the best-preserved 19th-century Jewish cemeteries in Ukraine, with several thousand carved gravestones and an ohel at the entrance — but it is large, the inscriptions are worn, and sections are overgrown.",
       "Arrange with the Brody municipal museum or the Lviv Jewish community to have someone walk you to the grave, and confirm the exact spot on the ground before you bring a group.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.08094, 25.15099 and the newer one at 50.10070, 25.14750, about 2.2 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Shlomo Kluger", yiddishName: "רבי שלמה קלוגר", knownAs: "The Maharshak, the Maggid of Brody", seforim: "חכמת שלמה · האלף לך שלמה · ספר החיים", yahrzeit: "ל׳ סיון · 5629 / 1869", note: "Son of Rabbi Yehuda Aharon, rav of Komarow; orphaned young and taken in by the Dubno Maggid, Rabbi Yaakov Kranz, who taught him and arranged his teachers, he served Brody as dayan and maggid for more than fifty years and was one of the leading poskim of his generation." },
@@ -675,12 +677,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "זלאָטשאָוו — ציון רבי אברהם חיים, בעל אורח לחיים",
     country: "Ukraine",
     address: "Former Jewish cemetery, Zolochiv, Lviv Oblast, Ukraine — both of the town's Jewish cemeteries were destroyed and we could not establish which one holds him; confirm exact location locally",
+    coordinates: "49.80903, 24.89010",
     airportRef: "49.807, 24.903",
     arrivalNotes: [
       "Both of Zolochiv's Jewish cemeteries were destroyed, and the ohel the Yizkor book describes over his grave no longer exists. The old cemetery, in use from the 17th century, was demolished and built over — a car park and a filling station now stand on the ground — and the new cemetery was demolished in the 1960s, fenced in the early 2000s and marked only with a memorial. There is no standing, identified matzevah for the Orach LaChaim today.",
       "Do not confuse this tzaddik with Reb Yechiel Michel, the Maggid of Zloczow, who died in 1781 and is buried in Yampil, not here. Travelers regularly drive to Zolochiv expecting the Maggid and find nothing of his; if the Maggid is who your group wants, you need Yampil.",
       "Also make sure of the town: there is a second Zolochiv in Kharkiv Oblast, hundreds of kilometres east. You want Zolochiv in Lviv Oblast, about 60 km east of Lviv.",
       "If you still want to daven at the site, ask the Lviv Jewish community to point out which ground is which and confirm the exact spot locally before you go.",
+      "SURVEYED COORDINATES, AND THE TOWN'S TWO GROUNDS ARE ALL BUT THE SAME PLACE. ESJF surveyed an old and a new Jewish cemetery here and measured them 86 metres apart, so the map point on this listing serves for both. Old: 49.80903, 24.89010. New: 49.80828, 24.89039.",
     ],
     burials: [
       { name: "Rabbi Avraham Chaim ben Gedaliah of Zloczow", yiddishName: "רבי אברהם חיים בן גדליה מזלאָטשאָוו", knownAs: "The Orach LaChaim of Zolochiv", seforim: "אורח לחיים · פרי חיים", yahrzeit: "כ״ו טבת · 5576 / 1816", note: "Son of Rabbi Gedaliah; he succeeded Reb Yisaskhar as rav of Zloczow and was buried in the town, where the community later built an ohel over his grave — he is a different man from Reb Yechiel Michel, the Maggid of Zloczow, who is buried in Yampil." },
@@ -723,6 +727,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "He died in 1874, after the old cemetery had closed, so the newer ground — Nove Okopisko, opened in 1840 at the corner of Mykulynetska and Pavlova streets, opposite the Christian Mykulynetskyi cemetery — is where he would have been buried. That is an inference from the dates, not a record of his grave. About 240 gravestones survive there, and no source we could check identifies his among them.",
       "His burial in Ternopil rests on Wikipedia, dbpedia and Wikidata rather than a first-hand kever record; one genealogy site claims he died in Tzfat, which the other sources contradict.",
       "If Ternopil is on your route, have someone local check the new cemetery for the stone before you commit a group to the stop, and confirm anything you are told on the ground.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.54670, 25.60059 and the newer one at 49.53771, 25.60369, about 1.0 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Yosef Babad", yiddishName: "רבי יוסף באב\"ד", knownAs: "The Minchas Chinuch", seforim: "מנחת חינוך", note: "Yosef ben Moshe Babad, born 1801 in Przeworsk, rav of Bohorodchany, Zbarazh and Sniatyn before being appointed Av Beis Din of Tarnopol in 1857, a post he held until his petirah in 1874 — not to be confused with the twentieth-century Rabbi Yosef Babad (1905-1997), a different man with his own biography." },
@@ -785,6 +790,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "Khust sits in Zakarpattia, in Ukraine's far west, and the kever is a regular stop for groups travelling the Carpathian kevarim.",
       "One name to keep straight: this is the Maharam Schick, the talmid of the Chasam Sofer. He is not R' Eliezer Shlomo Schick, the Breslover Mohorosh who passed in 2015 and is buried in Yavne'el, and not R' Dovid Yosef Schick. All three surface together in searches.",
       "We do not publish a grave-level point for this kever. Ask the caretaker or a local shomer to walk you to the exact kever before you set out.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.18302, 23.30823 and the newer one at 48.16757, 23.30641, about 1.7 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Moshe Schick", yiddishName: "רבי משה שיק", knownAs: "The Maharam Schick, Rav of Khust", seforim: "שו״ת מהר״ם שיק · מהר״ם שיק על תרי״ג מצוות · חידושי מהר״ם שיק על הש״ס · דרשות מהר״ם שיק", yahrzeit: "א׳ שבט · 5639 / 1879", note: "Born 1807 in Brezova; a leading talmid of the Chasam Sofer in Pressburg and one of the foremost Hungarian poskim of his generation, he served as rav of Khust from 1861 until his death — not to be confused with the later Breslover R' Eliezer Shlomo Schick, who is buried in Yavne'el." },
@@ -805,6 +811,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "That said, it is a living Chabad pilgrimage stop, and the ohel stands in the Jewish cemetery of Vynohradiv — Sevlush in Yiddish — in Zakarpattia, in Ukraine's far west.",
       "Chabad sources also call him Yisroel Boruch of Lyozna. He is not Reb Boruch of Mezhibuzh, the Baal Shem Tov's grandson, who is buried in Medzhybizh — a completely different town and a completely different man.",
       "Confirm the cemetery and the exact ohel locally before you go; ask Chabad in the region, who keep the site.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.14388, 23.03333 and the newer one at 48.133805, 23.034891, about 1.1 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Boruch of Lyozna", yiddishName: "רבי ברוך מליאזנא", knownAs: "Reb Boruch of Lyozna, father of the Alter Rebbe of Chabad", note: "Father of Rabbi Shneur Zalman of Liadi, the Alter Rebbe and founder of Chabad; some Chabad sources give his name as Yisroel Boruch. He must not be confused with Reb Boruch of Mezhibuzh, the Baal Shem Tov's grandson, who is buried in Medzhybizh." },

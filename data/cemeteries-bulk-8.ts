@@ -147,6 +147,7 @@ export const bulkCemeteries8: Cemetery[] = [
       "The Nitra Rov is buried here, not in Nitra — he was born in this town and was brought back to it. Almost everything written about him says Nitra, so people go to the wrong place. Piešťany is about 35 km north of Nitra.",
       "The cemetery is on a hillside above the town, on a partly terraced slope towards the eastern edge near the railway. The oldest stone is from 1880 and the last burial was in 1955. It is owned by the municipality and has been restored through a local civic effort.",
       "The cemetery chapel was rebuilt by the German army at the end of the war into a pillbox, and that structure is still there — it is not a building to daven in, and it will not look like an ohel.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 48.60722, 17.82797 and the newer one at 48.58749, 17.81628, about 2.4 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       {

@@ -230,6 +230,7 @@ export const bulkCemeteries5: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Meir Horowitz of Dzikov, the Imrei Noam, a leading Galician rebbe of the Ropshitz line.",
       "Confirm the cemetery and exact grave/ohel location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.57361, 21.67463 and the newer one at 50.57207, 21.68719, about 0.9 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Meir Horowitz of Dzikov", yiddishName: "רבי מאיר הורוביץ מדזשיקאוו", knownAs: "The Imrei Noam", seforim: "אמרי נועם", yahrzeit: "כ״ט אייר · 5637 / 1877", note: "Founder of the Dzikov chassidus, a grandson of the Ropshitzer Rav." },
@@ -248,6 +249,7 @@ export const bulkCemeteries5: Cemetery[] = [
     arrivalNotes: [
       "Rabbi Pinchas Shapiro of Koretz, a close disciple of the Baal Shem Tov, passed away in Shepetivka on his way to Eretz Yisrael and is buried there.",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.17347, 27.06079 and the newer one at 50.16361, 27.06888, about 1.2 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Pinchas Shapiro of Koretz", yiddishName: "רבי פנחס שפירא מקאריץ", knownAs: "Reb Pinchas Koritzer", seforim: "מדרש פנחס · אמרי פנחס", yahrzeit: "י׳ אלול · 5550 / 1790", note: "A foremost disciple of the Baal Shem Tov, celebrated for his teachings on truth and humility." },

@@ -242,6 +242,7 @@ export const bulkCemeteries4: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Twersky of Skver, founder of the Skver chassidus (today centered in New Square, NY).",
       "Confirm the cemetery and exact grave location locally.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.73920, 29.65927 and the newer one at 49.743373, 29.676298, about 1.3 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Twersky of Skver", yiddishName: "רבי יצחק טווערסקי מסקווירא", knownAs: "The first Skverer Rebbe", yahrzeit: "כ״ז אייר · 5645 / 1885", note: "Founder of the Skver chassidus, a branch of the Chernobyl dynasty." },

@@ -66,11 +66,13 @@ export const bulkCemeteries18: Cemetery[] = [
     yiddishName: "דוקלא — בית החיים",
     country: "Poland",
     address: "Jewish cemetery, Tadeusza Kościuszki, 38-450 Dukla, Subcarpathian Voivodeship, Poland",
+    coordinates: "49.54813, 21.68392",
     airportRef: "49.557, 21.685",
     arrivalNotes: [
       "The cemetery is in the southern part of the town, along Tadeusza Kościuszki. It is in two parts — the older from the seventeen hundreds, the newer from after 1870 — and has been a listed monument since 1989.",
       "It was devastated by the Germans during the war, so expect a damaged ground rather than a kept one.",
       "There are ruins of an ohel beside the cemetery. Sources say it PROBABLY belonged to a tzaddik of the Horowitz family and are explicit that this is not certain, and local testimony rejects the other suggestion that it was a mortuary chapel. Nobody should be told whose it is until somebody knows.",
+      "SURVEYED COORDINATES, AND THE TOWN'S TWO GROUNDS ARE ALL BUT THE SAME PLACE. ESJF surveyed an old and a new Jewish cemetery here and measured them 59 metres apart, so the map point on this listing serves for both. Old: 49.54813, 21.68392. New: 49.54804, 21.68312.",
     ],
     burials: [],
     sourceUrl: "https://en.wikipedia.org/wiki/Jewish_cemetery_in_Dukla",
