@@ -95,6 +95,7 @@ export const bulkCemeteries29: Cemetery[] = [
       "EXPECT TO FIND LITTLE OR NOTHING STANDING. The survey records either no visible stones or stones from the eighteen-hundreds, and does not settle which. Go with the lower expectation.",
       "Balta was a substantial Podolian kehilla — over thirteen thousand Jews in 1900, in a town made in 1797 by joining three smaller ones. What is on the ground today does not reflect that and the page is not going to pretend otherwise.",
       "Balta is in Odesa oblast now rather than in Podolia as the old sources have it, which matters when navigating.",
+      "FOUR GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are two old — on Kuznechna at 47.92711, 29.63006 and on Yaroslavskoho at 47.94100, 29.62727 — and two newer, on Krasnyy Yar at 47.94687, 29.62742 and on Tkachenko at 47.92218, 29.63334. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [],
     sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/balta",

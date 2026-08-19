@@ -227,6 +227,7 @@ export const bulkCemeteries16b: Cemetery[] = [
       "The newer ground was itself cleared and turned into a recreational area. It is a meadow with a few trees today, surrounded by blocks of flats, with no matzevos standing.",
       "The oldest burial ground, from about the seventeenth century, was near the corner of 17 Stycznia and Jesionowa. There is nothing marked to find there either.",
       "The Foundation for the Preservation of Jewish Heritage in Poland and Friends of Jewish Heritage in Poland have been raising money to put a monument back on the site. Ask them what stands there before you make the journey.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the oldest at 52.88247, 20.60994, the old at 52.8802676, 20.6240845 and the new at 52.8804618, 20.6355429. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {

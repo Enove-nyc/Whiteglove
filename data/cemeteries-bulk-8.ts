@@ -38,6 +38,7 @@ export const bulkCemeteries8: Cemetery[] = [
       "The Žaliakalnis ground is neglected and overgrown, and has been for years. The city signed an agreement with Maceva, the group that documents Lithuania's Jewish cemeteries, to look after and restore it, and students have worked on clearing it — but do not expect a tended cemetery with signed paths.",
       "There is a mass grave of kedoshim here with its own memorial. Take care where you walk.",
       "We are not publishing an opening time or a gate contact, because we could not stand behind either. Ask the Lithuanian Jewish Community in Vilnius or a local guide before you set out, especially if you want somebody to help you find the kever among the fallen stones.",
+      "KOVNO HAS FOUR SURVEYED JEWISH CEMETERIES AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the city ground at 54.907826, 23.945537, Slabodka at 54.911157, 23.872192, Aleksotas at 54.88629, 23.90616 and Panemune at 54.85819, 23.94874. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {

@@ -49,11 +49,13 @@ export const bulkCemeteries26: Cemetery[] = [
     yiddishName: "קעידאן — בתי החיים",
     country: "Lithuania",
     address: "Jewish cemeteries, Lakštingalų and Kanapinskio streets, just outside Kėdainiai, Kaunas County, Lithuania",
+    coordinates: "55.29383, 23.96348",
     airportRef: "55.288, 23.975",
     arrivalNotes: [
       "TWO GROUNDS, JUST OUTSIDE THE TOWN, on Lakštingalų and Kanapinskio. They were one cemetery until they were divided — a map from 1933 still shows the single ground — and each now has its own boundary and its own protection.",
       "The newer one is where the stones are: getting on for six hundred matzevos, the oldest inscription from the eighteen-sixties and probably older ground than that.",
       "THE OLD GROUND IS ON A BLUFF ABOVE THE SMILGA, and the river is what destroyed it. More than half of it went to flooding and to vandalism. Sources disagree about what is left — one says nothing stands and there is only a monument in a fenced field, another says about a hundred stones are still up, in every condition from good to unreadable. Go expecting the monument and treat anything standing as a bonus.",
+      "SURVEYED COORDINATES, AND THE DIVISION IS ON PAPER MORE THAN ON THE GROUND. ESJF surveyed Keidan's cemetery as three separate parts — old, oldest and new — and measured all three within about thirty metres of each other. One map point serves for the lot, which is what this listing carries.",
     ],
     burials: [],
     sourceUrl: "https://cdp.jewishgen.org/eastern-europe/lithuania/kedainiai",

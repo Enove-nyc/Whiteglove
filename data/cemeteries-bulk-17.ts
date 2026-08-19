@@ -28,6 +28,7 @@ export const bulkCemeteries17: Cemetery[] = [
       "THE OHEL IS WHAT SURVIVES, AND ALMOST NOTHING ELSE. The cemetery was founded in 1730; its fence and every one of its matzevos were destroyed in the war, and the ground has since been buried under soil, asphalt and rubbish. The ohel is described as the only object left of the Jewish past of this ground.",
       "It stands at Ternopilska 4, so navigate to the street rather than looking for a cemetery — there is no cemetery left to see from the road.",
       "The family restored the kevarim inside it in 2007, which is why it is in the state it is.",
+      "FOUR GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the oldest at 49.07650, 26.21355, the old at 49.07304, 26.22070 and two newer at 49.0738729, 26.1936965 and 49.05531, 26.21273. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {

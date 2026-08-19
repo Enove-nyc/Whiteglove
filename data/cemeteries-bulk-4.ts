@@ -220,10 +220,12 @@ export const bulkCemeteries4: Cemetery[] = [
     yiddishName: "ציון היכל הברכה מקאמארנא",
     country: "Ukraine",
     address: "Jewish cemetery, Komarno, Lviv Oblast, Ukraine — confirm exact location locally",
+    coordinates: "49.63236, 23.69854",
     airportRef: "49.628, 23.699",
     arrivalNotes: [
       "Resting place of Rabbi Yitzchak Isaac Yehuda Yechiel Safrin of Komarno, the great kabbalist and author of the Heichal HaBracha.",
       "Confirm the cemetery and exact grave location locally.",
+      "SURVEYED COORDINATES, AND A NAME THAT POINTS AT TWO COUNTRIES. There is a Komarno in Lviv oblast and a Komárno in Slovakia, two hundred kilometres apart, and both have a surveyed Jewish cemetery. This listing is the Ukrainian one; the map point is its ground, measured by the ESJF survey.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Isaac Yehuda Yechiel Safrin", yiddishName: "רבי יצחק אייזיק יהודה יחיאל ספרין", knownAs: "The Komarno Rebbe · Heichal HaBracha", seforim: "היכל הברכה · נתיב מצוותיך · זהר חי", yahrzeit: "י׳ אייר · 5634 / 1874", note: "Founder of the Komarno chassidus and a major kabbalistic author." },

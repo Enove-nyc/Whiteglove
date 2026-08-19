@@ -88,6 +88,7 @@ export const bulkCemeteries6: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Zeev Wolf of Zhitomir, the Ohr HaMeir, a close disciple of the Maggid of Mezritch.",
       "Confirm the cemetery and exact grave location locally.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the oldest at 50.25925, 28.65045, the old at 50.24696, 28.63358 and the new at 50.24167, 28.69303. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Zeev Wolf of Zhitomir", yiddishName: "רבי זאב וואלף מזשיטאמיר", knownAs: "The Ohr HaMeir", seforim: "אור המאיר", yahrzeit: "כ׳ אדר · c. 5558 / 1798", note: "A leading disciple of the Maggid of Mezritch; his Ohr HaMeir is a classic of chassidic thought." },

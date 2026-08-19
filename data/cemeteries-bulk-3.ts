@@ -224,6 +224,7 @@ export const bulkCemeteries3: Cemetery[] = [
     arrivalNotes: [
       "Resting place of Rabbi Dovid Moshe Friedman, founder of the Chortkov chassidus and a son of the Ruzhiner Rebbe.",
       "Confirm the cemetery and exact grave location locally.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the old cemetery at 49.01677, 25.79165 and two newer ones — on Pulyuya street at 49.01768, 25.78225 and on Stepana Bandery at 49.00789, 25.80117. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Dovid Moshe Friedman", yiddishName: "רבי דוד משה פרידמן", knownAs: "The Chortkover Rebbe", yahrzeit: "ט״ו מרחשון · 5664 / 1903", note: "Founder of the Chortkov dynasty, one of the sons of Rabbi Yisrael of Ruzhin." },

@@ -414,6 +414,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "Strzyżów had more than one Jewish cemetery and the earlier ones are gone entirely, built over during and after the war. The one you want is the newest, reported to be on ul. Wschodnia — confirm this in town before you drive out.",
       "His is the only rabbi's matzevah in Strzyżów. The yizkor book records that every other rav of the town left for a larger kehillah and was niftar elsewhere — he stayed nearly fifty years and is buried where he served.",
       "The cemetery is on a hillside and is not staffed. Confirm the exact position of the kever locally, and ask in town about the gate before you drive out.",
+      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are two old ones, ninety metres apart at 49.86965, 21.78703 and 49.8704, 21.78863, and a newer one at 49.87493, 21.80176. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       { name: "Rabbi Alter Ze'ev Horowitz", yiddishName: "רבי אלתר זאב הורוויץ", knownAs: "Strzyżower Rov (Strizov / Sztrizov)", note: "About 1854-1930. A great-grandson of Reb Naftali Tzvi Horowitz of Ropshitz, he was elected rav of Strzyżów before he was twenty and served the kehillah close to fifty years as rav and admor. The town's name is written Strzyżów, Strzyzow, Strizov and Sztrizov in different sources — all the same place, and all the same man." },

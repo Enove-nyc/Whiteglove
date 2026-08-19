@@ -53,6 +53,7 @@ export const bulkCemeteries22: Cemetery[] = [
       "YOU GET IN BY KNOCKING ON SOMEBODY'S DOOR. The old funeral house beside the cemetery — the one with the mogen dovid still on the wall — is a private home now, and its residents hold the way in. Knock and ask.",
       "They keep three large dogs, and they shut them indoors so visitors can walk the ground. Do not let yourself in without asking.",
       "The cemetery is at Nitrianska 15, immediately beside the Christian cemetery, which is the easier landmark to navigate to.",
+      "TWO GROUNDS IN THE TOWN, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are 48.36941, 17.54788 and 48.3654178, 17.6004266. A third Slovak survey called Trnava is Trnava pri Laborci, a village in the east of the country and not this town at all. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [],
     sourceUrl: "https://billiongraves.com/cemetery/Trnava-%C5%BEidovsk%C3%BD-cintor%C3%ADn/280590",

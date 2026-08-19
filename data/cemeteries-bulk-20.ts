@@ -78,6 +78,7 @@ export const bulkCemeteries20: Cemetery[] = [
       "THE STONES NO LONGER MARK THE GRAVES. The Germans destroyed two thousand matzevos here. About a thousand were recovered and set back up in the nineteen-eighties, with money given by Asher Scharf of New York, but they stand where they were replaced rather than over the people they name.",
       "Two ohels stand on the ground: the Scharf family's, and one over Szymon Kluger, the last Jew of Oświęcim.",
       "This is the town's own Jewish cemetery, four centuries of a kehilla that lived here before the camp took the town's name. It is a different place from the camp memorial and is reached separately.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the old cemetery at 50.03844, 19.21956 and the newer one at 50.03905, 19.23389, about a kilometre apart. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
     ],
     burials: [
       {
