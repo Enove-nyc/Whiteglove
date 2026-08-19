@@ -58,11 +58,13 @@ export const bulkCemeteries16: Cemetery[] = [
     yiddishName: "טיסינעץ — אוהל הסטראפקאווער רב",
     country: "Slovakia",
     address: "Jewish cemetery, Tisinec, near Stropkov, Prešov Region, Slovakia",
+    coordinates: "49.230241, 21.642448",
     airportRef: "49.217, 21.650",
     arrivalNotes: [
       "THE CEMETERY IS NOT IN STROPKOV. The Jews of Stropkov and the villages around it buried their dead at Tisinec, a small village just outside the town — navigating to Stropkov itself is the usual way people miss this kever.",
       "The ohel over the Stropkover Rov is a small building on the ground. The cemetery has been badly overgrown at times and the ohel has been described as nearly invisible in the undergrowth, so go with somebody who has been, or arrange it in advance.",
       "His descendants gather here on his yahrzeit, 4 Adar I. In a leap year that is the date to work to; ask locally which day is being kept in a year that has only one Adar.",
+      "SURVEYED COORDINATES, AND THEY ARE TISINEC'S, NOT STROPKOV'S. Earlier attempts to give this listing a map point were refused because the obvious survey to match was the one filed under Stropkov, whose point sits by the town. ESJF surveys the village ground separately under its own name, and that is the one this listing carries.",
     ],
     accessContacts: [
       {

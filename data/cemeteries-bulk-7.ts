@@ -84,11 +84,13 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "לאָדזש — ציון ר׳ אליהו חיים מייזל",
     country: "Poland",
     address: "New Jewish cemetery, ul. Bracka 40, Łódź, Łódź Voivodeship, Poland",
+    coordinates: "51.7966728, 19.4819784",
     airportRef: "51.759, 19.456",
     arrivalNotes: [
       "This cemetery survives largely intact — around 40 hectares and up to 200,000 kevarim, one of the largest Jewish cemeteries in Europe — and he lies here, not in the older Wesoła Street cemetery, which was liquidated.",
       "Guides place his kever in the second gated section, close to the entrance. We have not published a row number; ask at the gate and confirm the stone before you daven.",
       "Polish records and cemetery signage spell him Eljasz Chaim Majzel or Meizel, so use that if you need to ask staff.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Eliyahu Chaim Meisel", yiddishName: "רבי אליהו חיים מייזל", knownAs: "Rav of Lodz", yahrzeit: "י״ד אייר · 5672 / 1912", note: "Born in Horodok near Volozhin and chief rabbi of Łódź from 1873 until his petirah, remembered above all for pressing the wealthy of the city to build an orphanage, an old-age home, a Jewish hospital and schools — asked once when he would write a sefer, he answered that his seforim were the loan notes he had signed for the poor; his levaya drew well over a hundred thousand people." },
@@ -429,12 +431,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "סאקאלאוו — אוהל רבי אלימלך מרודניק",
     country: "Poland",
     address: "Old Jewish cemetery, ul. Kochanowskiego, Sokołów Małopolski, Subcarpathian Voivodeship (Podkarpackie), Poland — no street number is documented; confirm exact location locally",
+    coordinates: "50.23021, 22.12231",
     airportRef: "50.233, 22.121",
     arrivalNotes: [
       "The exact graves here are lost. This cemetery, in use from 1687 until 1853, was destroyed by the Germans, and after the war the ground was put to use as a warehouse and materials and coal yard. The ohel you will find is a post-war reconstruction with commemorative plaques, so the original grave positions are not preserved.",
       "It stands just inside the gates — a small white concrete building under a large overhanging roof. It is the ohel of the tzaddikim Reb Elimelech of Rudnik and Reb Eliezer of Reisha (Rzeszów).",
       "Two warnings on the names. The Elimelech here is NOT Reb Elimelech of Lizhensk — searches conflate them constantly, and the Noam Elimelech is buried in Leżajsk, about 30 km away. And the Rudnik here is Rudnik nad Sanem; the better-known rabbinic name from that town, Reb Tzvi Hirsh Halberstam, is a different man buried in Gorlice.",
       "The site is on ul. Kochanowskiego, near the rynek. Confirm the exact location of the ohel and how to get in locally before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Elimelech of Rudnik", yiddishName: "רבי אלימלך מרודניק", knownAs: "Rudniker Rebbe", note: "A tzaddik of his generation, commemorated in the rebuilt ohel just inside the cemetery gates. He is not Reb Elimelech of Lizhensk, the Noam Elimelech, who lies in Leżajsk, and 'Rudnik' here means Rudnik nad Sanem and not the Halberstam rav of that town." },
@@ -771,6 +775,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "There have been press reports of a fire at a Jewish mausoleum in Ukraine treated as possible arson and connected to this site. Check the ohel's current condition before you route a group to it.",
       "The ground under the park is Kolomyia's second Jewish cemetery, in use from 1783 to 1894, whose entrance stood at the corner of what are now Antona Chekhova and Symona Petliury streets, a few blocks north of Ivana Franka Street.",
       "Two things not to confuse: the Lichtenstein Kolomiya section at Washington Cemetery in Brooklyn is a landsmanshaft burial-society plot and not his grave, and there is a living Rabbi Hillel Lichtenstein unconnected to this tzaddik. Confirm the exact spot of the ohel locally before you travel.",
+      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed an old Jewish cemetery at 48.53329, 25.04262 and a newer one at 48.53126, 25.05949, about a kilometre and a quarter apart. Neither survey says which of them is the second cemetery of 1783–1894 that lies under the park this page describes, so no single map point is published. Take both.",
     ],
     burials: [
       { name: "Rabbi Hillel Lichtenstein of Kolomyia", yiddishName: "רבי הלל ליכטענשטיין מקאָלאָמיי", knownAs: "The Maskil El Dal of Kolomyia (d. 1891)", seforim: "משכיל אל דל", yahrzeit: "י׳ אייר · 5651 / 1891", note: "Son of Rabbi Baruch, born in Vecs in Hungary and a talmid of the Chasam Sofer, he married in 1837 and came to Kolomea in 1867, serving as its rav and as a leader of Hungarian Orthodoxy until his petirah there — not the modern Rabbi Hillel Lichtenstein of the same name." },
@@ -941,12 +946,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "יאמפאל — אוהל המגיד מזלאטשוב",
     country: "Ukraine",
     address: "Old Jewish cemetery, Yampil, Shepetivka Raion, Khmelnytskyi Oblast (historic Volhynia), Ukraine — confirm exact location locally",
+    coordinates: "49.95819, 26.24191",
     airportRef: "49.958, 26.230",
     arrivalNotes: [
       "The ohel you will stand in is not the original. The first ohel ever built over a Chassidic grave stood here and was lost; its foundations were rediscovered in 2002 and the structure you see today was put up over them.",
       "Set your navigation carefully. This is Yampil in Shepetivka Raion, Khmelnytskyi Oblast, in what was Volhynia. There is a second, unrelated Yampil in Vinnytsia Oblast on the Dniester, about 350 km away, which also had a Jewish community and cemetery.",
       "His son Reb Yosef of Yampol lies beside him under the same ohel.",
       "Confirm the exact grave with someone local before you daven, so you are certain which kever is which.",
+      "SURVEYED COORDINATES, FOR THE RIGHT YAMPIL. ESJF surveys four grounds under this name, two in Khmelnytskyi oblast and two in Vinnytsia. The point here is the old cemetery in the Khmelnytskyi one, which is the Yampil this listing means.",
     ],
     burials: [
       { name: "Rabbi Yechiel Michel of Zlotchov", yiddishName: "רבי יחיאל מיכל מזלאטשוב", knownAs: "The Zlotchover Maggid (18th century)", note: "The Maggid of Zlotchov, son of Rabbi Yitzchak of Drohobych and one of the early Chassidic masters counted among the talmidim of the Baal Shem Tov; do not confuse him with Rabbi Yechiel Michel ben Eliezer HaKohen, the Martyr of Nemirov, who was killed in 1648, more than a century earlier, and lies in Nemyriv." },
@@ -1028,6 +1035,7 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "זינקאוו — אוהל אדמו\"רי זינקאוו",
     country: "Ukraine",
     address: "Jewish cemetery, Zinkiv, Zinkiv rural hromada, Khmelnytskyi Oblast (historic Podolia), Ukraine — confirm exact location locally",
+    coordinates: "49.09579, 27.0697",
     airportRef: "49.094, 27.075",
     arrivalNotes: [
       "Get the town right before anything else. This is the village of Zinkiv in Khmelnytskyi Oblast, in historic Podolia, roughly 50 km from Kamianets-Podilskyi. There is a different Zinkiv in Poltava Oblast, 600 to 700 km away in central Ukraine, and plain searches and maps will send you there.",
@@ -1035,6 +1043,7 @@ export const bulkCemeteries7: Cemetery[] = [
       "Four generations of the Zinkov dynasty lie in this cemetery, beginning with Reb Yitzchak Meir, a son of the Apter Rov, who is buried here with his wife.",
       "This Rabbi Yitzchak Meir Heschel is not Rabbi Yitzchok Meir Heschel of Kopyczynitz, father of the Kopyczynitzer Rebbe, who died on Rosh Hashanah 5696 (1936) and is not buried here.",
       "Confirm the exact graves with someone local when you arrive.",
+      "SURVEYED COORDINATES, FOR THE RIGHT ZINKIV. There are two towns of this name with surveyed Jewish cemeteries — one in Khmelnytskyi oblast, in historic Podolia, and one in Sumy oblast five hundred kilometres east. This listing is the Podolian one and the map point is its ground.",
     ],
     burials: [
       { name: "Rabbi Yitzchak Meir Heschel of Zinkov", yiddishName: "רבי יצחק מאיר העשיל מזינקוב", knownAs: "The first Zinkover Rebbe", note: "Son of the Apter Rov, Rabbi Avraham Yehoshua Heschel of Apta, and founder of the Zinkov dynasty (1775-1854/55), buried here with his wife; he is not Rabbi Yitzchok Meir Heschel of Kopyczynitz, who died in 1936." },

@@ -24,11 +24,13 @@ export const bulkCemeteries18: Cemetery[] = [
     yiddishName: "קרעמעניץ — בית החיים הישן",
     country: "Ukraine",
     address: "Jewish cemetery, Dzherelna, Kremenets, Ternopil Oblast, Ukraine",
+    coordinates: "50.10568, 25.73380",
     airportRef: "50.107, 25.727",
     arrivalNotes: [
       "The cemetery lies on the slope of Mount Chercha, off Dzherelna. It has been fenced and partly restored, which is why so much of it survives.",
       "About seven thousand matzevos stand here, some fifty of them from the sixteenth century — this is one of the older and larger surviving grounds in the region, not a small plot to walk in an hour.",
       "NOBODY MAINTAINS IT. Vegetation is the real obstacle: in the growing season the overgrowth blocks access and covers stones, so late autumn to early spring is when the ground can actually be walked. There is an ohel within the cemetery.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://shtetlroutes.eu/en/kremenets-putvnik/",
