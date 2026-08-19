@@ -264,6 +264,43 @@ function coordKey(value: string | null | undefined): string | null {
   return `${Number(m[1]).toFixed(3)},${Number(m[2]).toFixed(3)}`;
 }
 
+/**
+ * The common words in a place name that do not identify WHICH place it is.
+ *
+ * A "Museum" or a "Cathedral" or a "Park" is in every city; matching a lead to
+ * a published listing on one of these would clear a different place with the
+ * same generic word. Only a distinctive token — a proper name like Prado,
+ * Picasso, Alcázar — is allowed to make a name match.
+ */
+const GENERIC_NAME_TOKENS = new Set(
+  ("the of and de la el les del du des or an museo museum gallery galleria cathedral catedral basilica " +
+    "church iglesia palace palacio tower torre castle castillo park parque parc garden gardens jardin jardi " +
+    "market mercat mercado square plaza placa praca house casa maison old town city ciutat cite quarter barri " +
+    "barrio national nacional royal real reial great grand jewish synagogue sinagoga bridge pont gate porta " +
+    "puerta street carrer calle rue monument memorial center centre centro hall fountain font fuente beach " +
+    "playa platja bay mount monte saint san santa sant valley lake lago river rio sea mar arts sciences").split(/\s+/),
+);
+
+function nameTokens(value: string): string[] {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** The distinctive tokens of a name — long enough, not generic, not the town. */
+function distinctiveNameTokens(name: string, city: string): string[] {
+  const cityTokens = new Set(nameTokens(city));
+  return nameTokens(name).filter((token) => token.length >= 4 && !GENERIC_NAME_TOKENS.has(token) && !cityTokens.has(token));
+}
+
+function cityCountryKey(city: string, country: string): string {
+  return `${nameTokens(city).join("")}|${nameTokens(country).join("")}`;
+}
+
 function alreadyOnSite<T extends { status: string; name: string; city: string; country: string; sourceUrl: string | null; coordinates: string | null; duplicateOf: string | null }>(
   views: readonly T[],
 ): T[] {
@@ -275,6 +312,19 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
       .map((item) => coordKey((item as { coordinates?: string | null }).coordinates ?? null))
       .filter((k): k is string => Boolean(k)),
   );
+  // A lead reconciles by name only when a published attraction sits in the SAME
+  // city and country and shares a distinctive place-name token — so "Prado
+  // Museum" clears against "Museo del Prado" in Madrid, while a second museum in
+  // Madrid the site has not written up stays in the queue. Curated names rarely
+  // match a lead's name exactly, and this closes the honest half of that gap
+  // without ever clearing a place that is not actually on the site.
+  const attractionTokens = new Map<string, Set<string>>();
+  for (const item of attractions) {
+    const key = cityCountryKey(item.city, item.country);
+    const set = attractionTokens.get(key) ?? new Set<string>();
+    for (const token of distinctiveNameTokens(item.name, item.city)) set.add(token);
+    attractionTokens.set(key, set);
+  }
   return views.map((view) => {
     if (view.status !== "NEEDS_REVIEW") return view;
     const onSite =
@@ -283,6 +333,11 @@ function alreadyOnSite<T extends { status: string; name: string; city: string; c
       (() => {
         const c = coordKey(view.coordinates);
         return c ? coords.has(c) : false;
+      })() ||
+      (() => {
+        const set = attractionTokens.get(cityCountryKey(view.city, view.country));
+        if (!set) return false;
+        return distinctiveNameTokens(view.name, view.city).some((token) => set.has(token));
       })();
     return onSite ? { ...view, status: "DUPLICATE", duplicateOf: view.duplicateOf ?? "on-site" } : view;
   });
