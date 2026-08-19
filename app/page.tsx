@@ -19,9 +19,9 @@ import { headers } from "next/headers";
 import Link from "next/link";
 
 export const metadata = pageMetadata({
-  title: "Kosher Vacation Planning — Where to Go and How to Plan It | White Glove Kosher Travel",
+  title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
   description:
-    "Kosher travel: destinations, kosher food, Shabbos, shuls and mikvahs — plan and book your own trip.",
+    "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvahs — plan your own itinerary or search booking partners.",
   path: "/",
 });
 
