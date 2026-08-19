@@ -107,3 +107,37 @@ describe("nothing falls back in silence", () => {
     assert.match(page, /These are not your businesses/);
   });
 });
+
+describe("A FALLBACK IS NEVER FROZEN INTO THE PAGE", () => {
+  /**
+   * The owner's database was replaced. A deploy built /directory while the old
+   * one was refusing connections, so the build baked in the thirty built-in
+   * businesses — and the site served them for hours with nothing able to
+   * recover, because the cache is busted by a save and no save was coming.
+   *
+   * Two things had to change, and both are asserted here rather than left to
+   * a comment: a failed read must not be cached, and a page whose content
+   * changes without a deploy must not be decided at deploy time.
+   */
+  const LIB = readFileSync("lib/directory.ts", "utf8");
+  const PAGE = readFileSync("app/directory/page.tsx", "utf8");
+
+  it("does not cache a read that failed", () => {
+    // The cached function throws on failure, which unstable_cache does not
+    // store — so the next visit asks the database again.
+    assert.match(LIB, /async function succeedOrThrow/);
+    assert.match(LIB, /reading\.source === "database-failed"/);
+    assert.match(LIB, /cachedRead\(succeedOrThrow/);
+    assert.ok(!/cachedRead\(readProviders/.test(LIB), "the raw reader is cached, failures and all");
+  });
+
+  it("still shows the built-in businesses rather than an error", () => {
+    // Not caching a failure must not turn a database blip into a broken page.
+    // The catch falls back to the same uncached reading the page always had.
+    assert.match(LIB, /return \(await readProviders\(\)\)\.providers;/);
+  });
+
+  it("DOES NOT DECIDE THE LISTINGS AT BUILD TIME", () => {
+    assert.match(PAGE, /export const dynamic = "force-dynamic"/);
+  });
+});

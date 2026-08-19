@@ -1,9 +1,3 @@
-import { whiteGloveEuropeCandidates } from "@/data/imports/white-glove-europe-batch/candidates";
-import { sourceCatalog as europeSources } from "@/data/imports/white-glove-europe-batch/sources";
-import { whiteGloveFillCandidates } from "@/data/imports/white-glove-fill-batch/candidates";
-import { sourceCatalog as fillSources } from "@/data/imports/white-glove-fill-batch/sources";
-import { whiteGloveGlobalCandidates } from "@/data/imports/white-glove-global-batch/candidates";
-import { sourceCatalog as globalSources } from "@/data/imports/white-glove-global-batch/sources";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
 import { sourceCatalog as worldwideSources } from "@/data/imports/worldwide-batch-2/sources";
 import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
@@ -144,46 +138,11 @@ function batchFor(slug: string, name: string, sourceCount: number) {
   };
 }
 
+// The White Glove europe / global / fill "research" packs were retired at the
+// owner's decision — ~1,500 bare place-names with no coordinates, address or
+// description, a research to-do list rather than reviewable listings. They are
+// gone from the built-in import packages and their directories were removed.
 export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPackage[] = [
-  {
-    schemaVersion: 1,
-    batch: batchFor(
-      "white-glove-europe-batch",
-      "White Glove Europe research pack",
-      Object.keys(europeSources).length,
-    ),
-    generatedAt: "2026-08-11",
-    // Europe is the odd one out twice over: `kind` rather than `importKind`,
-    // `city` rather than `locality`, and it is the only pack that records a
-    // per-candidate `sourceRights`.
-    candidates: whiteGloveEuropeCandidates.map((candidate) =>
-      candidateFrom(candidate, candidate.kind, candidate.city, candidate.sourceRights || RESEARCH_ONLY),
-    ),
-  },
-  {
-    schemaVersion: 1,
-    batch: batchFor(
-      "white-glove-global-batch",
-      "White Glove global research pack",
-      Object.keys(globalSources).length,
-    ),
-    generatedAt: "2026-08-11",
-    candidates: whiteGloveGlobalCandidates.map((candidate) =>
-      candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
-    ),
-  },
-  {
-    schemaVersion: 1,
-    batch: batchFor(
-      "white-glove-fill-batch",
-      "White Glove complementary fill pack",
-      Object.keys(fillSources).length,
-    ),
-    generatedAt: "2026-08-11",
-    candidates: whiteGloveFillCandidates.map((candidate) =>
-      candidateFrom(candidate, candidate.importKind, candidate.locality, RESEARCH_ONLY),
-    ),
-  },
   {
     schemaVersion: 1,
     batch: batchFor(

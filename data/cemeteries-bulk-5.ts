@@ -169,12 +169,15 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Makariv — Kever of Rabbi Nachum of Makarov",
     yiddishName: "ציון רבי נחום ממאקאראוו",
     country: "Ukraine",
-    address: "Jewish cemetery, Makariv, Kyiv Oblast, Ukraine",
+    address: "Site of the Jewish cemetery, near vulytsia Kominterna, Makariv, Kyiv Oblast, Ukraine",
     coordinates: "50.46266, 29.80567",
     airportRef: "50.462, 29.813",
     arrivalNotes: [
       "Resting place of Rabbi Nachum Twersky of Makarov, a son of the Chernobyl dynasty.",
-      "Confirm the cemetery and exact grave location locally.",
+      "THE CEMETERY WAS DESTROYED IN THE NINETEEN-SEVENTIES. What is left is part of a municipal cemetery near vulytsia Kominterna, and the survey suggests the district hospital buildings may stand on some of the ground. Between one and twenty stones remain where they were set; where the rest went is not known.",
+      "THERE IS NO OHEL AND NO STRUCTURE OF ANY KIND on the site, and no source found marks the Makarover's kever. The town is where he lies; the ground has been taken apart around him.",
+      "A marker identifying the site was put up in May 2010. The fence is continuous and the gate does not lock, so access is open — but overgrowth prevents it for part of the year, and local people clear the site only now and then.",
+      "The mass grave of Makariv's Jews, murdered in 1941, is a separate memorial and not on this ground.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [

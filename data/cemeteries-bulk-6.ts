@@ -86,12 +86,15 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Zhytomyr — Kever of the Ohr HaMeir",
     yiddishName: "ציון בעל אור המאיר",
     country: "Ukraine",
-    address: "Jewish cemetery, Zhytomyr, Zhytomyr Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Berdychivske shose, Zhytomyr, Zhytomyr Oblast, Ukraine — see the notes; the city has several grounds",
     airportRef: "50.254, 28.658",
     arrivalNotes: [
       "Resting place of Rabbi Zeev Wolf of Zhitomir, the Ohr HaMeir, a close disciple of the Maggid of Mezritch.",
-      "Confirm the cemetery and exact grave location locally.",
-      "THREE GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. They are the oldest at 50.25925, 28.65045, the old at 50.24696, 28.63358 and the new at 50.24167, 28.69303. ESJF surveyed each of them, and no source found says which one holds the kever this page is about. No single map point is published; ask locally, and take the coordinates with you.",
+      "ZHYTOMYR HAS SIX JEWISH SITES AND ONLY ONE HAS AN OHEL. It is the hillside ground on Berdychivske shose: more than five thousand stones, under a quarter of them down, a beis tahara, a masonry wall with a broken fence, and a gate that opens. Go there first.",
+      "BUT ITS STONES START IN 1893 AND THE OHR HAMEIR WAS NIFTAR IN 1798. The survey names the ohel's rabbonim as men of Korostyshev and Kotelnya, not as him. Whether his kever is on that ground is not something any source found will say.",
+      "THE EIGHTEENTH-CENTURY GROUND IS THE ONE HE WOULD HAVE BEEN BURIED IN, and there is nothing to see. It lies at Mayakovskoho and Parkhomenka, has no visible stones, no wall, no fence and no gate, and housing has eaten into its boundaries. The survey calls it under very serious threat.",
+      "A third old ground on Chernyakhovskoho, from the eighteen-hundreds, also has nothing standing and is under commercial and industrial building. The modern municipal cemetery at Korbutivka, opened 1976, is well kept with a paid caretaker — and is not what anyone comes to Zhytomyr for.",
+      "Two of the six numbered sites are mass graves from 1941, at Dolzhyk and on Svobody street.",
     ],
     burials: [
       { name: "Rabbi Zeev Wolf of Zhitomir", yiddishName: "רבי זאב וואלף מזשיטאמיר", knownAs: "The Ohr HaMeir", seforim: "אור המאיר", yahrzeit: "כ׳ אדר · c. 5558 / 1798", note: "A leading disciple of the Maggid of Mezritch; his Ohr HaMeir is a classic of chassidic thought." },
