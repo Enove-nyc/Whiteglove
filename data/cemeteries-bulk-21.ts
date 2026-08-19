@@ -69,11 +69,13 @@ export const bulkCemeteries21: Cemetery[] = [
     yiddishName: "פאנעוועזש — פלאץ פון בית החיים",
     country: "Lithuania",
     address: "Site of the Jewish cemetery, Panevėžys, Panevėžys County, Lithuania",
+    coordinates: "55.73078, 24.3523",
     airportRef: "55.730, 24.360",
     arrivalNotes: [
       "IT IS A PARK NOW. The cemetery was destroyed in 1966 and its matzevos taken away as building material. The ground was laid out as a city park, with paths and benches, and not one stone stands where it stood.",
       "The community worked for years to have the taken stones brought back. A memorial marks the ground, and the Sad Jewish Mother monument stands where the cemetery was.",
       "Ponevezh is a name people know from the yeshiva rather than from the town, and the yeshiva that carries it is in Bnei Brak. Reb Itzele Ponevezher led the kehilla and the yeshiva here until 1919; no matzevah survives to say who else lay in this ground.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/panevezys-jewish-cemetery/",

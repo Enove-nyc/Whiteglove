@@ -49,6 +49,7 @@ export const bulkCemeteries29: Cemetery[] = [
     yiddishName: "סלאבאדקע — בית החיים",
     country: "Lithuania",
     address: "Jewish cemetery, Kalnų street, north of the Lopšelio street junction, Vilijampolė, Kaunas, Lithuania",
+    coordinates: "54.911157, 23.872192",
     airportRef: "54.913, 23.897",
     arrivalNotes: [
       "PEOPLE COME HERE FOR THE YESHIVA AND THIS IS NOT THE YESHIVA. Slabodka is a district of Kovno across the river, and what this listing is about is its burial ground.",
@@ -56,6 +57,7 @@ export const bulkCemeteries29: Cemetery[] = [
       "THE OBVIOUS FIELD IS NOT WHERE THE STONES ARE. About twenty matzevos stand where you come in. Walk to the far northern end and there are many more, some of them hundreds of years old, on the hill in the trees. Anyone who stops at the near field will conclude the cemetery is empty and be wrong.",
       "The ground was destroyed in 1963 and the clean-up work on it, together with the Seventh Fort, only began in 2016.",
       "SLABODKA WAS THE KOVNO GHETTO. After the German invasion in 1941 this district was where the ghetto was made — nearly thirty thousand Jews in it at its height, and ninety who got out alive when it was destroyed in 1944. You are walking in that as well.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [],
     sourceUrl: "https://www.esjf-cemeteries.org/survey/kaunas-slobodca-jewish-cemetery/",

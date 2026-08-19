@@ -51,12 +51,14 @@ export const bulkCemeteries28: Cemetery[] = [
     yiddishName: "טולטשין — בית החיים",
     country: "Ukraine",
     address: "Jewish cemetery, on the hillside in the town, Tulchyn, Vinnytsia Oblast, Ukraine",
+    coordinates: "48.66503, 28.86877",
     airportRef: "48.674, 28.847",
     arrivalNotes: [
       "The old ground is on a hillside inside the town and you turn straight off a public road into it. The fence is broken and the gate locks, but access is open to all — the caretaker who has held the key is recorded as Mikhail Abramovitch Bartik. There is a second, modern cemetery opened in 1984, unfenced, which is not the one to walk.",
       "AN OHEL STANDS ON THE GROUND and it is the only structure there. No source found says whose it is, so this listing does not name him.",
       "THE OLDEST READABLE MATZEVAH IS FROM 1732 — Reb Avraham, son of Reb Shaulya. Between one and five thousand stones survive, a quarter to a half of them down, and many more were taken away into the town's roads and buildings. Some carry portraits and some have iron railings round them, which is a Podolian style and not a mistake.",
       "THERE ARE MARKED MASS GRAVES IN THE CEMETERY from December 1941. Tulchyn's Jews were driven out to Pechera that winter, and this ground holds some of what was done here first.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       {

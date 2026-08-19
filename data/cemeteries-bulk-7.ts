@@ -294,12 +294,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אפטא — מצבת זכרון לרבי מאיר הלוי מאפטא בעל 'אור לשמים'",
     country: "Poland",
     address: "Site of the Jewish cemetery, ul. Kopernika, Opatów, Opatów County, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    coordinates: "50.796972, 21.427444",
     airportRef: "50.805, 21.425",
     arrivalNotes: [
       "There is no kever to stand at here and no ohel. The Germans destroyed this cemetery and its matzevot were looted and built into walls around the town; Reb Meir HaLevi's individual grave cannot be identified today, so do not come expecting a marked resting place.",
       "What stands on the ground on ul. Kopernika is a cenotaph — a memorial stone, not a grave — built in 2022 from recovered matzeva fragments, together with a commemorative plaque and a lapidarium of roughly 25 to 30 salvaged stones and fragments, 18 of them set into a new concrete base shaped like a matzeva and laid flat.",
       "Meir Bulka of J-nerations came here specifically to try to find this Rebbe's grave and instead found tombstone fragments built into a wall between the town's auditorium and cultural centre; the wall was dismantled and the stones brought back in a ceremony marking 80 years since the Opatów ghetto was destroyed.",
       "Do not confuse this with the other Apter Rov: the famous Ohev Yisroel, Reb Avraham Yehoshua Heshel, served in Opatów but is buried in Medzhibozh in Ukraine, beside the Baal Shem Tov. Two different Apter rebbes, two different countries — and confirm with the Opatów tourist office exactly where the lapidarium stands before you drive.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Meir HaLevi Rotenberg of Apta", yiddishName: "רבי מאיר הלוי ראטענבערג מאפטא", knownAs: "The Ohr LaShamayim", seforim: "אור לשמים", note: "Son of Reb Shmuel, he was rav of Stopnica and then of Apta (Opatów) and a talmid of the Chozeh of Lublin; his Torah on chumash, written in the Pardes method and including responsa, was printed as Ohr LaShamayim, and he died and was buried in Apta. He is NOT the Ohev Yisroel, Reb Avraham Yehoshua Heshel, the other Apter Rebbe, who is buried in Medzhibozh, Ukraine." },
@@ -839,12 +841,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "אוהל רבי משה מקיטוב",
     country: "Ukraine",
     address: "Jewish cemetery, Kuty, Kosiv district, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.25910, 25.17301",
     airportRef: "48.257, 25.167",
     arrivalNotes: [
       "What you will see here is a modern structure, not an original one: the grave was lost for years, and by published reports it was located and cleaned in 1996 by Oholei Tzaddikim together with Geder Avos, who then built the ohel that stands today and laid the access path to it.",
       "Under that ohel are R' Moshe of Kitov, who died in 1738 and was the first rav of Kuty, and his wife Sarah Sisi. The ESJF survey of the Kuty cemetery records both.",
       "This is the correction that matters most on this stop: R' Moshe of Kitov was not the Baal Shem Tov's brother-in-law. That was Rabbi Avraham Gershon of Kitov, who settled in Eretz Yisrael and is buried on Har HaZeisim in Yerushalayim. Town write-ups about Kuty lead with Avraham Gershon and travellers arrive expecting his kever — it is not here.",
       "Kuty is in the Kosiv area of Ivano-Frankivsk Oblast, up toward the Carpathians. Confirm the cemetery and the exact ohel locally before you drive out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Moshe of Kitov", yiddishName: "רבי משה מקיטוב", knownAs: "First rav of Kuty, son of R' Menachem Mendel Kitover", note: "Son of R' Menachem Mendel Kitover and the first rav of Kuty; he died in 1738, and the Kuty yizkor book records that he opposed the Baal Shem Tov at first before accepting him. He is not the Baal Shem Tov's brother-in-law — that was Rabbi Avraham Gershon of Kitov (c.1701-1761), who is buried on Har HaZeisim in Yerushalayim, not in Kuty." },
@@ -994,12 +998,14 @@ export const bulkCemeteries7: Cemetery[] = [
     yiddishName: "יאלטושקאוו — אוהל רבי לייב שרה'ס",
     country: "Ukraine",
     address: "Yaltushkiv Old Jewish Cemetery, Yaltushkiv, Vinnytsia Oblast, Ukraine — confirm exact location locally",
+    coordinates: "48.99021, 27.51248",
     airportRef: "48.990, 27.509",
     arrivalNotes: [
       "The ground here is rough. The cemetery was partly demolished during the war and trees were planted over it in the 1970s, so much of the burial field is now woodland.",
       "The ESJF survey of the old cemetery records an ohel on the site for 'Leib Soreth, buried in 1791'. That name and year match Reb Leib Sarah's, and it is the load-bearing evidence for this kever — the identification rests on that match, not on a separate attestation.",
       "He is not the Shpoler Zeide, Reb Aryeh Leib of Shpola, who is buried in Shpola, and he is not Reb Yisrael Aryeh Leib Schneerson, who is buried in Tzfas.",
       "Under that tree cover you are unlikely to find the ohel unaided, so confirm the exact spot with someone local before you set out.",
+      "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Aryeh Leib Sarah's", yiddishName: "רבי אריה לייב שרה'ס", knownAs: "Reb Leib Sarah's", yahrzeit: "ד׳ אדר", note: "One of the hidden tzaddikim of the Baal Shem Tov's circle, called after his mother Sarah and named in sources as Reb Aryeh Leib of Yaltushkov; he is neither the Shpoler Zeide nor Reb Yisrael Aryeh Leib Schneerson." },
