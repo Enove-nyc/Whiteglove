@@ -564,12 +564,12 @@ export async function sendItineraryToClient(input: {
         `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open your itinerary →</a></p>` +
         `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin-top:24px;">` +
         `Sent by ${business}. Reply to this email to reach them.<br>` +
-        `Planned with whitegloveitineraries.com.</p></div>`,
+        `Planned with whiteglovekoshertravel.com.</p></div>`,
       text:
         `Your itinerary from ${input.from}\n\n` +
         (note ? `${note}\n\n` : "") +
         `${input.tripTitle || "Your trip"} is ready. Open it to see every day, and print it or save it as a PDF:\n${input.url}\n\n` +
-        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whitegloveitineraries.com.`,
+        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whiteglovekoshertravel.com.`,
     },
     input.to,
     "itinerary to client",

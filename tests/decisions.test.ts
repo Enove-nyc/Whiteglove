@@ -10,10 +10,11 @@ describe("which site this is", () => {
     // The terms and the privacy policy once named a different business's
     // domain — the wrong answer to "who is holding my data". That domain has
     // since been given up; the assertion stays so it cannot come back.
-    // The visible brand is "White Glove Kosher Travel"; the domain, the email
-    // addresses and the storage keys keep the original name and must not
-    // follow the rename.
-    assert.equal(SITE_DOMAIN, "whitegloveitineraries.com");
+    // The site has now moved to whiteglovekoshertravel.com, so the domain the
+    // legal pages print follows the rename too. What deliberately does NOT
+    // follow it: the internal email addresses and the storage keys, which keep
+    // the original whitegloveitineraries name for continuity.
+    assert.equal(SITE_DOMAIN, "whiteglovekoshertravel.com");
     assert.equal(SITE_NAME, "White Glove Kosher Travel");
     assert.ok(!SITE_DOMAIN.includes("enove"));
   });

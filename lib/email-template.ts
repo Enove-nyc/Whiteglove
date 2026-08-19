@@ -235,7 +235,7 @@ export function renderBlastHtml(input: BlastRenderInput): string {
     `<a href="${unsubscribe}" style="color:${GOLD_INK};text-decoration:underline;">Stop these emails</a>.</p>` +
     `<p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.6;color:#8a8a86;">` +
     `<a href="${escapeEmailHtml(origin)}" style="color:${INK};text-decoration:none;">White Glove Kosher Travel</a>` +
-    ` &middot; whitegloveitineraries.com</p>` +
+    ` &middot; whiteglovekoshertravel.com</p>` +
     `</td></tr>` +
 
     `</table></td></tr></table></body></html>`
@@ -283,6 +283,6 @@ export function renderBlastText(input: BlastRenderInput): string {
   return (
     `${lines.join("\n").trim()}\n\n—\n` +
     `${input.becauseLine} Stop these emails: ${input.unsubscribeUrl}\n\n` +
-    `White Glove Kosher Travel · whitegloveitineraries.com`
+    `White Glove Kosher Travel · whiteglovekoshertravel.com`
   );
 }
