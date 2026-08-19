@@ -61,7 +61,7 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Zhydachiv — Kever of Rabbi Tzvi Hirsch of Zidichov",
     yiddishName: "קבר רבי צבי הירש מזידיטשוב",
     country: "Ukraine",
-    address: "Jewish cemetery, Zhydachiv, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Zhydachiv, Lviv Oblast, Ukraine",
     coordinates: "49.39429, 24.13417",
     airportRef: "49.383, 24.145",
     arrivalNotes: [
@@ -123,7 +123,7 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Ostroh — Kever of the Maharsha",
     yiddishName: "קבר המהרש״א",
     country: "Ukraine",
-    address: "Old Jewish cemetery, Ostroh, Rivne Oblast, Ukraine — confirm exact location locally",
+    address: "Old Jewish cemetery, Ostroh, Rivne Oblast, Ukraine",
     coordinates: "50.333009, 26.522958",
     airportRef: "50.329, 26.515",
     arrivalNotes: [
@@ -145,7 +145,7 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Radomsko — Ohel of the Tiferes Shlomo",
     yiddishName: "אוהל תפארת שלמה",
     country: "Poland",
-    address: "Jewish cemetery, Radomsko, Łódź Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Radomsko, Łódź Voivodeship, Poland",
     coordinates: "51.0795462, 19.4735026",
     airportRef: "51.067, 19.445",
     arrivalNotes: [
@@ -165,7 +165,7 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Warka — Ohel of Rabbi Yitzchak of Vorki",
     yiddishName: "אוהל רבי יצחק מווארקא",
     country: "Poland",
-    address: "Jewish cemetery, Warka, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Warka, Masovian Voivodeship, Poland",
     coordinates: "51.7780304, 21.1774564",
     airportRef: "51.783, 21.193",
     arrivalNotes: [
@@ -204,7 +204,7 @@ export const bulkCemeteries3: Cemetery[] = [
     name: "Bobowa — Ohel of the first Bobover Rebbe",
     yiddishName: "אוהל האדמו״ר הראשון מבאבוב",
     country: "Poland",
-    address: "Jewish cemetery, Bobowa, Lesser Poland Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Bobowa, Lesser Poland Voivodeship, Poland",
     coordinates: "49.69987, 20.93908",
     airportRef: "49.717, 20.950",
     arrivalNotes: [

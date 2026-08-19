@@ -179,7 +179,7 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Kosiv — Kever of the Ahavas Shalom",
     yiddishName: "ציון האהבת שלום מקאסוב",
     country: "Ukraine",
-    address: "Jewish cemetery, Kosiv, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Kosiv, Ivano-Frankivsk Oblast, Ukraine",
     coordinates: "48.32186, 25.09168",
     airportRef: "48.310, 25.096",
     arrivalNotes: [
@@ -199,7 +199,7 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Sieniawa — Kever of the Shinover Rav",
     yiddishName: "ציון השינאווער רב",
     country: "Poland",
-    address: "Jewish cemetery, Sieniawa, Subcarpathian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Sieniawa, Subcarpathian Voivodeship, Poland",
     coordinates: "50.18365, 22.60504",
     airportRef: "50.175, 22.610",
     arrivalNotes: [
@@ -219,7 +219,7 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Komarno — Kever of the Heichal HaBracha",
     yiddishName: "ציון היכל הברכה מקאמארנא",
     country: "Ukraine",
-    address: "Jewish cemetery, Komarno, Lviv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Komarno, Lviv Oblast, Ukraine",
     coordinates: "49.63236, 23.69854",
     airportRef: "49.628, 23.699",
     arrivalNotes: [
@@ -276,7 +276,7 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Savran — Kever of the Savraner Rebbe",
     yiddishName: "ציון הסאווראנער רבי",
     country: "Ukraine",
-    address: "Jewish cemetery, Savran, Odesa Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Savran, Odesa Oblast, Ukraine",
     coordinates: "48.13624, 30.07427",
     airportRef: "48.130, 30.078",
     arrivalNotes: [
@@ -296,7 +296,7 @@ export const bulkCemeteries4: Cemetery[] = [
     name: "Rotmistrivka — Kever of the first Rachmastrivka Rebbe",
     yiddishName: "ציון האדמו״ר הראשון מראחמיסטריווקא",
     country: "Ukraine",
-    address: "Jewish cemetery, Rotmistrivka, Cherkasy Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Rotmistrivka, Cherkasy Oblast, Ukraine",
     coordinates: "49.1383, 31.71218",
     // Was 49.250, 31.400 — twenty-six kilometres off the village, caught when the
     // surveyed cemetery coordinate was added and the two disagreed. The town pin

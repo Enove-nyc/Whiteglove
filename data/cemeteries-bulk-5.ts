@@ -37,7 +37,7 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Nadvirna — Kever of Rabbi Mordechai of Nadvorna",
     yiddishName: "ציון רבי מרדכי מנאדווארנא",
     country: "Ukraine",
-    address: "Jewish cemetery, Nadvirna, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Nadvirna, Ivano-Frankivsk Oblast, Ukraine",
     coordinates: "48.63652, 24.57667",
     airportRef: "48.634, 24.570",
     arrivalNotes: [
@@ -93,7 +93,7 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Grodzisk — Kever of the Imrei Elimelech",
     yiddishName: "ציון האמרי אלימלך",
     country: "Poland",
-    address: "Jewish cemetery, Grodzisk Mazowiecki, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Grodzisk Mazowiecki, Masovian Voivodeship, Poland",
     coordinates: "52.112251, 20.6228185",
     airportRef: "52.107, 20.634",
     arrivalNotes: [
@@ -113,7 +113,7 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Radoszyce — Kever of the Saba Kadisha",
     yiddishName: "ציון הסבא קדישא מראדושיץ",
     country: "Poland",
-    address: "Jewish cemetery, Radoszyce, Świętokrzyskie Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Radoszyce, Świętokrzyskie Voivodeship, Poland",
     coordinates: "51.084399, 20.2325892",
     airportRef: "51.073, 20.264",
     arrivalNotes: [
@@ -169,7 +169,7 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Makariv — Kever of Rabbi Nachum of Makarov",
     yiddishName: "ציון רבי נחום ממאקאראוו",
     country: "Ukraine",
-    address: "Jewish cemetery, Makariv, Kyiv Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Makariv, Kyiv Oblast, Ukraine",
     coordinates: "50.46266, 29.80567",
     airportRef: "50.462, 29.813",
     arrivalNotes: [
@@ -189,7 +189,7 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Mogielnica — Kever of Rabbi Chaim Meir Yechiel",
     yiddishName: "ציון השרף ממאגלניצא",
     country: "Poland",
-    address: "Jewish cemetery, Mogielnica, Masovian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, Mogielnica, Masovian Voivodeship, Poland",
     coordinates: "51.7000126, 20.7280254",
     airportRef: "51.688, 20.717",
     arrivalNotes: [
