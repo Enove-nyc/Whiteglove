@@ -108,11 +108,13 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Neshchiz — Kever of Rabbi Mordechai of Neshchiz",
     yiddishName: "ציון רבי מרדכי מנעסכיז",
     country: "Ukraine",
-    address: "Jewish cemetery, Nesukhoyizhe, Volyn Oblast, Ukraine — confirm exact location locally",
+    address: "Jewish cemetery, Nesukhoyizhe, Kovel district, Volyn Oblast, Ukraine — no street is published in any source found",
     airportRef: "51.100, 24.900",
     arrivalNotes: [
       "Resting place of Rabbi Mordechai of Neshchiz, a beloved Volhynian tzaddik and founder of the Neskhizh line.",
-      "Confirm the cemetery and exact grave location locally.",
+      "TWO REB MORDECHAIS OF NESKHIZH ARE BOTH BURIED HERE, a century apart, and sources rarely say which they mean. This page is about the FIRST — the talmid of Reb Yechiel Michel of Zlotchov who founded the line and was niftar about 1800. A later Reb Mordechai Shapira of Neskhizh, born 1842, was niftar on 8 Nissan 1900 and was also laid to rest in the town. Check which one you are looking for before you travel.",
+      "THE VILLAGE IS SMALL AND THE NAME IS THE PROBLEM. It is Nesukhoyizhe in the Kovel district of Volyn — Neskhizh in Yiddish, Niesuchojeże in the Polish records. Navigation and older sources use different spellings and some place it loosely as north of Lviv, which it is not: it is about a hundred and eighty kilometres north of there.",
+      "NO SOURCE FOUND GIVES A STREET, a gate arrangement, a keyholder or a description of what stands on the ground. That is the state of the record for this village rather than an omission from this page. Ask in Nesukhoyizhe, and expect to be shown rather than to find it yourself.",
     ],
     burials: [
       { name: "Rabbi Mordechai of Neshchiz", yiddishName: "רבי מרדכי מנעסכיז", knownAs: "The Neshchizer Rebbe", yahrzeit: "י׳ אב · c. 5560 / 1800", note: "A disciple of Reb Yechiel Michel of Zlotchov; founder of the Neskhizh chassidus." },
