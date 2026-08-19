@@ -425,16 +425,23 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
         : item;
     };
 
-    const items = [...dbItems.map(reconcile), ...packItems.map(reconcile)].sort((a, b) =>
-      a.name.localeCompare(b.name, "en") || a.batchName.localeCompare(b.batchName, "en") || a.id.localeCompare(b.id, "en"),
-    );
+    // A lead whose place is already on the site is done, not outstanding work,
+    // and there is nothing for a reviewer to do with it — so it is dropped from
+    // the queue entirely rather than shown as a "possible duplicate" the owner
+    // has to look through. The reconcile pass above is what identifies them;
+    // here they simply leave, along with anything already published or rejected.
+    const items = [...dbItems.map(reconcile), ...packItems.map(reconcile)]
+      .filter((item) => item.status !== "DUPLICATE" && item.status !== "PUBLISHED" && item.status !== "REJECTED")
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, "en") || a.batchName.localeCompare(b.batchName, "en") || a.id.localeCompare(b.id, "en"),
+      );
 
     return {
       configured: dashboard.configured,
       databaseReady: dashboard.databaseReady,
       items,
       packs,
-      counts: tally(items.filter((item) => item.status !== "PUBLISHED" && item.status !== "REJECTED")),
+      counts: tally(items),
       error: null,
     };
   } catch (error) {

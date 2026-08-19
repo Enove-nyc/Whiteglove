@@ -148,12 +148,6 @@ export default function ImportNeedsReviewQueue({
           active={origin === "source_pack"}
           onClick={() => applyCountFilter({ status: "OPEN", origin: "source_pack" })}
         />
-        <CountCard
-          label="Possible duplicates"
-          value={queue.counts.duplicates}
-          active={status === "DUPLICATE" && origin === "ALL"}
-          onClick={() => applyCountFilter({ status: "DUPLICATE", origin: "ALL" })}
-        />
       </div>
 
       <section className="mt-8 border border-[var(--gold-light)] bg-[#fffdf9] p-5" aria-labelledby="review-one-heading">
@@ -347,7 +341,6 @@ export default function ImportNeedsReviewQueue({
             <option value="ALL">Every state</option>
             <option value="AWAITING_VERIFICATION">{reviewQueueStatusLabel("AWAITING_VERIFICATION")}</option>
             <option value="NEEDS_REVIEW">{reviewQueueStatusLabel("NEEDS_REVIEW")}</option>
-            <option value="DUPLICATE">{reviewQueueStatusLabel("DUPLICATE")}</option>
             <option value="REJECTED">{reviewQueueStatusLabel("REJECTED")}</option>
             <option value="PUBLISHED">{reviewQueueStatusLabel("PUBLISHED")}</option>
           </Filter>
