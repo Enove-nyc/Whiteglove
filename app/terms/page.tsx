@@ -3,6 +3,8 @@ import { pageMetadata } from "@/lib/seo";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageBlocks from "@/components/PageBlocks";
+import { resolvePage } from "@/lib/pages";
 
 export const metadata = pageMetadata({
   title: "Terms of Use — White Glove Kosher Travel",
@@ -22,6 +24,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function TermsOfUsePage() {
+  // Once the owner has published an edit in /admin/pages, the page is his
+  // blocks. Until then it is the built-in version below, still wired to the
+  // site words for the contact email and the affiliate disclosure.
+  const page = await resolvePage("terms");
+  if (page?.edited) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <PageBlocks blocks={page.blocks} />
+        <Footer />
+      </main>
+    );
+  }
   const { contactEmail, affiliateDisclosure } = await readWords();
   return (
     <main className="min-h-screen bg-[var(--cream)]">
