@@ -87,9 +87,16 @@ export default async function AppPage({
       // The app fills the screen — its own header, tabs and chrome, no site
       // furniture around it. On a phone it is the whole window; installed to the
       // home screen it is the whole app.
+      //
+      // A shared trip carries its chat: the owner is here as the advisor side,
+      // talking to the client who holds the same trip's link. No share, no
+      // thread — the channel opens when the trip is handed over.
+      const chat = selected?.shareId
+        ? { shareId: selected.shareId, side: "advisor" as const, advisorName: companionTrip.contactName ?? "White Glove" }
+        : undefined;
       return (
         <main>
-          <CompanionApp trip={companionTrip} />
+          <CompanionApp trip={companionTrip} chat={chat} />
         </main>
       );
     }
