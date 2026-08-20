@@ -57,7 +57,8 @@ export default async function AccountPage() {
   // What this plan limits, and where they stand against it. Worked out here
   // rather than in the panel: saying when the next printable copy is due means
   // reading the clock, and a component may not do that while it renders.
-  const limits = limitsFor(plan, await getLimitOverrides());
+  const overrides = await getLimitOverrides();
+  const limits = limitsFor(plan, overrides);
   const trips = await getTrips(who);
   const usageLine = await usageLineFor(who, limits, trips.length);
 
@@ -81,7 +82,15 @@ export default async function AccountPage() {
       // nothing else is asking somebody to agree to an unnamed amount.
       const usable = offering.how === "stripe" ? periods.filter((entry) => entry.line) : [];
       if (offering.how === "stripe" && usable.length === 0) continue;
-      offerChoices.push({ plan: paid, line: offerLine(offering, paid, usable[0]?.line), periods: usable });
+      // Each offered plan carries its own limits line, so the card can read out
+      // everything that plan does — its ceilings alongside the extras it
+      // unlocks (whatYouGet), the same as the plan the traveller is already on.
+      offerChoices.push({
+        plan: paid,
+        line: offerLine(offering, paid, usable[0]?.line),
+        periods: usable,
+        limitsLine: describeLimits(paid, limitsFor(paid, overrides)),
+      });
     }
   }
   const offer = offerChoices.length > 0 ? { how: offering.how, choices: offerChoices } : null;

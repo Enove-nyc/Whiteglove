@@ -106,22 +106,28 @@ export function isUpgrade(from: AccountPlan, to: AccountPlan): boolean {
 }
 
 /**
- * What each plan gets you, in words.
+ * What each plan gets you, over and above the whole site every account already
+ * has — in words.
  *
- * This was empty for all three and is the table those lines go in. The first
- * one is here. A page reading it must still cope with an empty list, because
- * Traveler has none — an empty list under a heading reads as something that
- * failed to load, so those pages say it in a sentence instead.
+ * These are the things a plan UNLOCKS. The trip and print ceilings are not here:
+ * they are numbers the owner can change, so describeLimits() in
+ * lib/account-limits.ts says those instead, and a page shows both together so
+ * each plan reads out everything it can do. Traveler unlocks nothing extra and
+ * keeps an empty list, which the pages cope with by saying it in a sentence
+ * rather than printing an empty heading.
  *
- * The words are what the traveler GETS, not what the code calls it. The gate
- * itself lives in lib/account-limits.ts, once, and this line and that gate
- * must not drift apart — tests/site-assistant.test.ts holds them together.
+ * The words are what the traveler GETS, not what the code calls it, and each
+ * line has a gate behind it in lib/account-limits.ts — the assistant-memory
+ * line tracks keepsAssistantHistory, the branding line tracks
+ * mayBrandOwnItinerary. The two must not drift apart: tests/site-assistant.test.ts
+ * and tests/account-plans.test.ts hold them together.
  */
 const PLAN_INCLUDES: Record<AccountPlan, readonly string[]> = {
   traveler: [],
   pro: ["The assistant remembers your conversation between visits"],
   business: [
     "The assistant remembers your conversation between visits",
+    "Your own logo and business name on every itinerary you print, in place of the White Glove crest",
     "The White Glove app for the travellers you plan for — their trip on their phone, a day at a time, kept for when there is no signal",
   ],
 };
