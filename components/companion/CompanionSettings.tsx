@@ -75,7 +75,7 @@ export default function CompanionSettings() {
         aria-label="Kosher and Shabbos features in the app"
         onClick={toggle}
         disabled={busy}
-        className={`relative h-7 w-12 flex-none rounded-full border transition disabled:opacity-60 ${
+        className={`relative h-6 w-11 flex-none rounded-full border transition disabled:opacity-60 ${
           on ? "border-[var(--navy)] bg-[var(--navy)]" : "border-stone-300 bg-stone-200"
         }`}
       >
