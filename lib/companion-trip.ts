@@ -204,6 +204,7 @@ function dayFor(
   lastIndex: number,
   today: string,
   zday?: ZmanimDay,
+  kosher = true,
 ): CompanionDay {
   const dt = atNoon(day.date);
   const wd = dt?.getUTCDay();
@@ -226,6 +227,11 @@ function dayFor(
     today: day.date === today || undefined,
     items: itemsForDay(day),
   };
+
+  // The Shabbos side of a day is part of the kosher-and-Shabbos layer, off
+  // until an account turns it on. When it is off this is a plain itinerary and
+  // the day carries no Shabbos note at all.
+  if (!kosher) return out;
 
   // Prefer real, worked-out times — candle-lighting on erev Shabbos or yom tov,
   // and when Shabbos ends — falling back to a weekday-only note when the day has
@@ -359,12 +365,15 @@ export function itineraryToCompanionTrip(
     tripName?: string;
     client?: string;
     layer?: CompanionLayer;
+    /** Whether the kosher-and-Shabbos layer is shown. Off by default. */
+    kosher?: boolean;
   },
 ): CompanionTrip {
-  const zmanimByDate = opts.layer?.zmanimByDate;
-  const kosher = opts.layer?.kosher ?? [];
+  const kosherOn = opts.kosher !== false;
+  const zmanimByDate = kosherOn ? opts.layer?.zmanimByDate : undefined;
+  const kosher = kosherOn ? opts.layer?.kosher ?? [] : [];
   const lastIndex = days.length - 1;
-  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, zmanimByDate?.[d.date]));
+  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, zmanimByDate?.[d.date], kosherOn));
 
   // Which day the app opens on: today when the trip is on now, else the first.
   let todayIndex = compDays.findIndex((d) => d.today);
