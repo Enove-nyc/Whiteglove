@@ -17,18 +17,21 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Kozienice — Ohel of the Maggid of Kozhnitz",
     yiddishName: "אוהל המגיד מקאזשניץ",
     country: "Poland",
-    address: "Jewish cemetery, Kozienice, Masovian Voivodeship, Poland",
+    address: "Ohel in the Jewish cemetery, ulica Wójcików, south of the town by the Zagożdżonka, Kozienice, Masovian Voivodeship, Poland",
     coordinates: "51.5775763, 21.5470648",
     airportRef: "51.585, 21.545",
     arrivalNotes: [
-      "Resting place of Rabbi Yisrael Hopstein, the Maggid of Kozhnitz, one of the founding fathers of Polish chassidus.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "RING 502 918 929 BEFORE YOU TRAVEL. The ground is fenced all round with a gate that locks, and the key is held by the man who looks after it. This is not a cemetery you can turn up at.",
+      "IT IS ON ULICA WÓJCIKÓW, at the southern end of the town — the national road 79 runs along its eastern side and the Zagożdżonka is below it to the south. Founded around 1630, and about seven hectares, which is large for the ninety stones left on it.",
+      "THE OHEL IS THE THIRD ONE ON THIS SPOT. The original was hit in the bombing of September 1939 and finished off during the war. A modest one went up in 1984 when the ground was first fenced, and the present larger one was built in 2004 — that work, and the stone fence and gate, were paid for by Reb Mendel Reichberg of New York with the Foundation for the Preservation of Jewish Heritage.",
+      "INSIDE ARE TABLETS FOR FIVE REBBES AFTER HIM and for others of the family. The Maggid's is the kever; the rest are commemorated. Do not assume the whole dynasty is underneath you.",
+      "EXPECT BARE STONE. Of the ninety matzevos that remain, most are granite without any inscription left on them at all.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
       { name: "Rabbi Yisrael Hopstein", yiddishName: "רבי ישראל האפשטיין", knownAs: "The Maggid of Kozhnitz", seforim: "עבודת ישראל", yahrzeit: "י״ד תשרי · 5575 / 1814", note: "A disciple of the Maggid of Mezritch and Reb Elimelech of Lizhensk; a founder of chassidus in Poland." },
     ],
-    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/kozienice",
+    sourceUrl: "https://sztetl.org.pl/pl/miejscowosci/k/371-kozienice/114-cmentarze/16929-cmentarz-zydowski-w-kozienicach-ul-wojcikow",
   },
   {
     slug: "lublin-chozeh",
@@ -37,12 +40,13 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Lublin — Ohel of the Chozeh of Lublin",
     yiddishName: "אוהל החוזה מלובלין",
     country: "Poland",
-    address: "Old Jewish cemetery, Lublin, Lublin Voivodeship, Poland",
+    address: "Old Jewish cemetery, on the hill between ulica Kalinowszczyzna and ulica Sienna, Lublin, Lublin Voivodeship, Poland",
     coordinates: "51.25228, 22.57943",
     airportRef: "51.246, 22.568",
     arrivalNotes: [
-      "Resting place of Rabbi Yaakov Yitzchak Horowitz, the Chozeh (Seer) of Lublin, whose court raised a generation of Polish rebbes.",
-      "In the old Jewish cemetery of Lublin; confirm the exact grave/ohel location locally.",
+      "IT IS NOT OPEN TO WALK INTO. The old cemetery is kept locked and is opened for arranged visits rather than to whoever arrives. The Lublin branch of the Warsaw Jewish community is the address for it — ulica Lubartowska 85, telephone +48 501 667 810. Arrange it before you build a day around it.",
+      "IT IS THE OLDEST JEWISH CEMETERY LEFT IN POLAND, in use from the sixteenth century, on a loess hill between Kalinowszczyzna and Sienna that had been a medieval fortress before it was a burial ground. Its brick and stone wall dates from the seventeenth century.",
+      "ABOUT TWO HUNDRED MATZEVOS AND FRAGMENTS SURVIVE on a ground that buried Lublin for three hundred years. Conservation work was done on the stones in 2018, so what you see has been tended rather than merely left.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
@@ -246,7 +250,7 @@ export const bulkCemeteries6: Cemetery[] = [
     coordinates: "52.2235408, 20.2344561",
     airportRef: "52.229, 20.238",
     arrivalNotes: [
-      "Resting place of Rabbi Avrohom Bornsztain, the Avnei Nezer, founder of the Sochatchov chassidus and one of the great poskim of his age.",
+      "THE OHEL HOLDS FATHER AND SON. The Avnei Nezer, and Reb Shmuel his son, the Shem MiShmuel, who was niftar in Otwock in Teves 5686 and brought here to be buried with him. People come for one and stand over both.",
       "THE KEY IS AT SIERPNIOWA 6. The cemetery is on the same street, closed all round by a continuous fence with a locking gate, so there is no walking in — collect the key at number 6 first.",
       "THE OHEL WAS REBUILT IN AUGUST 1993 and holds the Avnei Nezer together with his son Reb Shmuel, the Shem MiShmuel. Two generations of Sochatchov in one structure.",
       "EXPECT ALMOST NO STONES. The ground runs to nearly three hectares and about ten matzevos remain, the oldest from 1810 — a third of the site is in reasonable order and the other two thirds hold only the occasional stone. The kehilla is documented here from 1564 and the last burial was in 1945.",
@@ -254,9 +258,10 @@ export const bulkCemeteries6: Cemetery[] = [
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
+      { name: "Rabbi Shmuel Bornsztain", yiddishName: "רבי שמואל בורנשטיין", knownAs: "The Shem MiShmuel — second Sochatchover Rebbe", seforim: "שם משמואל", yahrzeit: "טבת · 5686 / 1926", note: "1855–1926. Son of the Avnei Nezer and a grandson of the Kotzker; his Shem MiShmuel runs to nine volumes and is among the most learned chassidishe works on the parsha and the moadim. He was niftar in Otwock and brought to Sochaczew, into his father's ohel. Sources give the day as both 22 and 24 Teves." },
       { name: "Rabbi Avrohom Bornsztain", yiddishName: "רבי אברהם בורנשטיין", knownAs: "The Avnei Nezer of Sochatchov", seforim: "אבני נזר · אגלי טל", yahrzeit: "י״א אדר · 5670 / 1910", note: "A son-in-law of the Kotzker Rebbe; a towering posek and founder of the Sochatchov chassidus." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Avrohom_Bornsztain",
+    sourceUrl: "https://www.jewishgen.org/yizkor/sochaczew/so628.html",
   },
   {
     slug: "radzymin-guterman",

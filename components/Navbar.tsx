@@ -26,7 +26,8 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * why opening on hover made the buttons look dead.
  */
 
-export default function Navbar() {
+export default function Navbar({ brand = "kosher" }: { brand?: "kosher" | "itineraries" } = {}) {
+  const isItineraries = brand === "itineraries";
   const openSignIn = useOpenSignIn();
   const [searchOpen, setSearchOpen] = useState(false);
   useEffect(() => {
@@ -204,7 +205,7 @@ export default function Navbar() {
         }`}
       >
         <div className={`mx-auto flex max-w-7xl items-center gap-2 px-5 transition-[min-height] sm:px-8 ${scrolled ? "min-h-16" : "min-h-20"}`}>
-          <Link href="/" className="relative z-10 mr-2 flex shrink-0 items-center gap-2.5 sm:mr-4" aria-label="White Glove Kosher Travel home">
+          <Link href="/" className="relative z-10 mr-2 flex shrink-0 items-center gap-2.5 sm:mr-4" aria-label={isItineraries ? "White Glove Itineraries home" : "White Glove Kosher Travel home"}>
             <Image
               src="/logo-hand-navy.png"
               alt=""
@@ -217,7 +218,7 @@ export default function Navbar() {
                 the site's own name there left the header as a bare mark. */}
             <span className="hidden flex-col leading-none min-[360px]:flex">
               <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove</span>
-              <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Kosher Travel</span>
+              <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{isItineraries ? "Itineraries" : "Kosher Travel"}</span>
             </span>
           </Link>
 
