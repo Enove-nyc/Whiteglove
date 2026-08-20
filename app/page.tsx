@@ -16,7 +16,7 @@ import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
 import { destinationPhotoSrc } from "@/lib/default-photo";
 import ItinerariesHome from "@/components/ItinerariesHome";
-import { BRAND_ORIGIN, brandForHost, currentBrand } from "@/lib/site-brand";
+import { BRAND_ORIGIN, brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -76,8 +76,9 @@ export async function generateMetadata() {
 export default async function Home() {
   const requestHeaders = await headers();
   // The itineraries domain gets its own front door; everything below is the
-  // kosher site, unchanged.
-  if (brandForHost(requestHeaders.get("host")) === "itineraries") {
+  // kosher site, unchanged. Read through the same helper generateMetadata uses,
+  // so the proxy's brand header and the Host are honoured the one same way.
+  if (brandFromRequestHeaders(requestHeaders) === "itineraries") {
     return <ItinerariesHome />;
   }
   const userAgent = requestHeaders.get("user-agent") || "";
