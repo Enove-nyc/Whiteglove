@@ -9,7 +9,8 @@ import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
-import { categoryIsCurrent, isCurrent, NAV_CATEGORIES, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
+import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
+import { brandForHost } from "@/lib/site-brand-core";
 import AccountMenu, { ACCOUNT_PLACES } from "@/components/AccountMenu";
 import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
@@ -26,7 +27,17 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * why opening on hover made the buttons look dead.
  */
 
-export default function Navbar({ brand = "kosher" }: { brand?: "kosher" | "itineraries" } = {}) {
+export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "kosher" | "itineraries" } = {}) {
+  // A page that knows its brand server-side passes it (the itineraries home);
+  // everywhere else Navbar renders with the default and settles from the
+  // hostname after mount — one frame on the itineraries domain, nothing on the
+  // kosher one. Client-side on purpose, so the kosher site's static pages stay
+  // static (a server read of the host would turn every page dynamic).
+  const [brand, setBrand] = useState<"kosher" | "itineraries">(brandProp);
+  useEffect(() => {
+    if (brandProp === "itineraries") return;
+    if (typeof window !== "undefined") setBrand(brandForHost(window.location.hostname));
+  }, [brandProp]);
   const isItineraries = brand === "itineraries";
   const openSignIn = useOpenSignIn();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -86,8 +97,14 @@ export default function Navbar({ brand = "kosher" }: { brand?: "kosher" | "itine
   // lib/booking-access.ts and lib/navigation.ts's bookCategoryFor.
   const booking = useBookingLink();
   // Four categories; Travel's booking links resolve through the owner's lock.
-  const categories: NavCategory[] = NAV_CATEGORIES.map((category) =>
-    category.label === "Travel" ? travelCategoryFor(booking) : category,
+  const categories: NavCategory[] = categoriesForBrand(brand).map((category) =>
+    isItineraries
+      ? category.label === "Book"
+        ? itinerariesBookingCategoryFor(booking)
+        : category
+      : category.label === "Travel"
+        ? travelCategoryFor(booking)
+        : category,
   );
 
   useEffect(() => {

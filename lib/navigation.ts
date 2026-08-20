@@ -165,6 +165,68 @@ export function travelCategoryFor(booking: BookingLink): NavCategory {
   return { ...travel, links };
 }
 
+/**
+ * The itineraries site's OWN dropdowns — STRICTLY A PLANNER, NOT A GUIDE.
+ *
+ * whitegloveitineraries.com is the trip-planning product, and only that. It is
+ * not a travel guide: it has no browsable directory of destinations, stays,
+ * attractions, kosher places or heritage — those are the kosher site's, and a
+ * guide page reached on this domain is redirected there (middleware.ts). What
+ * lives here is the work of building a trip: get recommendations, build the
+ * itinerary, arrange the travel, and the app the finished trip becomes. The
+ * database underneath is the same one — an itinerary built here can still pull
+ * any place, kosher ones included, into a day (that is autofill, in the
+ * builder) — it is only the FRONT that is the planner's, with no shelves to
+ * browse.
+ *
+ * "Book" is resolved the same way Travel is on the kosher side: its
+ * Flights/Hotels/Cars go through the owner's booking lock, never to a password
+ * box — see itinerariesBookingCategoryFor. It is booking SEARCH (arranging the
+ * trip), not a directory of stays to browse.
+ */
+export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
+  {
+    label: "Plan",
+    links: [
+      { label: "Get recommendations", href: "/plan" },
+      { label: "Build a trip", href: "/itinerary" },
+      { label: "Your route", href: "/my-route" },
+    ],
+  },
+  {
+    label: "Book",
+    // Filled by itinerariesBookingCategoryFor — the booking searches, resolved
+    // through the owner's lock. No browsable stays/activities directory: that is
+    // guide, not planner.
+    links: [],
+  },
+  {
+    label: "The app",
+    links: [
+      { label: "The White Glove app", href: "/app", description: "The trip in your client's pocket" },
+    ],
+  },
+] as const;
+
+/** Book, resolved to the Flights/Hotels/Cars searches through the booking lock
+ *  — the itineraries mirror of travelCategoryFor. Search only, never a browse. */
+export function itinerariesBookingCategoryFor(booking: BookingLink): NavCategory {
+  const book = ITINERARIES_CATEGORIES.find((category) => category.label === "Book")!;
+  const bookingLinks: NavLink[] = booking.searchIsPublic
+    ? [
+        { label: "Flights", href: `${BOOKING_SEARCH_PATH}?type=flights` },
+        { label: "Hotels", href: `${BOOKING_SEARCH_PATH}?type=hotels` },
+        { label: "Cars", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+      ]
+    : [{ label: booking.label, href: booking.href, description: booking.description }];
+  return { ...book, links: bookingLinks };
+}
+
+/** The bar for a brand: the kosher four, or the itineraries four. */
+export function categoriesForBrand(brand: "kosher" | "itineraries"): readonly NavCategory[] {
+  return brand === "itineraries" ? ITINERARIES_CATEGORIES : NAV_CATEGORIES;
+}
+
 export const SIGN_IN: NavLink = { label: "Sign in", href: "/login" };
 
 /**
