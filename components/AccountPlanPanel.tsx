@@ -30,10 +30,12 @@ import {
  * which is take a request a person answers. With the offering closed it says
  * nothing about Gold or Business at all.
  *
- * AND IT STILL DOES NOT INVENT A FEATURE LIST. What Pro gets you is the two
- * free limits lifted, which `limitsLine` already says in the traveller's own
- * terms. A bulleted list of benefits would be the first place this site made
- * something up.
+ * EVERY PLAN READS OUT WHAT IT DOES, AND NONE OF IT IS INVENTED. Each card —
+ * the one the traveller is on and each one offered — shows the same two true
+ * things: its limits line (`limitsLine`, worked out on the server from the real
+ * ceilings) and the extras it unlocks (`whatYouGet`, each with a gate behind it
+ * in lib/account-limits.ts). Nothing here is a benefit nobody agreed to keep;
+ * the words and the gates are held in step by the tests named on those files.
  */
 
 const inputClass =
@@ -47,6 +49,8 @@ export type PlanOffer = {
   line: string;
   /** The renewal periods available. Empty when nothing is being charged. */
   periods: Array<{ period: "monthly" | "yearly"; line: string }>;
+  /** What this plan limits, in the traveller's words, so the card reads out everything it does. */
+  limitsLine: string;
 };
 
 export default function AccountPlanPanel({
@@ -182,20 +186,18 @@ export default function AccountPlanPanel({
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">{PLAN_BLURB[plan]}</p>
 
-      {/* An empty list under a heading reads as something that failed to load,
-          so the sentence is written out instead. */}
-      {included.length === 0 ? (
-        /* This used to end "nothing is behind them yet", which stopped being
-           true the day the trip and print limits arrived. Somebody should meet
-           a limit here, in a sentence, rather than at the moment it stops
-           them. */
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-500">
-          Every account has the whole site — the planner, your saved places, your trips and their documents. {limitsLine}
-        </p>
-      ) : (
-        <ul className="mt-4 space-y-1.5 text-sm leading-7 text-stone-600">
+      {/* Everything this plan does, said the same way for every plan: the
+          limits line (which already ends "everything else on the site is the
+          same"), then the extras this plan unlocks. Traveler unlocks none, so
+          it is the limits line alone rather than an empty heading. */}
+      <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">{limitsLine}</p>
+      {included.length > 0 && (
+        <ul className="mt-3 max-w-2xl space-y-1.5 text-sm leading-7 text-stone-600">
           {included.map((line) => (
-            <li key={line}>{line}</li>
+            <li key={line} className="flex gap-2">
+              <span aria-hidden="true" className="text-[var(--gold-ink)]">✓</span>
+              <span>{line}</span>
+            </li>
           ))}
         </ul>
       )}
@@ -242,6 +244,19 @@ export default function AccountPlanPanel({
                 <div key={choice} className="border border-[var(--gold-light)] bg-white p-5">
                   <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{PLAN_LABELS[choice]}</h3>
                   <p className="mt-2 text-sm leading-7 text-stone-600">{PLAN_BLURB[choice]}</p>
+                  {/* Everything the plan does, the same two true things as the
+                      card above: its limits line, then the extras it unlocks. */}
+                  {entry?.limitsLine && <p className="mt-3 text-sm leading-7 text-stone-600">{entry.limitsLine}</p>}
+                  {whatYouGet(choice).length > 0 && (
+                    <ul className="mt-3 space-y-1.5 text-sm leading-7 text-stone-600">
+                      {whatYouGet(choice).map((line) => (
+                        <li key={line} className="flex gap-2">
+                          <span aria-hidden="true" className="text-[var(--gold-ink)]">✓</span>
+                          <span>{line}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {/* No price line at all rather than a guessed one. In Stripe
                       mode this comes from Stripe itself, so it is the number
                       that will appear on the card or it is not shown. */}

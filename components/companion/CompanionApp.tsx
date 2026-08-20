@@ -67,11 +67,15 @@ type DecItem = CompanionItem & {
 export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
+  advisorInbox = false,
 }: {
   trip?: CompanionTrip;
   chat?: CompanionChat;
+  /** The advisor's own side: a Messages tab that lists every client's chat. */
+  advisorInbox?: boolean;
 }) {
   const liveChat = chat ?? null;
+  const hasMessages = Boolean(liveChat) || advisorInbox;
   const [st, setSt] = useState<State>({
     screen: "home",
     prev: null,
@@ -153,7 +157,7 @@ export default function CompanionApp({
     day: sel.name,
     activity: "On the day",
     chat: advisor,
-    messages: liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Messages",
+    messages: advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Messages",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
@@ -163,7 +167,7 @@ export default function CompanionApp({
     day: `Day ${st.selDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge ? "Your advisor" : "On your own",
-    messages: liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
+    messages: advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
@@ -232,7 +236,7 @@ export default function CompanionApp({
     setSt((s) => ({ ...s, screen: "activity", prev: s.screen, actIdx: i, actDay: di }));
 
   const tabDefs: [Screen, string][] = [["home", "Trip"], ["chat", isGuideMode ? "Guide" : "Concierge"]];
-  if (liveChat) tabDefs.push(["messages", "Messages"]);
+  if (hasMessages) tabDefs.push(["messages", "Messages"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
@@ -358,7 +362,17 @@ export default function CompanionApp({
           <button onClick={() => go("chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Open guide</button>
         </div>
       )}
-      {liveChat && (
+      {advisorInbox && (
+        <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>❝</div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600 }}>Your clients</span>
+            <span style={{ fontSize: 12, color: "#57534e" }}>Every trip you have shared, in one place</span>
+          </div>
+          <button onClick={() => go("messages")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Open</button>
+        </div>
+      )}
+      {liveChat && !advisorInbox && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>
             {(liveChat.side === "advisor" ? trip.family : liveChat.advisorName).charAt(0).toUpperCase()}
@@ -370,7 +384,7 @@ export default function CompanionApp({
           <button onClick={() => go("messages")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Message</button>
         </div>
       )}
-      {!liveChat && !hasConcierge && trip.contactName && (
+      {!liveChat && !advisorInbox && !hasConcierge && trip.contactName && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.25)", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>{trip.contactName.charAt(0).toUpperCase()}</div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -718,7 +732,7 @@ export default function CompanionApp({
   else if (st.screen === "activity") body = activityScreen;
   else if (st.screen === "alerts") body = alertsScreen;
   else if (st.screen === "chat") body = isConcierge ? conciergeChat : guideChat;
-  else if (st.screen === "messages") body = liveChat ? <LiveChat chat={liveChat} /> : guideChat;
+  else if (st.screen === "messages") body = advisorInbox ? <AdvisorInbox /> : liveChat ? <LiveChat chat={liveChat} /> : guideChat;
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
 
@@ -892,6 +906,85 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
         />
         <button onClick={() => void send()} disabled={sending} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>↑</button>
       </div>
+    </div>
+  );
+}
+
+type InboxConvo = {
+  shareId: string;
+  name: string;
+  client: string;
+  count: number;
+  lastText: string;
+  lastFrom: ChatSide | null;
+  lastAt: string;
+};
+
+/**
+ * The advisor's inbox — one conversation per client they have shared a trip
+ * with. Tap one to open that thread; every client is its own chat, and this is
+ * the one place they all live.
+ */
+function AdvisorInbox() {
+  const serif = "Georgia,'Times New Roman',serif";
+  const [convos, setConvos] = useState<InboxConvo[] | null>(null);
+  const [open, setOpen] = useState<InboxConvo | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/api/companion/chats", { cache: "no-store" });
+      if (!r.ok) {
+        setConvos((prev) => prev ?? []); // don't hang on "Loading…" if the first read fails
+        return;
+      }
+      const d = await r.json();
+      setConvos(Array.isArray(d.conversations) ? d.conversations : []);
+    } catch {
+      setConvos((prev) => prev ?? []);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const t = setInterval(() => void load(), 8000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  if (open) {
+    return (
+      <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
+        <button onClick={() => setOpen(null)} className="wg-warm" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, border: 0, borderBottom: "1px solid rgba(38,50,58,.08)", background: "#ece8df", cursor: "pointer", padding: "12px 16px", textAlign: "left" }}>
+          <span style={{ fontSize: 15, color: "#57534e" }}>←</span>
+          <span style={{ font: `400 17px/1.1 ${serif}` }}>{open.client || open.name}</span>
+        </button>
+        <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
+          <LiveChat chat={{ shareId: open.shareId, side: "advisor", advisorName: open.client || open.name }} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 10, animation: "wgIn .28s ease both" }}>
+      {convos === null && <div style={{ padding: 20, textAlign: "center", fontSize: 13, color: "#a8a29e" }}>Loading…</div>}
+      {convos && convos.length === 0 && (
+        <div style={{ padding: "8px 6px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <span style={{ font: `400 19px/1.2 ${serif}` }}>No conversations yet.</span>
+          <span style={{ fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Create a client app link on a trip in the planner and share it. When the client opens it, your chat with them appears here.</span>
+        </div>
+      )}
+      {convos?.map((c) => {
+        const preview = c.lastText ? `${c.lastFrom === "advisor" ? "You: " : ""}${c.lastText}` : "No messages yet";
+        return (
+          <button key={c.shareId} onClick={() => setOpen(c)} className="wg-warm" style={{ textAlign: "left", cursor: "pointer", border: "1px solid rgba(38,50,58,.08)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", alignItems: "center", gap: 13 }}>
+            <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 18px/1 ${serif}`, color: "#1f3f5c" }}>{(c.client || c.name || "?").charAt(0).toUpperCase()}</span>
+            <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.client || c.name}</span>
+              <span style={{ fontSize: 12.5, color: "#78716c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{preview}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

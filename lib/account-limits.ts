@@ -303,9 +303,8 @@ export function describeLimits(plan: AccountPlan, limits: PlanLimits): string {
   if (limits.printsPerWeek !== UNLIMITED) {
     parts.push(`${limits.printsPerWeek} printable ${limits.printsPerWeek === 1 ? "copy" : "copies"} a week`);
   }
-  if (parts.length === 0) return `${PLAN_LABELS[plan]} has no limits on trips or printing.`;
-  return (
-    `${PLAN_LABELS[plan]}: ${parts.join(", and ")}. ` +
-    "Everything else on the site is the same — every kever, every guide, the planner, the map, and sharing a trip with anybody you like."
-  );
+  const everythingElse =
+    "Everything else on the site is the same — every kever, every guide, the planner, the map, and sharing a trip with anybody you like.";
+  if (parts.length === 0) return `${PLAN_LABELS[plan]} has no limits on trips or printing. ${everythingElse}`;
+  return `${PLAN_LABELS[plan]}: ${parts.join(", and ")}. ${everythingElse}`;
 }

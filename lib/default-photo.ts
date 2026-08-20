@@ -1,5 +1,3 @@
-import type { DestinationPhoto } from "@/lib/vacation-destinations-view";
-
 /**
  * The site-wide branded fallback, shown wherever a photograph belongs but none
  * has been published yet.
@@ -21,6 +19,6 @@ export const DEFAULT_PHOTO = "/default-photo.png";
  * The view already holds a picture back to draft until it has a credit
  * (lib/vacation-destinations-view.ts), so anything reaching here may be shown.
  */
-export function destinationPhotoSrc(photos: readonly DestinationPhoto[] | undefined): string {
+export function destinationPhotoSrc(photos: readonly { url: string }[] | undefined): string {
   return photos?.[0]?.url ?? DEFAULT_PHOTO;
 }
