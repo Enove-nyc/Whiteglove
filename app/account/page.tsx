@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
@@ -10,7 +11,7 @@ import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
-import { describeLimits, limitsFor, mayBrandOwnItinerary } from "@/lib/account-limits";
+import { describeLimits, limitsFor, mayBrandOwnItinerary, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
 import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
@@ -90,6 +91,9 @@ export default async function AccountPage() {
   // on somebody's own account page.
   const canBrand = mayBrandOwnItinerary(plan);
   const brand = canBrand ? await readBrand(who) : null;
+  // The White Glove app is a Business entitlement (lib/account-limits.ts). A
+  // Business account gets the door to it here; nobody else sees this line.
+  const canUseApp = mayUseCompanionApp(plan);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -135,6 +139,22 @@ export default async function AccountPage() {
             hasSubscription={hasSubscription}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
+          {canUseApp && (
+            <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
+                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, the kosher side of each day, and the travel wallet kept for when there is no signal. Add it to your home screen.</span>
+                </div>
+                <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
+              </div>
+              <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
+                To hand a client their own trip, open it in the{" "}
+                <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
+                and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
+              </p>
+            </div>
+          )}
         </section>
 
         <section aria-labelledby="account-sign-out" className="mt-10">

@@ -20,6 +20,8 @@ import { addFlightItineraryAction } from "@/app/admin/flight-itineraries/actions
 
 type LegDraft = {
   key: string;
+  /** "", "airline" or "separate" — how this flight connects from the one before. */
+  connectionType: string;
   airline: string;
   flightNumber: string;
   from: string;
@@ -51,6 +53,7 @@ const label = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500"
 function blankLeg(key: string): LegDraft {
   return {
     key,
+    connectionType: "",
     airline: "",
     flightNumber: "",
     from: "",
@@ -124,6 +127,7 @@ function pickLeg(leg: unknown): Partial<LegDraft> {
   const source = (leg ?? {}) as Record<string, unknown>;
   const out: Partial<LegDraft> = {};
   for (const k of [
+    "connectionType",
     "airline",
     "flightNumber",
     "from",
@@ -240,6 +244,29 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
             </button>
           )}
         </div>
+
+        {index > 0 && (
+          <label className="mt-3 block rounded-md border border-[var(--gold-light)] bg-[#fcfaf6] p-3">
+            <span className={label}>Connection from the flight above</span>
+            <select
+              value={leg.connectionType}
+              onChange={(e) => update(listName, leg.key, { connectionType: e.target.value })}
+              disabled={busy}
+              className={field}
+            >
+              <option value="">Just show it as a connection</option>
+              <option value="airline">One ticket — a stopover the airline protects</option>
+              <option value="separate">Separate booking — a self-transfer</option>
+            </select>
+            <span className="mt-2 block text-xs leading-5 text-stone-500">
+              {leg.connectionType === "airline"
+                ? "One booking: the airline checks bags through and rebooks a missed connection."
+                : leg.connectionType === "separate"
+                  ? "Two bookings: the customer re-checks bags and carries the risk of a missed connection — the page warns them."
+                  : "Pick one only if this flight changes from the one above."}
+            </span>
+          </label>
+        )}
 
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <label className="block">

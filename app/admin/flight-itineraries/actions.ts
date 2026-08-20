@@ -49,6 +49,8 @@ function parseLegs(formData: FormData, key: string, direction: FlightDirection):
     if (!Array.isArray(parsed)) return [];
     return parsed.map((leg) => ({
       direction,
+      connectionType:
+        leg?.connectionType === "airline" || leg?.connectionType === "separate" ? leg.connectionType : undefined,
       airline: typeof leg?.airline === "string" ? leg.airline : "",
       flightNumber: typeof leg?.flightNumber === "string" ? leg.flightNumber : "",
       from: typeof leg?.from === "string" ? leg.from : "",

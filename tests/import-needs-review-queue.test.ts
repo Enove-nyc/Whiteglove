@@ -15,11 +15,15 @@ describe("import needs-review queue", () => {
       assert.ok(queue.counts.sourcePackOnly > 0);
       assert.ok(queue.items.every((item) => item.origin === "source_pack" || item.origin === "database"));
       assert.ok(queue.items.every((item) => item.href.startsWith("/admin/imports")));
+      // Leads whose place is already on the site are reconciled away and dropped
+      // from the queue entirely — the list carries only outstanding work, never a
+      // "possible duplicate" for the owner to sift through.
+      assert.equal(queue.counts.duplicates, 0);
+      assert.ok(queue.items.every((item) => item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION"));
+      // Packs whose real candidates are all still outstanding keep their rows;
+      // a pack that fully reconciles to on-site content simply has none left.
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-2"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-4"));
       assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-5"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "kosher-food-batch" && item.kind === "food"));
       assert.ok(queue.items.some((item) => item.batchSlug === "nesiyatova-heritage-batch"));
       assert.ok(queue.packs.every((pack) => pack.path.startsWith("data/imports/")));
       // The White Glove europe / global / fill research packs were retired at the
