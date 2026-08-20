@@ -89,6 +89,12 @@ export type CompanionTrip = {
    */
   concierge: boolean;
   advisorName: string;
+  /**
+   * The client's point of contact, shown on a wired trip that has no live
+   * advisor — the agent a Business account put on the trip. A plain name, no
+   * chat behind it. Absent when nobody was named.
+   */
+  contactName?: string;
   /** What the home screen's header reads — the family and the place. */
   homeTitle: string;
   /** The small line above it — "27 October · day 3 of 8". */

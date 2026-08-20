@@ -345,6 +345,15 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <button onClick={() => go("chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Open guide</button>
         </div>
       )}
+      {!hasConcierge && trip.contactName && (
+        <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.25)", display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>{trip.contactName.charAt(0).toUpperCase()}</div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600 }}>{trip.contactName}</span>
+            <span style={{ fontSize: 12, color: "#57534e" }}>Your advisor for this trip</span>
+          </div>
+        </div>
+      )}
       <div style={{ height: 26 }} />
     </div>
   );

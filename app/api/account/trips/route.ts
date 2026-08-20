@@ -5,14 +5,17 @@ import {
   createTrip,
   deleteTrip,
   duplicateTrip,
+  ensureTripShare,
   getCurrentAccountData,
   getTrips,
   importTrip,
   renameTrip,
+  setTripAdvisor,
   setTripClient,
+  stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayBrandOwnItinerary } from "@/lib/account-limits";
+import { mayBrandOwnItinerary, mayUseCompanionApp } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Itinerary } from "@/data/itinerary";
@@ -40,7 +43,7 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: string; id?: string; name?: string; client?: string; itinerary?: Itinerary }
+    | { action?: string; id?: string; name?: string; client?: string; advisor?: string; itinerary?: Itinerary }
     | null;
 
   switch (body?.action) {
@@ -79,6 +82,41 @@ export async function POST(request: NextRequest) {
       }
       const result = await setTripClient(email, body.id, body.client ?? "");
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "advisor": {
+      // The agent the client is dealing with — the name the trip carries, shown
+      // in the app. Same door as naming the client, and behind the same plan:
+      // it is only shown to somebody planning on another person's behalf.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayBrandOwnItinerary(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: "Putting an advisor on a trip is part of a Business account." },
+          { status: 403 },
+        );
+      }
+      const result = await setTripAdvisor(email, body.id, body.advisor ?? "");
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "share":
+    case "unshare": {
+      // The client's app link, locked to this one trip. Business only — the app
+      // it opens is a Business capability (lib/account-limits.ts), so the link
+      // that hands a trip over as the app is too.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayUseCompanionApp(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: "Sharing a trip as the app is part of a Business account." },
+          { status: 403 },
+        );
+      }
+      if (body.action === "unshare") {
+        const ok = await stopTripShare(email, body.id);
+        if (!ok) return NextResponse.json({ ok: false, error: "Could not stop that." }, { status: 400 });
+      } else if (!(await ensureTripShare(email, body.id))) {
+        return NextResponse.json({ ok: false, error: "Could not create the link." }, { status: 503 });
+      }
+      const trips = await getTrips(email);
+      return NextResponse.json({ ok: true, trips });
     }
     case "duplicate": {
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });

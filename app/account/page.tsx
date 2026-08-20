@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
 import BusinessBrandPanel from "@/components/BusinessBrandPanel";
-import CompanionShare from "@/components/companion/CompanionShare";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -149,7 +148,11 @@ export default async function AccountPage() {
                 </div>
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
-              <CompanionShare />
+              <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
+                To hand a client their own trip, open it in the{" "}
+                <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
+                and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
+              </p>
             </div>
           )}
         </section>
