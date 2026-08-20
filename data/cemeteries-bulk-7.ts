@@ -687,7 +687,7 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Zolochiv — Kever of Reb Avraham Chaim, the Orach LaChaim",
     yiddishName: "זלאָטשאָוו — ציון רבי אברהם חיים, בעל אורח לחיים",
     country: "Ukraine",
-    address: "Former Jewish cemetery, Zolochiv, Lviv Oblast, Ukraine — both of the town's Jewish cemeteries were destroyed and we could not establish which one holds him; confirm exact location locally",
+    address: "The site of the town's two former Jewish cemeteries, 86 metres apart, Zolochiv, Lviv Oblast, Ukraine — no standing matzevah; see the notes",
     coordinates: "49.80903, 24.89010",
     airportRef: "49.807, 24.903",
     arrivalNotes: [
@@ -731,11 +731,14 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Ternopil — Kever of Reb Yosef Babad, the Minchas Chinuch",
     yiddishName: "טאַרנאָפּאָל — ציון רבי יוסף באב\"ד, בעל מנחת חינוך",
     country: "Ukraine",
-    address: "No identified grave site in Ternopil. If you go, the new Jewish cemetery (Nove Okopisko) stands at the corner of Mykulynetska and Pavlova streets, Ternopil, Ternopil Oblast, Ukraine — confirm exact location locally",
+    address: "No identified grave site in Ternopil. If you go, the new Jewish cemetery (Nove Okopisko) stands at the corner of Mykulynetska and Pavlova streets, Ternopil, Ternopil Oblast, Ukraine",
     airportRef: "49.567, 25.600",
     arrivalNotes: [
       "There is no identified, standing, marked kever for the Minchas Chinuch in Ternopil, and we will not pretend otherwise. Ternopil's old Jewish cemetery was vandalised in the war and finally demolished in the 1960s, with the matzevos reportedly broken up to build a road and a military airfield near the Pidvolochysk highway. Do not route a group here expecting to find his stone.",
       "He died in 1874, after the old cemetery had closed, so the newer ground — Nove Okopisko, opened in 1840 at the corner of Mykulynetska and Pavlova streets, opposite the Christian Mykulynetskyi cemetery — is where he would have been buried. That is an inference from the dates, not a record of his grave. About 240 gravestones survive there, and no source we could check identifies his among them.",
+      "THE SURVIVING STONES THERE BEGIN IN 1903, TWENTY-NINE YEARS AFTER HIM. The JewishGen survey of the Mykulynetska ground records between one and five hundred matzevos still standing, most of them where they were set, and dates the earliest of them to 1903. Whatever is under that ground, his matzevah is not among what survives above it. This is the closest anyone has come to an answer and the answer is no.",
+      "THAT SAME SURVEY MAKES THE GROUND EASY, WHICH IS NOT NOTHING. It is enclosed by a continuous fence with no gate in it, reached by turning straight off a private road, and open to all — no keyholder, no arrangement. Overgrowth is the standing problem rather than access.",
+      "THE OLD GROUND IS ON THE CROWN OF A HILL and no stone is visible on it at all; what was taken went into roads and buildings. It was in use from the sixteenth century, and the survey warns that development around it is a serious and current threat.",
       "His burial in Ternopil rests on Wikipedia, dbpedia and Wikidata rather than a first-hand kever record; one genealogy site claims he died in Tzfat, which the other sources contradict.",
       "If Ternopil is on your route, have someone local check the new cemetery for the stone before you commit a group to the stop, and confirm anything you are told on the ground.",
       "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 49.54670, 25.60059 and the newer one at 49.53771, 25.60369, about 1.0 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
@@ -743,7 +746,7 @@ export const bulkCemeteries7: Cemetery[] = [
     burials: [
       { name: "Rabbi Yosef Babad", yiddishName: "רבי יוסף באב\"ד", knownAs: "The Minchas Chinuch", seforim: "מנחת חינוך", note: "Yosef ben Moshe Babad, born 1801 in Przeworsk, rav of Bohorodchany, Zbarazh and Sniatyn before being appointed Av Beis Din of Tarnopol in 1857, a post he held until his petirah in 1874 — not to be confused with the twentieth-century Rabbi Yosef Babad (1905-1997), a different man with his own biography." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Joseph_Babad",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/ternopol",
   },
   {
     slug: "berezhany-maharsham",
@@ -774,10 +777,13 @@ export const bulkCemeteries7: Cemetery[] = [
     name: "Kolomyia — Ohel of Reb Hillel Lichtenstein",
     yiddishName: "קאָלאָמיי — אוהל רבי הלל ליכטענשטיין",
     country: "Ukraine",
-    address: "Ohel in the municipal park on the site of the second Jewish cemetery, near the corner of Antona Chekhova and Symona Petliury streets, Kolomyia, Ivano-Frankivsk Oblast, Ukraine — confirm exact location locally",
+    address: "Ohel in the municipal park on the site of the second Jewish cemetery, near the corner of Antona Chekhova and Symona Petliury streets, Kolomyia, Ivano-Frankivsk Oblast, Ukraine",
     airportRef: "48.531, 25.040",
     arrivalNotes: [
       "The grave is an approximation, not a located stone. Reb Yisrael Meir Gabay of Oholei Tzadikim traced the site in 1998, obtained municipal permits, and built the ohel and tombstone with the Kolomyer Rebbe, Reb Shmuel Levi Weinberger — but the sources say plainly that the stone was set up on the approximated place of burial, and it stands in a municipal park, not in a maintained cemetery.",
+      "THERE IS SOMEWHERE TO STAY AT THE OHEL. Oholei Tzadikim record that a guest house was built beside it for the people who come regularly and spend Shabbos at the site. Almost nothing else on this site has that — a kever in Galicia you can stay at over Shabbos rather than drive to and leave. Ask them what is standing and open before you count on it.",
+      "THE SITE WAS FENCED BEFORE THE OHEL WENT UP, by the Avoiseynu organisation, and the ohel was then built by Oholei Tzadikim and Geder Avos together with the Kolomyer Rebbe. That is who to ask about it, rather than the municipality that owns the park.",
+      "ONE THING ON GEDER AVOS' OWN PAGE IS NOT RIGHT, and it is worth knowing before somebody repeats it to you. That page runs on from Kolomyia into saying the area was formerly Okup, the Baal Shem Tov's birthplace. Okopy is a different place, roughly a hundred and twenty kilometres east near Borshchiv. Kolomyia is not the Besht's birthplace and this listing does not say it is.",
       "There have been press reports of a fire at a Jewish mausoleum in Ukraine treated as possible arson and connected to this site. Check the ohel's current condition before you route a group to it.",
       "The ground under the park is Kolomyia's second Jewish cemetery, in use from 1783 to 1894, whose entrance stood at the corner of what are now Antona Chekhova and Symona Petliury streets, a few blocks north of Ivana Franka Street.",
       "Two things not to confuse: the Lichtenstein Kolomiya section at Washington Cemetery in Brooklyn is a landsmanshaft burial-society plot and not his grave, and there is a living Rabbi Hillel Lichtenstein unconnected to this tzaddik. Confirm the exact spot of the ohel locally before you travel.",
@@ -786,7 +792,7 @@ export const bulkCemeteries7: Cemetery[] = [
     burials: [
       { name: "Rabbi Hillel Lichtenstein of Kolomyia", yiddishName: "רבי הלל ליכטענשטיין מקאָלאָמיי", knownAs: "The Maskil El Dal of Kolomyia (d. 1891)", seforim: "משכיל אל דל", yahrzeit: "י׳ אייר · 5651 / 1891", note: "Son of Rabbi Baruch, born in Vecs in Hungary and a talmid of the Chasam Sofer, he married in 1837 and came to Kolomea in 1867, serving as its rav and as a leader of Hungarian Orthodoxy until his petirah there — not the modern Rabbi Hillel Lichtenstein of the same name." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Hillel_Lichtenstein",
+    sourceUrl: "http://www.gederavos.org/portfolio/kolomyia-ukraine/",
   },
   {
     slug: "khust-maharam-schick",
