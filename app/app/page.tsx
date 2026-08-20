@@ -61,6 +61,10 @@ export default async function AppPage({
 
   const plan = await getPlan(who);
   if (mayUseCompanionApp(plan)) {
+    // Gold has the app for its own trips; only Business hands it to a client.
+    // The copy below turns on this, so a Gold member is never offered a client
+    // feature they do not have.
+    const servesClients = mayServeCompanionClients(plan);
     const wantedId = firstParam((await searchParams).trip);
     const trips = await getTrips(who).catch(() => []);
     const selected =
@@ -96,7 +100,6 @@ export default async function AppPage({
       // Business hands the app to clients, so it gets the Messages inbox — every
       // client they have shared a trip with. Gold has the app for its own trips
       // and no inbox; the tab simply is not there.
-      const servesClients = mayServeCompanionClients(plan);
       return (
         <main>
           <CompanionApp trip={companionTrip} advisorInbox={servesClients} />
@@ -104,8 +107,8 @@ export default async function AppPage({
       );
     }
 
-    // A Business account with no trip to show yet — say so plainly, and offer
-    // the way to fix it, rather than pretending with a sample.
+    // A Gold or Business account with no trip to show yet — say so plainly, and
+    // offer the way to fix it, rather than pretending with a sample.
     const dated = trips.filter((t) => t.startDate && t.endDate);
     return (
       <main className="min-h-screen bg-[var(--cream)]">
@@ -117,8 +120,10 @@ export default async function AppPage({
           </h1>
           <p className="text-base leading-7 text-stone-600">
             {selected
-              ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here — the days, the kosher side of each one, and the Shabbos times."
-              : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."}
+              ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here, ready for the phone."
+              : servesClients
+                ? "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."
+                : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app in your pocket."}
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
             <Link href="/itinerary" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
@@ -146,7 +151,10 @@ export default async function AppPage({
     );
   }
 
-  // Signed in, but not on Business. Say what it is and where it is, once.
+  // Signed in on Traveler — the only plan the app is not part of (Gold and
+  // Business both cleared the gate above). Say what it is, and point at Gold,
+  // the first plan that includes it, not Business. The itineraries "See the
+  // app" link can land here, so this is where that promise has to be true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -156,21 +164,19 @@ export default async function AppPage({
           The trip in your pocket.
         </h1>
         <p className="text-base leading-7 text-stone-600">
-          A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
-          wallet kept on the phone for when there is no signal. It is the itinerary you build in
-          here, handed to your traveller on their phone rather than on paper.
+          Your itinerary a day at a time, with a travel wallet kept on the phone for when there is
+          no signal. It is the trip you build in here, carried on your phone rather than on paper.
         </p>
         <p className="text-base leading-7 text-stone-600">
-          The app is part of {PLAN_LABELS.business} — the plan for an agency or an office planning
-          trips for other people. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business}{" "}
-          from your account, and we will be in touch.
+          The app comes with {PLAN_LABELS.pro} and {PLAN_LABELS.business}. You are on{" "}
+          {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.pro} from your account, and we will be in touch.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/account"
             className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Ask about {PLAN_LABELS.business}
+            Ask about {PLAN_LABELS.pro}
           </Link>
           <Link
             href="/itinerary"
