@@ -826,6 +826,8 @@ type LiveMsg = {
   lat?: number;
   lng?: number;
   at: string;
+  editedAt?: string;
+  deletedAt?: string;
 };
 
 /** The most a picture may weigh before the phone is asked to shrink it first. */
@@ -838,6 +840,9 @@ const MAX_CHAT_VIDEO_BYTES = 15 * 1024 * 1024;
 /** The most a voice note may weigh. Matches MAX_CHAT_AUDIO_BYTES server-side. */
 const MAX_CHAT_AUDIO_BYTES = 8 * 1024 * 1024;
 
+/** A picture, video or voice note picked but not yet sent. */
+type StagedMedia = { kind: "image" | "video" | "audio"; file: File | Blob; previewUrl: string; noun: string };
+
 function LiveChat({ chat }: { chat: CompanionChat }) {
   const { shareId, side, advisorName } = chat;
   const [messages, setMessages] = useState<LiveMsg[]>([]);
@@ -848,6 +853,18 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   const [note, setNote] = useState("");
   const [reported, setReported] = useState<Record<string, boolean>>({});
   const [recording, setRecording] = useState(false);
+  // A picture, video or voice note picked but not yet sent — a preview and a
+  // caption box replace the input row until Send or Cancel is pressed. Chosen
+  // this way rather than sending on pick because the wrong photo tapped by
+  // accident, in a chat that reaches a real client, is not a mistake either
+  // side can take back.
+  const [staged, setStaged] = useState<StagedMedia | null>(null);
+  const [caption, setCaption] = useState("");
+  // The `at` of a message being changed — while set, the composer holds that
+  // message's words rather than a new message, and Send saves the change
+  // instead of posting another one.
+  const [editingAt, setEditingAt] = useState<string | null>(null);
+  const [readAt, setReadAt] = useState<Partial<Record<ChatSide, string>>>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -861,6 +878,7 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       const d = await r.json();
       setMessages(Array.isArray(d.messages) ? d.messages : []);
       setAvailable(d.available !== false);
+      setReadAt(d.readMarkers && typeof d.readMarkers === "object" ? d.readMarkers : {});
       setLoaded(true);
     } catch {
       /* keep what we have; the next poll may reach it */
@@ -905,14 +923,68 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   function send() {
     const t = draft.trim();
     if (!t || sending) return;
+    if (editingAt) {
+      void saveEdit(editingAt, t);
+      return;
+    }
     setDraft("");
     void post({ text: t });
   }
 
-  // Reads a file into a data URL and posts it — the one path pickImage,
-  // pickVideo and the recorded voice note all share, so the size check, the
-  // read and the send stay in exactly one place.
-  function sendFile(file: File | Blob, opts: { accept: RegExp; noun: string; max: number; maxLabel: string }) {
+  // Puts an already-sent text message into the composer to change it, rather
+  // than opening a second box — there is only ever one thing being typed.
+  function startEdit(m: LiveMsg) {
+    if (sending || staged) return;
+    setEditingAt(m.at);
+    setDraft(m.text);
+  }
+
+  function cancelEdit() {
+    setEditingAt(null);
+    setDraft("");
+  }
+
+  async function saveEdit(at: string, text: string) {
+    setSending(true);
+    setNote("");
+    try {
+      const r = await fetch("/api/companion/chat", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, at, text }),
+      });
+      const d = await r.json().catch(() => null);
+      if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
+      else setNote((d && d.error) || "That couldn't be changed.");
+    } catch {
+      setNote("That couldn't be changed.");
+    } finally {
+      setSending(false);
+      setEditingAt(null);
+      setDraft("");
+    }
+  }
+
+  async function deleteMine(at: string) {
+    if (!window.confirm("Delete this message? This can't be undone.")) return;
+    try {
+      const r = await fetch("/api/companion/chat", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, at }),
+      });
+      const d = await r.json().catch(() => null);
+      if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
+      else setNote((d && d.error) || "That couldn't be deleted.");
+    } catch {
+      setNote("That couldn't be deleted.");
+    }
+  }
+
+  // Validates a picked file and holds it for review — nothing is sent until
+  // sendStaged() runs. The one path pickImage, pickVideo and the recorded
+  // voice note all share, so the size check and the preview stay in one place.
+  function stageFile(file: File | Blob, opts: { accept: RegExp; kind: StagedMedia["kind"]; noun: string; max: number; maxLabel: string }) {
     if (sending) return;
     if (!opts.accept.test(file.type)) {
       setNote(`That is not a ${opts.noun}.`);
@@ -922,23 +994,46 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       setNote(`That ${opts.noun} is too large (max ${opts.maxLabel}).`);
       return;
     }
+    setNote("");
+    setStaged({ kind: opts.kind, file, previewUrl: URL.createObjectURL(file), noun: opts.noun });
+  }
+
+  function clearStaged() {
+    setStaged(null);
+    setCaption("");
+  }
+
+  // One place that frees the preview URL — whenever a staged pick is replaced
+  // or cleared, and on unmount if the chat closes with one still held.
+  useEffect(() => {
+    return () => {
+      if (staged) URL.revokeObjectURL(staged.previewUrl);
+    };
+  }, [staged]);
+
+  // Only now does the file actually go out, reading it into the data URL the
+  // route expects, with whatever caption was typed while it sat in preview.
+  function sendStaged() {
+    if (!staged || sending) return;
+    const { file, noun } = staged;
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      if (dataUrl) void post({ dataUrl });
+      if (dataUrl) void post({ dataUrl, text: caption.trim() });
+      clearStaged();
     };
-    reader.onerror = () => setNote(`Could not read that ${opts.noun}.`);
+    reader.onerror = () => setNote(`Could not read that ${noun}.`);
     reader.readAsDataURL(file);
   }
 
   function pickImage(file: File | null | undefined) {
     if (!file) return;
-    sendFile(file, { accept: /^image\//, noun: "picture", max: MAX_CHAT_IMAGE_BYTES, maxLabel: "2 MB" });
+    stageFile(file, { accept: /^image\//, kind: "image", noun: "picture", max: MAX_CHAT_IMAGE_BYTES, maxLabel: "2 MB" });
   }
 
   function pickVideo(file: File | null | undefined) {
     if (!file) return;
-    sendFile(file, { accept: /^video\//, noun: "video", max: MAX_CHAT_VIDEO_BYTES, maxLabel: "15 MB" });
+    stageFile(file, { accept: /^video\//, kind: "video", noun: "video", max: MAX_CHAT_VIDEO_BYTES, maxLabel: "15 MB" });
   }
 
   // A voice note recorded right here, rather than picked from the gallery —
@@ -965,7 +1060,7 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
         chunksRef.current = [];
         if (blob.size > 0) {
-          sendFile(blob, { accept: /^audio\//, noun: "voice note", max: MAX_CHAT_AUDIO_BYTES, maxLabel: "8 MB" });
+          stageFile(blob, { accept: /^audio\//, kind: "audio", noun: "voice note", max: MAX_CHAT_AUDIO_BYTES, maxLabel: "8 MB" });
         }
       };
       recorderRef.current = recorder;
@@ -1017,6 +1112,19 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   }
 
   const otherName = side === "advisor" ? "your client" : advisorName.split(" ")[0];
+  const otherSide: ChatSide = side === "advisor" ? "client" : "advisor";
+
+  // The one message a "Read" mark can attach to — the most recent one I sent
+  // that is still standing. Shown only there, the way a phone's messaging app
+  // does it, rather than under every message I have ever sent.
+  let lastMineAt: string | null = null;
+  for (let j = messages.length - 1; j >= 0; j--) {
+    if (messages[j].from === side && !messages[j].deletedAt) {
+      lastMineAt = messages[j].at;
+      break;
+    }
+  }
+  const otherHasRead = Boolean(lastMineAt && readAt[otherSide] && readAt[otherSide]! >= lastMineAt);
 
   return (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
@@ -1043,7 +1151,13 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             overflow: "hidden",
           };
           let content: ReactNode;
-          if (m.kind === "image" && m.mediaId) {
+          if (m.deletedAt) {
+            content = (
+              <div style={{ maxWidth: "80%", alignSelf: mine ? "flex-end" : "flex-start", padding: "10px 15px", borderRadius: 14, background: "rgba(38,50,58,.06)", fontSize: 13, fontStyle: "italic", color: "#78716c" }}>
+                {mine ? "You deleted this message" : "This message was deleted"}
+              </div>
+            );
+          } else if (m.kind === "image" && m.mediaId) {
             content = (
               <div style={bubble}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1085,22 +1199,43 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             content = (
               <div style={{ ...bubble, padding: "13px 15px", fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                 {m.text}
+                {m.editedAt && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7, fontStyle: "italic" }}>(edited)</span>}
               </div>
             );
           }
+          const isTextEditable = mine && !m.deletedAt && (m.kind ?? "text") === "text";
           return (
             <div key={m.at || i} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", gap: 2 }}>
               {content}
-              {/* Reporting is offered on the other person's messages — you do not
-                  report your own. One tap flags it for the operator. */}
-              {!mine && (
-                reported[m.at] ? (
-                  <span style={{ fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>Reported</span>
-                ) : (
-                  <button onClick={() => void report(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
-                    Report
+              <div style={{ display: "flex", gap: 8 }}>
+                {/* Reporting is offered on the other person's messages — you do
+                    not report your own. One tap flags it for the operator. */}
+                {!mine && !m.deletedAt && (
+                  reported[m.at] ? (
+                    <span style={{ fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>Reported</span>
+                  ) : (
+                    <button onClick={() => void report(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
+                      Report
+                    </button>
+                  )
+                )}
+                {/* Your own messages: change the words (text only) or take the
+                    message back. Not offered on something already deleted. */}
+                {isTextEditable && (
+                  <button onClick={() => startEdit(m)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
+                    Edit
                   </button>
-                )
+                )}
+                {mine && !m.deletedAt && (
+                  <button onClick={() => void deleteMine(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
+                    Delete
+                  </button>
+                )}
+              </div>
+              {/* "Read", once — under the last message I sent, and only once the
+                  other side's own marker has caught up to it. */}
+              {mine && m.at === lastMineAt && otherHasRead && (
+                <span style={{ fontSize: 10, color: "#a8a29e", padding: "0 4px" }}>Read</span>
               )}
             </div>
           );
@@ -1109,44 +1244,99 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       {note && (
         <div style={{ flexShrink: 0, textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#8a5a2b", background: "#f7eee0", padding: "8px 14px" }}>{note}</div>
       )}
-      <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", gap: 9, alignItems: "center" }}>
-        <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
-        <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
-        <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🖼</button>
-        <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🎥</button>
-        <button
-          onClick={() => (recording ? stopRecording() : void startRecording())}
-          disabled={sending}
-          title={recording ? "Stop and send the voice note" : "Record a voice note"}
-          aria-label={recording ? "Stop and send the voice note" : "Record a voice note"}
-          className={recording ? "" : "wg-warm"}
-          style={{
-            flex: "none",
-            border: recording ? "1px solid transparent" : "1px solid rgba(38,50,58,.16)",
-            background: recording ? "#b5442e" : "#ffffff",
-            color: recording ? "#fff" : undefined,
-            cursor: "pointer",
-            width: 40,
-            height: 46,
-            borderRadius: 14,
-            fontSize: 16,
-            padding: 0,
-            opacity: sending ? 0.6 : 1,
-            animation: recording ? "wgPulse 1.1s ease-in-out infinite" : undefined,
-          }}
-        >
-          {recording ? "⏹" : "🎙"}
-        </button>
-        <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>📍</button>
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder={side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
-          style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
-        />
-        <button onClick={() => send()} disabled={sending} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>↑</button>
-      </div>
+
+      {/* A picked photo, video or voice note sits here for review — nothing has
+          gone anywhere yet. This replaces the ordinary input row until it is
+          sent or cancelled, so there is never a question of which one a tap
+          on "↑" would act on. */}
+      {staged ? (
+        <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ flex: "none", width: 56, height: 56, borderRadius: 12, overflow: "hidden", background: "#ece8df", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {staged.kind === "image" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={staged.previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+              {staged.kind === "video" && (
+                <video src={staged.previewUrl} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+              {staged.kind === "audio" && <span style={{ fontSize: 22 }}>🎙</span>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#26323a", textTransform: "capitalize" }}>{staged.noun} ready to send</span>
+              {staged.kind === "audio" && <audio src={staged.previewUrl} controls style={{ height: 30, width: 200, maxWidth: "100%" }} />}
+            </div>
+            <button onClick={clearStaged} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 36, height: 36, borderRadius: 12, fontSize: 15, padding: 0 }}>
+              ✕
+            </button>
+          </div>
+          <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
+            {staged.kind !== "audio" && (
+              <input
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendStaged(); } }}
+                placeholder="Add a caption (optional)…"
+                style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
+              />
+            )}
+            <button onClick={() => sendStaged()} disabled={sending} className="wg-press" style={{ flex: staged.kind === "audio" ? 1 : "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, height: 46, minWidth: 46, borderRadius: 14, fontSize: staged.kind === "audio" ? 14 : 17, fontWeight: staged.kind === "audio" ? 700 : 400, padding: staged.kind === "audio" ? "0 20px" : 0, opacity: sending ? 0.6 : 1 }}>
+              {staged.kind === "audio" ? "Send voice note" : "↑"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          {editingAt && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: "#78716c", padding: "0 2px" }}>
+              <span>Editing your message</span>
+              <button onClick={cancelEdit} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 11.5, color: "#a8a29e" }}>Cancel</button>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
+            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
+            <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
+            {!editingAt && (
+              <>
+                <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🖼</button>
+                <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🎥</button>
+                <button
+                  onClick={() => (recording ? stopRecording() : void startRecording())}
+                  disabled={sending}
+                  title={recording ? "Stop recording" : "Record a voice note"}
+                  aria-label={recording ? "Stop recording" : "Record a voice note"}
+                  className={recording ? "" : "wg-warm"}
+                  style={{
+                    flex: "none",
+                    border: recording ? "1px solid transparent" : "1px solid rgba(38,50,58,.16)",
+                    background: recording ? "#b5442e" : "#ffffff",
+                    color: recording ? "#fff" : undefined,
+                    cursor: "pointer",
+                    width: 40,
+                    height: 46,
+                    borderRadius: 14,
+                    fontSize: 16,
+                    padding: 0,
+                    opacity: sending ? 0.6 : 1,
+                    animation: recording ? "wgPulse 1.1s ease-in-out infinite" : undefined,
+                  }}
+                >
+                  {recording ? "⏹" : "🎙"}
+                </button>
+                <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>📍</button>
+              </>
+            )}
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
+              style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
+            />
+            <button onClick={() => send()} disabled={sending || recording} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1170,6 +1360,7 @@ function AdvisorInbox() {
   const serif = "Georgia,'Times New Roman',serif";
   const [convos, setConvos] = useState<InboxConvo[] | null>(null);
   const [open, setOpen] = useState<InboxConvo | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -1184,6 +1375,25 @@ function AdvisorInbox() {
       setConvos((prev) => prev ?? []);
     }
   }, []);
+
+  // Clears the talk, not the trip or the client's link — they can still open
+  // it and pick up a conversation, just as empty as the day it opened.
+  async function deleteConvo(shareId: string) {
+    if (!window.confirm("Delete this conversation? Every message is cleared — the client keeps their link and can still message you.")) return;
+    setDeleting(shareId);
+    try {
+      const r = await fetch("/api/companion/chats", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId }),
+      });
+      if (r.ok) {
+        setConvos((prev) => (prev ? prev.map((c) => (c.shareId === shareId ? { ...c, count: 0, lastText: "", lastFrom: null, lastAt: "" } : c)) : prev));
+      }
+    } finally {
+      setDeleting(null);
+    }
+  }
 
   useEffect(() => {
     void load();
@@ -1217,13 +1427,27 @@ function AdvisorInbox() {
       {convos?.map((c) => {
         const preview = c.lastText ? `${c.lastFrom === "advisor" ? "You: " : ""}${c.lastText}` : "No messages yet";
         return (
-          <button key={c.shareId} onClick={() => setOpen(c)} className="wg-warm" style={{ textAlign: "left", cursor: "pointer", border: "1px solid rgba(38,50,58,.08)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", alignItems: "center", gap: 13 }}>
-            <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 18px/1 ${serif}`, color: "#1f3f5c" }}>{(c.client || c.name || "?").charAt(0).toUpperCase()}</span>
-            <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.client || c.name}</span>
-              <span style={{ fontSize: 12.5, color: "#78716c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{preview}</span>
-            </span>
-          </button>
+          <div key={c.shareId} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setOpen(c)} className="wg-warm" style={{ flex: 1, minWidth: 0, textAlign: "left", cursor: "pointer", border: "1px solid rgba(38,50,58,.08)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", alignItems: "center", gap: 13 }}>
+              <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 18px/1 ${serif}`, color: "#1f3f5c" }}>{(c.client || c.name || "?").charAt(0).toUpperCase()}</span>
+              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.client || c.name}</span>
+                <span style={{ fontSize: 12.5, color: "#78716c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{preview}</span>
+              </span>
+            </button>
+            {c.count > 0 && (
+              <button
+                onClick={() => void deleteConvo(c.shareId)}
+                disabled={deleting === c.shareId}
+                title="Delete this conversation"
+                aria-label={`Delete conversation with ${c.client || c.name}`}
+                className="wg-warm"
+                style={{ flex: "none", border: "1px solid rgba(38,50,58,.12)", background: "#ffffff", cursor: "pointer", width: 42, height: 42, borderRadius: 12, fontSize: 15, color: "#a8544a", padding: 0, opacity: deleting === c.shareId ? 0.5 : 1 }}
+              >
+                🗑
+              </button>
+            )}
+          </div>
         );
       })}
     </div>
