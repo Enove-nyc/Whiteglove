@@ -108,6 +108,18 @@ export default function VacationCard({ card, compact = false }: { card: Director
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-[var(--navy)] via-[rgba(23,45,82,0.55)] to-[rgba(23,45,82,0.10)]"
         />
+        {/* THE TYPE, NAMED ON THE CARD — so a heritage town reads as the
+            heritage KIND of destination rather than as a different sort of data
+            dropped into the grid. It is the same trip type as the Heritage
+            filter and the Categories menu, surfaced here so like sits with like
+            in one directory instead of feeling merged. Heritage is the one whose
+            card carries different content (kevarim rather than the kosher and
+            Shabbos signals), so it is the one that needs saying. */}
+        {card.kind === "heritage" && (
+          <span className="absolute left-6 top-5 inline-flex items-center rounded-md border border-[var(--gold)] bg-[#fcf6e9] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--navy)]">
+            Heritage
+          </span>
+        )}
         <span className={`relative block ${compact ? "px-6 pb-5 pt-24" : "px-6 pb-7 pt-32"}`}>
           <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">
             {eyebrow}
