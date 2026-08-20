@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { readConversation, withTurns, MAX_TURNS, type AssistantTurn } from "@/lib/assistant-conversation";
 import { NOT_ON_THE_SITE, SITE_ASSISTANT_SYSTEM, saysNotOnTheSite } from "@/lib/site-assistant";
+import { isClientCodeAppView } from "@/components/SiteAssistant";
 
 /**
  * The assistant that only knows this site.
@@ -352,5 +353,38 @@ describe("signing in does not take you off the page", () => {
     assert.match(gate, /\/login remains a real page/);
     const nav = readFileSync("components/Navbar.tsx", "utf8");
     assert.match(nav, /href=\{signInHref\(\)\}/, "the href stays as the fallback");
+  });
+});
+
+describe("the assistant stays off a client's code-only app view", () => {
+  // /i/<shareId>/app is the one door a client reaches with no account at
+  // all — their adviser's code, opening straight into the full-screen app.
+  // It has its own complete chrome; a corner launcher floating over it has
+  // nothing to do there and only sits in the way of the app's own buttons.
+  it("is hidden on the client's app view, in any share id", () => {
+    assert.equal(isClientCodeAppView("/i/abc123/app"), true);
+    assert.equal(isClientCodeAppView("/i/some-long-token/app"), true);
+  });
+
+  it("stays shown on the plain shared-itinerary page — that one has the site's own chrome", () => {
+    assert.equal(isClientCodeAppView("/i/abc123"), false);
+  });
+
+  it("stays shown everywhere else, including a real account's own /app", () => {
+    assert.equal(isClientCodeAppView("/app"), false);
+    assert.equal(isClientCodeAppView("/"), false);
+    assert.equal(isClientCodeAppView("/itinerary"), false);
+    assert.equal(isClientCodeAppView(null), false);
+  });
+
+  it("the component bails out only after every hook has already run", () => {
+    // usePathname is called unconditionally at the top; the early return
+    // sits right before the JSX, after every other hook — never between them.
+    const body = PANEL.slice(PANEL.indexOf("export default function SiteAssistant"));
+    const pathnameHook = body.indexOf("usePathname()");
+    const earlyReturn = body.indexOf("if (isClientCodeAppView(pathname)) return null;");
+    const finalReturn = body.indexOf("return (\n    <>");
+    assert.ok(pathnameHook > -1 && pathnameHook < earlyReturn, "usePathname runs before the bail-out");
+    assert.ok(earlyReturn > -1 && earlyReturn < finalReturn, "the bail-out comes before the render, not inside it");
   });
 });

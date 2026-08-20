@@ -886,11 +886,31 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   // instead of posting another one.
   const [editingAt, setEditingAt] = useState<string | null>(null);
   const [readAt, setReadAt] = useState<Partial<Record<ChatSide, string>>>({});
+  // The `at` of the one message whose "⋯" menu (Report / Edit / Delete) is
+  // open. Only ever one at a time, so a single value does the job of a map.
+  const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpenAt) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenAt(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpenAt(null);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpenAt]);
 
   const load = useCallback(async () => {
     try {
@@ -1229,32 +1249,81 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             );
           }
           const isTextEditable = mine && !m.deletedAt && (m.kind ?? "text") === "text";
+          // A live message always has at least one action — Report on
+          // theirs, Delete (and often Edit) on your own. A deleted one has
+          // none, so its "⋯" is dropped rather than opening onto nothing.
+          const hasMenu = !m.deletedAt;
+          const menuOpen = menuOpenAt === m.at;
           return (
             <div key={m.at || i} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", gap: 2 }}>
-              {content}
-              <div style={{ display: "flex", gap: 8 }}>
-                {/* Reporting is offered on the other person's messages — you do
-                    not report your own. One tap flags it for the operator. */}
-                {!mine && !m.deletedAt && (
-                  reported[m.at] ? (
-                    <span style={{ fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>Reported</span>
-                  ) : (
-                    <button onClick={() => void report(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
-                      Report
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flexDirection: mine ? "row-reverse" : "row" }}>
+                {content}
+                {/* One "⋯" per message instead of Report/Edit/Delete spelled
+                    out beside every bubble — the options a tap actually needs
+                    sit in a small menu right against the message they act on,
+                    rather than spread across the row under it. */}
+                {hasMenu && (
+                  <div ref={menuOpen ? menuRef : undefined} style={{ position: "relative", flex: "none" }}>
+                    <button
+                      onClick={() => setMenuOpenAt(menuOpen ? null : m.at)}
+                      title="Message options"
+                      aria-label="Message options"
+                      aria-expanded={menuOpen}
+                      style={{ border: 0, background: "none", cursor: "pointer", padding: 4, color: "#a8a29e", display: "flex", alignItems: "center" }}
+                    >
+                      <Icon name="more" className="h-4 w-4" />
                     </button>
-                  )
-                )}
-                {/* Your own messages: change the words (text only) or take the
-                    message back. Not offered on something already deleted. */}
-                {isTextEditable && (
-                  <button onClick={() => startEdit(m)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
-                    Edit
-                  </button>
-                )}
-                {mine && !m.deletedAt && (
-                  <button onClick={() => void deleteMine(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
-                    Delete
-                  </button>
+                    {menuOpen && (
+                      <div
+                        role="menu"
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          [mine ? "right" : "left"]: 0,
+                          zIndex: 5,
+                          marginTop: 2,
+                          minWidth: 128,
+                          borderRadius: 12,
+                          border: "1px solid rgba(38,50,58,.12)",
+                          background: "#ffffff",
+                          boxShadow: "0 10px 26px rgba(23,45,82,.16)",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {!mine && (
+                          reported[m.at] ? (
+                            <span style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "#a8a29e" }}>Reported</span>
+                          ) : (
+                            <button
+                              role="menuitem"
+                              onClick={() => { void report(m.at); setMenuOpenAt(null); }}
+                              style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                            >
+                              Report
+                            </button>
+                          )
+                        )}
+                        {isTextEditable && (
+                          <button
+                            role="menuitem"
+                            onClick={() => { startEdit(m); setMenuOpenAt(null); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {mine && (
+                          <button
+                            role="menuitem"
+                            onClick={() => { setMenuOpenAt(null); void deleteMine(m.at); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#b5442e" }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               {/* "Read", once — under the last message I sent, and only once the
