@@ -65,12 +65,9 @@ export default function AccountPlanPanel({
    * about other kinds of account — not a greyed-out card, not a "coming soon".
    */
   offer = null,
-  /** True when they already have a live subscription that can be managed. */
-  hasSubscription = false,
 }: {
   plan: AccountPlan;
   offer?: { how: "soon" | "ask" | "stripe"; choices: PlanOffer[] } | null;
-  hasSubscription?: boolean;
   /**
    * What this plan limits, worked out on the server. A sentence rather than
    * numbers, because it has to read the clock to say when the next printable
@@ -220,11 +217,6 @@ export default function AccountPlanPanel({
           >
             {leaving ? "Opening…" : "Change or cancel your plan"}
           </button>
-          <p className="mt-2 text-xs leading-6 text-stone-500">
-            {hasSubscription
-              ? "Opens Stripe, where you can switch plan, cancel, or go back to Traveler. Your card and receipts are there too, and the trips you have made stay yours either way."
-              : "Opens your billing to change or cancel. If your plan was set up for you, it will say so and we will sort out the change — and the trips you have made stay yours either way."}
-          </p>
         </div>
       )}
 
