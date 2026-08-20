@@ -13,16 +13,16 @@ import { describe, it } from "node:test";
  * were pages about the site standing between the visitor and the site.
  *
  * THE PAGE IS NOW A DOOR: one place-picture hero with the site-wide search in
- * it, a Featured row chosen by what people actually open, and the three free
- * ways in. An order is not something a type system can hold, so it is held
- * here: the source is read and the position of each piece is compared. Crude,
- * and it catches the exact regression that matters.
+ * it, a "Browse by category" row of trip types (at the owner's word — not a
+ * set of featured places), and the three free ways in. An order is not
+ * something a type system can hold, so it is held here: the source is read and
+ * the position of each piece is compared. Crude, and it catches the exact
+ * regression that matters.
  */
 
 const HOME = readFileSync("app/page.tsx", "utf8");
 const NOTICE = readFileSync("components/NewSiteNotice.tsx", "utf8");
 const LAYOUT = readFileSync("app/layout.tsx", "utf8");
-const FEATURED_LIB = readFileSync("lib/featured-destinations.ts", "utf8");
 
 /**
  * The page with the comments and the Tailwind stripped out.
@@ -63,41 +63,31 @@ describe("the first five seconds", () => {
   });
 });
 
-describe("the featured row", () => {
-  it("IS CHOSEN BY USE, from the trailing week, with a written fallback", () => {
-    // Six destinations somebody picked once is a row that goes stale the day
-    // it ships. The row reads the last seven day-buckets of opened
-    // destinations and tops up from FEATURED_FALLBACK while the data is thin
-    // — the merge itself is tested in tests/featured-destinations.test.ts.
-    assert.match(HOME, /featuredDestinations\(6\)/);
-    assert.match(FEATURED_LIB, /topSearchedDestinations/);
-    assert.match(FEATURED_LIB, /FEATURED_FALLBACK/);
+describe("the category row", () => {
+  it("IS THE TRIP TYPES, NOT FEATURED PLACES", () => {
+    // At the owner's word the row under the search is categories — the trip
+    // types — rather than a set of featured destinations. No single place is
+    // lifted above another, and the stale-data machinery that chose a featured
+    // row is not read on the front page any more.
+    assert.doesNotMatch(HOME, /featuredDestinations/, "the featured-destinations picker is back on the front page");
+    assert.match(HOME, /Browse by category/);
+    assert.match(HOME, /TRIP_THEMES\.map/, "the row is not built from the shared trip-type list");
+    assert.match(HOME, /\/destinations\?kind=/, "the category cards do not link into the filtered browser");
   });
 
   it("NEVER SAYS WHY A CARD IS THERE", () => {
     // "Trending" and "most searched" are traffic figures in disguise, and on
-    // a young site they announce the traffic. The heading is one word; the
-    // selection mechanism is the site's business.
-    assert.ok(/Featured\s*<\/h2>/.test(HOME), "the Featured heading is gone or carries extra words");
+    // a young site they announce the traffic.
     assert.doesNotMatch(PROSE, /trending|most[- ]searched|most popular|people are (searching|booking)/i);
   });
 
-  it("PUTS PHOTOGRAPH-POSITION, NAME AND COUNTRY ON THE CARD, AND NOTHING ELSE", () => {
-    // The destination's own page carries the why-go, the kosher and Shabbos
-    // answers and the two ways in. A front-page card that repeats them is the
-    // brochure creeping back one field at a time.
-    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
-    assert.match(cards, /destination\.name/);
-    assert.match(cards, /destination\.country/);
-    assert.doesNotMatch(cards, /whyGo|SignalChip|bestFor|suggestedLength/, "editorial fields are back on the featured card");
-    assert.doesNotMatch(cards, /Explore |See hotels|Learn more|View details|Discover/, "a CTA label is back on the featured card");
-  });
-
-  it("MAKES THE WHOLE CARD ONE LINK", () => {
-    // One action, so a screen reader lists "Rome" rather than "Open" six
-    // times — and there is no second button for a swallowed click to find.
-    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
-    assert.equal(cards.match(/<Link/g)?.length, 1, "a featured card carries more than one link");
+  it("PUTS A NAME ON THE CARD, AND NOTHING ELSE", () => {
+    // A category card is one word and one link. No blurb, no photograph of a
+    // single destination, no CTA label — that is the brochure creeping back.
+    const cards = HOME.slice(at("Browse by category"), at("The three ways in, as compact icon cards"));
+    assert.match(cards, /theme\.label/);
+    assert.doesNotMatch(cards, /theme\.blurb|destinationPhotoSrc|whyGo|bestFor|suggestedLength/, "editorial fields are back on the category card");
+    assert.doesNotMatch(cards, /Explore |See hotels|Learn more|View details|Discover/, "a CTA label is back on the category card");
   });
 
   it("PUBLISHES NO COUNT AND NO TOTAL", () => {
@@ -106,19 +96,16 @@ describe("the featured row", () => {
     // of anything, here or on the hub cards.
     assert.doesNotMatch(HOME, /cards\.length|kevarim\.length|guides\.length/);
     assert.doesNotMatch(PROSE, /\b\d+ (destinations|kevarim|guides|hotels|stays)\b/i);
-    const hub = readFileSync("app/destinations/(hub)/page.tsx", "utf8");
-    const hubCards = hub.slice(hub.indexOf("Browse by holiday type"), hub.indexOf('id="browse"'));
-    assert.doesNotMatch(hubCards, /\{count\} destination/);
   });
 });
 
 describe("the order of the page", () => {
-  it("runs hero, Featured, then the three ways in", () => {
+  it("runs hero, category row, then the three ways in", () => {
     const search = at("<DestinationSearch");
-    const featured = HOME.search(/Featured\s*<\/h2>/);
+    const categories = at("Browse by category");
     const doors = at("The three ways in, as compact icon cards");
-    assert.ok(featured > search, "the Featured row has moved above the hero");
-    assert.ok(doors > featured, "the three ways in have moved above the Featured row");
+    assert.ok(categories > search, "the category row has moved above the hero");
+    assert.ok(doors > categories, "the three ways in have moved above the category row");
   });
 
   it("CARRIES NONE OF THE BROCHURE SECTIONS", () => {

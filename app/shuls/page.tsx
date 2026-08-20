@@ -50,7 +50,7 @@ export default async function ShulsPage() {
 
       {listings.length === 0 ? (
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-          <p className="max-w-2xl leading-7 text-stone-600">Nothing published yet.</p>
+          <p className="max-w-2xl leading-7 text-stone-600">No shuls are listed here.</p>
         </section>
       ) : (
         <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">

@@ -4,23 +4,22 @@ import { describe, it } from "node:test";
 import { BUILT_IN_WORDS } from "@/data/site-words";
 
 /**
- * The booking page is about a holiday now.
+ * The booking page is the search, and little else.
  *
- * WHAT IT USED TO SAY. It compared "airlines and routes to the towns your trip
- * is built around", offered "kosher-friendly stays near the kever or in the
- * city", suggested "a rental for getting between towns and kevarim at your own
- * pace", and explained that a booking sits "alongside the kevarim and
- * destinations the journey is actually built around".
+ * WHAT IT USED TO CARRY, and no longer does. Below the fields sat a long "cash
+ * or points, side by side" comparison, a "rest of the trip" panel explaining
+ * which products are not bookable here, a "planning a heritage journey?" aside,
+ * and an "if a search is not what you came for" list of the other doors. All
+ * four were cut at the owner's word: somebody who reached this page has decided
+ * to search, and a booking page that explains what it does not book — or offers
+ * to send them elsewhere — is a booking page getting in the way of its one job.
  *
- * Every one of those sentences was written when the site was a heritage
- * database with a travel page attached, and they are all true of a heritage
- * journey. Shown to a family booking a week in Rome — on the page where the
- * business now earns its money — they read as evidence that the page is not
- * for them.
- *
- * The heritage side is not diminished by this. It has its own section, and one
- * line here says these tools serve it too. What changed is that the general
- * booking page is now general.
+ * WHAT IT USED TO SAY, and still must not. It once compared "airlines and
+ * routes to the towns your trip is built around" and explained how a booking
+ * sits "alongside the kevarim and destinations the journey is actually built
+ * around". Those sentences were written when the site was a heritage database
+ * with a travel page attached, and a family booking a week in Rome read them as
+ * evidence the page was not for them.
  */
 
 const PAGE = readFileSync("app/book/page.tsx", "utf8");
@@ -38,17 +37,14 @@ describe("what the page is about", () => {
     }
   });
 
-  it("SAYS SO ONCE, AND POINTS AT THE SECTION", () => {
-    // Removing it entirely would be the opposite mistake: somebody planning a
-    // heritage journey needs to know these tools work for them.
-    assert.match(PROSE, /Planning a heritage journey\?/);
-    assert.match(PROSE, /These booking tools work for that too/);
-    assert.match(PROSE, /href="\/heritage"/);
-    // ONCE, as a sentence and its link. A theme rather than a line is how it
-    // got here the first time, so this counts rather than trusting the eye.
-    const mentions = (PROSE.match(/heritage/gi) ?? []).length;
-    assert.ok(mentions <= 3, `heritage is mentioned ${mentions} times on the general booking page`);
-    assert.ok(mentions >= 1, "the heritage line has gone entirely");
+  it("DOES NOT SINGLE OUT HERITAGE", () => {
+    // The "planning a heritage journey? these tools work for that too" aside was
+    // removed: the booking tools obviously work regardless of why somebody is
+    // travelling, and heritage does not need repeatedly elevating on a general
+    // booking page.
+    assert.doesNotMatch(PROSE, /Planning a heritage journey/);
+    assert.doesNotMatch(PROSE, /These booking tools work for that too/);
+    assert.doesNotMatch(PROSE, /heritage/i);
   });
 
   it("opens on the destination, the dates and the kosher needs", () => {
@@ -60,22 +56,31 @@ describe("what the page is about", () => {
   });
 });
 
-describe("getting to the fields", () => {
+describe("the search is the page", () => {
   it("PUTS THE SEARCH ABOVE THE PROSE", () => {
-    // A headline, the owner's notice and a heritage aside used to sit above
-    // the panel: three blocks of reading before anybody could type a city.
+    // A headline and the owner's notice are all that surround the panel, and the
+    // notice reads after the fields, not before them.
     const panel = PAGE.indexOf("<BookPartners");
     const notice = PAGE.indexOf("{words.bookingNotice}");
-    const heritage = PAGE.indexOf("Planning a heritage journey?");
-    assert.ok(panel > 0 && notice > 0 && heritage > 0);
+    assert.ok(panel > 0 && notice > 0);
     assert.ok(panel < notice, "the owner's notice is still above the search");
-    assert.ok(panel < heritage, "the heritage line is still above the search");
   });
 
   it("keeps one short line of heading over it", () => {
     const beforePanel = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf("<BookPartners"));
     const paragraphs = beforePanel.match(/<p[\s>]/g) ?? [];
     assert.equal(paragraphs.length, 0, `${paragraphs.length} paragraphs still sit between the heading and the fields`);
+  });
+
+  it("DROPS THE LONG EDITORIAL SECTIONS BELOW THE SEARCH", () => {
+    // Cut at the owner's word so the page does one job. Each of these was a
+    // block of reading under a working search.
+    assert.doesNotMatch(PROSE, /Cash or points, side by side/, "the cash-or-points comparison is still here");
+    assert.doesNotMatch(PROSE, /The rest of the trip/, "the not-bookable explanation panel is still here");
+    assert.doesNotMatch(PROSE, /We do not sell tickets yet/, "still explaining what it cannot book");
+    assert.doesNotMatch(PROSE, /Drivers on a heritage route/, "still explaining what it cannot book");
+    assert.doesNotMatch(PROSE, /If a search is not what you came for/, "still offering the other doors");
+    assert.doesNotMatch(PROSE, /StartingPoints/, "the other-doors list is still rendered");
   });
 });
 
@@ -106,12 +111,6 @@ describe("hotels first", () => {
     // middle of. See tests/travel-provider-layer.test.ts.
     const order = ["hotels", "flights", "cars"].map((kind) => tabs.indexOf(`chooseKind("${kind}")`));
     assert.ok(order[0] >= 0 && order[0] < order[1] && order[1] < order[2], "the tab order is not hotels, flights, cars");
-  });
-
-  it("puts hotels first in the cash-and-points comparison too", () => {
-    const comparison = PAGE.slice(PAGE.indexOf("const COMPARISON"), PAGE.indexOf("const NOT_YET"));
-    assert.ok(comparison.indexOf('"Where to stay"') < comparison.indexOf('"Flights"'));
-    assert.ok(comparison.indexOf('"Flights"') < comparison.indexOf('"Cars"'));
   });
 });
 
@@ -171,67 +170,5 @@ describe("a date is called what that product calls it", () => {
     const TRANSFERS = readFileSync("app/transfers/page.tsx", "utf8");
     assert.doesNotMatch(TRANSFERS, /PartnerSearchForm/);
     assert.doesNotMatch(TRANSFERS, /Check in|Check out/);
-  });
-});
-
-describe("what is not bookable is named", () => {
-  it("SAYS SO RATHER THAN OFFERING A TAB THAT CANNOT WORK", () => {
-    // The brief names transfers and activities alongside hotels, flights and
-    // cars. Where no programme is joined the registry refuses to build a link,
-    // so it is a sentence with what to do instead rather than a form that takes
-    // somebody's dates and gives them nothing.
-    assert.match(PROSE, /Things to do/);
-    assert.match(PROSE, /We do not sell tickets yet/);
-    // Drivers joined them when /cars folded into this page: that page named
-    // three ways of getting around and only car hire was ever bookable.
-    assert.match(PROSE, /Drivers on a heritage route/);
-    // And each points somewhere that does help. There is no /cars button here
-    // any more — the car search is a tab at the top of this same page, so a
-    // link to it was a link back up the page you were already on.
-    assert.doesNotMatch(PROSE, /["'`]\/cars/);
-    // The link now travels with the card it belongs to rather than sitting in
-    // a row of buttons underneath, so it is declared beside its own sentence.
-    assert.match(PROSE, /href: "\/directory"/);
-    assert.match(PROSE, /href: "\/things-to-do"/);
-    assert.match(PROSE, /href=\{link\.href\}/);
-  });
-
-  it("DROPS AN ENTRY BY READING THE SETTINGS, NOT BY BEING EDITED", () => {
-    // The transfers apology was hardcoded, so it survived the launch of the
-    // thing it apologised for: /book told visitors transfers were not on offer
-    // on the same screen as a working transfer card. Nothing failed and nothing
-    // looked broken — a person found it by clicking.
-    //
-    // The list is filtered against the hand-off settings now, so it cannot fall
-    // out of step again. These assertions are the mechanism, not the wording:
-    // an entry names the hand-off that replaces it, and the page asks whether
-    // that hand-off is live.
-    assert.match(PAGE, /essentialIsBookable/);
-    assert.match(PAGE, /NOT_YET\.filter/);
-    assert.match(PAGE, /notYet\.map/);
-    assert.doesNotMatch(PAGE, /NOT_YET\.map/, "the page still renders the unfiltered list");
-    // Things to do names the tours hand-off, so it goes when tours go live.
-    assert.match(PAGE, /"activity",/);
-    // The counting sentence went in the wording pass, and no typed count may
-    // replace it — "Two things" was written when there were two and stayed
-    // while the list changed underneath it.
-    assert.doesNotMatch(PROSE, /things people ask us for/i);
-  });
-
-  it("STOPS SAYING IT ONCE THE PRODUCT IS BOOKABLE", () => {
-    // Airport transfers were on the not-bookable list while there was no
-    // programme behind them. There is one now, and it has its own page — so
-    // the booking page must not still be telling visitors the opposite on the
-    // same screen as the transfer card. This is the assertion that fails if a
-    // product is ever launched and its apology left behind.
-    assert.doesNotMatch(PROSE, /We do not book transfers yet/);
-    assert.doesNotMatch(PROSE, /Airport transfers/);
-    // The hand-off itself is the Travel Essentials transfer card, which this
-    // page already renders — so there is no separate button to assert here,
-    // and adding one would be a second front door to the same product.
-    assert.match(PROSE, /TravelEssentials/);
-    // "Cars and transfers" was one label over two products that are chosen
-    // instead of each other. It must not come back.
-    assert.doesNotMatch(PROSE, /Cars and transfers/);
   });
 });

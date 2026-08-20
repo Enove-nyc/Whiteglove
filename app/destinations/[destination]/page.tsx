@@ -781,11 +781,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               </p>
             </div>
           </div>
-
-          <p className="mt-6 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-5 py-3 text-sm leading-6 text-stone-600">
-            <span className="font-semibold text-[var(--navy)]">This section is our view of the place.</span> The
-            practical detail below comes from listings with a named source.
-          </p>
         </Fold>
 
         <Fold

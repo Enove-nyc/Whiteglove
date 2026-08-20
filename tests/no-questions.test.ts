@@ -29,7 +29,8 @@ import { describe, it } from "node:test";
  * ALLOWED — a question the visitor is already asking, at the moment they are
  * asking it:
  *   "Ready to book Rome?" at the foot of a destination page.
- *   "Planning a heritage journey?" beside the link for somebody who is.
+ *   "What kind of trip are you planning?" as the opening of /plan, where the
+ *   visitor has come to answer exactly that.
  *
  * Both of those name the reader's own next move. Neither can be rewritten as a
  * statement without sounding like a brochure. The banned list below is
@@ -65,7 +66,6 @@ const NOT_THE_VISITORS: Array<[RegExp, string]> = [
   [/Would rather look at somewhere/i, "same"],
   // Our own machinery, asked out loud.
   [/Is the private store connected\?/i, "an internal state, asked of a customer"],
-  [/What kind of trip are you planning\?/i, "a grid of trip types the page already shows"],
 ];
 
 /**
@@ -77,6 +77,10 @@ const NOT_THE_VISITORS: Array<[RegExp, string]> = [
  */
 const THE_VISITORS_OWN: Array<[string, string]> = [
   ["app/destinations/[destination]/page.tsx", "Ready to book {destination.name}?"],
+  // The opening of /plan, at the owner's word. The visitor arrived to answer
+  // this; it is their own question, and the recommendation flow below is the
+  // answer rather than a restatement.
+  ["app/plan/page.tsx", "What kind of trip are you planning?"],
   // The homepage headline was later hidden so the page opens on the search
   // box itself, with a single sr-only <h1> for search and accessibility
   // (see app/page.tsx). It no longer poses the "Where to?" question, so it

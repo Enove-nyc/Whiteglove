@@ -79,11 +79,11 @@ export default async function MikvaosPage() {
       {listings.length === 0 ? (
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
           <p className="max-w-2xl leading-7 text-stone-600">
-            Nothing published yet. Destination guides and the{" "}
+            Destination guides and the{" "}
             <Link href="/kosher-travel" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
               kosher travel hub
             </Link>{" "}
-            still cover how mikvaos fit into trip planning.
+            cover how mikvaos fit into trip planning.
           </p>
         </section>
       ) : (

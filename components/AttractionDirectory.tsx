@@ -7,7 +7,6 @@ import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
-import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
 import { placeDirectionsUrl } from "@/data/route-utils";
@@ -118,7 +117,11 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
               </ul>
             )}
 
-            <div className="mt-5 flex flex-wrap gap-2 text-sm">
+            {/* PRIMARY ACTIONS — the few things a traveler actually came to
+                do: go there, keep it on the trip, read the full guide, and the
+                kosher answer nearby. Kosher nearby is an outline toggle, not a
+                filled button, so it does not dominate the card. */}
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
               {a.coordinates && (
                 <a
                   href={placeDirectionsUrl(a.address, a.coordinates)}
@@ -129,16 +132,15 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   Navigate →
                 </a>
               )}
-              {a.website && (
-                <a
-                  href={a.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
-                >
-                  Website ↗
-                </a>
-              )}
+              <AddToItineraryButton
+                place={{
+                  id: `attraction-${a.slug}`,
+                  name: a.name,
+                  address: a.address || `${a.city}, ${a.country}`,
+                  coordinates: a.coordinates,
+                }}
+                label="Add to itinerary"
+              />
               {a.internalHref && (
                 <Link
                   href={a.internalHref}
@@ -147,32 +149,26 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   Full guide
                 </Link>
               )}
-              <a
-                href={a.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
-              >
-                Source ↗
-              </a>
               {a.coordinates && (
                 <button
                   type="button"
                   onClick={() => setOpenNearby(openNearby === a.slug ? null : a.slug)}
-                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                  className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)] transition hover:border-[var(--gold)]"
                 >
-                  {openNearby === a.slug ? "Hide what's nearby" : "Kosher food near here"}
+                  {openNearby === a.slug ? "Hide kosher nearby" : "Kosher nearby"}
                 </button>
               )}
             </div>
 
-            {/* WHAT TO DO WITH IT, on the card that made you want to.
-                Somebody who has just read that the Colosseum is twenty minutes
-                from the Ghetto has one of two next thoughts — where would we
-                sleep, and can I keep this — and until now the answer to both
-                was to go back to the navigation and start again. Three
-                specific actions instead of a way out of the page. */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--gold-light)] pt-3 text-sm">
+            {/* SECONDARY, MUTED — the route (driving order, distinct from the
+                itinerary), the source and website for transparency, and rating
+                or suggesting an edit. Real, but they must not compete with the
+                traveler's main choice, so they sit small and quiet under a rule.
+                "Where to stay in {city}" and "Plan a trip here" were removed at
+                the owner's word: repeating Stay and Plan on every one of several
+                hundred cards makes a directory of buttons, and both are one tap
+                away in the navigation. */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--gold-light)] pt-3 text-xs text-stone-500">
               <SaveTripItemButton
                 // A saved place needs an address to navigate to. Not every
                 // attraction record carries one — a valley or a lake shore is
@@ -186,31 +182,26 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   coordinates: a.coordinates,
                   href: `/things-to-do#${a.slug}`,
                 }}
-                label="Add to my route"
+                label="Add to route"
               />
-              {/* The route is the driving order; the itinerary is the trip.
-                  The card offered only the first, so a place you wanted on
-                  the trip could be saved as a stop and nothing more. */}
-              <AddToItineraryButton
-                place={{
-                  id: `attraction-${a.slug}`,
-                  name: a.name,
-                  address: a.address || `${a.city}, ${a.country}`,
-                  coordinates: a.coordinates,
-                }}
-              />
-              <Link
-                href={staySearchHref({ destination: a.city })}
-                className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+              {a.website && (
+                <a
+                  href={a.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center font-semibold text-stone-500 underline decoration-[var(--gold-light)] underline-offset-4 hover:text-[var(--navy)]"
+                >
+                  Website ↗
+                </a>
+              )}
+              <a
+                href={a.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center font-semibold text-stone-500 underline decoration-[var(--gold-light)] underline-offset-4 hover:text-[var(--navy)]"
               >
-                Where to stay in {a.city} →
-              </Link>
-              <Link
-                href={`/plan?destination=${encodeURIComponent(a.city)}`}
-                className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Plan a trip here →
-              </Link>
+                Source ↗
+              </a>
               <RateExperienceLink kind="listing" refId={a.slug} label={a.name} />
               <SuggestEditPanel targetType="site" targetId={a.slug} title={a.name} compact />
             </div>

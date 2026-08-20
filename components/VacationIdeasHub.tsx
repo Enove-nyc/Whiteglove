@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import VacationCard from "@/components/VacationCard";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
@@ -234,12 +233,10 @@ export default function VacationIdeasHub({
            page is where somebody leaves. */
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--gold)] bg-[#fcfaf6] p-8 text-center">
           <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-            Nothing here matches all of those at once.
+            No destinations match those filters.
           </p>
           <p className="mx-auto mt-3 max-w-xl leading-7 text-stone-600">
-            We publish a destination when we hold enough real information to be useful about it, so the list is shorter
-            than a booking site&apos;s. Widen one filter — or tell us where you are thinking of and we will look into it
-            for you.
+            Try changing or clearing a filter.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
@@ -247,14 +244,8 @@ export default function VacationIdeasHub({
               onClick={clearFilters}
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
-              Show every destination
+              Clear filters
             </button>
-            <Link
-              href="/plan"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-            >
-              Tell us what you are looking for
-            </Link>
           </div>
         </div>
       )}

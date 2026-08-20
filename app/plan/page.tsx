@@ -53,7 +53,7 @@ export default async function PlanPage({
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Start a trip</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            {destination ? `Let’s plan ${destination.name}.` : "Tell us roughly what you have in mind."}
+            {destination ? `Let’s plan ${destination.name}.` : "What kind of trip are you planning?"}
           </h1>
         </div>
       </section>
@@ -77,12 +77,6 @@ export default async function PlanPage({
               className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
             >
               Browse vacation ideas
-            </Link>
-            <Link
-              href="/heritage"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Planning a heritage journey
             </Link>
           </div>
         </div>

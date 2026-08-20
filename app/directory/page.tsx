@@ -40,8 +40,10 @@ import { resolvePage } from "@/lib/pages";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Directory — White Glove Kosher Travel",
-  description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
+  title: "Travel Directory — White Glove Kosher Travel",
+  // Provider directory, not a planning service: White Glove is not described as
+  // a planner or agency. Independent providers are what the page lists.
+  description: "Find independent guides, drivers, tour operators and travel providers for kosher and Jewish travel.",
   path: "/directory",
 });
 
@@ -60,10 +62,10 @@ export default async function DirectoryPage() {
           <div className="mx-auto max-w-7xl">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove directory</p>
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">
-              Find the people who make the trip happen.
+              Travel Directory
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-              Tour operators, planners, agencies, guides and drivers — by name, region or specialty.
+              Find independent guides, drivers, tour operators and travel providers.
             </p>
           </div>
         </section>
@@ -89,7 +91,7 @@ export default async function DirectoryPage() {
         </p>
 
         <p className="mt-8 max-w-3xl text-xs leading-5 text-stone-400">
-          Listings are gathered from public sources and provider submissions. White Glove does not endorse or guarantee any provider — please confirm details and kashrus arrangements directly before booking.
+          Provider details can change. Confirm services, pricing and kashrus arrangements directly before booking.
         </p>
       </section>
 

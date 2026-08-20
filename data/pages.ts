@@ -349,9 +349,9 @@ export const editablePages: PageDef[] = [
     slug: "directory",
     href: "/directory",
     label: "Directory",
-    seoTitle: "The White Glove directory | White Glove Kosher Travel",
-    seoDescription: "Tour operators, planners, agencies, guides and drivers — by name, region or specialty.",
-    blocks: [{ id: "directory-hero", kind: "hero", eyebrow: "White Glove directory", heading: "Find the people who make the trip happen.", intro: "Tour operators, planners, agencies, guides and drivers — by name, region or specialty." }],
+    seoTitle: "Travel Directory | White Glove Kosher Travel",
+    seoDescription: "Find independent guides, drivers, tour operators and travel providers for kosher and Jewish travel.",
+    blocks: [{ id: "directory-hero", kind: "hero", eyebrow: "White Glove directory", heading: "Travel Directory", intro: "Find independent guides, drivers, tour operators and travel providers." }],
   },
   {
     slug: "mikvaos",

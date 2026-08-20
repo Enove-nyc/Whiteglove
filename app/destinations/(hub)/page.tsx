@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
@@ -93,33 +92,6 @@ export default async function VacationIdeasPage({
           heading here said the same word twice. */}
       <section id="browse" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
         <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
-      </section>
-
-      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
-          <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Somewhere else in mind
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Ask about somewhere that is not written up yet.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/plan"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-            >
-              Get recommendations
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
-            >
-              Ask about a destination
-            </Link>
-          </div>
-        </div>
       </section>
 
       <Footer />

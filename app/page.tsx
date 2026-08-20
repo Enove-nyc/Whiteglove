@@ -7,14 +7,13 @@ import SearchMemory from "@/components/SearchMemory";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
-import { featuredDestinations } from "@/lib/featured-destinations";
+import { TRIP_THEMES } from "@/data/vacation-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons/Icon";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
-import { destinationPhotoSrc } from "@/lib/default-photo";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -41,10 +40,11 @@ export const metadata = pageMetadata({
  * say that the Ghetto is the quarter to be in. That answer is what the
  * search finds, and the partner hand-off stays underneath it, on our pages.
  *
- * FEATURED IS CHOSEN BY USE. The row is built from the destinations people
- * opened over the trailing week (lib/featured-destinations.ts), topped up
- * from a written fallback while the data is thin — and the page never says
- * which is which, or why anything was chosen. No "trending", no counts.
+ * THE CARDS ARE CATEGORIES, NOT PLACES. At the owner's word the row below the
+ * search is the trip types (Beach, Cities, Mountains, Family, Couples, Short
+ * Trips, Heritage) — the same choice the "Categories" menu offers — each a
+ * link into the destinations browser filtered to that type. No single place is
+ * featured over another, no photograph of one destination, no counts.
  *
  * WHAT IS NOT HERE, AND IS NOT AN OVERSIGHT:
  *
@@ -62,10 +62,9 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, featured, caseStudies, booking] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, caseStudies, booking] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
-    featuredDestinations(6),
     // Genuine, permitted, approved only — section renders nothing when empty.
     readPublicCaseStudies(),
     readBookingLink(),
@@ -103,42 +102,42 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 2. Featured --------------------------------------------------
-          Picture, name, country. Nothing else: no blurb, no rating, no CTA, no
-          reason it was chosen. The picture is the place's own credited photo
-          when there is one, and the branded White Glove default otherwise
-          (lib/default-photo.ts) — never a blank box. The whole card is one
-          link, so a screen reader lists "Rome" rather than "Explore" six
-          times. */}
-      {featured.length > 0 && (
-        <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-            Featured
-          </h2>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map(({ destination, href }) => (
-              <li key={destination.slug}>
-                <Link
-                  href={href}
-                  className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
-                >
-                  <div
-                    aria-hidden="true"
-                    className="aspect-[4/3] w-full bg-[var(--navy)] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${destinationPhotoSrc(destination.photos)})` }}
-                  />
-                  <div className="p-5">
-                    <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
-                      {destination.name}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-stone-600">{destination.country}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* ---- 2. Browse by category ----------------------------------------
+          At the owner's word the row under the search is the trip types, not a
+          set of featured places. Each card is one link into the destinations
+          browser filtered to that type — the same choice the "Categories" menu
+          offers. Name only: no blurb, no photograph of one destination, no
+          count. The list is TRIP_THEMES, so it stays in step with the filter
+          the hub actually reads and the labels the menu shows. */}
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
+          Browse by category
+        </h2>
+        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {TRIP_THEMES.map((theme) => (
+            <li key={theme.value}>
+              <Link
+                href={`/destinations?kind=${theme.value}`}
+                className="wg-card group flex min-h-24 flex-col justify-end rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]"
+              >
+                <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
+                  {theme.label}
+                </span>
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link
+              href="/destinations"
+              className="wg-card group flex min-h-24 flex-col justify-end rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]"
+            >
+              <span className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
+                All destinations
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </section>
 
       {/* ---- 3. The three ways in, as compact icon cards ------------------
           Ideas (/plan), Itinerary (/itinerary), Book (resolved through the
@@ -184,40 +183,12 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 4. Explore ---------------------------------------------------
-          The front page had been cut back to a search, six places and three
-          doors, which is a clean opening and a poor map: things to do, where
-          to stay, kosher food, heritage, the map, the directory, who this is
-          and how it checks what it prints were all real parts of the site
-          with no way in from the page everybody lands on. This is a plain
-          list of names — no pictures, no counts, no sales copy — so it adds a
-          way through without adding weight. */}
-      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Explore</h2>
-        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
-          {(
-            [
-              { label: "Things to do", href: "/things-to-do" },
-              { label: "Where to stay", href: "/hotels" },
-              { label: "Kosher food", href: "/kosher" },
-              { label: "Jewish heritage", href: "/heritage" },
-              { label: "Map", href: "/map" },
-              { label: "Directory", href: "/directory" },
-              { label: "About", href: "/about" },
-              { label: "Verification", href: "/verification" },
-            ] as const
-          ).map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] underline-offset-4 transition hover:decoration-[var(--gold)]"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* The homepage-as-sitemap "Explore" directory was removed at the owner's
+          word: things to do, where to stay, kosher food, the map, the directory,
+          About and Verification all have a home in the navigation or the footer,
+          and a front page that lists its own site reads as a map rather than a
+          door. The page stays intentionally short — search, categories, the
+          three ways in, the assistant. */}
 
       {inlinePromotions.length ? (
         <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">

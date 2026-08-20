@@ -1,8 +1,11 @@
 /**
  * What the site says it is, in the order it says it.
  *
- * Four dropdown categories in the bar — Destinations, Kosher, Plan, Travel
- * — each a short list of links with no photographs or paragraphs. Booking
+ * Four dropdown categories in the bar — Categories, Kosher, Plan, Travel
+ * — each a short list of links with no photographs or paragraphs. The first,
+ * "Categories", is the way to choose the TYPE of trip (Beach, Cities,
+ * Mountains, Family, Couples, Short Trips, Heritage) alongside All
+ * Destinations and the Map. Booking
  * (flights, hotels, cars) lives inside Travel rather than as a fifth door. A
  * category is what somebody is trying to do, not which folder the page lives
  * in: Kosher Stays and Travel Stays point at the same page today (one kosher
@@ -56,14 +59,15 @@ export type NavCategory = {
 };
 
 /**
- * The four dropdowns, in order. Destinations first: a visitor reads left to
- * right and stops at the first thing that sounds like what they came for.
+ * The four dropdowns, in order. Categories first: a visitor reads left to
+ * right and stops at the first thing that sounds like what they came for, and
+ * "Categories" says plainly that this menu is where you pick the type of trip.
  * Travel's booking links (Flights/Hotels/Cars) are appended per request by
  * travelCategoryFor below, never listed here — rule 3.
  */
 export const NAV_CATEGORIES: readonly NavCategory[] = [
   {
-    label: "Destinations",
+    label: "Categories",
     links: [
       { label: "All Destinations", href: "/destinations" },
       { label: "Map", href: "/map" },
@@ -120,9 +124,15 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
   {
     label: "Plan",
     links: [
-      { label: "Planner", href: "/plan" },
-      { label: "Route", href: "/my-route" },
-      { label: "Itinerary", href: "/itinerary" },
+      // "Get Ideas" not "Planner": /plan is a recommendation/start flow, not a
+      // done-for-you planner. Build Itinerary (/itinerary) and Build Route
+      // (/my-route) are the two things a visitor builds themselves. There is no
+      // separate "Saved Trips" page to add — an account's itinerary and route
+      // are those two, reached through the account menu — so the menu stays the
+      // three real tools rather than inventing a fourth.
+      { label: "Get Ideas", href: "/plan" },
+      { label: "Build Itinerary", href: "/itinerary" },
+      { label: "Build Route", href: "/my-route" },
     ],
   },
   {

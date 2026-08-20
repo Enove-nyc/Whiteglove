@@ -1,30 +1,28 @@
-import Link from "next/link";
 import { readWords } from "@/lib/site-words-store";
 import { readExtras } from "@/lib/travel-extras-store";
-import { essentialIsBookable, type EssentialServiceId } from "@/lib/travel-essentials";
-import { readTravelEssentials } from "@/lib/travel-essentials-store";
 import TravelEssentials from "@/components/TravelEssentials";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
-import StartingPoints from "@/components/StartingPoints";
 import Footer from "@/components/Footer";
-import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
 
 // The one booking page.
 //
-// REWRITTEN AROUND A HOLIDAY, not around a kevarim route. It used to compare
-// "airlines and routes to the towns your trip is built around", offer "stays
-// near the kever or in the city", and explain how a booking sits "alongside
-// the kevarim and destinations the journey is actually built around". Every
-// one of those sentences was written when the site was a heritage database
-// with a travel page attached, and a family booking a week in Rome read them
-// as evidence that this page was not for them.
+// THE SEARCH IS THE PAGE. Somebody arriving here has already decided to
+// search, so the fields come first and the page does the one job. The long
+// "cash or points, side by side" comparison, the "rest of the trip"
+// explanation cards for products that are not bookable here, the heritage
+// aside and the "if a search is not what you came for" list were all cut at
+// the owner's word — a booking page that explains what it does not book, and
+// offers other doors, is a booking page getting in the way of the search.
 //
-// The heritage side is not diminished by that and is not meant to be: it has
-// its own section, and one line here says these tools work for it too. What
-// changed is that the general booking page is now general.
+// REWRITTEN AROUND A HOLIDAY, not around a kevarim route. It used to compare
+// "airlines and routes to the towns your trip is built around" and explain how
+// a booking sits "alongside the kevarim and destinations the journey is
+// actually built around". Those sentences were written when the site was a
+// heritage database with a travel page attached, and a family booking a week
+// in Rome read them as evidence that this page was not for them.
 //
 // HOTELS OPENS. Accommodation is the one product this site knows something a
 // comparison site does not — which quarter makes Shabbos walkable — so it is
@@ -35,68 +33,6 @@ export const metadata = pageMetadata({
     "Search places to stay, flights and rental cars — with cash or miles. Booking and payment happen with trusted partners.",
   path: "/book",
 });
-
-const COMPARISON: Array<[string, string, string]> = [
-  [
-    "Where to stay",
-    "Compare places to stay for your dates.",
-    "See which chains have a property in town, and whether the points beat the cash rate.",
-  ],
-  [
-    "Flights",
-    "Compare airlines and routes for your dates, then book with a partner.",
-    "Search award seats across programs, then check the cents-per-point before you transfer.",
-  ],
-  [
-    "Cars",
-    // The cross-border warning stays: several hire companies forbid taking
-    // the car over a border outright, and finding out late is expensive.
-    "Hire a car where the destination needs one. If the trip crosses a border, check the rules first — several hire companies forbid it outright.",
-    "Card portals take points for a rental — usually poor value; the calculator will say.",
-  ],
-];
-
-/**
- * What is not bookable here, said plainly.
- *
- * The brief names transfers and activities alongside hotels, flights and cars.
- * lib/affiliate/partners.ts refuses to build a link for a product with no
- * programme behind it — so the honest thing is a sentence about each rather
- * than a tab that takes somebody's dates and gives them nothing.
- *
- * DRIVERS JOINED THE LIST when /cars folded into this page. That page named
- * three ways of getting around — hire, transfers, drivers — and only the first
- * was ever bookable. A driver is the honest sentence it always was, and it
- * belongs wherever the car search is.
- *
- * AIRPORT TRANSFERS HAVE LEFT IT, and that is the rule this list lives by:
- * each entry becomes a search the day there is something behind it, and must
- * leave on that day. An entry left here after its product launches is the site
- * contradicting itself on the screen where somebody is deciding whether to
- * trust it — which is exactly what happened with transfers, and was found by a
- * person clicking the card and reading the apology beside it.
- *
- * SO IT IS NOT A HAND-EDITED LIST ANY MORE. An entry carrying `needs` names the
- * hand-off that would replace it, and drops out of the list the moment that
- * hand-off is enabled and configured. Turning the programme off puts the
- * sentence back. Nobody has to remember, and the page cannot disagree with the
- * settings screen. An entry with no `needs` is a standing truth rather than a
- * pending launch — a driver on a heritage route is a person, and no programme
- * is going to change that.
- */
-const NOT_YET: Array<[string, string, { href: string; label: string }?, EssentialServiceId?]> = [
-  [
-    "Drivers on a heritage route",
-    "A driver is a person, not a booking engine. They are in the provider directory.",
-    { href: "/directory", label: "Open the provider directory" },
-  ],
-  [
-    "Things to do",
-    "We do not sell tickets yet.",
-    { href: "/things-to-do", label: "Browse things to do" },
-    "activity",
-  ],
-];
 
 export default async function BookPage({
   searchParams,
@@ -116,10 +52,6 @@ export default async function BookPage({
   // The paragraph under the heading. /admin/settings/words.
   const words = await readWords();
   const extras = await readExtras();
-  // The not-bookable list, minus anything that has since become bookable. See
-  // the comment on NOT_YET: this is the reason it cannot be left behind again.
-  const essentials = await readTravelEssentials();
-  const notYet = NOT_YET.filter(([, , , needs]) => !needs || !essentialIsBookable(needs, essentials));
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   // Trimmed and capped rather than printed as given: it lands in a text field
   // as though the visitor had typed it, and a link is not a trustworthy author.
@@ -177,101 +109,15 @@ export default async function BookPage({
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            Planning a heritage journey?{" "}
-            <Link
-              href="/heritage"
-              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
-            >
-              These booking tools work for that too
-            </Link>
-            .
-          </p>
         </div>
       </section>
 
-      {/* Structured Travel Essentials first; free-form custom extras after. */}
+      {/* Structured Travel Essentials first; free-form custom extras after.
+          These are real, bookable partner hand-offs — the page's one job is the
+          search, and these extend it rather than explaining what it does not
+          do. */}
       <TravelEssentials pageType="book" placement="book-essentials" destinationName={destination || undefined} />
       <TravelExtras extras={extras} />
-
-      {/* Cash and points, set side by side per category. Two independent
-          columns of cards never lined up — each card sized to its own text —
-          so the comparison is one grid, where a row is a row by construction. */}
-      {/* Same padding-then-centre order as the hero above, so both sections
-          share one left edge. Putting the padding inside max-w-5xl instead
-          shifted this block 32px in from the panel. */}
-      <section className="px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-6xl">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Cash or points, side by side</h2>
-
-        <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_18px_45px_rgba(23,45,82,.07)]">
-          <div className="hidden bg-[var(--navy)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)] sm:grid sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
-            <span />
-            <span>With cash</span>
-            <span>With miles &amp; points</span>
-          </div>
-          {COMPARISON.map(([category, cash, points]) => (
-            <div key={category} className="grid gap-4 bg-[#fcfaf6] px-5 py-6 sm:grid-cols-[8rem_1fr_1fr] sm:gap-6 sm:px-6">
-              <h3 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
-                <GloveMark size="sm" />
-                {category}
-              </h3>
-              <p className="text-sm leading-6 text-stone-600">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)] sm:hidden">With cash</span>
-                {cash}
-              </p>
-              <p className="text-sm leading-6 text-stone-600">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)] sm:hidden">With miles &amp; points</span>
-                {points}
-              </p>
-            </div>
-          ))}
-        </div>
-        </div>
-      </section>
-
-      {/* What is NOT bookable here. A tab that takes somebody's dates and
-          gives them nothing is worse than a sentence saying so.
-
-          The whole section goes when there is nothing left in it — a heading
-          called "The rest of the trip" over an empty space is worse than no
-          heading, and the day everything here is bookable is a day worth
-          reaching without a deploy. */}
-      {notYet.length > 0 && (
-      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">The rest of the trip</h2>
-          {/* The link sits on the card it belongs to, rather than in a row of
-              buttons underneath. That row used to lead with "Cars and
-              transfers" pointing at /cars — a page whose search is now the Cars
-              tab at the top of this one, which made the button a link back up
-              the page it was already on. */}
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {notYet.map(([heading, body, link]) => (
-              <article key={heading} className="rounded-3xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
-                <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{heading}</h3>
-                <p className="mt-3 text-sm leading-6 text-stone-600">{body}</p>
-                {link && (
-                  <Link
-                    href={link.href}
-                    className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                  >
-                    {link.label}
-                  </Link>
-                )}
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
-
-      {/* Which of the four doors this one is, for somebody who arrived here
-          from the navigation and is not sure a partner search is what they
-          wanted. lib/starting-points.ts. */}
-      <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
-        <StartingPoints omit={["/book"]} heading="If a search is not what you came for" />
-      </section>
 
       <Footer />
     </main>

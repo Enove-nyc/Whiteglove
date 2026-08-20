@@ -260,12 +260,12 @@ describe("one name per thing", () => {
     // The bar once said "My Trips" and the menu said "Itinerary planner", both
     // pointing at /itinerary — one page offered twice under two names, which
     // reads as two features, one of which cannot be found. The header's
-    // dropdowns since moved to short, category-scoped words ("Plan >
+    // dropdowns since moved to short, category-scoped words ("Plan > Build
     // Itinerary" reads as "Itinerary planner" without spelling it out) — what
     // still must not happen is a SECOND, competing name for the same page.
     const itineraryBlocks = [...NAV.matchAll(/\{[^{}]*href: "\/itinerary"[^{}]*\}/g)].map((m) => m[0]);
     const labels = itineraryBlocks.map((block) => /label: "([^"]+)"/.exec(block)?.[1]).filter(Boolean);
-    assert.deepEqual([...new Set(labels)], ["Itinerary"], `/itinerary is called more than one thing: ${labels}`);
+    assert.deepEqual([...new Set(labels)], ["Build Itinerary"], `/itinerary is called more than one thing: ${labels}`);
     assert.doesNotMatch(NAV, /"My Trips"/);
     assert.doesNotMatch(NAV, /"Hotels & Stays"/);
     assert.doesNotMatch(NAV, /"Itinerary planner"/, "a second, longer name for the same page has crept back in");
