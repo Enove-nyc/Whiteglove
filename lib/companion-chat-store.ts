@@ -18,10 +18,11 @@ export type CompanionChatSide = "client" | "advisor";
 
 /**
  * What a message carries. A plain message is "text"; the concierge and the
- * traveller can also send a picture or their current place, so the advisor can
- * see what they are looking at rather than only read about it.
+ * traveller can also send a picture, a short video, a voice note, or their
+ * current place, so the advisor can see and hear what they are looking at
+ * rather than only read about it.
  */
-export type CompanionChatKind = "text" | "image" | "location";
+export type CompanionChatKind = "text" | "image" | "video" | "audio" | "location";
 
 export type CompanionChatMessage = {
   from: CompanionChatSide;
@@ -31,9 +32,9 @@ export type CompanionChatMessage = {
    * kind reads as "text" and nothing already in a thread changes.
    */
   kind?: CompanionChatKind;
-  /** The words: the message itself, a picture's caption, or a place's label. May be "". */
+  /** The words: the message itself, a picture/video's caption, or a place's label. May be "". */
   text: string;
-  /** kind "image": the media-store id, served back through /api/media. */
+  /** kind "image", "video" or "audio": the media-store id, served back through /api/media. */
   mediaId?: string;
   /** kind "location": a point the other side can open in a map. */
   lat?: number;
@@ -75,7 +76,7 @@ async function command<T>(args: (string | number)[]): Promise<T | null> {
 
 /** A stored kind we recognise, or "text" — an old or unknown row is text. */
 function kindOf(raw: unknown): CompanionChatKind {
-  return raw === "image" || raw === "location" ? raw : "text";
+  return raw === "image" || raw === "video" || raw === "audio" || raw === "location" ? raw : "text";
 }
 
 /**
@@ -93,9 +94,10 @@ export function parseChatMessages(rows: string[] | null): CompanionChatMessage[]
       const m = JSON.parse(row) as CompanionChatMessage;
       if (!m || (m.from !== "client" && m.from !== "advisor") || typeof m.text !== "string") continue;
       const kind = kindOf(m.kind);
-      // A picture with no file, or a place with no coordinate, is a broken row,
-      // not a message — skip it rather than render an empty bubble.
-      if (kind === "image" && typeof m.mediaId !== "string") continue;
+      // A picture, video or voice note with no file, or a place with no
+      // coordinate, is a broken row, not a message — skip it rather than
+      // render an empty bubble.
+      if ((kind === "image" || kind === "video" || kind === "audio") && typeof m.mediaId !== "string") continue;
       if (kind === "location" && !(Number.isFinite(m.lat) && Number.isFinite(m.lng))) continue;
       out.push({ ...m, kind });
     } catch {

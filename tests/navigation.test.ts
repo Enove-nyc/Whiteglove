@@ -124,7 +124,10 @@ describe("which section is current", () => {
 
 describe("the header renders the list rather than its own copy", () => {
   it("reads the shared navigation", () => {
-    assert.match(NAVBAR, /NAV_CATEGORIES/);
+    // The header picks the brand's bar from the shared module rather than
+    // hard-coding a copy — kosher gets NAV_CATEGORIES, itineraries its own set,
+    // both through categoriesForBrand.
+    assert.match(NAVBAR, /categoriesForBrand\(/);
     assert.match(NAVBAR, /travelCategoryFor\(/);
     assert.match(NAVBAR, /from "@\/lib\/navigation"/);
   });

@@ -9,7 +9,15 @@ import {
   readChat,
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
-import { effectiveMediaLimit, mediaStoreAvailable, putMedia } from "@/lib/media";
+import {
+  audioUploadsAvailable,
+  effectiveMediaLimit,
+  MAX_CHAT_AUDIO_BYTES,
+  MAX_CHAT_VIDEO_BYTES,
+  mediaStoreAvailable,
+  putMedia,
+  videoUploadsAvailable,
+} from "@/lib/media";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { identityKey } from "@/lib/identity";
@@ -22,6 +30,25 @@ export const dynamic = "force-dynamic";
 // camera and gallery produce, and nothing else the media store also happens to
 // accept (PDFs, GIFs).
 const CHAT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+// A video is a short clip, not any container a phone might produce.
+const CHAT_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm"]);
+// A voice note, recorded in the browser — the two containers MediaRecorder
+// actually produces across Safari and everywhere else.
+const CHAT_AUDIO_TYPES = new Set(["audio/webm", "audio/mp4", "audio/mpeg", "audio/ogg"]);
+
+type ChatMediaKind = "image" | "video" | "audio";
+
+/** What a content type is, its limit, its rate key, and whether the store can
+ * take it — one table instead of three parallel if/else ladders. */
+function mediaKindFor(contentType: string): { kind: ChatMediaKind; limit: number; available: () => boolean } | null {
+  if (CHAT_IMAGE_TYPES.has(contentType)) return { kind: "image", limit: effectiveMediaLimit(), available: mediaStoreAvailable };
+  if (CHAT_VIDEO_TYPES.has(contentType)) return { kind: "video", limit: MAX_CHAT_VIDEO_BYTES, available: videoUploadsAvailable };
+  if (CHAT_AUDIO_TYPES.has(contentType)) return { kind: "audio", limit: MAX_CHAT_AUDIO_BYTES, available: audioUploadsAvailable };
+  return null;
+}
+
+const RATE_LIMIT_FOR: Record<ChatMediaKind, number> = { image: 20, video: 8, audio: 15 };
+const NOUN_FOR: Record<ChatMediaKind, string> = { image: "picture", video: "video", audio: "voice note" };
 
 /**
  * The chat on one trip, between the client on the app link and the advisor.
@@ -73,33 +100,47 @@ export async function POST(request: NextRequest) {
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
 
-  // A picture. Rate limited BEFORE the work, because this is the one message a
-  // client with no account can push real bytes with — the fence matters more
-  // than the feature. Same media store and ceiling as a profile photo.
+  // A picture, a video, or a voice note. Rate limited BEFORE the work, because
+  // this is the one message a client with no account can push real bytes with
+  // — the fence matters more than the feature. Which kind it is comes from the
+  // data URL's own declared type, never from a separate field the caller
+  // could mismatch.
   if (typeof body?.dataUrl === "string" && body.dataUrl) {
-    if (!mediaStoreAvailable()) {
-      return NextResponse.json({ error: "Sharing a picture needs the private store connected." }, { status: 503 });
-    }
-    const limited = await rateLimit(`companion-image:${shareId}`, { limit: 20, windowSeconds: 3600 });
-    if (!limited.ok) {
-      return NextResponse.json({ error: "That is a lot of pictures at once — try again shortly." }, { status: 429 });
-    }
     const match = /^data:([\w/+.-]+);base64,([A-Za-z0-9+/=]+)$/.exec(body.dataUrl);
-    if (!match) return NextResponse.json({ error: "Share a JPG, PNG or WEBP picture." }, { status: 400 });
+    if (!match) return NextResponse.json({ error: "Share a photo, a video or a voice note." }, { status: 400 });
     const contentType = match[1];
     const base64 = match[2];
-    if (!CHAT_IMAGE_TYPES.has(contentType)) {
-      return NextResponse.json({ error: "Use a JPG, PNG or WEBP picture." }, { status: 400 });
+    const media = mediaKindFor(contentType);
+    if (!media) {
+      return NextResponse.json(
+        { error: "Use a JPG, PNG or WEBP picture, an MP4, MOV or WEBM video, or a recorded voice note." },
+        { status: 400 },
+      );
     }
+    if (!media.available()) {
+      return NextResponse.json({ error: `Sharing a ${NOUN_FOR[media.kind]} needs the private store connected.` }, { status: 503 });
+    }
+
+    const limited = await rateLimit(`companion-${media.kind}:${shareId}`, {
+      limit: RATE_LIMIT_FOR[media.kind],
+      windowSeconds: 3600,
+    });
+    if (!limited.ok) {
+      return NextResponse.json({ error: "That is a lot at once — try again shortly." }, { status: 429 });
+    }
+
     const bytes = Math.floor((base64.length * 3) / 4);
-    if (bytes > effectiveMediaLimit()) {
-      return NextResponse.json({ error: `That picture is too large (max ${Math.round(effectiveMediaLimit() / 1024)} KB).` }, { status: 413 });
+    if (bytes > media.limit) {
+      return NextResponse.json(
+        { error: `That ${NOUN_FOR[media.kind]} is too large (max ${Math.round(media.limit / 1024 / 1024)} MB).` },
+        { status: 413 },
+      );
     }
     const id = await putMedia(contentType, base64);
-    if (!id) return NextResponse.json({ error: "Could not save the picture." }, { status: 503 });
+    if (!id) return NextResponse.json({ error: `Could not save the ${NOUN_FOR[media.kind]}.` }, { status: 503 });
     const messages = await appendChat(shareId, {
       from: who.side,
-      kind: "image",
+      kind: media.kind,
       text: (body.text ?? "").trim().slice(0, MAX_CHAT_LABEL),
       mediaId: id,
       at: new Date().toISOString(),

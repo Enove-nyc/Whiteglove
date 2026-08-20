@@ -72,6 +72,11 @@ export function useSignedIn(): boolean | null {
 /** Where to send somebody to sign in, and come back to where they were. */
 export function signInHref(): string {
   if (typeof window === "undefined") return "/login";
+  // Never carry the sign-in pages themselves back as `next`: once signed in the
+  // login page sends you to `next`, so next=/login would loop you on /login
+  // rather than land you at your account. The login page guards this too.
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/login" || path === "/access") return "/login";
   const here = `${window.location.pathname}${window.location.search}`;
   return `/login?next=${encodeURIComponent(here)}`;
 }

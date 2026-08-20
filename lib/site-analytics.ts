@@ -281,6 +281,18 @@ export async function setSiteLock(locked: boolean) {
   return Boolean(response);
 }
 
+/**
+ * Whether the whole site is behind the access code right now. The node-side
+ * mirror of edgeSiteIsLocked() in lib/edge-lock.ts, for pages that need to know
+ * (e.g. /access, which is an orphan once the site is public).
+ */
+export async function siteIsLocked(): Promise<boolean> {
+  if (process.env.SITE_LOCK_ENABLED === "true") return true;
+  if (!analyticsIsConfigured()) return false;
+  const response = await redis<string>("get/white-glove:site-lock");
+  return response?.result === "on";
+}
+
 // Sections (path prefixes) that require the site-access code, even when the
 // whole site is not locked.
 export async function getLockedPaths(): Promise<string[]> {

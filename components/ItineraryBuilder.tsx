@@ -1871,7 +1871,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list</span>
         <KeverPicker onPick={pickKever} />
-        <span className={`${caption} mt-3 block`}>…or something to do</span>
+        <span className={`${caption} mt-3 block`}>…or any place: a sight, a kosher restaurant, a shul, a mikvah</span>
         <AttractionPicker onPick={pickAttraction} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
@@ -1987,7 +1987,7 @@ function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void })
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        placeholder="Search a city or a sight — e.g. Rome, Jungfrau, museum, waterfall…"
+        placeholder="Search a place — a sight, a kosher restaurant, a shul, a mikvah…"
         autoComplete="off"
       />
       {open && results.length > 0 && (

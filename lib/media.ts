@@ -33,6 +33,34 @@ export const MAX_MEDIA_BYTES = 900 * 1024;
  * portraits, not video. */
 export const MAX_DISK_MEDIA_BYTES = 2 * 1024 * 1024;
 
+/**
+ * The cap for a chat video — a short clip, not a film. Deliberately its own
+ * number rather than a multiple of MAX_DISK_MEDIA_BYTES: that constant is
+ * "how big a picture may be", and conflating the two would mean a change meant
+ * for portraits quietly resizing what a client's phone may upload.
+ *
+ * VIDEO REQUIRES THE DISK. It is stored the same way as everything else here —
+ * base64 in a JSON file — and at this size that only belongs on a real
+ * filesystem; Redis's own per-value ceiling (see MAX_MEDIA_BYTES) is far below
+ * it. videoUploadsAvailable() is the gate a caller checks before accepting one.
+ */
+export const MAX_CHAT_VIDEO_BYTES = 15 * 1024 * 1024;
+
+/**
+ * The cap for a voice note — a few minutes of speech, not a podcast. Smaller
+ * than a video because there is no picture in it, but still well past the
+ * Redis ceiling, so it needs the same disk gate.
+ */
+export const MAX_CHAT_AUDIO_BYTES = 8 * 1024 * 1024;
+
+export function videoUploadsAvailable(): boolean {
+  return diskMediaActive();
+}
+
+export function audioUploadsAvailable(): boolean {
+  return diskMediaActive();
+}
+
 export function isAllowedMediaType(type: string) {
   return ALLOWED_TYPES.has(type);
 }

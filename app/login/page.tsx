@@ -17,8 +17,16 @@ export const metadata = pageMetadata({
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; google?: string; googleSays?: string }> }) {
   const { next, google, googleSays } = await searchParams;
   // Only a path on this site. A full URL here would turn the sign-in page into
-  // an open redirect somebody could point anywhere.
-  const back = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
+  // an open redirect somebody could point anywhere. And never back to the sign-in
+  // pages themselves: once signed in, /login sends you to `next`, so next=/login
+  // (which the header's sign-in control produces when you are already on /login)
+  // would replace /login with /login and strand you there instead of at your
+  // account.
+  const backPath = next?.split("?")[0].replace(/\/+$/, "") || "";
+  const back =
+    next && next.startsWith("/") && !next.startsWith("//") && backPath !== "/login" && backPath !== "/access"
+      ? next
+      : undefined;
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
