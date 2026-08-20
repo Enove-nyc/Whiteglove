@@ -42,7 +42,9 @@ export type IconName =
   | "video"
   | "microphone"
   | "stop"
-  | "more";
+  | "more"
+  | "reply"
+  | "check-check";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -199,6 +201,21 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
       <circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </>
+  ),
+  reply: (
+    <>
+      <path d="M10 7 4 12l6 5" />
+      <path d="M4 12h9a7 7 0 0 1 7 7v1" />
+    </>
+  ),
+  // Two offset checks — a message read, not just sent. `check` alone still
+  // means "sent"; this is the pair a messaging app shows once the other side
+  // has actually seen it.
+  "check-check": (
+    <>
+      <path d="M1.5 12.5 6 17 13 9.5" />
+      <path d="M9 12.5 13.5 17 22.5 7" />
     </>
   ),
 };

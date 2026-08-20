@@ -20,7 +20,7 @@
  * to be.
  */
 
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   COMPANION_DEMO_TRIP,
   COMPANION_KIND,
@@ -53,6 +53,10 @@ type State = {
   swap: SwapId | null;
   draft: string;
   typing: boolean;
+  // A day or activity tapped through "Ask about this" — carried into the
+  // real thread as a small reference, then cleared once picked up, rather
+  // than opening a second, separate conversation.
+  chatSubject: string | null;
   tstyle: TStyle;
   tmode: Mode;
   role: Role;
@@ -92,6 +96,7 @@ export default function CompanionApp({
     swap: null,
     draft: "",
     typing: false,
+    chatSubject: null,
     tstyle: "rail",
     tmode: trip.concierge ? "concierge" : "guide",
     role: "traveler",
@@ -102,6 +107,34 @@ export default function CompanionApp({
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
+
+  // Whether the real thread has something this side has not seen yet — read
+  // with ?peek=1 so merely checking never marks it read, the way it would if
+  // this used the same call the open thread itself polls with.
+  const [unread, setUnread] = useState(false);
+  useEffect(() => {
+    if (!liveChat) return;
+    let cancelled = false;
+    async function poll() {
+      try {
+        const r = await fetch(`/api/companion/chat?share=${encodeURIComponent(liveChat!.shareId)}&peek=1`, { cache: "no-store" });
+        if (!r.ok) return;
+        const d = await r.json();
+        const messages: { at: string; from: ChatSide }[] = Array.isArray(d.messages) ? d.messages : [];
+        const latest = messages[messages.length - 1];
+        const myRead: string | undefined = d.readMarkers?.[liveChat!.side];
+        if (!cancelled) setUnread(Boolean(latest && latest.from !== liveChat!.side && (!myRead || myRead < latest.at)));
+      } catch {
+        /* leave the badge as it was */
+      }
+    }
+    void poll();
+    const t = setInterval(poll, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [liveChat]);
 
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
@@ -214,11 +247,6 @@ export default function CompanionApp({
       pick: () => set(id),
     }));
 
-  const styleOpts = seg<TStyle>(
-    [["rail", "Rail"], ["cards", "Cards"], ["bands", "Bands"]],
-    st.tstyle,
-    (id) => setSt((s) => ({ ...s, tstyle: id })),
-  );
   const tmodeOpts = seg<Mode>(
     [["concierge", "Concierge"], ["guide", "Guide"]],
     st.tmode,
@@ -261,7 +289,7 @@ export default function CompanionApp({
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
-    return { id, label, bg: on ? GOLD : "transparent", fg: on ? CREAM : "#57534e" };
+    return { id, label, bg: on ? GOLD : "transparent", fg: on ? CREAM : "#57534e", badge: id === "messages" && unread && st.screen !== "messages" };
   });
 
   const quickReplies = (
@@ -275,7 +303,6 @@ export default function CompanionApp({
     act.time ? { label: "When", value: act.time } : null,
     act.place ? { label: "Where", value: act.place } : null,
     act.walk ? { label: "On foot", value: act.walk } : null,
-    { label: "Kind", value: actKind.label },
   ].filter(Boolean) as { label: string; value: string }[];
 
   // ── shared bits of style ────────────────────────────────────────────────
@@ -290,9 +317,9 @@ export default function CompanionApp({
   // ── screens ─────────────────────────────────────────────────────────────
   const homeScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: "repeating-linear-gradient(135deg,#ece8df 0 11px,#f7f5f0 11px 22px)", filter: "saturate(.6) contrast(.85) brightness(1.1)" }}>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 14 }}>
-          <span style={{ font: "400 10px/1 ui-monospace,Menlo,monospace", letterSpacing: ".06em", color: "#57534e", background: "rgba(255,255,255,.85)", padding: "6px 10px", borderRadius: 14 }}>photo · the Ghetto at dusk</span>
+      <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(155deg, ${GOLD} 0%, #8f6c3a 100%)`, color: CREAM }}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.22 }}>
+          <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
         </div>
       </div>
       <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 7 }}>
@@ -370,7 +397,7 @@ export default function CompanionApp({
             <span style={{ fontSize: 14.5, fontWeight: 600 }}>{advisor}</span>
             <span style={{ fontSize: 12, color: "#57534e" }}>Your advisor · replies in minutes</span>
           </div>
-          <button onClick={() => go("chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Message</button>
+          <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Message</button>
         </div>
       )}
       {isGuideMode && (
@@ -520,15 +547,24 @@ export default function CompanionApp({
       {st.tstyle === "rail" && railView}
       {st.tstyle === "cards" && cardsView}
       {st.tstyle === "bands" && bandsView}
-      <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ alignSelf: "flex-start", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a" }}>Ask about this day</button>
+      <button
+        onClick={() => {
+          setSt((s) => ({ ...s, chatSubject: `Day ${st.selDay + 1} — ${sel.name}` }));
+          go(usesRealChat ? "messages" : "chat");
+        }}
+        className="wg-warm"
+        style={{ alignSelf: "flex-start", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a" }}
+      >
+        Ask about this day
+      </button>
     </div>
   );
 
   const activityScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      <div style={{ position: "relative", margin: "14px 14px 0", height: 172, borderRadius: 20, overflow: "hidden", background: "repeating-linear-gradient(135deg,#ece8df 0 11px,#f7f5f0 11px 22px)", filter: "saturate(.6) contrast(.85) brightness(1.1)" }}>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ font: "400 10px/1 ui-monospace,Menlo,monospace", letterSpacing: ".06em", color: "#57534e", background: "rgba(255,255,255,.85)", padding: "6px 10px", borderRadius: 14 }}>photo · {act.title.toLowerCase()}</span>
+      <div style={{ position: "relative", margin: "14px 14px 0", height: 172, borderRadius: 20, overflow: "hidden", background: actKind.tint }}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: actKind.dot, opacity: 0.35 }}>
+          <Icon name="map-pin" className="h-16 w-16" strokeWidth={1.1} />
         </div>
       </div>
       <div style={{ padding: "18px 20px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -546,12 +582,18 @@ export default function CompanionApp({
             </div>
           ))}
         </div>
-        <div style={{ height: 138, borderRadius: 20, background: "repeating-linear-gradient(45deg,#e7edf1 0 13px,#e7edf1 13px 26px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ font: "400 10px/1 ui-monospace,Menlo,monospace", letterSpacing: ".06em", color: "#1f3f5c", background: "rgba(255,255,255,.85)", padding: "6px 10px", borderRadius: 14 }}>map · walk from the hotel, 22 min</span>
-        </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
           <button className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14 }}>Directions</button>
-          <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a" }}>Ask to move this</button>
+          <button
+            onClick={() => {
+              setSt((s) => ({ ...s, chatSubject: act.title }));
+              go(usesRealChat ? "messages" : "chat");
+            }}
+            className="wg-warm"
+            style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a" }}
+          >
+            Ask to move this
+          </button>
         </div>
       </div>
     </div>
@@ -753,7 +795,14 @@ export default function CompanionApp({
   else if (st.screen === "activity") body = activityScreen;
   else if (st.screen === "alerts") body = alertsScreen;
   else if (st.screen === "chat") body = isConcierge ? conciergeChat : guideChat;
-  else if (st.screen === "messages") body = advisorInbox ? <AdvisorInbox /> : liveChat ? <LiveChat chat={liveChat} /> : guideChat;
+  else if (st.screen === "messages")
+    body = advisorInbox ? (
+      <AdvisorInbox />
+    ) : liveChat ? (
+      <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} />
+    ) : (
+      guideChat
+    );
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
 
@@ -781,7 +830,10 @@ export default function CompanionApp({
       {/* tabs */}
       <div style={{ flexShrink: 0, padding: "9px 12px", background: "#ece8df", borderTop: "1px solid rgba(38,50,58,.08)", display: "flex", gap: 5 }}>
         {tabs.map((t) => (
-          <button key={t.id} onClick={() => go(t.id)} style={{ flex: 1, border: 0, cursor: "pointer", background: t.bg, color: t.fg, font: `400 13px/1 ${serif}`, padding: "12px 6px", borderRadius: 14 }}>{t.label}</button>
+          <button key={t.id} onClick={() => go(t.id)} style={{ position: "relative", flex: 1, border: 0, cursor: "pointer", background: t.bg, color: t.fg, font: `400 13px/1 ${serif}`, padding: "12px 6px", borderRadius: 14 }}>
+            {t.label}
+            {t.badge && <span style={{ position: "absolute", top: 5, right: "22%", width: 8, height: 8, borderRadius: 14, background: GOLD, border: "2px solid #ece8df" }} />}
+          </button>
         ))}
       </div>
     </div>
@@ -798,14 +850,6 @@ export default function CompanionApp({
             <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#c8a76a" }}>White Glove · app</div>
             <h1 style={{ font: `400 40px/1.06 ${serif}`, letterSpacing: "-.015em", margin: 0, color: "#f7f5f0" }}>The trip in your pocket</h1>
             <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#c9d3da", textWrap: "pretty" }}>{hasConcierge ? "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice." : "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and a travel wallet kept for when there is no signal."}</p>
-          </div>
-          <div className="wg-toolbar-group">
-            <div className="wg-toolbar-label">Day timeline</div>
-            <div className="wg-toolbar">
-              {styleOpts.map((o) => (
-                <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "9px 15px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
-              ))}
-            </div>
           </div>
           {hasConcierge && (
             <div className="wg-toolbar-group">
@@ -849,10 +893,20 @@ type LiveMsg = {
   at: string;
   editedAt?: string;
   deletedAt?: string;
+  replyTo?: { at: string; from: ChatSide; kind?: string; text: string };
 };
 
-/** The most a picture may weigh before the phone is asked to shrink it first. */
-const MAX_CHAT_IMAGE_BYTES = 2 * 1024 * 1024;
+/** The floor a picture may weigh before the server even has a disk to hold it
+ * on — used until the server's own GET reports its real, deploy-specific
+ * limit (see effectiveMediaLimit() in lib/media.ts). Staging a photo against
+ * a hopeful client-side number the server does not actually honor is how a
+ * client can compose, caption and "send" a photo only to have it rejected
+ * after the fact — this keeps the two in sync instead. */
+const MAX_CHAT_IMAGE_BYTES_FLOOR = 900 * 1024;
+
+function formatBytes(n: number): string {
+  return n >= 1024 * 1024 ? `${(n / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
+}
 /** The most a video may weigh — a short clip, not a film. Matches
  * MAX_CHAT_VIDEO_BYTES in lib/media.ts; kept as its own number here because a
  * client-side check exists to save the phone an upload the server would only
@@ -864,7 +918,36 @@ const MAX_CHAT_AUDIO_BYTES = 8 * 1024 * 1024;
 /** A picture, video or voice note picked but not yet sent. */
 type StagedMedia = { kind: "image" | "video" | "audio"; file: File | Blob; previewUrl: string; noun: string };
 
-function LiveChat({ chat }: { chat: CompanionChat }) {
+/** "Today" / "Yesterday" / a short date — the divider between a run of
+ *  messages sent on different days, the way any messaging app breaks up
+ *  scrollback. */
+function dayLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  return d.toLocaleDateString(undefined, {
+    weekday: diffDays < 7 ? "long" : undefined,
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() === now.getFullYear() ? undefined : "numeric",
+  });
+}
+
+function LiveChat({
+  chat,
+  subject,
+  onSubjectUsed,
+}: {
+  chat: CompanionChat;
+  /** A day or activity tapped through "Ask about this" — folded into the
+   *  next message as a small reference, once, rather than opening a
+   *  separate conversation for it. */
+  subject?: string | null;
+  onSubjectUsed?: () => void;
+}) {
   const { shareId, side, advisorName } = chat;
   const [messages, setMessages] = useState<LiveMsg[]>([]);
   const [draft, setDraft] = useState("");
@@ -889,12 +972,36 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   // The `at` of the one message whose "⋯" menu (Report / Edit / Delete) is
   // open. Only ever one at a time, so a single value does the job of a map.
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
+  // Whether the other side has typed within the last few seconds — read off
+  // the poll, exactly like the messages themselves.
+  const [otherTyping, setOtherTyping] = useState(false);
+  // The message the next send will quote — staged the same way an edit is,
+  // in a bar above the composer, cleared once it is actually attached to a
+  // sent message.
+  const [replyingTo, setReplyingTo] = useState<LiveMsg | null>(null);
+  // A picture or video opened full-size, over the whole chat panel.
+  const [viewerMedia, setViewerMedia] = useState<{ kind: "image" | "video"; mediaId: string; text: string } | null>(null);
+  // Briefly highlighted after tapping a quote to jump to the message it
+  // quotes — long enough to catch the eye, not so long it feels stuck.
+  const [jumpFlashAt, setJumpFlashAt] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Whether the scroller was already near its bottom the last time it was
+  // checked — read by the auto-scroll effect so a new message does not yank
+  // somebody back down while they are reading scrollback. Starts true: the
+  // very first load should land at the bottom, the same way opening any
+  // messaging app does.
+  const nearBottomRef = useRef(true);
+  const lastTypingPingRef = useRef(0);
+  // The server's real, deploy-specific picture limit — learned from the GET
+  // response, not assumed. Starts at the safe floor so a picture staged
+  // before the first load completes is never bigger than the server could
+  // reject anyway.
+  const [imageLimit, setImageLimit] = useState(MAX_CHAT_IMAGE_BYTES_FLOOR);
 
   useEffect(() => {
     if (!menuOpenAt) return;
@@ -912,6 +1019,17 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     };
   }, [menuOpenAt]);
 
+  // Picked up once per "Ask about this" tap, then handed back so the parent
+  // clears it — otherwise navigating away and back would refill the
+  // composer over whatever the traveler had already typed.
+  const onSubjectUsedRef = useRef(onSubjectUsed);
+  onSubjectUsedRef.current = onSubjectUsed;
+  useEffect(() => {
+    if (!subject) return;
+    setDraft((d) => d || `Re: ${subject} — `);
+    onSubjectUsedRef.current?.();
+  }, [subject]);
+
   const load = useCallback(async () => {
     try {
       const r = await fetch(`/api/companion/chat?share=${encodeURIComponent(shareId)}`, { cache: "no-store" });
@@ -920,6 +1038,8 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       setMessages(Array.isArray(d.messages) ? d.messages : []);
       setAvailable(d.available !== false);
       setReadAt(d.readMarkers && typeof d.readMarkers === "object" ? d.readMarkers : {});
+      setOtherTyping(Boolean(d.typing));
+      if (typeof d.imageLimit === "number" && d.imageLimit > 0) setImageLimit(d.imageLimit);
       setLoaded(true);
     } catch {
       /* keep what we have; the next poll may reach it */
@@ -932,25 +1052,42 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     return () => clearInterval(t);
   }, [load]);
 
+  // Only follows new messages down when the reader was already at the
+  // bottom — the way every real messaging app behaves. Scrolled up reading
+  // yesterday's plans, a new message arriving must not yank the screen away
+  // from what is actually being read.
+  const NEAR_BOTTOM_PX = 80;
+  function noteScrollPosition() {
+    const el = scrollerRef.current;
+    if (!el) return;
+    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX;
+  }
   useEffect(() => {
     const el = scrollerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length]);
+    if (el && nearBottomRef.current) el.scrollTop = el.scrollHeight;
+  }, [messages.length, otherTyping]);
 
-  // One place to POST from — text, a picture, or a place all land here; the
-  // reply carries the whole thread back, so the send is also the refresh.
+  // One place to POST from — text, a picture, a place, or a voice note all
+  // land here; the reply carries the whole thread back, so the send is also
+  // the refresh. Whatever is staged in `replyingTo` rides along automatically
+  // — a caller sends its own payload without having to remember the quote.
   async function post(payload: Record<string, unknown>) {
     setSending(true);
     setNote("");
+    // Sending is the one moment the screen must follow the new message down
+    // regardless of where the reader had scrolled to while composing it.
+    nearBottomRef.current = true;
     try {
       const r = await fetch("/api/companion/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, ...payload }),
+        body: JSON.stringify({ share: shareId, ...(replyingTo ? { replyToAt: replyingTo.at } : {}), ...payload }),
       });
       const d = await r.json().catch(() => null);
-      if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
-      else {
+      if (r.ok && d) {
+        setMessages(Array.isArray(d.messages) ? d.messages : []);
+        setReplyingTo(null);
+      } else {
         setNote((d && d.error) || "That didn't send. Try again.");
         void load();
       }
@@ -972,10 +1109,35 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     void post({ text: t });
   }
 
+  /** A message either side can reply to — anything still standing. Staged
+   *  the same way an edit is: one bar above the composer, cleared on send
+   *  or Cancel. */
+  function startReply(m: LiveMsg) {
+    if (sending) return;
+    setEditingAt(null);
+    setReplyingTo(m);
+  }
+
+  // Pings "I am typing" at most once every couple of seconds — the server
+  // key already lasts a few seconds on its own, so the composer only has to
+  // refresh it well before it would lapse, not on every keystroke.
+  function noteTyping() {
+    if (editingAt) return; // changing old words is not "typing" to the other side
+    const now = Date.now();
+    if (now - lastTypingPingRef.current < 2000) return;
+    lastTypingPingRef.current = now;
+    void fetch("/api/companion/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ share: shareId, typing: true }),
+    }).catch(() => undefined);
+  }
+
   // Puts an already-sent text message into the composer to change it, rather
   // than opening a second box — there is only ever one thing being typed.
   function startEdit(m: LiveMsg) {
     if (sending || staged) return;
+    setReplyingTo(null);
     setEditingAt(m.at);
     setDraft(m.text);
   }
@@ -1069,7 +1231,7 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
 
   function pickImage(file: File | null | undefined) {
     if (!file) return;
-    stageFile(file, { accept: /^image\//, kind: "image", noun: "picture", max: MAX_CHAT_IMAGE_BYTES, maxLabel: "2 MB" });
+    stageFile(file, { accept: /^image\//, kind: "image", noun: "picture", max: imageLimit, maxLabel: formatBytes(imageLimit) });
   }
 
   function pickVideo(file: File | null | undefined) {
@@ -1118,6 +1280,15 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     setRecording(false);
   }
 
+  // Leaving the chat mid-recording (a tab switch, the app closing) must not
+  // leave the microphone stream open — recorder.onstop is what releases it,
+  // and nothing else calls that unless we do it here.
+  useEffect(() => {
+    return () => {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+    };
+  }, []);
+
   function shareLocation() {
     if (sending) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -1155,21 +1326,21 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   const otherName = side === "advisor" ? "your client" : advisorName.split(" ")[0];
   const otherSide: ChatSide = side === "advisor" ? "client" : "advisor";
 
-  // The one message a "Read" mark can attach to — the most recent one I sent
-  // that is still standing. Shown only there, the way a phone's messaging app
-  // does it, rather than under every message I have ever sent.
-  let lastMineAt: string | null = null;
-  for (let j = messages.length - 1; j >= 0; j--) {
-    if (messages[j].from === side && !messages[j].deletedAt) {
-      lastMineAt = messages[j].at;
-      break;
-    }
+  // Jumps to a quoted message and briefly highlights it, the same tap any
+  // messaging app's reply preview gives you.
+  function jumpTo(at: string) {
+    const el = scrollerRef.current?.querySelector<HTMLElement>(`[data-msg-at="${at}"]`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setJumpFlashAt(at);
+    window.setTimeout(() => setJumpFlashAt((cur) => (cur === at ? null : cur)), 1200);
   }
-  const otherHasRead = Boolean(lastMineAt && readAt[otherSide] && readAt[otherSide]! >= lastMineAt);
+
+  let lastRenderedDay = "";
 
   return (
-    <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
-      <div ref={scrollerRef} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", position: "relative", animation: "wgIn .28s ease both" }}>
+      <div ref={scrollerRef} onScroll={noteScrollPosition} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
         {!available && (
           <div style={{ alignSelf: "center", textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#765321", background: "#f7eee0", padding: "10px 14px", borderRadius: 14 }}>
             Messaging isn&apos;t connected yet.
@@ -1182,6 +1353,10 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
         )}
         {messages.map((m, i) => {
           const mine = m.from === side;
+          const day = new Date(m.at).toDateString();
+          const showDivider = day !== lastRenderedDay;
+          lastRenderedDay = day;
+          const seenRead = Boolean(readAt[otherSide] && readAt[otherSide]! >= m.at);
           const bubble: CSSProperties = {
             maxWidth: "80%",
             alignSelf: mine ? "flex-end" : "flex-start",
@@ -1205,7 +1380,8 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
                 <img
                   src={`/api/media?id=${encodeURIComponent(m.mediaId)}`}
                   alt={m.text || "Shared photo"}
-                  style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280, objectFit: "cover" }}
+                  onClick={() => setViewerMedia({ kind: "image", mediaId: m.mediaId!, text: m.text })}
+                  style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280, objectFit: "cover", cursor: "pointer" }}
                 />
                 {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
               </div>
@@ -1249,15 +1425,61 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             );
           }
           const isTextEditable = mine && !m.deletedAt && (m.kind ?? "text") === "text";
-          // A live message always has at least one action — Report on
-          // theirs, Delete (and often Edit) on your own. A deleted one has
-          // none, so its "⋯" is dropped rather than opening onto nothing.
+          // A live message always has at least one action — Reply on any
+          // live one, Report on theirs, Delete (and often Edit) on your own.
+          // A deleted one has none, so its "⋯" is dropped rather than
+          // opening onto nothing.
           const hasMenu = !m.deletedAt;
           const menuOpen = menuOpenAt === m.at;
+          const quote = m.replyTo && (
+            <button
+              onClick={() => jumpTo(m.replyTo!.at)}
+              style={{
+                display: "block",
+                textAlign: "left",
+                width: "100%",
+                border: 0,
+                cursor: "pointer",
+                background: mine ? "rgba(255,255,255,.18)" : "rgba(38,50,58,.06)",
+                borderLeft: `3px solid ${mine ? "rgba(255,255,255,.6)" : GOLD}`,
+                borderRadius: 8,
+                padding: "5px 9px",
+                marginBottom: 3,
+                fontFamily: "Inter,sans-serif",
+              }}
+            >
+              <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: mine ? "rgba(255,255,255,.92)" : "#57534e" }}>
+                {m.replyTo.from === side ? "You" : otherName}
+              </span>
+              <span style={{ display: "block", fontSize: 12, lineHeight: 1.35, color: mine ? "rgba(255,255,255,.85)" : "#78716c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {m.replyTo.text}
+              </span>
+            </button>
+          );
           return (
-            <div key={m.at || i} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", gap: 2 }}>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flexDirection: mine ? "row-reverse" : "row" }}>
-                {content}
+            <Fragment key={m.at || i}>
+              {showDivider && (
+                <div style={{ alignSelf: "center", margin: "6px 0 2px", font: "600 11px/1 Inter,sans-serif", color: "#a8a29e", background: "rgba(38,50,58,.05)", padding: "5px 13px", borderRadius: 999 }}>
+                  {dayLabel(m.at)}
+                </div>
+              )}
+              <div
+                data-msg-at={m.at}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: mine ? "flex-end" : "flex-start",
+                  gap: 2,
+                  background: jumpFlashAt === m.at ? "rgba(183,138,74,.18)" : "transparent",
+                  borderRadius: 10,
+                  transition: "background .5s ease",
+                }}
+              >
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flexDirection: mine ? "row-reverse" : "row", maxWidth: "100%" }}>
+                <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                  {quote}
+                  {content}
+                </div>
                 {/* One "⋯" per message instead of Report/Edit/Delete spelled
                     out beside every bubble — the options a tap actually needs
                     sit in a small menu right against the message they act on,
@@ -1290,6 +1512,13 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
                           overflow: "hidden",
                         }}
                       >
+                        <button
+                          role="menuitem"
+                          onClick={() => { startReply(m); setMenuOpenAt(null); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                        >
+                          Reply
+                        </button>
                         {!mine && (
                           reported[m.at] ? (
                             <span style={{ display: "block", padding: "10px 14px", fontSize: 13, color: "#a8a29e" }}>Reported</span>
@@ -1326,14 +1555,27 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
                   </div>
                 )}
               </div>
-              {/* "Read", once — under the last message I sent, and only once the
-                  other side's own marker has caught up to it. */}
-              {mine && m.at === lastMineAt && otherHasRead && (
-                <span style={{ fontSize: 10, color: "#a8a29e", padding: "0 4px" }}>Read</span>
+              {/* A sent/read tick under every message I sent, not just the
+                  last one — the way a real messaging app marks each bubble. */}
+              {mine && !m.deletedAt && (
+                <span style={{ display: "inline-flex", alignItems: "center", padding: "0 4px", color: seenRead ? GOLD : "#a8a29e" }}>
+                  <Icon name={seenRead ? "check-check" : "check"} className="h-3 w-3" />
+                </span>
               )}
-            </div>
+              </div>
+            </Fragment>
           );
         })}
+        {otherTyping && (
+          <div style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 4, background: "#ffffff", borderRadius: "14px 14px 14px 4px", padding: "12px 16px", boxShadow: "0 1px 2px rgba(23,45,82,.08)" }}>
+            {[0, 1, 2].map((n) => (
+              <span
+                key={n}
+                style={{ width: 6, height: 6, borderRadius: 6, background: "#a8a29e", animation: "wgPulse 1.1s ease-in-out infinite", animationDelay: `${n * 0.15}s` }}
+              />
+            ))}
+          </div>
+        )}
       </div>
       {note && (
         <div style={{ flexShrink: 0, textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#8a5a2b", background: "#f7eee0", padding: "8px 14px" }}>{note}</div>
@@ -1391,6 +1633,21 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
               <button onClick={cancelEdit} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 11.5, color: "#a8a29e" }}>Cancel</button>
             </div>
           )}
+          {replyingTo && !editingAt && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, background: "rgba(38,50,58,.05)", borderLeft: `3px solid ${GOLD}`, borderRadius: 8, padding: "6px 9px" }}>
+              <div style={{ minWidth: 0, overflow: "hidden" }}>
+                <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#57534e" }}>
+                  Replying to {replyingTo.from === side ? "yourself" : otherName}
+                </span>
+                <span style={{ display: "block", fontSize: 12, color: "#78716c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {replyingTo.text || (replyingTo.kind && replyingTo.kind !== "text" ? replyingTo.kind : "")}
+                </span>
+              </div>
+              <button onClick={() => setReplyingTo(null)} title="Cancel reply" aria-label="Cancel reply" className="wg-link" style={{ flex: "none", border: 0, background: "none", cursor: "pointer", color: "#a8a29e", display: "flex" }}>
+                <Icon name="close" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
             <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
@@ -1434,13 +1691,46 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             )}
             <input
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => { setDraft(e.target.value); noteTyping(); }}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
               style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
             />
             <button onClick={() => send()} disabled={sending || recording} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
           </div>
+        </div>
+      )}
+      {/* A photo opened full-size, over the whole chat panel — scoped to the
+          phone frame (position: absolute against the relatively-positioned
+          root above), not the whole browser viewport. */}
+      {viewerMedia && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={viewerMedia.text || "Photo"}
+          onClick={() => setViewerMedia(null)}
+          style={{ position: "absolute", inset: 0, zIndex: 30, background: "rgba(15,20,25,.94)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setViewerMedia(null); }}
+            title="Close"
+            aria-label="Close"
+            style={{ position: "absolute", top: 14, right: 14, border: 0, background: "rgba(255,255,255,.14)", color: "#fff", width: 36, height: 36, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <Icon name="close" className="h-4 w-4" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/media?id=${encodeURIComponent(viewerMedia.mediaId)}`}
+            alt={viewerMedia.text || "Shared photo"}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "100%", maxHeight: "78%", objectFit: "contain", borderRadius: 8, cursor: "default" }}
+          />
+          {viewerMedia.text && (
+            <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 14, maxWidth: "90%", textAlign: "center", color: "#fff", fontSize: 14, lineHeight: 1.5 }}>
+              {viewerMedia.text}
+            </div>
+          )}
         </div>
       )}
     </div>

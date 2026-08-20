@@ -455,6 +455,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         })()}
         {tab === "hotel" && (
           <LodgingForm
+            key={editingLodgingId ?? "new"}
             startDate={itin.startDate}
             initial={itin.lodging.find((l) => l.id === editingLodgingId)}
             onAdd={(l) => { saveLodging(l); setTab(null); setEditingLodgingId(null); }}
@@ -825,6 +826,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         />
         {openLeg && (
           <FlightForm
+            key={openLeg.id}
             startDate={day.date}
             initial={openLeg}
             onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}

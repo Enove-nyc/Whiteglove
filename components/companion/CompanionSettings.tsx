@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 /**
- * The app's own settings — Business-only, on the account page's app card.
+ * The app's own settings — Gold or Business, on the account page's app card.
  *
  * ONE SWITCH FOR NOW: the kosher-and-Shabbos layer, off until an account turns
  * it on. The app is a general itinerary tool; an agency that plans kosher

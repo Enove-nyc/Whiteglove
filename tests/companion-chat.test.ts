@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { parseChatMessages } from "@/lib/companion-chat-store";
+import { parseChatMessages, quoteFor } from "@/lib/companion-chat-store";
 
 /**
  * The concierge thread: text, a picture, a video, a voice note, or a place —
@@ -209,6 +209,59 @@ describe("reporting a message is fenced", () => {
   });
 });
 
+describe("a reply quotes a real message, never a client-supplied one", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("looks the quote up server-side from replyToAt, never takes quoted text from the body", () => {
+    assert.match(POST, /quoteFor\(shareId, body\.replyToAt\)/);
+    assert.doesNotMatch(POST, /replyTo:\s*body\.replyTo/);
+  });
+
+  it("attaches the same replyTo to every kind of send — media, location and text", () => {
+    const mediaBranch = POST.slice(POST.indexOf("body.dataUrl"), POST.indexOf("A place"));
+    const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
+    const textBranch = POST.slice(POST.indexOf("// Words."));
+    for (const branch of [mediaBranch, locationBranch, textBranch]) {
+      assert.match(branch, /appendChat\(shareId, \{[\s\S]*replyTo,[\s\S]*?\}\)/);
+    }
+  });
+
+  it("returns nothing for a stale or made-up `at` rather than failing the send", async () => {
+    assert.equal(await quoteFor("no-such-share-id", "no-such-at"), undefined);
+  });
+});
+
+describe("typing is a courtesy signal, not a message", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("short-circuits before a reply is even looked up, and carries no rate limit", () => {
+    assert.match(POST, /body\?\.typing === true/);
+    assert.ok(POST.indexOf("body?.typing === true") < POST.indexOf("quoteFor"), "typing returns before a quote is looked up");
+  });
+
+  it("GET reports the OTHER side's typing state, never this side's own", () => {
+    const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
+    assert.match(GET, /isTyping\(shareId, otherSideOf\(who\.side\)\)/);
+  });
+});
+
+describe("a peek does not mark the thread read", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
+
+  it("only marks read when ?peek=1 was not sent", () => {
+    assert.match(GET, /searchParams\.get\("peek"\) === "1"/);
+    assert.match(GET, /if \(!peek\)/);
+    assert.ok(GET.indexOf('searchParams.get("peek")') < GET.indexOf("markRead"), "peek is read before markRead runs");
+  });
+
+  it("still reports the server's real picture size limit either way", () => {
+    assert.match(GET, /imageLimit: effectiveMediaLimit\(\)/);
+  });
+});
+
 describe("deleting a whole conversation is fenced", () => {
   const ROUTE = readFileSync("app/api/companion/chats/route.ts", "utf8");
   const DEL = ROUTE.slice(ROUTE.indexOf("export async function DELETE"));
@@ -236,5 +289,12 @@ describe("deleting a whole conversation is fenced", () => {
     const body = DEL.slice(DEL.indexOf("const owns"));
     assert.match(body, /await deleteConversation\(shareId\)/);
     assert.doesNotMatch(body, /stopTripShare|deleteTrip|removeTrip/);
+  });
+
+  it("clearing a conversation also clears both sides' typing signal, not just the messages", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function deleteConversation"), STORE.indexOf("/* ---- read markers"));
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "client"\)/);
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "advisor"\)/);
   });
 });
