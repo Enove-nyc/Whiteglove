@@ -817,10 +817,10 @@ export default function CompanionApp({
  * "me" is the side this app was opened as. No fabricated replies here — a
  * message sits until the other person answers, which is the honest thing.
  */
-/** A live message — text, a picture, or a place. */
+/** A live message — text, a picture, a video, a voice note, or a place. */
 type LiveMsg = {
   from: ChatSide;
-  kind?: "text" | "image" | "location";
+  kind?: "text" | "image" | "video" | "audio" | "location";
   text: string;
   mediaId?: string;
   lat?: number;
@@ -830,6 +830,13 @@ type LiveMsg = {
 
 /** The most a picture may weigh before the phone is asked to shrink it first. */
 const MAX_CHAT_IMAGE_BYTES = 2 * 1024 * 1024;
+/** The most a video may weigh — a short clip, not a film. Matches
+ * MAX_CHAT_VIDEO_BYTES in lib/media.ts; kept as its own number here because a
+ * client-side check exists to save the phone an upload the server would only
+ * reject, not to be the source of truth. */
+const MAX_CHAT_VIDEO_BYTES = 15 * 1024 * 1024;
+/** The most a voice note may weigh. Matches MAX_CHAT_AUDIO_BYTES server-side. */
+const MAX_CHAT_AUDIO_BYTES = 8 * 1024 * 1024;
 
 function LiveChat({ chat }: { chat: CompanionChat }) {
   const { shareId, side, advisorName } = chat;
@@ -840,8 +847,12 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
   const [sending, setSending] = useState(false);
   const [note, setNote] = useState("");
   const [reported, setReported] = useState<Record<string, boolean>>({});
+  const [recording, setRecording] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const load = useCallback(async () => {
     try {
@@ -898,14 +909,17 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     void post({ text: t });
   }
 
-  function pickImage(file: File | null | undefined) {
-    if (!file || sending) return;
-    if (!/^image\//.test(file.type)) {
-      setNote("That is not a picture.");
+  // Reads a file into a data URL and posts it — the one path pickImage,
+  // pickVideo and the recorded voice note all share, so the size check, the
+  // read and the send stay in exactly one place.
+  function sendFile(file: File | Blob, opts: { accept: RegExp; noun: string; max: number; maxLabel: string }) {
+    if (sending) return;
+    if (!opts.accept.test(file.type)) {
+      setNote(`That is not a ${opts.noun}.`);
       return;
     }
-    if (file.size > MAX_CHAT_IMAGE_BYTES) {
-      setNote("That picture is too large (max 2 MB).");
+    if (file.size > opts.max) {
+      setNote(`That ${opts.noun} is too large (max ${opts.maxLabel}).`);
       return;
     }
     const reader = new FileReader();
@@ -913,8 +927,59 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
       if (dataUrl) void post({ dataUrl });
     };
-    reader.onerror = () => setNote("Could not read that picture.");
+    reader.onerror = () => setNote(`Could not read that ${opts.noun}.`);
     reader.readAsDataURL(file);
+  }
+
+  function pickImage(file: File | null | undefined) {
+    if (!file) return;
+    sendFile(file, { accept: /^image\//, noun: "picture", max: MAX_CHAT_IMAGE_BYTES, maxLabel: "2 MB" });
+  }
+
+  function pickVideo(file: File | null | undefined) {
+    if (!file) return;
+    sendFile(file, { accept: /^video\//, noun: "video", max: MAX_CHAT_VIDEO_BYTES, maxLabel: "15 MB" });
+  }
+
+  // A voice note recorded right here, rather than picked from the gallery —
+  // one tap to start talking, one tap to send. MediaRecorder is not on every
+  // browser (older Safari in particular), so the mic button simply does not
+  // appear when it is absent, rather than failing when tapped.
+  async function startRecording() {
+    if (sending || recording) return;
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setNote("This device can't record a voice note.");
+      return;
+    }
+    setNote("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = ["audio/webm", "audio/mp4", "audio/ogg"].find((t) => MediaRecorder.isTypeSupported(t)) ?? "";
+      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        chunksRef.current = [];
+        if (blob.size > 0) {
+          sendFile(blob, { accept: /^audio\//, noun: "voice note", max: MAX_CHAT_AUDIO_BYTES, maxLabel: "8 MB" });
+        }
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setNote("Couldn't reach the microphone. Check the app's microphone permission.");
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+    setRecording(false);
   }
 
   function shareLocation() {
@@ -963,7 +1028,7 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
         )}
         {available && loaded && messages.length === 0 && (
           <div style={{ alignSelf: "center", maxWidth: "80%", textAlign: "center", font: "400 13px/1.6 Inter,sans-serif", color: "#78716c" }}>
-            {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Send a message, a photo or your location to ${advisorName}.`}
+            {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Send a message, a photo, a video, a voice note or your location to ${advisorName}.`}
           </div>
         )}
         {messages.map((m, i) => {
@@ -988,6 +1053,24 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
                   style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280, objectFit: "cover" }}
                 />
                 {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
+              </div>
+            );
+          } else if (m.kind === "video" && m.mediaId) {
+            content = (
+              <div style={bubble}>
+                <video controls preload="metadata" style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280 }}>
+                  <source src={`/api/media?id=${encodeURIComponent(m.mediaId)}`} />
+                </video>
+                {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
+              </div>
+            );
+          } else if (m.kind === "audio" && m.mediaId) {
+            content = (
+              <div style={{ ...bubble, padding: "10px 13px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 12.5, opacity: 0.85 }}>🎙 Voice note</span>
+                <audio controls preload="metadata" style={{ width: 220, maxWidth: "100%", height: 32 }}>
+                  <source src={`/api/media?id=${encodeURIComponent(m.mediaId)}`} />
+                </audio>
               </div>
             );
           } else if (m.kind === "location" && typeof m.lat === "number" && typeof m.lng === "number") {
@@ -1028,8 +1111,33 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
       )}
       <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", gap: 9, alignItems: "center" }}>
         <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
-        <button onClick={() => fileRef.current?.click()} disabled={sending} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 42, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>🖼</button>
-        <button onClick={() => shareLocation()} disabled={sending} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 42, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>📍</button>
+        <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
+        <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🖼</button>
+        <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🎥</button>
+        <button
+          onClick={() => (recording ? stopRecording() : void startRecording())}
+          disabled={sending}
+          title={recording ? "Stop and send the voice note" : "Record a voice note"}
+          aria-label={recording ? "Stop and send the voice note" : "Record a voice note"}
+          className={recording ? "" : "wg-warm"}
+          style={{
+            flex: "none",
+            border: recording ? "1px solid transparent" : "1px solid rgba(38,50,58,.16)",
+            background: recording ? "#b5442e" : "#ffffff",
+            color: recording ? "#fff" : undefined,
+            cursor: "pointer",
+            width: 40,
+            height: 46,
+            borderRadius: 14,
+            fontSize: 16,
+            padding: 0,
+            opacity: sending ? 0.6 : 1,
+            animation: recording ? "wgPulse 1.1s ease-in-out infinite" : undefined,
+          }}
+        >
+          {recording ? "⏹" : "🎙"}
+        </button>
+        <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>📍</button>
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
