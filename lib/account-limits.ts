@@ -79,20 +79,20 @@ export type PlanFeatures = {
   /**
    * The White Glove app — a trip in your pocket, at /app.
    *
-   * Business-only, and asked for as such: a day at a time, the kosher side of
+   * GOLD AND BUSINESS, at the owner's word: a day at a time, the kosher side of
    * each day, the Shabbos that stops early, the travel wallet kept on the phone
-   * with no signal, and an advisor thread. It is the itinerary an agency
-   * already builds in here, handed to the client on their phone rather than on
-   * paper — which is what Business is for. The gate lives here, once; the
-   * account page says "the app for your travellers" in the same breath, and
-   * app/app/page.tsx is the only door that reads this.
+   * with no signal, and an advisor thread. A Gold traveller carries their own
+   * trip in it; a Business account does that AND hands each client their own —
+   * but handing a trip to a client is a separate gate (ownBranding), so opening
+   * the app to Gold does not open client links to them. The gate lives here,
+   * once, and app/app/page.tsx is the door that reads it.
    */
   companionApp: boolean;
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
   traveler: { ownBranding: false, assistantHistory: false, companionApp: false },
-  pro: { ownBranding: false, assistantHistory: true, companionApp: false },
+  pro: { ownBranding: false, assistantHistory: true, companionApp: true },
   business: { ownBranding: true, assistantHistory: true, companionApp: true },
 };
 

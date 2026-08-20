@@ -9,18 +9,19 @@ import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "Eruvin — community eruv status for travel | White Glove Kosher Travel",
+  title: "Eruvin — community eruvin for Jewish travel | White Glove Kosher Travel",
   description:
-    "Community eruvin for Jewish travel, each linked to its own status page. An eruv can be down on any Shabbos — always check the community's status before you carry.",
+    "Community eruvin for Jewish travel, each linked to a source that establishes it and a boundary map where the community publishes one. An eruv can be down on any Shabbos — rely on the community's own word before you carry.",
   path: "/eruvin",
 });
 
 /**
- * Community eruvin, each pointing at its own status page.
+ * Community eruvin, each pointing at a source that establishes it.
  *
- * The page leads with the one thing that matters: an eruv's status changes
- * every week, so the listing is a route to the community's live status rather
- * than a claim about it.
+ * A listing says the community maintains an eruv and links what documents it —
+ * the community's own page, or an authoritative reference — with a boundary map
+ * where one is published. It is never a claim that the eruv is up on the day
+ * you travel; the community's own current word is what a traveller relies on.
  */
 export default async function EruvinPage() {
   const listings = await listAllEruvin();
@@ -53,9 +54,9 @@ export default async function EruvinPage() {
             Eruvin
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            An eruv can come down on any Shabbos, sometimes without notice. Each community
-            posts its own status every Erev Shabbos — check it before you carry. These
-            listings link you straight to it.
+            These are communities that maintain an eruv, each with a source that establishes it
+            and, where the community publishes one, a map of its boundary. An eruv can come down
+            on any Shabbos — the community&rsquo;s own current word is what to rely on before you carry.
           </p>
         </div>
       </section>
@@ -79,15 +80,25 @@ export default async function EruvinPage() {
                     {listing.covers && (
                       <p className="mt-2 text-sm leading-6 text-stone-600">Covers {listing.covers}.</p>
                     )}
-                    <div className="mt-4">
+                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
                       <a
-                        href={listing.statusUrl}
+                        href={listing.sourceUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
                       >
-                        Check this week&rsquo;s status
+                        See the community eruv
                       </a>
+                      {listing.mapUrl && (
+                        <a
+                          href={listing.mapUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                        >
+                          Boundary map
+                        </a>
+                      )}
                     </div>
                   </li>
                 ))}

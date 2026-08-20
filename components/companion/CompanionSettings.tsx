@@ -65,7 +65,7 @@ export default function CompanionSettings() {
         <p className="text-sm font-semibold text-[var(--navy)]">Kosher &amp; Shabbos in the app</p>
         <p className="mt-1 text-xs leading-5 text-stone-600">
           Off by default. Turn it on to show each day&apos;s candle-lighting, when Shabbos ends, and
-          the kosher places near the trip — on your app and on every client link you share.
+          the kosher places near the trip — in the app, and on any trip you share from it.
         </p>
       </div>
       <button

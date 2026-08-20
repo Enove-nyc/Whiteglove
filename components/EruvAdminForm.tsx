@@ -24,8 +24,8 @@ export default function EruvAdminForm({ storeReady }: { storeReady: boolean }) {
           <input name="name" required disabled={busy} className={field} placeholder="The Golders Green Eruv" />
         </label>
         <label className="block">
-          <span className={label}>Status link (https://…)</span>
-          <input name="statusUrl" type="url" required disabled={busy} className={field} placeholder="https://…" />
+          <span className={label}>Source link (https://…)</span>
+          <input name="sourceUrl" type="url" required disabled={busy} className={field} placeholder="https://…" />
         </label>
         <label className="block">
           <span className={label}>City</span>
@@ -36,6 +36,10 @@ export default function EruvAdminForm({ storeReady }: { storeReady: boolean }) {
           <input name="country" required disabled={busy} className={field} placeholder="United Kingdom" />
         </label>
       </div>
+      <label className="block">
+        <span className={label}>Boundary map link (optional)</span>
+        <input name="mapUrl" type="url" disabled={busy} className={field} placeholder="https://…" />
+      </label>
       <label className="block">
         <span className={label}>What it covers (optional)</span>
         <input name="covers" disabled={busy} className={field} placeholder="Golders Green, Hendon and Temple Fortune" />
