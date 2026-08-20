@@ -6,6 +6,7 @@ import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
+import { getAppPrefs } from "@/lib/app-prefs-store";
 import { pageMetadata } from "@/lib/seo";
 
 // A link given to a client, not found. It carries somebody's dates and stops;
@@ -41,13 +42,17 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   const plan = await getPlan(shared.ownerEmail);
   if (!mayUseCompanionApp(plan)) redirect(`/i/${shareId}`);
 
-  const brand = await readBrand(shared.ownerEmail).catch(() => null);
+  const [brand, prefs] = await Promise.all([
+    readBrand(shared.ownerEmail).catch(() => null),
+    getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
+  ]);
   const trip = await buildCompanionFromItinerary(
     { ...emptyItinerary(), ...shared.itinerary },
     {
       today: new Date().toISOString().slice(0, 10),
       advisorName: shared.advisor || (brand?.enabled ? brand.name : undefined) || shared.ownerName,
       client: shared.client,
+      kosher: prefs.kosherFeatures,
     },
   );
   if (!trip) redirect(`/i/${shareId}`); // no dates / no days — the document still reads

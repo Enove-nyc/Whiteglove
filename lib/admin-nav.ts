@@ -131,6 +131,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/vacation-destinations", label: "Vacation destinations", blurb: "Where to go on holiday." },
       { href: "/admin/directory/attractions", label: "Things to do", blurb: "Attractions already listed." },
       { href: "/admin/directory/stays", label: "Where to stay", blurb: "Lodging already listed." },
+      { href: "/admin/kosher-apartments", label: "Kosher apartments", blurb: "Sites and hosts renting kosher apartments." },
       { href: "/admin/directory/food", label: "Kosher food", blurb: "Food listings on the site." },
       { href: "/admin/countries", label: "Countries", blurb: "Country notes." },
       { href: "/admin/airports", label: "Airports", blurb: "Flight search and the planner." },

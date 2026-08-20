@@ -97,6 +97,22 @@ export const notableEruvin: NotableEruv[] = [
     statusUrl: "https://cosv.org.au/eruv/",
     covers: "Caulfield, St Kilda, Elwood and the neighbouring suburbs",
   },
+  {
+    slug: "boston",
+    name: "The Greater Boston Eruv",
+    city: "Boston",
+    country: "United States",
+    statusUrl: "https://www.bostoneruv.org/",
+    covers: "Brookline, Newton and Brighton, with a weekly status line",
+  },
+  {
+    slug: "five-towns",
+    name: "The Five Towns Eruv",
+    city: "Cedarhurst",
+    country: "United States",
+    statusUrl: "https://www.fivetownseruv.org/",
+    covers: "Lawrence, Cedarhurst, Woodmere and the neighbouring Five Towns",
+  },
 ];
 
 /** The worldwide eruv directory, for any community not listed above. */
