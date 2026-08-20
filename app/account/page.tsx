@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
 import BusinessBrandPanel from "@/components/BusinessBrandPanel";
+import CompanionSettings from "@/components/companion/CompanionSettings";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -153,6 +154,7 @@ export default async function AccountPage() {
                 <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
                 and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
               </p>
+              <CompanionSettings />
             </div>
           )}
         </section>
