@@ -15,6 +15,49 @@ import {
   edgeSiteIsLocked,
 } from "@/lib/edge-lock";
 import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
+import { BRAND_ORIGIN, brandFromRequestHeaders } from "@/lib/site-brand-core";
+
+/**
+ * The guide lives on the kosher site; the itineraries site is strictly the
+ * planner. These are the guide's path prefixes — the browsable directory of
+ * destinations, kosher information, heritage and travel services — and any of
+ * them reached on the itineraries domain is redirected to the kosher one, where
+ * it belongs. The planner's own paths (/plan, /itinerary, /app, /account, the
+ * share links) are deliberately NOT here, so they stay put.
+ */
+const GUIDE_ONLY_PREFIXES = [
+  "/destinations",
+  "/map",
+  "/kosher",
+  "/kosher-travel",
+  "/shuls",
+  "/mikvaos",
+  "/eruvin",
+  "/zmanim",
+  "/tzaddikim",
+  "/cemeteries",
+  "/hechsherim",
+  "/heritage",
+  "/hotels",
+  "/things-to-do",
+  "/transfers",
+  "/travel-insurance",
+  "/travel-gear",
+  "/directory",
+  "/esim",
+  "/travel-guide",
+  "/sources",
+  "/verification",
+  "/submit",
+  "/alerts",
+  "/sample-itinerary",
+  "/case-studies",
+  "/info",
+];
+
+function isGuidePath(pathname: string): boolean {
+  return GUIDE_ONLY_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
@@ -144,6 +187,16 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = moved;
     return NextResponse.redirect(url, 308);
+  }
+
+  // The itineraries domain is strictly the planner — a guide page reached on it
+  // is sent to the kosher site, where the guide lives. Brand is read from the
+  // request (the proxy's x-wg-brand header first, then the Host), so it is right
+  // whether the request came straight to Railway or through the Cloudflare
+  // worker that fronts the itineraries domain. 307, not 308: the split is still
+  // young, and a permanent redirect would stick in browser caches if it moved.
+  if (isGuidePath(pathname) && brandFromRequestHeaders(request.headers) === "itineraries") {
+    return NextResponse.redirect(new URL(pathname + request.nextUrl.search, BRAND_ORIGIN.kosher), 307);
   }
 
   const onAdminHost = isAdminHost(request);

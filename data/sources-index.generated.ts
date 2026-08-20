@@ -110,7 +110,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "en.wikipedia.org",
     "url": "https://en.wikipedia.org/",
     "category": "General reference",
-    "count": 937
+    "count": 934
   },
   {
     "host": "fr.wikipedia.org",
@@ -1250,7 +1250,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "cdp.jewishgen.org",
     "url": "https://cdp.jewishgen.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 40
+    "count": 41
   },
   {
     "host": "cja.huji.ac.il",
@@ -1358,7 +1358,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "myshtetl.org",
     "url": "https://myshtetl.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 1
+    "count": 2
   },
   {
     "host": "prostejov.zidovskyhrbitov.cz",
@@ -1388,7 +1388,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "sztetl.org.pl",
     "url": "https://sztetl.org.pl/",
     "category": "Jewish heritage & cemeteries",
-    "count": 28
+    "count": 29
   },
   {
     "host": "willesdenjewishcemetery.org.uk",

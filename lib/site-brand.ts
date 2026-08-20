@@ -23,54 +23,22 @@
  */
 
 import { headers } from "next/headers";
+import { type SiteBrand, brandFromRequestHeaders } from "@/lib/site-brand-core";
 
-export type SiteBrand = "kosher" | "itineraries";
-
-/** The host fragment that marks the itineraries front door. */
-const ITINERARIES_HOST = "whitegloveitineraries";
-
-/**
- * The header a front proxy sets to name the brand when it has had to rewrite
- * the Host to route the request. Kept in one place so the code and the proxy
- * rule agree on the spelling.
- */
-export const BRAND_HEADER = "x-wg-brand";
-
-export const BRAND_ORIGIN: Record<SiteBrand, string> = {
-  kosher: "https://www.whiteglovekoshertravel.com",
-  itineraries: "https://www.whitegloveitineraries.com",
-};
-
-export const BRAND_NAME: Record<SiteBrand, string> = {
-  kosher: "White Glove Kosher Travel",
-  itineraries: "White Glove Itineraries",
-};
-
-/** The brand a host belongs to. Anything unrecognised is the kosher default. */
-export function brandForHost(host?: string | null): SiteBrand {
-  return host && host.toLowerCase().includes(ITINERARIES_HOST) ? "itineraries" : "kosher";
-}
-
-export function isItinerariesHost(host?: string | null): boolean {
-  return brandForHost(host) === "itineraries";
-}
-
-/** A brand named outright by the proxy header, or null when it says nothing we know. */
-function brandFromHeader(value?: string | null): SiteBrand | null {
-  const v = value?.trim().toLowerCase();
-  return v === "itineraries" || v === "kosher" ? v : null;
-}
-
-type HeaderBag = { get(name: string): string | null };
-
-/**
- * The brand for a request, from its headers: the explicit proxy header first,
- * then the Host. The header is only consulted when it names a brand we know, so
- * an absent or garbled one falls straight through to the Host as before.
- */
-export function brandFromRequestHeaders(h: HeaderBag): SiteBrand {
-  return brandFromHeader(h.get(BRAND_HEADER)) ?? brandForHost(h.get("host"));
-}
+// The header-free brand facts and the header-bag resolver live in
+// lib/site-brand-core.ts (so a client component and the edge middleware can
+// import them without pulling in next/headers). Re-exported here, so
+// "@/lib/site-brand" stays the one door for everything server-side.
+export type { SiteBrand };
+export { brandFromRequestHeaders };
+export {
+  BRAND_HEADER,
+  BRAND_NAME,
+  BRAND_ORIGIN,
+  ITINERARIES_HOST,
+  brandForHost,
+  isItinerariesHost,
+} from "@/lib/site-brand-core";
 
 /** The brand of the request being served, from its headers. */
 export async function currentBrand(): Promise<SiteBrand> {

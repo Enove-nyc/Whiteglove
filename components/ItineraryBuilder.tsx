@@ -563,8 +563,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
               </span>
-              <span className="inline-flex h-14 rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
-                <Link href="/itinerary/print" target="_blank" className="inline-flex items-center justify-center self-stretch rounded-full bg-[var(--navy)] px-5 text-xs font-bold text-white transition hover:bg-[var(--gold)]">Print / PDF</Link>
+              <span className="inline-flex h-14 items-stretch overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+                <Link href="/itinerary/print" target="_blank" className="inline-flex items-center justify-center rounded-full bg-[var(--navy)] px-5 text-xs font-bold text-white transition hover:bg-[var(--gold)]">Print / PDF</Link>
               </span>
             </div>
           </div>
@@ -1864,7 +1864,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list</span>
         <KeverPicker onPick={pickKever} />
-        <span className={`${caption} mt-3 block`}>…or something to do</span>
+        <span className={`${caption} mt-3 block`}>…or any place: a sight, a kosher restaurant, a shul, a mikvah</span>
         <AttractionPicker onPick={pickAttraction} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
@@ -1980,7 +1980,7 @@ function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void })
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        placeholder="Search a city or a sight — e.g. Rome, Jungfrau, museum, waterfall…"
+        placeholder="Search a place — a sight, a kosher restaurant, a shul, a mikvah…"
         autoComplete="off"
       />
       {open && results.length > 0 && (

@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { BUILT_IN_WORDS } from "@/data/site-words";
+import { ITINERARIES_CATEGORIES, NAV_CATEGORIES } from "@/lib/navigation";
 
 /**
  * The customer-facing copy rules from AGENTS.md, as a test.
@@ -256,16 +257,41 @@ describe("one name per thing", () => {
     assert.match(AGENTS_MD, /lib\/starting-points\.ts/);
   });
 
-  it("CALLS ONE PAGE ONE THING IN THE NAVIGATION", () => {
+  it("CALLS ONE PAGE ONE THING IN EACH BRAND'S NAVIGATION", () => {
     // The bar once said "My Trips" and the menu said "Itinerary planner", both
     // pointing at /itinerary — one page offered twice under two names, which
-    // reads as two features, one of which cannot be found. The header's
-    // dropdowns since moved to short, category-scoped words ("Plan >
-    // Itinerary" reads as "Itinerary planner" without spelling it out) — what
-    // still must not happen is a SECOND, competing name for the same page.
-    const itineraryBlocks = [...NAV.matchAll(/\{[^{}]*href: "\/itinerary"[^{}]*\}/g)].map((m) => m[0]);
-    const labels = itineraryBlocks.map((block) => /label: "([^"]+)"/.exec(block)?.[1]).filter(Boolean);
-    assert.deepEqual([...new Set(labels)], ["Itinerary"], `/itinerary is called more than one thing: ${labels}`);
+    // reads as two features, one of which cannot be found. What must not happen
+    // is a SECOND, competing name for the same page IN ONE BAR.
+    //
+    // The two brands are two front doors, so a page may be named differently
+    // BETWEEN them — /itinerary is "Itinerary" on the kosher bar and "Build a
+    // trip" on the itineraries one — but never twice within a single bar.
+    for (const categories of [NAV_CATEGORIES, ITINERARIES_CATEGORIES]) {
+      // Keyed on the FULL href: /destinations?kind=beach and /destinations are
+      // different things and rightly carry different labels ("Beach" vs "All
+      // Destinations"). What this catches is one exact destination named two
+      // ways in one bar.
+      const labelsByHref = new Map<string, Set<string>>();
+      for (const category of categories) {
+        for (const link of category.links) {
+          const set = labelsByHref.get(link.href) ?? new Set<string>();
+          set.add(link.label);
+          labelsByHref.set(link.href, set);
+        }
+      }
+      for (const [href, labels] of labelsByHref) {
+        assert.equal(labels.size, 1, `${href} is named more than one way in one bar: ${[...labels]}`);
+      }
+    }
+    // And within a brand, /itinerary keeps its one name each.
+    assert.deepEqual(
+      NAV_CATEGORIES.flatMap((c) => c.links).filter((l) => l.href === "/itinerary").map((l) => l.label),
+      ["Itinerary"],
+    );
+    assert.deepEqual(
+      ITINERARIES_CATEGORIES.flatMap((c) => c.links).filter((l) => l.href === "/itinerary").map((l) => l.label),
+      ["Build a trip"],
+    );
     assert.doesNotMatch(NAV, /"My Trips"/);
     assert.doesNotMatch(NAV, /"Hotels & Stays"/);
     assert.doesNotMatch(NAV, /"Itinerary planner"/, "a second, longer name for the same page has crept back in");
