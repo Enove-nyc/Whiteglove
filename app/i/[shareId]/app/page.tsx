@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayUseCompanionApp } from "@/lib/account-limits";
+import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
@@ -28,19 +28,20 @@ export const dynamic = "force-dynamic";
  * the document. The client needs no account and no plan — they were given the
  * link, and it opens THIS trip and no other of the agency's.
  *
- * THE APP STAYS A BUSINESS CAPABILITY. Only a trip whose OWNER is on Business
- * opens this way; anyone else's share link falls back to the ordinary
- * read-only itinerary at /i/[shareId].
+ * HANDING THE APP TO A CLIENT IS BUSINESS-ONLY. Gold has the app for its own
+ * trips, but only a trip whose OWNER is on Business opens this way for a client;
+ * anyone else's share link falls back to the ordinary read-only itinerary at
+ * /i/[shareId]. The gate is mayServeCompanionClients, the client-facing half.
  */
 export default async function SharedAppPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
   const shared = await getSharedItineraryByShareId(shareId);
   if (!shared) redirect(`/i/${shareId}`); // the shared view shows the "not available" notice
 
-  // The app is a Business capability; a non-Business owner's link is still a
-  // real shared trip, just as the document rather than the app.
+  // Handing the app to a client is Business-only; a non-Business owner's link
+  // is still a real shared trip, just as the document rather than the app.
   const plan = await getPlan(shared.ownerEmail);
-  if (!mayUseCompanionApp(plan)) redirect(`/i/${shareId}`);
+  if (!mayServeCompanionClients(plan)) redirect(`/i/${shareId}`);
 
   const [brand, prefs] = await Promise.all([
     readBrand(shared.ownerEmail).catch(() => null),

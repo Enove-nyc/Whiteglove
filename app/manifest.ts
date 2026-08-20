@@ -1,12 +1,24 @@
 import type { MetadataRoute } from "next";
+import { currentBrand } from "@/lib/site-brand";
 
 // Web app manifest — makes the site installable as an app (and Play Store-ready
 // once wrapped as a Trusted Web Activity).
-export default function manifest(): MetadataRoute.Manifest {
+//
+// BRAND-AWARE, so the two domains install as themselves: whitegloveitineraries.com
+// adds to a home screen as "White Glove Itineraries", whiteglovekoshertravel.com
+// as "White Glove Kosher Travel". Reading the request's brand (its Host, or the
+// proxy header the itineraries domain arrives with) is a request-time API, which
+// Next treats as opting this route out of static caching — which is exactly
+// right, because the answer depends on which door the request came through.
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const brand = await currentBrand();
+  const itineraries = brand === "itineraries";
   return {
-    name: "White Glove Kosher Travel",
+    name: itineraries ? "White Glove Itineraries" : "White Glove Kosher Travel",
     short_name: "White Glove",
-    description: "Thoughtfully planned kosher travel and Jewish heritage journeys — kevarim, kosher food, minyanim, and trip planning.",
+    description: itineraries
+      ? "The trip you plan, in your client's pocket — the itinerary a day at a time, a travel wallet for when there is no signal, and a line to their advisor."
+      : "Thoughtfully planned kosher travel and Jewish heritage journeys — kevarim, kosher food, minyanim, and trip planning.",
     start_url: "/",
     display: "standalone",
     background_color: "#14213d",

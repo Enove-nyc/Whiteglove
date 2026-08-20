@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData, getTrips } from "@/lib/account-store";
 import { readChat } from "@/lib/companion-chat-store";
+import { mayServeCompanionClients } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +14,19 @@ export const dynamic = "force-dynamic";
  * conversations, so it is read from who the request is, never from anything
  * passed in. Each shared trip is one conversation, keyed by that trip's share
  * token; the client on the other end reaches the same thread from their link.
+ *
+ * BUSINESS-ONLY, like the client links it lists. Gold has the app for its own
+ * trips and no clients to keep an inbox of, so the gate is
+ * mayServeCompanionClients — the same door the share link and the client chat
+ * pass through.
  */
 export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  if (!mayServeCompanionClients(await getPlan(account.email))) {
+    return NextResponse.json({ error: "The client inbox is part of a Business account." }, { status: 403 });
+  }
 
   const shared = (await getTrips(account.email).catch(() => [])).filter((t) => t.shareId);
   const conversations = await Promise.all(

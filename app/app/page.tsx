@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import AppCodeEntry from "@/components/companion/AppCodeEntry";
 import CompanionApp from "@/components/companion/CompanionApp";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -12,7 +12,7 @@ import {
   readSessionEmail,
 } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayUseCompanionApp } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
@@ -41,7 +41,9 @@ function firstParam(value: string | string[] | undefined): string {
  *
  * GOLD AND BUSINESS, in one place. The gate is mayUseCompanionApp in
  * lib/account-limits.ts, and this page is the only door that reads it. Handing a
- * trip to a client stays Business-only behind a separate gate (ownBranding).
+ * trip to a client stays Business-only behind a separate gate
+ * (mayServeCompanionClients) — the Messages inbox below, and the client links,
+ * chat and report routes elsewhere.
  *
  * IT SHOWS THE OWNER'S OWN TRIP, never a sample. `?trip=<id>` opens a specific
  * one (that is what the "Open the app" links carry); otherwise it opens the
@@ -58,10 +60,64 @@ export default async function AppPage({
   const account = await getCurrentAccountSummary(cookie);
   const sessionEmail = readSessionEmail(cookie);
   const who = account?.email || sessionEmail || "";
-  if (!who) redirect("/login?next=%2Fapp");
+  // Not signed in: the two doors. A client enters the code their adviser sent
+  // and opens their one trip with no account; an adviser or a Gold member logs
+  // in to their own trips. This replaced a straight redirect to /login, which
+  // left a client with a code nowhere to put it.
+  if (!who) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
+          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            The trip in your pocket.
+          </h1>
+          <p className="text-base leading-7 text-stone-600">
+            A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
+            wallet kept on the phone for when there is no signal.
+          </p>
+
+          <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              Have a code from your travel adviser?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-stone-600">
+              Enter it to open your trip. You do not need an account.
+            </p>
+            <div className="mt-4">
+              <AppCodeEntry />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--gold-light)] bg-white p-6">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              Travel adviser or Gold member?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-stone-600">
+              Log in to open your own trips in the app.
+            </p>
+            <div className="mt-4">
+              <Link
+                href="/login?next=%2Fapp"
+                className="inline-flex min-h-11 items-center rounded-full bg-[var(--navy)] px-6 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    );
+  }
 
   const plan = await getPlan(who);
   if (mayUseCompanionApp(plan)) {
+    // Gold has the app for its own trips; only Business hands it to a client.
+    // The copy below turns on this, so a Gold member is never offered a client
+    // feature they do not have.
+    const servesClients = mayServeCompanionClients(plan);
     const wantedId = firstParam((await searchParams).trip);
     const trips = await getTrips(who).catch(() => []);
     const selected =
@@ -94,18 +150,18 @@ export default async function AppPage({
       // furniture around it. On a phone it is the whole window; installed to the
       // home screen it is the whole app.
       //
-      // The owner is the advisor here, so the Messages tab is their inbox —
-      // every client they have shared a trip with, each its own conversation,
-      // regardless of which trip's days they are looking at.
+      // Business hands the app to clients, so it gets the Messages inbox — every
+      // client they have shared a trip with. Gold has the app for its own trips
+      // and no inbox; the tab simply is not there.
       return (
         <main>
-          <CompanionApp trip={companionTrip} advisorInbox />
+          <CompanionApp trip={companionTrip} advisorInbox={servesClients} />
         </main>
       );
     }
 
-    // A Business account with no trip to show yet — say so plainly, and offer
-    // the way to fix it, rather than pretending with a sample.
+    // A Gold or Business account with no trip to show yet — say so plainly, and
+    // offer the way to fix it, rather than pretending with a sample.
     const dated = trips.filter((t) => t.startDate && t.endDate);
     return (
       <main className="min-h-screen bg-[var(--cream)]">
@@ -117,8 +173,10 @@ export default async function AppPage({
           </h1>
           <p className="text-base leading-7 text-stone-600">
             {selected
-              ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here — the days, the kosher side of each one, and the Shabbos times."
-              : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."}
+              ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here, ready for the phone."
+              : servesClients
+                ? "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."
+                : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app in your pocket."}
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
             <Link href="/itinerary" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
@@ -146,7 +204,12 @@ export default async function AppPage({
     );
   }
 
-  // Signed in, but not on Business. Say what it is and where it is, once.
+  // Signed in on Traveler — the only plan the app is not part of (Gold and
+  // Business both cleared the gate above). Say what it is, and point at Gold,
+  // the first plan that includes it, not Business. It still takes a client's
+  // code, since a client may have their own account and a code from their
+  // adviser at once. The itineraries "See the app" link can land here, so this
+  // is where that promise has to be true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -156,21 +219,32 @@ export default async function AppPage({
           The trip in your pocket.
         </h1>
         <p className="text-base leading-7 text-stone-600">
-          A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
-          wallet kept on the phone for when there is no signal. It is the itinerary you build in
-          here, handed to your traveller on their phone rather than on paper.
+          Your itinerary a day at a time, with a travel wallet kept on the phone for when there is
+          no signal. It is the trip you build in here, carried on your phone rather than on paper.
         </p>
+
+        <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+            Have a code from your travel adviser?
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-stone-600">
+            Enter it to open your trip — you do not need the app on your own account for that.
+          </p>
+          <div className="mt-4">
+            <AppCodeEntry />
+          </div>
+        </div>
+
         <p className="text-base leading-7 text-stone-600">
-          The app is part of {PLAN_LABELS.business} — the plan for an agency or an office planning
-          trips for other people. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business}{" "}
-          from your account, and we will be in touch.
+          The app comes with {PLAN_LABELS.pro} and {PLAN_LABELS.business}. You are on{" "}
+          {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.pro} from your account, and we will be in touch.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/account"
             className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Ask about {PLAN_LABELS.business}
+            Ask about {PLAN_LABELS.pro}
           </Link>
           <Link
             href="/itinerary"

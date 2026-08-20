@@ -12,7 +12,7 @@ import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
-import { describeLimits, limitsFor, mayBrandOwnItinerary, mayUseCompanionApp } from "@/lib/account-limits";
+import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
 import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
@@ -101,9 +101,11 @@ export default async function AccountPage() {
   // on somebody's own account page.
   const canBrand = mayBrandOwnItinerary(plan);
   const brand = canBrand ? await readBrand(who) : null;
-  // The White Glove app is a Business entitlement (lib/account-limits.ts). A
-  // Business account gets the door to it here; nobody else sees this line.
+  // The White Glove app (lib/account-limits.ts). Gold and Business both get the
+  // app for their own trips, so both see the door here. Only Business hands a
+  // trip to a client, so only Business sees the client-link line inside it.
   const canUseApp = mayUseCompanionApp(plan);
+  const canServeClients = mayServeCompanionClients(plan);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -158,7 +160,7 @@ export default async function AccountPage() {
                 </div>
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
-              {canBrand && (
+              {canServeClients && (
                 <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
                   To hand a client their own trip, open it in the{" "}
                   <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}

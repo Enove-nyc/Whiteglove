@@ -15,7 +15,7 @@ import {
   stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayBrandOwnItinerary, mayUseCompanionApp } from "@/lib/account-limits";
+import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Itinerary } from "@/data/itinerary";
@@ -99,13 +99,15 @@ export async function POST(request: NextRequest) {
     }
     case "share":
     case "unshare": {
-      // The client's app link, locked to this one trip. Business only — the app
-      // it opens is a Business capability (lib/account-limits.ts), so the link
-      // that hands a trip over as the app is too.
+      // The client's per-trip code, locked to this one trip. Business only:
+      // handing a trip to a client is the Business capability
+      // (mayServeCompanionClients), even though the app it opens is now
+      // Gold-and-Business (companionApp). A Gold member uses the app for their
+      // own trips; only Business creates a code to send a client.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayUseCompanionApp(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: "Sharing a trip as the app is part of a Business account." },
+          { ok: false, error: "Handing a trip to a client is part of a Business account." },
           { status: 403 },
         );
       }

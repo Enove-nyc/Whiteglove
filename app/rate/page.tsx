@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
   title: "Rate how it went — White Glove Kosher Travel",
-  description: "Tell White Glove how a place or a trip went. Private feedback — nothing is published from this page.",
+  description: "Private feedback for White Glove — how a place or White Glove itself did. Nothing is published from this page.",
   path: "/rate",
 });
 
@@ -19,6 +19,7 @@ export default async function RatePage({ searchParams }: { searchParams: Promise
   const kind: RatingKind = isRatingKind(params.kind) ? params.kind : "listing";
   const refId = (params.ref ?? "").trim() || "general";
   const label = (params.label ?? "").trim() || (kind === "trip" ? "Your trip" : "Something on White Glove");
+  const isTrip = kind === "trip";
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -26,13 +27,14 @@ export default async function RatePage({ searchParams }: { searchParams: Promise
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">After the trip</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">{isTrip ? "After your trip" : "After the trip"}</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-5xl text-[var(--navy)] sm:text-6xl">
-            How did it go?
+            {isTrip ? "How was White Glove?" : "How did it go?"}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-            A short note for us about a place you visited or a trip you took. It stays with White Glove — we do not
-            put ratings on the public pages from this form.
+            {isTrip
+              ? "A short note for us about how White Glove did during your trip — how the site and its information held up, not how the trip itself went. It stays with White Glove and is never published from this form."
+              : "A short note for us about a place you visited. It stays with White Glove — we do not put ratings on the public pages from this form."}
           </p>
         </div>
       </section>

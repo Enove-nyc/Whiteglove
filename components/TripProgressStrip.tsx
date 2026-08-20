@@ -185,7 +185,7 @@ export default function TripProgressStrip({
             onClick={() => setRateOpen(true)}
             className="min-h-11 shrink-0 rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
-            Rate how it went
+            Rate White Glove
           </button>
         )}
         {progress.phase === "after" && !tripId && (
@@ -193,7 +193,7 @@ export default function TripProgressStrip({
             href={rateHref({ kind: "trip", ref: "finished", label: tripTitle?.trim() || "Your trip" })}
             className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
           >
-            Rate how it went
+            Rate White Glove
           </a>
         )}
       </div>

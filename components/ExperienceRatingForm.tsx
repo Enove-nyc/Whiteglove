@@ -42,6 +42,11 @@ export default function ExperienceRatingForm({
   const [done, setDone] = useState(false);
 
   const about = useMemo(() => label.trim() || "this", [label]);
+  // A trip rating is feedback about White Glove during the trip, not a report
+  // on how the trip itself went — the site did not arrange the trip, so it asks
+  // only about its own part. A listing rating stays about the place.
+  const isTrip = kind === "trip";
+  const subject = isTrip ? "White Glove" : about;
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -74,7 +79,7 @@ export default function ExperienceRatingForm({
   if (signedIn === false) {
     return (
       <div className={compact ? "mt-4 border-t border-[var(--gold-light)] pt-4" : ""}>
-        <p className="text-sm leading-6 text-stone-600">Sign in to rate {about}.</p>
+        <p className="text-sm leading-6 text-stone-600">Sign in to rate {subject}.</p>
         <button
           type="button"
           onClick={() => requireSignIn(() => undefined, "Sign in to rate")}
@@ -91,7 +96,7 @@ export default function ExperienceRatingForm({
       <div className={compact ? "mt-4 border-t border-[var(--gold-light)] pt-4" : ""}>
         <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Thank you.</p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          We have what you wrote about {about}. It stays with us — nothing is published from this form.
+          We have what you wrote about {subject}. It stays with us — nothing is published from this form.
         </p>
       </div>
     );
@@ -108,17 +113,21 @@ export default function ExperienceRatingForm({
     >
       {!compact && (
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">How it went</p>
-          <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{about}</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{isTrip ? "After your trip" : "How it went"}</p>
+          <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
+            {isTrip ? "How was White Glove?" : about}
+          </h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-stone-600">
-            A short note for White Glove — not a public review. Say how the place or the trip felt from where you stood.
+            {isTrip
+              ? "A short note for White Glove about how it did during your trip — how the site and its information held up, not how the trip itself went. Not a public review."
+              : "A short note for White Glove — not a public review. Say how the place felt from where you stood."}
           </p>
         </div>
       )}
 
       {compact && (
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
-          How did {about} go?
+          {isTrip ? "How was White Glove during your trip?" : `How did ${about} go?`}
         </p>
       )}
 
@@ -171,7 +180,7 @@ export default function ExperienceRatingForm({
           rows={compact ? 3 : 4}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="What helped, what was missing, what you would tell a friend."
+          placeholder={isTrip ? "What helped, what was missing, what you'd tell a friend about White Glove." : "What helped, what was missing, what you would tell a friend."}
           maxLength={2000}
         />
       </label>

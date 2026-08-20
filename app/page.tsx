@@ -14,15 +14,30 @@ import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-di
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
 import { DEFAULT_PHOTO } from "@/lib/default-photo";
+import ItinerariesHome from "@/components/ItinerariesHome";
+import { BRAND_ORIGIN, brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
 import { headers } from "next/headers";
 import Link from "next/link";
 
-export const metadata = pageMetadata({
-  title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
-  description:
-    "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvahs — plan your own itinerary or search booking partners.",
-  path: "/",
-});
+// Two front doors, one page. The kosher site keeps the metadata it always had;
+// the itineraries domain names itself and points its canonical at its own
+// origin so search does not fold the two into one.
+export async function generateMetadata() {
+  if ((await currentBrand()) === "itineraries") {
+    return {
+      title: "White Glove Itineraries — the trip you plan, in your client's pocket",
+      description:
+        "Build an itinerary a day at a time and hand it to your client as an app on their phone — the days, a travel wallet for no signal, and a chat with you.",
+      alternates: { canonical: `${BRAND_ORIGIN.itineraries}/` },
+    };
+  }
+  return pageMetadata({
+    title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
+    description:
+      "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvahs — plan your own itinerary or search booking partners.",
+    path: "/",
+  });
+}
 
 /**
  * The front page.
@@ -81,6 +96,12 @@ const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: strin
 
 export default async function Home() {
   const requestHeaders = await headers();
+  // The itineraries domain gets its own front door; everything below is the
+  // kosher site, unchanged. Read through the same helper generateMetadata uses,
+  // so the proxy's brand header and the Host are honoured the one same way.
+  if (brandFromRequestHeaders(requestHeaders) === "itineraries") {
+    return <ItinerariesHome />;
+  }
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const [homepagePromotions, inlinePromotions, caseStudies, booking] = await Promise.all([

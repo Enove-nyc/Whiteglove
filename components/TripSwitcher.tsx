@@ -112,6 +112,17 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     [onSwitched],
   );
 
+  // Copy the code (or the link) and flash "Copied!" on that one control.
+  const copy = useCallback((key: string, text: string) => {
+    navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        setCopied(key);
+        setTimeout(() => setCopied((c) => (c === key ? null : c)), 1500);
+      })
+      .catch(() => undefined);
+  }, []);
+
   // Not signed in, or the account store is not connected. Say nothing.
   if (!trips) return null;
 
@@ -302,39 +313,49 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               </div>
             )}
 
-            {/* The client's app link — Business only, one link per trip. It
-                opens THIS trip as the app on the client's phone; no account
-                needed. Other trips are never reachable from it. */}
+            {/* The client's per-trip code — Business only, one code per trip.
+                Send the client the code and they enter it on the app's front
+                page; the link is the same thing pre-opened. Either opens THIS
+                trip as the app on the client's phone, no account needed. Other
+                trips are never reachable from it. */}
             {mayNameClient && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
               <div className="mt-1 w-full">
                 {trip.shareId ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Client app link</span>
-                    <input
-                      readOnly
-                      value={`${origin}/i/${trip.shareId}/app`}
-                      onFocus={(e) => e.currentTarget.select()}
-                      className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs text-[var(--navy)]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard?.writeText(`${origin}/i/${trip.shareId}/app`).then(() => {
-                          setCopied(trip.id);
-                          setTimeout(() => setCopied((c) => (c === trip.id ? null : c)), 1500);
-                        }).catch(() => undefined);
-                      }}
-                      className={smallButton}
-                    >
-                      {copied === trip.id ? "Copied!" : "Copy"}
-                    </button>
-                    <button type="button" disabled={busy} onClick={() => void act("unshare", { id: trip.id })} className={smallButton}>
-                      Stop link
-                    </button>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Client code</span>
+                      <input
+                        readOnly
+                        value={trip.shareId}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs font-semibold tracking-[0.14em] text-[var(--navy)]"
+                      />
+                      <button type="button" onClick={() => copy(`${trip.id}-code`, trip.shareId!)} className={smallButton}>
+                        {copied === `${trip.id}-code` ? "Copied!" : "Copy code"}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">or link</span>
+                      <input
+                        readOnly
+                        value={`${origin}/i/${trip.shareId}/app`}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs text-[var(--navy)]"
+                      />
+                      <button type="button" onClick={() => copy(`${trip.id}-link`, `${origin}/i/${trip.shareId}/app`)} className={smallButton}>
+                        {copied === `${trip.id}-link` ? "Copied!" : "Copy link"}
+                      </button>
+                      <button type="button" disabled={busy} onClick={() => void act("unshare", { id: trip.id })} className={smallButton}>
+                        Stop
+                      </button>
+                    </div>
+                    <p className="text-[11px] leading-4 text-stone-500">
+                      Send your client the code — they enter it on the app&rsquo;s front page — or the link, which opens their trip directly.
+                    </p>
                   </div>
                 ) : (
                   <button type="button" disabled={busy} onClick={() => void act("share", { id: trip.id })} className={smallButton}>
-                    Create a client app link
+                    Create a client code
                   </button>
                 )}
               </div>
