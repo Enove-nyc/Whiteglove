@@ -110,7 +110,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "en.wikipedia.org",
     "url": "https://en.wikipedia.org/",
     "category": "General reference",
-    "count": 874
+    "count": 900
   },
   {
     "host": "fr.wikipedia.org",
@@ -1190,7 +1190,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "cdp.jewishgen.org",
     "url": "https://cdp.jewishgen.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 25
+    "count": 39
   },
   {
     "host": "cja.huji.ac.il",
@@ -1208,7 +1208,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "esjf-cemeteries.org",
     "url": "https://esjf-cemeteries.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 17
+    "count": 18
   },
   {
     "host": "findagrave.com",
