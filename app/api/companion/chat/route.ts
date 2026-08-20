@@ -6,7 +6,11 @@ import {
   MAX_CHAT_TEXT,
   appendChat,
   chatStoreAvailable,
+  deleteMessage,
+  editMessageText,
+  markRead,
   readChat,
+  readMarkers,
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
 import {
@@ -79,7 +83,64 @@ export async function GET(request: NextRequest) {
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
-  return NextResponse.json({ messages: await readChat(shareId), side: who.side, available: chatStoreAvailable() });
+  const messages = await readChat(shareId);
+  // Loading the thread IS reading it — there is no separate "mark as read"
+  // action, the same as a phone's messaging app. The other side sees this as
+  // soon as their own next poll picks the marker up.
+  const latest = messages[messages.length - 1];
+  if (latest) await markRead(shareId, who.side, latest.at);
+  return NextResponse.json({
+    messages,
+    side: who.side,
+    available: chatStoreAvailable(),
+    readMarkers: await readMarkers(shareId),
+  });
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!sameOrigin(request)) {
+    return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
+  }
+  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; text?: string } | null;
+  const shareId = body?.share?.trim();
+  const at = body?.at?.trim();
+  const text = body?.text?.trim();
+  if (!shareId || !at || !text) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
+  if (!chatStoreAvailable()) {
+    return NextResponse.json({ error: "Messaging needs the private store connected." }, { status: 503 });
+  }
+  const who = await sideFor(shareId);
+  if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+
+  const limited = await rateLimit(`companion-edit:${shareId}`, { limit: 30, windowSeconds: 3600 });
+  if (!limited.ok) {
+    return NextResponse.json({ error: "That is a lot of edits at once — try again shortly." }, { status: 429 });
+  }
+
+  // editMessageText itself re-checks who sent the original — `by` here is
+  // only ever this request's own verified side, never anything the body says.
+  const messages = await editMessageText(shareId, at, who.side, text.slice(0, MAX_CHAT_TEXT));
+  if (!messages) return NextResponse.json({ error: "That message can't be changed." }, { status: 404 });
+  return NextResponse.json({ messages, side: who.side });
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!sameOrigin(request)) {
+    return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
+  }
+  const body = (await request.json().catch(() => null)) as { share?: string; at?: string } | null;
+  const shareId = body?.share?.trim();
+  const at = body?.at?.trim();
+  if (!shareId || !at) return NextResponse.json({ error: "Which message?" }, { status: 400 });
+  if (!chatStoreAvailable()) {
+    return NextResponse.json({ error: "Messaging needs the private store connected." }, { status: 503 });
+  }
+  const who = await sideFor(shareId);
+  if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+
+  const messages = await deleteMessage(shareId, at, who.side);
+  if (!messages) return NextResponse.json({ error: "That message can't be deleted." }, { status: 404 });
+  return NextResponse.json({ messages, side: who.side });
 }
 
 export async function POST(request: NextRequest) {

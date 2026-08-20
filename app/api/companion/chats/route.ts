@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData, getTrips } from "@/lib/account-store";
-import { readChat } from "@/lib/companion-chat-store";
+import { deleteConversation, readChat } from "@/lib/companion-chat-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
+import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
@@ -49,4 +50,38 @@ export async function GET() {
   conversations.sort((a, b) => (b.lastAt || "").localeCompare(a.lastAt || "") || a.name.localeCompare(b.name));
 
   return NextResponse.json({ conversations });
+}
+
+/**
+ * Clear one client conversation — every message in it, back to empty.
+ *
+ * WHAT THIS DOES NOT DO: touch the trip, or the share link the client holds.
+ * Deleting a conversation is deleting what was said, not the door the client
+ * walks through to say the next thing — that stays open, same as before.
+ *
+ * Ownership is checked the same way the list above is built: the shareId has
+ * to belong to one of THIS account's own trips, read from the account, never
+ * trusted from the body — otherwise any advisor could clear any other
+ * advisor's conversation by guessing a share id.
+ */
+export async function DELETE(request: NextRequest) {
+  if (!sameOrigin(request)) {
+    return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
+  }
+  const cookie = (await cookies()).get(accountCookieName())?.value;
+  const account = await getCurrentAccountData(cookie);
+  if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  if (!mayServeCompanionClients(await getPlan(account.email))) {
+    return NextResponse.json({ error: "The client inbox is part of a Business account." }, { status: 403 });
+  }
+
+  const body = (await request.json().catch(() => null)) as { share?: string } | null;
+  const shareId = body?.share?.trim();
+  if (!shareId) return NextResponse.json({ error: "Which conversation?" }, { status: 400 });
+
+  const owns = (await getTrips(account.email).catch(() => [])).some((t) => t.shareId === shareId);
+  if (!owns) return NextResponse.json({ error: "That conversation isn't yours." }, { status: 404 });
+
+  await deleteConversation(shareId);
+  return NextResponse.json({ ok: true });
 }

@@ -62,6 +62,35 @@ describe("reading a stored thread", () => {
   it("refuses a row from neither side", () => {
     assert.equal(parseChatMessages([JSON.stringify({ from: "someone", text: "x", at: "t" })]).length, 0);
   });
+
+  it("keeps an edited message's new words, and says it was edited", () => {
+    const [m] = parseChatMessages([JSON.stringify({ from: "client", kind: "text", text: "actually Tuesday", editedAt: "t2", at: "t1" })]);
+    assert.equal(m.text, "actually Tuesday");
+    assert.equal(m.editedAt, "t2");
+  });
+
+  it("strips a deleted message down to nothing a client could act on", () => {
+    // Whatever it carried — a caption, a picture's id, a place's coordinates —
+    // must not survive being read back, or "deleted" would only mean "hidden".
+    const rows = [
+      JSON.stringify({ from: "advisor", kind: "text", text: "the old plan", deletedAt: "t9", at: "t1" }),
+      JSON.stringify({ from: "client", kind: "image", text: "oops", mediaId: "m-1", deletedAt: "t9", at: "t2" }),
+      JSON.stringify({ from: "client", kind: "location", text: "here", lat: 41.9, lng: 12.5, deletedAt: "t9", at: "t3" }),
+    ];
+    const out = parseChatMessages(rows);
+    assert.equal(out.length, 3);
+    for (const m of out) {
+      assert.equal(m.deletedAt, "t9");
+      assert.equal(m.text, "");
+      assert.equal(m.mediaId, undefined);
+      assert.equal(m.lat, undefined);
+      assert.equal(m.lng, undefined);
+    }
+    // The kind is kept — the tombstone bubble still knows it was a picture, a
+    // place or a plain message, even though it renders none of the content.
+    assert.equal(out[1].kind, "image");
+    assert.equal(out[2].kind, "location");
+  });
 });
 
 describe("sending a picture, video or voice note is fenced", () => {
@@ -105,6 +134,42 @@ describe("sending a picture, video or voice note is fenced", () => {
   });
 });
 
+describe("reading the thread also marks it read", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
+
+  it("records this side's own marker at the newest message, and returns both sides' markers", () => {
+    assert.match(GET, /markRead\(shareId, who\.side, latest\.at\)/);
+    assert.match(GET, /readMarkers: await readMarkers\(shareId\)/);
+    assert.ok(GET.indexOf("markRead") < GET.indexOf("readMarkers:"), "the poll's own read is recorded before the response is built");
+  });
+});
+
+describe("changing or removing a message is fenced", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const PATCH = ROUTE.slice(ROUTE.indexOf("export async function PATCH"), ROUTE.indexOf("export async function DELETE"));
+  const DEL = ROUTE.slice(ROUTE.indexOf("export async function DELETE"));
+
+  it("both check same-origin before touching the store", () => {
+    assert.match(PATCH, /sameOrigin/);
+    assert.match(DEL, /sameOrigin/);
+    assert.ok(PATCH.indexOf("sameOrigin") < PATCH.indexOf("sideFor"));
+    assert.ok(DEL.indexOf("sameOrigin") < DEL.indexOf("sideFor"));
+  });
+
+  it("edit is rate limited before the write, and ownership is proven by who.side, never the request body", () => {
+    assert.match(PATCH, /rateLimit\(`companion-edit:/);
+    assert.ok(PATCH.indexOf("rateLimit") < PATCH.indexOf("editMessageText"));
+    // The side passed to the store is the one sideFor() worked out from the
+    // session, not anything the caller could put in the JSON body.
+    assert.match(PATCH, /editMessageText\(shareId, at, who\.side, text/);
+  });
+
+  it("delete proves ownership the same way", () => {
+    assert.match(DEL, /deleteMessage\(shareId, at, who\.side\)/);
+  });
+});
+
 describe("the thread is Business-only, like the app it belongs to", () => {
   // The client app page and the inbox are gated on mayServeCompanionClients;
   // the chat and report routes are the write path behind them and must carry
@@ -141,5 +206,35 @@ describe("reporting a message is fenced", () => {
     // route — a client cannot claim to be the advisor.
     assert.match(ROUTE, /getShareOwnerEmail/);
     assert.match(ROUTE, /identityKey\(account\.email\) === identityKey\(owner\)/);
+  });
+});
+
+describe("deleting a whole conversation is fenced", () => {
+  const ROUTE = readFileSync("app/api/companion/chats/route.ts", "utf8");
+  const DEL = ROUTE.slice(ROUTE.indexOf("export async function DELETE"));
+
+  it("comes only from this site, and needs the account signed in", () => {
+    assert.match(DEL, /sameOrigin/);
+    assert.match(DEL, /account\?\.email/);
+    assert.ok(DEL.indexOf("sameOrigin") < DEL.indexOf("account?.email"), "same-origin is checked before the account is even read");
+  });
+
+  it("is gated the same as the inbox it clears", () => {
+    assert.match(DEL, /mayServeCompanionClients\(await getPlan\(account\.email\)\)/);
+  });
+
+  it("proves the conversation belongs to THIS account before clearing it — never trusts the share id alone", () => {
+    // Otherwise any signed-in advisor could clear any other advisor's
+    // conversation just by knowing (or guessing) their client's share id.
+    const body = DEL.slice(DEL.indexOf("const shareId"));
+    assert.match(body, /getTrips\(account\.email\)/);
+    assert.match(body, /t\.shareId === shareId/);
+    assert.ok(body.indexOf("getTrips") < body.indexOf("deleteConversation"), "ownership is proven before the store is touched");
+  });
+
+  it("does not touch the trip or share link — only deleteConversation is called", () => {
+    const body = DEL.slice(DEL.indexOf("const owns"));
+    assert.match(body, /await deleteConversation\(shareId\)/);
+    assert.doesNotMatch(body, /stopTripShare|deleteTrip|removeTrip/);
   });
 });

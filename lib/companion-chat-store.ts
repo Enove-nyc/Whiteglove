@@ -41,6 +41,22 @@ export type CompanionChatMessage = {
   lng?: number;
   /** ISO timestamp. */
   at: string;
+  /**
+   * Set once the sender edits this message's text — a text message only; a
+   * picture or a place is sent again rather than changed. The original is
+   * gone once this is set: there is no history to page through, only the
+   * words as they now stand and the honest word "edited" beside them.
+   */
+  editedAt?: string;
+  /**
+   * Set once the sender deletes this message. The row stays — deleting it
+   * outright would shift every other message's position in the list the
+   * store and the edit/delete lookups both address by, and the other side
+   * would see a conversation that silently lost a turn — but everything the
+   * row carried is gone: parseChatMessages strips the text, mediaId and
+   * coordinates from anything deleted before it ever leaves the store.
+   */
+  deletedAt?: string;
 };
 
 /** The most a text message may carry, and the most a thread keeps. */
@@ -93,6 +109,13 @@ export function parseChatMessages(rows: string[] | null): CompanionChatMessage[]
     try {
       const m = JSON.parse(row) as CompanionChatMessage;
       if (!m || (m.from !== "client" && m.from !== "advisor") || typeof m.text !== "string") continue;
+      if (typeof m.deletedAt === "string") {
+        // Everything the message carried is gone the moment it is deleted —
+        // never just hidden client-side, where a curious poke at the network
+        // tab would still find the picture.
+        out.push({ from: m.from, kind: kindOf(m.kind), text: "", at: m.at, deletedAt: m.deletedAt });
+        continue;
+      }
       const kind = kindOf(m.kind);
       // A picture, video or voice note with no file, or a place with no
       // coordinate, is a broken row, not a message — skip it rather than
@@ -127,6 +150,128 @@ export async function appendChat(
   await command(["RPUSH", key, JSON.stringify(message)]);
   await command(["LTRIM", key, -MAX_THREAD, -1]);
   return readChat(shareId);
+}
+
+/**
+ * Find one message's position in the list by its `at` and who sent it — the
+ * only two things a caller off the wire can be asked to prove they know, and
+ * together they identify one row because `at` is stamped once, by the server,
+ * when the message was first written.
+ *
+ * A list has no other address for "the message I am looking at" — it is not a
+ * hash keyed by id — so editing or deleting one means finding its index first,
+ * then changing that index with LSET. There is no lock across the two steps;
+ * for a thread this size (one advisor, one client) the chance of a second
+ * write landing between them is the same chance as two people editing the
+ * same message in the same second, which is not a case worth building for.
+ */
+async function findRawIndex(shareId: string, at: string, from: CompanionChatSide): Promise<{ index: number; raw: string } | null> {
+  const rows = await command<string[]>(["LRANGE", keyFor(shareId), 0, -1]);
+  if (!rows) return null;
+  for (let i = 0; i < rows.length; i++) {
+    try {
+      const m = JSON.parse(rows[i]) as CompanionChatMessage;
+      if (m.at === at && m.from === from) return { index: i, raw: rows[i] };
+    } catch {
+      /* not this one */
+    }
+  }
+  return null;
+}
+
+/**
+ * Change a text message's words. Text only — a picture or a place is sent
+ * again, not edited — and only the side that sent it, checked here as well as
+ * by the route, the same belt-and-braces every other write in this file gets.
+ *
+ * Returns the thread as it now stands, or null when there was nothing at that
+ * address to change (already deleted, wrong sender, or a stale `at`).
+ */
+export async function editMessageText(
+  shareId: string,
+  at: string,
+  by: CompanionChatSide,
+  text: string,
+): Promise<CompanionChatMessage[] | null> {
+  if (!chatStoreAvailable()) return null;
+  const found = await findRawIndex(shareId, at, by);
+  if (!found) return null;
+  let existing: CompanionChatMessage;
+  try {
+    existing = JSON.parse(found.raw) as CompanionChatMessage;
+  } catch {
+    return null;
+  }
+  if (existing.deletedAt || kindOf(existing.kind) !== "text") return null;
+  const updated: CompanionChatMessage = { ...existing, text, editedAt: new Date().toISOString() };
+  await command(["LSET", keyFor(shareId), found.index, JSON.stringify(updated)]);
+  return readChat(shareId);
+}
+
+/**
+ * Delete one message — the sender's own, checked here as well as by the
+ * route. The row stays so nothing else in the list shifts position; what it
+ * carried is gone the moment parseChatMessages reads it back.
+ */
+export async function deleteMessage(shareId: string, at: string, by: CompanionChatSide): Promise<CompanionChatMessage[] | null> {
+  if (!chatStoreAvailable()) return null;
+  const found = await findRawIndex(shareId, at, by);
+  if (!found) return null;
+  let existing: CompanionChatMessage;
+  try {
+    existing = JSON.parse(found.raw) as CompanionChatMessage;
+  } catch {
+    return null;
+  }
+  if (existing.deletedAt) return readChat(shareId); // already gone; nothing to do
+  const updated: CompanionChatMessage = { from: existing.from, kind: existing.kind, text: "", at: existing.at, deletedAt: new Date().toISOString() };
+  await command(["LSET", keyFor(shareId), found.index, JSON.stringify(updated)]);
+  return readChat(shareId);
+}
+
+/**
+ * Clear a trip's whole conversation — every message, every report, and both
+ * sides' read markers. What is NOT touched: the trip itself, and the share
+ * link that opens it. Deleting a conversation is deleting what was said, not
+ * closing the door the client walks through — that stays open, and the next
+ * message either side sends starts a thread as empty as the day it opened.
+ */
+export async function deleteConversation(shareId: string): Promise<boolean> {
+  await command(["DEL", keyFor(shareId)]);
+  await command(["DEL", reportKeyFor(shareId)]);
+  await command(["DEL", readKeyFor(shareId, "client")]);
+  await command(["DEL", readKeyFor(shareId, "advisor")]);
+  return true;
+}
+
+/* ---- read markers ---------------------------------------------------------
+ *
+ * "Read" is not tracked per message — that would be a second write for every
+ * poll, on top of the one the messages already cost. Instead each side has
+ * ONE marker: the `at` of the newest message they had loaded the last time
+ * they asked for the thread. A message shows as read once the OTHER side's
+ * marker is at or past its own `at` — the same shape a phone's messaging app
+ * shows, at a hundredth of the writes.
+ */
+
+const readKeyFor = (shareId: string, side: CompanionChatSide) => `white-glove:companion-read:${shareId}:${side}`;
+
+/** Record that `side` has now seen the thread up to `at`. */
+export async function markRead(shareId: string, side: CompanionChatSide, at: string): Promise<void> {
+  if (!chatStoreAvailable() || !at) return;
+  await command(["SET", readKeyFor(shareId, side), at]);
+}
+
+/** Both sides' read markers, whichever exist. */
+export async function readMarkers(shareId: string): Promise<Partial<Record<CompanionChatSide, string>>> {
+  const [client, advisor] = await Promise.all([
+    command<string>(["GET", readKeyFor(shareId, "client")]),
+    command<string>(["GET", readKeyFor(shareId, "advisor")]),
+  ]);
+  const out: Partial<Record<CompanionChatSide, string>> = {};
+  if (client) out.client = client;
+  if (advisor) out.advisor = advisor;
+  return out;
 }
 
 /* ---- reporting ----------------------------------------------------------- */
