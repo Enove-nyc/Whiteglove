@@ -817,14 +817,31 @@ export default function CompanionApp({
  * "me" is the side this app was opened as. No fabricated replies here — a
  * message sits until the other person answers, which is the honest thing.
  */
+/** A live message — text, a picture, or a place. */
+type LiveMsg = {
+  from: ChatSide;
+  kind?: "text" | "image" | "location";
+  text: string;
+  mediaId?: string;
+  lat?: number;
+  lng?: number;
+  at: string;
+};
+
+/** The most a picture may weigh before the phone is asked to shrink it first. */
+const MAX_CHAT_IMAGE_BYTES = 2 * 1024 * 1024;
+
 function LiveChat({ chat }: { chat: CompanionChat }) {
   const { shareId, side, advisorName } = chat;
-  const [messages, setMessages] = useState<{ from: ChatSide; text: string; at: string }[]>([]);
+  const [messages, setMessages] = useState<LiveMsg[]>([]);
   const [draft, setDraft] = useState("");
   const [available, setAvailable] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [sending, setSending] = useState(false);
+  const [note, setNote] = useState("");
+  const [reported, setReported] = useState<Record<string, boolean>>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -850,25 +867,87 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
-  async function send() {
-    const t = draft.trim();
-    if (!t || sending) return;
+  // One place to POST from — text, a picture, or a place all land here; the
+  // reply carries the whole thread back, so the send is also the refresh.
+  async function post(payload: Record<string, unknown>) {
     setSending(true);
-    setDraft("");
+    setNote("");
     try {
       const r = await fetch("/api/companion/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, text: t }),
+        body: JSON.stringify({ share: shareId, ...payload }),
       });
-      if (r.ok) {
-        const d = await r.json();
-        setMessages(Array.isArray(d.messages) ? d.messages : []);
-      } else {
+      const d = await r.json().catch(() => null);
+      if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
+      else {
+        setNote((d && d.error) || "That didn't send. Try again.");
         void load();
       }
+    } catch {
+      setNote("That didn't send. Try again.");
     } finally {
       setSending(false);
+    }
+  }
+
+  function send() {
+    const t = draft.trim();
+    if (!t || sending) return;
+    setDraft("");
+    void post({ text: t });
+  }
+
+  function pickImage(file: File | null | undefined) {
+    if (!file || sending) return;
+    if (!/^image\//.test(file.type)) {
+      setNote("That is not a picture.");
+      return;
+    }
+    if (file.size > MAX_CHAT_IMAGE_BYTES) {
+      setNote("That picture is too large (max 2 MB).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+      if (dataUrl) void post({ dataUrl });
+    };
+    reader.onerror = () => setNote("Could not read that picture.");
+    reader.readAsDataURL(file);
+  }
+
+  function shareLocation() {
+    if (sending) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setNote("This device can't share a location.");
+      return;
+    }
+    setSending(true);
+    setNote("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setSending(false);
+        void post({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => {
+        setSending(false);
+        setNote("Couldn't get your location. Check the app's location permission.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }
+
+  async function report(at: string) {
+    setReported((r) => ({ ...r, [at]: true }));
+    try {
+      await fetch("/api/companion/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, at }),
+      });
+    } catch {
+      /* the flag stands locally; the operator store is best-effort */
     }
   }
 
@@ -884,27 +963,81 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
         )}
         {available && loaded && messages.length === 0 && (
           <div style={{ alignSelf: "center", maxWidth: "80%", textAlign: "center", font: "400 13px/1.6 Inter,sans-serif", color: "#78716c" }}>
-            {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Anything you send reaches ${advisorName}.`}
+            {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Send a message, a photo or your location to ${advisorName}.`}
           </div>
         )}
         {messages.map((m, i) => {
           const mine = m.from === side;
+          const bubble: CSSProperties = {
+            maxWidth: "80%",
+            alignSelf: mine ? "flex-end" : "flex-start",
+            background: mine ? GOLD : "#ffffff",
+            color: mine ? CREAM : "#26323a",
+            borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+            boxShadow: "0 1px 2px rgba(23,45,82,.08)",
+            overflow: "hidden",
+          };
+          let content: ReactNode;
+          if (m.kind === "image" && m.mediaId) {
+            content = (
+              <div style={bubble}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/media?id=${encodeURIComponent(m.mediaId)}`}
+                  alt={m.text || "Shared photo"}
+                  style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280, objectFit: "cover" }}
+                />
+                {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
+              </div>
+            );
+          } else if (m.kind === "location" && typeof m.lat === "number" && typeof m.lng === "number") {
+            const href = `https://www.google.com/maps?q=${m.lat},${m.lng}`;
+            content = (
+              <a href={href} target="_blank" rel="noopener noreferrer" style={{ ...bubble, textDecoration: "none", padding: "13px 15px", display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>📍 {m.text || "Shared a location"}</span>
+                <span style={{ fontSize: 12.5, opacity: 0.85 }}>Open in maps →</span>
+              </a>
+            );
+          } else {
+            content = (
+              <div style={{ ...bubble, padding: "13px 15px", fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                {m.text}
+              </div>
+            );
+          }
           return (
-            <div key={i} style={{ maxWidth: "80%", alignSelf: mine ? "flex-end" : "flex-start", background: mine ? GOLD : "#ffffff", color: mine ? CREAM : "#26323a", borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "13px 15px", fontSize: 14, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(23,45,82,.08)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              {m.text}
+            <div key={m.at || i} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start", gap: 2 }}>
+              {content}
+              {/* Reporting is offered on the other person's messages — you do not
+                  report your own. One tap flags it for the operator. */}
+              {!mine && (
+                reported[m.at] ? (
+                  <span style={{ fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>Reported</span>
+                ) : (
+                  <button onClick={() => void report(m.at)} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 10.5, color: "#a8a29e", padding: "0 4px" }}>
+                    Report
+                  </button>
+                )
+              )}
             </div>
           );
         })}
       </div>
+      {note && (
+        <div style={{ flexShrink: 0, textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#8a5a2b", background: "#f7eee0", padding: "8px 14px" }}>{note}</div>
+      )}
       <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", gap: 9, alignItems: "center" }}>
+        <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
+        <button onClick={() => fileRef.current?.click()} disabled={sending} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 42, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>🖼</button>
+        <button onClick={() => shareLocation()} disabled={sending} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 42, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>📍</button>
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           placeholder={side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
           style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
         />
-        <button onClick={() => void send()} disabled={sending} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>↑</button>
+        <button onClick={() => send()} disabled={sending} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>↑</button>
       </div>
     </div>
   );
