@@ -1,7 +1,13 @@
+import { redirect } from "next/navigation";
 import AccessForm from "@/components/AccessForm";
 import Footer from "@/components/Footer";
 
+import { getLockedPaths, siteIsLocked } from "@/lib/site-analytics";
 import { pageMetadata } from "@/lib/seo";
+
+// Read per request: the lock is a live setting, so a page frozen at build would
+// keep offering the access code long after the owner opened the site.
+export const dynamic = "force-dynamic";
 
 // Private to one person. Nothing here belongs in a search result.
 export const metadata = pageMetadata({
@@ -13,6 +19,14 @@ export const metadata = pageMetadata({
 
 export default async function AccessPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
+
+  // The site is public now, so this gate is an orphan: nobody is sent here, and
+  // a visitor who lands on it directly should not be told the site is private
+  // and asked for a password that opens nothing. Only show it while something is
+  // actually locked — the whole site, or a section. Otherwise, go home.
+  const [locked, lockedPaths] = await Promise.all([siteIsLocked(), getLockedPaths()]);
+  if (!locked && lockedPaths.length === 0) redirect("/");
+
   return (
     <main className="flex min-h-screen flex-col bg-[var(--cream)]">
       <div className="grid flex-1 place-items-center px-5 py-16">

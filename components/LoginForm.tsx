@@ -283,8 +283,7 @@ export default function LoginForm({
             className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]"
           />
           <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
-            Only so we can reach you about a trip. Leave it blank if you would rather not — nothing needs it, and you
-            still sign in with what you typed above.
+            Only so we can reach you about a trip — it is never how you sign in. Leave it blank if you would rather not; nothing needs it.
           </span>
         </label>
       )}
