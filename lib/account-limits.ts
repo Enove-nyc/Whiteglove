@@ -47,13 +47,12 @@ export type PlanLimits = {
  * exact drift this file exists to prevent, where nobody can answer "what does
  * Pro actually get you" without grepping.
  *
- * PRO IS STILL NOT A FEATURE LIST. It is the same site without the two limits
- * above, because that is what was asked for: somebody planning more than one
- * trip at a time. Business is the plan that genuinely does something different,
- * because it is used by a person planning on somebody else's behalf — so the
- * two entitlements that are true are both Business's: the itinerary carries the
- * agency's name rather than ours, and it reaches the traveller as an app on
- * their phone (the White Glove app, at /app) rather than only on paper.
+ * WHERE THE LINE FALLS NOW. Gold and Business both get the White Glove app for
+ * their OWN trips (companionApp) — that is the step up from a free account.
+ * Business is still the plan for planning on somebody else's behalf, and keeps
+ * what that needs: its own name on the itinerary (ownBranding) and the app
+ * handed to clients — a link, a chat, an inbox (companionClients). Gold has the
+ * app; only Business hands it to other people.
  *
  * NOTHING ELSE IS INVENTED HERE. Each entitlement in this table was asked for,
  * and the account page changed in the same commit that added it.
@@ -77,23 +76,30 @@ export type PlanFeatures = {
    */
   assistantHistory: boolean;
   /**
-   * The White Glove app — a trip in your pocket, at /app.
+   * The White Glove app for your OWN trips — a trip in your pocket, at /app.
    *
-   * GOLD AND BUSINESS, at the owner's word: a day at a time, the kosher side of
-   * each day, the Shabbos that stops early, the travel wallet kept on the phone
-   * with no signal, and an advisor thread. A Gold traveller carries their own
-   * trip in it; a Business account does that AND hands each client their own —
-   * but handing a trip to a client is a separate gate (ownBranding), so opening
-   * the app to Gold does not open client links to them. The gate lives here,
-   * once, and app/app/page.tsx is the door that reads it.
+   * Gold and Business. A day at a time, the wallet kept on the phone with no
+   * signal, the guide, the map. This is the app used for the trips the account
+   * itself is taking; it says nothing about anybody else. app/app/page.tsx is
+   * the door that reads this.
    */
   companionApp: boolean;
+  /**
+   * The app for OTHER PEOPLE — the client-facing half. Business only.
+   *
+   * A link that opens one trip as the app on a client's phone, the chat with
+   * that client, and the advisor's inbox of all of them. This is the "planning
+   * on somebody else's behalf" that Business is for; Gold has the app for its
+   * own trips and none of this. Read by the share and chat routes and by the
+   * advisor inbox — never by app/app/page.tsx, which only asks companionApp.
+   */
+  companionClients: boolean;
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
-  traveler: { ownBranding: false, assistantHistory: false, companionApp: false },
-  pro: { ownBranding: false, assistantHistory: true, companionApp: true },
-  business: { ownBranding: true, assistantHistory: true, companionApp: true },
+  traveler: { ownBranding: false, assistantHistory: false, companionApp: false, companionClients: false },
+  pro: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: false },
+  business: { ownBranding: true, assistantHistory: true, companionApp: true, companionClients: true },
 };
 
 export function featuresFor(plan: AccountPlan): PlanFeatures {
@@ -110,9 +116,14 @@ export function mayBrandOwnItinerary(plan: AccountPlan): boolean {
   return featuresFor(plan).ownBranding;
 }
 
-/** Whether this plan reaches the White Glove app at /app. Named once. */
+/** Whether this plan reaches the White Glove app at /app for its own trips. */
 export function mayUseCompanionApp(plan: AccountPlan): boolean {
   return featuresFor(plan).companionApp;
+}
+
+/** Whether this plan may hand the app to clients — links, chat, the inbox. */
+export function mayServeCompanionClients(plan: AccountPlan): boolean {
+  return featuresFor(plan).companionClients;
 }
 
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
