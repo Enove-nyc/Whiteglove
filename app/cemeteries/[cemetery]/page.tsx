@@ -11,6 +11,7 @@ import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import DestinationActions from "@/components/DestinationActions";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import SourceNote from "@/components/SourceNote";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import { cemeteries } from "@/data/cemeteries";
@@ -246,8 +247,8 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                           {place.phone && <a href={`tel:${place.phone.replace(/[^+\d]/g, "")}`} className="border border-[var(--gold)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Call {place.phone}</a>}
                           {place.email && <a href={`mailto:${place.email}`} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Email</a>}
                           {place.website && <a href={place.website} target="_blank" rel="noreferrer" className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Website ↗</a>}
-                          {place.source && <a href={place.source} target="_blank" rel="noreferrer" className="px-1 py-2 text-xs font-bold uppercase tracking-[0.12em] text-stone-400 underline decoration-[var(--gold)] underline-offset-4">Source</a>}
                         </div>
+                        {place.source && <SourceNote url={place.source} className="mt-3" />}
                       </article>
                     ))}
                   </div>
@@ -274,7 +275,7 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
             <p className="mt-3 text-sm leading-7 text-stone-600">
               {hasAccessContacts ? "This cemetery has a public access contact listed above. Please confirm it before traveling." : "No public access contact has been verified for this cemetery yet."}
             </p>
-            <a href={cemetery.sourceUrl} target="_blank" rel="noreferrer" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Read the cemetery source →</a>
+            <SourceNote url={cemetery.sourceUrl} className="mt-5" />
           </section>
 
           <div>

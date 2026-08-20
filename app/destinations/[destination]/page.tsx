@@ -10,6 +10,7 @@ import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
 import DetailActionRow from "@/components/DetailActionRow";
+import SourceNote from "@/components/SourceNote";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import DestinationPhotos from "@/components/DestinationPhotos";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
@@ -377,15 +378,8 @@ async function MinyanimAndMikvaos({ destination }: { destination: VacationDestin
                     Map
                   </a>
                 )}
-                <a
-                  href={listing.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-stone-500 underline decoration-stone-300 underline-offset-4"
-                >
-                  Source
-                </a>
               </div>
+              <SourceNote url={listing.sourceUrl} className="mt-2" />
             </li>
           ))}
         </ul>

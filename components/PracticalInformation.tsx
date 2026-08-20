@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { readBookingLink } from "@/lib/booking-access-store";
 import KosherNearby from "@/components/KosherNearby";
+import SourceNote from "@/components/SourceNote";
 import { PhotoCredit, type GalleryPhoto } from "@/components/PhotoGallery";
 import { placeMapUrl } from "@/data/route-utils";
 import type { DestinationRecord, PracticalSection } from "@/data/destination-database";
@@ -147,10 +148,10 @@ function PlaceCard({ place }: { place: PlaceWithPhotos }) {
         {place.whatsapp && <a href={waHref(place.whatsapp)} target="_blank" rel="noreferrer" className={pill}>WhatsApp</a>}
         {place.email && <a href={`mailto:${place.email}`} className={pill}>Email</a>}
         {place.website && <a href={place.website} target="_blank" rel="noreferrer" className={pill}>Website</a>}
-        {place.sourceUrl && <a href={place.sourceUrl} target="_blank" rel="noreferrer" className={pill}>Source</a>}
         {place.bookingLink && <a href={place.bookingLink} target="_blank" rel="noreferrer" className={pill}>Book</a>}
         {place.address && <a href={mapHref(place.address, place.coordinates)} target="_blank" rel="noreferrer" className={pill}>Map</a>}
       </div>
+      {place.sourceUrl && <SourceNote url={place.sourceUrl} className="mt-3" />}
       {/* "Is there kosher food near this hotel" is the question somebody is
           actually asking, and it is not the same question as "is there kosher
           food in this city". Asked live against the hotel's own position, so

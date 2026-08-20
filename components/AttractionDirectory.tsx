@@ -5,6 +5,7 @@ import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import SourceNote from "@/components/SourceNote";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { staySearchHref } from "@/lib/stay-search";
@@ -147,14 +148,6 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   Full guide
                 </Link>
               )}
-              <a
-                href={a.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
-              >
-                Source ↗
-              </a>
               {a.coordinates && (
                 <button
                   type="button"
@@ -165,6 +158,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                 </button>
               )}
             </div>
+            {a.sourceUrl && <SourceNote url={a.sourceUrl} className="mt-3" />}
 
             {/* WHAT TO DO WITH IT, on the card that made you want to.
                 Somebody who has just read that the Colosseum is twenty minutes

@@ -5,6 +5,7 @@ import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import SourceNote from "@/components/SourceNote";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
@@ -181,9 +182,6 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                   Their site →
                 </a>
               )}
-              <a href={s.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]">
-                Source ↗
-              </a>
               <button
                 type="button"
                 onClick={() => setOpenNearby(openNearby === s.slug ? null : s.slug)}
@@ -192,6 +190,7 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 {openNearby === s.slug ? "Hide what's nearby" : "What's within walking distance"}
               </button>
             </div>
+            {s.sourceUrl && <SourceNote url={s.sourceUrl} className="mt-3" />}
 
             {/* The next step from a stay somebody likes: check dates and
                 prices for that town, or see what there is to do around it.

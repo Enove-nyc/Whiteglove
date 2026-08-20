@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
+import SourceNote from "@/components/SourceNote";
 import StructuredData from "@/components/StructuredData";
 import { listPublishedMikvaos } from "@/lib/mikvaos";
 import { resolvePage } from "@/lib/pages";
@@ -148,15 +149,8 @@ export default async function MikvaosPage() {
                         >
                           Destination
                         </Link>
-                        <a
-                          href={listing.sourceUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-stone-500 underline decoration-stone-300 underline-offset-4"
-                        >
-                          Source
-                        </a>
                       </div>
+                      {listing.sourceUrl && <SourceNote url={listing.sourceUrl} className="mt-2" />}
                     </li>
                   ))}
                 </ul>
