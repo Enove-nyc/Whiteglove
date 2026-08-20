@@ -110,7 +110,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "en.wikipedia.org",
     "url": "https://en.wikipedia.org/",
     "category": "General reference",
-    "count": 900
+    "count": 918
   },
   {
     "host": "fr.wikipedia.org",
