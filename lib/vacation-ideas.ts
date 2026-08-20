@@ -35,6 +35,7 @@ import type { HeritageCardModel } from "@/lib/destination-directory";
  */
 
 import type { Season, TripTheme, VacationDestination } from "@/data/vacation-destinations";
+import type { VacationDestinationItem } from "@/lib/vacation-destinations-view";
 import { vacationDestinationHref } from "@/lib/route-migration";
 
 /* ---- the shapes this needs, and no more --------------------------------- */
@@ -284,7 +285,7 @@ export function shabbosPracticality(destination: VacationDestination, facts: Vac
 /* ---- the card ------------------------------------------------------------ */
 
 export type VacationCardModel = {
-  destination: VacationDestination;
+  destination: VacationDestinationItem;
   kosher: Signal<KosherLevel>;
   shabbos: Signal<ShabbosLevel>;
   /** How many things to do we hold for it. Shown only when it is not zero. */
@@ -293,7 +294,7 @@ export type VacationCardModel = {
   places: number;
 };
 
-export function cardModel(destination: VacationDestination, sources: VacationSources): VacationCardModel {
+export function cardModel(destination: VacationDestinationItem, sources: VacationSources): VacationCardModel {
   const facts = factsFor(destination, sources);
   return {
     destination,
@@ -305,7 +306,7 @@ export function cardModel(destination: VacationDestination, sources: VacationSou
 }
 
 export function cardModels(
-  destinations: readonly VacationDestination[],
+  destinations: readonly VacationDestinationItem[],
   sources: VacationSources,
 ): VacationCardModel[] {
   return destinations.map((destination) => cardModel(destination, sources));

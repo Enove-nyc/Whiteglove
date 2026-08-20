@@ -147,14 +147,6 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   Full guide
                 </Link>
               )}
-              <a
-                href={a.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
-              >
-                Source ↗
-              </a>
               {a.coordinates && (
                 <button
                   type="button"

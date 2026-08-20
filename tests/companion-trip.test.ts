@@ -103,6 +103,20 @@ describe("a planner trip, wired into the app", () => {
     assert.equal(withLayer.concierge, false);
   });
 
+  it("drops the whole kosher and Shabbos layer when it is turned off", () => {
+    const zmanimByDate: Record<string, ZmanimDay> = {};
+    for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
+    const off = itineraryToCompanionTrip(itin, days, {
+      today: itin.startDate,
+      kosher: false,
+      layer: { zmanimByDate, kosher: [{ name: "Ba'Ghetto", city: "Rome", kind: "Restaurant", hechsher: "x", km: 0 }] },
+    });
+    assert.equal(off.guideSections.length, 0, "no guide sections");
+    assert.equal(off.kosherTitle, undefined, "no Eating today line");
+    const friday = off.days.find((d) => d.dow === "Fri");
+    assert.equal(friday?.shabbosLabel, undefined, "no Shabbos label on a plain itinerary");
+  });
+
   it("shows the advisor as the client's contact, and never invents one", () => {
     const withAdvisor = itineraryToCompanionTrip(itin, days, { today: itin.startDate, advisorName: "Sarah Klein" });
     assert.equal(withAdvisor.contactName, "Sarah Klein");

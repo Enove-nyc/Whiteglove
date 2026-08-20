@@ -6,6 +6,13 @@
 // `airportRef` is a CITY-level point used only to rank the nearest airports — it
 // is NOT a grave location and must never be used to navigate. Grave navigation
 // uses the address; confirm the exact grave/ohel locally.
+//
+// CORRECTED LATER. Two listings in this file claimed a kever the sources do
+// not support. Reb Asher of Stolin died at Karlin and no source says where he
+// was buried; Reb Mordechai of Lechovitch died in Stolin, on a visit for a
+// grandchild's wedding, and was buried there rather than in Lyakhavichy. Both
+// pages now say so, and Lyakhavichy is kept under its own name because that is
+// what people search for.
 
 import type { Cemetery } from "@/data/cemeteries";
 
@@ -57,11 +64,14 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Kobryn — Kever of Rabbi Moshe of Kobrin",
     yiddishName: "ציון רבי משה מקאברין",
     country: "Belarus",
-    address: "Jewish cemetery, Kobryn, Brest region, Belarus — confirm exact location locally",
+    address: "Jewish cemetery, Kobryn, Brest Region, Belarus — no street is published in any source found",
     airportRef: "52.216, 24.359",
     arrivalNotes: [
       "Resting place of Rabbi Moshe Polier of Kobrin, a disciple of the Lechovitch line and founder of the Kobrin chassidus.",
-      "Confirm the cemetery and exact grave location locally.",
+      "THE BURIAL TOWN IS FIRM AND NOTHING ELSE IS. Kobryn's own yizkor book records that his kever is in the town and that other rabbonim were buried beside him. No source found gives a street, an ohel, a gate, a keyholder or a description of what stands over him.",
+      "THE CEMETERY IS ALSO A HOLOCAUST SITE, with mass graves recorded on and around it. Behave in it accordingly.",
+      "The survey claims legible matzevos from the fifteenth century. That would be remarkable for Belarus and this page repeats it as the survey's claim rather than as fact.",
+      "Belarus is the least documented country on this site. Ask before travelling rather than expecting to find the kever yourself, and check current entry requirements.",
     ],
     burials: [
       { name: "Rabbi Moshe Polier of Kobrin", yiddishName: "רבי משה פּאליער מקאברין", knownAs: "The Kobriner Rebbe", yahrzeit: "כ״ט ניסן · 5618 / 1858", note: "Founder of the Kobrin chassidus, known for fervent avodah and closeness to his chassidim." },
@@ -82,6 +92,7 @@ export const bulkCemeteries5: Cemetery[] = [
       "HE DIED IN KARLIN, NOT IN STOLIN, and no source found says where he was buried. Reb Asher the first led the chassidus for thirty-five years and was niftar on 26 Tishrei 1826 at Karlin, by Pinsk. This page used to present Stolin as his resting place; it should not have, and it does not now.",
       "THERE ARE TWO REB ASHERS OF STOLIN, grandfather and grandson, and sources rarely say which they mean. This listing is about the first — the son of Reb Aharon HaGadol of Karlin. Check which one you are looking for before you travel.",
       "STOLIN IS STILL THE SEAT OF THE CHASSIDUS and worth the journey for that. What the town cannot be relied on to hold is his kever. The survey of Stolin records only that houses have been built on the Jewish cemetery.",
+      "THE LECHOVITCHER IS BURIED IN THIS TOWN. Reb Mordechai of Lechovitch was staying with Reb Asher for a grandchild's wedding when he was niftar, on 13 Shvat 5570 / 1810, and he was buried in Stolin. The exact spot is not confirmed either, but a monument to him was put up here by Reb Yisroel Meir Gabbai. People come to Stolin for Reb Asher and it is the Lechovitcher who is actually here.",
       "Belarus entry rules change — check current travel requirements, and ask the Karlin-Stolin kehilla what is standing before setting out.",
     ],
     burials: [
@@ -140,17 +151,19 @@ export const bulkCemeteries5: Cemetery[] = [
     slug: "lyakhavichy-lechovitcher",
     city: "Lyakhavichy (Lechovitch)",
     yiddishCity: "לעחאוויטש",
-    name: "Lyakhavichy — Kever of Rabbi Mordechai of Lechovitch",
-    yiddishName: "ציון רבי מרדכי מלעחאוויטש",
+    name: "Lyakhavichy — the town of the Lechovitcher; his kever is in Stolin",
+    yiddishName: "לעחאוויטש — די שטאט פון רבי מרדכי",
     country: "Belarus",
-    address: "Jewish cemetery, Lyakhavichy, Brest region, Belarus — confirm exact location locally",
+    address: "Lyakhavichy, Brest Region, Belarus — Reb Mordechai died and was buried in Stolin, not here; see the notes",
     airportRef: "53.033, 26.264",
     arrivalNotes: [
-      "Resting place of Rabbi Mordechai of Lechovitch, founder of the Lechovitch chassidus (a forerunner of Kobrin and Slonim).",
-      "Confirm the cemetery and exact grave location locally.",
+      "HE IS NOT BURIED IN LECHOVITCH. Reb Mordechai was in Stolin in the winter of 1810, staying with Reb Asher of Stolin for a grandchild's wedding, and he was niftar there on 13 Shvat 5570. He was buried in Stolin. This page used to present Lyakhavichy as his resting place; it should not have, and it does not now.",
+      "THE EXACT SPOT IN STOLIN IS NOT CONFIRMED. What stands there is a monument put up by Reb Yisroel Meir Gabbai, who marked a great many of these kevorim across Belarus and Ukraine when the old ground itself could no longer be read. Stand at the monument knowing that is what it is.",
+      "LYAKHAVICHY IS STILL WHERE THE CHASSIDUS BEGAN. He led from this town, and the Kobrin and Slonim lines descend from what he built here. It is worth the journey for that — but it is a town to see, not a kever to daven at.",
+      "Stolin is about a hundred and forty kilometres south of Lyakhavichy, deep in the Polesia marshes. It is a separate day, not a detour, and Belarus entry rules change — check current travel requirements before setting out.",
     ],
     burials: [
-      { name: "Rabbi Mordechai of Lechovitch", yiddishName: "רבי מרדכי מלעחאוויטש", knownAs: "The Lechovitcher Rebbe", yahrzeit: "ט״ו שבט · 5570 / 1810", note: "Founder of the Lechovitch chassidus, from which the Kobrin and Slonim lines descend." },
+      { name: "Rabbi Mordechai of Lechovitch", yiddishName: "רבי מרדכי מלעחאוויטש", knownAs: "The Lechovitcher Rebbe", yahrzeit: "ט״ו שבט · 5570 / 1810", note: "Founder of the Lechovitch chassidus, from which the Kobrin and Slonim lines descend. He led from Lyakhavichy but was niftar in Stolin, on a visit for a grandchild's wedding, and was buried there." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Mordechai_of_Lechovitch",
   },
@@ -244,12 +257,15 @@ export const bulkCemeteries5: Cemetery[] = [
     name: "Tarnobrzeg — Kever of the Dzikover Rebbe",
     yiddishName: "ציון הדזשיקאווער רבי",
     country: "Poland",
-    address: "Jewish cemetery, Tarnobrzeg (Dzików), Subcarpathian Voivodeship, Poland — confirm exact location locally",
+    address: "Jewish cemetery, ulica Sienkiewicza by the marketplace, Tarnobrzeg (Dzikow), Subcarpathian Voivodeship, Poland",
+    coordinates: "50.57207, 21.68719",
     airportRef: "50.573, 21.679",
     arrivalNotes: [
-      "Resting place of Rabbi Meir Horowitz of Dzikov, the Imrei Noam, a leading Galician rebbe of the Ropshitz line.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
-      "TWO GROUNDS, AND THIS LISTING WILL NOT CHOOSE BETWEEN THEM. ESJF surveyed both — the old cemetery at 50.57361, 21.67463 and the newer one at 50.57207, 21.68719, about 0.9 kilometres apart. No source found says which of them holds the kever this page is about, so no single map point is published. Ask locally before setting out, and take both coordinates with you.",
+      "The Imrei Noam, Reb Meir Horowitz of Dzikov, a leading Galician rebbe of the Ropshitz line. His ohel stands on the newer of the town's two grounds.",
+      "FOUR MATZEVOS AND ONE OHEL. That is everything left of Jewish Dzikow. The ohel is on the newer ground, on ulica Sienkiewicza by the marketplace near what is now the Kaufland, and it was rebuilt in the nineteen-sixties over four tzaddikim — Reb Elazar Horowitz, Reb Meir of Dzikov, Reb Yehoshua of Dzikov and Reb Yechiel son of Reb Meir.",
+      "THE KEYHOLDER IS A CATHOLIC AND HIS FAMILY EARNED THE TRUST. Mieczyslaw Zdyrski, at ulica Sienkiewicza 89, keeps the cemetery; his father protected it during the war by burying the rov's matzevah in his own garden. There is a fence and the gate locks, so knock at 89.",
+      "The fence is covered in anti-Semitic slogans and cartoons. The ground inside it is looked after all the same.",
+      "THE OLD CEMETERY IS GONE COMPLETELY. It was at the corner of Sienkiewicza and Sawickiej and an exhibition hall stands on it now. Do not go looking there. The newer ground was itself cut down in 1931, from about one and a fifth hectares to less than one, when part was built over and some graves were moved.",
     ],
     burials: [
       { name: "Rabbi Meir Horowitz of Dzikov", yiddishName: "רבי מאיר הורוביץ מדזשיקאוו", knownAs: "The Imrei Noam", seforim: "אמרי נועם", yahrzeit: "כ״ט אייר · 5637 / 1877", note: "Founder of the Dzikov chassidus, a grandson of the Ropshitzer Rav." },

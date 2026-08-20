@@ -377,14 +377,6 @@ async function MinyanimAndMikvaos({ destination }: { destination: VacationDestin
                     Map
                   </a>
                 )}
-                <a
-                  href={listing.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-stone-500 underline decoration-stone-300 underline-offset-4"
-                >
-                  Source
-                </a>
               </div>
             </li>
           ))}

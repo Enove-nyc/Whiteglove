@@ -27,6 +27,7 @@
 import { vacationDestinations, type VacationDestination } from "@/data/vacation-destinations";
 import { topSearchedDestinations } from "@/lib/site-analytics";
 import { destinationHref } from "@/lib/vacation-ideas";
+import type { VacationDestinationItem } from "@/lib/vacation-destinations-view";
 
 /**
  * The row a stranger sees before anybody has searched anything.
@@ -45,8 +46,8 @@ export const FEATURED_FALLBACK: readonly string[] = [
   "jungfrau-region",
 ];
 
-export type FeaturedDestination = {
-  destination: VacationDestination;
+export type FeaturedDestination<T extends VacationDestination = VacationDestination> = {
+  destination: T;
   /** Where the whole card goes — the destination's own page. */
   href: string;
 };
@@ -55,17 +56,17 @@ export type FeaturedDestination = {
  * The pure core: searched slugs first in searched order, unknowns dropped,
  * duplicates kept once, topped up from the fallback to the limit.
  */
-export function pickFeatured(
+export function pickFeatured<T extends VacationDestination = VacationDestination>(
   searchedSlugs: readonly string[],
   options?: {
     limit?: number;
-    destinations?: readonly VacationDestination[];
+    destinations?: readonly T[];
     fallback?: readonly string[];
   },
-): FeaturedDestination[] {
-  const { limit = 6, destinations = vacationDestinations, fallback = FEATURED_FALLBACK } = options ?? {};
+): FeaturedDestination<T>[] {
+  const { limit = 6, destinations = vacationDestinations as readonly T[], fallback = FEATURED_FALLBACK } = options ?? {};
   const bySlug = new Map(destinations.map((destination) => [destination.slug, destination]));
-  const chosen: VacationDestination[] = [];
+  const chosen: T[] = [];
   const seen = new Set<string>();
   for (const slug of [...searchedSlugs, ...fallback]) {
     if (chosen.length >= limit) break;
@@ -84,7 +85,7 @@ export function pickFeatured(
  * (pure fallback), and a redis that throws is caught here rather than taking
  * the front page down with it.
  */
-export async function featuredDestinations(limit = 6): Promise<FeaturedDestination[]> {
+export async function featuredDestinations(limit = 6): Promise<FeaturedDestination<VacationDestinationItem>[]> {
   let searched: string[] = [];
   try {
     searched = await topSearchedDestinations(7);

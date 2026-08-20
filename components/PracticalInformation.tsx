@@ -147,7 +147,6 @@ function PlaceCard({ place }: { place: PlaceWithPhotos }) {
         {place.whatsapp && <a href={waHref(place.whatsapp)} target="_blank" rel="noreferrer" className={pill}>WhatsApp</a>}
         {place.email && <a href={`mailto:${place.email}`} className={pill}>Email</a>}
         {place.website && <a href={place.website} target="_blank" rel="noreferrer" className={pill}>Website</a>}
-        {place.sourceUrl && <a href={place.sourceUrl} target="_blank" rel="noreferrer" className={pill}>Source</a>}
         {place.bookingLink && <a href={place.bookingLink} target="_blank" rel="noreferrer" className={pill}>Book</a>}
         {place.address && <a href={mapHref(place.address, place.coordinates)} target="_blank" rel="noreferrer" className={pill}>Map</a>}
       </div>

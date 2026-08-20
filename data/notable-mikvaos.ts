@@ -41,7 +41,17 @@ function city(slug: string, name: string, cityName: string, country: string, not
 
 export const notableMikvaos: NotableMikvah[] = [
   city("jerusalem", "Mikvaos of Jerusalem", "Jerusalem", "Israel"),
-  city("london", "Mikvaos of London", "London", "United Kingdom"),
+  // The plain /directory/london slug resolves to London, Ontario, not London,
+  // England — so this one points at the searchable directory root, where
+  // "London, England" (Edgware, Stamford Hill and the rest) is one search away.
+  {
+    slug: "london",
+    name: "Mikvaos of London",
+    city: "London",
+    country: "United Kingdom",
+    directoryUrl: "https://www.mikvah.org/directory/",
+    note: `Search "London, England" on the worldwide mikvah directory. ${ARRANGE}`,
+  },
   city("manchester", "Mikvaos of Manchester", "Manchester", "United Kingdom"),
   city("gateshead", "Mikvah in Gateshead", "Gateshead", "United Kingdom"),
   city("new-york", "Mikvaos of New York", "New York", "United States"),
@@ -55,6 +65,11 @@ export const notableMikvaos: NotableMikvah[] = [
   city("cape-town", "Mikvah in Cape Town", "Cape Town", "South Africa"),
   city("johannesburg", "Mikvaos of Johannesburg", "Johannesburg", "South Africa"),
   city("mexico-city", "Mikvaos of Mexico City", "Mexico City", "Mexico"),
+  city("baltimore", "Mikvaos of Baltimore", "Baltimore", "United States"),
+  city("chicago", "Mikvaos of Chicago", "Chicago", "United States"),
+  city("lakewood", "Mikvaos of Lakewood", "Lakewood", "United States"),
+  city("boston", "Mikvaos of Boston", "Boston", "United States"),
+  city("bnei-brak", "Mikvaos of Bnei Brak", "Bnei Brak", "Israel"),
   city("amsterdam", "Mikvah in Amsterdam", "Amsterdam", "Netherlands"),
   city("antwerp", "Mikvaos of Antwerp", "Antwerp", "Belgium"),
   city("zurich", "Mikvah in Zurich", "Zurich", "Switzerland"),

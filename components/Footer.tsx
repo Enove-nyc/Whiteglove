@@ -22,6 +22,7 @@ import Link from "next/link";
 const FOOTER_LINKS = [
   { label: "Contact", href: "/contact" },
   { label: "Advertise", href: "/contact?reason=advertise" },
+  { label: "Sources", href: "/sources" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
 ];
