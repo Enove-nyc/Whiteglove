@@ -7,7 +7,7 @@ const good: EruvInput = {
   city: "London",
   country: "United Kingdom",
   covers: "Golders Green and Hendon",
-  statusUrl: "https://example.org/status",
+  sourceUrl: "https://example.org/eruv",
 };
 
 describe("adding an eruv from the admin", () => {
@@ -21,10 +21,16 @@ describe("adding an eruv from the admin", () => {
     assert.match(eruvProblem({ ...good, country: "" }) ?? "", /country/i);
   });
 
-  it("insists the status link is a real web address — the whole point of a listing", () => {
-    assert.match(eruvProblem({ ...good, statusUrl: "golders-green" }) ?? "", /web address/i);
-    assert.match(eruvProblem({ ...good, statusUrl: "" }) ?? "", /web address/i);
-    assert.equal(eruvProblem({ ...good, statusUrl: "http://example.org" }), null);
+  it("insists the source link is a real web address — the whole point of a listing", () => {
+    assert.match(eruvProblem({ ...good, sourceUrl: "golders-green" }) ?? "", /web address/i);
+    assert.match(eruvProblem({ ...good, sourceUrl: "" }) ?? "", /web address/i);
+    assert.equal(eruvProblem({ ...good, sourceUrl: "http://example.org" }), null);
+  });
+
+  it("accepts an optional boundary map, but rejects a malformed one", () => {
+    assert.equal(eruvProblem({ ...good, mapUrl: "https://example.org/map.png" }), null);
+    assert.equal(eruvProblem({ ...good, mapUrl: null }), null);
+    assert.match(eruvProblem({ ...good, mapUrl: "not-a-url" }) ?? "", /map link/i);
   });
 
   it("turns input into a listing, trimmed, flagged as added, with a stable id", () => {
@@ -34,7 +40,7 @@ describe("adding an eruv from the admin", () => {
     assert.equal(listing.id, eruvId(good));
     // The same city and name always give the same id, so re-adding replaces
     // rather than duplicating.
-    assert.equal(eruvId(good), eruvId({ ...good, statusUrl: "https://other.example/status" }));
+    assert.equal(eruvId(good), eruvId({ ...good, sourceUrl: "https://other.example/eruv" }));
   });
 
   it("gives an accented name a clean ascii id", () => {
@@ -45,6 +51,6 @@ describe("adding an eruv from the admin", () => {
   it("still reads the built-in list synchronously", () => {
     const built = listEruvin();
     assert.ok(built.length > 0);
-    assert.ok(built.every((e) => e.statusUrl.startsWith("http")));
+    assert.ok(built.every((e) => e.sourceUrl.startsWith("http")));
   });
 });
