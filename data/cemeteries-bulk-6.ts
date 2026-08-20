@@ -28,7 +28,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Yisrael Hopstein", yiddishName: "רבי ישראל האפשטיין", knownAs: "The Maggid of Kozhnitz", seforim: "עבודת ישראל", yahrzeit: "י״ד תשרי · 5575 / 1814", note: "A disciple of the Maggid of Mezritch and Reb Elimelech of Lizhensk; a founder of chassidus in Poland." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Israel_Hopsztajn",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/kozienice",
   },
   {
     slug: "lublin-chozeh",
@@ -55,7 +55,7 @@ export const bulkCemeteries6: Cemetery[] = [
       { name: "Rabbi Shalom Shachna ben Yosef", yiddishName: "רבי שלום שכנא", knownAs: "Founder of the Lublin yeshiva", note: "Niftar 1558. Rebbe of the Rema, and the man who made Lublin a place people came to learn." },
       { name: "Rabbi Yaakov Kopelman ben Yehuda HaLevi", yiddishName: "רבי יעקב קאפעלמאן הלוי", note: "Niftar 1541. His matzeivah is the oldest Jewish gravestone in Poland still standing where it was set." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Jacob_Isaac_Horowitz",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/lublin",
   },
   {
     slug: "sasiv-moshe-leib",
@@ -99,7 +99,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Zeev Wolf of Zhitomir", yiddishName: "רבי זאב וואלף מזשיטאמיר", knownAs: "The Ohr HaMeir", seforim: "אור המאיר", yahrzeit: "כ׳ אדר · c. 5558 / 1798", note: "A leading disciple of the Maggid of Mezritch; his Ohr HaMeir is a classic of chassidic thought." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Zev_Wolf_of_Zhitomir",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/zhitomir",
   },
   {
     slug: "neshchiz-mordechai",
@@ -119,7 +119,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Mordechai of Neshchiz", yiddishName: "רבי מרדכי מנעסכיז", knownAs: "The Neshchizer Rebbe", yahrzeit: "י׳ אב · c. 5560 / 1800", note: "A disciple of Reb Yechiel Michel of Zlotchov; founder of the Neskhizh chassidus." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Mordechai_of_Neshchiz",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/nesukhoyezhe",
   },
   {
     slug: "bershad-raphael",
@@ -206,7 +206,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Meir Yechiel Halevi Halstock", yiddishName: "רבי מאיר יחיאל הלוי האלשטאק", knownAs: "The Ostrovtzer Rebbe", seforim: "מאיר עיני חכמים", yahrzeit: "י״ט אדר · 5688 / 1928", note: "Renowned Polish gaon and rebbe, known for his gematria-Torah and lifelong fasting." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Meir_Yechiel_Halstock",
+    sourceUrl: "https://en.wikipedia.org/wiki/Meir_Yechiel_Halevi_Halstock",
   },
   {
     slug: "amshinov-mszczonow",

@@ -56,7 +56,7 @@ export const bulkCemeteries3: Cemetery[] = [
     burials: [
       { name: "Rabbi Aharon ben Yaakov of Karlin", yiddishName: "רבי אהרן בן יעקב מקארלין", knownAs: "Aharon HaGadol · the Great", seforim: "בית אהרן (school)", yahrzeit: "י״ט ניסן · 5532 / 1772", note: "A leading early chassidic master and founder of the Karlin (Karlin-Stolin) chassidic path." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Aaron_of_Karlin",
+    sourceUrl: "https://en.wikipedia.org/wiki/Aharon_of_Karlin_(I)",
   },
   {
     slug: "zhydachiv-tzvi-hirsch",
@@ -97,7 +97,7 @@ export const bulkCemeteries3: Cemetery[] = [
     burials: [
       { name: "Rabbi Meir of Premishlan", yiddishName: "רבי מאיר מפרעמישלאן", knownAs: "Reb Meir'l Premishlaner", yahrzeit: "כ״ט אייר · 5610 / 1850", note: "A celebrated chassidic tzaddik known for spontaneous Torah, humility, and the many stories of his help to the poor." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Meir_of_Premishlan",
+    sourceUrl: "https://www.esjf-cemeteries.org/survey/peremyshlyany-old-jewish-cemetery/",
   },
   {
     slug: "polonne-toldos-yaakov-yosef",
@@ -184,7 +184,7 @@ export const bulkCemeteries3: Cemetery[] = [
     burials: [
       { name: "Rabbi Yitzchak Kalish of Vorki", yiddishName: "רבי יצחק קאליש מווארקא", knownAs: "The Vorker Rebbe", yahrzeit: "כ״ב ניסן · 5608 / 1848", note: "Founder of the Vorki (Warka) chassidus, remembered for extraordinary ahavas Yisrael and his advocacy for the community." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Yitzchak_Kalish_of_Vorki",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/warka",
   },
   {
     slug: "vyzhnytsia-tzemach-tzadik",
@@ -246,7 +246,7 @@ export const bulkCemeteries3: Cemetery[] = [
     burials: [
       { name: "Rabbi Dovid Moshe Friedman", yiddishName: "רבי דוד משה פרידמן", knownAs: "The Chortkover Rebbe", yahrzeit: "ט״ו מרחשון · 5664 / 1903", note: "Founder of the Chortkov dynasty, one of the sons of Rabbi Yisrael of Ruzhin." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/David_Moshe_Friedman",
+    sourceUrl: "https://en.wikipedia.org/wiki/Chortkov_(Hasidic_dynasty)",
   },
   {
     slug: "sadhora-ruzhiner",
@@ -291,7 +291,7 @@ export const bulkCemeteries3: Cemetery[] = [
     burials: [
       { name: "Rabbi Dovid Twersky of Talne", yiddishName: "רבי דוד טווערסקי מטאלנא", knownAs: "The Talner Rebbe", yahrzeit: "ט׳ אייר · 5642 / 1882", note: "Founder of the Talne chassidus and a son of Rabbi Mordechai of Chernobyl." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/David_Twersky_(Talne)",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/talnoye",
   },
   {
     slug: "amuka-yonasan-ben-uziel",

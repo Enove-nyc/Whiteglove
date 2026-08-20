@@ -173,7 +173,7 @@ export const bulkCemeteries4: Cemetery[] = [
       { name: "Rabbi Avraham Weinberg of Slonim", yiddishName: "רבי אברהם ווינברג מסלאנים", knownAs: "The Yesod HaAvodah", seforim: "יסוד העבודה · באר אברהם", yahrzeit: "י״א חשון · 5644 / 1883", note: "Founder of the Slonim chassidic dynasty." },
       { name: "Rabbi Nosson Tzvi Finkel", yiddishName: "רבי נתן צבי פינקל", knownAs: "The Alter of Slabodka", yahrzeit: "כ״ט שבט · 5687 / 1927", note: "Founder of the Slabodka yeshiva and the man behind the mussar derech of gadlus ha'adam that shaped a large part of the yeshiva world. He sent his talmidim to open the Chevron yeshiva and made aliyah himself two years before he was niftar - but he could not manage Chevron's winters and left, and he is buried here on Har HaZeisim, NOT in Chevron, which is where people go looking for him." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Avraham_Weinberg_(first_Slonimer_Rebbe)",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/belarus/slonim",
   },
   {
     slug: "kosiv-ahavas-shalom",
