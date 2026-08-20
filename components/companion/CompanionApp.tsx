@@ -27,6 +27,12 @@ import {
   type CompanionItem,
   type CompanionTrip,
 } from "@/data/companion-demo";
+import { Icon } from "@/components/icons/Icon";
+
+/** The blue the app already uses for its own accents — map notes, the
+ * initials avatar, kickers. The chat toolbar's icons match it rather than
+ * showing as whatever color the device's native emoji happen to render in. */
+const ICON_BLUE = "#1f3f5c";
 
 type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile";
 type ChatSide = "client" | "advisor";
@@ -143,6 +149,16 @@ export default function CompanionApp({
   const hasConcierge = trip.concierge;
   const isConcierge = hasConcierge && st.tmode === "concierge";
   const isGuideMode = !isConcierge;
+  /**
+   * A REAL advisor thread exists (hasMessages), as opposed to the showcase's
+   * scripted stand-in. In concierge mode this is the whole point of the mode
+   * — "somebody is holding this trip for you" — so once it is real, every
+   * door that used to open the SCRIPTED demo (the "Concierge" tab, "Ask to
+   * move this", "Ask about this day") opens the real thread instead. Without
+   * this, a client on a genuine shared trip typed into a conversation that
+   * went nowhere, which read as the whole feature being broken.
+   */
+  const usesRealChat = hasMessages;
   const sel = days[st.selDay];
   const items = sel.items.map(decorate);
   const hasSwap = Boolean(trip.swaps);
@@ -235,8 +251,13 @@ export default function CompanionApp({
   const openActivity = (di: number, i: number) =>
     setSt((s) => ({ ...s, screen: "activity", prev: s.screen, actIdx: i, actDay: di }));
 
-  const tabDefs: [Screen, string][] = [["home", "Trip"], ["chat", isGuideMode ? "Guide" : "Concierge"]];
-  if (hasMessages) tabDefs.push(["messages", "Messages"]);
+  // Guide mode's tab still opens the reference info (guideChat) — genuinely
+  // its own thing, not a chat. Concierge mode's tab opens the real thread the
+  // moment one exists, so there is only ever one door to "talk to your
+  // advisor" rather than a real one and a dead scripted one side by side.
+  const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
+  const tabDefs: [Screen, string][] = [["home", "Trip"], [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]];
+  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", "Messages"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
@@ -499,7 +520,7 @@ export default function CompanionApp({
       {st.tstyle === "rail" && railView}
       {st.tstyle === "cards" && cardsView}
       {st.tstyle === "bands" && bandsView}
-      <button onClick={() => go("chat")} className="wg-warm" style={{ alignSelf: "flex-start", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a" }}>Ask about this day</button>
+      <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ alignSelf: "flex-start", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a" }}>Ask about this day</button>
     </div>
   );
 
@@ -530,7 +551,7 @@ export default function CompanionApp({
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
           <button className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14 }}>Directions</button>
-          <button onClick={() => go("chat")} className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a" }}>Ask to move this</button>
+          <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a" }}>Ask to move this</button>
         </div>
       </div>
     </div>
@@ -1181,7 +1202,9 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
           } else if (m.kind === "audio" && m.mediaId) {
             content = (
               <div style={{ ...bubble, padding: "10px 13px", display: "flex", flexDirection: "column", gap: 6 }}>
-                <span style={{ fontSize: 12.5, opacity: 0.85 }}>🎙 Voice note</span>
+                <span style={{ fontSize: 12.5, opacity: 0.85, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                  <Icon name="microphone" className="h-[13px] w-[13px]" /> Voice note
+                </span>
                 <audio controls preload="metadata" style={{ width: 220, maxWidth: "100%", height: 32 }}>
                   <source src={`/api/media?id=${encodeURIComponent(m.mediaId)}`} />
                 </audio>
@@ -1191,7 +1214,9 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             const href = `https://www.google.com/maps?q=${m.lat},${m.lng}`;
             content = (
               <a href={href} target="_blank" rel="noopener noreferrer" style={{ ...bubble, textDecoration: "none", padding: "13px 15px", display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>📍 {m.text || "Shared a location"}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <Icon name="map-pin" className="h-4 w-4" /> {m.text || "Shared a location"}
+                </span>
                 <span style={{ fontSize: 12.5, opacity: 0.85 }}>Open in maps →</span>
               </a>
             );
@@ -1260,14 +1285,18 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
               {staged.kind === "video" && (
                 <video src={staged.previewUrl} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               )}
-              {staged.kind === "audio" && <span style={{ fontSize: 22 }}>🎙</span>}
+              {staged.kind === "audio" && (
+                <span style={{ color: ICON_BLUE }}>
+                  <Icon name="microphone" className="h-6 w-6" strokeWidth={1.4} />
+                </span>
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: "#26323a", textTransform: "capitalize" }}>{staged.noun} ready to send</span>
               {staged.kind === "audio" && <audio src={staged.previewUrl} controls style={{ height: 30, width: 200, maxWidth: "100%" }} />}
             </div>
-            <button onClick={clearStaged} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 36, height: 36, borderRadius: 12, fontSize: 15, padding: 0 }}>
-              ✕
+            <button onClick={clearStaged} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 36, height: 36, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="close" className="h-4 w-4" />
             </button>
           </div>
           <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
@@ -1298,8 +1327,12 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
             <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
             {!editingAt && (
               <>
-                <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🖼</button>
-                <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>🎥</button>
+                <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
+                  <Icon name="camera" className="h-[19px] w-[19px]" />
+                </button>
+                <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
+                  <Icon name="video" className="h-[19px] w-[19px]" />
+                </button>
                 <button
                   onClick={() => (recording ? stopRecording() : void startRecording())}
                   disabled={sending}
@@ -1310,20 +1343,24 @@ function LiveChat({ chat }: { chat: CompanionChat }) {
                     flex: "none",
                     border: recording ? "1px solid transparent" : "1px solid rgba(38,50,58,.16)",
                     background: recording ? "#b5442e" : "#ffffff",
-                    color: recording ? "#fff" : undefined,
+                    color: recording ? "#fff" : ICON_BLUE,
                     cursor: "pointer",
                     width: 40,
                     height: 46,
                     borderRadius: 14,
-                    fontSize: 16,
                     padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     opacity: sending ? 0.6 : 1,
                     animation: recording ? "wgPulse 1.1s ease-in-out infinite" : undefined,
                   }}
                 >
-                  {recording ? "⏹" : "🎙"}
+                  <Icon name={recording ? "stop" : "microphone"} className="h-[19px] w-[19px]" />
                 </button>
-                <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", width: 40, height: 46, borderRadius: 14, fontSize: 16, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>📍</button>
+                <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
+                  <Icon name="map-pin" className="h-[19px] w-[19px]" />
+                </button>
               </>
             )}
             <input
