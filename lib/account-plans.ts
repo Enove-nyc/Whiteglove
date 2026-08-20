@@ -124,11 +124,14 @@ export function isUpgrade(from: AccountPlan, to: AccountPlan): boolean {
  */
 const PLAN_INCLUDES: Record<AccountPlan, readonly string[]> = {
   traveler: [],
-  pro: ["The assistant remembers your conversation between visits"],
+  pro: [
+    "The assistant remembers your conversation between visits",
+    "The White Glove app for your own trips — your itinerary on your phone, a day at a time, kept for when there is no signal",
+  ],
   business: [
     "The assistant remembers your conversation between visits",
     "Your own logo and business name on every itinerary you print, in place of the White Glove crest",
-    "The White Glove app for the travellers you plan for — their trip on their phone, a day at a time, kept for when there is no signal",
+    "The White Glove app for the travellers you plan for — a link that opens their trip on their phone, and a chat with each one",
   ],
 };
 

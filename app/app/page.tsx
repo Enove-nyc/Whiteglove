@@ -12,7 +12,7 @@ import {
   readSessionEmail,
 } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayUseCompanionApp } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
@@ -93,12 +93,13 @@ export default async function AppPage({
       // furniture around it. On a phone it is the whole window; installed to the
       // home screen it is the whole app.
       //
-      // The owner is the advisor here, so the Messages tab is their inbox —
-      // every client they have shared a trip with, each its own conversation,
-      // regardless of which trip's days they are looking at.
+      // Business hands the app to clients, so it gets the Messages inbox — every
+      // client they have shared a trip with. Gold has the app for its own trips
+      // and no inbox; the tab simply is not there.
+      const servesClients = mayServeCompanionClients(plan);
       return (
         <main>
-          <CompanionApp trip={companionTrip} advisorInbox />
+          <CompanionApp trip={companionTrip} advisorInbox={servesClients} />
         </main>
       );
     }
