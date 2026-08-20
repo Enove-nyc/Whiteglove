@@ -563,8 +563,15 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
               </span>
-              <span className="inline-flex h-14 items-stretch overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
-                <Link href="/itinerary/print" target="_blank" className="inline-flex items-center justify-center rounded-full bg-[var(--navy)] px-5 text-xs font-bold text-white transition hover:bg-[var(--gold)]">Print / PDF</Link>
+              {/* The navy fill is a <span>, not the <a>: a global rule
+                  (app/globals.css) forces a 0.75rem radius onto any anchor with
+                  a bg- class, which overrode rounded-full and made the inner a
+                  rounded rectangle inside the pill track. Mirroring the toggle
+                  above — an absolutely-inset span under a transparent link —
+                  keeps the fill immune to that rule. */}
+              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+                <span aria-hidden="true" className="absolute inset-1.5 rounded-full bg-[var(--navy)] transition-colors group-hover:bg-[var(--gold)]" />
+                <Link href="/itinerary/print" target="_blank" className="relative z-10 inline-flex h-full items-center justify-center px-5 text-xs font-bold text-white">Print / PDF</Link>
               </span>
             </div>
           </div>
