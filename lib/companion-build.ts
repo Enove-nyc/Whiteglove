@@ -25,7 +25,14 @@ import type { CompanionTrip } from "@/data/companion-demo";
  */
 export async function buildCompanionFromItinerary(
   itin: Itinerary,
-  opts: { today: string; advisorName?: string; tripName?: string; client?: string },
+  opts: {
+    today: string;
+    advisorName?: string;
+    tripName?: string;
+    client?: string;
+    /** Whether the kosher-and-Shabbos layer is worked out and shown. Off by default. */
+    kosher?: boolean;
+  },
 ): Promise<CompanionTrip | null> {
   if (!itin.startDate || !itin.endDate) return null;
 
@@ -34,29 +41,42 @@ export async function buildCompanionFromItinerary(
   const days = buildDays(itin, borderCost, assume);
   if (days.length === 0) return null;
 
+  // Only work the layer out when it will be shown — no zmanim, no kosher lookup
+  // for an account that keeps the app a plain planner.
+  const kosherOn = opts.kosher === true;
   const zmanimByDate: Record<string, ReturnType<typeof zmanimForDay>> = {};
-  for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
-
-  const centerCoords =
-    itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
-    itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
-  const center = coordinatesToPoint(centerCoords);
-  const kosher = center
-    ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
-        name: k.name,
-        city: k.city,
-        kind: k.category,
-        diet: k.diet,
-        hechsher: hechsherLabel(k.hechsher),
-        km: k.km,
-      }))
-    : [];
+  let kosher: {
+    name: string;
+    city: string;
+    kind: string;
+    diet?: string;
+    hechsher: string;
+    km: number;
+  }[] = [];
+  if (kosherOn) {
+    for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
+    const centerCoords =
+      itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
+      itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
+    const center = coordinatesToPoint(centerCoords);
+    kosher = center
+      ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
+          name: k.name,
+          city: k.city,
+          kind: k.category,
+          diet: k.diet,
+          hechsher: hechsherLabel(k.hechsher),
+          km: k.km,
+        }))
+      : [];
+  }
 
   return itineraryToCompanionTrip(itin, days, {
     today: opts.today,
     advisorName: opts.advisorName,
     tripName: opts.tripName,
     client: opts.client,
+    kosher: kosherOn,
     layer: { zmanimByDate, kosher },
   });
 }
