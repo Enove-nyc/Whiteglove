@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { BRAND_HEADER, BRAND_HOSTS, type SiteBrand } from "@/lib/site-brand-core";
 
 type AccessScope = "admin" | "site";
 
@@ -58,11 +59,30 @@ export function sameOrigin(request: {
 }): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl?.host || "";
-  if (!host) return false;
+  let originHost: string;
   try {
-    return new URL(origin).host === host;
+    originHost = new URL(origin).host;
   } catch {
     return false;
   }
+
+  // The itineraries domain is served through a front proxy (Cloudflare), which
+  // has to rewrite the Host header it sends onward so the host it's proxying
+  // to can route the request at all — and that host's OWN edge then overwrites
+  // x-forwarded-host to match what it just received, so neither header carries
+  // the real public hostname once a proxy is in front. The proxy's brand header
+  // (lib/site-brand.ts) survives untouched, because branding depends on it
+  // working — but a header a page could set on its own request is not, by
+  // itself, proof of anything. What makes this safe is that Origin cannot be
+  // set by request-issuing script; a hostile page's Origin is always its own
+  // real origin. So the brand header only ever unlocks a check against ONE
+  // fixed, compile-time host list (BRAND_HOSTS) — forging it cannot make a
+  // request from anywhere else pass, only skip the (already-wrong) forwarded
+  // header for a request that is genuinely from one of our own domains.
+  const brand = request.headers.get(BRAND_HEADER) as SiteBrand | null;
+  if (brand && BRAND_HOSTS[brand]?.includes(originHost)) return true;
+
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl?.host || "";
+  if (!host) return false;
+  return originHost === host;
 }
