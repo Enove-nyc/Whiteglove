@@ -16,8 +16,8 @@ import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClien
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
 import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
-import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
-import { describePrice, readPrice, statusIsPaid } from "@/lib/stripe";
+import { readPlanOffering } from "@/lib/plan-billing-store";
+import { describePrice, readPrice } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
 import { getTrips } from "@/lib/account-store";
 import { isAdminAccount } from "@/lib/admin-roles";
@@ -67,8 +67,6 @@ export default async function AccountPage() {
   // because the price has to be read from Stripe when a card is involved, and
   // that is a network call — not something a component may make while it draws.
   const offering = await readPlanOffering();
-  const subscription = await readSubscription(who);
-  const hasSubscription = Boolean(subscription?.customerId && statusIsPaid(subscription.status));
   const offerChoices: PlanOffer[] = [];
   if (offering.open) {
     for (const paid of offerablePlans(offering)) {
@@ -148,7 +146,6 @@ export default async function AccountPage() {
             limitsLine={describeLimits(plan, limits)}
             usageLine={usageLine}
             offer={offer}
-            hasSubscription={hasSubscription}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
           {canUseApp && (
