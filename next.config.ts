@@ -22,10 +22,15 @@ const nextConfig: NextConfig = {
    * (components/PartnerSearchWidget). DENY would blank those three panels and
    * the failure would look like a broken partner rather than a header.
    *
-   * The permissions list names only what nothing on this site uses — there is
-   * no navigator.geolocation, getUserMedia or camera call anywhere. `payment`
-   * is deliberately absent from the list: Duffel's card component handles card
-   * entry, and switching that capability off is not a guess worth making.
+   * The permissions list switches off what nothing on this site uses —
+   * getUserMedia and camera — and ALLOWS geolocation for this origin only
+   * (`geolocation=(self)`): the companion app's chat lets a traveller share
+   * their current place with their advisor, and a blanket `geolocation=()`
+   * would kill that in every browser that honours the header. Self, not `*`,
+   * so only our own pages may ask, and the browser still prompts the person.
+   * `payment` is deliberately absent from the list: Duffel's card component
+   * handles card entry, and switching that capability off is not a guess worth
+   * making.
    *
    * THE CSP IS HERE NOW, AND IT ENFORCES. The note above used to say a
    * Content-Security-Policy was deferred because it is the header that breaks
@@ -56,7 +61,7 @@ const nextConfig: NextConfig = {
           // attribution that reads a referrer keeps working; the path a
           // visitor was reading does not leave the site.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
           { key: "Reporting-Endpoints", value: reportingEndpointsHeader(CSP_REPORT_PATH) },
           { key: "Content-Security-Policy", value: contentSecurityPolicy(CSP_REPORT_PATH) },
         ],

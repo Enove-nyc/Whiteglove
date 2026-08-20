@@ -15,7 +15,7 @@ import {
   stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayBrandOwnItinerary, mayUseCompanionApp } from "@/lib/account-limits";
+import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Itinerary } from "@/data/itinerary";
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
       // it opens is a Business capability (lib/account-limits.ts), so the link
       // that hands a trip over as the app is too.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayUseCompanionApp(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: "Sharing a trip as the app is part of a Business account." },
+          { ok: false, error: "Handing a trip to a client is part of a Business account." },
           { status: 403 },
         );
       }
