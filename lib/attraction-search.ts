@@ -8,6 +8,8 @@
 
 import { getAreaList, getAttractionList, getStayList, type AttractionItem, type KosherAreaItem, type KosherStayItem } from "@/lib/attractions-view";
 import { kosherEateries, type KosherEatery } from "@/data/kosher-eateries";
+import { listPublishedShuls, type ShulListing } from "@/lib/shuls";
+import { listPublishedMikvaos, type MikvahListing } from "@/lib/mikvaos";
 import { extraSpellings, fuzzyMatch, normalize } from "@/lib/place-search";
 
 /** What the planner needs to drop an attraction onto a day. */
@@ -132,6 +134,103 @@ export async function searchStays(query: string, limit = 12): Promise<StayResult
     .sort((x, y) => x.score - y.score || x.s.city.localeCompare(y.s.city))
     .slice(0, limit)
     .map((x) => toStayResult(x.s));
+}
+
+/* ---- one search across everything a day can hold ------------------------- */
+
+// A slug for a place that has none of its own — shuls and mikvaos are rows, not
+// pages. Name and city together are enough to key one, and to dedupe it against
+// the same place arriving from another list.
+function placeSlug(name: string, city: string): string {
+  return `${normalize(name)}-${normalize(city)}`.replace(/\s+/g, "-") || normalize(name);
+}
+
+function eateryToResult(e: KosherEatery): AttractionResult {
+  return {
+    slug: e.slug,
+    name: e.name,
+    city: e.city,
+    country: e.country,
+    kind: e.kind ? `Kosher · ${e.kind}` : "Kosher food",
+    summary: e.summary ?? "",
+    address: e.address,
+    coordinates: e.coordinates,
+    href: `/kosher#${e.slug}`,
+  };
+}
+
+function shulToResult(s: ShulListing): AttractionResult {
+  return {
+    slug: placeSlug(s.name, s.city),
+    name: s.name,
+    city: s.city,
+    country: s.country,
+    kind: "Shul",
+    summary: "",
+    address: s.address ?? undefined,
+    coordinates: s.coordinates ?? undefined,
+    href: "/shuls",
+  };
+}
+
+function mikvahToResult(m: MikvahListing): AttractionResult {
+  return {
+    slug: placeSlug(m.name, m.city),
+    name: m.name,
+    city: m.city,
+    country: m.country,
+    kind: "Mikvah",
+    summary: "",
+    address: m.address ?? undefined,
+    coordinates: m.coordinates ?? undefined,
+    href: "/mikvaos",
+  };
+}
+
+/**
+ * ONE search across everything a day can hold — an attraction, a kosher place
+ * to eat, a shul, a mikvah — so the planner drops any of them onto a day with
+ * its address and position already filled, from the same database the kosher
+ * site reads. Kevarim keep their own picker (they carry burials the others do
+ * not); everything else is here, in one box.
+ *
+ * The four lists are searched in parallel, merged, ranked the same way (an
+ * exact city or a name hit first), and deduped by name+city so a place that is
+ * both, say, a listing and a stored row shows once.
+ */
+export async function searchPlaces(query: string, limit = 14): Promise<AttractionResult[]> {
+  const q = query.trim();
+  if (q.length < 2) return searchAttractions(q, limit);
+  const nq = normalize(q);
+
+  const [attractions, eateries, shuls, mikvaos] = await Promise.all([
+    searchAttractions(q, limit),
+    searchEateries(q, limit),
+    listPublishedShuls().catch(() => [] as ShulListing[]),
+    listPublishedMikvaos().catch(() => [] as MikvahListing[]),
+  ]);
+
+  const scored: { r: AttractionResult; score: number }[] = [];
+  for (const a of attractions) scored.push({ r: a, score: rank(nq, a.city, a.name) });
+  for (const e of eateries) scored.push({ r: eateryToResult(e), score: rank(nq, e.city, e.name) });
+  for (const s of shuls) {
+    if (fuzzyMatch(q, [s.name, s.city, s.country].join(" "))) scored.push({ r: shulToResult(s), score: rank(nq, s.city, s.name) });
+  }
+  for (const m of mikvaos) {
+    if (fuzzyMatch(q, [m.name, m.city, m.country].join(" "))) scored.push({ r: mikvahToResult(m), score: rank(nq, m.city, m.name) });
+  }
+
+  const seen = new Set<string>();
+  return scored
+    .sort((a, b) => a.score - b.score || a.r.city.localeCompare(b.r.city))
+    .filter(({ r }) => {
+      const key = `${normalize(r.name)}|${normalize(r.city)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, limit)
+    .map((x) => x.r);
 }
 
 export async function searchAreas(query: string, limit = 12): Promise<KosherAreaItem[]> {
