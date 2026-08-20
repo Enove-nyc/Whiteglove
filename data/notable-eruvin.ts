@@ -105,6 +105,14 @@ export const notableEruvin: NotableEruv[] = [
     statusUrl: "https://www.bostoneruv.org/",
     covers: "Brookline, Newton and Brighton, with a weekly status line",
   },
+  {
+    slug: "five-towns",
+    name: "The Five Towns Eruv",
+    city: "Cedarhurst",
+    country: "United States",
+    statusUrl: "https://www.fivetownseruv.org/",
+    covers: "Lawrence, Cedarhurst, Woodmere and the neighbouring Five Towns",
+  },
 ];
 
 /** The worldwide eruv directory, for any community not listed above. */
