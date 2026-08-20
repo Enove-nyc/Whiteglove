@@ -41,7 +41,8 @@ export type IconName =
   | "camera"
   | "video"
   | "microphone"
-  | "stop";
+  | "stop"
+  | "more";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -190,6 +191,16 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   stop: <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none" />,
+  // Three small dots — an overflow menu, not a shape drawn from the same
+  // stroke as the rest; filled, because at this size a stroked circle is
+  // barely a dot at all.
+  more: (
+    <>
+      <circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </>
+  ),
 };
 
 export function Icon({
