@@ -7,14 +7,13 @@ import SearchMemory from "@/components/SearchMemory";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
-import { featuredDestinations } from "@/lib/featured-destinations";
 import { pageMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons/Icon";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
-import { destinationPhotoSrc } from "@/lib/default-photo";
+import { DEFAULT_PHOTO } from "@/lib/default-photo";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -41,10 +40,11 @@ export const metadata = pageMetadata({
  * say that the Ghetto is the quarter to be in. That answer is what the
  * search finds, and the partner hand-off stays underneath it, on our pages.
  *
- * FEATURED IS CHOSEN BY USE. The row is built from the destinations people
- * opened over the trailing week (lib/featured-destinations.ts), topped up
- * from a written fallback while the data is thin — and the page never says
- * which is which, or why anything was chosen. No "trending", no counts.
+ * FEATURED IS THE SITE'S SIX MAIN SECTIONS. It used to be six destinations
+ * ranked by what people opened; the owner asked for the shape of the site
+ * instead — what to do, where to stay, what to eat, the heritage, the map and
+ * the directory (HOME_CATEGORIES). Same card as before; only what it points at
+ * changed. No "trending", no counts, no reason a card is there.
  *
  * WHAT IS NOT HERE, AND IS NOT AN OVERSIGHT:
  *
@@ -58,14 +58,34 @@ export const metadata = pageMetadata({
  *     /verification; a second copy here was the front page explaining itself.
  */
 
+/**
+ * The six cards on the front page — the site's main sections, not individual
+ * places.
+ *
+ * This row used to be six destinations chosen by what people opened; the owner
+ * asked for it to be the sections instead, so a first-time visitor sees the
+ * whole shape of the site — what to do, where to stay, what to eat, the
+ * heritage, the map and the directory — rather than six towns. Same card as
+ * before; only what it points at changed. Each opens its own section, and the
+ * picture is the branded default (lib/default-photo.ts) until a section has its
+ * own.
+ */
+const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: string }> = [
+  { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do" },
+  { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels" },
+  { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher" },
+  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage" },
+  { label: "Map", blurb: "Everything on the site, placed.", href: "/map" },
+  { label: "Directory", blurb: "Drivers, guides and local services.", href: "/directory" },
+];
+
 export default async function Home() {
   const requestHeaders = await headers();
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, featured, caseStudies, booking] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, caseStudies, booking] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
-    featuredDestinations(6),
     // Genuine, permitted, approved only — section renders nothing when empty.
     readPublicCaseStudies(),
     readBookingLink(),
@@ -104,41 +124,39 @@ export default async function Home() {
       </section>
 
       {/* ---- 2. Featured --------------------------------------------------
-          Picture, name, country. Nothing else: no blurb, no rating, no CTA, no
-          reason it was chosen. The picture is the place's own credited photo
-          when there is one, and the branded White Glove default otherwise
-          (lib/default-photo.ts) — never a blank box. The whole card is one
-          link, so a screen reader lists "Rome" rather than "Explore" six
+          The six main sections of the site, as cards — not individual places.
+          Picture, name, one line saying what is inside. Nothing else: no rating,
+          no CTA, no count. The picture is the branded White Glove default
+          (lib/default-photo.ts) — never a blank box. The whole card is one link,
+          so a screen reader lists "Where to stay" rather than "Explore" six
           times. */}
-      {featured.length > 0 && (
-        <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-            Featured
-          </h2>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map(({ destination, href }) => (
-              <li key={destination.slug}>
-                <Link
-                  href={href}
-                  className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
-                >
-                  <div
-                    aria-hidden="true"
-                    className="aspect-[4/3] w-full bg-[var(--navy)] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${destinationPhotoSrc(destination.photos)})` }}
-                  />
-                  <div className="p-5">
-                    <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
-                      {destination.name}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-stone-600">{destination.country}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
+          Featured
+        </h2>
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {HOME_CATEGORIES.map((category) => (
+            <li key={category.href}>
+              <Link
+                href={category.href}
+                className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
+              >
+                <div
+                  aria-hidden="true"
+                  className="aspect-[4/3] w-full bg-[var(--navy)] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${DEFAULT_PHOTO})` }}
+                />
+                <div className="p-5">
+                  <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
+                    {category.label}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-stone-600">{category.blurb}</p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {/* ---- 3. The three ways in, as compact icon cards ------------------
           Ideas (/plan), Itinerary (/itinerary), Book (resolved through the
