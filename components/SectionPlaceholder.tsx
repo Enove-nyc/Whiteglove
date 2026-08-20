@@ -1,6 +1,6 @@
 export default function SectionPlaceholder({
-  title = "Information not available",
-  description = "We are still gathering and verifying the details for this section.",
+  title = "Nothing to show here",
+  description = "There is nothing to show for this section right now.",
 }: {
   title?: string;
   description?: string;

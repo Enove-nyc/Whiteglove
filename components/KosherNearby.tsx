@@ -136,11 +136,11 @@ export default function KosherNearby({
                       onClick={() =>
                         requireSignIn(async () => {
                           if (await addKosherToTrip(place)) setAdded((current) => ({ ...current, [place.id]: true }));
-                        }, "Sign in to add to your trip")
+                        }, "Sign in to add to your itinerary")
                       }
                       className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
                     >
-                      {added[place.id] ? "Added ✓" : "Add to my trip"}
+                      {added[place.id] ? "Added ✓" : "Add to itinerary"}
                     </button>
                   )}
                 </div>
