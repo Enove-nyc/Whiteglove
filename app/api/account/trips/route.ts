@@ -99,9 +99,11 @@ export async function POST(request: NextRequest) {
     }
     case "share":
     case "unshare": {
-      // The client's app link, locked to this one trip. Business only — the app
-      // it opens is a Business capability (lib/account-limits.ts), so the link
-      // that hands a trip over as the app is too.
+      // The client's per-trip code, locked to this one trip. Business only:
+      // handing a trip to a client is the Business capability
+      // (mayServeCompanionClients), even though the app it opens is now
+      // Gold-and-Business (companionApp). A Gold member uses the app for their
+      // own trips; only Business creates a code to send a client.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(

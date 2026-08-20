@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import AppCodeEntry from "@/components/companion/AppCodeEntry";
 import CompanionApp from "@/components/companion/CompanionApp";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -60,7 +60,57 @@ export default async function AppPage({
   const account = await getCurrentAccountSummary(cookie);
   const sessionEmail = readSessionEmail(cookie);
   const who = account?.email || sessionEmail || "";
-  if (!who) redirect("/login?next=%2Fapp");
+  // Not signed in: the two doors. A client enters the code their adviser sent
+  // and opens their one trip with no account; an adviser or a Gold member logs
+  // in to their own trips. This replaced a straight redirect to /login, which
+  // left a client with a code nowhere to put it.
+  if (!who) {
+    return (
+      <main className="min-h-screen bg-[var(--cream)]">
+        <Navbar />
+        <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
+          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            The trip in your pocket.
+          </h1>
+          <p className="text-base leading-7 text-stone-600">
+            A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
+            wallet kept on the phone for when there is no signal.
+          </p>
+
+          <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              Have a code from your travel adviser?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-stone-600">
+              Enter it to open your trip. You do not need an account.
+            </p>
+            <div className="mt-4">
+              <AppCodeEntry />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--gold-light)] bg-white p-6">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              Travel adviser or Gold member?
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-stone-600">
+              Log in to open your own trips in the app.
+            </p>
+            <div className="mt-4">
+              <Link
+                href="/login?next=%2Fapp"
+                className="inline-flex min-h-11 items-center rounded-full bg-[var(--navy)] px-6 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    );
+  }
 
   const plan = await getPlan(who);
   if (mayUseCompanionApp(plan)) {
@@ -156,8 +206,10 @@ export default async function AppPage({
 
   // Signed in on Traveler — the only plan the app is not part of (Gold and
   // Business both cleared the gate above). Say what it is, and point at Gold,
-  // the first plan that includes it, not Business. The itineraries "See the
-  // app" link can land here, so this is where that promise has to be true.
+  // the first plan that includes it, not Business. It still takes a client's
+  // code, since a client may have their own account and a code from their
+  // adviser at once. The itineraries "See the app" link can land here, so this
+  // is where that promise has to be true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -170,6 +222,19 @@ export default async function AppPage({
           Your itinerary a day at a time, with a travel wallet kept on the phone for when there is
           no signal. It is the trip you build in here, carried on your phone rather than on paper.
         </p>
+
+        <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+            Have a code from your travel adviser?
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-stone-600">
+            Enter it to open your trip — you do not need the app on your own account for that.
+          </p>
+          <div className="mt-4">
+            <AppCodeEntry />
+          </div>
+        </div>
+
         <p className="text-base leading-7 text-stone-600">
           The app comes with {PLAN_LABELS.pro} and {PLAN_LABELS.business}. You are on{" "}
           {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.pro} from your account, and we will be in touch.
