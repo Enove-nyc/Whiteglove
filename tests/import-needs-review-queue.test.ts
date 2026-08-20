@@ -4,34 +4,34 @@ import { describe, it } from "node:test";
 import { getImportReviewQueue, isOpenReviewStatus } from "@/lib/import-review-queue";
 
 describe("import needs-review queue", () => {
-  it("lists private source-pack candidates that still await verification", async () => {
+  it("carries only genuinely outstanding work, and never retired research packs", async () => {
     const original = process.env.DATABASE_URL;
     delete process.env.DATABASE_URL;
     try {
       const queue = await getImportReviewQueue();
       assert.equal(queue.error, null);
-      assert.ok(queue.packs.length >= 2);
-      assert.ok(queue.counts.awaitingVerification > 0);
-      assert.ok(queue.counts.sourcePackOnly > 0);
       assert.ok(queue.items.every((item) => item.origin === "source_pack" || item.origin === "database"));
       assert.ok(queue.items.every((item) => item.href.startsWith("/admin/imports")));
-      // Leads whose place is already on the site are reconciled away and dropped
-      // from the queue entirely — the list carries only outstanding work, never a
-      // "possible duplicate" for the owner to sift through.
+      // Every remaining item is genuinely open work, never a reconciled duplicate.
       assert.equal(queue.counts.duplicates, 0);
       assert.ok(queue.items.every((item) => item.status === "NEEDS_REVIEW" || item.status === "AWAITING_VERIFICATION"));
-      // Packs whose real candidates are all still outstanding keep their rows;
-      // a pack that fully reconciles to on-site content simply has none left.
-      assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-2"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "worldwide-batch-5"));
-      assert.ok(queue.items.some((item) => item.batchSlug === "nesiyatova-heritage-batch"));
       assert.ok(queue.packs.every((pack) => pack.path.startsWith("data/imports/")));
-      // The White Glove europe / global / fill research packs were retired at the
-      // owner's decision — bare place-names with no coordinates, address or
-      // summary. They must no longer appear in the queue at all.
-      for (const retired of ["white-glove-europe-batch", "white-glove-global-batch", "white-glove-fill-batch"]) {
-        assert.ok(!queue.packs.some((pack) => pack.slug === retired), `${retired} should be retired`);
-        assert.ok(!queue.items.some((item) => item.batchSlug === retired), `${retired} should have no items`);
+      // The retired research and already-live packs are gone from the queue at
+      // the owner's decision: the europe / global / fill bare-name packs, the
+      // worldwide editorial packs 2 and 5 (the same bare / machine-drafted
+      // research), and the Nesiya Tova heritage pack (whose content is already
+      // live in data/heritage-cemeteries.ts). None may appear as a pack or an item.
+      const retired = [
+        "white-glove-europe-batch",
+        "white-glove-global-batch",
+        "white-glove-fill-batch",
+        "worldwide-batch-2",
+        "worldwide-batch-5",
+        "nesiyatova-heritage-batch",
+      ];
+      for (const slug of retired) {
+        assert.ok(!queue.packs.some((pack) => pack.slug === slug), `${slug} should be retired`);
+        assert.ok(!queue.items.some((item) => item.batchSlug === slug), `${slug} should have no items`);
       }
       assert.ok(!queue.items.some((item) => /openstreetmap|overpass|photon/i.test(`${item.name} ${item.batchName}`)));
     } finally {

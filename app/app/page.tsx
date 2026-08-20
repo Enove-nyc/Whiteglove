@@ -39,8 +39,9 @@ function firstParam(value: string | string[] | undefined): string {
 /**
  * The White Glove app — a trip in your pocket.
  *
- * BUSINESS-ONLY, on purpose and in one place. The gate is mayUseCompanionApp in
- * lib/account-limits.ts, and this page is the only door that reads it.
+ * GOLD AND BUSINESS, in one place. The gate is mayUseCompanionApp in
+ * lib/account-limits.ts, and this page is the only door that reads it. Handing a
+ * trip to a client stays Business-only behind a separate gate (ownBranding).
  *
  * IT SHOWS THE OWNER'S OWN TRIP, never a sample. `?trip=<id>` opens a specific
  * one (that is what the "Open the app" links carry); otherwise it opens the
