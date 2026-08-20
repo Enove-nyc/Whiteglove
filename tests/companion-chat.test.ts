@@ -88,6 +88,26 @@ describe("sending a picture is fenced", () => {
   });
 });
 
+describe("the thread is Business-only, like the app it belongs to", () => {
+  // The client app page and the inbox are gated on mayServeCompanionClients;
+  // the chat and report routes are the write path behind them and must carry
+  // the SAME gate, or a share link from any plan becomes a way to push chat
+  // and hosted images the product otherwise withholds.
+  it("gates the chat route on the owner's plan, before a side is read", () => {
+    const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+    const sideFor = ROUTE.slice(ROUTE.indexOf("async function sideFor"), ROUTE.indexOf("export async function GET"));
+    assert.match(sideFor, /mayServeCompanionClients\(await getPlan\(owner\)\)/);
+    assert.ok(sideFor.indexOf("mayServeCompanionClients") < sideFor.indexOf("accountCookieName"), "the plan is checked before the side is worked out");
+  });
+
+  it("gates the report route on the owner's plan too", () => {
+    const ROUTE = readFileSync("app/api/companion/report/route.ts", "utf8");
+    const body = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+    assert.match(body, /mayServeCompanionClients\(await getPlan\(owner\)\)/);
+    assert.ok(body.indexOf("mayServeCompanionClients") < body.indexOf("appendReport"), "gate before recording");
+  });
+});
+
 describe("reporting a message is fenced", () => {
   const ROUTE = readFileSync("app/api/companion/report/route.ts", "utf8");
 

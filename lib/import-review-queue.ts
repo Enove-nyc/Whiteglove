@@ -21,7 +21,12 @@ import {
   isTemplateFillerCandidate,
   type BulkContentKind,
 } from "@/lib/bulk-content";
-import { createOnSiteMatcher, getContentImportDashboard, type ContentImportCandidateView } from "@/lib/content-imports";
+import {
+  createOnSiteMatcher,
+  getContentImportDashboard,
+  RETIRED_IMPORT_BATCH_SLUGS,
+  type ContentImportCandidateView,
+} from "@/lib/content-imports";
 import {
   isOpenReviewStatus,
   reviewQueueKindLabel,
@@ -98,6 +103,11 @@ function emptyCounts(): ImportReviewQueueCounts {
     byBatch: [],
     byMarket: [],
   };
+}
+
+/** The packs that still surface in the review queue — retired ones filtered out. */
+function activePacks(): readonly KnownPack[] {
+  return KNOWN_PACKS.filter((pack) => !RETIRED_IMPORT_BATCH_SLUGS.has(pack.slug));
 }
 
 const KNOWN_PACKS: readonly KnownPack[] = [
@@ -369,7 +379,7 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
     const stagedSourceIds = new Set(dbCandidates.map((candidate) => candidate.sourceId));
     const stagedBatchSlugs = new Set(dashboard.batches.filter((batch) => batch.stagedCandidates > 0).map((batch) => batch.slug));
 
-    const packs: PrivateImportPackSummary[] = KNOWN_PACKS.map((pack) => {
+    const packs: PrivateImportPackSummary[] = activePacks().map((pack) => {
       const candidates = pack.loadCandidates().filter(allowedPackCandidate);
       const needsReviewCount = candidates.filter((candidate) => candidate.status === "NEEDS_REVIEW").length;
       const inDatabase = stagedBatchSlugs.has(pack.slug);
@@ -400,7 +410,7 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
 
     const dbItems = dbCandidates.map(fromDatabase);
     const packItems: ReviewQueueItem[] = [];
-    for (const pack of KNOWN_PACKS) {
+    for (const pack of activePacks()) {
       if (stagedBatchSlugs.has(pack.slug)) continue;
       for (const candidate of pack.loadCandidates().filter(allowedPackCandidate)) {
         if (candidate.status !== "NEEDS_REVIEW") continue;
@@ -479,7 +489,7 @@ export type PackSearchRow = {
 
 export function listSourcePackSearchRows(): PackSearchRow[] {
   const out: PackSearchRow[] = [];
-  for (const pack of KNOWN_PACKS) {
+  for (const pack of activePacks()) {
     for (const candidate of pack.loadCandidates().filter(allowedPackCandidate)) {
       if (candidate.status === "PUBLISHED") continue;
       out.push({

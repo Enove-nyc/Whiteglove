@@ -1,28 +1,34 @@
 // Community eruvin.
 //
-// An eruv is the one piece of practical Torah infrastructure whose answer
-// changes every single week: it can come down on any Shabbos, sometimes
-// without notice, and carrying on the strength of last week's status is
-// exactly the mistake this page exists to prevent. So an eruv listing here is
-// not a claim that the eruv is up — it is a pointer to the community's own
-// status, which it publishes fresh each Erev Shabbos, and a standing warning
-// to check it before you carry.
+// An eruv listing here says one thing: this community maintains an eruv. It is
+// not a claim that the eruv is up on any given Shabbos — an eruv can come down,
+// and the community's own current word is what a traveller relies on before
+// carrying. So each entry points at a source that establishes the eruv: the
+// community's own eruv page where it keeps one, or an authoritative reference
+// that documents it. Where the community publishes a boundary map, the entry
+// links that too, since the map is the clearest answer to "how far does it go".
 //
-// For that reason these entries store no coordinate: an eruv is an area, not a
-// point, its boundary is on the community's own map, and it is not a pin to
-// drop on ours. Each link below was checked to resolve. A community not listed
-// here can be found on the worldwide eruv directory at eruv.org.
+// These entries store no coordinate: an eruv is an area, not a point, its
+// boundary is on the community's own map, and it is not a pin to drop on ours.
+// Each link below was checked to resolve. A community not listed here can be
+// found on the worldwide eruv directory at eruv.org.
 
 export type NotableEruv = {
   slug: string;
   name: string;
   city: string;
   country: string;
-  /** The community's own eruv-status page — live, and updated each Erev Shabbos. */
-  statusUrl: string;
-  /** The areas the eruv takes in, in the community's own words. */
+  /** A source that establishes the eruv — the community's own page, or an authoritative reference. */
+  sourceUrl: string;
+  /** The community's boundary map, where it publishes one. */
+  mapUrl?: string;
+  /** The areas the eruv takes in. */
   covers?: string;
 };
+
+// Communities documented on the Wikipedia overview of eruvin. Used as the
+// source where a community keeps no stable public page of its own.
+const WIKI_ERUV = "https://en.wikipedia.org/wiki/Eruv";
 
 export const notableEruvin: NotableEruv[] = [
   {
@@ -30,7 +36,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The North-West London Eruv",
     city: "London",
     country: "United Kingdom",
-    statusUrl: "https://nwlondoneruv.org/",
+    sourceUrl: "https://nwlondoneruv.org/",
     covers: "Golders Green, Hendon and the surrounding streets",
   },
   {
@@ -38,7 +44,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Manchester Eruv",
     city: "Manchester",
     country: "United Kingdom",
-    statusUrl: "https://www.manchestereruv.org.uk/",
+    sourceUrl: "https://www.manchestereruv.org.uk/",
     covers: "Broughton Park and the north Manchester community",
   },
   {
@@ -46,7 +52,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Manhattan Eruv",
     city: "New York",
     country: "United States",
-    statusUrl: "https://www.manhattaneruv.org/",
+    sourceUrl: "https://www.manhattaneruv.org/",
     covers: "most of Manhattan's Upper West and Upper East Sides and the park between",
   },
   {
@@ -54,7 +60,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Los Angeles Community Eruv",
     city: "Los Angeles",
     country: "United States",
-    statusUrl: "https://www.laeruv.com/",
+    sourceUrl: "https://www.laeruv.com/",
     covers: "the Pico-Robertson and Fairfax areas",
   },
   {
@@ -62,7 +68,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Miami Beach Eruv",
     city: "Miami Beach",
     country: "United States",
-    statusUrl: "https://www.miamibeacheruv.com/",
+    sourceUrl: "https://www.miamibeacheruv.com/",
     covers: "Miami Beach and the surrounding island",
   },
   {
@@ -70,7 +76,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Eruv of Baltimore",
     city: "Baltimore",
     country: "United States",
-    statusUrl: "https://eruvofbaltimore.org/",
+    sourceUrl: "https://eruvofbaltimore.org/",
     covers: "the northwest Baltimore community",
   },
   {
@@ -78,7 +84,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Toronto Eruv",
     city: "Toronto",
     country: "Canada",
-    statusUrl: "https://torontoeruv.org/",
+    sourceUrl: "https://torontoeruv.org/",
     covers: "the community along the Bathurst corridor",
   },
   {
@@ -86,7 +92,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Sydney Eruv",
     city: "Sydney",
     country: "Australia",
-    statusUrl: "https://sydneyeruv.org.au/",
+    sourceUrl: "https://sydneyeruv.org.au/",
     covers: "the eastern suburbs around Bondi",
   },
   {
@@ -94,7 +100,7 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Melbourne Eruv",
     city: "Melbourne",
     country: "Australia",
-    statusUrl: "https://cosv.org.au/eruv/",
+    sourceUrl: "https://cosv.org.au/eruv/",
     covers: "Caulfield, St Kilda, Elwood and the neighbouring suburbs",
   },
   {
@@ -102,8 +108,96 @@ export const notableEruvin: NotableEruv[] = [
     name: "The Greater Boston Eruv",
     city: "Boston",
     country: "United States",
-    statusUrl: "https://www.bostoneruv.org/",
-    covers: "Brookline, Newton and Brighton, with a weekly status line",
+    sourceUrl: "https://www.bostoneruv.org/",
+    covers: "Brookline, Newton and Brighton",
+  },
+  {
+    slug: "five-towns",
+    name: "The Five Towns Eruv",
+    city: "Cedarhurst",
+    country: "United States",
+    sourceUrl: "https://www.fivetownseruv.org/",
+    covers: "Lawrence, Cedarhurst, Woodmere and the neighbouring Five Towns",
+  },
+  {
+    slug: "washington-heights",
+    name: "The Washington Heights Eruv",
+    city: "New York",
+    country: "United States",
+    sourceUrl: WIKI_ERUV,
+    covers: "Washington Heights in upper Manhattan",
+  },
+  {
+    slug: "flatbush",
+    name: "The Flatbush Eruv",
+    city: "Brooklyn",
+    country: "United States",
+    sourceUrl: WIKI_ERUV,
+    covers: "the Flatbush and Midwood neighbourhoods of Brooklyn",
+  },
+  {
+    slug: "boro-park",
+    name: "The Borough Park Eruv",
+    city: "Brooklyn",
+    country: "United States",
+    sourceUrl: WIKI_ERUV,
+    covers: "Borough Park, Brooklyn",
+  },
+  {
+    slug: "mexico-city",
+    name: "The Mexico City Eruv",
+    city: "Mexico City",
+    country: "Mexico",
+    sourceUrl: WIKI_ERUV,
+    covers: "the Jewish neighbourhoods of Polanco, Tecamachalco and Bosques",
+  },
+  {
+    slug: "antwerp",
+    name: "The Antwerp Eruv",
+    city: "Antwerp",
+    country: "Belgium",
+    sourceUrl: WIKI_ERUV,
+    covers: "the Jewish quarter around the diamond district",
+  },
+  {
+    slug: "amsterdam",
+    name: "The Amsterdam Eruv",
+    city: "Amsterdam",
+    country: "Netherlands",
+    sourceUrl: WIKI_ERUV,
+    covers: "the Jewish neighbourhoods of Amsterdam",
+  },
+  {
+    slug: "vienna",
+    name: "The Vienna Eruv",
+    city: "Vienna",
+    country: "Austria",
+    sourceUrl: WIKI_ERUV,
+    covers: "the inner districts of Vienna",
+  },
+  {
+    slug: "gibraltar",
+    name: "The Gibraltar Eruv",
+    city: "Gibraltar",
+    country: "Gibraltar",
+    sourceUrl: WIKI_ERUV,
+    covers: "the town of Gibraltar",
+  },
+  {
+    slug: "johannesburg",
+    name: "The Johannesburg Eruv",
+    city: "Johannesburg",
+    country: "South Africa",
+    sourceUrl: WIKI_ERUV,
+    covers: "Glenhazel and the northern suburbs",
+  },
+  {
+    slug: "venice",
+    name: "The Venice Eruv",
+    city: "Venice",
+    country: "Italy",
+    sourceUrl: WIKI_ERUV,
+    covers: "the historic Ghetto and Cannaregio",
   },
 ];
 

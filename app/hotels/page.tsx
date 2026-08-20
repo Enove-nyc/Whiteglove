@@ -1,5 +1,6 @@
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
+import KosherApartmentProviders from "@/components/KosherApartmentProviders";
 import KosherStayDirectory from "@/components/KosherStayDirectory";
 import ListingAudienceNote from "@/components/ListingAudienceNote";
 import Navbar from "@/components/Navbar";
@@ -156,6 +157,10 @@ export default async function KosherStaysPage({
             )}
           </>
         )}
+
+        {/* Where to find a kosher apartment — the sites and hosts, not hotels.
+            Renders nothing until the owner has added one in the admin. */}
+        <KosherApartmentProviders />
 
         {/* The commercial action, under the reason to trust it rather than
             over it. Everything typed on the front page arrives here already

@@ -10,6 +10,8 @@ import {
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
 import { effectiveMediaLimit, mediaStoreAvailable, putMedia } from "@/lib/media";
+import { mayServeCompanionClients } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
 import { identityKey } from "@/lib/identity";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
@@ -32,6 +34,12 @@ const CHAT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 async function sideFor(shareId: string): Promise<{ owner: string; side: CompanionChatSide } | null> {
   const owner = await getShareOwnerEmail(shareId);
   if (!owner) return null;
+  // The thread is the client-facing app, so it is Business-only — the SAME gate
+  // as the client app page (app/i/[shareId]/app) and the inbox. A share link
+  // from a Gold or Traveler account is a real read-only itinerary, never a
+  // message or image channel; without this check the plan boundary would be UI
+  // only, and any share token a link-holder could POST pictures into the store.
+  if (!mayServeCompanionClients(await getPlan(owner))) return null;
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   const side: CompanionChatSide =

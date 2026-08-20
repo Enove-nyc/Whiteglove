@@ -48,7 +48,17 @@ async function read(): Promise<EruvListing[]> {
   if (!raw) return [];
   try {
     const list = JSON.parse(raw);
-    return Array.isArray(list) ? (list as EruvListing[]) : [];
+    if (!Array.isArray(list)) return [];
+    // Migrate eruvin saved before the field was renamed: an older entry carries
+    // `statusUrl` and no `mapUrl`. Read it as today's shape.
+    return list.map((item) => {
+      const legacy = item as EruvListing & { statusUrl?: string };
+      return {
+        ...legacy,
+        sourceUrl: legacy.sourceUrl ?? legacy.statusUrl ?? "",
+        mapUrl: legacy.mapUrl ?? null,
+      } as EruvListing;
+    });
   } catch {
     return [];
   }

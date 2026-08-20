@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData, getShareOwnerEmail } from "@/lib/account-store";
 import { appendReport } from "@/lib/companion-chat-store";
+import { mayServeCompanionClients } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
 import { identityKey } from "@/lib/identity";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
@@ -34,6 +36,11 @@ export async function POST(request: NextRequest) {
 
   const owner = await getShareOwnerEmail(shareId);
   if (!owner) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  // Business-only, the same gate as the chat it reports on — a non-Business
+  // share link has no thread to report against.
+  if (!mayServeCompanionClients(await getPlan(owner))) {
+    return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  }
 
   const limited = await rateLimit(`companion-report:${shareId}`, { limit: 30, windowSeconds: 3600 });
   if (!limited.ok) {

@@ -13,16 +13,15 @@ import { describe, it } from "node:test";
  * were pages about the site standing between the visitor and the site.
  *
  * THE PAGE IS NOW A DOOR: one place-picture hero with the site-wide search in
- * it, a Featured row chosen by what people actually open, and the three free
- * ways in. An order is not something a type system can hold, so it is held
- * here: the source is read and the position of each piece is compared. Crude,
- * and it catches the exact regression that matters.
+ * it, a Featured row of the site's six main sections, and the three free ways
+ * in. An order is not something a type system can hold, so it is held here: the
+ * source is read and the position of each piece is compared. Crude, and it
+ * catches the exact regression that matters.
  */
 
 const HOME = readFileSync("app/page.tsx", "utf8");
 const NOTICE = readFileSync("components/NewSiteNotice.tsx", "utf8");
 const LAYOUT = readFileSync("app/layout.tsx", "utf8");
-const FEATURED_LIB = readFileSync("lib/featured-destinations.ts", "utf8");
 
 /**
  * The page with the comments and the Tailwind stripped out.
@@ -64,14 +63,17 @@ describe("the first five seconds", () => {
 });
 
 describe("the featured row", () => {
-  it("IS CHOSEN BY USE, from the trailing week, with a written fallback", () => {
-    // Six destinations somebody picked once is a row that goes stale the day
-    // it ships. The row reads the last seven day-buckets of opened
-    // destinations and tops up from FEATURED_FALLBACK while the data is thin
-    // — the merge itself is tested in tests/featured-destinations.test.ts.
-    assert.match(HOME, /featuredDestinations\(6\)/);
-    assert.match(FEATURED_LIB, /topSearchedDestinations/);
-    assert.match(FEATURED_LIB, /FEATURED_FALLBACK/);
+  it("IS THE SITE'S SIX MAIN SECTIONS, NOT SIX DESTINATIONS", () => {
+    // The owner asked for the row to show the shape of the site — what to do,
+    // where to stay, what to eat, the heritage, the map and the directory —
+    // rather than six towns ranked by traffic. The six are declared in one
+    // place, and each is a section that exists.
+    assert.match(HOME, /HOME_CATEGORIES/);
+    for (const href of ["/things-to-do", "/hotels", "/kosher", "/heritage", "/map", "/directory"]) {
+      assert.ok(HOME.includes(`href: "${href}"`), `${href} is not one of the six cards`);
+    }
+    // Not the old traffic-ranked destinations row.
+    assert.doesNotMatch(HOME, /featuredDestinations/);
   });
 
   it("NEVER SAYS WHY A CARD IS THERE", () => {
@@ -82,21 +84,20 @@ describe("the featured row", () => {
     assert.doesNotMatch(PROSE, /trending|most[- ]searched|most popular|people are (searching|booking)/i);
   });
 
-  it("PUTS PHOTOGRAPH-POSITION, NAME AND COUNTRY ON THE CARD, AND NOTHING ELSE", () => {
-    // The destination's own page carries the why-go, the kosher and Shabbos
-    // answers and the two ways in. A front-page card that repeats them is the
-    // brochure creeping back one field at a time.
-    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
-    assert.match(cards, /destination\.name/);
-    assert.match(cards, /destination\.country/);
-    assert.doesNotMatch(cards, /whyGo|SignalChip|bestFor|suggestedLength/, "editorial fields are back on the featured card");
-    assert.doesNotMatch(cards, /Explore |See hotels|Learn more|View details|Discover/, "a CTA label is back on the featured card");
+  it("PUTS A PICTURE, A NAME AND ONE LINE ON THE CARD, AND NOTHING ELSE", () => {
+    // A section card names the section and says in one line what is inside.
+    // No CTA label, no editorial fields — that is the brochure creeping back.
+    const cards = HOME.slice(at("HOME_CATEGORIES.map"), at("The three ways in, as compact icon cards"));
+    assert.match(cards, /category\.label/);
+    assert.match(cards, /category\.blurb/);
+    assert.doesNotMatch(cards, /whyGo|SignalChip|bestFor|suggestedLength/, "editorial fields are on the featured card");
+    assert.doesNotMatch(cards, /Explore |See hotels|Learn more|View details|Discover/, "a CTA label is on the featured card");
   });
 
   it("MAKES THE WHOLE CARD ONE LINK", () => {
-    // One action, so a screen reader lists "Rome" rather than "Open" six
-    // times — and there is no second button for a swallowed click to find.
-    const cards = HOME.slice(at("featured.map"), at("The three ways in, as compact icon cards"));
+    // One action, so a screen reader lists "Where to stay" rather than "Open"
+    // six times — and there is no second button for a swallowed click to find.
+    const cards = HOME.slice(at("HOME_CATEGORIES.map"), at("The three ways in, as compact icon cards"));
     assert.equal(cards.match(/<Link/g)?.length, 1, "a featured card carries more than one link");
   });
 

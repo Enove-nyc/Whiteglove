@@ -41,6 +41,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "inventory",
   "eruvin",
   "kevarim",
+  "kosher-apartments",
   "login",
   "messages",
   "mikvaos",
