@@ -114,6 +114,17 @@ export type VacationDestination = {
   outline?: { title: string; days: readonly string[] };
   /** What catches people out. Practical, and specific enough to act on. */
   cautions: readonly string[];
+  /**
+   * Published, credited pictures of the place, when there are any.
+   *
+   * The built-in list in this file sets none — a photograph belongs to whoever
+   * took it, and the site holds one back to draft until it has a credit
+   * (lib/photos.ts). The field is here so the shape the cards and pages read is
+   * the same whether a destination has pictures or not: the view layer fills it
+   * from the database (lib/vacation-destinations-view.ts), and where it is empty
+   * the branded default stands in (lib/default-photo.ts).
+   */
+  photos?: readonly { id: string; url: string; caption?: string; credit?: string }[];
 };
 
 export const vacationDestinations: readonly VacationDestination[] = [
