@@ -20,7 +20,7 @@
  * to be.
  */
 
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   COMPANION_DEMO_TRIP,
   COMPANION_KIND,
@@ -28,7 +28,10 @@ import {
   type CompanionTrip,
 } from "@/data/companion-demo";
 
-type Screen = "home" | "day" | "activity" | "chat" | "alerts" | "wallet" | "profile";
+type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile";
+type ChatSide = "client" | "advisor";
+/** The live thread on this trip — present once the trip has been shared. */
+export type CompanionChat = { shareId: string; side: ChatSide; advisorName: string };
 type Mode = "concierge" | "guide";
 type Role = "traveler" | "advisor";
 type TStyle = "rail" | "cards" | "bands";
@@ -61,7 +64,14 @@ type DecItem = CompanionItem & {
   kindFg: string;
 };
 
-export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: CompanionTrip }) {
+export default function CompanionApp({
+  trip = COMPANION_DEMO_TRIP,
+  chat,
+}: {
+  trip?: CompanionTrip;
+  chat?: CompanionChat;
+}) {
+  const liveChat = chat ?? null;
   const [st, setSt] = useState<State>({
     screen: "home",
     prev: null,
@@ -143,6 +153,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
     day: sel.name,
     activity: "On the day",
     chat: advisor,
+    messages: liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Messages",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
@@ -152,6 +163,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
     day: `Day ${st.selDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge ? "Your advisor" : "On your own",
+    messages: liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
@@ -219,12 +231,13 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
   const openActivity = (di: number, i: number) =>
     setSt((s) => ({ ...s, screen: "activity", prev: s.screen, actIdx: i, actDay: di }));
 
-  const tabs = ([["home", "Trip"], ["chat", isGuideMode ? "Guide" : "Concierge"], ["wallet", "Wallet"], ["profile", "You"]] as [Screen, string][]).map(
-    ([id, label]) => {
-      const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
-      return { id, label, bg: on ? GOLD : "transparent", fg: on ? CREAM : "#57534e" };
-    },
-  );
+  const tabDefs: [Screen, string][] = [["home", "Trip"], ["chat", isGuideMode ? "Guide" : "Concierge"]];
+  if (liveChat) tabDefs.push(["messages", "Messages"]);
+  tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
+  const tabs = tabDefs.map(([id, label]) => {
+    const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
+    return { id, label, bg: on ? GOLD : "transparent", fg: on ? CREAM : "#57534e" };
+  });
 
   const quickReplies = (
     st.role === "advisor"
@@ -345,7 +358,19 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
           <button onClick={() => go("chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Open guide</button>
         </div>
       )}
-      {!hasConcierge && trip.contactName && (
+      {liveChat && (
+        <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
+          <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>
+            {(liveChat.side === "advisor" ? trip.family : liveChat.advisorName).charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600 }}>{liveChat.side === "advisor" ? trip.family : liveChat.advisorName}</span>
+            <span style={{ fontSize: 12, color: "#57534e" }}>{liveChat.side === "advisor" ? "The client on this trip" : "Your advisor · message anytime"}</span>
+          </div>
+          <button onClick={() => go("messages")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Message</button>
+        </div>
+      )}
+      {!liveChat && !hasConcierge && trip.contactName && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.25)", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#765321" }}>{trip.contactName.charAt(0).toUpperCase()}</div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -693,6 +718,7 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
   else if (st.screen === "activity") body = activityScreen;
   else if (st.screen === "alerts") body = alertsScreen;
   else if (st.screen === "chat") body = isConcierge ? conciergeChat : guideChat;
+  else if (st.screen === "messages") body = liveChat ? <LiveChat chat={liveChat} /> : guideChat;
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
 
@@ -766,6 +792,106 @@ export default function CompanionApp({ trip = COMPANION_DEMO_TRIP }: { trip?: Co
       {hasConcierge && (
         <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#e7d3ad" }}>You</strong>.</p>
       )}
+    </div>
+  );
+}
+
+/**
+ * The real thread on a shared trip — the client and the advisor, in one place.
+ *
+ * Both sides poll the same endpoint keyed by the trip's share token; who is
+ * "me" is the side this app was opened as. No fabricated replies here — a
+ * message sits until the other person answers, which is the honest thing.
+ */
+function LiveChat({ chat }: { chat: CompanionChat }) {
+  const { shareId, side, advisorName } = chat;
+  const [messages, setMessages] = useState<{ from: ChatSide; text: string; at: string }[]>([]);
+  const [draft, setDraft] = useState("");
+  const [available, setAvailable] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [sending, setSending] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/companion/chat?share=${encodeURIComponent(shareId)}`, { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json();
+      setMessages(Array.isArray(d.messages) ? d.messages : []);
+      setAvailable(d.available !== false);
+      setLoaded(true);
+    } catch {
+      /* keep what we have; the next poll may reach it */
+    }
+  }, [shareId]);
+
+  useEffect(() => {
+    void load();
+    const t = setInterval(() => void load(), 5000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages.length]);
+
+  async function send() {
+    const t = draft.trim();
+    if (!t || sending) return;
+    setSending(true);
+    setDraft("");
+    try {
+      const r = await fetch("/api/companion/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, text: t }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        setMessages(Array.isArray(d.messages) ? d.messages : []);
+      } else {
+        void load();
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const otherName = side === "advisor" ? "your client" : advisorName.split(" ")[0];
+
+  return (
+    <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
+      <div ref={scrollerRef} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {!available && (
+          <div style={{ alignSelf: "center", textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#765321", background: "#f7eee0", padding: "10px 14px", borderRadius: 14 }}>
+            Messaging isn&apos;t connected yet.
+          </div>
+        )}
+        {available && loaded && messages.length === 0 && (
+          <div style={{ alignSelf: "center", maxWidth: "80%", textAlign: "center", font: "400 13px/1.6 Inter,sans-serif", color: "#78716c" }}>
+            {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Anything you send reaches ${advisorName}.`}
+          </div>
+        )}
+        {messages.map((m, i) => {
+          const mine = m.from === side;
+          return (
+            <div key={i} style={{ maxWidth: "80%", alignSelf: mine ? "flex-end" : "flex-start", background: mine ? GOLD : "#ffffff", color: mine ? CREAM : "#26323a", borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "13px 15px", fontSize: 14, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(23,45,82,.08)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {m.text}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", gap: 9, alignItems: "center" }}>
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
+          placeholder={side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
+          style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
+        />
+        <button onClick={() => void send()} disabled={sending} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending ? 0.6 : 1 }}>↑</button>
+      </div>
     </div>
   );
 }

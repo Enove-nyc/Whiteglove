@@ -52,9 +52,16 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   );
   if (!trip) redirect(`/i/${shareId}`); // no dates / no days — the document still reads
 
+  // The client's side of the thread: this link IS the channel to their advisor.
+  const chat = {
+    shareId,
+    side: "client" as const,
+    advisorName: trip.contactName ?? "your advisor",
+  };
+
   return (
     <main>
-      <CompanionApp trip={trip} />
+      <CompanionApp trip={trip} chat={chat} />
     </main>
   );
 }

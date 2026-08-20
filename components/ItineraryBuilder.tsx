@@ -105,6 +105,15 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [reloadKey, setReloadKey] = useState(0);
   const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
+  // The add/edit form sits at the top of the builder, while the flights and
+  // hotels it edits are listed further down. Pressing Edit down there opens the
+  // top form — so bring it into view, or it reads as nothing happening.
+  const editFormRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (editingFlightId || editingLodgingId) {
+      editFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [editingFlightId, editingLodgingId]);
   const [view, setView] = useState<ItineraryView>("days");
   const requireSignIn = useRequireSignIn();
 
@@ -425,6 +434,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         </div>
         {!hasDates && <p className="mt-3 text-xs font-semibold text-[var(--gold-ink)]">Choose start and end dates to begin.</p>}
 
+        <div ref={editFormRef}>
         {tab === "flight" && (() => {
           const editing = itin.flights.find((x) => x.id === editingFlightId);
           return (
@@ -453,6 +463,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           />
         )}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        </div>
       </section>
 
       <div className="grid gap-3 md:grid-cols-2">
