@@ -38,6 +38,10 @@ describe("admin chrome search", () => {
     const rows = listSourcePackSearchRows();
     assert.ok(rows.length > 0, "expected NEEDS_REVIEW pack rows");
     assert.ok(rows.every((row) => row.href.startsWith("/admin/imports")));
-    assert.ok(rows.some((row) => row.batchSlug === "worldwide-batch-2"));
+    assert.ok(rows.some((row) => row.batchSlug === "kosher-food-batch"));
+    // The retired research packs are out of the queue and its search entirely.
+    for (const retired of ["worldwide-batch-2", "worldwide-batch-5", "nesiyatova-heritage-batch"]) {
+      assert.ok(!rows.some((row) => row.batchSlug === retired), `${retired} should be retired from search`);
+    }
   });
 });

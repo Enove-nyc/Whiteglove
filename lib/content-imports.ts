@@ -60,6 +60,20 @@ export const RETIRED_IMPORT_BATCH_SLUGS: ReadonlySet<string> = new Set([
   "white-glove-europe-batch",
   "white-glove-global-batch",
   "white-glove-fill-batch",
+  // Cleared from the review queue at the owner's decision. The worldwide
+  // editorial packs 2 and 5 are the same bare / machine-drafted research as the
+  // three above — place-names with no verified per-listing detail — so they are
+  // not reviewable listings, only a research to-do list. The Nesiya Tova
+  // heritage pack is different: its content is real and is already live, built
+  // into data/heritage-cemeteries.ts (1,900-odd kevarim on the map and the
+  // heritage index), so its appearance in the review queue was a second, empty
+  // copy of already-published content. All three are dropped from the queue and
+  // its counts; their data files stay in place (the heritage locator is
+  // generated from one of them, and the Trello editorial flow reads batch 2
+  // directly), they simply no longer inflate Needs review.
+  "worldwide-batch-2",
+  "worldwide-batch-5",
+  "nesiyatova-heritage-batch",
 ]);
 
 export type ContentImportStatus = "NEEDS_REVIEW" | "DUPLICATE" | "REJECTED" | "PUBLISHED";

@@ -31,7 +31,8 @@ export async function addEruvAction(_prev: ActionResult | null, formData: FormDa
     city: str(formData, "city"),
     country: str(formData, "country"),
     covers: str(formData, "covers") || null,
-    statusUrl: str(formData, "statusUrl"),
+    sourceUrl: str(formData, "sourceUrl"),
+    mapUrl: str(formData, "mapUrl") || null,
   };
   const problem = eruvProblem(input);
   if (problem) return { ok: false, message: problem };

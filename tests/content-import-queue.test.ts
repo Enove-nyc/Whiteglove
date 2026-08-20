@@ -51,8 +51,10 @@ describe("bulk content review queue without a database", () => {
       const { getImportReviewQueue } = await import("@/lib/import-review-queue");
       const queue = await getImportReviewQueue();
       assert.equal(queue.error, null);
-      assert.ok(queue.counts.sourcePackOnly > 0);
-      assert.ok(queue.items.every((item) => item.origin === "source_pack"));
+      // The guard: with no database, nothing may be labelled a database row —
+      // a preview must never masquerade as staged. (The source packs that once
+      // populated this queue are retired, so in this mode it is simply empty.)
+      assert.ok(queue.items.every((item) => item.origin !== "database"));
     } finally {
       if (original === undefined) delete process.env.DATABASE_URL;
       else process.env.DATABASE_URL = original;
