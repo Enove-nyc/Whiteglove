@@ -4,7 +4,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
-import SourceNote from "@/components/SourceNote";
 import StructuredData from "@/components/StructuredData";
 import { airportsFor } from "@/lib/destination-actions";
 import { heritageCemeteryBySlug } from "@/lib/heritage-cemeteries";
@@ -112,7 +111,14 @@ export default async function HeritageCemeteryPage({ params }: { params: Promise
             Access, hours and contacts for this bais hachaim are kept by Nesiya Tova. Many grounds are locked —
             confirm access before travelling.
           </p>
-          <SourceNote url={cem.sourceUrl} label="Nesiya Tova" className="mt-5" />
+          <a
+            href={cem.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-block bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--gold)]"
+          >
+            See the details on Nesiya Tova →
+          </a>
         </div>
 
         <p className="mt-8 text-sm">
