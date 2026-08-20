@@ -37,7 +37,11 @@ export type IconName =
   | "lightbulb"
   | "plane"
   | "check"
-  | "sparkle";
+  | "sparkle"
+  | "camera"
+  | "video"
+  | "microphone"
+  | "stop";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -165,6 +169,27 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M17 6h3" />
     </>
   ),
+  camera: (
+    <>
+      <path d="M4 8.3a2 2 0 0 1 2-2h1.3l1.1-1.7a1.6 1.6 0 0 1 1.3-.7h4.6a1.6 1.6 0 0 1 1.3.7l1.1 1.7H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+      <circle cx="12" cy="12.6" r="3.4" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="7" width="12.5" height="10" rx="2.2" />
+      <path d="M15.5 10.4 20.5 7v10l-5-3.4Z" />
+    </>
+  ),
+  microphone: (
+    <>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M6 11.3a6 6 0 0 0 12 0" />
+      <path d="M12 17.3v3.2" />
+      <path d="M9 20.5h6" />
+    </>
+  ),
+  stop: <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none" />,
 };
 
 export function Icon({
