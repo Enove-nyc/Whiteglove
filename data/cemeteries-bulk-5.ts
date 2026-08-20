@@ -28,7 +28,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Yitzchak Friedman of Boyan", yiddishName: "רבי יצחק פרידמן מבויאן", knownAs: "The Pachad Yitzchak · first Boyaner Rebbe", yahrzeit: "ט״ז אדר · 5677 / 1917", note: "Founder of the Boyan chassidus and a grandson of Rabbi Yisrael of Ruzhin." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Yitzchak_Friedman_of_Boyan",
+    sourceUrl: "https://en.wikipedia.org/wiki/Yitzchok_Friedman",
   },
   {
     slug: "nadvirna-nadvorna",
@@ -66,7 +66,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Moshe Polier of Kobrin", yiddishName: "רבי משה פּאליער מקאברין", knownAs: "The Kobriner Rebbe", yahrzeit: "כ״ט ניסן · 5618 / 1858", note: "Founder of the Kobrin chassidus, known for fervent avodah and closeness to his chassidim." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Moshe_of_Kobryn",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/belarus/kobrin",
   },
   {
     slug: "stolin-asher",
@@ -110,7 +110,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Elimelech Shapiro of Grodzisk", yiddishName: "רבי אלימלך שפירא מגראדזיסק", knownAs: "The Imrei Elimelech", seforim: "אמרי אלימלך · דברי אלימלך", yahrzeit: "כ״ז כסלו · 5653 / 1892", note: "A leading Polish rebbe descended from the Kozhnitzer Maggid." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Elimelech_Shapiro",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/grodzisk-mazowiecki",
   },
   {
     slug: "radoszyce-saba-kadisha",
@@ -134,7 +134,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Yissachar Ber of Radoshitz", yiddishName: "רבי יששכר בער מראדושיץ", knownAs: "The Saba Kadisha (Holy Grandfather)", yahrzeit: "י״ז ניסן · 5603 / 1843", note: "A disciple of the Chozeh of Lublin and the Yid HaKadosh, sought by many for yeshuos." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Yissachar_Dov_Ber_of_Radoszyce",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/radoszyce",
   },
   {
     slug: "lyakhavichy-lechovitcher",
@@ -193,7 +193,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Nachum Twersky of Makarov", yiddishName: "רבי נחום טווערסקי ממאקאראוו", knownAs: "The Makarover Rebbe", yahrzeit: "י׳ אייר · 5612 / 1852", note: "A son of Rabbi Mordechai of Chernobyl and founder of the Makarov chassidus." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Twersky_(Hasidic_dynasty)",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/makarov",
   },
   {
     slug: "mogielnica-saraf",
@@ -217,7 +217,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Chaim Meir Yechiel Shapiro of Mogielnica", yiddishName: "רבי חיים מאיר יחיאל שפירא ממאגלניצא", knownAs: "The Saraf of Mogielnica", yahrzeit: "כ״ט תשרי · 5610 / 1849", note: "A grandson of the Maggid of Kozhnitz, known for his fiery avodah." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Chaim_Meir_Yechiel_Shapiro",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/mogielnica",
   },
   {
     slug: "stefanesti-friedman",
@@ -235,7 +235,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Avraham Matisyahu Friedman of Ștefănești", yiddishName: "רבי אברהם מתתיהו פרידמן מסטעפאנעשט", knownAs: "The Stefaneshter Rebbe", yahrzeit: "י׳ סיון · 5693 / 1933", note: "A grandson of Rabbi Yisrael of Ruzhin; his kever remains a place of pilgrimage in Romania." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Avraham_Matisyahu_Friedman",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/romania/stefanesti",
   },
   {
     slug: "tarnobrzeg-dzikover",
@@ -254,7 +254,7 @@ export const bulkCemeteries5: Cemetery[] = [
     burials: [
       { name: "Rabbi Meir Horowitz of Dzikov", yiddishName: "רבי מאיר הורוביץ מדזשיקאוו", knownAs: "The Imrei Noam", seforim: "אמרי נועם", yahrzeit: "כ״ט אייר · 5637 / 1877", note: "Founder of the Dzikov chassidus, a grandson of the Ropshitzer Rav." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Meir_Horowitz_of_Dzikov",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/tarnobrzeg",
   },
   {
     slug: "shepetivka-reb-pinchas",

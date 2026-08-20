@@ -28,7 +28,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Yisrael Hopstein", yiddishName: "רבי ישראל האפשטיין", knownAs: "The Maggid of Kozhnitz", seforim: "עבודת ישראל", yahrzeit: "י״ד תשרי · 5575 / 1814", note: "A disciple of the Maggid of Mezritch and Reb Elimelech of Lizhensk; a founder of chassidus in Poland." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Israel_Hopsztajn",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/kozienice",
   },
   {
     slug: "lublin-chozeh",
@@ -55,7 +55,7 @@ export const bulkCemeteries6: Cemetery[] = [
       { name: "Rabbi Shalom Shachna ben Yosef", yiddishName: "רבי שלום שכנא", knownAs: "Founder of the Lublin yeshiva", note: "Niftar 1558. Rebbe of the Rema, and the man who made Lublin a place people came to learn." },
       { name: "Rabbi Yaakov Kopelman ben Yehuda HaLevi", yiddishName: "רבי יעקב קאפעלמאן הלוי", note: "Niftar 1541. His matzeivah is the oldest Jewish gravestone in Poland still standing where it was set." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Jacob_Isaac_Horowitz",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/poland/lublin",
   },
   {
     slug: "sasiv-moshe-leib",
@@ -99,7 +99,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Zeev Wolf of Zhitomir", yiddishName: "רבי זאב וואלף מזשיטאמיר", knownAs: "The Ohr HaMeir", seforim: "אור המאיר", yahrzeit: "כ׳ אדר · c. 5558 / 1798", note: "A leading disciple of the Maggid of Mezritch; his Ohr HaMeir is a classic of chassidic thought." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Zev_Wolf_of_Zhitomir",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/zhitomir",
   },
   {
     slug: "neshchiz-mordechai",
@@ -119,7 +119,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Mordechai of Neshchiz", yiddishName: "רבי מרדכי מנעסכיז", knownAs: "The Neshchizer Rebbe", yahrzeit: "י׳ אב · c. 5560 / 1800", note: "A disciple of Reb Yechiel Michel of Zlotchov; founder of the Neskhizh chassidus." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Mordechai_of_Neshchiz",
+    sourceUrl: "https://cdp.jewishgen.org/eastern-europe/ukraine/nesukhoyezhe",
   },
   {
     slug: "bershad-raphael",
@@ -206,7 +206,7 @@ export const bulkCemeteries6: Cemetery[] = [
     burials: [
       { name: "Rabbi Meir Yechiel Halevi Halstock", yiddishName: "רבי מאיר יחיאל הלוי האלשטאק", knownAs: "The Ostrovtzer Rebbe", seforim: "מאיר עיני חכמים", yahrzeit: "י״ט אדר · 5688 / 1928", note: "Renowned Polish gaon and rebbe, known for his gematria-Torah and lifelong fasting." },
     ],
-    sourceUrl: "https://en.wikipedia.org/wiki/Meir_Yechiel_Halstock",
+    sourceUrl: "https://en.wikipedia.org/wiki/Meir_Yechiel_Halevi_Halstock",
   },
   {
     slug: "amshinov-mszczonow",
@@ -215,12 +215,16 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Mszczonów — Kever of the first Amshinover Rebbe",
     yiddishName: "ציון האדמו״ר הראשון מאמשינאוו",
     country: "Poland",
-    address: "Jewish cemetery, Mszczonów, Masovian Voivodeship, Poland",
+    address: "Jewish cemetery, ulica Marchlewskiego, on the Warsaw–Katowice road opposite ulica Poniatowskiego, Mszczonów, Masovian Voivodeship, Poland",
     coordinates: "51.9805982, 20.5110991",
     airportRef: "51.975, 20.517",
     arrivalNotes: [
       "Resting place of Rabbi Yaakov Dovid Kalish, founder of the Amshinov chassidus, a son of the Vorker Rebbe.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "THE FAMILY NEXT DOOR HOLDS BOTH KEYS — the gate and the ohel. They keep the cemetery, and there is no office and no arrangement to make in advance: knock at the house beside the ground.",
+      "It is on ulica Marchlewskiego, on the Warsaw–Katowice road opposite ulica Poniatowskiego, about forty-five kilometres south-west of Warsaw.",
+      "THE OHEL IS RESTORED AND SO IS THE GROUND. The cemetery was fenced and repaired in 2007, paid for by Renata Singer and the Foundation for the Preservation of Jewish Heritage. Between a hundred and fifty and two hundred matzevos stand, in clear rows facing east — a small fraction of what was here before the Germans, but the rows are legible as rows.",
+      "The oldest stone is from 1772 on a ground opened in 1763, and burials went on into the war years. Weather has worn the carving down: candles, lions, birds and broken trees are still visible on some of them, and a quarter to a half of the stones are broken or down.",
+      "TWO MORE OF THE LINE ARE HERE with him — Reb Menachem Kalisz, 1860–1918, and Reb Aron Kohen, niftar 1873.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
@@ -235,12 +239,15 @@ export const bulkCemeteries6: Cemetery[] = [
     name: "Sochaczew — Kever of the Avnei Nezer",
     yiddishName: "ציון האבני נזר",
     country: "Poland",
-    address: "Jewish cemetery, Sochaczew, Masovian Voivodeship, Poland",
+    address: "Jewish cemetery, ulica Sierpniowa, Sochaczew, Masovian Voivodeship, Poland",
     coordinates: "52.2235408, 20.2344561",
     airportRef: "52.229, 20.238",
     arrivalNotes: [
       "Resting place of Rabbi Avrohom Bornsztain, the Avnei Nezer, founder of the Sochatchov chassidus and one of the great poskim of his age.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "THE KEY IS AT SIERPNIOWA 6. The cemetery is on the same street, closed all round by a continuous fence with a locking gate, so there is no walking in — collect the key at number 6 first.",
+      "THE OHEL WAS REBUILT IN AUGUST 1993 and holds the Avnei Nezer together with his son Reb Shmuel, the Shem MiShmuel. Two generations of Sochatchov in one structure.",
+      "EXPECT ALMOST NO STONES. The ground runs to nearly three hectares and about ten matzevos remain, the oldest from 1810 — a third of the site is in reasonable order and the other two thirds hold only the occasional stone. The kehilla is documented here from 1564 and the last burial was in 1945.",
+      "What survives is granite, limestone, sandstone and fieldstone, inscribed in Hebrew, Yiddish and Polish, some carved in relief with traces of paint. The Germans destroyed the rest, and there has been vandalism since.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
@@ -252,19 +259,21 @@ export const bulkCemeteries6: Cemetery[] = [
     slug: "radzymin-guterman",
     city: "Radzymin",
     yiddishCity: "ראדזימין",
-    name: "Radzymin — Kever of Rabbi Yaakov Aryeh of Radzymin",
-    yiddishName: "ציון רבי יעקב אריה מראדזימין",
+    name: "Radzymin — the ohel here is his son's; Reb Yaakov Aryeh lies in Warsaw",
+    yiddishName: "ראדזימין — דער אוהל פון זיין זון",
     country: "Poland",
-    address: "Jewish cemetery, Radzymin, Masovian Voivodeship, Poland",
+    address: "Jewish cemetery, ulica Mickiewicza, Radzymin, Masovian Voivodeship, Poland — Reb Yaakov Aryeh himself is buried at the Warsaw Jewish cemetery",
     coordinates: "52.4113333, 21.1871123",
     airportRef: "52.418, 21.191",
     arrivalNotes: [
-      "Resting place of Rabbi Yaakov Aryeh Guterman, founder of the Radzymin chassidus, a disciple of the Chidushei HaRim and Rabbi Menachem Mendel of Kotzk.",
-      "Confirm the cemetery and exact grave/ohel location locally.",
+      "The town of Reb Yaakov Aryeh Guterman, founder of the Radzymin chassidus and a talmid of the Chidushei HaRim. He led here; he is not buried here.",
+      "REB YAAKOV ARYEH IS BURIED IN WARSAW, AND THIS PAGE USED TO SAY RADZYMIN. He founded the Radzymin chassidus and the town carries his name, but he was niftar on the third of July 1874 and lies in the Warsaw Jewish cemetery, where his ohel stands. Warsaw is about twenty-two kilometres south-west.",
+      "THE OHEL AT RADZYMIN IS HIS SON'S. It stands restored in the middle of the ground and holds Reb Shlomo Yehoshua Dovid of Radzymin. Somebody who comes here for the father has come to the son — which is a journey worth making, but not the one they thought they were making.",
+      "THE CEMETERY WAS TURNED INTO A PARK. It is on ulica Mickiewicza, something over two hectares, in use from the seventeen-hundreds. After the war it was levelled and planted with poplars, maples and limes. The old entrance was on the east side and the main path ran east to west.",
       "SURVEYED COORDINATES. The map point on this listing is the cemetery itself, measured on the ground by the ESJF survey — not a town centre. Where a kever is inside an ohel it will still need finding once you are through the gate, but the gate is now something you can navigate to.",
     ],
     burials: [
-      { name: "Rabbi Yaakov Aryeh Guterman of Radzymin", yiddishName: "רבי יעקב אריה גוטרמן מראדזימין", knownAs: "The Radziminer Rebbe", yahrzeit: "כ״ג ניסן · 5634 / 1874", note: "Founder of the Radzymin chassidus, beloved for his warmth and blessings." },
+      { name: "Rabbi Yaakov Aryeh Guterman of Radzymin", yiddishName: "רבי יעקב אריה גוטרמן מראדזימין", knownAs: "The Radziminer Rebbe", yahrzeit: "כ״ג ניסן · 5634 / 1874", note: "Founder of the Radzymin chassidus, beloved for his warmth and blessings. He is buried in the Warsaw Jewish cemetery, where his ohel stands — not in Radzymin. The restored ohel in Radzymin holds his son, Reb Shlomo Yehoshua Dovid." },
     ],
     sourceUrl: "https://en.wikipedia.org/wiki/Yaakov_Aryeh_Guterman",
   },
