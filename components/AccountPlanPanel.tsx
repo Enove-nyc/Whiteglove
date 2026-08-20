@@ -204,7 +204,13 @@ export default function AccountPlanPanel({
 
       <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--navy)]">{usageLine}</p>
 
-      {hasSubscription && (
+      {/* A way back down, once upgraded. It opens Stripe's own page — the one
+          place a subscription cancels decently — where a member can switch
+          plan, cancel, or return to Traveler. Shown for any paid plan, not only
+          a live card subscription: somebody the owner put on a plan by hand has
+          no Stripe customer and the portal route answers them plainly (write in
+          and we sort it out) rather than with an error. */}
+      {plan !== "traveler" && (
         <div className="mt-6">
           <button
             type="button"
@@ -212,10 +218,12 @@ export default function AccountPlanPanel({
             disabled={leaving}
             className="min-h-11 rounded-md border border-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
           >
-            {leaving ? "Opening…" : "Manage your subscription"}
+            {leaving ? "Opening…" : "Change or cancel your plan"}
           </button>
           <p className="mt-2 text-xs leading-6 text-stone-500">
-            Your card, your receipts and stopping the subscription are all handled by Stripe.
+            {hasSubscription
+              ? "Opens Stripe, where you can switch plan, cancel, or go back to Traveler. Your card and receipts are there too, and the trips you have made stay yours either way."
+              : "Opens your billing to change or cancel. If your plan was set up for you, it will say so and we will sort out the change — and the trips you have made stay yours either way."}
           </p>
         </div>
       )}
