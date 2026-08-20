@@ -44,7 +44,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "chabad.org",
     "url": "https://chabad.org/",
     "category": "Chabad",
-    "count": 28
+    "count": 29
   },
   {
     "host": "chabadhungary.com",
@@ -110,7 +110,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "en.wikipedia.org",
     "url": "https://en.wikipedia.org/",
     "category": "General reference",
-    "count": 951
+    "count": 937
   },
   {
     "host": "fr.wikipedia.org",
@@ -133,6 +133,12 @@ export const sourceIndex: SourceIndexEntry[] = [
   {
     "host": "birminghamjewish.com",
     "url": "https://birminghamjewish.com/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "bostoneruv.org",
+    "url": "https://bostoneruv.org/",
     "category": "Jewish community & institutions",
     "count": 1
   },
@@ -197,8 +203,20 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 2
   },
   {
+    "host": "eruvofbaltimore.org",
+    "url": "https://eruvofbaltimore.org/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
     "host": "europeanjewishtours.com",
     "url": "https://europeanjewishtours.com/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "fivetownseruv.org",
+    "url": "https://fivetownseruv.org/",
     "category": "Jewish community & institutions",
     "count": 1
   },
@@ -1055,6 +1073,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "laeruv.com",
+    "url": "https://laeruv.com/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
     "host": "lawrencejcc.org",
     "url": "https://lawrencejcc.org/",
     "category": "Jewish community & institutions",
@@ -1079,6 +1103,24 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "manchestereruv.org.uk",
+    "url": "https://manchestereruv.org.uk/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "manhattaneruv.org",
+    "url": "https://manhattaneruv.org/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "miamibeacheruv.com",
+    "url": "https://miamibeacheruv.com/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
     "host": "milwaukeejewish.org",
     "url": "https://milwaukeejewish.org/",
     "category": "Jewish community & institutions",
@@ -1093,6 +1135,12 @@ export const sourceIndex: SourceIndexEntry[] = [
   {
     "host": "nottinghamsynagogue.org.uk",
     "url": "https://nottinghamsynagogue.org.uk/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "nwlondoneruv.org",
+    "url": "https://nwlondoneruv.org/",
     "category": "Jewish community & institutions",
     "count": 1
   },
@@ -1139,6 +1187,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "sydneyeruv.org.au",
+    "url": "https://sydneyeruv.org.au/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
     "host": "synagogue.lu",
     "url": "https://synagogue.lu/",
     "category": "Jewish community & institutions",
@@ -1159,6 +1213,12 @@ export const sourceIndex: SourceIndexEntry[] = [
   {
     "host": "thejewishcenter.org",
     "url": "https://thejewishcenter.org/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
+    "host": "torontoeruv.org",
+    "url": "https://torontoeruv.org/",
     "category": "Jewish community & institutions",
     "count": 1
   },
@@ -1208,7 +1268,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "esjf-cemeteries.org",
     "url": "https://esjf-cemeteries.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 19
+    "count": 21
   },
   {
     "host": "findagrave.com",
@@ -1244,7 +1304,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "jewishgen.org",
     "url": "https://jewishgen.org/",
     "category": "Jewish heritage & cemeteries",
-    "count": 4
+    "count": 5
   },
   {
     "host": "jewishheritageguide.net",
@@ -1316,7 +1376,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "shtetlroutes.eu",
     "url": "https://shtetlroutes.eu/",
     "category": "Jewish heritage & cemeteries",
-    "count": 7
+    "count": 8
   },
   {
     "host": "slovak-jewish-heritage.org",
@@ -1328,7 +1388,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "sztetl.org.pl",
     "url": "https://sztetl.org.pl/",
     "category": "Jewish heritage & cemeteries",
-    "count": 26
+    "count": 28
   },
   {
     "host": "willesdenjewishcemetery.org.uk",
@@ -1586,7 +1646,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "kevarim.com",
     "url": "https://kevarim.com/",
     "category": "Kevarim & kivrei tzaddikim",
-    "count": 1
+    "count": 4
   },
   {
     "host": "lizansk.com",
@@ -1604,7 +1664,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "nertzaddik.com",
     "url": "https://nertzaddik.com/",
     "category": "Kevarim & kivrei tzaddikim",
-    "count": 4
+    "count": 6
   },
   {
     "host": "rashbi.org",
@@ -2377,6 +2437,12 @@ export const sourceIndex: SourceIndexEntry[] = [
   {
     "host": "conib.org.br",
     "url": "https://conib.org.br/",
+    "category": "Other sites cited",
+    "count": 1
+  },
+  {
+    "host": "cosv.org.au",
+    "url": "https://cosv.org.au/",
     "category": "Other sites cited",
     "count": 1
   },
@@ -3218,7 +3284,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "jewua.org",
     "url": "https://jewua.org/",
     "category": "Other sites cited",
-    "count": 1
+    "count": 3
   },
   {
     "host": "jfcm.org",
