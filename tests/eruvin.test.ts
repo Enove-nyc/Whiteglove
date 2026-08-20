@@ -4,14 +4,17 @@ import { notableEruvin, WORLDWIDE_ERUV_DIRECTORY } from "../data/notable-eruvin"
 import { listEruvin } from "../lib/eruvin";
 import { NAV_CATEGORIES } from "../lib/navigation";
 
-// An eruv listing is a route to the community's live status, never a claim
-// that the eruv is up. These tests hold that line.
+// An eruv listing says the community maintains an eruv and links a source that
+// establishes it — never a claim that the eruv is up. These tests hold that line.
 
 describe("the eruvin are careful, sourced listings", () => {
-  it("links every eruv to a live status page", () => {
+  it("links every eruv to a source that establishes it", () => {
     for (const eruv of notableEruvin) {
-      assert.ok(eruv.statusUrl.startsWith("https://"), `${eruv.slug} has no status link`);
+      assert.ok(eruv.sourceUrl.startsWith("https://"), `${eruv.slug} has no source link`);
       assert.ok(eruv.city.trim() && eruv.country.trim(), `${eruv.slug} has no place`);
+      if (eruv.mapUrl !== undefined) {
+        assert.ok(eruv.mapUrl.startsWith("https://"), `${eruv.slug} has a malformed map link`);
+      }
     }
     assert.ok(WORLDWIDE_ERUV_DIRECTORY.startsWith("https://"));
   });
@@ -31,7 +34,7 @@ describe("the eruvin are careful, sourced listings", () => {
     const listings = listEruvin();
     assert.equal(listings.length, notableEruvin.length);
     for (const listing of listings) {
-      assert.ok(listing.statusUrl.startsWith("https://"), `${listing.id} lost its status link`);
+      assert.ok(listing.sourceUrl.startsWith("https://"), `${listing.id} lost its source link`);
     }
   });
 });

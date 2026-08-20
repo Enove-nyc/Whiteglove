@@ -16,8 +16,9 @@ export default async function AdminEruvinPage() {
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Eruvin</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Community eruvin for the public page. Each listing is a pointer to the community&rsquo;s own status page — never
-          a claim that the eruv is up — so the status link is the one field that must be a working web address.
+          Community eruvin for the public page. Each listing says the community maintains an eruv and links a source that
+          establishes it — never a claim that the eruv is up — so the source link is the one field that must be a working
+          web address. A boundary map is welcome where the community publishes one.
         </p>
         <p className="mt-3 text-sm text-stone-500">
           {listings.length} listed · {added.length} added here · {listings.length - added.length} built in
@@ -53,9 +54,17 @@ export default async function AdminEruvinPage() {
                 <span className="text-sm text-[var(--navy)]">
                   <strong>{eruv.name}</strong> — {eruv.city}, {eruv.country}
                   {eruv.covers ? <span className="text-stone-500"> · {eruv.covers}</span> : null}{" "}
-                  <a href={eruv.statusUrl} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
-                    status
+                  <a href={eruv.sourceUrl} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
+                    source
                   </a>
+                  {eruv.mapUrl ? (
+                    <>
+                      {" · "}
+                      <a href={eruv.mapUrl} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
+                        map
+                      </a>
+                    </>
+                  ) : null}
                 </span>
                 <EruvRemoveButton id={eruv.id} />
               </li>
