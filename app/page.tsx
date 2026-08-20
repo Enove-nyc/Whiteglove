@@ -14,7 +14,7 @@ import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { website } from "@/lib/structured-data";
-import type { TripTheme } from "@/data/vacation-destinations";
+import { destinationPhotoSrc } from "@/lib/default-photo";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -57,34 +57,6 @@ export const metadata = pageMetadata({
  *   • The verification paragraph. The site-wide notice carries the door to
  *     /verification; a second copy here was the front page explaining itself.
  */
-
-/**
- * The wash where the photograph will go.
- *
- * THERE IS NO DESTINATION PHOTOGRAPH ON THIS SITE YET, and that is a rule
- * rather than a gap: lib/photos.ts refuses to publish a picture without a
- * credit, the photo library holds none for destinations, and a stock image
- * bought to fill the space would be the one thing on the page that was not
- * true of the place (components/VacationCard.tsx makes the same argument for
- * the cards). So the hero and the Featured cards use the same navy washes the
- * destination cards are built from, with the text-contrast overlay already in
- * place — when a real, credited photograph lands, it drops into the same
- * container under the same overlay and the words do not move.
- *
- * These gradients are the ones measured in components/VacationCard.tsx. On
- * the Featured cards below they carry no text at all, so the contrast
- * arithmetic there does not bind them — but one palette per theme, everywhere
- * a theme is painted, is what keeps the site looking like one site.
- */
-const THEME_WASH: Record<TripTheme, string> = {
-  beach: "from-[#12384a] to-[#1f5c6b]",
-  city: "from-[var(--navy)] to-[#344461]",
-  mountains: "from-[#1f3b57] to-[#3a5462]",
-  family: "from-[#23405f] to-[#44526b]",
-  couples: "from-[#2a2f52] to-[#5b4a63]",
-  "short-break": "from-[var(--navy-deep)] to-[#3a4d6f]",
-  heritage: "from-[var(--navy)] to-[#344461]",
-};
 
 export default async function Home() {
   const requestHeaders = await headers();
@@ -132,9 +104,12 @@ export default async function Home() {
       </section>
 
       {/* ---- 2. Featured --------------------------------------------------
-          Photograph-position wash, name, country. Nothing else: no blurb, no
-          rating, no CTA, no reason it was chosen. The whole card is one link,
-          so a screen reader lists "Rome" rather than "Explore" six times. */}
+          Picture, name, country. Nothing else: no blurb, no rating, no CTA, no
+          reason it was chosen. The picture is the place's own credited photo
+          when there is one, and the branded White Glove default otherwise
+          (lib/default-photo.ts) — never a blank box. The whole card is one
+          link, so a screen reader lists "Rome" rather than "Explore" six
+          times. */}
       {featured.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
           <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
@@ -149,7 +124,8 @@ export default async function Home() {
                 >
                   <div
                     aria-hidden="true"
-                    className={`aspect-[4/3] w-full bg-gradient-to-br ${THEME_WASH[destination.themes[0] ?? "city"]}`}
+                    className="aspect-[4/3] w-full bg-[var(--navy)] bg-cover bg-center"
+                    style={{ backgroundImage: `url(${destinationPhotoSrc(destination.photos)})` }}
                   />
                   <div className="p-5">
                     <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">

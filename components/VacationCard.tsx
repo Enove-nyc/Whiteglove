@@ -3,12 +3,11 @@ import {
   SIGNAL_CLASSES,
   cardCountry,
   cardName,
-  cardThemes,
   destinationHref,
   type DirectoryCard,
   type Signal,
 } from "@/lib/vacation-ideas";
-import type { TripTheme } from "@/data/vacation-destinations";
+import { DEFAULT_PHOTO, destinationPhotoSrc } from "@/lib/default-photo";
 
 /**
  * One destination, on the hub and wherever else a row of them is offered.
@@ -26,36 +25,15 @@ import type { TripTheme } from "@/data/vacation-destinations";
  * are not shown anywhere public any more, and the rest is on the page the
  * card opens.
  *
- * WHY THERE IS NO PHOTOGRAPH. The site has a picture library and it is for
- * pictures somebody took and credited — lib/photos.ts refuses to publish one
- * without a credit. There are no destination photographs in it yet, and a
- * stock image bought in to fill the space would be the one thing on a card
- * that was not true of the place. So the header is typographic; when there
- * are real, credited pictures, they go here and the rest does not change.
+ * THE PICTURE ON THE HEADER. A card used to carry no photograph at all —
+ * lib/photos.ts refuses to publish a stock image without a credit, and a bought
+ * photo of the place would be the one thing on the card that was not true of
+ * it. What fills the frame now is not a photo of the place: it is White Glove's
+ * own aircraft, the site-wide branded default (lib/default-photo.ts), which
+ * makes no such claim and replaces the blank navy box the header used to be.
+ * When a real, credited picture of the place lands, it takes the same frame and
+ * the rest does not change.
  */
-
-/**
- * The wash behind the name, by what kind of trip it is.
- *
- * Decoration only, and every light end clears 4.5:1 against the gold-light
- * eyebrow — measured, because a gradient has no single colour for the audit
- * to check: beach 4.52 · city 5.90 · mountains 4.82 · family 4.75 ·
- * couples 4.86 · short break 5.12.
- */
-const THEME_WASH: Record<TripTheme, string> = {
-  beach: "from-[#12384a] to-[#1f5c6b]",
-  city: "from-[var(--navy)] to-[#344461]",
-  mountains: "from-[#1f3b57] to-[#3a5462]",
-  family: "from-[#23405f] to-[#44526b]",
-  couples: "from-[#2a2f52] to-[#5b4a63]",
-  "short-break": "from-[var(--navy-deep)] to-[#3a4d6f]",
-  // The same pair as "city", which the audit measures at 5.90 — the best of
-  // the six. Reused rather than invented because a new gradient is a new
-  // contrast measurement, and this one is already made. In practice it is
-  // rarely drawn: the wash comes from themes[0], and heritage is a second
-  // theme on every destination that carries it.
-  heritage: "from-[var(--navy)] to-[#344461]",
-};
 
 function SignalChip({ signal }: { signal: Signal<string> }) {
   return (
@@ -112,25 +90,37 @@ export default function VacationCard({ card, compact = false }: { card: Director
     card.kind === "vacation" && card.destination.region
       ? `${card.destination.region} · ${country}`
       : country;
-  const wash = THEME_WASH[cardThemes(card)[0] ?? "city"];
+  const photoSrc = card.kind === "vacation" ? destinationPhotoSrc(card.destination.photos) : DEFAULT_PHOTO;
 
   return (
     <Link
       href={href}
       className="wg-card group flex h-full flex-col overflow-hidden border border-[var(--gold-light)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
     >
-      <span className={`block bg-gradient-to-br ${wash} ${compact ? "px-6 py-5" : "px-6 py-7"}`}>
-        <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">
-          {eyebrow}
-        </span>
-        <span className={`mt-2 block font-[family-name:var(--font-display)] leading-tight text-white ${compact ? "text-2xl" : "text-3xl"}`}>
-          {name}
-        </span>
-        {card.kind === "heritage" && card.yiddishName && (
-          <span className="mt-1 block text-sm text-[var(--gold-light)]" lang="yi" dir="rtl">
-            {card.yiddishName}
+      <span
+        className="relative block overflow-hidden bg-[var(--navy)] bg-cover bg-center"
+        style={{ backgroundImage: `url(${photoSrc})` }}
+      >
+        {/* A navy scrim under the name so the white type stays legible over any
+            picture — measured for the branded default, and dark enough at the
+            foot to hold a real photograph too. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[var(--navy)] via-[rgba(23,45,82,0.55)] to-[rgba(23,45,82,0.10)]"
+        />
+        <span className={`relative block ${compact ? "px-6 pb-5 pt-24" : "px-6 pb-7 pt-32"}`}>
+          <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">
+            {eyebrow}
           </span>
-        )}
+          <span className={`mt-2 block font-[family-name:var(--font-display)] leading-tight text-white ${compact ? "text-2xl" : "text-3xl"}`}>
+            {name}
+          </span>
+          {card.kind === "heritage" && card.yiddishName && (
+            <span className="mt-1 block text-sm text-[var(--gold-light)]" lang="yi" dir="rtl">
+              {card.yiddishName}
+            </span>
+          )}
+        </span>
       </span>
 
       {card.kind === "heritage" ? (
