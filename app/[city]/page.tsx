@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner from "@/components/SubBrand";
 import DestinationActions from "@/components/DestinationActions";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
-import SourceNote from "@/components/SourceNote";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import { getCemetery } from "@/data/cemeteries";
@@ -253,7 +252,6 @@ export default async function CityGuidePage({ params }: { params: Promise<{ city
           <SectionHeading eyebrow="Practical guide" title="Everything around the visit." description="Accommodations, food, minyanim, mikvaos, and transport are kept together here. A detail appears only when it has been checked for this exact destination." />
           <PhotoGallery photos={dbContent?.photos ?? []} />
           {destinationRecord && <PracticalInformation record={destinationRecord} places={dbContent?.places ?? []} />}
-          <SourceNote url={guide.sourceUrl} className="mt-8" />
         </div>
       </section>
 

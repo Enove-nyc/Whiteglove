@@ -11,7 +11,6 @@ import NearestAirports from "@/components/NearestAirports";
 import TravelAdvisoryBadge from "@/components/TravelAdvisoryBadge";
 import DestinationActions from "@/components/DestinationActions";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
-import SourceNote from "@/components/SourceNote";
 import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import { cemeteries } from "@/data/cemeteries";
@@ -248,7 +247,6 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
                           {place.email && <a href={`mailto:${place.email}`} className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Email</a>}
                           {place.website && <a href={place.website} target="_blank" rel="noreferrer" className="border border-[var(--gold-light)] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Website ↗</a>}
                         </div>
-                        {place.source && <SourceNote url={place.source} className="mt-3" />}
                       </article>
                     ))}
                   </div>
@@ -271,11 +269,10 @@ export default async function CemeteryPage({ params }: { params: Promise<{ cemet
 
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
           <section className="wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Verification and source</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Verification</p>
             <p className="mt-3 text-sm leading-7 text-stone-600">
               {hasAccessContacts ? "This cemetery has a public access contact listed above. Please confirm it before traveling." : "No public access contact has been verified for this cemetery yet."}
             </p>
-            <SourceNote url={cemetery.sourceUrl} className="mt-5" />
           </section>
 
           <div>

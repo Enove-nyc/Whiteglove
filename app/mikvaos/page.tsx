@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
-import SourceNote from "@/components/SourceNote";
 import StructuredData from "@/components/StructuredData";
 import { listPublishedMikvaos } from "@/lib/mikvaos";
 import { resolvePage } from "@/lib/pages";
@@ -150,7 +149,6 @@ export default async function MikvaosPage() {
                           Destination
                         </Link>
                       </div>
-                      {listing.sourceUrl && <SourceNote url={listing.sourceUrl} className="mt-2" />}
                     </li>
                   ))}
                 </ul>
