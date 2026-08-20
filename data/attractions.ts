@@ -11755,6 +11755,83 @@ export const attractions: Attraction[] = [
     sourceUrl: "https://en.wikipedia.org/wiki/Lumphini_Park",
   },
 
+  // ---- Vietnam --------------------------------------------------------
+  {
+    slug: "ha-long-bay",
+    name: "Ha Long Bay",
+    city: "Ha Long",
+    country: "Vietnam",
+    kind: "Nature",
+    summary: "A bay of thousands of limestone islands and sea stacks rising from emerald water, a UNESCO site, cruised by boat from the coast.",
+    address: "Ha Long Bay, Quang Ninh Province",
+    coordinates: "20.9101, 107.1839",
+    notes: [
+      "Seen on a day cruise or an overnight boat among the karsts, with caves and quiet coves; book through a reputable operator.",
+      "About two and a half hours east of Hanoi. No kosher food — carry it; Hanoi has a Chabad house.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/H%E1%BA%A1_Long_Bay",
+  },
+  {
+    slug: "hanoi-old-quarter",
+    name: "Hanoi Old Quarter and Hoan Kiem Lake",
+    city: "Hanoi",
+    country: "Vietnam",
+    kind: "Landmark",
+    summary: "The dense trading streets of the old capital around Hoan Kiem Lake, each lane once given to a single craft or trade.",
+    address: "Hoan Kiem, Hanoi",
+    coordinates: "21.0330, 105.8500",
+    notes: [
+      "Free to wander; the lake with its little red bridge and temple is the calm centre of the busy old streets.",
+      "Cross the roads slowly and steadily — the motorbike traffic flows around you.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Old_Quarter,_Hanoi",
+  },
+  {
+    slug: "hoi-an-ancient-town",
+    name: "Hoi An Ancient Town",
+    city: "Hoi An",
+    country: "Vietnam",
+    kind: "Landmark",
+    summary: "A preserved old trading port of tiled merchant houses and a Japanese covered bridge, hung with silk lanterns, a UNESCO town.",
+    address: "Hoi An, Quang Nam Province",
+    coordinates: "15.8801, 108.3380",
+    notes: [
+      "The lantern-lit old town is car-free and walked in an evening; a combined ticket covers the old houses and the bridge.",
+      "On the central coast near Da Nang.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/H%E1%BB%99i_An",
+  },
+  {
+    slug: "ho-chi-minh-city-centre",
+    name: "Ho Chi Minh City centre",
+    city: "Ho Chi Minh City",
+    country: "Vietnam",
+    kind: "Landmark",
+    summary: "The old French colonial heart of Saigon — the Central Post Office, the opera house and the wide boulevards — and the War Remnants Museum nearby.",
+    address: "District 1, Ho Chi Minh City",
+    coordinates: "10.7797, 106.6990",
+    notes: [
+      "The colonial buildings of District 1 are walked in a morning; the War Remnants Museum is sobering and for older visitors.",
+      "The city has a Chabad house with kosher provision, arranged ahead.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/Ho_Chi_Minh_City",
+  },
+  {
+    slug: "cu-chi-tunnels",
+    name: "The Củ Chi Tunnels",
+    city: "Ho Chi Minh City",
+    country: "Vietnam",
+    kind: "Landmark",
+    summary: "The preserved network of wartime tunnels northwest of the city, part of it opened for visitors to go down into.",
+    address: "Củ Chi District, Ho Chi Minh City",
+    coordinates: "11.1417, 106.4600",
+    notes: [
+      "A guided half-day out of the city; the tunnels are narrow and low — a widened stretch is opened for those who want to go in.",
+      "About an hour and a half from the centre, usually by tour.",
+    ],
+    sourceUrl: "https://en.wikipedia.org/wiki/C%E1%BB%A7_Chi_tunnels",
+  },
+
   // ---- India ----------------------------------------------------------
   {
     slug: "taj-mahal",
