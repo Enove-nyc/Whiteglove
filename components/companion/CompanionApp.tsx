@@ -43,7 +43,7 @@ import { Icon } from "@/components/icons/Icon";
  * showing as whatever color the device's native emoji happen to render in. */
 const ICON_BLUE = "#1f3f5c";
 
-type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile" | "guide";
+type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile";
 type ChatSide = "client" | "advisor";
 /** The live thread on this trip — present once the trip has been shared. */
 export type CompanionChat = { shareId: string; side: ChatSide; advisorName: string };
@@ -445,7 +445,6 @@ export default function CompanionApp({
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
-    guide: "Guide",
   };
   const kickers: Record<Screen, string> = {
     home: trip.homeKicker,
@@ -456,7 +455,6 @@ export default function CompanionApp({
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
-    guide: "Getting around, day by day",
   };
 
   const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
@@ -508,14 +506,11 @@ export default function CompanionApp({
   // one and a dead scripted one side by side. This "Guide/Concierge" tab is
   // the showcase's own — kosher and Shabbos content, hasConcierge only.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
-  // A REAL trip's own Guide tab — practical, day-by-day notes the advisor
-  // writes (the side door, where to eat, where to park), never kosher or
-  // Shabbos content. Always offered to whoever can add a note; a client only
-  // sees it once there is something in it, the same as an empty Wallet.
-  const hasGuideNotes = days.some((d) => d.guideNote);
+  // The bottom nav is capped at four on a real trip — Trip, Advisor, Wallet,
+  // You — so a real trip's Guide notes live inside the You tab (see
+  // guideSection below) rather than getting a tab of their own.
   const tabDefs: [Screen, string][] = [["home", "Trip"]];
   if (hasConcierge) tabDefs.push([conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]);
-  if (!hasConcierge && (!isClientViewer || hasGuideNotes)) tabDefs.push(["guide", "Guide"]);
   if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", advisorInbox ? "Messages" : "Advisor"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
@@ -1038,21 +1033,22 @@ export default function CompanionApp({
   );
 
   // A REAL trip's Guide — practical notes only, day by day, never kosher or
-  // Shabbos content. A client sees only the days that carry a note; the
-  // advisor (or a Gold member on their own trip) sees every day, with a
-  // control to add or edit one.
+  // Shabbos content. Lives inside the You tab rather than a tab of its own,
+  // to keep the bottom nav to four: Trip, Advisor, Wallet, You. A client sees
+  // only the days that carry a note, and not the section at all when there
+  // are none; the advisor (or a Gold member on their own trip) always sees
+  // it, with a control to add or edit each day's note.
   const guideDays = days.filter((d) => (isClientViewer ? d.guideNote : true));
-  const guideScreen = (
-    <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
-      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>
-        Getting around, day by day — written by your advisor.
-      </p>
+  const showGuideSection = !isClientViewer || guideDays.length > 0;
+  const guideSection = showGuideSection && (
+    <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+      <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>Getting around, day by day</div>
       {guideDays.length === 0 && (
-        <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>There is nothing here yet.</p>
+        <p style={{ margin: "0 4px", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Nothing added yet.</p>
       )}
       {guideDays.map((d, i) => (
-        <div key={d.date ?? i} style={{ padding: "16px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 7 }}>
-          <span style={kicker("#78716c")}>{d.name}</span>
+        <div key={d.date ?? i} style={{ padding: "15px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 7 }}>
+          <span style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".1em", textTransform: "uppercase", color: "#78716c" }}>{d.name}</span>
           {d.guideNote && <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#26323a", textWrap: "pretty" }}>{d.guideNote}</p>}
           {!isClientViewer && trip.tripId && d.date && (
             <GuideNoteEdit tripId={trip.tripId} date={d.date} note={d.guideNote ?? ""} onSaved={() => router.refresh()} />
@@ -1082,6 +1078,7 @@ export default function CompanionApp({
           ))}
         </div>
       )}
+      {guideSection}
       {/* Trip kind — Concierge or Guide — lives here on the phone, where the
           desktop showcase has it as a toolbar above the frame. Only when a
           live advisor is attached; a wired trip is read one way. */}
@@ -1135,7 +1132,6 @@ export default function CompanionApp({
     );
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
-  else if (st.screen === "guide") body = guideScreen;
 
   const canBack = st.screen !== "home";
 

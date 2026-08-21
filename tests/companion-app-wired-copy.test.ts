@@ -69,9 +69,14 @@ describe("the bottom-nav chat tab reads as White Glove's own, not a generic mess
   });
 });
 
-describe("the Guide tab is back, but for practical notes, never kosher content", () => {
-  it("is offered on a real trip once there is a note, or always to whoever can add one", () => {
-    assert.match(APP, /if \(!hasConcierge && \(!isClientViewer \|\| hasGuideNotes\)\) tabDefs\.push\(\["guide", "Guide"\]\)/);
+describe("Guide is back, but folded into You rather than a tab of its own — a real trip's bottom nav stays at four", () => {
+  it("a real trip never pushes a standalone guide tab", () => {
+    assert.doesNotMatch(APP, /tabDefs\.push\(\["guide"/);
+  });
+
+  it("the You screen renders the guide section", () => {
+    const profile = APP.slice(APP.indexOf("const profileScreen"), APP.indexOf("let body: ReactNode"));
+    assert.match(profile, /\{guideSection\}/);
   });
 
   it("the Guide screen carries a per-day note and nothing about kosher or Shabbos", () => {
