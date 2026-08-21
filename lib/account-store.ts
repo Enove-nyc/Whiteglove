@@ -4,6 +4,7 @@ import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
+import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
@@ -159,6 +160,12 @@ export type SavedTrip = {
    * data/trip-pipeline.ts for why nothing past this is stored by hand.
    */
   pipelineStage?: ManualTripStage;
+  /**
+   * This trip's payment balance — total, split across families/travelers,
+   * any deposit/installment schedule, and the ledger of what has actually
+   * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
+   */
+  balance?: TripBalance;
   createdAt: string;
   updatedAt: string;
 };
@@ -1080,6 +1087,55 @@ export async function savePipelineStage(email: string, tripId: string, stage: Ma
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
+// ---- Payments --------------------------------------------------------
+//
+// A trip's payment balance — total, split, schedule and ledger. See
+// data/trip-payments.ts for the shape and every pure computation on it
+// (paid/remaining/collected/outstanding); this file only ever reads and
+// writes the whole TripBalance object, the same read-modify-write every
+// other per-trip record here uses.
+
+/** One trip's payment balance, or null if the planner hasn't set one up. */
+export async function getBalance(email: string, tripId: string): Promise<TripBalance | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.balance ?? null;
+}
+
+/** Create or overwrite a trip's balance — the planner's own setup, never a payment itself. */
+export async function saveBalance(email: string, tripId: string, balance: TripBalance): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, balance, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/**
+ * Append one real payment attempt to the ledger — IDEMPOTENT: if a record
+ * with this exact stripePaymentIntentId is already there, this is a no-op
+ * that still returns true, rather than a second row. This is the actual
+ * guarantee behind "duplicate requests/webhooks cannot record duplicate
+ * payments" — a Stripe webhook retried, or delivered twice, changes nothing
+ * the second time.
+ */
+export async function recordPayment(ownerEmail: string, tripId: string, record: PaymentRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(ownerEmail);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const balance: TripBalance = trip.balance ?? { currency: record.currency, splitMode: "equal", assignments: [], schedule: [], showTotalToTravelers: false, payments: [] };
+  if (balance.payments.some((p) => p.stripePaymentIntentId === record.stripePaymentIntentId)) return true;
+  const next = trips.map((t) =>
+    t.id === tripId ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, updatedAt: new Date().toISOString() } : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
 /** The proposal's public link — created once, reused after. */
 export async function ensureProposalShare(email: string, tripId: string): Promise<string | null> {
   if (!hasAccountStorage()) return null;
@@ -1485,7 +1541,7 @@ export async function getSharedItineraryByShareId(shareId: string) {
   // fetch nothing — but stripping it here means the person holding the link is
   // not even told a pass exists. Two answers to the same question, because
   // this is the one that costs somebody their flight if it is wrong.
-  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor };
+  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor, tripId: trip?.id };
 }
 
 /* ---- per-trip sharing: one link, locked to one itinerary ---------------- */

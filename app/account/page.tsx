@@ -179,6 +179,9 @@ export default async function AccountPage() {
                   — answers come back to you alone, never onto the itinerary itself.
                   See every client trip and where it stands in your{" "}
                   <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
+                  Set a trip's balance, split it across families, and collect{" "}
+                  <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">payments</Link>{" "}
+                  straight into your own connected Stripe account.
                 </p>
               )}
               <CompanionSettings />
