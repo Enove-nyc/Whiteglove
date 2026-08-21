@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
-import { ATTACHMENT_KINDS, type AttachmentKind, attachmentProblem } from "@/lib/attachments";
+import { accountCookieName, getCurrentAccountData, getSharedItineraryByShareIdWithAttachments } from "@/lib/account-store";
+import { ATTACHMENT_KINDS, type AttachmentKind, attachmentProblem, itineraryHasAttachmentId } from "@/lib/attachments";
 import { attachmentStoreAvailable, deleteAttachmentFor, getAttachmentFor, putAttachment } from "@/lib/attachment-store";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -21,14 +21,36 @@ async function whoIsAsking() {
   return account?.email ?? null;
 }
 
-/** Serve one file back to the person who put it there. */
+/**
+ * Serve one file back to the person who put it there — OR to the one client
+ * it was attached for, on their own trip's share link.
+ *
+ * A client on a code from their adviser has no account and cannot log in, so
+ * `email` alone would lock them out of a boarding pass sitting right there in
+ * their own Wallet. `share` is the other door: it resolves to the trip's
+ * owning account (the same way the rest of the client app already works),
+ * and the file is served only when it is BOTH owned by that account AND
+ * actually attached to a stop on THAT trip's itinerary — not merely "some
+ * file this advisor has uploaded for somebody". That second check is what
+ * keeps one client's link from reaching another client's documents.
+ */
 export async function GET(request: NextRequest) {
-  const email = await whoIsAsking();
-  if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Name the file." }, { status: 400 });
 
-  const file = await getAttachmentFor(id, email);
+  const email = await whoIsAsking();
+  let owner = email;
+  if (!owner) {
+    const share = request.nextUrl.searchParams.get("share");
+    if (!share) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+    const shared = await getSharedItineraryByShareIdWithAttachments(share);
+    if (!shared || !itineraryHasAttachmentId(shared.itinerary, id)) {
+      return NextResponse.json({ error: "Not found." }, { status: 404 });
+    }
+    owner = shared.ownerEmail;
+  }
+
+  const file = await getAttachmentFor(id, owner);
   // The same answer for "not there" and "not yours", so asking tells nobody
   // whether a file exists.
   if (!file) return NextResponse.json({ error: "Not found." }, { status: 404 });

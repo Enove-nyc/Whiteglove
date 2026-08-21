@@ -12,6 +12,10 @@ import { describe, it } from "node:test";
  */
 
 const APP = readFileSync("components/companion/CompanionApp.tsx", "utf8");
+// The scripted advisor thread — Mode/Role switching, the canned send(), the
+// showcase's own quick replies — moved into its own module so production
+// chat code cannot brush up against it. Some pins below read from here now.
+const DEMO = readFileSync("components/companion/CompanionDemo.tsx", "utf8");
 
 describe("a live advisor thread is never called 'on your own'", () => {
   it("the home screen's guide-mode card only shows without a real chat", () => {
@@ -50,8 +54,9 @@ describe("the profile screen is honest about who is looking at it", () => {
 });
 
 describe("a finished trip never opens as if it were day one", () => {
-  it("the home screen's day pill reads the trip's own tripFinished flag", () => {
-    assert.match(APP, /trip\.tripFinished \? "Trip finished" : `Day \$\{trip\.todayIndex \+ 1\} of \$\{trip\.days\.length\}`/);
+  it("the home screen's day pill reads the trip's own tripFinished flag, and a countdown before the trip starts", () => {
+    assert.match(APP, /trip\.tripFinished\s*\n\s*\? "Trip finished"/);
+    assert.match(APP, /trip\.daysUntilStart !== undefined/);
   });
 });
 
@@ -64,30 +69,33 @@ describe("the empty guide does not promise content that will never come", () => 
 });
 
 describe("the bottom-nav chat tab reads as White Glove's own, not a generic messaging app", () => {
-  it("is labelled Advisor for a real trip, Messages only for the advisor's own inbox", () => {
-    assert.match(APP, /tabDefs\.push\(\["messages", advisorInbox \? "Messages" : "Advisor"\]\)/);
+  it("is labelled Messages everywhere — whether the other side is a live advisor, a named contact, or the advisor's own inbox", () => {
+    assert.match(APP, /tabDefs\.push\(\["messages", "Messages"\]\)/);
+    assert.doesNotMatch(APP, /tabDefs\.push\(\["messages", advisorInbox/);
   });
 });
 
-describe("Guide is back, but folded into You rather than a tab of its own — a real trip's bottom nav stays at four", () => {
+describe("Guide is back, next to the Trip tab rather than under You — a real trip's bottom nav stays at four", () => {
   it("a real trip never pushes a standalone guide tab", () => {
     assert.doesNotMatch(APP, /tabDefs\.push\(\["guide"/);
   });
 
-  it("the You screen renders the guide section", () => {
+  it("the Trip screen renders the guide section, not the You screen", () => {
+    const home = APP.slice(APP.indexOf("const homeScreen"), APP.indexOf("const railView"));
+    assert.match(home, /\{guideSection &&/);
     const profile = APP.slice(APP.indexOf("const profileScreen"), APP.indexOf("let body: ReactNode"));
-    assert.match(profile, /\{guideSection\}/);
+    assert.doesNotMatch(profile, /guideSection/);
   });
 
   it("the Guide screen carries a per-day note and nothing about kosher or Shabbos", () => {
-    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const profileScreen"));
+    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const homeScreen"));
     assert.match(guide, /d\.guideNote/);
     assert.doesNotMatch(guide, /kosher/i);
     assert.doesNotMatch(guide, /shabbos/i);
   });
 
   it("only the advisor's own side can edit a day's note — a client on a code link never gets the control", () => {
-    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const profileScreen"));
+    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const homeScreen"));
     assert.match(guide, /!isClientViewer && trip\.tripId && d\.date/);
   });
 });
@@ -176,8 +184,11 @@ describe("wallet rows carry real phone numbers and addresses as taps, not plain 
 
 describe("the composer never triggers iOS's auto-zoom", () => {
   it("every message text field is 16px, not 14 — under 16 zooms the whole page on focus", () => {
-    const inputs = [...APP.matchAll(/<input[\s\S]*?\/>/g)].filter((m) => /placeholder=/.test(m[0]));
-    const textareas = [...APP.matchAll(/<textarea[\s\S]*?\/>/g)];
+    // The scripted demo's own composer lives in CompanionDemo.tsx now; the
+    // real chat's caption input and growing draft textarea stay in CompanionApp.tsx.
+    const source = APP + "\n" + DEMO;
+    const inputs = [...source.matchAll(/<input[\s\S]*?\/>/g)].filter((m) => /placeholder=/.test(m[0]));
+    const textareas = [...source.matchAll(/<textarea[\s\S]*?\/>/g)];
     assert.ok(inputs.length >= 2, "expects the caption and demo composer inputs");
     assert.ok(textareas.length >= 1, "expects the growing draft textarea");
     for (const [tag] of [...inputs, ...textareas]) {

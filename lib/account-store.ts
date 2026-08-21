@@ -1034,6 +1034,33 @@ export async function getShareOwnerEmail(shareId: string): Promise<string | null
  * matches, and falls back to the open trip, which is exactly the one it was.
  */
 export async function getSharedItineraryByShareId(shareId: string) {
+  const shared = await sharedItineraryByShareId(shareId);
+  if (!shared) return null;
+  // Boarding passes and tickets do not leave the account they were uploaded
+  // to. Serving one already checks the owner, so the reference alone would
+  // fetch nothing — but stripping it here means the person holding the link is
+  // not even told a pass exists. Two answers to the same question, because
+  // this is the one that costs somebody their flight if it is wrong.
+  return { ...shared, itinerary: withoutAttachments(shared.itinerary) };
+}
+
+/**
+ * The same shared trip, WITH its attachment references kept.
+ *
+ * Used only by the client-code app (app/i/[shareId]/app) — the one place a
+ * client is meant to see that a boarding pass or confirmation exists and open
+ * it, because the app's Wallet is exactly where that belongs. The raw file
+ * itself is still never handed over here: /api/account/attachments checks
+ * this same share token against the file's owner and against this itinerary
+ * before it ever serves the bytes. Nowhere else should call this — the
+ * printable document and any other share surface must keep using
+ * getSharedItineraryByShareId, which strips references the way it always has.
+ */
+export async function getSharedItineraryByShareIdWithAttachments(shareId: string) {
+  return sharedItineraryByShareId(shareId);
+}
+
+async function sharedItineraryByShareId(shareId: string) {
   const ownerEmail = await getShareOwnerEmail(shareId);
   if (!ownerEmail) return null;
   const [data, record] = await Promise.all([getAccountData(ownerEmail), getAccountRecord(ownerEmail)]);
@@ -1044,12 +1071,7 @@ export async function getSharedItineraryByShareId(shareId: string) {
   // to know the itinerary is theirs.
   const client = trip?.client?.trim() ?? "";
   const advisor = trip?.advisor?.trim() ?? "";
-  // Boarding passes and tickets do not leave the account they were uploaded
-  // to. Serving one already checks the owner, so the reference alone would
-  // fetch nothing — but stripping it here means the person holding the link is
-  // not even told a pass exists. Two answers to the same question, because
-  // this is the one that costs somebody their flight if it is wrong.
-  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor };
+  return { itinerary, ownerName: record?.name, ownerEmail, client, advisor };
 }
 
 /* ---- per-trip sharing: one link, locked to one itinerary ---------------- */

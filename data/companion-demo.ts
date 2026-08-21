@@ -137,6 +137,17 @@ export type CompanionTrip = {
    *  opens on day one to browse from, but must not claim that day as today —
    *  see homeKicker and the "Day N of M" pill. Never true for the demo. */
   tripFinished?: boolean;
+  /** Set only when the trip has not started yet — the number of days between
+   *  "today" and the first day's date. The home screen reads this as a
+   *  countdown instead of pretending day one is already under way. Never set
+   *  once the trip has started (see `todayIndex`/`tripFinished`), and never
+   *  set for the demo. */
+  daysUntilStart?: number;
+  /** A real photograph of the destination, when this trip has one, used as
+   *  the home screen's hero. Absent for the demo and for a trip with no
+   *  useful image on file — the hero falls back to a short branded band
+   *  rather than a near-half-screen placeholder. */
+  homeImage?: string;
   /** The one line under "Eating today" on the home screen. */
   /** The one "Eating today" line on the home screen. Hidden when absent. */
   kosherTitle?: string;
