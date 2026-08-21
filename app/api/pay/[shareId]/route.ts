@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSharedItineraryByShareId, getSharedTraveler } from "@/lib/account-store";
 import { getBalance } from "@/lib/account-store";
 import { getConnectAccount } from "@/lib/stripe-connect-store";
-import { canAcceptPayments, createDestinationPaymentIntent } from "@/lib/stripe-connect";
+import { canAcceptPayments, createDestinationPaymentIntent, stripePublishableKey } from "@/lib/stripe-connect";
+import { paymentForUnit } from "@/lib/companion-payment";
 import { emptyItinerary, travelerUnitKey, unitsOf } from "@/data/itinerary";
-import { emptyTripBalance, nextDueFor, OPEN_BALANCE_UNIT_KEY, paidCentsFor, remainingCentsFor } from "@/data/trip-payments";
+import { emptyTripBalance, OPEN_BALANCE_UNIT_KEY, remainingCentsFor } from "@/data/trip-payments";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -50,29 +51,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const resolved = await resolve(shareId);
   if (!resolved) return NextResponse.json({ available: false });
-  const balance = (await getBalance(resolved.ownerEmail, resolved.tripId)) ?? emptyTripBalance();
-  // An "open" balance has one shared pot everybody contributes toward,
-  // rather than a personal share — see OPEN_BALANCE_UNIT_KEY.
-  const payKey = balance.splitMode === "open" ? OPEN_BALANCE_UNIT_KEY : resolved.unitKey;
-  const assignment = balance.assignments.find((a) => a.unitKey === payKey);
-  if (!assignment) return NextResponse.json({ available: false });
+  const payment = await paymentForUnit(resolved.ownerEmail, resolved.tripId, resolved.unitKey, resolved.label, shareId);
+  if (!payment) return NextResponse.json({ available: false });
 
-  const paidCents = paidCentsFor(balance, payKey);
-  const remainingCents = remainingCentsFor(balance, payKey);
-  const nextDue = nextDueFor(balance, payKey);
-  const connect = await getConnectAccount(resolved.ownerEmail);
-
-  return NextResponse.json({
-    available: true,
-    label: resolved.label,
-    currency: balance.currency,
-    totalCents: balance.showTotalToTravelers ? balance.totalCents : undefined,
-    yourShareCents: assignment.amountCents,
-    paidCents,
-    remainingCents,
-    nextDue: nextDue ? { label: nextDue.label, amountCents: nextDue.amountCents, dueDate: nextDue.dueDate } : null,
-    canPay: resolved.canPay && remainingCents > 0 && canAcceptPayments() && Boolean(connect?.chargesEnabled),
-  });
+  return NextResponse.json({ available: true, ...payment, publishableKey: stripePublishableKey() });
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {

@@ -38,17 +38,19 @@ import {
   COMPANION_DEMO_TRIP,
   COMPANION_KIND,
   type CompanionItem,
+  type CompanionPayment,
   type CompanionTrip,
   type CompanionWalletRow,
 } from "@/data/companion-demo";
 import { Icon } from "@/components/icons/Icon";
+import PaymentCheckout from "@/components/companion/PaymentCheckout";
 
 /** The blue the app already uses for its own accents — map notes, the
  * initials avatar, kickers. The chat toolbar's icons match it rather than
  * showing as whatever color the device's native emoji happen to render in. */
 const ICON_BLUE = "#1f3f5c";
 
-type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile";
+type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile" | "pay";
 type ChatSide = "client" | "advisor";
 /** The live thread on this trip — present once the trip has been shared. */
 export type CompanionChat = { shareId: string; side: ChatSide; advisorName: string };
@@ -308,6 +310,60 @@ function GuideNoteEdit({
   );
 }
 
+/**
+ * The Pay screen — re-fetches live numbers before showing anything, rather
+ * than trusting trip.payment as of when the page was rendered. A traveler
+ * could have paid from another device, or the planner could have changed
+ * the balance, since this page loaded.
+ */
+function PayScreen({ shareId }: { shareId: string }) {
+  const [payment, setPayment] = useState<(CompanionPayment & { publishableKey: string }) | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/pay/${shareId}`, { cache: "no-store" });
+        const data = await res.json().catch(() => null);
+        if (!active) return;
+        if (!res.ok || !data?.available) {
+          setError("This trip's balance isn't available right now.");
+          return;
+        }
+        setPayment(data);
+      } catch {
+        if (active) setError("Could not reach the payment service.");
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [shareId]);
+
+  if (error) return <p style={{ margin: "16px 16px 0", fontSize: 13.5, color: "#b42318" }}>{error}</p>;
+  if (!payment) {
+    return (
+      <div style={{ padding: "16px 16px 24px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <p style={{ margin: 0, fontSize: 13.5, color: "#78716c" }}>Your share</p>
+        <p style={{ margin: 0, font: "400 26px/1.2 Georgia,'Times New Roman',serif", color: "#0b2437" }}>Loading…</p>
+      </div>
+    );
+  }
+  if (!payment.canPay) {
+    return (
+      <p style={{ margin: "16px 16px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e" }}>
+        {payment.remainingCents <= 0 ? "This is paid in full — thank you." : "This trip isn't set up to take a payment right now. Message your advisor if you'd like to pay."}
+      </p>
+    );
+  }
+  return (
+    <div style={{ padding: "16px 16px 24px" }}>
+      <PaymentCheckout payment={payment} publishableKey={payment.publishableKey} onDone={() => window.location.reload()} />
+    </div>
+  );
+}
+
 export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
@@ -462,6 +518,7 @@ export default function CompanionApp({
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
+    pay: "Trip balance",
   };
   const kickers: Record<Screen, string> = {
     home: trip.homeKicker,
@@ -472,6 +529,7 @@ export default function CompanionApp({
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
+    pay: trip.payment?.label ?? "",
   };
 
   const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
@@ -656,6 +714,25 @@ export default function CompanionApp({
           );
         })}
       </div>
+
+      {/* Money due gets one prominent card on the home screen, not a tab of
+          its own — see the file note at the top. It disappears the moment
+          nothing is owed, so a paid-up traveler never sees it dominate the
+          app again. */}
+      {trip.payment && trip.payment.remainingCents > 0 && (
+        <div style={{ margin: "14px 14px 0", padding: "17px 18px", borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.28)", display: "flex", flexDirection: "column", gap: 8 }}>
+          <span style={kicker("#765321")}>Balance due</span>
+          <div style={{ font: `400 22px/1.15 ${serif}`, color: "#4a3016" }}>
+            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(
+              (trip.payment.nextDue ? Math.min(trip.payment.nextDue.amountCents, trip.payment.remainingCents) : trip.payment.remainingCents) / 100,
+            )}
+            {trip.payment.nextDue?.dueDate && <span style={{ font: "600 13px/1 Inter,sans-serif", color: "#765321" }}> · Due {trip.payment.nextDue.dueDate}</span>}
+          </div>
+          <button onClick={() => go("pay")} className="wg-press" style={{ alignSelf: "flex-start", border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "12px 20px", borderRadius: 14 }}>
+            Pay now
+          </button>
+        </div>
+      )}
 
       {trip.kosherTitle && (
         <div style={{ margin: "14px 14px 0", padding: 18, borderRadius: 20, background: "#e7edf1", display: "flex", flexDirection: "column", gap: 7 }}>
@@ -989,6 +1066,23 @@ export default function CompanionApp({
       <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#1f3f5c", background: "#e7edf1", padding: "10px 14px", borderRadius: 14, alignSelf: "flex-start" }}>
         <span style={{ width: 7, height: 7, borderRadius: 14, background: "#15324b" }} />Kept on the phone — works with no signal
       </div>
+      {trip.payment && (
+        <button
+          onClick={() => go("pay")}
+          className="wg-fade"
+          style={{ textAlign: "left", cursor: "pointer", padding: "16px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 5 }}
+        >
+          <span style={kicker("#78716c")}>Trip balance</span>
+          <span style={{ font: `400 19px/1.2 ${serif}`, color: "#0b2437" }}>
+            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.remainingCents / 100)}
+            {trip.payment.remainingCents > 0 ? " remaining" : " — paid in full"}
+          </span>
+          <span style={{ fontSize: 12.5, color: "#78716c" }}>
+            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.paidCents / 100)} paid so far
+            {trip.payment.totalCents ? ` of ${new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.totalCents / 100)} total` : ""}
+          </span>
+        </button>
+      )}
       {trip.walletGroups.length === 0 && (
         <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Flights, where you are staying and anything held for you appear here as they are added to the trip.</p>
       )}
@@ -1048,6 +1142,8 @@ export default function CompanionApp({
       ))}
     </div>
   );
+
+  const payScreen = trip.payment ? <PayScreen shareId={trip.payment.shareId} /> : null;
 
   // A REAL trip's Guide — the advisor's own per-day practical notes, and,
   // only when the account has turned the kosher-and-Shabbos layer on
@@ -1180,6 +1276,7 @@ export default function CompanionApp({
     );
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
+  else if (st.screen === "pay") body = payScreen;
 
   const canBack = st.screen !== "home";
 

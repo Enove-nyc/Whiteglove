@@ -47,9 +47,14 @@ export function paymentsWebhookSecret(): string {
   return process.env.STRIPE_PAYMENTS_WEBHOOK_SECRET?.trim() || "";
 }
 
-/** Whether a real charge can be confirmed once it happens — see connections.ts. */
+/** The key a browser is allowed to hold — never the secret key. */
+export function stripePublishableKey(): string {
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim() || "";
+}
+
+/** Whether a real charge can be confirmed AND shown to a traveler — see connections.ts. */
 export function canAcceptPayments(): boolean {
-  return Boolean(stripeSecretKey() && paymentsWebhookSecret());
+  return Boolean(stripeSecretKey() && paymentsWebhookSecret() && stripePublishableKey());
 }
 
 type ConnectAccountData = { id: string; charges_enabled?: boolean; payouts_enabled?: boolean };

@@ -112,13 +112,13 @@ export const CONNECTIONS: Connection[] = [
       "Stripe. The secret key is under Developers → API keys. The webhook secret comes from adding an endpoint at /api/billing/webhook listening for checkout.session.completed, customer.subscription.updated and customer.subscription.deleted.",
   },
   {
-    vars: ["STRIPE_PAYMENTS_WEBHOOK_SECRET"],
-    what: "Confirming a traveler's trip payment actually went through, once Stripe says so.",
+    vars: ["STRIPE_PAYMENTS_WEBHOOK_SECRET", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"],
+    what: "Confirming a traveler's trip payment actually went through, and showing them a real card form to pay with.",
     without:
-      "A Business planner can still connect their own Stripe account and set up a trip's balance and split. What cannot happen is a traveler actually paying: the Pay button stays off until this is set, so nobody is ever shown a card form that would collect a card with no way to confirm the charge really succeeded.",
+      "A Business planner can still connect their own Stripe account and set up a trip's balance and split. What cannot happen is a traveler actually paying: the Pay button stays off until both of these are set, so nobody is ever shown a card form that would collect a card with no way to confirm the charge really succeeded.",
     weight: "nicety",
     where:
-      "Stripe, on the SAME platform account as STRIPE_SECRET_KEY above — a trip payment is a destination charge created with the platform's own key, sent to a planner's connected account. This needs its OWN webhook secret because it is its own endpoint: add one at /api/payments/webhook listening for payment_intent.succeeded and payment_intent.payment_failed. STRIPE_SECRET_KEY itself is reused for Connect — no second key.",
+      "Stripe. The webhook secret is on the SAME platform account as STRIPE_SECRET_KEY above — a trip payment is a destination charge created with the platform's own key, sent to a planner's connected account. This needs its OWN webhook secret because it is its own endpoint: add one at /api/payments/webhook listening for payment_intent.succeeded and payment_intent.payment_failed. The publishable key is under Developers → API keys, next to the secret key — safe to expose in the browser, which is the only place it is ever used (Stripe Elements, the traveler's own card form).",
   },
   {
     vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
