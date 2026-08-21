@@ -167,6 +167,9 @@ export default async function AccountPage() {
                   To hand a client their own trip, open it in the{" "}
                   <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
                   and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
+                  Before that, offer them a{" "}
+                  <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
+                  to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
                 </p>
               )}
             </div>
