@@ -337,6 +337,21 @@ export function travelerUnitKey(t: ItinTraveler): string {
   return family ? `family:${family}` : `solo:${t.id}`;
 }
 
+/**
+ * Every distinct unit on this trip — one entry per family, plus one per solo
+ * traveler — in the order each first appears. For building a payment split or
+ * a family-by-family roster; not stored anywhere, always derived fresh from
+ * the travelers themselves so it can never drift out of sync with them.
+ */
+export function unitsOf(itin: Itinerary): Array<{ unitKey: string; label: string }> {
+  const seen = new Map<string, string>();
+  for (const t of travelersOf(itin)) {
+    const key = travelerUnitKey(t);
+    if (!seen.has(key)) seen.set(key, t.family?.trim() || t.name);
+  }
+  return [...seen.entries()].map(([unitKey, label]) => ({ unitKey, label }));
+}
+
 /** Every traveler sharing this one's unit, this one included. */
 export function unitMates(itin: Itinerary, travelerId: string): ItinTraveler[] {
   const travelers = travelersOf(itin);
