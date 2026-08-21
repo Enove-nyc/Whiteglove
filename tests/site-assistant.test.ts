@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { readConversation, withTurns, MAX_TURNS, type AssistantTurn } from "@/lib/assistant-conversation";
-import { NOT_ON_THE_SITE, SITE_ASSISTANT_SYSTEM, saysNotOnTheSite } from "@/lib/site-assistant";
+import { NOT_ON_THE_SITE, saysNotOnTheSite, siteAssistantSystemFor } from "@/lib/site-assistant";
 import { isClientCodeAppView } from "@/components/SiteAssistant";
+
+const SITE_ASSISTANT_SYSTEM = siteAssistantSystemFor("kosher");
 
 /**
  * The assistant that only knows this site.
