@@ -177,6 +177,8 @@ export default async function AccountPage() {
                   Need a passport number or an emergency contact first? Send a{" "}
                   <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
                   — answers come back to you alone, never onto the itinerary itself.
+                  See every client trip and where it stands in your{" "}
+                  <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
                 </p>
               )}
               <CompanionSettings />
