@@ -44,7 +44,8 @@ export type IconName =
   | "stop"
   | "more"
   | "reply"
-  | "check-check";
+  | "check-check"
+  | "trash";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -216,6 +217,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M1.5 12.5 6 17 13 9.5" />
       <path d="M9 12.5 13.5 17 22.5 7" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M5 7h14" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M7 7l.8 12a2 2 0 0 0 2 1.9h4.4a2 2 0 0 0 2-1.9L17 7" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
     </>
   ),
 };

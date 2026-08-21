@@ -71,6 +71,12 @@ export type CompanionWalletRow = {
   phone?: string;
   /** A real address — tappable as directions when set. */
   address?: string;
+  /** The itinerary stop this row came from, and which array it lives in —
+   *  set only on a real, wired trip. Lets the advisor attach a boarding pass
+   *  or a ticket straight from the wallet, without a separate id lookup. */
+  id?: string;
+  stopKind?: "flight" | "lodging" | "activity";
+  attachments?: import("@/data/itinerary").ItinAttachment[];
 };
 export type CompanionWalletGroup = { name: string; rows: CompanionWalletRow[] };
 
@@ -103,6 +109,9 @@ export type CompanionTrip = {
    * concierge backend exists, a real trip can carry it too.
    */
   concierge: boolean;
+  /** The trip's own id, for the advisor's "add a boarding pass or ticket"
+   *  control on the wallet — only set on a real, wired trip. */
+  tripId?: string;
   advisorName: string;
   /**
    * The client's point of contact, shown on a wired trip that has no live

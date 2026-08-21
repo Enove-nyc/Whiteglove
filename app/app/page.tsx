@@ -17,14 +17,13 @@ import { PLAN_LABELS } from "@/lib/account-plans";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
-import { getAppPrefs } from "@/lib/app-prefs-store";
 import { pageMetadata } from "@/lib/seo";
 
 // One person's trip, on one person's phone. Nothing here belongs in a search
 // result, and the gate below means most visitors never see it at all.
 export const metadata = pageMetadata({
   title: "The White Glove app",
-  description: "The trip in your pocket — a day at a time, the kosher side of each day, and the Shabbos that stops early.",
+  description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
   path: "/app",
   noIndex: true,
 });
@@ -74,8 +73,7 @@ export default async function AppPage({
             The trip in your pocket.
           </h1>
           <p className="text-base leading-7 text-stone-600">
-            A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
-            wallet kept on the phone for when there is no signal.
+            A day at a time, with a travel wallet kept on the phone for when there is no signal.
           </p>
 
           <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
@@ -127,10 +125,7 @@ export default async function AppPage({
     if (selected) {
       const chosen = await getTripItinerary(who, selected.id).catch(() => null);
       if (chosen) {
-        const [brand, prefs] = await Promise.all([
-          readBrand(who).catch(() => null),
-          getAppPrefs(who).catch(() => ({ kosherFeatures: false })),
-        ]);
+        const brand = await readBrand(who).catch(() => null);
         const advisorName = chosen.advisor || (brand?.enabled ? brand.name : undefined);
         companionTrip = await buildCompanionFromItinerary(
           { ...emptyItinerary(), ...chosen.itinerary },
@@ -139,7 +134,7 @@ export default async function AppPage({
             advisorName,
             tripName: chosen.tripName,
             client: chosen.client,
-            kosher: prefs.kosherFeatures,
+            tripId: selected.id,
           },
         );
       }

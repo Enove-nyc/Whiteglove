@@ -3,16 +3,23 @@
 /**
  * The White Glove app — a trip in your pocket.
  *
- * A faithful build of the mobile design: a day at a time, the kosher side of
- * each day, the Shabbos that stops early, a travel wallet kept on the phone for
- * when there is no signal, and an advisor thread. Two ways to read it —
- * Concierge (an advisor is holding the trip) and Guide (the same trip, on your
- * own) — and two sides to stand on, the traveller's and the advisor's.
+ * A faithful build of the mobile design: a day at a time, a travel wallet kept
+ * on the phone for when there is no signal, and an advisor thread. Two sides
+ * to stand on, the traveller's and the advisor's.
  *
  * ALL OF ITS CONTENT IS A PROP. It takes a CompanionTrip and renders it; the
  * demo Rome week is only the default. When a Business account's own itinerary
- * is handed in — built from lib/account-store.ts and the site's kosher, Shabbos
- * and destination records — nothing here changes but the data.
+ * is handed in — built from lib/account-store.ts — nothing here changes but
+ * the data.
+ *
+ * THE APP CARRIES NO KOSHER OR SHABBOS CONTENT. It once had an opt-in
+ * "kosher-and-Shabbos layer" and a Guide tab built on it; both are gone, at
+ * the owner's word — the app is a general itinerary tool, full stop. The
+ * demo trip (data/companion-demo.ts) still tells the Rome showcase in its own
+ * voice, kosher details included, because it is hand-written marketing copy
+ * for a real destination rather than a real account's data — but nothing a
+ * real trip renders comes from that file, and lib/companion-trip.ts (the only
+ * place a real itinerary becomes a CompanionTrip) never invents any.
  *
  * THE STATE IS THE WHOLE POINT OF THE DESIGN. Open the rain notice, pick one of
  * the two afternoons, and the day, the chat and the notice all move together —
@@ -21,11 +28,13 @@
  */
 
 import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   COMPANION_DEMO_TRIP,
   COMPANION_KIND,
   type CompanionItem,
   type CompanionTrip,
+  type CompanionWalletRow,
 } from "@/data/companion-demo";
 import { Icon } from "@/components/icons/Icon";
 
@@ -72,6 +81,132 @@ type DecItem = CompanionItem & {
   kindFg: string;
 };
 
+const WALLET_ATTACH_LABEL: Record<NonNullable<CompanionWalletRow["stopKind"]>, string> = {
+  flight: "+ Add a boarding pass",
+  lodging: "+ Add a booking confirmation",
+  activity: "+ Add an entry ticket",
+};
+const WALLET_ATTACH_KIND: Record<NonNullable<CompanionWalletRow["stopKind"]>, string> = {
+  flight: "boarding-pass",
+  lodging: "booking",
+  activity: "ticket",
+};
+
+/**
+ * The advisor's "add a boarding pass or ticket" control on one wallet row.
+ *
+ * Uploads through /api/account/attachments — the same private, owner-checked
+ * store the itinerary builder already uses — then reads the trip's itinerary
+ * back, attaches the reference to the one stop this row came from, and saves.
+ * The same read-modify-write /api/account/itinerary already supports.
+ */
+function WalletAttach({
+  tripId,
+  row,
+  onSaved,
+}: {
+  tripId: string;
+  row: CompanionWalletRow;
+  onSaved: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const stopKind = row.stopKind!;
+  const inputId = `wallet-attach-${row.id}`;
+
+  async function upload(file: File) {
+    setBusy(true);
+    setError("");
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read that file."));
+        reader.readAsDataURL(file);
+      });
+
+      const up = await fetch("/api/account/attachments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          kind: WALLET_ATTACH_KIND[stopKind],
+          dataUrl,
+          existingCount: row.attachments?.length ?? 0,
+        }),
+      });
+      const upData = (await up.json().catch(() => null)) as { attachment?: { id: string }; error?: string } | null;
+      if (!up.ok || !upData?.attachment) {
+        setError(upData?.error ?? "Could not keep that file.");
+        return;
+      }
+
+      const key = stopKind === "flight" ? "flights" : stopKind === "lodging" ? "lodging" : "activities";
+      const got = await fetch(`/api/account/itinerary?trip=${encodeURIComponent(tripId)}`, { cache: "no-store" });
+      const gotData = (await got.json().catch(() => null)) as { itinerary?: Record<string, unknown> } | null;
+      const itinerary = gotData?.itinerary;
+      const rows = itinerary?.[key];
+      if (!itinerary || !Array.isArray(rows)) {
+        setError("Could not find that stop to attach it to.");
+        return;
+      }
+      const stop = (rows as Array<{ id: string; attachments?: unknown[] }>).find((r) => r.id === row.id);
+      if (!stop) {
+        setError("That stop is no longer on the trip.");
+        return;
+      }
+      stop.attachments = [...(stop.attachments ?? []), upData.attachment];
+
+      const saved = await fetch("/api/account/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itinerary, tripId }),
+      });
+      if (!saved.ok) {
+        setError("Kept the file, but could not save it to the trip.");
+        return;
+      }
+      onSaved();
+    } catch {
+      setError("Could not reach the server.");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 4 }}>
+      <input
+        ref={fileRef}
+        id={inputId}
+        type="file"
+        accept="application/pdf,image/png,image/jpeg,image/webp"
+        disabled={busy}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void upload(file);
+        }}
+        style={{ display: "none" }}
+      />
+      <label
+        htmlFor={inputId}
+        style={{
+          cursor: busy ? "default" : "pointer",
+          fontSize: 12.5,
+          fontWeight: 600,
+          color: busy ? "#a8a29e" : "#1f3f5c",
+          textDecoration: "underline",
+        }}
+      >
+        {busy ? "Keeping it…" : WALLET_ATTACH_LABEL[stopKind]}
+      </label>
+      {error && <p style={{ margin: "4px 0 0", fontSize: 12, color: "#b42318" }}>{error}</p>}
+    </div>
+  );
+}
+
 export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
@@ -82,7 +217,14 @@ export default function CompanionApp({
   /** The advisor's own side: a Messages tab that lists every client's chat. */
   advisorInbox?: boolean;
 }) {
+  const router = useRouter();
   const liveChat = chat ?? null;
+  // A client on a per-trip code, as opposed to whoever is signed into the
+  // account that owns the trip (an advisor, or a Gold member on their own).
+  // Attachments are served only to the owning account (lib/attachments.ts),
+  // so a client link could never open one anyway — the wallet's "add" control
+  // is only ever offered to the side that can actually use it.
+  const isClientViewer = liveChat?.side === "client";
   const hasMessages = Boolean(liveChat) || advisorInbox;
   const [st, setSt] = useState<State>({
     screen: "home",
@@ -263,12 +405,15 @@ export default function CompanionApp({
   const openActivity = (di: number, i: number) =>
     setSt((s) => ({ ...s, screen: "activity", prev: s.screen, actIdx: i, actDay: di }));
 
-  // Guide mode's tab still opens the reference info (guideChat) — genuinely
-  // its own thing, not a chat. Concierge mode's tab opens the real thread the
-  // moment one exists, so there is only ever one door to "talk to your
-  // advisor" rather than a real one and a dead scripted one side by side.
+  // Concierge mode's tab opens the real thread the moment one exists, so
+  // there is only ever one door to "talk to your advisor" rather than a real
+  // one and a dead scripted one side by side. The Guide/Concierge tab itself
+  // only exists on the showcase (hasConcierge) — a wired trip has nothing to
+  // put behind "Guide" now that the kosher-and-Shabbos layer is gone, so it
+  // simply isn't offered rather than opening onto an always-empty screen.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
-  const tabDefs: [Screen, string][] = [["home", "Trip"], [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]];
+  const tabDefs: [Screen, string][] = [["home", "Trip"]];
+  if (hasConcierge) tabDefs.push([conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]);
   if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", "Messages"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
@@ -419,8 +564,9 @@ export default function CompanionApp({
       {/* "On your own" is only true without a real advisor thread — with one,
           the liveChat card below already offers the right door to it, and
           telling a client with a live advisor they are on their own would
-          contradict it. */}
-      {isGuideMode && !usesRealChat && (
+          contradict it. Only the showcase (hasConcierge) has a Guide to open
+          — a wired trip has nothing behind that door any more. */}
+      {hasConcierge && isGuideMode && !usesRealChat && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#1f3f5c" }}>{placeName.charAt(0).toUpperCase()}</div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -761,6 +907,27 @@ export default function CompanionApp({
                   )}
                 </div>
               )}
+              {/* Only to whoever is signed into the account that owns the
+                  file — a client on a code link could never open one, so
+                  showing the link there would just be a dead tap. */}
+              {!isClientViewer && r.attachments && r.attachments.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 2 }}>
+                  {r.attachments.map((att) => (
+                    <a
+                      key={att.id}
+                      href={`/api/account/attachments?id=${encodeURIComponent(att.id)}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      style={{ fontSize: 12.5, fontWeight: 600, color: "#1f3f5c", textDecoration: "underline" }}
+                    >
+                      📎 {att.name}
+                    </a>
+                  ))}
+                </div>
+              )}
+              {!isClientViewer && trip.tripId && r.id && r.stopKind && (
+                <WalletAttach tripId={trip.tripId} row={r} onSaved={() => router.refresh()} />
+              )}
             </div>
           ))}
         </div>
@@ -999,6 +1166,12 @@ function LiveChat({
   // side can take back.
   const [staged, setStaged] = useState<StagedMedia | null>(null);
   const [caption, setCaption] = useState("");
+  // A location fix, held for review the same way a photo is — nothing goes
+  // out until Send is pressed, so tapping the location button can never
+  // itself be the thing that shares where somebody is standing.
+  const [stagedLocation, setStagedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  // Whether the "⋯" attach menu (photo / video / location) is open.
+  const [attachOpen, setAttachOpen] = useState(false);
   // The `at` of a message being changed — while set, the composer holds that
   // message's words rather than a new message, and Send saves the change
   // instead of posting another one.
@@ -1007,6 +1180,11 @@ function LiveChat({
   // The `at` of the one message whose "⋯" menu (Report / Edit / Delete) is
   // open. Only ever one at a time, so a single value does the job of a map.
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
+  // Which side the open menu should grow toward — measured against the real
+  // screen at the moment it opens, not assumed from mine/theirs, since a
+  // wide bubble can push its own "⋯" close to either edge and a menu that
+  // always opens the same direction ends up rendered off the visible screen.
+  const [menuOpenLeft, setMenuOpenLeft] = useState(false);
   // Whether the other side has typed within the last few seconds — read off
   // the poll, exactly like the messages themselves.
   const [otherTyping, setOtherTyping] = useState(false);
@@ -1029,6 +1207,8 @@ function LiveChat({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
+  const draftRef = useRef<HTMLTextAreaElement>(null);
   // Whether the scroller was already near its bottom the last time it was
   // checked — read by the auto-scroll effect so a new message does not yank
   // somebody back down while they are reading scrollback. Starts true: the
@@ -1057,6 +1237,32 @@ function LiveChat({
       document.removeEventListener("keydown", onKey);
     };
   }, [menuOpenAt]);
+
+  useEffect(() => {
+    if (!attachOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) setAttachOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAttachOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [attachOpen]);
+
+  // Grows the composer with what is actually typed, up to a cap beyond which
+  // it scrolls internally rather than eating the whole screen.
+  const MAX_COMPOSER_PX = 120;
+  useEffect(() => {
+    const el = draftRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_COMPOSER_PX)}px`;
+  }, [draft]);
 
   // Picked up once per "Ask about this" tap, then handed back so the parent
   // clears it — otherwise navigating away and back would restage it over
@@ -1274,9 +1480,57 @@ function LiveChat({
     reader.readAsDataURL(file);
   }
 
-  function pickImage(file: File | null | undefined) {
-    if (!file) return;
-    stageFile(file, { accept: /^image\//, kind: "image", noun: "picture", max: imageLimit, maxLabel: formatBytes(imageLimit) });
+  // A phone's camera routinely produces a file well over any chat-sized cap
+  // — a modern photo is commonly 3–8 MB, the server's limit is 1–2 MB — so a
+  // flat reject on "too large" is why sending a picture could look broken
+  // rather than merely slow. Downscales dimensions first (most of the
+  // saving), then steps the JPEG quality down if it is still over, the same
+  // order a phone's own share sheet uses.
+  async function compressImage(file: File, maxBytes: number): Promise<Blob> {
+    const bitmap = await createImageBitmap(file);
+    const MAX_DIM = 1800;
+    let { width, height } = bitmap;
+    if (width > MAX_DIM || height > MAX_DIM) {
+      const scale = MAX_DIM / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    bitmap.close();
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    for (let quality = 0.85; quality >= 0.4; quality -= 0.15) {
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+      if (!blob) break;
+      if (blob.size <= maxBytes || quality <= 0.4) return blob;
+    }
+    return file;
+  }
+
+  async function pickImage(file: File | null | undefined) {
+    if (!file || sending) return;
+    if (!/^image\//.test(file.type)) {
+      setNote("That is not a picture.");
+      return;
+    }
+    setNote("");
+    let toStage: File | Blob = file;
+    if (file.size > imageLimit) {
+      try {
+        toStage = await compressImage(file, imageLimit);
+      } catch {
+        // Compression failed (an unusual format, a very old browser) — fall
+        // through to the plain size check below rather than losing the pick.
+      }
+    }
+    if (toStage.size > imageLimit) {
+      setNote(`That picture is too large (max ${formatBytes(imageLimit)}).`);
+      return;
+    }
+    setStaged({ kind: "image", file: toStage, previewUrl: URL.createObjectURL(toStage), noun: "picture" });
   }
 
   function pickVideo(file: File | null | undefined) {
@@ -1334,7 +1588,11 @@ function LiveChat({
     };
   }, []);
 
-  function shareLocation() {
+  // Finds where the phone is and holds it for review — the same "nothing
+  // goes anywhere until Send" rule a photo gets, so a tap on the location
+  // button can never itself be the thing that tells the other side exactly
+  // where somebody is standing.
+  function pickLocation() {
     if (sending) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setNote("This device can't share a location.");
@@ -1345,7 +1603,7 @@ function LiveChat({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setSending(false);
-        void post({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setStagedLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       },
       () => {
         setSending(false);
@@ -1353,6 +1611,12 @@ function LiveChat({
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
+  }
+
+  function sendStagedLocation() {
+    if (!stagedLocation || sending) return;
+    void post({ lat: stagedLocation.lat, lng: stagedLocation.lng });
+    setStagedLocation(null);
   }
 
   async function report(at: string) {
@@ -1560,7 +1824,16 @@ function LiveChat({
                 {hasMenu && (
                   <div ref={menuOpen ? menuRef : undefined} style={{ position: "relative", flex: "none" }}>
                     <button
-                      onClick={() => setMenuOpenAt(menuOpen ? null : m.at)}
+                      onClick={(e) => {
+                        if (!menuOpen) {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          // Not enough room for a ~150px menu on the right —
+                          // grow it left instead, whichever side "mine" would
+                          // otherwise have picked.
+                          setMenuOpenLeft(window.innerWidth - rect.left < 155);
+                        }
+                        setMenuOpenAt(menuOpen ? null : m.at);
+                      }}
                       title="Message options"
                       aria-label="Message options"
                       aria-expanded={menuOpen}
@@ -1574,10 +1847,10 @@ function LiveChat({
                         style={{
                           position: "absolute",
                           top: "100%",
-                          [mine ? "right" : "left"]: 0,
+                          [menuOpenLeft ? "right" : "left"]: 0,
                           zIndex: 5,
                           marginTop: 2,
-                          minWidth: 128,
+                          minWidth: 148,
                           borderRadius: 12,
                           border: "1px solid rgba(38,50,58,.12)",
                           background: "#ffffff",
@@ -1588,9 +1861,9 @@ function LiveChat({
                         <button
                           role="menuitem"
                           onClick={() => { startReply(m); setMenuOpenAt(null); }}
-                          style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
                         >
-                          Reply
+                          <Icon name="reply" className="h-4 w-4" /> Reply
                         </button>
                         {!mine && (
                           reported[m.at] ? (
@@ -1599,9 +1872,9 @@ function LiveChat({
                             <button
                               role="menuitem"
                               onClick={() => { void report(m.at); setMenuOpenAt(null); }}
-                              style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
                             >
-                              Report
+                              <Icon name="flag" className="h-4 w-4" /> Report
                             </button>
                           )
                         )}
@@ -1609,18 +1882,18 @@ function LiveChat({
                           <button
                             role="menuitem"
                             onClick={() => { startEdit(m); setMenuOpenAt(null); }}
-                            style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
                           >
-                            Edit
+                            <Icon name="pencil" className="h-4 w-4" /> Edit
                           </button>
                         )}
                         {mine && (
                           <button
                             role="menuitem"
                             onClick={() => { setMenuOpenAt(null); void deleteMine(m.at); }}
-                            style={{ display: "block", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#b5442e" }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#b5442e" }}
                           >
-                            Delete
+                            <Icon name="trash" className="h-4 w-4" /> Delete
                           </button>
                         )}
                       </div>
@@ -1702,6 +1975,27 @@ function LiveChat({
             </button>
           </div>
         </div>
+      ) : stagedLocation ? (
+        // A location fix held for review — the same confirm-before-send
+        // shape a photo gets, so finding where the phone is can never itself
+        // be the act of telling the other side.
+        <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ flex: "none", width: 56, height: 56, borderRadius: 12, background: "#e7edf1", color: "#1f3f5c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="map-pin" className="h-6 w-6" strokeWidth={1.4} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#26323a" }}>Your location, ready to send</span>
+              <span style={{ fontSize: 11.5, color: "#78716c" }}>{stagedLocation.lat.toFixed(4)}, {stagedLocation.lng.toFixed(4)}</span>
+            </div>
+            <button onClick={() => setStagedLocation(null)} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 36, height: 36, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="close" className="h-4 w-4" />
+            </button>
+          </div>
+          <button onClick={() => sendStagedLocation()} disabled={sending} className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, height: 46, borderRadius: 14, fontSize: 14, fontWeight: 700, opacity: sending ? 0.6 : 1 }}>
+            Send location
+          </button>
+        </div>
       ) : (
         <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(38,50,58,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           {editingAt && (
@@ -1736,17 +2030,56 @@ function LiveChat({
               </button>
             </div>
           )}
-          <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
-            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickImage(e.target.files?.[0]); e.target.value = ""; }} />
+          <div style={{ display: "flex", gap: 7, alignItems: "flex-end" }}>
+            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { void pickImage(e.target.files?.[0]); e.target.value = ""; }} />
             <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
             {!editingAt && (
               <>
-                <button onClick={() => fileRef.current?.click()} disabled={sending || recording} title="Send a photo" aria-label="Send a photo" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
-                  <Icon name="camera" className="h-[19px] w-[19px]" />
-                </button>
-                <button onClick={() => videoRef.current?.click()} disabled={sending || recording} title="Send a video" aria-label="Send a video" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
-                  <Icon name="video" className="h-[19px] w-[19px]" />
-                </button>
+                {/* One "attach" button for photo, video and location, instead
+                    of four buttons crowding the row and squeezing the text
+                    field down to a sliver. Opens upward, since the composer
+                    sits at the very bottom of the screen. */}
+                <div ref={attachMenuRef} style={{ position: "relative", flex: "none" }}>
+                  <button
+                    onClick={() => setAttachOpen((o) => !o)}
+                    disabled={sending || recording}
+                    title="Attach"
+                    aria-label="Attach a photo, video or location"
+                    aria-expanded={attachOpen}
+                    className="wg-warm"
+                    style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}
+                  >
+                    <Icon name="more" className="h-[19px] w-[19px]" />
+                  </button>
+                  {attachOpen && (
+                    <div
+                      role="menu"
+                      style={{
+                        position: "absolute",
+                        bottom: "100%",
+                        left: 0,
+                        marginBottom: 6,
+                        zIndex: 5,
+                        minWidth: 168,
+                        borderRadius: 12,
+                        border: "1px solid rgba(38,50,58,.12)",
+                        background: "#ffffff",
+                        boxShadow: "0 10px 26px rgba(23,45,82,.16)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
+                        <Icon name="camera" className="h-4 w-4" /> Photo
+                      </button>
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); videoRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
+                        <Icon name="video" className="h-4 w-4" /> Video
+                      </button>
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); pickLocation(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
+                        <Icon name="map-pin" className="h-4 w-4" /> Location
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => (recording ? stopRecording() : void startRecording())}
                   disabled={sending}
@@ -1772,20 +2105,23 @@ function LiveChat({
                 >
                   <Icon name={recording ? "stop" : "microphone"} className="h-[19px] w-[19px]" />
                 </button>
-                <button onClick={() => shareLocation()} disabled={sending || recording} title="Share your location" aria-label="Share your location" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}>
-                  <Icon name="map-pin" className="h-[19px] w-[19px]" />
-                </button>
               </>
             )}
-            <input
+            <textarea
+              ref={draftRef}
+              rows={1}
               value={draft}
               onChange={(e) => { setDraft(e.target.value); noteTyping(); }}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
-              // 16px: the same iOS auto-zoom-on-focus fix as the caption box.
-              style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: "#26323a", outline: "none" }}
+              // 16px, not 14: iOS Safari auto-zooms the whole page into any
+              // text input under 16px the moment it is focused, which is
+              // exactly what reads as the screen "jumping" when the keyboard
+              // opens. Grows with what is typed (see the effect above),
+              // rather than staying squashed to one line.
+              style={{ flex: 1, minWidth: 0, resize: "none", overflow: "auto", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "13px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, lineHeight: 1.4, color: "#26323a", outline: "none" }}
             />
-            <button onClick={() => send()} disabled={sending || recording} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
+            <button onClick={() => send()} disabled={sending || recording} title="Send" aria-label="Send" className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
           </div>
         </div>
       )}

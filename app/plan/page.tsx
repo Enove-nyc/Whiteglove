@@ -6,12 +6,18 @@ import TripStartFlow from "@/components/TripStartFlow";
 import { getVacationDestinationBySlug } from "@/lib/vacation-destinations-view";
 import { pageMetadata } from "@/lib/seo";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
-  title: "Plan a kosher trip — start here | White Glove Kosher Travel",
-  description: "Start a trip: the kind of holiday, where and when, and who is coming.",
-  path: "/plan",
-});
+// Brand-aware: reachable on both domains, and its own title used to say
+// "kosher trip" outright — the itineraries domain plans trips of every kind.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Plan a trip — start here | White Glove Itineraries" : "Plan a kosher trip — start here | White Glove Kosher Travel",
+    description: "Start a trip: the kind of holiday, where and when, and who is coming.",
+    path: "/plan",
+  });
+}
 
 /**
  * The front door to planning.

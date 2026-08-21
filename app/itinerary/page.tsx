@@ -14,13 +14,18 @@ import { readAssumptions } from "@/lib/planner-settings-store";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { templatesFrom } from "@/lib/trip-setup";
 import { loadVacationSources } from "@/lib/vacation-sources";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
-  title: "Itinerary planner — White Glove Kosher Travel",
-  description: "Build your trip day by day — flights, hotels, and stops — with automatic checks and a printable itinerary.",
-  path: "/itinerary",
-  noIndex: true,
-});
+// Brand-aware: /itinerary is one of the itineraries domain's own pages too.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Itinerary planner — White Glove Itineraries" : "Itinerary planner — White Glove Kosher Travel",
+    description: "Build your trip day by day — flights, hotels, and stops — with automatic checks and a printable itinerary.",
+    path: "/itinerary",
+    noIndex: true,
+  });
+}
 
 // The `ask` hand-off used to arrive here, because the travel assistant lived on
 // this page. It has its own page now — app/assistant — and this one is the

@@ -146,11 +146,13 @@ describe("wallet rows carry real phone numbers and addresses as taps, not plain 
 });
 
 describe("the composer never triggers iOS's auto-zoom", () => {
-  it("every message text input is 16px, not 14 — under 16 zooms the whole page on focus", () => {
+  it("every message text field is 16px, not 14 — under 16 zooms the whole page on focus", () => {
     const inputs = [...APP.matchAll(/<input[\s\S]*?\/>/g)].filter((m) => /placeholder=/.test(m[0]));
-    assert.ok(inputs.length >= 3, "expects the draft, caption and demo composer inputs");
-    for (const [tag] of inputs) {
-      assert.doesNotMatch(tag, /fontSize: 14[,}]/, "a text input must not sit at the pre-zoom size");
+    const textareas = [...APP.matchAll(/<textarea[\s\S]*?\/>/g)];
+    assert.ok(inputs.length >= 2, "expects the caption and demo composer inputs");
+    assert.ok(textareas.length >= 1, "expects the growing draft textarea");
+    for (const [tag] of [...inputs, ...textareas]) {
+      assert.doesNotMatch(tag, /fontSize: 14[,}]/, "a text field must not sit at the pre-zoom size");
     }
   });
 });

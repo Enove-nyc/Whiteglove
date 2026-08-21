@@ -4,15 +4,22 @@ import LoginForm from "@/components/LoginForm";
 import { smsConfigured } from "@/lib/sms";
 import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 // Noindexed: a sign-in form is of no use in a search result, and having one
 // rank for the brand name puts a login page where the homepage should be.
-export const metadata = pageMetadata({
-  title: "Sign in to White Glove Kosher Travel",
-  description: "Sign in to keep your route, saved destinations and itineraries on every device.",
-  path: "/login",
-  noIndex: true,
-});
+// Brand-aware: signing in on whitegloveitineraries.com must not read "Sign in
+// to White Glove Kosher Travel" in the tab — the one line most likely to make
+// somebody think the site itself had changed under them.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Sign in to White Glove Itineraries" : "Sign in to White Glove Kosher Travel",
+    description: "Sign in to keep your route, saved destinations and itineraries on every device.",
+    path: "/login",
+    noIndex: true,
+  });
+}
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; google?: string; googleSays?: string }> }) {
   const { next, google, googleSays } = await searchParams;
