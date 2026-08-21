@@ -46,6 +46,7 @@ export async function generateMetadata() {
  * deliberately absent from the header icons and the mobile bar.
  */
 export default async function AccountPage() {
+  const siteBrand = await currentBrand();
   const cookieStore = await cookies();
   const cookie = cookieStore.get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
@@ -153,7 +154,7 @@ export default async function AccountPage() {
             usageLine={usageLine}
             offer={offer}
           />
-          {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
+          {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
           {canUseApp && (
             <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
