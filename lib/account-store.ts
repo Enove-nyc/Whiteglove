@@ -3,6 +3,7 @@ import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
+import type { ManualTripStage } from "@/data/trip-pipeline";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
@@ -151,6 +152,13 @@ export type SavedTrip = {
   formTemplate?: ClientFormTemplate;
   formShareId?: string;
   formResponses?: ClientFormResponse[];
+  /**
+   * Set only before a proposal exists — an inquiry the planner hasn't started
+   * active work on yet, versus one they have. Every later stage is read off
+   * the proposal's own status and the trip's own dates instead; see
+   * data/trip-pipeline.ts for why nothing past this is stored by hand.
+   */
+  pipelineStage?: ManualTripStage;
   createdAt: string;
   updatedAt: string;
 };
@@ -1053,6 +1061,22 @@ export async function saveProposal(email: string, tripId: string, proposal: Prop
   if (!trips.some((t) => t.id === tripId)) return false;
   const stamped: Proposal = { ...proposal, id: proposal.id || proposalId(), updatedAt: new Date().toISOString() };
   const next = trips.map((t) => (t.id === tripId ? { ...t, proposal: stamped, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/**
+ * Move a trip between the only two stages a planner ever sets by hand —
+ * inquiry and active planning, before a proposal exists. See
+ * data/trip-pipeline.ts for why nothing past this is stored rather than
+ * derived.
+ */
+export async function savePipelineStage(email: string, tripId: string, stage: ManualTripStage): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, pipelineStage: stage, updatedAt: new Date().toISOString() } : t));
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
