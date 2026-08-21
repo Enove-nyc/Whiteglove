@@ -42,7 +42,9 @@ describe("what each of them shows instead", () => {
     const print = readFileSync("components/PrintableItinerary.tsx", "utf8");
     assert.match(print, /logo-hand-navy\.png/);
     assert.match(print, /White Glove<\/p>/);
-    assert.match(print, /Kosher Travel<\/p>/);
+    // The sub-line names whichever site actually produced the document — see
+    // tests/two-brands-print.test.ts for which text renders for which brand.
+    assert.match(print, /"Kosher Travel"/);
   });
 
   it("keeps the Business preview showing what the real cover shows", () => {

@@ -36,6 +36,12 @@ export const BRAND_NAME: Record<SiteBrand, string> = {
   itineraries: "White Glove Itineraries",
 };
 
+/** The bare domain a brand is credited by, on printed and shared documents. */
+export const BRAND_DOMAIN: Record<SiteBrand, string> = {
+  kosher: "whiteglovekoshertravel.com",
+  itineraries: "whitegloveitineraries.com",
+};
+
 /** The brand a host belongs to. Anything unrecognised is the kosher default. */
 export function brandForHost(host?: string | null): SiteBrand {
   return host && host.toLowerCase().includes(ITINERARIES_HOST) ? "itineraries" : "kosher";
