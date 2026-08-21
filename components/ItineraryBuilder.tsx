@@ -107,6 +107,9 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [reloadKey, setReloadKey] = useState(0);
   const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
+  // Which trip is loaded, so a per-traveler access link can be requested for
+  // it. Read once off the load response; the itinerary itself carries no id.
+  const [tripId, setTripId] = useState<string | null>(null);
   // The add/edit form sits at the top of the builder, while the flights and
   // hotels it edits are listed further down. Pressing Edit down there opens the
   // top form — so bring it into view, or it reads as nothing happening.
@@ -136,6 +139,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           const data = await res.json();
           if (!active) return;
           setItin(data?.itinerary ? { ...emptyItinerary(), ...data.itinerary } : emptyItinerary());
+          setTripId(data?.tripId ?? null);
           setLoaded(true);
           return;
         }
@@ -493,6 +497,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 const travelers = traveler ? [...travelersOf(itin), traveler] : travelersOf(itin);
                 set({ bookingFor, travelers, travelerName: travelers[0]?.name ?? "" });
               }}
+              tripId={tripId}
             />
           </div>
         </details>
@@ -2096,16 +2101,64 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
   { value: "infant", label: "Infant" },
 ];
 
+function TravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function create() {
+    if (!tripId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account/traveler-share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, travelerId: traveler.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.shareId) {
+        setError(data?.error || "Could not create that link.");
+        return;
+      }
+      setLink(`${window.location.origin}/t/${data.shareId}/app`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (link) {
+    return (
+      <div className="mt-1.5 flex w-full min-w-0 items-center gap-2 text-xs">
+        <input readOnly value={link} className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#fcfaf6] px-2 py-1 text-[var(--navy)]" onFocus={(e) => e.target.select()} />
+        <button type="button" onClick={() => navigator.clipboard?.writeText(link)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Copy
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-1.5 w-full">
+      <button type="button" onClick={create} disabled={busy || !tripId} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 disabled:opacity-40">
+        {traveler.hasOwnAccess ? "Get access link" : "Create access link"}
+      </button>
+      {error && <p className="mt-1 text-xs font-semibold text-red-700">{error}</p>}
+    </div>
+  );
+}
+
 function TravelersPanel({
   travelers,
   onChange,
   bookingFor,
   onBookingFor,
+  tripId,
 }: {
   travelers: ItinTraveler[];
   onChange: (t: ItinTraveler[]) => void;
   bookingFor?: "self" | "someone-else";
   onBookingFor: (answer: "self" | "someone-else", traveler?: ItinTraveler) => void;
+  tripId?: string | null;
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
@@ -2201,6 +2254,14 @@ function TravelersPanel({
               >
                 Remove
               </button>
+              <input
+                value={t.family ?? ""}
+                onChange={(e) => update(t.id, { family: e.target.value })}
+                aria-label={`${t.name || "Traveler"}'s family or group`}
+                placeholder="Family / group (optional)"
+                className="min-w-0 flex-1 border border-[var(--gold-light)] bg-[#fcfaf6] px-2 py-1 text-xs text-[var(--navy)] outline-none"
+              />
+              <TravelerShareLink tripId={tripId ?? null} traveler={t} />
             </li>
           ))}
         </ul>
