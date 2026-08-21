@@ -11,14 +11,16 @@ import { resolvePage } from "@/lib/pages";
 import { readAboutProfile } from "@/lib/about-profile-store";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { readWords } from "@/lib/site-words-store";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export async function generateMetadata() {
-  const page = await resolvePage("about");
+  const [page, name] = await Promise.all([resolvePage("about"), currentBrand().then((b) => BRAND_NAME[b])]);
   return pageMetadata({
-    title: page?.seoTitle ?? "About — White Glove Kosher Travel",
+    title: page?.seoTitle ?? `About — ${name}`,
     description:
       page?.seoDescription ??
-      "Who is behind White Glove Kosher Travel, how the practical detail on this site is put together, and how to reach a person.",
+      `Who is behind ${name}, how the practical detail on this site is put together, and how to reach a person.`,
     path: "/about",
   });
 }
@@ -31,11 +33,12 @@ export async function generateMetadata() {
  * The process blocks below stay editable via /admin/pages.
  */
 export default async function AboutPage() {
-  const [page, words, profile, studies] = await Promise.all([
+  const [page, words, profile, studies, siteBrand] = await Promise.all([
     resolvePage("about"),
     readWords(),
     readAboutProfile(),
     readPublicCaseStudies(),
+    currentBrand(),
   ]);
 
   // Hero is rendered by AboutProfileSection so empty personal fields can hide
@@ -45,7 +48,7 @@ export default async function AboutPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
-      <AboutProfileSection profile={profile} />
+      <AboutProfileSection profile={profile} siteBrand={siteBrand} />
       <PageBlocks blocks={blocks} />
       <CaseStudiesSection studies={studies} />
 

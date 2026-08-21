@@ -3,14 +3,19 @@ import ExperienceRatingForm from "@/components/ExperienceRatingForm";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { isRatingKind, type RatingKind } from "@/lib/experience-ratings";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = pageMetadata({
-  title: "Rate how it went — White Glove Kosher Travel",
-  description: "Private feedback for White Glove — how a place or White Glove itself did. Nothing is published from this page.",
-  path: "/rate",
-});
+export async function generateMetadata() {
+  const name = BRAND_NAME[await currentBrand()];
+  return pageMetadata({
+    title: `Rate how it went — ${name}`,
+    description: `Private feedback for ${name} — how a place or ${name} itself did. Nothing is published from this page.`,
+    path: "/rate",
+  });
+}
 
 type Search = { kind?: string; ref?: string; label?: string };
 

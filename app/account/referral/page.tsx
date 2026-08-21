@@ -6,13 +6,18 @@ import { getOrCreateReferralCode, readReferralSettings, referralStoreAvailable }
 import { accountCookieName, readSessionEmail } from "@/lib/account-store";
 import { cookies } from "next/headers";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
-export const metadata = pageMetadata({
-  title: "Referral programme | White Glove Kosher Travel",
-  description: "Invite friends when the White Glove referral programme is open.",
-  path: "/account/referral",
-  noIndex: true,
-});
+export async function generateMetadata() {
+  const name = BRAND_NAME[await currentBrand()];
+  return pageMetadata({
+    title: `Referral programme | ${name}`,
+    description: `Invite friends when the ${name} referral programme is open.`,
+    path: "/account/referral",
+    noIndex: true,
+  });
+}
 
 export const dynamic = "force-dynamic";
 

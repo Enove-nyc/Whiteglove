@@ -1,14 +1,17 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { isValidAccessToken } from "@/lib/secure-access";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Site status | White Glove Kosher Travel",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  return {
+    title: `Site status | ${BRAND_NAME[await currentBrand()]}`,
+    robots: { index: false, follow: false },
+  };
+}
 
 /**
  * Railway uses this route as its health check, so it stays small, dynamic and
@@ -39,6 +42,7 @@ async function adminCookie(): Promise<string | undefined> {
 }
 
 export default async function VersionPage() {
+  const siteName = BRAND_NAME[await currentBrand()];
   const admin = isValidAccessToken("admin", await adminCookie());
   // Vercel and Railway name these differently; whichever platform built the
   // site, this answers the same question.
@@ -49,7 +53,7 @@ export default async function VersionPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
       <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">
-        White Glove Kosher Travel
+        {siteName}
       </p>
       <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Site status</h1>
       <p className="mt-4 leading-7 text-stone-600">White Glove is available.</p>
