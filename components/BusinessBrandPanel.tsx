@@ -106,7 +106,7 @@ export default function BusinessBrandPanel({ brand, siteBrand }: { brand: Busine
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your name on the itinerary</h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
         Plan the trip here and hand your client a document with your logo on the cover and your name in the header of
-        every page. One line at the bottom says the itinerary was planned with whiteglovekoshertravel.com; everything
+        every page. One line at the bottom says the itinerary was planned with {siteDomain}; everything
         else on it is yours.
       </p>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">

@@ -27,6 +27,9 @@ describe("the Business branding preview matches whichever brand the account is o
     assert.doesNotMatch(PANEL, /: "A White Glove Kosher Travel journey"/);
     assert.doesNotMatch(PANEL, /"Planned with whiteglovekoshertravel\.com"/);
     assert.doesNotMatch(PANEL, /: "whiteglovekoshertravel\.com"/);
+    // The explanatory prose above the form said the same thing outright too.
+    assert.doesNotMatch(PANEL, /planned with whiteglovekoshertravel\.com/);
+    assert.match(PANEL, /planned with \{siteDomain\}/);
   });
 
   it("app/account/page.tsx resolves the real brand and passes it down", () => {
