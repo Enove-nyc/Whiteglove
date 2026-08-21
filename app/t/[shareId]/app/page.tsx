@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
-import { getSharedTraveler } from "@/lib/account-store";
+import { checkTripFlightStatus, getSharedTraveler, getTripAlerts } from "@/lib/account-store";
 import { emptyItinerary, redactForTraveler, travelerUnitKey } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
@@ -59,6 +59,8 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   });
   if (!trip) redirect("/");
   if (payment) trip.payment = payment;
+  await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
+  trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
 
   const chat = {
     shareId: shared.tripShareId ?? shareId,

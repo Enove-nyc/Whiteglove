@@ -5,6 +5,8 @@ import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
+import { alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
+import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
@@ -166,6 +168,18 @@ export type SavedTrip = {
    * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
    */
   balance?: TripBalance;
+  /**
+   * The last real reading of each of this trip's flights — keyed by the
+   * flight's own id. Absent until a flight is actually checked. See
+   * lib/flight-status.ts and checkTripFlightStatus below.
+   */
+  flightStatus?: Record<string, FlightStatusSnapshot>;
+  /**
+   * What a flight-status check found worth telling somebody about — a
+   * meaningful delay, a cancellation, a real gate/terminal change. Not every
+   * status reading becomes one of these; see data/trip-alerts.ts.
+   */
+  alerts?: TripAlert[];
   createdAt: string;
   updatedAt: string;
 };
@@ -1134,6 +1148,89 @@ export async function recordPayment(ownerEmail: string, tripId: string, record: 
     t.id === tripId ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, updatedAt: new Date().toISOString() } : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Live travel information ----------------------------------------------
+//
+// A flight's real status, checked on demand (no cron in this deployment —
+// see lib/flight-status.ts) whenever somebody opens the app on a trip with a
+// flight coming up soon, throttled so the same flight isn't re-queried every
+// time the page loads.
+
+function tripAlertId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/** Re-check status if the last real reading is older than this. */
+const FLIGHT_RECHECK_MS = 3 * 60 * 60 * 1000;
+/** Only bother checking a flight departing this soon — no use querying a flight six months out. */
+const FLIGHT_CHECK_WINDOW_DAYS = 3;
+
+/**
+ * Check every upcoming flight on this trip that is due for a re-check, and
+ * record whatever alerts come out of a meaningful change. Silent when
+ * nothing needed checking (every flight was checked recently, or none is
+ * departing soon) — no write happens in that case.
+ */
+export async function checkTripFlightStatus(email: string, tripId: string): Promise<TripAlert[]> {
+  if (!hasAccountStorage()) return [];
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return [];
+
+  const today = new Date().toISOString().slice(0, 10);
+  const cutoff = new Date(Date.now() + FLIGHT_CHECK_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10);
+  const candidates = trip.itinerary.flights.filter((f) => f.flightNo?.trim() && f.date && f.date >= today && f.date <= cutoff);
+  if (candidates.length === 0) return [];
+
+  const statuses = { ...(trip.flightStatus ?? {}) };
+  const newAlerts: TripAlert[] = [];
+  let checkedAny = false;
+
+  for (const flight of candidates) {
+    const previous = statuses[flight.id];
+    if (previous && Date.now() - Date.parse(previous.checkedAt) < FLIGHT_RECHECK_MS) continue;
+    const next = await checkFlightStatus(flight.id, flight.flightNo!.trim(), flight.date);
+    if (!next) continue;
+    checkedAny = true;
+    const label = [flight.airline, flight.flightNo].filter(Boolean).join(" ") || `${flight.from} → ${flight.to}`;
+    newAlerts.push(...alertsFromStatusChange(label, previous, next, tripAlertId));
+    statuses[flight.id] = next;
+  }
+  if (!checkedAny) return [];
+
+  const nextTrips = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, flightStatus: statuses, alerts: [...(t.alerts ?? []), ...newAlerts], updatedAt: new Date().toISOString() }
+      : t,
+  );
+  await writeTrips(normalized, nextTrips, activeId);
+  return newAlerts;
+}
+
+/** Every alert recorded on this trip so far, oldest first — read fresh after checkTripFlightStatus so a just-created alert is included. */
+export async function getTripAlerts(email: string, tripId: string): Promise<TripAlert[]> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.alerts ?? [];
+}
+
+/** Mark one alert as read — dismissed from the Changes screen, never deleted. */
+export async function acknowledgeAlert(email: string, tripId: string, alertId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const nextTrips = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, alerts: (t.alerts ?? []).map((a) => (a.id === alertId ? { ...a, acknowledged: true } : a)), updatedAt: new Date().toISOString() }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, nextTrips, activeId));
 }
 
 /** The proposal's public link — created once, reused after. */

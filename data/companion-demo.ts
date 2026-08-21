@@ -14,6 +14,8 @@
  * changes but the data. The shape below is the contract for that hand-off.
  */
 
+import type { TripAlert } from "@/data/trip-alerts";
+
 export type CompanionKind = "travel" | "sight" | "meal" | "rest" | "shabbos";
 
 export type CompanionItem = {
@@ -171,6 +173,13 @@ export type CompanionTrip = {
    * one place it is shown.
    */
   payment?: CompanionPayment;
+  /**
+   * Real flight-status alerts — a meaningful delay, a cancellation, a real
+   * gate/terminal change (data/trip-alerts.ts, lib/flight-status.ts). Empty
+   * on the demo, which uses its own scripted `swaps`/`handledSteps` instead;
+   * a real trip's Changes screen reads this list, not those.
+   */
+  liveAlerts?: TripAlert[];
   /* ---- concierge-only, present when `concierge` is true ---------------- */
   /** The held-for-you weather swap. */
   swaps?: { a: CompanionSwap; b: CompanionSwap };

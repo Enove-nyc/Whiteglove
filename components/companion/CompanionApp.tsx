@@ -506,6 +506,13 @@ export default function CompanionApp({
   const open = hasSwap && !st.swap; // an open weather alert waiting on a decision
   const settled = hasSwap && Boolean(st.swap); // one was picked
   const handledSteps = trip.handledSteps ?? [];
+  // Real flight-status alerts (data/trip-alerts.ts) — never present on the
+  // demo, which tells its own scripted weather-swap story via `open` above
+  // instead. Kept separate from `open` rather than folded into it, so a real
+  // trip's badge/pill lights up for these without touching any of the
+  // demo-only swap logic that already reads `open`.
+  const liveAlerts = trip.liveAlerts ?? [];
+  const unacknowledgedAlerts = liveAlerts.filter((a) => !a.acknowledged);
   const advisorTrips = trip.advisorTrips ?? [];
   const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
 
@@ -526,7 +533,7 @@ export default function CompanionApp({
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
     messages: advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
-    alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
+    alerts: open ? "One needs you" : unacknowledgedAlerts.length > 0 ? `${unacknowledgedAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
     pay: trip.payment?.label ?? "",
@@ -946,6 +953,31 @@ export default function CompanionApp({
 
   const alertsScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 14, animation: "wgIn .28s ease both" }}>
+      {/* Real flight-status alerts — never present on the demo. Newest
+          first, each with a Dismiss control on the advisor's own side only;
+          a client sees the same alert with nothing to manage. */}
+      {[...liveAlerts].reverse().map((a) => (
+        <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: a.acknowledged ? "#ffffff" : "#f7eee0", border: `1px solid ${a.acknowledged ? "rgba(38,50,58,.08)" : "rgba(183,138,74,.28)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
+          <span style={kicker(a.acknowledged ? "#78716c" : "#765321")}>{new Date(a.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+          <div style={{ font: `400 20px/1.15 ${serif}`, color: a.acknowledged ? "#26323a" : "#4a3016" }}>{a.title}</div>
+          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: a.acknowledged ? "#57534e" : "#5c4322", textWrap: "pretty" }}>{a.note}</p>
+          {!isClientViewer && !a.acknowledged && trip.tripId && (
+            <button
+              onClick={() => {
+                void fetch("/api/account/alerts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ tripId: trip.tripId, alertId: a.id }),
+                }).then(() => router.refresh());
+              }}
+              className="wg-press"
+              style={{ alignSelf: "flex-start", border: "1px solid rgba(183,138,74,.4)", background: "none", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, color: "#765321" }}
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+      ))}
       {open && (
         <div style={{ padding: "20px 18px", borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.28)", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1294,7 +1326,7 @@ export default function CompanionApp({
         </div>
         <button onClick={() => go("alerts")} className="wg-fade" style={{ position: "relative", border: "1px solid rgba(38,50,58,.14)", background: "#ffffff", height: 34, padding: "0 13px", borderRadius: 14, cursor: "pointer", font: "600 11.5px/1 Inter,sans-serif", color: "#57534e" }}>
           Changes
-          {open && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${CREAM}` }} />}
+          {(open || unacknowledgedAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${CREAM}` }} />}
         </button>
       </div>
       {/* content */}
