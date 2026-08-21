@@ -170,6 +170,9 @@ export default async function AccountPage() {
                   Before that, offer them a{" "}
                   <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
                   to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
+                  Save the hotels, activities and contacts you use often to your{" "}
+                  <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
+                  and a proposal is built from what's already there instead of retyped each time.
                 </p>
               )}
             </div>

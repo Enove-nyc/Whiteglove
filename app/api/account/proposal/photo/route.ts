@@ -8,7 +8,11 @@ import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
-/** A photo for one proposal option or component — a hotel, a view, a tour. */
+/**
+ * A photo for one proposal option or component, or a saved library item —
+ * a hotel, a view, a tour. Shared by both: the same Business gate, the
+ * same store, the same size and type limits either way.
+ */
 const PHOTO_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_PHOTO_BYTES = effectiveMediaLimit();
 

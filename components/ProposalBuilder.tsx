@@ -13,6 +13,7 @@ import {
   type ProposalComponentKind,
   type ProposalOption,
 } from "@/data/proposal";
+import { itemsInPack, libraryItemToProposalComponent, type LibraryItem, type LibraryPack } from "@/data/library";
 
 /**
  * The planner's side of a proposal — one or more options, each with its own
@@ -138,18 +139,80 @@ function ComponentRow({
   );
 }
 
+/** Insert one library item, or a whole pack at once, as fresh components —
+ *  each gets its own new id, so the same saved item can be dropped onto
+ *  more than one option, or more than once onto the same one. */
+function LibraryPicker({
+  library,
+  onInsert,
+  onClose,
+}: {
+  library: { items: LibraryItem[]; packs: LibraryPack[] };
+  onInsert: (components: ProposalComponent[]) => void;
+  onClose: () => void;
+}) {
+  if (library.items.length === 0) {
+    return (
+      <div className="mt-3 rounded-lg border border-[var(--gold-light)] bg-white p-3 text-xs text-stone-500">
+        Nothing in your library yet — <a href="/library" target="_blank" className="font-semibold text-[var(--navy)] underline">add some</a> to reuse it here.
+      </div>
+    );
+  }
+  return (
+    <div className="mt-3 max-h-64 space-y-3 overflow-y-auto rounded-lg border border-[var(--gold-light)] bg-white p-3">
+      {library.packs.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-stone-400">Packs</p>
+          {library.packs.map((pack) => (
+            <button
+              key={pack.id}
+              type="button"
+              onClick={() => {
+                onInsert(itemsInPack(pack, library.items).map((i) => libraryItemToProposalComponent(i, uid())));
+                onClose();
+              }}
+              className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-[var(--cream-deep)]"
+            >
+              {pack.name} <span className="text-stone-400">· {pack.itemIds.length} items</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-stone-400">Saved items</p>
+        {library.items.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              onInsert([libraryItemToProposalComponent(item, uid())]);
+              onClose();
+            }}
+            className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-[var(--cream-deep)]"
+          >
+            {item.name} <span className="text-stone-400">· {PROPOSAL_COMPONENT_LABEL[item.kind]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OptionEditor({
   option,
   index,
+  library,
   onChange,
   onRemove,
 }: {
   option: ProposalOption;
   index: number;
+  library: { items: LibraryItem[]; packs: LibraryPack[] };
   onChange: (next: ProposalOption) => void;
   onRemove: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   return (
     <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex items-start justify-between gap-3">
@@ -212,18 +275,30 @@ function OptionEditor({
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() =>
-          onChange({
-            ...option,
-            components: [...option.components, { id: uid(), kind: "hotel", name: "" }],
-          })
-        }
-        className={`${smallButton} mt-3`}
-      >
-        + Add a hotel, flight, activity…
-      </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            onChange({
+              ...option,
+              components: [...option.components, { id: uid(), kind: "hotel", name: "" }],
+            })
+          }
+          className={smallButton}
+        >
+          + Add a hotel, flight, activity…
+        </button>
+        <button type="button" onClick={() => setShowLibrary((s) => !s)} className={smallButton}>
+          <Icon name="suitcase" className="h-3.5 w-3.5" /> Insert from your library
+        </button>
+      </div>
+      {showLibrary && (
+        <LibraryPicker
+          library={library}
+          onInsert={(components) => onChange({ ...option, components: [...option.components, ...components] })}
+          onClose={() => setShowLibrary(false)}
+        />
+      )}
     </div>
   );
 }
@@ -237,7 +312,15 @@ export default function ProposalBuilder() {
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
   const [shareUrl, setShareUrl] = useState("");
+  const [library, setLibrary] = useState<{ items: LibraryItem[]; packs: LibraryPack[] }>({ items: [], packs: [] });
   const origin = typeof window === "undefined" ? "" : window.location.origin;
+
+  useEffect(() => {
+    fetch("/api/account/library", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setLibrary({ items: d.items ?? [], packs: d.packs ?? [] }))
+      .catch(() => undefined);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -349,6 +432,7 @@ export default function ProposalBuilder() {
             key={option.id}
             option={option}
             index={i}
+            library={library}
             onChange={(next) => setProposal({ ...proposal, options: proposal.options.map((o) => (o.id === option.id ? next : o)) })}
             onRemove={() => setProposal({ ...proposal, options: proposal.options.filter((o) => o.id !== option.id) })}
           />

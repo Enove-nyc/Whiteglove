@@ -3,6 +3,7 @@ import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
+import type { LibraryItem, LibraryPack } from "@/data/library";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
@@ -161,6 +162,13 @@ export type AccountData = {
   /** Every trip in the account. Absent on accounts made before this existed. */
   trips?: SavedTrip[];
   activeTripId?: string;
+  /**
+   * The planner's own reusable content — hotels, activities, tours,
+   * contacts — and the destination packs built from them. Belongs to the
+   * ACCOUNT, not one trip, since the whole point is using the same saved
+   * hotel on a dozen different trips instead of retyping it each time.
+   */
+  library?: { items: LibraryItem[]; packs: LibraryPack[] };
   updatedAt?: string;
 };
 
@@ -583,6 +591,68 @@ export async function saveAccountCollection(email: string, collection: "route" |
     next.trips = trips.map((t) => (t.id === activeId ? { ...t, route: capped, updatedAt: new Date().toISOString() } : t));
     next.activeTripId = activeId;
   }
+  return writeJson(dataKey(normalized), next);
+}
+
+// ---- Content library -----------------------------------------------------
+//
+// A planner's reusable hotels, activities, tours and contacts, and the
+// destination packs built from them — scoped to the ACCOUNT rather than one
+// trip, since reuse across trips is the entire point. Read-modify-write
+// against AccountData.library, the same shape every other per-account
+// collection here already keeps.
+
+function libraryId() {
+  return randomBytes(6).toString("base64url");
+}
+
+export async function getLibrary(email: string): Promise<{ items: LibraryItem[]; packs: LibraryPack[] }> {
+  const data = await getAccountData(email);
+  return { items: data.library?.items ?? [], packs: data.library?.packs ?? [] };
+}
+
+export async function saveLibraryItem(email: string, item: LibraryItem): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const items = current.library?.items ?? [];
+  const now = new Date().toISOString();
+  const stamped: LibraryItem = { ...item, id: item.id || libraryId(), savedAt: item.savedAt || now, updatedAt: now };
+  const nextItems = items.some((i) => i.id === stamped.id) ? items.map((i) => (i.id === stamped.id ? stamped : i)) : [...items, stamped];
+  const next: AccountData = { ...current, library: { items: nextItems, packs: current.library?.packs ?? [] }, updatedAt: now };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function deleteLibraryItem(email: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const items = (current.library?.items ?? []).filter((i) => i.id !== id);
+  // Drop it from any pack that referenced it too, so a pack never quietly
+  // points at an item that no longer exists.
+  const packs = (current.library?.packs ?? []).map((p) => ({ ...p, itemIds: p.itemIds.filter((x) => x !== id) }));
+  const next: AccountData = { ...current, library: { items, packs }, updatedAt: new Date().toISOString() };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function saveLibraryPack(email: string, pack: LibraryPack): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const packs = current.library?.packs ?? [];
+  const now = new Date().toISOString();
+  const stamped: LibraryPack = { ...pack, id: pack.id || libraryId(), savedAt: pack.savedAt || now, updatedAt: now };
+  const nextPacks = packs.some((p) => p.id === stamped.id) ? packs.map((p) => (p.id === stamped.id ? stamped : p)) : [...packs, stamped];
+  const next: AccountData = { ...current, library: { items: current.library?.items ?? [], packs: nextPacks }, updatedAt: now };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function deleteLibraryPack(email: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const packs = (current.library?.packs ?? []).filter((p) => p.id !== id);
+  const next: AccountData = { ...current, library: { items: current.library?.items ?? [], packs }, updatedAt: new Date().toISOString() };
   return writeJson(dataKey(normalized), next);
 }
 
