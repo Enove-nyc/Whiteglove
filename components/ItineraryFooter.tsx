@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
 import PromotionBanner from "@/components/PromotionBanner";
 import type { Promotion } from "@/lib/admin-content";
+import { brandForHost } from "@/lib/site-brand-core";
 
 // The band at the bottom of an itinerary.
 //
@@ -9,7 +13,22 @@ import type { Promotion } from "@/lib/admin-content";
 // other page on the site — so it is the one place worth signing. Any live
 // promotion targeted at "Bottom of the itinerary" sits above the signature;
 // with none set, the signature stands on its own rather than leaving a gap.
+//
+// BRAND-AWARE, the same way Navbar is: this page (/itinerary, /i/[shareId]) is
+// reachable on both domains and does not read the host server-side, so the
+// brand is settled client-side after mount. This matters more than it looks —
+// the second button used to be a bare /cemeteries link with no brand check at
+// all, which is a guide-only path (middleware.ts): reached on the itineraries
+// domain it silently bounced the visitor to the kosher domain, which breaks
+// out of an installed itineraries app entirely (Android drops a Trusted Web
+// Activity to an ordinary browser tab, address bar and all, the moment
+// navigation leaves the verified domain).
 export default function ItineraryFooter({ promotion }: { promotion: Promotion | null }) {
+  const [itineraries, setItineraries] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") setItineraries(brandForHost(window.location.hostname) === "itineraries");
+  }, []);
+
   return (
     <div className="mt-14">
       {promotion && (
@@ -26,10 +45,11 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
               Planned with White Glove
             </p>
             <p className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-              White Glove Kosher Travel
+              {itineraries ? "White Glove Itineraries" : "White Glove Kosher Travel"}
             </p>
-            {/* The site now lives on whiteglovekoshertravel.com; the visible brand matches. */}
-            <p className="mt-1 text-sm font-semibold text-[var(--navy)]">whiteglovekoshertravel.com</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--navy)]">
+              {itineraries ? "whitegloveitineraries.com" : "whiteglovekoshertravel.com"}
+            </p>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:shrink-0">
             <Link
@@ -38,12 +58,21 @@ export default function ItineraryFooter({ promotion }: { promotion: Promotion | 
             >
               Plan a trip
             </Link>
-            <Link
-              href="/cemeteries"
-              className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white lg:w-52"
-            >
-              Browse kevarim
-            </Link>
+            {itineraries ? (
+              <Link
+                href="/app"
+                className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white lg:w-52"
+              >
+                Open the app
+              </Link>
+            ) : (
+              <Link
+                href="/cemeteries"
+                className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white lg:w-52"
+              >
+                Browse kevarim
+              </Link>
+            )}
           </div>
         </div>
       </div>
