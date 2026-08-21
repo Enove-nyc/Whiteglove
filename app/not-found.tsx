@@ -19,9 +19,16 @@ import Navbar from "@/components/Navbar";
  *
  * No `pageMetadata` call: Next sets the 404 status itself and this page must
  * never be canonical or indexed for the address that missed.
+ *
+ * THE TITLE CARRIES NO BRAND ENDING AT ALL. A brand-aware one needs an async
+ * generateMetadata reading the request's Host, and this file's own docs only
+ * confirm that for global-not-found.js, not the per-segment not-found.js this
+ * site uses — not worth risking on a page that is never indexed anyway. And a
+ * hand-written short ending ("| White Glove") is exactly what
+ * tests/title-suffix.test.ts forbids everywhere else, so this page has none.
  */
 export const metadata = {
-  title: "Page not found | White Glove Kosher Travel",
+  title: "Page not found",
   robots: { index: false, follow: false },
 };
 

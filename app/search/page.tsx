@@ -5,6 +5,8 @@ import DestinationSearch from "@/components/DestinationSearch";
 import StructuredData from "@/components/StructuredData";
 import { searchSite } from "@/lib/site-search";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +14,9 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const query = q.trim();
+  const name = BRAND_NAME[await currentBrand()];
   return pageMetadata({
-    title: query ? `Search: ${query} | White Glove Kosher Travel` : "Search | White Glove Kosher Travel",
+    title: query ? `Search: ${query} | ${name}` : `Search | ${name}`,
     description: query ? `Results for “${query}”.` : "Search White Glove.",
     path: query ? `/search?q=${encodeURIComponent(query)}` : "/search",
     noIndex: true,

@@ -13,6 +13,7 @@ import {
 import { getFlightItineraryByShareId } from "@/lib/flight-itinerary-store";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 // A flight itinerary is handed to a named customer, not found. Indexing it
 // would put their name, dates and confirmation code into search results.
@@ -29,13 +30,15 @@ export async function generateMetadata() {
 
 export const dynamic = "force-dynamic";
 
-function Wordmark() {
+function Wordmark({ siteBrand }: { siteBrand: SiteBrand }) {
   return (
     <div className="flex items-center gap-3">
       <Image src="/logo-hand-navy.png" alt="" width={355} height={460} className="h-11 w-auto object-contain" />
       <span className="flex flex-col leading-none">
         <span className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">White Glove</span>
-        <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Kosher Travel</span>
+        <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+          {siteBrand === "itineraries" ? "Itineraries" : "Kosher Travel"}
+        </span>
       </span>
     </div>
   );
@@ -163,12 +166,13 @@ function FlightCard({ leg, index }: { leg: FlightLeg; index: number }) {
 export default async function FlightItineraryPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
   const itinerary = await getFlightItineraryByShareId(shareId);
+  const siteBrand = await currentBrand();
 
   if (!itinerary) {
     return (
       <main className="grid min-h-screen place-items-center bg-[var(--cream)] px-5 py-20 text-center">
         <div className="max-w-md">
-          <Wordmark />
+          <Wordmark siteBrand={siteBrand} />
           <h1 className="mt-8 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
             This itinerary isn&apos;t available
           </h1>
@@ -216,7 +220,7 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
         </div>
 
         <header className="border-b border-[var(--gold-light)] pb-6">
-          <Wordmark />
+          <Wordmark siteBrand={siteBrand} />
           <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Flight itinerary</p>
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
             {flightItineraryLabel(itinerary)}
@@ -255,7 +259,7 @@ export default async function FlightItineraryPage({ params }: { params: Promise<
             Times are shown for each flight&rsquo;s own airport. Please check in online and confirm each flight with the
             airline before you travel.
           </p>
-          <p className="mt-2">Prepared by White Glove Kosher Travel.</p>
+          <p className="mt-2">Prepared by {BRAND_NAME[siteBrand]}.</p>
         </footer>
       </div>
     </main>
