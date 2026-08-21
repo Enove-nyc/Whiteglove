@@ -173,6 +173,9 @@ export default async function AccountPage() {
                   Save the hotels, activities and contacts you use often to your{" "}
                   <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
                   and a proposal is built from what's already there instead of retyped each time.
+                  Need a passport number or an emergency contact first? Send a{" "}
+                  <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
+                  — answers come back to you alone, never onto the itinerary itself.
                 </p>
               )}
             </div>

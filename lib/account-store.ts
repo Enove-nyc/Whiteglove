@@ -4,6 +4,7 @@ import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { LibraryItem, LibraryPack } from "@/data/library";
+import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
@@ -140,6 +141,16 @@ export type SavedTrip = {
    * Most trips never use this; it stays empty.
    */
   travelerShares?: Record<string, string>;
+  /**
+   * The pre-trip form a client fills out — legal name, passport, emergency
+   * contact, preferences, whatever the planner asks for. The template (which
+   * fields, which are required) is not sensitive; the answers are, so they
+   * are read back only through the planner's own authenticated route, never
+   * through a shared itinerary, a proposal, or the app. See data/client-form.ts.
+   */
+  formTemplate?: ClientFormTemplate;
+  formShareId?: string;
+  formResponses?: ClientFormResponse[];
   createdAt: string;
   updatedAt: string;
 };
@@ -1203,6 +1214,100 @@ export async function getSharedTraveler(shareId: string) {
   const traveler = trip?.itinerary.travelers?.find((p) => p.id === rec.travelerId);
   if (!trip || !traveler) return null;
   return { ownerEmail: rec.ownerEmail, tripId: rec.tripId, traveler };
+}
+
+// ---- Client forms ---------------------------------------------------------
+//
+// The template (which fields, which are required) lives on the trip; the
+// answers do too, but are NEVER handed back by getSharedForm — that route
+// answers a fresh respondent with the template alone. Reading answers back
+// is a separate, planner-only, authenticated call (getFormResponses).
+
+function formShareKey(shareId: string) {
+  return `white-glove:form-share:${shareId}`;
+}
+function formResponseId() {
+  return randomBytes(6).toString("base64url");
+}
+
+export async function getFormTemplate(email: string, tripId: string): Promise<ClientFormTemplate | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.formTemplate ?? null;
+}
+
+export async function saveFormTemplate(email: string, tripId: string, template: ClientFormTemplate): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const stamped: ClientFormTemplate = { ...template, updatedAt: new Date().toISOString() };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, formTemplate: stamped, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The form's public link — created once, reused after. */
+export async function ensureFormShare(email: string, tripId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  if (trip.formShareId) {
+    await writeJson(formShareKey(trip.formShareId), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+    return trip.formShareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(formShareKey(token), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, formShareId: token, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(normalized, next, activeId);
+  return saved ? token : null;
+}
+
+/** What a fresh respondent needs — the template and who it's for, never
+ *  any answer anybody else already gave. */
+export async function getSharedForm(shareId: string) {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(formShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip?.formTemplate) return null;
+  return { template: trip.formTemplate, tripName: trip.client || trip.name, advisor: trip.advisor };
+}
+
+/** Add one response — the only thing a client's link may ever do here. */
+export async function submitFormResponse(shareId: string, respondentName: string, answers: Record<string, string>): Promise<boolean> {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(formShareKey(shareId));
+  if (!rec) return false;
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(rec.ownerEmail);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === rec.tripId);
+  if (!trip?.formTemplate) return false;
+  const name = respondentName.trim().slice(0, 120);
+  if (!name) return false;
+  // Only what the template actually asked for — a caller cannot smuggle an
+  // extra field onto the record just by including it in the request.
+  const cleanAnswers: Record<string, string> = {};
+  for (const field of trip.formTemplate.fields) {
+    const value = answers[field.id];
+    if (typeof value === "string" && value.trim()) cleanAnswers[field.id] = value.trim().slice(0, 500);
+  }
+  const response: ClientFormResponse = { id: formResponseId(), respondentName: name, answers: cleanAnswers, submittedAt: new Date().toISOString() };
+  const nextResponses = [...(trip.formResponses ?? []), response];
+  const next = trips.map((t) => (t.id === rec.tripId ? { ...t, formResponses: nextResponses, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The planner's own read of what's come back — never reachable any other way. */
+export async function getFormResponses(email: string, tripId: string): Promise<ClientFormResponse[]> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.formResponses ?? [];
 }
 
 // ---- Itinerary sharing ------------------------------------------------

@@ -128,6 +128,8 @@ describe("the itineraries domain's own pages never title themselves 'Kosher Trav
     "app/proposal/page.tsx",
     "app/p/[shareId]/page.tsx",
     "app/library/page.tsx",
+    "app/forms/page.tsx",
+    "app/form/[shareId]/page.tsx",
   ];
 
   for (const path of pages) {
@@ -153,7 +155,7 @@ describe("the guide is redirected off the itineraries domain", () => {
     for (const guide of ["/kosher", "/cemeteries", "/heritage", "/destinations", "/hotels", "/things-to-do", "/directory"]) {
       assert.ok(list.includes(`"${guide}"`), `guide prefix ${guide} should be redirected`);
     }
-    for (const planner of ["/plan", "/itinerary", "/app", "/account", "/i", "/f", "/book", "/proposal", "/p", "/library"]) {
+    for (const planner of ["/plan", "/itinerary", "/app", "/account", "/i", "/f", "/book", "/proposal", "/p", "/library", "/forms", "/form"]) {
       assert.ok(!list.includes(`"${planner}"`), `planner path ${planner} must stay on the itineraries domain`);
     }
   });
