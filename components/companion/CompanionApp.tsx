@@ -307,11 +307,16 @@ export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
   advisorInbox = false,
+  sharedDraft,
 }: {
   trip?: CompanionTrip;
   chat?: CompanionChat;
   /** The advisor's own side: a Messages tab that lists every client's chat. */
   advisorInbox?: boolean;
+  /** A place shared in from outside the app — Google Maps' share sheet, say
+   *  — arrived as the OS's Web Share Target params (app/manifest.ts). Held
+   *  until the advisor picks which client's thread it goes into. */
+  sharedDraft?: string;
 }) {
   const router = useRouter();
   const liveChat = chat ?? null;
@@ -322,8 +327,15 @@ export default function CompanionApp({
   // is only ever offered to the side that can actually use it.
   const isClientViewer = liveChat?.side === "client";
   const hasMessages = Boolean(liveChat) || advisorInbox;
+  // Held until the advisor opens a client's thread to put it in — cleared the
+  // moment that happens, so going back to the inbox and opening someone else
+  // afterward doesn't carry the same shared place along with it.
+  const [pendingShare, setPendingShare] = useState(sharedDraft ?? null);
   const [st, setSt] = useState<State>({
-    screen: "home",
+    // A shared-in place has nowhere to go but the Messages/Advisor tab, so
+    // that's where a shared draft opens straight to — otherwise it would sit
+    // unused on the Trip tab until noticed.
+    screen: sharedDraft && advisorInbox ? "messages" : "home",
     prev: null,
     selDay: trip.todayIndex,
     actIdx: 0,
@@ -1139,7 +1151,7 @@ export default function CompanionApp({
   else if (st.screen === "chat") body = isConcierge ? conciergeChat : guideChat;
   else if (st.screen === "messages")
     body = advisorInbox ? (
-      <AdvisorInbox />
+      <AdvisorInbox pendingShare={pendingShare} onPendingShareUsed={() => setPendingShare(null)} />
     ) : liveChat ? (
       <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} />
     ) : (
@@ -1284,6 +1296,8 @@ function LiveChat({
   subject,
   onSubjectUsed,
   places = [],
+  initialDraft,
+  onInitialDraftUsed,
 }: {
   chat: CompanionChat;
   /** A day or activity tapped through "Ask about this" — folded into the
@@ -1297,6 +1311,10 @@ function LiveChat({
    *  itinerary loaded for this thread (the advisor's own inbox, browsing
    *  a list of clients rather than one open trip). */
   places?: { label: string; address: string }[];
+  /** A place shared in from outside — Google Maps' share sheet, say — put
+   *  straight into the composer, ready to send as an ordinary message. */
+  initialDraft?: string | null;
+  onInitialDraftUsed?: () => void;
 }) {
   const { shareId, side, advisorName } = chat;
   const [messages, setMessages] = useState<LiveMsg[]>([]);
@@ -1434,6 +1452,17 @@ function LiveChat({
     setItineraryRef(subject);
     onSubjectUsedRef.current?.();
   }, [subject]);
+
+  // A place shared in from outside, put straight into the composer —
+  // picked up once, then handed back so the parent clears it, the same way
+  // "Ask about this" is.
+  const onInitialDraftUsedRef = useRef(onInitialDraftUsed);
+  onInitialDraftUsedRef.current = onInitialDraftUsed;
+  useEffect(() => {
+    if (!initialDraft) return;
+    setDraft(initialDraft);
+    onInitialDraftUsedRef.current?.();
+  }, [initialDraft]);
 
   const load = useCallback(async () => {
     try {
@@ -2399,7 +2428,15 @@ type InboxConvo = {
  * with. Tap one to open that thread; every client is its own chat, and this is
  * the one place they all live.
  */
-function AdvisorInbox() {
+function AdvisorInbox({
+  pendingShare,
+  onPendingShareUsed,
+}: {
+  /** A place shared in from outside, waiting for the advisor to pick which
+   *  client's thread it belongs in. */
+  pendingShare?: string | null;
+  onPendingShareUsed?: () => void;
+}) {
   const serif = "Georgia,'Times New Roman',serif";
   const [convos, setConvos] = useState<InboxConvo[] | null>(null);
   const [open, setOpen] = useState<InboxConvo | null>(null);
@@ -2452,7 +2489,11 @@ function AdvisorInbox() {
           <span style={{ font: `400 17px/1.1 ${serif}` }}>{open.client || open.name}</span>
         </button>
         <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
-          <LiveChat chat={{ shareId: open.shareId, side: "advisor", advisorName: open.client || open.name }} />
+          <LiveChat
+            chat={{ shareId: open.shareId, side: "advisor", advisorName: open.client || open.name }}
+            initialDraft={pendingShare}
+            onInitialDraftUsed={onPendingShareUsed}
+          />
         </div>
       </div>
     );
@@ -2460,6 +2501,11 @@ function AdvisorInbox() {
 
   return (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 10, animation: "wgIn .28s ease both" }}>
+      {pendingShare && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#1f3f5c", background: "#e7edf1", padding: "10px 14px", borderRadius: 14 }}>
+          <Icon name="map-pin" className="h-3.5 w-3.5" /> Shared in — tap a client below to send it
+        </div>
+      )}
       {convos === null && <div style={{ padding: 20, textAlign: "center", fontSize: 13, color: "#a8a29e" }}>Loading…</div>}
       {convos && convos.length === 0 && (
         <div style={{ padding: "8px 6px", display: "flex", flexDirection: "column", gap: 6 }}>

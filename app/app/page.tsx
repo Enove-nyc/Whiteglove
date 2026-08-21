@@ -53,7 +53,7 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trip?: string | string[] }>;
+  searchParams: Promise<{ trip?: string | string[]; share_title?: string | string[]; share_text?: string | string[]; share_url?: string | string[] }>;
 }) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
@@ -116,7 +116,16 @@ export default async function AppPage({
     // The copy below turns on this, so a Gold member is never offered a client
     // feature they do not have.
     const servesClients = mayServeCompanionClients(plan);
-    const wantedId = firstParam((await searchParams).trip);
+    const params = await searchParams;
+    const wantedId = firstParam(params.trip);
+    // A place shared in from outside — Google Maps' own share sheet, say —
+    // arrives here as the OS's Web Share Target params (app/manifest.ts).
+    // Held as a plain line of text; the advisor picks which client's thread
+    // it goes into, the same way any other message does.
+    const sharedDraft = [firstParam(params.share_title), firstParam(params.share_text), firstParam(params.share_url)]
+      .filter(Boolean)
+      .join("\n")
+      .trim();
     const trips = await getTrips(who).catch(() => []);
     const selected =
       trips.find((t) => t.id === wantedId) ?? trips.find((t) => t.active) ?? trips[0] ?? null;
@@ -150,7 +159,7 @@ export default async function AppPage({
       // and no inbox; the tab simply is not there.
       return (
         <main>
-          <CompanionApp trip={companionTrip} advisorInbox={servesClients} />
+          <CompanionApp trip={companionTrip} advisorInbox={servesClients} sharedDraft={sharedDraft || undefined} />
         </main>
       );
     }

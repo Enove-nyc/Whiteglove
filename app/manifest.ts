@@ -25,6 +25,15 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     theme_color: "#14213d",
     orientation: "portrait",
     categories: ["travel", "lifestyle"],
+    // Lets the OS share sheet offer White Glove itself as a destination —
+    // sharing a place from Google Maps, say, lands it here rather than
+    // needing to be copied and pasted in by hand. Read by app/app/page.tsx
+    // and handed to the advisor as a message ready to send.
+    share_target: {
+      action: "/app",
+      method: "GET",
+      params: { title: "share_title", text: "share_text", url: "share_url" },
+    },
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
