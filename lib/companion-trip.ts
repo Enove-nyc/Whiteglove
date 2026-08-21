@@ -128,7 +128,7 @@ function itemsForDay(day: ItineraryDay): CompanionItem[] {
   return items.sort((x, y) => minutesOf(x.time) - minutesOf(y.time));
 }
 
-function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: string): CompanionDay {
+function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: string, guideNote?: string): CompanionDay {
   const dt = atNoon(day.date);
   const weekdayLong = fmt(day.date, { weekday: "long" });
   const month = fmt(day.date, { month: "long" });
@@ -140,6 +140,7 @@ function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: stri
   const travelChip = day.travelHours > 0 ? `≈${day.travelHours}h travelling` : "";
 
   return {
+    date: day.date,
     dow: fmt(day.date, { weekday: "short" }),
     dom,
     short: shortLabel(day, index, lastIndex),
@@ -147,6 +148,7 @@ function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: stri
     weather: timeChip,
     walk: travelChip,
     today: day.date === today || undefined,
+    ...(guideNote?.trim() ? { guideNote: guideNote.trim() } : {}),
     items: itemsForDay(day),
   };
 }
@@ -220,7 +222,7 @@ export function itineraryToCompanionTrip(
   },
 ): CompanionTrip {
   const lastIndex = days.length - 1;
-  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today));
+  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, itin.guideNotes?.[d.date]));
 
   // Which day the app opens on: today when the trip is on now, else the
   // first — a reasonable page to land a browser on, whether the trip hasn't

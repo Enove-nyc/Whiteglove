@@ -36,6 +36,9 @@ export type CompanionItem = {
 };
 
 export type CompanionDay = {
+  /** ISO date, YYYY-MM-DD — set only on a real, wired trip, where it doubles
+   *  as the key for guideNote (Itinerary.guideNotes) and any edit to it. */
+  date?: string;
   dow: string;
   dom: string;
   short: string;
@@ -45,6 +48,9 @@ export type CompanionDay = {
   today?: boolean;
   shabbosLabel?: string;
   shabbosNote?: string;
+  /** A practical note for this day — the side door, where to eat, where to
+   *  park. Never kosher or Shabbos content; see Itinerary.guideNotes. */
+  guideNote?: string;
   items: CompanionItem[];
 };
 

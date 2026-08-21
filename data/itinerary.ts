@@ -250,6 +250,14 @@ export type Itinerary = {
    */
   rooms?: Array<{ id: string; label: string; travelerIds: string[] }>;
   notes?: string;
+  /**
+   * A practical note for one day of the trip, keyed by that day's date —
+   * "enter through the side door", where to eat, where to park. The
+   * White Glove app's Guide tab (components/companion/CompanionApp.tsx),
+   * written by the advisor and read by the traveler. Carries no kosher or
+   * Shabbos content — that layer was removed outright, at the owner's word.
+   */
+  guideNotes?: Record<string, string>;
   updatedAt?: string;
 };
 

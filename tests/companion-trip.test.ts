@@ -58,6 +58,19 @@ describe("a planner trip, wired into the app", () => {
     assert.ok(stay && stay.rows.length > 0, "the hotel is there");
   });
 
+  it("carries the stop's id and kind on each wallet row, so the advisor can attach a document to it", () => {
+    const flights = trip.walletGroups.find((g) => g.name === "Flights")!;
+    assert.ok(flights.rows.every((r) => r.id && r.stopKind === "flight"));
+    const stay = trip.walletGroups.find((g) => g.name === "Where you are staying")!;
+    assert.ok(stay.rows.every((r) => r.id && r.stopKind === "lodging"));
+
+    // Without a tripId, the wallet still renders fine — the "add" control is
+    // simply never offered, since it has nowhere to save.
+    assert.equal(trip.tripId, undefined);
+    const withId = itineraryToCompanionTrip(itin, days, { today: itin.startDate, tripId: "trip-9" });
+    assert.equal(withId.tripId, "trip-9");
+  });
+
   it("NEVER fabricates the advisor side on a wired trip", () => {
     assert.equal(trip.concierge, false, "no live advisor is claimed");
     assert.equal(trip.swaps, undefined, "no held-for-you weather swap is invented");
@@ -88,6 +101,18 @@ describe("a planner trip, wired into the app", () => {
       assert.equal(day.shabbosNote, undefined);
     }
     assert.ok(!trip.prefs.some((p) => p.label === "Zmanim"), "no Zmanim row in prefs");
+  });
+
+  // The Guide tab came back after the kosher layer left — but for a
+  // different reason: a plain, per-day note the advisor writes (the side
+  // door, where to eat, where to park). Nothing here reads it off zmanim or
+  // hechsherim; it comes straight from Itinerary.guideNotes.
+  it("carries a day's practical note when the itinerary has one, and nothing when it doesn't", () => {
+    const noted: Itinerary = { ...itin, guideNotes: { [itin.startDate]: "  Enter through the side door.  " } };
+    const withNote = itineraryToCompanionTrip(noted, days, { today: itin.startDate });
+    assert.equal(withNote.days[0].guideNote, "Enter through the side door.", "trimmed, and on the right day");
+    assert.equal(withNote.days[1]?.guideNote, undefined, "no note bleeds onto a day that has none");
+    assert.equal(trip.days[0].guideNote, undefined, "no guideNotes on the itinerary → no note at all");
   });
 
   it("shows the advisor as the client's contact, and never invents one", () => {

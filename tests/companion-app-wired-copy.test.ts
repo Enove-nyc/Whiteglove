@@ -63,6 +63,30 @@ describe("the empty guide does not promise content that will never come", () => 
   });
 });
 
+describe("the bottom-nav chat tab reads as White Glove's own, not a generic messaging app", () => {
+  it("is labelled Advisor for a real trip, Messages only for the advisor's own inbox", () => {
+    assert.match(APP, /tabDefs\.push\(\["messages", advisorInbox \? "Messages" : "Advisor"\]\)/);
+  });
+});
+
+describe("the Guide tab is back, but for practical notes, never kosher content", () => {
+  it("is offered on a real trip once there is a note, or always to whoever can add one", () => {
+    assert.match(APP, /if \(!hasConcierge && \(!isClientViewer \|\| hasGuideNotes\)\) tabDefs\.push\(\["guide", "Guide"\]\)/);
+  });
+
+  it("the Guide screen carries a per-day note and nothing about kosher or Shabbos", () => {
+    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const profileScreen"));
+    assert.match(guide, /d\.guideNote/);
+    assert.doesNotMatch(guide, /kosher/i);
+    assert.doesNotMatch(guide, /shabbos/i);
+  });
+
+  it("only the advisor's own side can edit a day's note — a client on a code link never gets the control", () => {
+    const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const profileScreen"));
+    assert.match(guide, /!isClientViewer && trip\.tripId && d\.date/);
+  });
+});
+
 describe("Rail / Cards / Bands is gone, not just hidden", () => {
   it("carries no TStyle type, tstyle state, or a picker for it", () => {
     assert.doesNotMatch(APP, /TStyle/);

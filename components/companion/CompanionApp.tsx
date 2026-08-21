@@ -43,7 +43,7 @@ import { Icon } from "@/components/icons/Icon";
  * showing as whatever color the device's native emoji happen to render in. */
 const ICON_BLUE = "#1f3f5c";
 
-type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile";
+type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile" | "guide";
 type ChatSide = "client" | "advisor";
 /** The live thread on this trip — present once the trip has been shared. */
 export type CompanionChat = { shareId: string; side: ChatSide; advisorName: string };
@@ -207,6 +207,102 @@ function WalletAttach({
   );
 }
 
+/**
+ * The advisor's practical note for one day of the Guide tab — the side door,
+ * where to eat, where to park. Never kosher or Shabbos content; that layer
+ * was removed from the app outright.
+ *
+ * Same read-modify-write as WalletAttach, against Itinerary.guideNotes
+ * instead of a stop's attachments — the file the itinerary builder itself
+ * would save if it had a place to type this in, which it does not yet.
+ */
+function GuideNoteEdit({
+  tripId,
+  date,
+  note,
+  onSaved,
+}: {
+  tripId: string;
+  date: string;
+  note: string;
+  onSaved: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(note);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    setBusy(true);
+    setError("");
+    try {
+      const got = await fetch(`/api/account/itinerary?trip=${encodeURIComponent(tripId)}`, { cache: "no-store" });
+      const gotData = (await got.json().catch(() => null)) as { itinerary?: Record<string, unknown> } | null;
+      const itinerary = gotData?.itinerary;
+      if (!itinerary) {
+        setError("Could not reach this trip.");
+        return;
+      }
+      const notes = { ...((itinerary.guideNotes as Record<string, string> | undefined) ?? {}) };
+      const trimmed = text.trim();
+      if (trimmed) notes[date] = trimmed;
+      else delete notes[date];
+      itinerary.guideNotes = notes;
+
+      const saved = await fetch("/api/account/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itinerary, tripId }),
+      });
+      if (!saved.ok) {
+        setError("Could not save that note.");
+        return;
+      }
+      setEditing(false);
+      onSaved();
+    } catch {
+      setError("Could not reach the server.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => {
+          setText(note);
+          setEditing(true);
+        }}
+        style={{ alignSelf: "flex-start", border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 12.5, fontWeight: 600, color: "#1f3f5c", textDecoration: "underline" }}
+      >
+        {note ? "Edit this note" : "+ Add a note for this day"}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={3}
+        placeholder="Enter through the side door, table held at one o'clock, park at the lot on Via del…"
+        style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 10, padding: "10px 12px", fontFamily: "Inter,sans-serif", fontSize: 13.5, lineHeight: 1.5, color: "#26323a", outline: "none", resize: "vertical" }}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => void save()} disabled={busy} className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, borderRadius: 10, padding: "8px 14px", fontSize: 12.5, fontWeight: 700, opacity: busy ? 0.6 : 1 }}>
+          {busy ? "Saving…" : "Save"}
+        </button>
+        <button onClick={() => setEditing(false)} disabled={busy} style={{ border: "1px solid rgba(38,50,58,.16)", background: "none", cursor: "pointer", borderRadius: 10, padding: "8px 14px", fontSize: 12.5, fontWeight: 600, color: "#57534e" }}>
+          Cancel
+        </button>
+      </div>
+      {error && <p style={{ margin: 0, fontSize: 12, color: "#b42318" }}>{error}</p>}
+    </div>
+  );
+}
+
 export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
@@ -345,10 +441,11 @@ export default function CompanionApp({
     day: sel.name,
     activity: "On the day",
     chat: advisor,
-    messages: advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Messages",
+    messages: advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
+    guide: "Guide",
   };
   const kickers: Record<Screen, string> = {
     home: trip.homeKicker,
@@ -359,6 +456,7 @@ export default function CompanionApp({
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
+    guide: "Getting around, day by day",
   };
 
   const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
@@ -407,14 +505,18 @@ export default function CompanionApp({
 
   // Concierge mode's tab opens the real thread the moment one exists, so
   // there is only ever one door to "talk to your advisor" rather than a real
-  // one and a dead scripted one side by side. The Guide/Concierge tab itself
-  // only exists on the showcase (hasConcierge) — a wired trip has nothing to
-  // put behind "Guide" now that the kosher-and-Shabbos layer is gone, so it
-  // simply isn't offered rather than opening onto an always-empty screen.
+  // one and a dead scripted one side by side. This "Guide/Concierge" tab is
+  // the showcase's own — kosher and Shabbos content, hasConcierge only.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
+  // A REAL trip's own Guide tab — practical, day-by-day notes the advisor
+  // writes (the side door, where to eat, where to park), never kosher or
+  // Shabbos content. Always offered to whoever can add a note; a client only
+  // sees it once there is something in it, the same as an empty Wallet.
+  const hasGuideNotes = days.some((d) => d.guideNote);
   const tabDefs: [Screen, string][] = [["home", "Trip"]];
   if (hasConcierge) tabDefs.push([conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]);
-  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", "Messages"]);
+  if (!hasConcierge && (!isClientViewer || hasGuideNotes)) tabDefs.push(["guide", "Guide"]);
+  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", advisorInbox ? "Messages" : "Advisor"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
@@ -935,6 +1037,31 @@ export default function CompanionApp({
     </div>
   );
 
+  // A REAL trip's Guide — practical notes only, day by day, never kosher or
+  // Shabbos content. A client sees only the days that carry a note; the
+  // advisor (or a Gold member on their own trip) sees every day, with a
+  // control to add or edit one.
+  const guideDays = days.filter((d) => (isClientViewer ? d.guideNote : true));
+  const guideScreen = (
+    <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
+      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>
+        Getting around, day by day — written by your advisor.
+      </p>
+      {guideDays.length === 0 && (
+        <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>There is nothing here yet.</p>
+      )}
+      {guideDays.map((d, i) => (
+        <div key={d.date ?? i} style={{ padding: "16px 18px", borderRadius: 16, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 7 }}>
+          <span style={kicker("#78716c")}>{d.name}</span>
+          {d.guideNote && <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#26323a", textWrap: "pretty" }}>{d.guideNote}</p>}
+          {!isClientViewer && trip.tripId && d.date && (
+            <GuideNoteEdit tripId={trip.tripId} date={d.date} note={d.guideNote ?? ""} onSaved={() => router.refresh()} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   const profileScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
       <div style={{ padding: 20, borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 14 }}>
@@ -1008,6 +1135,7 @@ export default function CompanionApp({
     );
   else if (st.screen === "wallet") body = walletScreen;
   else if (st.screen === "profile") body = profileScreen;
+  else if (st.screen === "guide") body = guideScreen;
 
   const canBack = st.screen !== "home";
 
