@@ -13,6 +13,7 @@ import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
  */
 
 export const SITE_NAME = "White Glove Kosher Travel";
+const ITINERARIES_SITE_NAME = "White Glove Itineraries";
 
 export { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
 const CANONICAL_HOST = new URL(CANONICAL_ORIGIN).hostname;
@@ -32,7 +33,7 @@ const CANONICAL_APEX = CANONICAL_HOST.replace(/^www\./, "");
  * showing a name this business no longer uses. The mark carries no words at
  * all, which is worse than a wordmark and far better than the wrong one.
  */
-const SOCIAL_IMAGE = { url: "/logo-hand-navy.png", width: 355, height: 460, alt: SITE_NAME };
+const SOCIAL_IMAGE = { url: "/logo-hand-navy.png", width: 355, height: 460 };
 
 function parseOrigin(raw?: string | null): URL | null {
   const value = raw?.trim();
@@ -136,33 +137,73 @@ export type PageMetadata = {
  * The pages were hand-writing three different endings — "| White Glove Kosher
  * Travel", "— White Glove Kosher Travel" and the short "| White Glove" — so a
  * row of the site's own results in Google looked like three sites. This folds
- * whichever was written down to the one the brand actually is (SITE_NAME), and
- * adds it to a title that carried none. A page whose whole title IS the brand —
- * the home page — is left alone rather than made "White Glove … | White Glove".
+ * whichever was written down to the one the brand actually is, and adds it to
+ * a title that carried none. A page whose whole title IS the brand — the home
+ * page — is left alone rather than made "White Glove … | White Glove".
+ *
+ * TWO BRANDS, NOT ONE. A page already written for the itineraries brand hands
+ * in a title ending "… | White Glove Itineraries" — that ending is DETECTED
+ * and preserved, never replaced with the kosher name. This was the actual bug:
+ * the strip pattern only recognized "White Glove[ Kosher Travel]", so an
+ * itineraries title fell all the way through as "not a brand ending yet" and
+ * got a SECOND, kosher-branded ending appended after it — every itineraries
+ * page whose title looked correctly branded was actually shipping both names
+ * at once, live, in the browser tab. Detecting which brand was already there
+ * is what stops that: this function never invents a brand, only recognizes
+ * the one the caller already wrote and keeps that one.
  */
-const SITE_TITLE_SUFFIX = ` | ${SITE_NAME}`;
+// DETECTING a brand ending allows no separator at all — "Sign in to White
+// Glove Itineraries" carries none, while "Build a proposal — White Glove
+// Itineraries" does, and both are real titles written this session. Used to
+// decide WHICH brand a title already carries, for openGraph.siteName and to
+// know a rewrite is not needed at all.
+const ITINERARIES_ANY = /(?:^|[|–—-]\s*|\s)White\s?Glove\s+Itineraries\s*$/i;
+const KOSHER_ANY = /(?:^|[|–—-]\s*|\s)White\s?Glove(?:\s+Kosher\s+Travel)?\s*$/i;
 
-export function withSiteName(title: string): string {
+// REWRITING only ever touches one of the three separator styles this
+// codebase actually used ("|", "-"/"—", or nothing at all but a mismatched
+// one of the two). A title with NO separator at all is a natural sentence —
+// "Sign in to White Glove Itineraries" — already correct as written, and
+// rewriting it would leave a stray "to | White Glove Itineraries" behind.
+const ITINERARIES_WITH_SEP = /\s*[|–—-]\s*White\s?Glove\s+Itineraries\s*$/i;
+const KOSHER_WITH_SEP = /\s*[|–—-]\s*White\s?Glove(?:\s+Kosher\s+Travel)?\s*$/i;
+
+function detectedSiteName(trimmed: string): string | null {
+  if (ITINERARIES_ANY.test(trimmed)) return ITINERARIES_SITE_NAME;
+  if (KOSHER_ANY.test(trimmed)) return SITE_NAME;
+  return null;
+}
+
+export function withSiteName(title: string, siteName: string = SITE_NAME): string {
   const trimmed = title.trim();
-  if (trimmed === SITE_NAME || trimmed.length === 0) return trimmed || SITE_NAME;
-  // Strip any trailing "<separator> White Glove[ Kosher Travel]" — pipe, dash
-  // or em-dash — so all three hand-written variants collapse to one. Only at
-  // the very end, so an internal "White Glove" in a real title is untouched.
-  const base = trimmed.replace(/\s*[|–—-]\s*White\s?Glove(?:\s+Kosher\s+Travel)?\s*$/i, "").trim();
-  return `${base || SITE_NAME}${SITE_TITLE_SUFFIX}`;
+  if (trimmed === siteName || trimmed.length === 0) return trimmed || siteName;
+  // A brand already sits at the end with no separator — a natural sentence,
+  // already correct. Leave it exactly as written; see the note above.
+  if (!ITINERARIES_WITH_SEP.test(trimmed) && !KOSHER_WITH_SEP.test(trimmed) && detectedSiteName(trimmed)) {
+    return trimmed;
+  }
+  // Whichever brand the title's separator-style ending already names wins —
+  // never replaced with the other brand. Only a title with NEITHER ending
+  // falls back to whatever this call passed.
+  const effectiveName = detectedSiteName(trimmed) ?? siteName;
+  const base = trimmed.replace(ITINERARIES_WITH_SEP, "").replace(KOSHER_WITH_SEP, "").trim();
+  return `${base || effectiveName} | ${effectiveName}`;
 }
 
 export function pageMetadata({ title, description, path, image, noIndex }: PageMetadata): Metadata {
   const canonical = path.startsWith("/") ? path : `/${path}`;
-  const images = [image ?? SOCIAL_IMAGE];
-  const fullTitle = withSiteName(title);
+  // The same brand withSiteName settled on decides openGraph.siteName too —
+  // a page's tab title and its share-card site name must never disagree.
+  const siteName = detectedSiteName(title.trim()) ?? SITE_NAME;
+  const images = [image ?? { ...SOCIAL_IMAGE, alt: siteName }];
+  const fullTitle = withSiteName(title, siteName);
   return {
     title: fullTitle,
     description,
     alternates: { canonical },
     openGraph: {
       type: "website",
-      siteName: SITE_NAME,
+      siteName,
       title: fullTitle,
       description,
       url: canonical,
