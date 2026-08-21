@@ -41,6 +41,15 @@ describe("reading a stored thread", () => {
     assert.equal(out[3].lat, 41.9);
   });
 
+  it("reads a place shared by its own address — a trip stop, not a device fix", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "location", text: "The Grand Hotel", address: "Via Roma 1, Rome", at: "t4" }),
+    ]);
+    assert.equal(m.kind, "location");
+    assert.equal(m.address, "Via Roma 1, Rome");
+    assert.equal(m.lat, undefined);
+  });
+
   it("drops a broken picture, video, voice note or place rather than showing an empty bubble", () => {
     const rows = [
       JSON.stringify({ from: "advisor", kind: "image", text: "", at: "t1" }), // no mediaId
@@ -131,6 +140,11 @@ describe("sending a picture, video or voice note is fenced", () => {
   it("validates a shared location's coordinates", () => {
     assert.match(ROUTE, /Math\.abs\(body\.lat\) > 90/);
     assert.match(ROUTE, /Math\.abs\(body\.lng\) > 180/);
+  });
+
+  it("also accepts a trip stop shared by its own address, not only a device fix", () => {
+    assert.match(ROUTE, /typeof body\?\.address === "string" && body\.address\.trim\(\)/);
+    assert.match(ROUTE, /address: body\.address\.trim\(\)\.slice\(0, MAX_CHAT_LABEL\)/);
   });
 });
 

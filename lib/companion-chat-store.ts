@@ -36,9 +36,16 @@ export type CompanionChatMessage = {
   text: string;
   /** kind "image", "video" or "audio": the media-store id, served back through /api/media. */
   mediaId?: string;
-  /** kind "location": a point the other side can open in a map. */
+  /** kind "location": a point the other side can open in a map — the
+   *  sender's own device fix. */
   lat?: number;
   lng?: number;
+  /**
+   * kind "location", alternative to lat/lng: a place's own street address,
+   * shared from the itinerary rather than found by the sender's device —
+   * the hotel, the restaurant, the activity, not "where I am standing".
+   */
+  address?: string;
   /** ISO timestamp. */
   at: string;
   /**
@@ -141,11 +148,11 @@ export function parseChatMessages(rows: string[] | null): CompanionChatMessage[]
         continue;
       }
       const kind = kindOf(m.kind);
-      // A picture, video or voice note with no file, or a place with no
-      // coordinate, is a broken row, not a message — skip it rather than
-      // render an empty bubble.
+      // A picture, video or voice note with no file, or a place with neither
+      // a coordinate nor an address, is a broken row, not a message — skip it
+      // rather than render an empty bubble.
       if ((kind === "image" || kind === "video" || kind === "audio") && typeof m.mediaId !== "string") continue;
-      if (kind === "location" && !(Number.isFinite(m.lat) && Number.isFinite(m.lng))) continue;
+      if (kind === "location" && !(Number.isFinite(m.lat) && Number.isFinite(m.lng)) && !(typeof m.address === "string" && m.address.trim())) continue;
       out.push({ ...m, kind });
     } catch {
       /* skip a corrupt row rather than drop the thread */

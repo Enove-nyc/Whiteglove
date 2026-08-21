@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
         dataUrl?: string;
         lat?: number;
         lng?: number;
+        address?: string;
         label?: string;
         replyToAt?: string;
         typing?: boolean;
@@ -272,6 +273,22 @@ export async function POST(request: NextRequest) {
       text: (body.label ?? "").trim().slice(0, MAX_CHAT_LABEL),
       lat: body.lat,
       lng: body.lng,
+      at: new Date().toISOString(),
+      replyTo,
+      itineraryRef,
+    });
+    return NextResponse.json({ messages, side: who.side });
+  }
+
+  // A place from the itinerary itself — the hotel, the activity, the eatery
+  // — shared by its own address rather than a device fix, so an advisor can
+  // send where something IS instead of only where they happen to be standing.
+  if (typeof body?.address === "string" && body.address.trim()) {
+    const messages = await appendChat(shareId, {
+      from: who.side,
+      kind: "location",
+      text: (body.label ?? "").trim().slice(0, MAX_CHAT_LABEL),
+      address: body.address.trim().slice(0, MAX_CHAT_LABEL),
       at: new Date().toISOString(),
       replyTo,
       itineraryRef,

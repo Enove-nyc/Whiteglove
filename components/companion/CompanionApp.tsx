@@ -1115,6 +1115,21 @@ export default function CompanionApp({
     </div>
   );
 
+  // Stops from this trip that can be shared by their own address in the
+  // chat — where you are staying, and any sight, meal or stop that has a
+  // real place, not "an open day" with nothing planned. A device fix only
+  // ever says where the sender is standing; this is how a hotel, an
+  // activity or an eatery gets shared instead.
+  const shareablePlaces = [
+    ...(trip.walletGroups.find((g) => g.name === "Where you are staying")?.rows ?? [])
+      .filter((r) => r.address)
+      .map((r) => ({ label: r.title, address: r.address! })),
+    ...days
+      .flatMap((d) => d.items)
+      .filter((it) => it.kind !== "travel" && it.kind !== "rest" && it.place.trim())
+      .map((it) => ({ label: it.title, address: it.place })),
+  ];
+
   let body: ReactNode = null;
   if (advisorHome) body = advisorHomeScreen;
   else if (st.screen === "home") body = homeScreen;
@@ -1126,7 +1141,7 @@ export default function CompanionApp({
     body = advisorInbox ? (
       <AdvisorInbox />
     ) : liveChat ? (
-      <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} />
+      <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} />
     ) : (
       guideChat
     );
@@ -1215,6 +1230,8 @@ type LiveMsg = {
   mediaId?: string;
   lat?: number;
   lng?: number;
+  /** kind "location", when shared as a trip stop rather than a device fix. */
+  address?: string;
   at: string;
   editedAt?: string;
   deletedAt?: string;
@@ -1266,6 +1283,7 @@ function LiveChat({
   chat,
   subject,
   onSubjectUsed,
+  places = [],
 }: {
   chat: CompanionChat;
   /** A day or activity tapped through "Ask about this" — folded into the
@@ -1273,6 +1291,12 @@ function LiveChat({
    *  separate conversation for it. */
   subject?: string | null;
   onSubjectUsed?: () => void;
+  /** Stops from this trip that can be shared by their own address — the
+   *  hotel, an activity, an eatery — offered alongside "my current
+   *  location" when Location is tapped. Empty when the caller has no
+   *  itinerary loaded for this thread (the advisor's own inbox, browsing
+   *  a list of clients rather than one open trip). */
+  places?: { label: string; address: string }[];
 }) {
   const { shareId, side, advisorName } = chat;
   const [messages, setMessages] = useState<LiveMsg[]>([]);
@@ -1290,12 +1314,18 @@ function LiveChat({
   // side can take back.
   const [staged, setStaged] = useState<StagedMedia | null>(null);
   const [caption, setCaption] = useState("");
-  // A location fix, held for review the same way a photo is — nothing goes
-  // out until Send is pressed, so tapping the location button can never
-  // itself be the thing that shares where somebody is standing.
-  const [stagedLocation, setStagedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  // A location, held for review the same way a photo is — nothing goes out
+  // until Send is pressed. Either a device fix (lat/lng) or a stop from the
+  // trip itself, shared by its own address (label names which one).
+  const [stagedLocation, setStagedLocation] = useState<
+    { lat: number; lng: number; label?: string } | { address: string; label: string } | null
+  >(null);
   // Whether the "⋯" attach menu (photo / video / location) is open.
   const [attachOpen, setAttachOpen] = useState(false);
+  // The location choice — "my current location" or a stop from this trip —
+  // shown in place of the attach menu once Location is tapped, since a
+  // device fix alone can never be where the hotel or the restaurant is.
+  const [locationChoiceOpen, setLocationChoiceOpen] = useState(false);
   // The `at` of a message being changed — while set, the composer holds that
   // message's words rather than a new message, and Send saves the change
   // instead of posting another one.
@@ -1363,12 +1393,18 @@ function LiveChat({
   }, [menuOpenAt]);
 
   useEffect(() => {
-    if (!attachOpen) return;
+    if (!attachOpen && !locationChoiceOpen) return;
     const onDocClick = (e: MouseEvent) => {
-      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) setAttachOpen(false);
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
+        setAttachOpen(false);
+        setLocationChoiceOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAttachOpen(false);
+      if (e.key === "Escape") {
+        setAttachOpen(false);
+        setLocationChoiceOpen(false);
+      }
     };
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
@@ -1376,7 +1412,7 @@ function LiveChat({
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onKey);
     };
-  }, [attachOpen]);
+  }, [attachOpen, locationChoiceOpen]);
 
   // Grows the composer with what is actually typed, up to a cap beyond which
   // it scrolls internally rather than eating the whole screen.
@@ -1737,9 +1773,20 @@ function LiveChat({
     );
   }
 
+  // A stop from the trip itself — the hotel, the activity, the eatery —
+  // shared by its own address rather than a device fix, so an advisor can
+  // send where something IS rather than only where they happen to be.
+  function pickPlaceLocation(place: { label: string; address: string }) {
+    setStagedLocation({ address: place.address, label: place.label });
+  }
+
   function sendStagedLocation() {
     if (!stagedLocation || sending) return;
-    void post({ lat: stagedLocation.lat, lng: stagedLocation.lng });
+    void post(
+      "address" in stagedLocation
+        ? { address: stagedLocation.address, label: stagedLocation.label }
+        : { lat: stagedLocation.lat, lng: stagedLocation.lng, label: stagedLocation.label },
+    );
     setStagedLocation(null);
   }
 
@@ -1852,13 +1899,17 @@ function LiveChat({
                 </audio>
               </div>
             );
-          } else if (m.kind === "location" && typeof m.lat === "number" && typeof m.lng === "number") {
-            const href = `https://www.google.com/maps?q=${m.lat},${m.lng}`;
+          } else if (m.kind === "location" && ((typeof m.lat === "number" && typeof m.lng === "number") || m.address)) {
+            const href =
+              typeof m.lat === "number" && typeof m.lng === "number"
+                ? `https://www.google.com/maps?q=${m.lat},${m.lng}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.address!)}`;
             content = (
               <a href={href} target="_blank" rel="noopener noreferrer" style={{ ...bubble, textDecoration: "none", padding: "13px 15px", display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
                   <Icon name="map-pin" className="h-4 w-4" /> {m.text || "Shared a location"}
                 </span>
+                {m.address && <span style={{ fontSize: 12.5, opacity: 0.85 }}>{m.address}</span>}
                 <span style={{ fontSize: 12.5, opacity: 0.85 }}>Open in maps →</span>
               </a>
             );
@@ -2109,8 +2160,12 @@ function LiveChat({
               <Icon name="map-pin" className="h-6 w-6" strokeWidth={1.4} />
             </div>
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#26323a" }}>Your location, ready to send</span>
-              <span style={{ fontSize: 11.5, color: "#78716c" }}>{stagedLocation.lat.toFixed(4)}, {stagedLocation.lng.toFixed(4)}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#26323a" }}>
+                {"address" in stagedLocation ? stagedLocation.label : "Your location"}, ready to send
+              </span>
+              <span style={{ fontSize: 11.5, color: "#78716c" }}>
+                {"address" in stagedLocation ? stagedLocation.address : `${stagedLocation.lat.toFixed(4)}, ${stagedLocation.lng.toFixed(4)}`}
+              </span>
             </div>
             <button onClick={() => setStagedLocation(null)} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 36, height: 36, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Icon name="close" className="h-4 w-4" />
@@ -2198,9 +2253,52 @@ function LiveChat({
                       <button role="menuitem" onClick={() => { setAttachOpen(false); videoRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
                         <Icon name="video" className="h-4 w-4" /> Video
                       </button>
-                      <button role="menuitem" onClick={() => { setAttachOpen(false); pickLocation(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); setLocationChoiceOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
                         <Icon name="map-pin" className="h-4 w-4" /> Location
                       </button>
+                    </div>
+                  )}
+                  {locationChoiceOpen && (
+                    // A device fix is only ever "where I am standing" — the
+                    // one thing it can never say is where the hotel or the
+                    // restaurant is, so this offers the trip's own stops too.
+                    <div
+                      role="menu"
+                      style={{
+                        position: "absolute",
+                        bottom: "100%",
+                        left: 0,
+                        marginBottom: 6,
+                        zIndex: 5,
+                        minWidth: 220,
+                        maxWidth: 280,
+                        maxHeight: 260,
+                        overflowY: "auto",
+                        borderRadius: 12,
+                        border: "1px solid rgba(38,50,58,.12)",
+                        background: "#ffffff",
+                        boxShadow: "0 10px 26px rgba(23,45,82,.16)",
+                      }}
+                    >
+                      <button role="menuitem" onClick={() => { setLocationChoiceOpen(false); pickLocation(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, borderBottom: places.length ? "1px solid rgba(38,50,58,.08)" : 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: "#26323a" }}>
+                        <Icon name="map-pin" className="h-4 w-4" /> My current location
+                      </button>
+                      {places.length > 0 && (
+                        <div style={{ padding: "8px 14px 2px", font: "600 10px/1 Inter,sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "#a8a29e" }}>
+                          From this trip
+                        </div>
+                      )}
+                      {places.map((p, i) => (
+                        <button
+                          key={i}
+                          role="menuitem"
+                          onClick={() => { setLocationChoiceOpen(false); pickPlaceLocation(p); }}
+                          style={{ display: "flex", flexDirection: "column", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "8px 14px", fontSize: 13, color: "#26323a" }}
+                        >
+                          <span style={{ fontWeight: 600 }}>{p.label}</span>
+                          <span style={{ fontSize: 11.5, color: "#78716c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.address}</span>
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
