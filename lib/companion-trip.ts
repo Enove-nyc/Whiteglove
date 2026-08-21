@@ -173,6 +173,8 @@ function itemsForDay(day: ItineraryDay): CompanionItem[] {
       kind: STOP_KIND,
       note: a.notes || "",
       ...(walk ? { walk } : {}),
+      ...(a.phone ? { phone: a.phone } : {}),
+      ...(a.href ? { href: a.href } : {}),
     });
   }
 
@@ -270,14 +272,12 @@ function walletGroupsFor(itin: Itinerary): CompanionWalletGroup[] {
     .map((l) => ({
       title: l.name || "Where you are staying",
       ref: l.confirmation ? `conf ${l.confirmation}` : "",
-      sub: [
+      sub:
         l.checkIn && l.checkOut
           ? `${fmt(l.checkIn, { day: "numeric", month: "short" })} – ${fmt(l.checkOut, { day: "numeric", month: "short" })}`
           : "",
-        l.address,
-      ]
-        .filter(Boolean)
-        .join(" · "),
+      ...(l.phone ? { phone: l.phone } : {}),
+      ...(l.address ? { address: l.address } : {}),
     }));
   if (stayRows.length) groups.push({ name: "Where you are staying", rows: stayRows });
 

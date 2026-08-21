@@ -40,7 +40,6 @@ type ChatSide = "client" | "advisor";
 export type CompanionChat = { shareId: string; side: ChatSide; advisorName: string };
 type Mode = "concierge" | "guide";
 type Role = "traveler" | "advisor";
-type TStyle = "rail" | "cards" | "bands";
 type SwapId = "a" | "b";
 
 type State = {
@@ -57,7 +56,6 @@ type State = {
   // real thread as a small reference, then cleared once picked up, rather
   // than opening a second, separate conversation.
   chatSubject: string | null;
-  tstyle: TStyle;
   tmode: Mode;
   role: Role;
   messages: { from: "them" | "me"; text: string }[];
@@ -97,7 +95,6 @@ export default function CompanionApp({
     draft: "",
     typing: false,
     chatSubject: null,
-    tstyle: "rail",
     tmode: trip.concierge ? "concierge" : "guide",
     role: "traveler",
     messages: trip.messages ?? [],
@@ -225,19 +222,6 @@ export default function CompanionApp({
   const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
   const actKind = COMPANION_KIND[act.kind] || COMPANION_KIND.rest;
 
-  const bandOf = (t: string) => {
-    const h = parseInt(t || "0", 10);
-    return h < 12 ? 0 : h < 17 ? 1 : 2;
-  };
-  const bandDefs: [string, string][] = [
-    ["Morning", "06:00 – 12:00"],
-    ["Afternoon", "12:00 – 17:00"],
-    ["Evening", "after 17:00"],
-  ];
-  const bands = bandDefs
-    .map(([name, span], bi) => ({ name, span, items: items.filter((it) => bandOf(it.time) === bi) }))
-    .filter((b) => b.items.length);
-
   const seg = <T extends string>(list: [T, string][], cur: T, set: (id: T) => void) =>
     list.map(([id, label]) => ({
       id,
@@ -327,7 +311,12 @@ export default function CompanionApp({
         </div>
       </div>
       <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 7 }}>
-        <h2 style={{ margin: 0, font: `400 29px/1.08 ${serif}`, letterSpacing: "-.02em" }}>{trip.tripTitle}</h2>
+        {/* Skipped when it would just repeat the header above it word for
+            word — a trip with no name of its own reads as "Family trip" in
+            both places otherwise. */}
+        {trip.tripTitle !== trip.homeTitle && (
+          <h2 style={{ margin: 0, font: `400 29px/1.08 ${serif}`, letterSpacing: "-.02em" }}>{trip.tripTitle}</h2>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap", fontSize: 13, color: "#57534e" }}>
           <span>{trip.tripDates}</span>
           <span style={{ width: 4, height: 4, borderRadius: 14, background: "#a8a29e" }} />
@@ -376,16 +365,37 @@ export default function CompanionApp({
           <h3 style={{ margin: 0, font: `400 21px/1.1 ${serif}` }}>{sel.name}</h3>
           <button onClick={() => go("day")} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", font: "600 12px/1 Inter,sans-serif", color: "#765321", padding: 0 }}>Full day →</button>
         </div>
-        {items.slice(0, 3).map((it, i) => (
-          <button key={i} onClick={() => openActivity(st.selDay, i)} className="wg-fade" style={{ textAlign: "left", border: 0, background: "none", padding: 0, cursor: "pointer", display: "flex", gap: 13, alignItems: "flex-start" }}>
-            <span style={{ flex: "none", width: 52, font: "600 12.5px/1.5 ui-monospace,Menlo,monospace", color: "#78716c", paddingTop: 2 }}>{it.time}</span>
-            <span style={{ flex: "none", width: 9, height: 9, borderRadius: 14, background: it.dot, marginTop: 6 }} />
-            <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
-              <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.place}</span>
-            </span>
-          </button>
-        ))}
+        {items.slice(0, 3).map((it, i) => {
+          // The one thing today that most needs finding fast: the day's
+          // first still-ahead stop, only when the day on screen IS today.
+          const isNext = Boolean(sel.today) && i === 0;
+          return (
+            <button
+              key={i}
+              onClick={() => openActivity(st.selDay, i)}
+              className="wg-fade"
+              style={{
+                textAlign: "left",
+                border: isNext ? `1px solid ${GOLD}` : 0,
+                background: isNext ? "#f7eee0" : "none",
+                borderRadius: isNext ? 16 : 0,
+                padding: isNext ? "15px 16px" : 0,
+                cursor: "pointer",
+                display: "flex",
+                gap: 13,
+                alignItems: "flex-start",
+              }}
+            >
+              <span style={{ flex: "none", width: 52, font: `600 ${isNext ? 13.5 : 12.5}px/1.5 ui-monospace,Menlo,monospace`, color: isNext ? "#765321" : "#78716c", paddingTop: 2 }}>{it.time}</span>
+              <span style={{ flex: "none", width: 9, height: 9, borderRadius: 14, background: it.dot, marginTop: 6 }} />
+              <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                {isNext && <span style={{ ...kicker("#765321"), marginBottom: 1 }}>Next up</span>}
+                <span style={{ fontSize: isNext ? 17 : 15, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+                <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.place}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {trip.kosherTitle && (
@@ -500,46 +510,6 @@ export default function CompanionApp({
     </div>
   );
 
-  const cardsView = (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {items.map((it, i) => (
-        <button key={i} onClick={() => openActivity(st.selDay, i)} className="wg-fade" style={{ textAlign: "left", cursor: "pointer", border: 0, borderRadius: 20, padding: 20, background: it.tint, display: "flex", flexDirection: "column", gap: 8 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <span style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".12em", textTransform: "uppercase", color: it.kindFg }}>{it.kindLabel}</span>
-            <span style={{ font: "600 12.5px/1 ui-monospace,Menlo,monospace", color: "#78716c" }}>{it.time}</span>
-          </span>
-          <span style={{ font: `400 21px/1.12 ${serif}`, letterSpacing: "-.01em" }}>{it.title}</span>
-          <span style={{ fontSize: 13, color: "#57534e" }}>{it.place}</span>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: "#26323a", textWrap: "pretty" }}>{it.note}</span>
-        </button>
-      ))}
-    </div>
-  );
-
-  const bandsView = (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {bands.map((b, bi) => (
-        <div key={bi} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ font: `400 15px/1 ${serif}`, color: "#765321" }}>{b.name}</span>
-            <span style={{ flex: 1, height: 1, background: "rgba(38,50,58,.12)" }} />
-            <span style={{ font: "400 11px/1 ui-monospace,Menlo,monospace", color: "#a8a29e" }}>{b.span}</span>
-          </div>
-          {b.items.map((it, i) => (
-            <button key={i} onClick={() => openActivity(st.selDay, items.indexOf(it))} className="wg-fade" style={{ textAlign: "left", cursor: "pointer", border: 0, background: "none", padding: 0, display: "flex", gap: 12, alignItems: "stretch" }}>
-              <span style={{ flex: "none", width: 6, borderRadius: 14, background: it.dot }} />
-              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3, padding: "4px 0" }}>
-                <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.25 }}>{it.title}</span>
-                <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.time} · {it.place}</span>
-                <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{it.note}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-
   const dayScreen = (
     <div style={{ padding: "16px 18px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
       {(sel.weather || sel.walk) && (
@@ -554,9 +524,7 @@ export default function CompanionApp({
           <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#0b2437", textWrap: "pretty" }}>{sel.shabbosNote}</p>
         </div>
       )}
-      {st.tstyle === "rail" && railView}
-      {st.tstyle === "cards" && cardsView}
-      {st.tstyle === "bands" && bandsView}
+      {railView}
       <button
         onClick={() => {
           setSt((s) => ({ ...s, chatSubject: `Day ${st.selDay + 1} — ${sel.name}` }));
@@ -602,6 +570,26 @@ export default function CompanionApp({
               style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, textDecoration: "none", display: "inline-flex", alignItems: "center" }}
             >
               Directions
+            </a>
+          )}
+          {act.phone && (
+            <a
+              href={`tel:${act.phone.replace(/[^\d+]/g, "")}`}
+              className="wg-warm"
+              style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+            >
+              Call
+            </a>
+          )}
+          {act.href && (
+            <a
+              href={act.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="wg-warm"
+              style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: "#26323a", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+            >
+              Confirmation
             </a>
           )}
           <button
@@ -708,7 +696,7 @@ export default function CompanionApp({
           ))}
         </div>
         <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
-          <input value={st.draft} onChange={(e) => setSt((s) => ({ ...s, draft: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") send(); }} placeholder={st.role === "advisor" ? "Reply to the Cohens…" : `Ask ${firstName} anything…`} style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }} />
+          <input value={st.draft} onChange={(e) => setSt((s) => ({ ...s, draft: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") send(); }} placeholder={st.role === "advisor" ? "Reply to the Cohens…" : `Ask ${firstName} anything…`} style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: "#26323a", outline: "none" }} />
           <button onClick={() => send()} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0 }}>↑</button>
         </div>
       </div>
@@ -753,7 +741,26 @@ export default function CompanionApp({
                 <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25 }}>{r.title}</span>
                 <span style={{ flex: "none", font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#78716c" }}>{r.ref}</span>
               </div>
-              <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{r.sub}</span>
+              {r.sub && <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{r.sub}</span>}
+              {(r.phone || r.address) && (
+                <div style={{ display: "flex", gap: 14, marginTop: 2 }}>
+                  {r.phone && (
+                    <a href={`tel:${r.phone.replace(/[^\d+]/g, "")}`} style={{ fontSize: 12.5, fontWeight: 600, color: "#1f3f5c", textDecoration: "underline" }}>
+                      Call
+                    </a>
+                  )}
+                  {r.address && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: 12.5, fontWeight: 600, color: "#1f3f5c", textDecoration: "underline" }}
+                    >
+                      Directions
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -877,8 +884,6 @@ export default function CompanionApp({
         <div className="wg-chrome-head">
           <div className="wg-chrome-intro">
             <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#c8a76a" }}>White Glove · app</div>
-            <h1 style={{ font: `400 40px/1.06 ${serif}`, letterSpacing: "-.015em", margin: 0, color: "#f7f5f0" }}>The trip in your pocket</h1>
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#c9d3da", textWrap: "pretty" }}>{hasConcierge ? "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and an advisor who has usually moved before you notice." : "Built on the itinerary the planner already produces — a day at a time, the kosher side of each day, the Friday that stops early, and a travel wallet kept for when there is no signal."}</p>
           </div>
           {hasConcierge && (
             <div className="wg-toolbar-group">
@@ -923,6 +928,7 @@ type LiveMsg = {
   editedAt?: string;
   deletedAt?: string;
   replyTo?: { at: string; from: ChatSide; kind?: string; text: string };
+  itineraryRef?: string;
 };
 
 /** The floor a picture may weigh before the server even has a disk to hold it
@@ -1008,6 +1014,10 @@ function LiveChat({
   // in a bar above the composer, cleared once it is actually attached to a
   // sent message.
   const [replyingTo, setReplyingTo] = useState<LiveMsg | null>(null);
+  // A day or activity carried in from "Ask about this" — staged the same
+  // way a reply is, and attached to the next message sent rather than
+  // mixed into its words, so it shows in the thread as its own small tag.
+  const [itineraryRef, setItineraryRef] = useState<string | null>(null);
   // A picture or video opened full-size, over the whole chat panel.
   const [viewerMedia, setViewerMedia] = useState<{ kind: "image" | "video"; mediaId: string; text: string } | null>(null);
   // Briefly highlighted after tapping a quote to jump to the message it
@@ -1049,13 +1059,13 @@ function LiveChat({
   }, [menuOpenAt]);
 
   // Picked up once per "Ask about this" tap, then handed back so the parent
-  // clears it — otherwise navigating away and back would refill the
-  // composer over whatever the traveler had already typed.
+  // clears it — otherwise navigating away and back would restage it over
+  // whatever the traveler had already set up to send.
   const onSubjectUsedRef = useRef(onSubjectUsed);
   onSubjectUsedRef.current = onSubjectUsed;
   useEffect(() => {
     if (!subject) return;
-    setDraft((d) => d || `Re: ${subject} — `);
+    setItineraryRef(subject);
     onSubjectUsedRef.current?.();
   }, [subject]);
 
@@ -1110,12 +1120,18 @@ function LiveChat({
       const r = await fetch("/api/companion/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, ...(replyingTo ? { replyToAt: replyingTo.at } : {}), ...payload }),
+        body: JSON.stringify({
+          share: shareId,
+          ...(replyingTo ? { replyToAt: replyingTo.at } : {}),
+          ...(itineraryRef ? { itineraryRef } : {}),
+          ...payload,
+        }),
       });
       const d = await r.json().catch(() => null);
       if (r.ok && d) {
         setMessages(Array.isArray(d.messages) ? d.messages : []);
         setReplyingTo(null);
+        setItineraryRef(null);
       } else {
         setNote((d && d.error) || "That didn't send. Try again.");
         void load();
@@ -1367,6 +1383,19 @@ function LiveChat({
 
   let lastRenderedDay = "";
 
+  // The one message a sent/read mark can attach to — the most recent one I
+  // sent that is still standing. A tick under every message I have ever sent
+  // reads as noise once a thread runs long; a real messaging app shows this
+  // once, where it answers the only question worth asking: has my last word
+  // landed.
+  let lastMineAt: string | null = null;
+  for (let j = messages.length - 1; j >= 0; j--) {
+    if (messages[j].from === side && !messages[j].deletedAt) {
+      lastMineAt = messages[j].at;
+      break;
+    }
+  }
+
   return (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", position: "relative", animation: "wgIn .28s ease both" }}>
       <div ref={scrollerRef} onScroll={noteScrollPosition} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1485,6 +1514,15 @@ function LiveChat({
               </span>
             </button>
           );
+          // Which day or activity this message was started from — set once,
+          // when "Ask about this" opened the thread, so the reader does not
+          // have to guess what a bare "Can we move this?" refers to.
+          const itineraryTag = m.itineraryRef && (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, alignSelf: mine ? "flex-end" : "flex-start", marginBottom: 2, padding: "3px 9px 3px 7px", borderRadius: 999, background: "#e7edf1", color: "#1f3f5c", fontSize: 11, fontWeight: 600 }}>
+              <Icon name="suitcase" className="h-3 w-3" />
+              {m.itineraryRef}
+            </div>
+          );
           return (
             <Fragment key={m.at || i}>
               {showDivider && (
@@ -1504,7 +1542,8 @@ function LiveChat({
                   transition: "background .5s ease",
                 }}
               >
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flexDirection: mine ? "row-reverse" : "row", maxWidth: "100%" }}>
+              {itineraryTag}
+              <div style={{ display: "flex", alignItems: "center", gap: 1, flexDirection: mine ? "row-reverse" : "row", maxWidth: "100%" }}>
                 <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                   {quote}
                   {content}
@@ -1512,7 +1551,12 @@ function LiveChat({
                 {/* One "⋯" per message instead of Report/Edit/Delete spelled
                     out beside every bubble — the options a tap actually needs
                     sit in a small menu right against the message they act on,
-                    rather than spread across the row under it. */}
+                    rather than spread across the row under it. Centered on
+                    the bubble (not bottom-aligned) so it visually belongs to
+                    THIS message even when the bubble is tall — a photo or a
+                    multi-line note — rather than drifting toward whatever
+                    sits below it; dimmed until touched so a long thread of
+                    bubbles doesn't read as a column of dots. */}
                 {hasMenu && (
                   <div ref={menuOpen ? menuRef : undefined} style={{ position: "relative", flex: "none" }}>
                     <button
@@ -1520,7 +1564,7 @@ function LiveChat({
                       title="Message options"
                       aria-label="Message options"
                       aria-expanded={menuOpen}
-                      style={{ border: 0, background: "none", cursor: "pointer", padding: 4, color: "#a8a29e", display: "flex", alignItems: "center" }}
+                      style={{ border: 0, background: "none", cursor: "pointer", padding: 10, margin: -6, color: "#a8a29e", opacity: menuOpen ? 1 : 0.55, display: "flex", alignItems: "center" }}
                     >
                       <Icon name="more" className="h-4 w-4" />
                     </button>
@@ -1584,9 +1628,9 @@ function LiveChat({
                   </div>
                 )}
               </div>
-              {/* A sent/read tick under every message I sent, not just the
-                  last one — the way a real messaging app marks each bubble. */}
-              {mine && !m.deletedAt && (
+              {/* A sent/read tick once, under the last message I sent — not
+                  repeated down the thread. */}
+              {mine && m.at === lastMineAt && (
                 <span style={{ display: "inline-flex", alignItems: "center", padding: "0 4px", color: seenRead ? GOLD : "#a8a29e" }}>
                   <Icon name={seenRead ? "check-check" : "check"} className="h-3 w-3" />
                 </span>
@@ -1646,7 +1690,11 @@ function LiveChat({
                 onChange={(e) => setCaption(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendStaged(); } }}
                 placeholder="Add a caption (optional)…"
-                style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
+                // 16px, not 14: iOS Safari auto-zooms the whole page into any
+                // text input under 16px the moment it is focused, which is
+                // exactly what reads as the screen "jumping" when the
+                // keyboard opens.
+                style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: "#26323a", outline: "none" }}
               />
             )}
             <button onClick={() => sendStaged()} disabled={sending} className="wg-press" style={{ flex: staged.kind === "audio" ? 1 : "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, height: 46, minWidth: 46, borderRadius: 14, fontSize: staged.kind === "audio" ? 14 : 17, fontWeight: staged.kind === "audio" ? 700 : 400, padding: staged.kind === "audio" ? "0 20px" : 0, opacity: sending ? 0.6 : 1 }}>
@@ -1673,6 +1721,17 @@ function LiveChat({
                 </span>
               </div>
               <button onClick={() => setReplyingTo(null)} title="Cancel reply" aria-label="Cancel reply" className="wg-link" style={{ flex: "none", border: 0, background: "none", cursor: "pointer", color: "#a8a29e", display: "flex" }}>
+                <Icon name="close" className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          {itineraryRef && !editingAt && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, background: "#e7edf1", borderRadius: 8, padding: "6px 9px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, fontSize: 12, fontWeight: 600, color: "#1f3f5c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <Icon name="suitcase" className="h-3.5 w-3.5" />
+                {itineraryRef}
+              </span>
+              <button onClick={() => setItineraryRef(null)} title="Remove" aria-label="Remove" className="wg-link" style={{ flex: "none", border: 0, background: "none", cursor: "pointer", color: "#1f3f5c", display: "flex" }}>
                 <Icon name="close" className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -1723,7 +1782,8 @@ function LiveChat({
               onChange={(e) => { setDraft(e.target.value); noteTyping(); }}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
-              style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 14, color: "#26323a", outline: "none" }}
+              // 16px: the same iOS auto-zoom-on-focus fix as the caption box.
+              style={{ flex: 1, minWidth: 0, border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: "#26323a", outline: "none" }}
             />
             <button onClick={() => send()} disabled={sending || recording} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: CREAM, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
           </div>

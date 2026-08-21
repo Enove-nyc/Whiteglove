@@ -166,7 +166,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
   const body = (await request.json().catch(() => null)) as
-    | { share?: string; text?: string; dataUrl?: string; lat?: number; lng?: number; label?: string; replyToAt?: string; typing?: boolean }
+    | {
+        share?: string;
+        text?: string;
+        dataUrl?: string;
+        lat?: number;
+        lng?: number;
+        label?: string;
+        replyToAt?: string;
+        typing?: boolean;
+        itineraryRef?: string;
+      }
     | null;
   const shareId = body?.share?.trim();
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
@@ -192,6 +202,14 @@ export async function POST(request: NextRequest) {
   // alongside replyToAt. A stale or made-up `at` just means the message goes
   // out as an ordinary one rather than failing the whole send over it.
   const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(shareId, body.replyToAt) : undefined;
+
+  // "Ask about this day" / "Ask to move this" — a short label naming the
+  // itinerary item the thread was opened from, carried on the one message it
+  // rides in with rather than jammed into the words themselves.
+  const itineraryRef =
+    typeof body?.itineraryRef === "string" && body.itineraryRef.trim()
+      ? body.itineraryRef.trim().slice(0, MAX_CHAT_LABEL)
+      : undefined;
 
   // A picture, a video, or a voice note. Rate limited BEFORE the work, because
   // this is the one message a client with no account can push real bytes with
@@ -238,6 +256,7 @@ export async function POST(request: NextRequest) {
       mediaId: id,
       at: new Date().toISOString(),
       replyTo,
+      itineraryRef,
     });
     return NextResponse.json({ messages, side: who.side });
   }
@@ -255,6 +274,7 @@ export async function POST(request: NextRequest) {
       lng: body.lng,
       at: new Date().toISOString(),
       replyTo,
+      itineraryRef,
     });
     return NextResponse.json({ messages, side: who.side });
   }
@@ -268,6 +288,7 @@ export async function POST(request: NextRequest) {
     text: text.slice(0, MAX_CHAT_TEXT),
     at: new Date().toISOString(),
     replyTo,
+    itineraryRef,
   });
   return NextResponse.json({ messages, side: who.side });
 }

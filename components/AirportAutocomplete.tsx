@@ -42,6 +42,7 @@ export default function AirportAutocomplete({
   placeholder,
   className,
   required = false,
+  allowGroups = true,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -49,6 +50,13 @@ export default function AirportAutocomplete({
   className?: string;
   /** Passed straight to the input, so a starred label is actually enforced. */
   required?: boolean;
+  /**
+   * Offer a city as one option covering every airport in it — right for a
+   * flight SEARCH ("flying to London" rarely cares which of five it lands
+   * at), wrong for a stop on a CONFIRMED itinerary, which always lands at
+   * one specific airport. Off in the itinerary builder; on everywhere else.
+   */
+  allowGroups?: boolean;
 }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
@@ -83,7 +91,7 @@ export default function AirportAutocomplete({
   // The built-in list with the owner's on top. Until the fetch lands `extras`
   // is empty, so this is exactly the built-in list and the box works at once.
   const all: Airport[] = extras.airports.length ? mergeAirports(extras.airports) : AIRPORTS;
-  const cities = q.length >= 1 ? metroMatches(q, all, mergeMetros(extras.metros)) : [];
+  const cities = allowGroups && q.length >= 1 ? metroMatches(q, all, mergeMetros(extras.metros)) : [];
   const matches = q.length >= 1
     ? all.filter((a) => foldAccents(`${a.code} ${a.name} ${a.city} ${a.country} ${a.aliases.join(" ")}`).includes(q)).slice(0, 8)
     : [];

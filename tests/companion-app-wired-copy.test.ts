@@ -62,3 +62,95 @@ describe("the empty guide does not promise content that will never come", () => 
     assert.doesNotMatch(guide, /kosher food, the Shabbos times and the sights/);
   });
 });
+
+describe("Rail / Cards / Bands is gone, not just hidden", () => {
+  it("carries no TStyle type, tstyle state, or a picker for it", () => {
+    assert.doesNotMatch(APP, /TStyle/);
+    assert.doesNotMatch(APP, /tstyle/);
+    assert.doesNotMatch(APP, /cardsView|bandsView/);
+    assert.doesNotMatch(APP, /Day timeline/);
+  });
+
+  it("the day screen just renders the timeline view, unconditionally", () => {
+    const dayScreen = APP.slice(APP.indexOf("const dayScreen"), APP.indexOf("const activityScreen"));
+    assert.match(dayScreen, /\{railView\}/);
+  });
+});
+
+describe("the desktop showcase no longer explains the app to a traveler", () => {
+  it("drops the headline and the 'built on the itinerary' paragraph", () => {
+    assert.doesNotMatch(APP, /The trip in your pocket/);
+    assert.doesNotMatch(APP, /Built on the itinerary the planner already produces/);
+  });
+});
+
+describe("the trip title is never repeated word for word", () => {
+  it("the home screen's h2 is skipped when it would just echo the header above it", () => {
+    const home = APP.slice(APP.indexOf("const homeScreen"), APP.indexOf("{open &&"));
+    assert.match(home, /\{trip\.tripTitle !== trip\.homeTitle && \(/);
+  });
+});
+
+describe("a sent/read tick shows once, not on every message", () => {
+  it("computes the last message I sent, the same way the old single 'Read' mark did", () => {
+    assert.match(APP, /let lastMineAt: string \| null = null;/);
+  });
+
+  it("the tick is gated on being that one message, not merely being mine", () => {
+    assert.match(APP, /\{mine && m\.at === lastMineAt && \(/);
+    assert.doesNotMatch(APP, /\{mine && !m\.deletedAt && \(\s*<span[^>]*>\s*<Icon name=\{seenRead/);
+  });
+});
+
+describe("the overflow menu belongs to its own bubble, and recedes until touched", () => {
+  it("is centered on the bubble rather than pinned to its bottom edge", () => {
+    const row = APP.slice(APP.indexOf('flexDirection: mine ? "row-reverse" : "row", maxWidth') - 60, APP.indexOf("{hasMenu &&"));
+    assert.match(row, /alignItems: "center"/);
+  });
+
+  it("dims by default and comes to full opacity only while open", () => {
+    assert.match(APP, /opacity: menuOpen \? 1 : 0\.55/);
+  });
+});
+
+describe("an itinerary reference rides with the message it was asked from", () => {
+  it("is staged like a reply — attached on send, not typed into the words", () => {
+    assert.match(APP, /const \[itineraryRef, setItineraryRef\] = useState<string \| null>\(null\)/);
+    assert.match(APP, /setItineraryRef\(subject\)/);
+    assert.match(APP, /\.\.\.\(itineraryRef \? \{ itineraryRef \} : \{\}\)/);
+    assert.match(APP, /setItineraryRef\(null\)/);
+  });
+
+  it("renders as its own small tag on the sent message, not folded into the text", () => {
+    assert.match(APP, /const itineraryTag = m\.itineraryRef && \(/);
+    assert.match(APP, /\{itineraryTag\}/);
+  });
+});
+
+describe("activity details lead with the actions a traveler actually needs", () => {
+  it("Call and Confirmation sit between Directions and the message button, only when real", () => {
+    const buttons = APP.slice(APP.indexOf("actHasDirections &&"), APP.indexOf("Ask to move this"));
+    assert.match(buttons, /act\.phone && \(/);
+    assert.match(buttons, /href=\{`tel:\$\{act\.phone/);
+    assert.match(buttons, /act\.href && \(/);
+    assert.ok(buttons.indexOf("act.phone &&") < buttons.indexOf("act.href &&"), "Call comes before Confirmation");
+  });
+});
+
+describe("wallet rows carry real phone numbers and addresses as taps, not plain text", () => {
+  it("a Call link and a Directions link render when the row has them", () => {
+    const wallet = APP.slice(APP.indexOf("const walletScreen"), APP.indexOf("const profileScreen"));
+    assert.match(wallet, /href=\{`tel:\$\{r\.phone/);
+    assert.match(wallet, /maps\/search\/\?api=1&query=\$\{encodeURIComponent\(r\.address\)\}/);
+  });
+});
+
+describe("the composer never triggers iOS's auto-zoom", () => {
+  it("every message text input is 16px, not 14 — under 16 zooms the whole page on focus", () => {
+    const inputs = [...APP.matchAll(/<input[\s\S]*?\/>/g)].filter((m) => /placeholder=/.test(m[0]));
+    assert.ok(inputs.length >= 3, "expects the draft, caption and demo composer inputs");
+    for (const [tag] of inputs) {
+      assert.doesNotMatch(tag, /fontSize: 14[,}]/, "a text input must not sit at the pre-zoom size");
+    }
+  });
+});

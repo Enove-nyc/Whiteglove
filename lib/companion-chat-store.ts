@@ -74,6 +74,13 @@ export type CompanionChatMessage = {
      *  note/place when there are none to show. */
     text: string;
   };
+  /**
+   * A short label for the day or activity this message was started from —
+   * "Day 3 — The Colosseum" — set once, when "Ask about this" opens the
+   * thread. Plain display text, not sensitive: the same trust level as the
+   * message's own words, just capped and stripped the same way.
+   */
+  itineraryRef?: string;
 };
 
 /** The most a text message may carry, and the most a thread keeps. */

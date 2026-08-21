@@ -27,6 +27,10 @@ export type CompanionItem = {
   /** A departing flight's landing time — belongs with "When" it lands, not
    *  "Where" it is, so it is its own field rather than living in `place`. */
   arriveNote?: string;
+  /** A number worth calling — the venue, the driver, the front desk. */
+  phone?: string;
+  /** A confirmation, booking or reference page for this stop, when there is one. */
+  href?: string;
   /** Whether the advisor may swap this one out around weather. */
   swappable?: boolean;
 };
@@ -59,7 +63,15 @@ export type CompanionHandledStep = { what: string; when: string };
 export type CompanionGuideItem = { title: string; note: string; tint: string };
 export type CompanionGuideSection = { name: string; items: CompanionGuideItem[] };
 
-export type CompanionWalletRow = { title: string; ref: string; sub: string };
+export type CompanionWalletRow = {
+  title: string;
+  ref: string;
+  sub: string;
+  /** A number worth calling — the front desk, the driver. Tappable when set. */
+  phone?: string;
+  /** A real address — tappable as directions when set. */
+  address?: string;
+};
 export type CompanionWalletGroup = { name: string; rows: CompanionWalletRow[] };
 
 export type CompanionPref = { label: string; value: string };

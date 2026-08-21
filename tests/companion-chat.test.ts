@@ -232,6 +232,25 @@ describe("a reply quotes a real message, never a client-supplied one", () => {
   });
 });
 
+describe("an itinerary reference is sanitized and carried on every kind of send", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("is trimmed and capped the same way a caption is, never trusted raw", () => {
+    assert.match(POST, /body\?\.itineraryRef === "string" && body\.itineraryRef\.trim\(\)/);
+    assert.match(POST, /body\.itineraryRef\.trim\(\)\.slice\(0, MAX_CHAT_LABEL\)/);
+  });
+
+  it("attaches to media, location and text sends alike", () => {
+    const mediaBranch = POST.slice(POST.indexOf("body.dataUrl"), POST.indexOf("A place"));
+    const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
+    const textBranch = POST.slice(POST.indexOf("// Words."));
+    for (const branch of [mediaBranch, locationBranch, textBranch]) {
+      assert.match(branch, /appendChat\(shareId, \{[\s\S]*itineraryRef,[\s\S]*?\}\)/);
+    }
+  });
+});
+
 describe("typing is a courtesy signal, not a message", () => {
   const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
   const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
