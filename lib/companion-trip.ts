@@ -12,6 +12,15 @@
  * wired trip (concierge: false). Nothing is put in an advisor's mouth that no
  * advisor said. What a real trip carries is what the planner actually holds:
  * the days, the stops, the flights and stay in the wallet, and who is going.
+ *
+ * THE KOSHER-AND-SHABBOS LAYER IS OFF UNTIL THE ACCOUNT TURNS IT ON
+ * (AppPrefs.kosherFeatures, lib/app-prefs-store.ts — a settings switch on the
+ * account page). Off, this file behaves exactly as a plain itinerary tool.
+ * On, candle-lighting, when Shabbos ends, and the site's own kosher listings
+ * near the trip are worked out here and carried on `days[].shabbosLabel` /
+ * `shabbosNote` and `guideSections` — never invented when the layer is off,
+ * and never computed at all (no zmanim call, no kosher lookup) when it is,
+ * see lib/companion-build.ts.
  */
 
 import {
@@ -20,14 +29,40 @@ import {
   travelerSummary,
   travelersOf,
 } from "@/data/itinerary";
+import type { ZmanimDay } from "@/lib/zmanim-day";
 import type {
   CompanionDay,
+  CompanionGuideSection,
   CompanionItem,
   CompanionKind,
   CompanionTrip,
   CompanionWalletGroup,
   CompanionWalletRow,
 } from "@/data/companion-demo";
+
+/**
+ * A kosher place near the trip, flattened to just what the guide shows.
+ *
+ * Built from lib/curated-kosher.ts (the site's own listings) with the
+ * hechsher already spelled for a reader — kept a plain shape here so the
+ * mapper stays a pure transform a test can call with a hand-made list.
+ */
+export type CompanionKosherNearby = {
+  name: string;
+  city: string;
+  kind: string;
+  diet?: string;
+  /** The hechsher, already put into words. */
+  hechsher: string;
+  km: number;
+};
+
+export type CompanionLayer = {
+  /** One worked-out ZmanimDay per date (candle-lighting, tzeis, occasion). */
+  zmanimByDate?: Record<string, ZmanimDay>;
+  /** The site's kosher listings near where the trip is, nearest first. */
+  kosher?: CompanionKosherNearby[];
+};
 
 /* ---- small date helpers (UTC-noon, like the rest of the planner) -------- */
 
@@ -60,6 +95,48 @@ function minutesOf(time?: string): number {
   return m ? Number(m[1]) * 60 + Number(m[2]) : 100000;
 }
 
+/* ---- the Shabbos layer, read off worked-out zmanim ---------------------- */
+
+/** The first time carrying this id across a day's blocks, or null. */
+function zmanTime(zday: ZmanimDay | undefined, id: string): string | null {
+  if (!zday) return null;
+  for (const block of zday.blocks) {
+    const found = block.entries.find((e) => e.id === id && e.time);
+    if (found?.time) return found.time;
+  }
+  return null;
+}
+
+/** The name of the place a day's evening times were worked out for. */
+function zmanPlace(zday: ZmanimDay | undefined): string {
+  if (!zday) return "";
+  const evening = zday.blocks.find((b) => b.span === "evening") ?? zday.blocks[zday.blocks.length - 1];
+  return evening?.placeName ?? "";
+}
+
+/** The Shabbos / erev-Shabbos label and note for a day, from real times. */
+function shabbosFromZmanim(zday: ZmanimDay | undefined): { label: string; note: string } | null {
+  if (!zday) return null;
+  const candle = zmanTime(zday, "candle-lighting");
+  const tzeis = zmanTime(zday, "tzeit");
+  const occasion = zday.occasion || "Shabbos";
+  if (candle) {
+    return {
+      label: `Candle-lighting ${candle}`,
+      note: `${occasion} begins this evening — the day is built to finish before it comes in.`,
+    };
+  }
+  if (zday.occasion === "Shabbos" || zday.restDay) {
+    return {
+      label: "Shabbos",
+      note: tzeis
+        ? `Nothing is scheduled — everything is where you are staying. Shabbos ends about ${tzeis}.`
+        : "Nothing is scheduled — everything is where you are staying.",
+    };
+  }
+  return null;
+}
+
 /* ---- the mapping -------------------------------------------------------- */
 
 // Everything the planner holds as a stop today is a place you go to on foot —
@@ -68,16 +145,19 @@ function minutesOf(time?: string): number {
 const STOP_KIND: CompanionKind = "sight";
 
 /** The short label under a day in the eight-day strip. */
-function shortLabel(day: ItineraryDay, index: number, lastIndex: number): string {
+function shortLabel(day: ItineraryDay, index: number, lastIndex: number, kosher: boolean): string {
   if (day.flightsArriving.length && index === 0) return "Arrive";
   if (day.flightsDeparting.length && index === lastIndex) return "Home";
   if (day.flightsDeparting.length && index === 0) return "Fly out";
   const first = day.activities[0];
   if (first) return first.name.split(/[,(]/)[0].trim().slice(0, 12);
+  // Only the kosher-and-Shabbos layer knows to call an empty Saturday
+  // "Shabbos" rather than just "Open" — off, this is a plain itinerary.
+  if (kosher && atNoon(day.date)?.getUTCDay() === 6) return "Shabbos";
   return "Open";
 }
 
-function itemsForDay(day: ItineraryDay): CompanionItem[] {
+function itemsForDay(day: ItineraryDay, kosher: boolean): CompanionItem[] {
   const items: CompanionItem[] = [];
 
   for (const f of day.flightsArriving) {
@@ -122,14 +202,29 @@ function itemsForDay(day: ItineraryDay): CompanionItem[] {
   }
 
   if (items.length === 0) {
-    items.push({ time: "", title: "An open day", place: "", kind: "rest", note: "Nothing planned yet." });
+    // An empty Saturday only reads as "Shabbos" when the layer that knows
+    // what that means is actually on — off, it's an open day like any other.
+    if (kosher && atNoon(day.date)?.getUTCDay() === 6) {
+      items.push({ time: "", title: "Shabbos", place: "", kind: "shabbos", note: "Nothing scheduled." });
+    } else {
+      items.push({ time: "", title: "An open day", place: "", kind: "rest", note: "Nothing planned yet." });
+    }
   }
 
   return items.sort((x, y) => minutesOf(x.time) - minutesOf(y.time));
 }
 
-function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: string, guideNote?: string): CompanionDay {
+function dayFor(
+  day: ItineraryDay,
+  index: number,
+  lastIndex: number,
+  today: string,
+  guideNote?: string,
+  zday?: ZmanimDay,
+  kosher = false,
+): CompanionDay {
   const dt = atNoon(day.date);
+  const wd = dt?.getUTCDay();
   const weekdayLong = fmt(day.date, { weekday: "long" });
   const month = fmt(day.date, { month: "long" });
   const dom = dt ? String(dt.getUTCDate()).padStart(2, "0") : "";
@@ -139,18 +234,39 @@ function dayFor(day: ItineraryDay, index: number, lastIndex: number, today: stri
   const timeChip = start && end ? `${start}–${end}` : start ? `From ${start}` : "";
   const travelChip = day.travelHours > 0 ? `≈${day.travelHours}h travelling` : "";
 
-  return {
+  const out: CompanionDay = {
     date: day.date,
     dow: fmt(day.date, { weekday: "short" }),
     dom,
-    short: shortLabel(day, index, lastIndex),
+    short: shortLabel(day, index, lastIndex, kosher),
     name: `${weekdayLong} ${dt ? dt.getUTCDate() : ""} ${month}`.trim(),
     weather: timeChip,
     walk: travelChip,
     today: day.date === today || undefined,
     ...(guideNote?.trim() ? { guideNote: guideNote.trim() } : {}),
-    items: itemsForDay(day),
+    items: itemsForDay(day, kosher),
   };
+
+  // The Shabbos side of a day is part of the kosher-and-Shabbos layer, off
+  // until an account turns it on. When it is off this is a plain itinerary
+  // and the day carries no Shabbos note at all.
+  if (!kosher) return out;
+
+  // Prefer real, worked-out times — candle-lighting on erev Shabbos or yom
+  // tov, and when Shabbos ends — falling back to a weekday-only note when
+  // the day has no place we can put a clock to.
+  const fromZmanim = shabbosFromZmanim(zday);
+  if (fromZmanim) {
+    out.shabbosLabel = fromZmanim.label;
+    out.shabbosNote = fromZmanim.note;
+  } else if (wd === 6) {
+    out.shabbosLabel = "Shabbos";
+    out.shabbosNote = "Shabbos. Nothing is scheduled — everything is where you are staying.";
+  } else if (wd === 5) {
+    out.shabbosLabel = "Erev Shabbos";
+    out.shabbosNote = "Shabbos begins this evening — the day is built to finish before it comes in.";
+  }
+  return out;
 }
 
 function walletGroupsFor(itin: Itinerary): CompanionWalletGroup[] {
@@ -202,6 +318,55 @@ function walletGroupsFor(itin: Itinerary): CompanionWalletGroup[] {
   return groups;
 }
 
+/* ---- the guide (kosher + Shabbos), from the site's own records ---------- */
+
+const KOSHER_TINT = "#e7edf1";
+const SHABBOS_TINT = "#ffffff";
+
+/** "Kosher, near you" — the site's listings, in the site's careful voice. */
+function kosherSection(kosher: CompanionKosherNearby[]): CompanionGuideSection | null {
+  if (!kosher.length) return null;
+  return {
+    name: "Kosher, near you",
+    items: kosher.slice(0, 5).map((k) => ({
+      title: k.name,
+      note: [[k.kind, k.diet].filter(Boolean).join(", "), k.city, k.hechsher]
+        .filter(Boolean)
+        .join(" · ")
+        .concat(". Listed, not endorsed — confirm the hechsher close to the day."),
+      tint: KOSHER_TINT,
+    })),
+  };
+}
+
+/** "Shabbos here" — candle-lighting and when Shabbos ends, from real times. */
+function shabbosSection(days: ItineraryDay[], zmanimByDate: Record<string, ZmanimDay> | undefined): CompanionGuideSection | null {
+  if (!zmanimByDate) return null;
+  const items: CompanionGuideSection["items"] = [];
+  for (const day of days) {
+    const zday = zmanimByDate[day.date];
+    const candle = zmanTime(zday, "candle-lighting");
+    const place = zmanPlace(zday);
+    if (candle) {
+      items.push({
+        title: `Candle-lighting ${candle}`,
+        note: `${fmt(day.date, { weekday: "long" })}${place ? `, ${place}` : ""}. The day is built to finish before it comes in.`,
+        tint: SHABBOS_TINT,
+      });
+    }
+    const isShabbos = zday?.occasion === "Shabbos" || zday?.restDay;
+    const tzeis = zmanTime(zday, "tzeit");
+    if (isShabbos && tzeis && !candle) {
+      items.push({
+        title: `Shabbos ends about ${tzeis}`,
+        note: `${fmt(day.date, { weekday: "long" })}${place ? `, ${place}` : ""}. Nothing is scheduled — everything is where you are staying.`,
+        tint: SHABBOS_TINT,
+      });
+    }
+  }
+  return items.length ? { name: "Shabbos here", items } : null;
+}
+
 /**
  * Build the app's trip from a planner itinerary and its day-by-day plan.
  *
@@ -219,10 +384,18 @@ export function itineraryToCompanionTrip(
     tripName?: string;
     client?: string;
     tripId?: string;
+    /** The worked-out zmanim and nearby kosher listings — see
+     *  lib/companion-build.ts, the only caller that ever fills this in. */
+    layer?: CompanionLayer;
+    /** Whether the kosher-and-Shabbos layer is shown at all. Off by default. */
+    kosher?: boolean;
   },
 ): CompanionTrip {
+  const kosherOn = opts.kosher === true;
+  const zmanimByDate = kosherOn ? opts.layer?.zmanimByDate : undefined;
+  const kosherNearby = kosherOn ? (opts.layer?.kosher ?? []) : [];
   const lastIndex = days.length - 1;
-  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, itin.guideNotes?.[d.date]));
+  const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, itin.guideNotes?.[d.date], zmanimByDate?.[d.date], kosherOn));
 
   // Which day the app opens on: today when the trip is on now, else the
   // first — a reasonable page to land a browser on, whether the trip hasn't
@@ -264,6 +437,14 @@ export function itineraryToCompanionTrip(
     itin.dayStartTime ? { label: "Starts each day", value: itin.dayStartTime } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
+  const guideSections = [shabbosSection(days, zmanimByDate), kosherSection(kosherNearby)].filter(
+    Boolean,
+  ) as CompanionGuideSection[];
+
+  // The one "Eating today" line on the home screen — the nearest kosher
+  // place, in the same careful voice as the guide.
+  const nearest = kosherNearby[0];
+
   const contact = opts.advisorName?.trim();
   return {
     concierge: false,
@@ -276,11 +457,17 @@ export function itineraryToCompanionTrip(
     tripDates: formatRange(itin.startDate, itin.endDate),
     todayIndex,
     tripFinished,
+    ...(nearest
+      ? {
+          kosherTitle: nearest.name,
+          kosherNote: `${[nearest.kind, nearest.city].filter(Boolean).join(" in ")}. Confirm the hechsher close to the day.`,
+        }
+      : {}),
     family: who || title,
     familyMeta,
     days: compDays,
     walletGroups: walletGroupsFor(itin),
     prefs,
-    guideSections: [],
+    guideSections,
   };
 }

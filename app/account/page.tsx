@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
 import BusinessBrandPanel from "@/components/BusinessBrandPanel";
+import CompanionSettings from "@/components/companion/CompanionSettings";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -178,6 +179,7 @@ export default async function AccountPage() {
                   — answers come back to you alone, never onto the itinerary itself.
                 </p>
               )}
+              <CompanionSettings />
             </div>
           )}
         </section>
