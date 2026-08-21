@@ -176,6 +176,20 @@ export type ItinTraveler = {
   kind?: "adult" | "child" | "infant";
   /** Passport notes, seat preference, dietary needs — whatever matters. */
   notes?: string;
+  /** A contact for this one person — where their own app link, if any, is sent. */
+  email?: string;
+  phone?: string;
+  /**
+   * Whether the planner has given this person their OWN door into the trip
+   * app — a link scoped to them, not the one shared trip-wide link every
+   * traveler on a family or group trip would otherwise be handed alike.
+   * Absent/false is the normal case: most trips still use the one link.
+   * The token itself lives server-side (lib/account-store.ts), the same way
+   * a trip's own share token does — never here, since this record travels
+   * with the itinerary and a token baked into it would leak wherever a copy
+   * of the trip goes.
+   */
+  hasOwnAccess?: boolean;
 };
 
 /** Re-exported shape; the rules live in lib/day-progress.ts. */
