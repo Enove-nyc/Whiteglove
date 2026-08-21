@@ -283,8 +283,7 @@ export default function LoginForm({
             className="mt-2 w-full border border-[var(--gold-light)] bg-white px-4 py-3 outline-none focus:border-[var(--gold)]"
           />
           <span className="mt-1.5 block text-xs font-normal leading-5 text-stone-500">
-            Only so we can reach you about a trip. Leave it blank if you would rather not — nothing needs it, and you
-            still sign in with what you typed above.
+            Only so we can reach you about a trip — it is never how you sign in. Leave it blank if you would rather not; nothing needs it.
           </span>
         </label>
       )}
@@ -336,13 +335,13 @@ export default function LoginForm({
         </label>
       )}
 
-      {/* OFFERED ON THE SIGN-UP FORM TOO, which is the one this page opens on.
-          Somebody who already has an account and cannot remember the password
-          arrives here, meets "Create account", and has to work out that
-          recovery lives behind a mode switch they have not pressed yet — so
-          the one control they came for was the only one not on the screen.
+      {/* ON THE LOG-IN FORM ONLY. Password recovery belongs with signing in, not
+          with creating an account — under the sign-up form's terms checkbox it
+          read as out of place, a recovery link on a screen for people who have
+          nothing to recover yet. Somebody who already has an account switches to
+          Log in with the tabs above and finds it here, under the password.
           Thumb-sized, like every other control on the site. */}
-      {(mode === "login" || mode === "signup") && (
+      {mode === "login" && (
         <button type="button" onClick={() => { setMode("forgot"); setMessage(""); }} className="inline-flex min-h-11 items-center self-start text-xs font-bold uppercase tracking-[0.13em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
           Forgot password?
         </button>
