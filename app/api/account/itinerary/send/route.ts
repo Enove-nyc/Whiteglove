@@ -9,6 +9,7 @@ import { sendItineraryToClient } from "@/lib/email";
 import { rateLimit, tooManyMessage } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 import { siteOrigin } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
     tripTitle: trip.itinerary?.title || trip.tripName || "your trip",
     note,
     url: `${origin}/i/${shareId}`,
+    siteBrand: await currentBrand(),
   });
 
   if (!result.ok) {

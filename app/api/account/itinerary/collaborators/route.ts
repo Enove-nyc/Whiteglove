@@ -8,6 +8,7 @@ import {
 } from "@/lib/account-store";
 import { sendItineraryShareEmail } from "@/lib/email";
 import { isPhoneIdentity, normalizeIdentity } from "@/lib/identity";
+import { currentBrand } from "@/lib/site-brand";
 import { type TripRole, shareProblem } from "@/lib/trip-roles";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
         fromName: account.record.name || account.email,
         url,
         title: account.data.itinerary?.title || "Shared trip",
+        siteBrand: await currentBrand(),
       });
 
   return NextResponse.json({ ok: true, collaborators: result.collaborators, url, emailed });

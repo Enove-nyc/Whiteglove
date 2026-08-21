@@ -94,8 +94,10 @@ describe("what the client's email says", () => {
     assert.match(fn, /input\.from/);
   });
 
-  it("keeps the credit line, like the document does", () => {
-    assert.match(fn, /whiteglovekoshertravel\.com/);
+  it("keeps the credit line, like the document does — naming whichever site actually sent it", () => {
+    // See tests/two-brands-email.test.ts for which domain each brand gets.
+    assert.match(fn, /Planned with \$\{domain\}/);
+    assert.match(fn, /BRAND_DOMAIN\[input\.siteBrand \?\? "kosher"\]/);
   });
 
   it("escapes everything the agent typed", () => {
