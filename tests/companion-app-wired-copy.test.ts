@@ -79,11 +79,13 @@ describe("Guide is back, but folded into You rather than a tab of its own — a 
     assert.match(profile, /\{guideSection\}/);
   });
 
-  it("the Guide screen carries a per-day note and nothing about kosher or Shabbos", () => {
+  it("the Guide screen carries a per-day note, plus kosher/Shabbos only when the account has turned it on", () => {
     const guide = APP.slice(APP.indexOf("const guideDays"), APP.indexOf("const profileScreen"));
     assert.match(guide, /d\.guideNote/);
-    assert.doesNotMatch(guide, /kosher/i);
-    assert.doesNotMatch(guide, /shabbos/i);
+    // The kosher-and-Shabbos layer rides in trip.guideSections, which
+    // lib/companion-trip.ts only ever populates when AppPrefs.kosherFeatures
+    // is on (CompanionSettings).
+    assert.match(guide, /trip\.guideSections/);
   });
 
   it("only the advisor's own side can edit a day's note — a client on a code link never gets the control", () => {

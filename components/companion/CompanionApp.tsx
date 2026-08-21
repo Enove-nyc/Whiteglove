@@ -12,14 +12,19 @@
  * is handed in — built from lib/account-store.ts — nothing here changes but
  * the data.
  *
- * THE APP CARRIES NO KOSHER OR SHABBOS CONTENT. It once had an opt-in
- * "kosher-and-Shabbos layer" and a Guide tab built on it; both are gone, at
- * the owner's word — the app is a general itinerary tool, full stop. The
- * demo trip (data/companion-demo.ts) still tells the Rome showcase in its own
- * voice, kosher details included, because it is hand-written marketing copy
- * for a real destination rather than a real account's data — but nothing a
- * real trip renders comes from that file, and lib/companion-trip.ts (the only
- * place a real itinerary becomes a CompanionTrip) never invents any.
+ * KOSHER AND SHABBOS CONTENT IS OFF UNTIL AN ACCOUNT TURNS IT ON. A settings
+ * switch on the account page (components/companion/CompanionSettings.tsx,
+ * AppPrefs.kosherFeatures) decides whether a real trip's candle-lighting,
+ * Shabbos notes and nearby kosher listings (lib/companion-build.ts) are ever
+ * worked out at all — off, the app is a plain itinerary tool, full stop. On,
+ * they show inside the You tab's Guide section, alongside whatever practical
+ * notes the advisor wrote by hand — never as a tab of their own, so the
+ * bottom nav stays at four either way. The demo trip (data/companion-demo.ts)
+ * always tells the Rome showcase in its own voice, kosher details included,
+ * because it is hand-written marketing copy for a real destination rather
+ * than a real account's data — but nothing a real trip renders comes from
+ * that file, and lib/companion-trip.ts (the only place a real itinerary
+ * becomes a CompanionTrip) never invents any.
  *
  * THE STATE IS THE WHOLE POINT OF THE DESIGN. Open the rain notice, pick one of
  * the two afternoons, and the day, the chat and the notice all move together —
@@ -1044,14 +1049,16 @@ export default function CompanionApp({
     </div>
   );
 
-  // A REAL trip's Guide — practical notes only, day by day, never kosher or
-  // Shabbos content. Lives inside the You tab rather than a tab of its own,
-  // to keep the bottom nav to four: Trip, Advisor, Wallet, You. A client sees
-  // only the days that carry a note, and not the section at all when there
-  // are none; the advisor (or a Gold member on their own trip) always sees
-  // it, with a control to add or edit each day's note.
+  // A REAL trip's Guide — the advisor's own per-day practical notes, and,
+  // only when the account has turned the kosher-and-Shabbos layer on
+  // (CompanionSettings), the site's own kosher listings and Shabbos times
+  // for the trip. Lives inside the You tab rather than a tab of its own, to
+  // keep the bottom nav to four: Trip, Advisor, Wallet, You. A client sees
+  // only the days that carry a note, and not that part of the section at
+  // all when there are none; the advisor (or a Gold member on their own
+  // trip) always sees every day, with a control to add or edit each note.
   const guideDays = days.filter((d) => (isClientViewer ? d.guideNote : true));
-  const showGuideSection = !isClientViewer || guideDays.length > 0;
+  const showGuideSection = (!isClientViewer || guideDays.length > 0) || trip.guideSections.length > 0;
   const guideSection = showGuideSection && (
     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
       <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>Getting around, day by day</div>
@@ -1066,6 +1073,20 @@ export default function CompanionApp({
             <GuideNoteEdit tripId={trip.tripId} date={d.date} note={d.guideNote ?? ""} onSaved={() => router.refresh()} />
           )}
         </div>
+      ))}
+      {/* The kosher-and-Shabbos layer — only ever present when the account
+          turned it on (CompanionSettings, AppPrefs.kosherFeatures). Off,
+          trip.guideSections is always empty and this renders nothing. */}
+      {trip.guideSections.map((g, gi) => (
+        <Fragment key={gi}>
+          <div style={{ ...kicker("#78716c"), paddingLeft: 4 }}>{g.name}</div>
+          {g.items.map((it, i) => (
+            <div key={i} style={{ padding: "16px 18px", borderRadius: 16, background: it.tint, border: "1px solid rgba(38,50,58,.08)", display: "flex", flexDirection: "column", gap: 5 }}>
+              <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+              <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#26323a", textWrap: "pretty" }}>{it.note}</span>
+            </div>
+          ))}
+        </Fragment>
       ))}
     </div>
   );

@@ -17,6 +17,7 @@ import { PLAN_LABELS } from "@/lib/account-plans";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
+import { getAppPrefs } from "@/lib/app-prefs-store";
 import { pageMetadata } from "@/lib/seo";
 
 // One person's trip, on one person's phone. Nothing here belongs in a search
@@ -134,7 +135,10 @@ export default async function AppPage({
     if (selected) {
       const chosen = await getTripItinerary(who, selected.id).catch(() => null);
       if (chosen) {
-        const brand = await readBrand(who).catch(() => null);
+        const [brand, prefs] = await Promise.all([
+          readBrand(who).catch(() => null),
+          getAppPrefs(who).catch(() => ({ kosherFeatures: false })),
+        ]);
         const advisorName = chosen.advisor || (brand?.enabled ? brand.name : undefined);
         companionTrip = await buildCompanionFromItinerary(
           { ...emptyItinerary(), ...chosen.itinerary },
@@ -144,6 +148,7 @@ export default async function AppPage({
             tripName: chosen.tripName,
             client: chosen.client,
             tripId: selected.id,
+            kosher: prefs.kosherFeatures,
           },
         );
       }
