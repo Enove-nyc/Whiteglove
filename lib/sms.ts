@@ -15,6 +15,7 @@
 
 import { recordEmailAttempt } from "@/lib/email-log";
 import { formatPhone } from "@/lib/identity";
+import { BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 export type SmsResult = { ok: boolean; status?: number; id?: string; error?: string };
 
@@ -104,21 +105,21 @@ export async function sendSms(to: string, body: string, kind = "sms"): Promise<S
   }
 }
 
-/** The verification code, by text. */
-export async function sendVerificationSms(to: string, code: string): Promise<boolean> {
+/** The verification code, by text. Reachable from either brand's sign-up. */
+export async function sendVerificationSms(to: string, code: string, siteBrand: SiteBrand = "kosher"): Promise<boolean> {
   const result = await sendSms(
     to,
-    `${code} is your White Glove Kosher Travel verification code. It expires in 30 minutes.`,
+    `${code} is your ${BRAND_NAME[siteBrand]} verification code. It expires in 30 minutes.`,
     "verification code",
   );
   return result.ok;
 }
 
-/** The password-reset code, by text. */
-export async function sendPasswordResetSms(to: string, code: string): Promise<boolean> {
+/** The password-reset code, by text. Reachable from either brand's sign-in. */
+export async function sendPasswordResetSms(to: string, code: string, siteBrand: SiteBrand = "kosher"): Promise<boolean> {
   const result = await sendSms(
     to,
-    `${code} is your White Glove Kosher Travel password reset code. It expires in 30 minutes. If you did not ask for it, ignore this message.`,
+    `${code} is your ${BRAND_NAME[siteBrand]} password reset code. It expires in 30 minutes. If you did not ask for it, ignore this message.`,
     "password reset",
   );
   return result.ok;

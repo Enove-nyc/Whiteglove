@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { resendVerificationCode } from "@/lib/account-store";
 import { verificationCodeTo } from "@/lib/verification-delivery";
+import { brandFromRequestHeaders } from "@/lib/site-brand-core";
 
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as { email?: string } | null;
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
   const result = await resendVerificationCode(body.email);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
-  const delivery = await verificationCodeTo(result.email, result.verificationCode);
+  const delivery = await verificationCodeTo(result.email, result.verificationCode, brandFromRequestHeaders(request.headers));
   return NextResponse.json({
     ok: true,
     email: result.email,

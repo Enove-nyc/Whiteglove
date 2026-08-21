@@ -3,6 +3,7 @@ import { createAccount } from "@/lib/account-store";
 import { normalizeIdentity } from "@/lib/identity";
 import { smsConfigured } from "@/lib/sms";
 import { verificationCodeTo } from "@/lib/verification-delivery";
+import { brandFromRequestHeaders } from "@/lib/site-brand-core";
 
 // Sign up with an email address or a phone number. One field takes both — a
 // visitor should not have to decide which kind of person they are before they
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   const result = await createAccount(body.email, body.password, body.name, contactPhone);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
-  const delivery = await verificationCodeTo(result.email, result.verificationCode);
+  const delivery = await verificationCodeTo(result.email, result.verificationCode, brandFromRequestHeaders(request.headers));
   return NextResponse.json({
     ok: true,
     email: result.email,

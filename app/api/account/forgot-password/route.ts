@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { requestPasswordReset } from "@/lib/account-store";
 import { resetCodeTo } from "@/lib/verification-delivery";
+import { brandFromRequestHeaders } from "@/lib/site-brand-core";
 
 /**
  * Asking for a reset code, answered the same way every time.
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   const result = await requestPasswordReset(body.email);
   if (result.ok) {
-    await resetCodeTo(result.email, result.resetCode);
+    await resetCodeTo(result.email, result.resetCode, brandFromRequestHeaders(request.headers));
   }
 
   // Deliberately carries nothing the caller did not already supply. No
