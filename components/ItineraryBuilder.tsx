@@ -64,6 +64,8 @@ import {
   type DayAdjustment as ItinAdjustment,
 } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
+import { addImportedItemsToItinerary, type ImportedItem } from "@/data/smart-import";
+import SmartImportPanel from "@/components/SmartImportPanel";
 
 const ROUTE_KEY = "whiteGloveMyRoute";
 
@@ -71,7 +73,7 @@ const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-
 const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
-type Tab = "flight" | "hotel" | "activity" | null;
+type Tab = "flight" | "hotel" | "activity" | "import" | null;
 type ItineraryView = "days" | "calendar";
 
 export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [] }: {
@@ -211,6 +213,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     } catch {
       /* ignore */
     }
+  }
+
+  // Smart Import's chosen rows, added in one save — same shape as
+  // importSavedRoute's batch above, but across all three arrays at once since
+  // a single confirmation can name a flight, a hotel and a car in one go.
+  function importSmartImportItems(items: ImportedItem[]) {
+    if (items.length) persist(addImportedItemsToItinerary(items, itin));
   }
 
   // Time at a border is folded into the driving rather than mentioned beside
@@ -428,6 +437,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <button type="button" onClick={() => { setEditingLodgingId(null); setTab(tab === "hotel" ? null : "hotel"); }} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Stop</button>
           <button type="button" onClick={importSavedRoute} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Saved route</button>
+          <button type="button" onClick={() => setTab(tab === "import" ? null : "import")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Smart Import</button>
           <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan my route"}</button>
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
@@ -464,6 +474,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           />
         )}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
 
