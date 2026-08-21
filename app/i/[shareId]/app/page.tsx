@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
-import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { checkTripFlightStatus, getSharedItineraryByShareId, getTripAlerts } from "@/lib/account-store";
 import { emptyItinerary, unitsOf } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
@@ -67,6 +67,10 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   );
   if (!trip) redirect(`/i/${shareId}`); // no dates / no days — the document still reads
   if (payment) trip.payment = payment;
+  if (shared.tripId) {
+    await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
+    trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
+  }
 
   // The client's side of the thread: this link IS the channel to their advisor.
   const chat = {

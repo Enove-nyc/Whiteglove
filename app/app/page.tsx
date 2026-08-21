@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import {
   accountCookieName,
+  checkTripFlightStatus,
   getCurrentAccountSummary,
+  getTripAlerts,
   getTripItinerary,
   getTrips,
   readSessionEmail,
@@ -151,6 +153,10 @@ export default async function AppPage({
             kosher: prefs.kosherFeatures,
           },
         );
+        // Best-effort, and throttled server-side — see checkTripFlightStatus.
+        // A failure here should never keep the app from opening.
+        await checkTripFlightStatus(who, selected.id).catch(() => []);
+        if (companionTrip) companionTrip.liveAlerts = await getTripAlerts(who, selected.id).catch(() => []);
       }
     }
 
