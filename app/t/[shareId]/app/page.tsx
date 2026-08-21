@@ -3,10 +3,11 @@ import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getSharedTraveler } from "@/lib/account-store";
-import { emptyItinerary, redactForTraveler } from "@/data/itinerary";
+import { emptyItinerary, redactForTraveler, travelerUnitKey } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
 import { getAppPrefs } from "@/lib/app-prefs-store";
+import { paymentForUnit } from "@/lib/companion-payment";
 import { pageMetadata } from "@/lib/seo";
 
 // One traveler's own link, not found. It carries their family's dates and
@@ -43,18 +44,21 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   const plan = await getPlan(shared.ownerEmail);
   if (!mayServeCompanionClients(plan)) redirect("/");
 
-  const [brand, prefs] = await Promise.all([
+  const label = shared.traveler.family?.trim() || shared.traveler.name;
+  const [brand, prefs, payment] = await Promise.all([
     readBrand(shared.ownerEmail).catch(() => null),
     getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
+    paymentForUnit(shared.ownerEmail, shared.tripId, travelerUnitKey(shared.traveler), label, shareId).catch(() => undefined),
   ]);
   const redacted = redactForTraveler({ ...emptyItinerary(), ...shared.itinerary }, shared.traveler.id);
   const trip = await buildCompanionFromItinerary(redacted, {
     today: new Date().toISOString().slice(0, 10),
     advisorName: shared.advisor || (brand?.enabled ? brand.name : undefined) || shared.ownerName,
-    client: shared.traveler.family?.trim() || shared.traveler.name,
+    client: label,
     kosher: prefs.kosherFeatures,
   });
   if (!trip) redirect("/");
+  if (payment) trip.payment = payment;
 
   const chat = {
     shareId: shared.tripShareId ?? shareId,

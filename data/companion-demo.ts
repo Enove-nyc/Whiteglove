@@ -103,6 +103,21 @@ export type CompanionAdvisorTrip = {
   go?: "alerts";
 };
 
+/** What one viewer owes on the trip, and what is left to pay it with. */
+export type CompanionPayment = {
+  /** The share-link path this viewer's own Pay screen calls — /pay/<shareId>. */
+  shareId: string;
+  label: string;
+  currency: string;
+  /** Only present when the planner chose to expose the whole trip's total. */
+  totalCents?: number;
+  yourShareCents: number;
+  paidCents: number;
+  remainingCents: number;
+  nextDue?: { label: string; amountCents: number; dueDate?: string } | null;
+  canPay: boolean;
+};
+
 export type CompanionTrip = {
   /**
    * Whether a live advisor is attached — the concierge side of the app.
@@ -147,6 +162,15 @@ export type CompanionTrip = {
   walletGroups: CompanionWalletGroup[];
   prefs: CompanionPref[];
   guideSections: CompanionGuideSection[];
+  /**
+   * What this viewer owes on the trip, and how to pay it — absent unless the
+   * planner has set up a balance AND this link is scoped to one family/
+   * traveler (a per-traveler link, or a whole-trip link on a single-payer
+   * trip). Never present for the demo. See lib/companion-payment.ts, the one
+   * place this is computed, and components/companion/PaymentCard.tsx, the
+   * one place it is shown.
+   */
+  payment?: CompanionPayment;
   /* ---- concierge-only, present when `concierge` is true ---------------- */
   /** The held-for-you weather swap. */
   swaps?: { a: CompanionSwap; b: CompanionSwap };
